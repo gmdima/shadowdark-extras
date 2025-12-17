@@ -1,0 +1,2234 @@
+/* Shadowdark Extras Module Styles */
+
+/* ============================================
+   TRADE CHAT MESSAGE STYLES
+   ============================================ */
+
+.trade-request-message {
+    padding: 8px;
+    border-radius: 5px;
+    background: rgba(0, 0, 0, 0.2);
+}
+
+.trade-request-message h3 {
+    margin: 0 0 8px 0;
+    font-size: 14px;
+    color: #c9aa58;
+}
+
+.trade-request-message h3 i {
+    margin-right: 6px;
+}
+
+.trade-request-message p {
+    margin: 0 0 12px 0;
+}
+
+.trade-request-buttons {
+    display: flex;
+    gap: 8px;
+}
+
+.trade-request-buttons button {
+    flex: 1;
+    padding: 6px 12px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.trade-accept-btn {
+    background: #2d5a27;
+    color: #fff;
+}
+
+.trade-accept-btn:hover {
+    background: #3d7a37;
+}
+
+.trade-decline-btn {
+    background: #5a2727;
+    color: #fff;
+}
+
+.trade-decline-btn:hover {
+    background: #7a3737;
+}
+
+.trade-open-btn {
+    background: #3a5a8a;
+    color: #fff;
+    width: 100%;
+}
+
+.trade-open-btn:hover {
+    background: #4a7aba;
+}
+
+.trade-request-accepted,
+.trade-request-declined {
+    padding: 6px 12px;
+    border-radius: 4px;
+    text-align: center;
+    font-weight: bold;
+}
+
+.trade-request-accepted {
+    background: #2d5a27;
+    color: #8f8;
+}
+
+.trade-request-declined {
+    background: #5a2727;
+    color: #f88;
+}
+
+.trade-request-accepted i,
+.trade-request-declined i {
+    margin-right: 6px;
+}
+
+.trade-accepted-message h3 {
+    color: #8f8;
+    margin: 0 0 8px 0;
+}
+
+.trade-declined-message {
+    color: #f88;
+}
+
+.trade-declined-message i {
+    margin-right: 6px;
+}
+
+/* ============================================
+   TRADE BUTTON ON PLAYER SHEET
+   ============================================ */
+
+.shadowdark-extras-trade-button {
+    margin-top: 8px;
+}
+
+.shadowdark-extras-trade-button .trade-btn {
+    width: 100%;
+    padding: 0px 0px;
+    font-size: 16px;
+    color: #fff;
+    background: #111;
+    border: 3px solid #000000;
+    border-radius: 0px;
+    cursor: pointer;
+    margin-left: auto;
+    outline: dotted;
+}
+
+.shadowdark-extras-trade-button .trade-btn i {
+    margin-right: 6px;
+}
+
+/* ============================================
+   RENOWN DISPLAY
+   ============================================ */
+
+/* Renown Display */
+.shadowdark-extras-renown .renown-display {
+    color: #c41e3a;
+    font-weight: bold;
+}
+
+.shadowdark-extras-renown .renown-display input {
+    color: #c41e3a;
+    font-weight: bold;
+    text-align: center;
+}
+
+.shadowdark-extras-renown .value-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr 2fr;
+    column-gap: 2px;
+    align-items: center;
+    text-align: center;
+}
+
+/* ============================================
+   NPC INVENTORY STYLES
+   ============================================ */
+
+/* Main inventory grid layout */
+.shadowdark-extras-npc-inventory .inventory-grid {
+    display: grid;
+    grid-template-columns: 1fr 200px;
+    gap: 10px;
+    height: 100%;
+}
+
+.shadowdark-extras-npc-inventory .inventory-main {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.shadowdark-extras-npc-inventory .inventory-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+/* Item list styling */
+.shadowdark-extras-npc-inventory .npc-item-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.shadowdark-extras-npc-inventory .npc-item-list .header {
+    display: grid;
+    grid-template-columns: 1fr 60px 50px;
+    gap: 5px;
+    padding: 4px 8px;
+    font-weight: bold;
+    border-bottom: 1px solid var(--color-border-light-1, #999);
+    background: rgba(0, 0, 0, 0.05);
+}
+
+.shadowdark-extras-npc-inventory .npc-item-list .item {
+    display: grid;
+    grid-template-columns: 30px 1fr 60px 50px;
+    gap: 5px;
+    padding: 4px 8px;
+    align-items: center;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    cursor: grab;
+    transition: background 0.2s;
+}
+
+.shadowdark-extras-npc-inventory .npc-item-list .item:hover {
+    background: rgba(0, 0, 0, 0.05);
+}
+
+.shadowdark-extras-npc-inventory .npc-item-list .item:active {
+    cursor: grabbing;
+}
+
+.shadowdark-extras-npc-inventory .npc-item-list .item:last-child {
+    border-bottom: none;
+}
+
+/* Item image */
+.shadowdark-extras-npc-inventory .item-image {
+    width: 24px;
+    height: 24px;
+    background-size: cover;
+    background-position: center;
+    border-radius: 3px;
+    cursor: pointer;
+    position: relative;
+}
+
+.shadowdark-extras-npc-inventory .item-image i {
+    display: none;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    text-shadow: 0 0 3px black;
+}
+
+.shadowdark-extras-npc-inventory .item-image:hover i {
+    display: block;
+}
+
+/* Item name */
+.shadowdark-extras-npc-inventory .item-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+.shadowdark-extras-npc-inventory .item-name:hover {
+    text-decoration: underline;
+}
+
+.shadowdark-extras-npc-inventory .item-name em {
+    font-size: 0.85em;
+    color: darkorange;
+    margin-left: 5px;
+}
+
+/* Quantity controls */
+.shadowdark-extras-npc-inventory .quantity {
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+}
+
+.shadowdark-extras-npc-inventory .quantity a {
+    cursor: pointer;
+    opacity: 0.7;
+}
+
+.shadowdark-extras-npc-inventory .quantity a:hover {
+    opacity: 1;
+}
+
+/* Actions */
+.shadowdark-extras-npc-inventory .actions {
+    display: flex;
+    gap: 5px;
+    justify-content: center;
+}
+
+.shadowdark-extras-npc-inventory .actions a {
+    cursor: pointer;
+    opacity: 0.7;
+}
+
+.shadowdark-extras-npc-inventory .actions a:hover {
+    opacity: 1;
+}
+
+/* Coins grid */
+.shadowdark-extras-npc-inventory .npc-coins-grid {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 5px 10px;
+    align-items: center;
+}
+
+.shadowdark-extras-npc-inventory .npc-coins-grid input.coin-value {
+    width: 60px;
+    text-align: center;
+}
+
+.shadowdark-extras-npc-inventory .npc-coins-grid h3 {
+    margin: 0;
+    font-size: 0.9em;
+}
+
+/* Create item button */
+.shadowdark-extras-npc-inventory [data-action="npc-create-item"] {
+    cursor: pointer;
+    opacity: 0.7;
+}
+
+.shadowdark-extras-npc-inventory [data-action="npc-create-item"]:hover {
+    opacity: 1;
+}
+
+/* ============================================
+   PARTY SHEET STYLES
+   ============================================ */
+
+/* ============================================
+   BASIC ITEM CONTAINERS
+   ============================================ */
+
+/* Container contents list layout (inside Basic item sheet) */
+.sdx-container-box .sdx-container-list .header {
+    display: grid;
+    grid-template-columns: 1fr 60px 50px 50px 50px 60px 30px;
+    gap: 5px;
+    align-items: center;
+}
+
+/* Container coins row styling */
+.sdx-container-box .sdx-container-list .sdx-container-coins-row {
+    display: grid;
+    grid-template-columns: 30px 1fr 60px 50px 50px 50px 60px 30px;
+    gap: 5px;
+    align-items: center;
+    background: rgba(135, 206, 235, 0.1);
+    border-bottom: 2px solid rgba(0, 0, 0, 0.2);
+}
+
+.sdx-container-box .sdx-container-list .sdx-container-coins-row .item-image {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #d4af37;
+    font-size: 16px;
+}
+
+.sdx-container-box .sdx-container-list .sdx-container-coins-row .item-name {
+    font-weight: 600;
+}
+
+.sdx-container-box .sdx-container-list .sdx-container-coins-row .slots {
+    text-align: center;
+}
+
+.sdx-container-box .sdx-container-coin-input {
+    width: 100%;
+    height: 24px;
+    text-align: center;
+    padding: 2px;
+    font-size: 12px;
+    border: 1px solid rgba(0, 0, 0, 0.2);
+    border-radius: 3px;
+    background: white;
+}
+
+.sdx-container-box .sdx-container-coin-input:focus {
+    outline: none;
+    border-color: var(--primary, #4b4a44);
+    box-shadow: 0 0 3px rgba(0, 0, 0, 0.2);
+}
+
+.sdx-container-box .sdx-container-list li.item {
+    display: grid;
+    grid-template-columns: 30px 1fr 60px 50px 50px 50px 60px 30px;
+    gap: 5px;
+    align-items: center;
+}
+
+.sdx-container-box .sdx-container-list .item-image,
+.sdx-container-box .sdx-container-list .item-name {
+    cursor: pointer;
+}
+
+.sdx-container-box .sdx-container-list .item-name:hover,
+.sdx-container-contents-summary .sdx-contained-item-link:hover {
+    text-decoration: underline;
+}
+
+.sdx-container-box .sdx-container-list .quantity,
+.sdx-container-box .sdx-container-list .cost-gp,
+.sdx-container-box .sdx-container-list .cost-cp,
+.sdx-container-box .sdx-container-list .cost-sp,
+.sdx-container-box .sdx-container-list .slots {
+    text-align: center;
+}
+
+/* Total row styling */
+.sdx-container-box .sdx-container-list li.sdx-container-total {
+    border-top: 2px solid rgba(0, 0, 0, 0.3);
+    background: rgba(0, 0, 0, 0.05);
+    margin-top: 4px;
+    padding-top: 4px;
+}
+
+/* Container tooltip styling */
+.sdx-has-container-tooltip {
+    cursor: help;
+}
+
+.sdx-has-container-tooltip:hover {
+    background: rgba(0, 0, 0, 0.05);
+}
+
+/* Actor sheet: "Contains" summary pills */
+.sdx-container-contents-summary {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px;
+}
+
+.sdx-container-contents-summary strong {
+    margin-right: 2px;
+}
+
+.sdx-container-contents-summary .sdx-pill {
+    display: inline-flex;
+    align-items: center;
+    background: var(--primary);
+    color: var(--color-text-light-0);
+    border: 1px solid var(--color-border-light-1);
+    border-radius: 999px;
+    padding: 1px 6px;
+    font-size: 0.85em;
+    line-height: 1.4;
+    white-space: nowrap;
+}
+
+.sdx-container-contents-summary .sdx-contained-item-link {
+    color: inherit;
+    text-decoration: none;
+}
+
+.sdx-container-contents-summary .sdx-pill-qty {
+    margin-left: 4px;
+}
+
+/* Party sheet base - dark elegant theme */
+.shadowdark-extras-party {
+    --party-bg-dark: #1a1a1a;
+    --party-bg-medium: #252525;
+    --party-bg-light: #333;
+    --party-border: #444;
+    --party-text: #e0e0e0;
+    --party-text-muted: #999;
+    --party-accent: #c9a961;
+    --party-danger: #c41e3a;
+    background: var(--party-bg-dark) !important;
+}
+
+.shadowdark-extras-party form {
+    background: var(--party-bg-dark);
+    gap: 0;
+}
+
+/* Override any Shadowdark system header styles */
+.shadowdark-extras-party .SD-header,
+.shadowdark-extras-party header {
+    min-height: unset !important;
+    height: auto !important;
+    flex: 0 0 auto !important;
+    background-image: none !important;
+}
+
+/* Force compact layout - kill all flex grow on header/nav */
+.shadowdark-extras-party form.flexcol > header,
+.shadowdark-extras-party form.flexcol > nav {
+    flex: 0 0 auto !important;
+}
+
+/* Party Header - redesigned */
+.shadowdark-extras-party .party-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: var(--party-bg-dark) !important;
+    padding: 8px 12px;
+    margin: 0;
+    border: none;
+    min-height: unset !important;
+    height: auto !important;
+    flex: 0 0 auto !important;
+}
+
+.shadowdark-extras-party .party-header::before,
+.shadowdark-extras-party .party-header::after {
+    display: none !important;
+    content: none !important;
+}
+
+.shadowdark-extras-party .party-header .portrait {
+    border: 2px solid var(--party-border);
+    width: 50px;
+    height: 50px;
+    flex-shrink: 0;
+}
+
+.shadowdark-extras-party .party-header-content {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.shadowdark-extras-party .party-title {
+    display: flex;
+    align-items: center;
+}
+
+.shadowdark-extras-party .party-title input {
+    font-size: 1.4em;
+    font-weight: bold;
+    color: var(--party-text);
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid transparent;
+    padding: 0;
+    width: auto;
+}
+
+.shadowdark-extras-party .party-title input:hover,
+.shadowdark-extras-party .party-title input:focus {
+    border-bottom-color: var(--party-border);
+}
+
+.shadowdark-extras-party .party-summary {
+    display: flex;
+    gap: 15px;
+}
+
+.shadowdark-extras-party .party-stat {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.9em;
+    color: var(--party-text);
+}
+
+.shadowdark-extras-party .party-stat i {
+    color: var(--party-accent);
+    width: 14px;
+    text-align: center;
+}
+
+/* Navigation tabs */
+.shadowdark-extras-party .SD-nav {
+    background: var(--party-bg-medium);
+    border-bottom: 1px solid var(--party-border);
+    flex: 0 0 auto !important;
+    min-height: unset !important;
+}
+
+.shadowdark-extras-party .SD-nav .navigation-tab {
+    color: var(--party-text-muted);
+    padding: 8px 16px;
+}
+
+.shadowdark-extras-party .SD-nav .navigation-tab:hover {
+    color: var(--party-text);
+}
+
+.shadowdark-extras-party .SD-nav .navigation-tab.active {
+    color: var(--party-text);
+    border-bottom: 2px solid var(--party-accent);
+}
+
+.shadowdark-extras-party .SD-nav .navigation-tab i {
+    margin-right: 6px;
+}
+
+/* Content body */
+.shadowdark-extras-party .SD-content-body {
+    background: var(--party-bg-medium);
+    padding: 15px;
+}
+
+/* Party Actions */
+.shadowdark-extras-party .party-actions {
+    margin-bottom: 15px;
+    display: flex;
+    gap: 10px;
+}
+
+.shadowdark-extras-party .party-actions button {
+    padding: 8px 16px;
+    background: var(--party-bg-light);
+    color: var(--party-text);
+    border: 1px solid var(--party-border);
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.shadowdark-extras-party .party-actions button:hover {
+    background: var(--party-border);
+    border-color: var(--party-accent);
+}
+
+/* Members List */
+.shadowdark-extras-party .members-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.shadowdark-extras-party .member {
+    display: grid;
+    grid-template-columns: 76px minmax(0, 1fr) 160px;
+    column-gap: 15px;
+    align-items: start;
+    padding: 12px;
+    background: var(--party-bg-dark);
+    border: 1px solid var(--party-border);
+    border-radius: 6px;
+    transition: all 0.2s ease;
+}
+
+.shadowdark-extras-party .member:hover {
+    border-color: var(--party-accent);
+}
+
+/* Member Portrait */
+.shadowdark-extras-party .member-portrait {
+    position: relative;
+    flex-shrink: 0;
+    align-self: center;
+}
+
+.shadowdark-extras-party .member-portrait img {
+    width: 72px;
+    height: 72px;
+    border-radius: 6px;
+    cursor: pointer;
+    border: 2px solid var(--party-border);
+    transition: border-color 0.2s ease;
+}
+
+.shadowdark-extras-party .member-portrait img:hover {
+    border-color: var(--party-accent);
+}
+
+.shadowdark-extras-party .member-portrait .remove-member {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    width: 20px;
+    height: 20px;
+    background: var(--party-danger);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    border: 2px solid var(--party-bg-dark);
+}
+
+.shadowdark-extras-party .member:hover .remove-member {
+    opacity: 1;
+}
+
+.shadowdark-extras-party .member-portrait .remove-member i {
+    font-size: 10px;
+    color: white;
+}
+
+.shadowdark-extras-party .member-portrait .npc-count {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    margin-top: 6px;
+}
+
+.shadowdark-extras-party .member-portrait .npc-count-btn {
+    width: 18px;
+    height: 18px;
+    border: 1px solid var(--party-border);
+    border-radius: 4px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--party-bg-light);
+    color: var(--party-text);
+    cursor: pointer;
+}
+
+.shadowdark-extras-party .member-portrait .npc-count-btn i {
+    font-size: 10px;
+}
+
+.shadowdark-extras-party .member-portrait .npc-count-input {
+    width: 72px;
+    height: 18px;
+    padding: 0 4px;
+    border: 1px solid var(--party-border);
+    border-radius: 4px;
+    background: var(--party-bg-light);
+    color: var(--party-text);
+    text-align: center;
+}
+
+/* Member Info */
+.shadowdark-extras-party .member-info {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.shadowdark-extras-party .member-header {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+}
+
+.shadowdark-extras-party .member-name {
+    font-size: 1.15em;
+    font-weight: bold;
+    color: var(--party-text);
+    cursor: pointer;
+}
+
+.shadowdark-extras-party .member-name:hover {
+    color: var(--party-accent);
+    text-decoration: underline;
+}
+
+.shadowdark-extras-party .member-class {
+    font-size: 0.9em;
+    color: var(--party-text-muted);
+    font-style: italic;
+}
+
+/* Member Stats */
+.shadowdark-extras-party .member-stats {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+}
+
+.shadowdark-extras-party .member-stats .stat {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.shadowdark-extras-party .member-stats .stat .label {
+    font-size: 0.8em;
+    color: var(--party-text-muted);
+    text-transform: uppercase;
+    font-weight: 600;
+}
+
+.shadowdark-extras-party .member-stats .stat .value {
+    font-weight: bold;
+    color: var(--party-text);
+    white-space: nowrap;
+}
+
+.shadowdark-extras-party .member-stats .stat.hp {
+    flex: 1;
+    max-width: none;
+}
+
+.shadowdark-extras-party .member-stats .stat.hp .value {
+    display: inline-block;
+    min-width: 52px;
+    text-align: right;
+}
+
+.shadowdark-extras-party .member-stats .hp-bar {
+    flex: 0 0 120px;
+    width: 120px;
+    height: 8px;
+    background: var(--party-bg-light);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-left: 8px;
+}
+
+.shadowdark-extras-party .member-stats .hp-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--party-danger), #e63946);
+    border-radius: 4px;
+    transition: width 0.3s ease;
+}
+
+/* Member Abilities */
+.shadowdark-extras-party .member-abilities {
+    display: flex;
+    gap: 8px;
+}
+
+.shadowdark-extras-party .member-abilities .ability {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 4px 10px;
+    background: var(--party-bg-light);
+    border-radius: 4px;
+    min-width: 40px;
+    border: 1px solid var(--party-border);
+}
+
+.shadowdark-extras-party .member-abilities .ability .label {
+    font-size: 0.7em;
+    color: var(--party-text-muted);
+    text-transform: uppercase;
+    font-weight: 600;
+}
+
+.shadowdark-extras-party .member-abilities .ability .mod {
+    font-weight: bold;
+    font-size: 1em;
+    color: var(--party-text);
+}
+
+/* XP Controls */
+.shadowdark-extras-party .member-stats .stat.xp {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.shadowdark-extras-party .member-stats .xp-control {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    background: var(--party-bg-light);
+    border: 1px solid var(--party-border);
+    border-radius: 3px;
+    cursor: pointer;
+    color: var(--party-text-muted);
+    font-size: 0.7em;
+}
+
+.shadowdark-extras-party .member-stats .xp-control:hover {
+    background: var(--party-border);
+    color: var(--party-accent);
+}
+
+/* Member Effects */
+.shadowdark-extras-party .member-effects {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    align-content: flex-start;
+    margin-top: -7px;
+    margin-right: -7px;
+    max-height: 64px;
+    overflow-y: auto;
+    padding: 2px;
+    border: 0;
+}
+
+.shadowdark-extras-party .member-effects.empty {
+    visibility: hidden;
+}
+
+.shadowdark-extras-party .member-effects .effect-icon {
+    width: 24px;
+    height: 24px;
+    border-radius: 3px;
+    overflow: hidden;
+    border: 1px solid var(--party-border);
+    cursor: help;
+}
+
+.shadowdark-extras-party .member-effects .effect-icon img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Empty Members State */
+.shadowdark-extras-party .members-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 40px;
+    color: var(--party-text-muted);
+    text-align: center;
+    background: var(--party-bg-dark);
+    border: 2px dashed var(--party-border);
+    border-radius: 8px;
+}
+
+.shadowdark-extras-party .members-empty i {
+    margin-bottom: 20px;
+    opacity: 0.5;
+    color: var(--party-accent);
+}
+
+.shadowdark-extras-party .members-empty p {
+    margin: 5px 0;
+}
+
+.shadowdark-extras-party .members-empty .hint {
+    font-size: 0.9em;
+    font-style: italic;
+}
+
+/* SD-box styling for party */
+.shadowdark-extras-party .SD-box {
+    background: var(--party-bg-dark);
+    border: 1px solid var(--party-border);
+    border-radius: 6px;
+}
+
+.shadowdark-extras-party .SD-box .header,
+.shadowdark-extras-party .SD-box > .header {
+    background: var(--party-bg-light) !important;
+    background-image: none !important;
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--party-border);
+    border-radius: 6px 6px 0 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: auto;
+    min-height: 34px;
+    gap: 10px;
+}
+
+/* Kill ALL pseudo-elements and background images in headers */
+.shadowdark-extras-party .SD-box .header *,
+.shadowdark-extras-party .SD-box .header::before,
+.shadowdark-extras-party .SD-box .header::after,
+.shadowdark-extras-party .SD-box .header *::before,
+.shadowdark-extras-party .SD-box .header *::after {
+    background-image: none !important;
+}
+
+.shadowdark-extras-party .header::before,
+.shadowdark-extras-party .header::after {
+    display: none !important;
+    content: none !important;
+    background: none !important;
+    background-image: none !important;
+}
+
+.shadowdark-extras-party .SD-box .header label {
+    color: var(--party-text);
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.85em;
+    letter-spacing: 0.5px;
+    background: none !important;
+    background-image: none !important;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.shadowdark-extras-party .SD-box .header > span {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-left: auto;
+    color: var(--party-text-muted);
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.85em;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+}
+
+.shadowdark-extras-party .SD-box .header > span a {
+    color: var(--party-text-muted);
+    text-decoration: none;
+}
+
+.shadowdark-extras-party .SD-box .header > span a:hover {
+    color: var(--party-text);
+}
+
+/* Party inventory slots overload indicator */
+.shadowdark-extras-party .SD-box .header > span.sdx-party-capacity.over .sdx-party-capacity-used {
+    color: var(--party-danger);
+    font-weight: 800;
+}
+
+/* Defensive: keep "SLOTS: used / max" strictly inline and ordered */
+.shadowdark-extras-party .SD-box .header > span.sdx-party-capacity .sdx-party-capacity-text,
+.shadowdark-extras-party .SD-box .header > span.sdx-party-capacity .sdx-party-capacity-used,
+.shadowdark-extras-party .SD-box .header > span.sdx-party-capacity .sdx-party-capacity-max {
+    display: inline !important;
+    float: none !important;
+    position: static !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    order: 0 !important;
+    flex: 0 0 auto !important;
+}
+
+.shadowdark-extras-party .SD-box .header label::before,
+.shadowdark-extras-party .SD-box .header label::after {
+    display: none !important;
+    content: none !important;
+}
+
+.shadowdark-extras-party .SD-box .content {
+    padding: 10px 12px;
+}
+
+/* Party Inventory Tab */
+.shadowdark-extras-party .tab-inventory .inventory-grid {
+    display: grid;
+    grid-template-columns: 1fr 200px;
+    gap: 15px;
+    height: 100%;
+}
+
+.shadowdark-extras-party .tab-inventory .inventory-main {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.shadowdark-extras-party .tab-inventory .inventory-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+/* Treasury actions */
+.shadowdark-extras-party .inventory-sidebar .party-actions {
+    margin: 10px 0 0;
+}
+
+.shadowdark-extras-divide-coins table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 8px 0;
+}
+
+.shadowdark-extras-divide-coins th,
+.shadowdark-extras-divide-coins td {
+    padding: 4px 6px;
+}
+
+.shadowdark-extras-divide-coins th {
+    text-align: left;
+    font-weight: 600;
+}
+
+.shadowdark-extras-divide-coins td.num,
+.shadowdark-extras-divide-coins th:nth-child(n+2) {
+    text-align: right;
+    white-space: nowrap;
+}
+
+.shadowdark-extras-divide-coins .remainder {
+    margin-top: 6px;
+    opacity: 0.85;
+}
+
+/* Party Item List */
+.shadowdark-extras-party .party-item-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.shadowdark-extras-party .party-item-list .header {
+    display: grid;
+    grid-template-columns: 1fr 60px 50px 50px;
+    gap: 5px;
+    padding: 6px 10px;
+    font-weight: 600;
+    color: var(--party-text-muted);
+    font-size: 0.85em;
+    text-transform: uppercase;
+    border-bottom: 1px solid var(--party-border);
+}
+
+.shadowdark-extras-party .party-item-list .item {
+    display: grid;
+    grid-template-columns: 30px 1fr 60px 50px 50px;
+    gap: 5px;
+    padding: 6px 10px;
+    align-items: center;
+    border-bottom: 1px solid var(--party-border);
+    color: var(--party-text);
+    cursor: grab;
+}
+
+.shadowdark-extras-party .party-item-list .quantity {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+
+.shadowdark-extras-party .party-item-list .header .quantity,
+.shadowdark-extras-party .party-item-list .header .slots-cost {
+    text-align: center;
+    justify-content: center;
+}
+
+.shadowdark-extras-party .party-item-list .slots-cost {
+    text-align: center;
+    color: var(--party-text-muted);
+    font-weight: 600;
+}
+
+.shadowdark-extras-party .party-item-list .item:hover {
+    background: var(--party-bg-light);
+}
+
+/* Expanded item details (Shadowdark utils.toggleItemDetails appends .item-details) */
+.shadowdark-extras-party .party-item-list .item .item-details {
+    grid-column: 1 / -1;
+    padding: 8px 10px 10px;
+    color: var(--party-text-muted);
+    line-height: 1.3;
+}
+
+.shadowdark-extras-party .party-item-list .item.expanded {
+    align-items: start;
+}
+
+.shadowdark-extras-party .party-item-list .item:last-child {
+    border-bottom: none;
+}
+
+.shadowdark-extras-party .party-item-list .empty-list {
+    padding: 20px;
+    text-align: center;
+    color: var(--party-text-muted);
+    font-style: italic;
+}
+
+/* Party Item Image */
+.shadowdark-extras-party .party-item-list .item-image {
+    width: 26px;
+    height: 26px;
+    background-size: cover;
+    background-position: center;
+    border-radius: 4px;
+    cursor: pointer;
+    position: relative;
+    border: 1px solid var(--party-border);
+}
+
+.shadowdark-extras-party .party-item-list .item-image i {
+    display: none;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    text-shadow: 0 0 3px black;
+}
+
+.shadowdark-extras-party .party-item-list .item-image:hover i {
+    display: block;
+}
+
+/* ============================================
+   BASIC ITEM CONTAINERS (Item Sheet Injection)
+   ============================================ */
+
+.sdx-container-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.sdx-container-toggle label {
+    font-weight: 600;
+}
+
+.sdx-container-toggle input[type="checkbox"] {
+    margin: 0;
+}
+
+.sdx-container-box {
+    margin-top: 10px;
+}
+
+.sdx-container-dropzone {
+    min-height: 140px;
+}
+
+.sdx-container-hint {
+    opacity: 0.8;
+    margin: 6px 0 10px;
+}
+
+.sdx-container-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.sdx-container-list .header {
+    display: grid;
+    grid-template-columns: 1fr 70px 30px;
+    gap: 6px;
+    align-items: center;
+    font-weight: 600;
+}
+
+.sdx-container-list .item {
+    display: grid;
+    grid-template-columns: 30px 1fr 70px 30px;
+    gap: 6px;
+    align-items: center;
+}
+
+.sdx-container-list .item-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.sdx-container-list .quantity {
+    text-align: right;
+    white-space: nowrap;
+}
+
+.sdx-container-contents-summary {
+    margin-top: 6px;
+    opacity: 0.9;
+}
+
+/* Party Item Name */
+.shadowdark-extras-party .party-item-list .item-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    cursor: pointer;
+    color: var(--party-text);
+}
+
+.shadowdark-extras-party .party-item-list .item-name:hover {
+    color: var(--party-accent);
+    text-decoration: underline;
+}
+
+/* Item Actions Column */
+.shadowdark-extras-party .party-item-list .actions {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    min-width: 30px;
+}
+
+.shadowdark-extras-party .party-item-list .actions a {
+    color: var(--party-text-muted);
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+
+.shadowdark-extras-party .party-item-list .actions a:hover {
+    color: var(--party-accent);
+}
+
+.shadowdark-extras-party .party-item-list .actions .light-active {
+    color: #ffc107;
+    text-shadow: 0 0 6px #ffc107;
+}
+
+.shadowdark-extras-party .party-item-list .actions a:hover .light-active {
+    color: #ffda44;
+}
+
+/* Quantity Controls */
+.shadowdark-extras-party .quantity {
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    color: var(--party-text);
+}
+
+.shadowdark-extras-party .quantity a {
+    cursor: pointer;
+    color: var(--party-text-muted);
+    padding: 2px;
+}
+
+.shadowdark-extras-party .quantity a:hover {
+    color: var(--party-accent);
+}
+
+/* Party Coins */
+.shadowdark-extras-party .party-coins-grid {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 8px 12px;
+    align-items: center;
+}
+
+.shadowdark-extras-party .party-coins-grid label {
+    font-weight: 600;
+    font-size: 0.9em;
+    color: var(--party-text);
+}
+
+.shadowdark-extras-party .party-coins-grid input.coin-value {
+    width: 100%;
+    text-align: center;
+    background: var(--party-bg-light);
+    border: 1px solid var(--party-border);
+    color: var(--party-text);
+    padding: 4px 8px;
+    border-radius: 4px;
+}
+
+.shadowdark-extras-party .party-coins-grid input.coin-value:focus {
+    border-color: var(--party-accent);
+    outline: none;
+}
+
+/* Coin Slots Display */
+.shadowdark-extras-party .party-coin-slots {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px;
+    margin-top: 4px;
+    background: var(--party-bg-light);
+    border: 1px solid var(--party-border);
+    border-radius: 4px;
+    font-size: 0.85em;
+    color: var(--party-text-muted);
+}
+
+.shadowdark-extras-party .party-coin-slots i {
+    color: var(--party-accent);
+}
+
+/* Member Drop Targets */
+.shadowdark-extras-party .member-drop-targets {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.shadowdark-extras-party .member-drop-target {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 10px;
+    background: var(--party-bg-light);
+    border: 1px solid var(--party-border);
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.shadowdark-extras-party .member-drop-target:hover,
+.shadowdark-extras-party .member-drop-target.drag-over {
+    background: var(--party-border);
+    border-color: var(--party-accent);
+}
+
+.shadowdark-extras-party .member-drop-target img {
+    width: 28px;
+    height: 28px;
+    border-radius: 4px;
+    border: 1px solid var(--party-border);
+}
+
+.shadowdark-extras-party .member-drop-target span {
+    font-size: 0.9em;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--party-text);
+}
+
+/* Description Tab */
+.shadowdark-extras-party .description-box {
+    height: 100%;
+}
+
+.shadowdark-extras-party .description-box .header a {
+    cursor: pointer;
+    color: var(--party-text-muted);
+    margin-left: 10px;
+}
+
+.shadowdark-extras-party .description-box .header a:hover {
+    color: var(--party-accent);
+}
+
+.shadowdark-extras-party .description-content {
+    padding: 15px;
+    min-height: 200px;
+    color: var(--party-text);
+    line-height: 1.6;
+}
+
+/* ============================================
+   CONTAINER FREE CARRY CHECKBOX
+   ============================================ */
+
+/* Style the free carry checkbox in item sheets */
+input[data-sdx-free-carry] {
+    width: 20px !important;
+    height: 20px !important;
+    cursor: pointer;
+    margin: 0;
+}
+
+input[data-sdx-free-carry]:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
+.shadowdark-extras-party .empty-description {
+    color: var(--party-text-muted);
+    font-style: italic;
+    text-align: center;
+    padding: 30px;
+}
+
+/* ============================================
+   TRADE WINDOW STYLES
+   ============================================ */
+
+.trade-window .window-content {
+    padding: 0;
+    background: linear-gradient(180deg, #1a1a1a 0%, #2d2d2d 100%);
+}
+
+.trade-window-container {
+    padding: 10px;
+    color: #e0e0e0;
+}
+
+.trade-panels {
+    display: flex;
+    gap: 10px;
+    align-items: stretch;
+}
+
+.trade-panel {
+    flex: 1;
+    background: rgba(0, 0, 0, 0.3);
+    border: 2px solid #444;
+    border-radius: 8px;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.trade-panel.trade-local {
+    border-color: #4a7c4a;
+}
+
+.trade-panel.trade-remote {
+    border-color: #7c4a4a;
+}
+
+.trade-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #444;
+}
+
+.trade-portrait {
+    width: 48px;
+    height: 48px;
+    border-radius: 4px;
+    border: 2px solid #666;
+    object-fit: cover;
+}
+
+.trade-name {
+    flex: 1;
+    margin: 0;
+    font-size: 1.1em;
+    color: #fff;
+}
+
+.trade-you {
+    font-size: 0.8em;
+    color: #4a7c4a;
+    background: rgba(74, 124, 74, 0.2);
+    padding: 2px 8px;
+    border-radius: 4px;
+}
+
+.trade-status {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+    background: rgba(255, 193, 7, 0.1);
+    border-radius: 4px;
+    font-size: 0.9em;
+    color: #ffc107;
+}
+
+.trade-status.locked {
+    background: rgba(40, 167, 69, 0.1);
+    color: #28a745;
+}
+
+.trade-status i {
+    font-size: 0.9em;
+}
+
+.trade-items {
+    flex: 1;
+    min-height: 150px;
+    max-height: 250px;
+    overflow-y: auto;
+    background: rgba(0, 0, 0, 0.2);
+    border: 2px dashed #444;
+    border-radius: 4px;
+    padding: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.trade-items.locked {
+    border-style: solid;
+    border-color: #28a745;
+}
+
+.trade-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 8px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid #444;
+    border-radius: 4px;
+    cursor: grab;
+    transition: all 0.2s ease;
+}
+
+.trade-item:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: #666;
+}
+
+.trade-item.remote {
+    cursor: default;
+}
+
+.trade-item .item-image {
+    width: 32px;
+    height: 32px;
+    border-radius: 4px;
+    border: 1px solid #555;
+    object-fit: cover;
+}
+
+.trade-item .item-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.trade-item .item-name {
+    font-size: 0.9em;
+    color: #fff;
+}
+
+.trade-item .item-qty {
+    font-size: 0.8em;
+    color: #888;
+}
+
+.trade-item .remove-item {
+    background: rgba(220, 53, 69, 0.2);
+    border: 1px solid #dc3545;
+    border-radius: 4px;
+    color: #dc3545;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.trade-item .remove-item:hover {
+    background: #dc3545;
+    color: #fff;
+}
+
+.trade-empty {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #666;
+    font-style: italic;
+    text-align: center;
+    padding: 20px;
+}
+
+/* Trade Coins Section */
+.trade-coins {
+    margin-top: 8px;
+    padding: 8px;
+    background: rgba(255, 215, 0, 0.05);
+    border: 1px solid #444;
+    border-radius: 4px;
+}
+
+.trade-coins.locked {
+    background: rgba(40, 167, 69, 0.05);
+    border-color: #28a745;
+}
+
+.trade-coins-label {
+    font-size: 0.8em;
+    color: #888;
+    margin-bottom: 6px;
+    text-align: center;
+}
+
+.trade-coins-row {
+    display: flex;
+    justify-content: space-around;
+    gap: 8px;
+}
+
+.trade-coin {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+}
+
+.trade-coin-input {
+    width: 60px;
+    padding: 4px;
+    text-align: center;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid #555;
+    border-radius: 4px;
+    color: #ffd700;
+    font-weight: bold;
+    font-size: 1em;
+}
+
+.trade-coin-input:focus {
+    outline: none;
+    border-color: #ffd700;
+}
+
+.trade-coin-input:disabled {
+    background: rgba(0, 0, 0, 0.2);
+    cursor: not-allowed;
+}
+
+.trade-coin-value {
+    width: 60px;
+    padding: 4px;
+    text-align: center;
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid #444;
+    border-radius: 4px;
+    color: #ffd700;
+    font-weight: bold;
+    font-size: 1em;
+    display: inline-block;
+}
+
+.trade-coin-label {
+    font-size: 0.75em;
+    color: #888;
+    text-transform: uppercase;
+}
+
+.trade-value {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+    background: rgba(255, 215, 0, 0.1);
+    border-radius: 4px;
+    color: #ffd700;
+    font-weight: bold;
+}
+
+.trade-value i {
+    color: #ffd700;
+}
+
+.trade-accepted {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 8px;
+    background: rgba(40, 167, 69, 0.2);
+    border: 1px solid #28a745;
+    border-radius: 4px;
+    color: #28a745;
+    font-weight: bold;
+}
+
+.trade-arrow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2em;
+    color: #666;
+    padding: 0 10px;
+}
+
+.trade-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid #444;
+}
+
+.trade-btn {
+    flex: 1;
+    padding: 10px 15px;
+    border: 2px solid #444;
+    border-radius: 6px;
+    background: rgba(0, 0, 0, 0.3);
+    color: #e0e0e0;
+    font-size: 0.95em;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.trade-btn:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: #666;
+}
+
+.trade-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.trade-btn.lock-btn {
+    border-color: #ffc107;
+    color: #ffc107;
+}
+
+.trade-btn.lock-btn:hover:not(:disabled) {
+    background: rgba(255, 193, 7, 0.2);
+}
+
+.trade-btn.lock-btn.locked {
+    border-color: #28a745;
+    color: #28a745;
+}
+
+.trade-btn.lock-btn.locked:hover:not(:disabled) {
+    background: rgba(40, 167, 69, 0.2);
+}
+
+.trade-btn.accept-btn {
+    border-color: #28a745;
+    color: #28a745;
+}
+
+.trade-btn.accept-btn:hover:not(:disabled) {
+    background: rgba(40, 167, 69, 0.2);
+}
+
+.trade-btn.cancel-btn {
+    border-color: #dc3545;
+    color: #dc3545;
+}
+
+.trade-btn.cancel-btn:hover:not(:disabled) {
+    background: rgba(220, 53, 69, 0.2);
+}
+
+/* ============================================
+   UNIDENTIFIED ITEM DESCRIPTION STYLES
+   ============================================ */
+
+.sdx-unidentified-description-box {
+    margin-top: 15px;
+    border: 1px dashed #a88b5a;
+    background: rgba(168, 139, 90, 0.05);
+}
+
+.sdx-unidentified-description-box .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 10px;
+    background: rgba(168, 139, 90, 0.1);
+    border-bottom: 1px dashed #a88b5a;
+}
+
+.sdx-unidentified-description-box .header label {
+    font-weight: 600;
+    color: #a88b5a;
+    margin: 0;
+}
+
+.sdx-unidentified-description-box .header .sdx-edit-unidentified-desc {
+    cursor: pointer;
+    opacity: 0.7;
+    color: #a88b5a;
+}
+
+.sdx-unidentified-description-box .header .sdx-edit-unidentified-desc:hover {
+    opacity: 1;
+}
+
+.sdx-unidentified-description-box .content {
+    padding: 10px;
+}
+
+.sdx-unidentified-description-box .sdx-unidentified-desc-content {
+    min-height: 30px;
+    padding: 8px;
+    background: rgba(0, 0, 0, 0.05);
+    border-radius: 3px;
+}
+
+/* Unidentified indicator icon in item lists */
+.sdx-unidentified-indicator {
+    color: #ff6b6b;
+    margin-right: 4px;
+}
+
+/* Unidentified item detail text in expanded rows */
+.sdx-unidentified-details-text {
+    font-style: italic;
+    opacity: 0.8;
+    padding: 5px;
+}
+
+/* Unidentified item sheet masked content */
+.sdx-unidentified-notice {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 30px 20px;
+    text-align: center;
+    color: #666;
+}
+
+.sdx-unidentified-notice i {
+    font-size: 3em;
+    margin-bottom: 15px;
+    opacity: 0.5;
+}
+
+.sdx-unidentified-notice p {
+    font-size: 1.1em;
+    font-style: italic;
+    margin: 0;
+}
+
+/* Add coins button in player sheet */
+.sdx-add-coins-btn {
+    cursor: pointer;
+    color: #000;
+    text-shadow: 
+        -1px -1px 0 #fff,
+        1px -1px 0 #fff,
+        -1px 1px 0 #fff,
+        1px 1px 0 #fff;
+    opacity: 0.7;
+    transition: opacity 0.2s ease;
+}
+
+.sdx-add-coins-btn:hover {
+    opacity: 1;
+}
+
+/* ============================================
+   INVENTORY STYLES APP
+   ============================================ */
+
+.inventory-styles-app {
+    background: #1a1a1a;
+}
+
+.inventory-styles-app .window-content {
+    background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.sdx-inventory-styles-form {
+    padding: 15px;
+    color: #ddd;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden;
+}
+
+.sdx-styles-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #444;
+    margin-bottom: 15px;
+    flex-shrink: 0;
+}
+
+.sdx-styles-description {
+    font-style: italic;
+    opacity: 0.8;
+    margin-bottom: 15px;
+    font-size: 0.9em;
+    flex-shrink: 0;
+}
+
+.sdx-master-toggle label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 1.1em;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.sdx-master-toggle input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+}
+
+.sdx-reset-styles {
+    background: #5a2727;
+    color: #fff;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9em;
+}
+
+.sdx-reset-styles:hover {
+    background: #7a3737;
+}
+
+.sdx-categories-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    overflow-y: auto;
+    padding-right: 5px;
+    flex: 1;
+    min-height: 0;
+}
+
+.sdx-category-section {
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid #444;
+    border-radius: 6px;
+    overflow: visible;
+    flex-shrink: 0;
+}
+
+.sdx-category-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 15px;
+    background: rgba(255, 255, 255, 0.05);
+    cursor: pointer;
+}
+
+.sdx-category-header:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.sdx-category-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.sdx-collapse-icon {
+    width: 16px;
+    color: #888;
+    transition: transform 0.2s ease;
+}
+
+.sdx-category-enable {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+}
+
+.sdx-category-enable input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+}
+
+.sdx-category-name {
+    font-weight: bold;
+    font-size: 1em;
+}
+
+.sdx-special-badge {
+    background: #4a1a7a;
+    color: #e0b0ff;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 0.75em;
+    font-weight: normal;
+}
+
+.sdx-category-priority {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.sdx-category-priority label {
+    font-size: 0.85em;
+    color: #999;
+}
+
+.sdx-category-priority input[type="number"] {
+    width: 50px;
+    padding: 4px 6px;
+    background: #222;
+    border: 1px solid #555;
+    border-radius: 3px;
+    color: #fff;
+    text-align: center;
+}
+
+.sdx-category-content {
+    padding: 15px;
+    border-top: 1px solid #333;
+    display: none;
+}
+
+.sdx-category-section.expanded .sdx-category-content {
+    display: block;
+}
+
+.sdx-category-section.expanded .sdx-collapse-icon {
+    transform: rotate(90deg);
+}
+
+.sdx-style-row {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+}
+
+.sdx-style-field {
+    flex: 1;
+    min-width: 150px;
+}
+
+.sdx-style-field > label {
+    display: block;
+    margin-bottom: 4px;
+    font-size: 0.85em;
+    color: #aaa;
+}
+
+.sdx-style-field input[type="text"],
+.sdx-style-field input[type="number"] {
+    width: 100%;
+    padding: 6px 8px;
+    background: #222;
+    border: 1px solid #555;
+    border-radius: 3px;
+    color: #fff;
+    font-size: 0.9em;
+}
+
+.sdx-style-field input[type="text"]:focus,
+.sdx-style-field input[type="number"]:focus {
+    border-color: #888;
+    outline: none;
+}
+
+.sdx-color-picker {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+}
+
+.sdx-color-picker input[type="color"] {
+    width: 36px;
+    height: 30px;
+    padding: 0;
+    border: 1px solid #555;
+    border-radius: 3px;
+    cursor: pointer;
+    background: transparent;
+}
+
+.sdx-color-picker input[type="color"]::-webkit-color-swatch-wrapper {
+    padding: 2px;
+}
+
+.sdx-color-picker input[type="color"]::-webkit-color-swatch {
+    border-radius: 2px;
+    border: none;
+}
+
+.sdx-color-picker .sdx-color-text {
+    flex: 1;
+}
+
+.sdx-gradient-toggle {
+    display: flex;
+    align-items: center;
+}
+
+.sdx-gradient-toggle label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    font-size: 0.9em;
+    margin-top: 20px;
+}
+
+.sdx-preview-section {
+    margin-top: 15px;
+    padding-top: 10px;
+    border-top: 1px dashed #444;
+}
+
+.sdx-preview-section > label {
+    font-size: 0.85em;
+    color: #aaa;
+    margin-bottom: 6px;
+    display: block;
+}
+
+.sdx-style-preview {
+    background: #333;
+    padding: 8px 12px;
+    border-radius: 3px;
+    transition: all 0.2s ease;
+}
+
+.sdx-style-preview .item-name {
+    font-weight: 500;
+}
+
+.sdx-form-footer {
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid #444;
+    display: flex;
+    justify-content: flex-end;
+    flex-shrink: 0;
+}
+
+.sdx-save-btn {
+    background: #2d5a27;
+    color: #fff;
+    border: none;
+    padding: 8px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1em;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.sdx-save-btn:hover {
+    background: #3d7a37;
+}
+
+/* Inventory item row styling - ensure item-image hover effect still works */
+.shadowdark .SD-list > li .item-image {
+    color: transparent;
+}
+
+.shadowdark .SD-list > li .item-image:hover {
+    color: white;
+}

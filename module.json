@@ -1,0 +1,39 @@
+{
+  "id": "shadowdark-extras",
+  "title": "Shadowdark Extras",
+  "version": "1.4.1",
+  "compatibility": {
+    "minimum": "13",
+    "verified": "13"
+  },
+  "description": "Adds extra features to the Shadowdark RPG system: Party management sheet, Renown tracking for players, additional light sources (Candle), and Inventory tab for NPCs.",
+  "authors": [
+    {
+      "name": "DmKal"
+    }
+  ],
+  "relationships": {
+    "systems": [
+      {
+        "id": "shadowdark",
+        "type": "system",
+        "compatibility": {
+          "minimum": "3.0.0"
+        }
+      }
+    ]
+  },
+  "esmodules": [
+    "scripts/shadowdark-extras.mjs"
+  ],
+  "styles": [
+    "styles/shadowdark-extras.css"
+  ],
+  "languages": [
+    {
+      "lang": "en",
+      "name": "English",
+      "path": "i18n/en.json"
+    }
+  ]
+}

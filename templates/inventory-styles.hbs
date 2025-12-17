@@ -1,0 +1,102 @@
+<form class="sdx-inventory-styles-form" autocomplete="off">
+	<div class="sdx-styles-header">
+		<div class="sdx-master-toggle">
+			<label class="sdx-toggle-label">
+				<input type="checkbox" name="enabled" {{#if enabled}}checked{{/if}} />
+				<span>{{localize "SHADOWDARK_EXTRAS.inventory_styles.enable_styling"}}</span>
+			</label>
+		</div>
+		<div class="sdx-header-actions">
+			<button type="button" class="sdx-reset-styles">
+				<i class="fas fa-undo"></i>
+				{{localize "SHADOWDARK_EXTRAS.inventory_styles.reset_defaults"}}
+			</button>
+		</div>
+	</div>
+
+	<p class="sdx-styles-description">
+		{{localize "SHADOWDARK_EXTRAS.inventory_styles.description"}}
+	</p>
+
+	<div class="sdx-categories-list">
+		{{#each categories}}
+		<div class="sdx-category-section" data-category="{{key}}">
+			<div class="sdx-category-header">
+				<div class="sdx-category-title">
+					<i class="sdx-collapse-icon fas fa-chevron-right"></i>
+					<label class="sdx-category-enable">
+						<input type="checkbox" name="categories.{{key}}.enabled" {{#if enabled}}checked{{/if}} />
+						<span class="sdx-category-name">{{label}}</span>
+						{{#if isSpecial}}<span class="sdx-special-badge">{{localize "SHADOWDARK_EXTRAS.inventory_styles.special"}}</span>{{/if}}
+					</label>
+				</div>
+				<div class="sdx-category-priority">
+					<label>{{localize "SHADOWDARK_EXTRAS.inventory_styles.priority"}}:</label>
+					<input type="number" name="categories.{{key}}.priority" value="{{priority}}" min="0" max="100" />
+				</div>
+			</div>
+			
+			<div class="sdx-category-content">
+				<div class="sdx-style-row">
+					<div class="sdx-style-field">
+						<label>{{localize "SHADOWDARK_EXTRAS.inventory_styles.background_color"}}</label>
+						<div class="sdx-color-picker">
+							<input type="color" data-edit="categories.{{key}}.backgroundColor" value="{{backgroundColor}}" />
+							<input type="text" name="categories.{{key}}.backgroundColor" value="{{backgroundColor}}" class="sdx-color-text" />
+						</div>
+					</div>
+					
+					<div class="sdx-style-field sdx-gradient-toggle">
+						<label>
+							<input type="checkbox" name="categories.{{key}}.useGradient" {{#if useGradient}}checked{{/if}} />
+							{{localize "SHADOWDARK_EXTRAS.inventory_styles.use_gradient"}}
+						</label>
+					</div>
+					
+					<div class="sdx-style-field">
+						<label>{{localize "SHADOWDARK_EXTRAS.inventory_styles.gradient_end"}}</label>
+						<div class="sdx-color-picker">
+							<input type="color" data-edit="categories.{{key}}.gradientEndColor" value="{{gradientEndColorPicker}}" />
+							<input type="text" name="categories.{{key}}.gradientEndColor" value="{{gradientEndColor}}" class="sdx-color-text" placeholder="transparent" />
+						</div>
+					</div>
+				</div>
+				
+				<div class="sdx-style-row">
+					<div class="sdx-style-field">
+						<label>{{localize "SHADOWDARK_EXTRAS.inventory_styles.text_color"}}</label>
+						<div class="sdx-color-picker">
+							<input type="color" data-edit="categories.{{key}}.textColor" value="{{textColor}}" />
+							<input type="text" name="categories.{{key}}.textColor" value="{{textColor}}" class="sdx-color-text" />
+						</div>
+					</div>
+					
+					<div class="sdx-style-field">
+						<label>{{localize "SHADOWDARK_EXTRAS.inventory_styles.text_shadow"}}</label>
+						<input type="text" name="categories.{{key}}.textShadow" value="{{textShadow}}" placeholder="1px 1px 2px #000" />
+					</div>
+					
+					<div class="sdx-style-field">
+						<label>{{localize "SHADOWDARK_EXTRAS.inventory_styles.border_left"}}</label>
+						<input type="text" name="categories.{{key}}.borderLeft" value="{{borderLeft}}" placeholder="3px solid #color" />
+					</div>
+				</div>
+				
+				<div class="sdx-preview-section">
+					<label>{{localize "SHADOWDARK_EXTRAS.inventory_styles.preview"}}:</label>
+					<div class="sdx-style-preview" data-category="{{key}}">
+						<span class="item-name">{{localize "SHADOWDARK_EXTRAS.inventory_styles.preview_item_name"}}</span>
+					</div>
+				</div>
+			</div>
+		</div>
+		{{/each}}
+	</div>
+
+	<footer class="sdx-form-footer">
+		<button type="submit" class="sdx-save-btn">
+			<i class="fas fa-save"></i>
+			{{localize "SHADOWDARK_EXTRAS.inventory_styles.save"}}
+		</button>
+	</footer>
+</form>

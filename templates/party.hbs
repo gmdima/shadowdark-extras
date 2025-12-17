@@ -1,0 +1,385 @@
+<form class="{{cssClass}} flexcol" autocomplete="off">
+	<header class="party-header">
+		<img
+			class="portrait"
+			src="{{ actor.img }}"
+			data-edit="img"
+			data-tooltip="{{ actor.name }}"
+			height="50"
+			width="50"
+		/>
+		<div class="party-header-content">
+			<div class="party-title">
+				<input
+					name="name"
+					type="text"
+					value="{{ actor.name }}"
+					placeholder="{{localize 'SHADOWDARK_EXTRAS.party.name_placeholder'}}"
+				/>
+			</div>
+			<div class="party-summary">
+				<div class="party-stat" data-tooltip="{{localize 'SHADOWDARK_EXTRAS.party.tab.members'}}">
+					<i class="fas fa-users"></i>
+					<span>{{memberCount}}</span>
+				</div>
+				<div class="party-stat" data-tooltip="HP">
+					<i class="fas fa-heart"></i>
+					<span>{{partyStats.totalHp}} / {{partyStats.maxHp}}</span>
+				</div>
+				<div class="party-stat" data-tooltip="AC">
+					<i class="fas fa-shield-alt"></i>
+					<span>{{partyStats.avgAc}}</span>
+				</div>
+				<div class="party-stat" data-tooltip="{{localize 'SHADOWDARK.sheet.player.level.label'}}">
+					<i class="fas fa-star"></i>
+					<span>{{partyStats.avgLevel}}</span>
+				</div>
+			</div>
+		</div>
+	</header>
+
+	<nav class="SD-nav flex0" data-group="primary">
+		<a class="navigation-tab active" data-tab="tab-members">
+			<i class="fas fa-users"></i>
+			{{localize "SHADOWDARK_EXTRAS.party.tab.members"}}
+		</a>
+
+		<a class="navigation-tab" data-tab="tab-inventory">
+			<i class="fas fa-box"></i>
+			{{localize "SHADOWDARK_EXTRAS.party.tab.inventory"}}
+		</a>
+
+		<a class="navigation-tab" data-tab="tab-description">
+			<i class="fas fa-book-open"></i>
+			{{localize "SHADOWDARK_EXTRAS.party.tab.description"}}
+		</a>
+	</nav>
+
+	<section class="SD-content-body flex1">
+		
+		<!-- MEMBERS TAB -->
+		<div class="tab tab-members active" data-group="primary" data-tab="tab-members">
+			<div class="party-actions">
+				{{#if owner}}
+				<button type="button" data-action="place-members" data-tooltip="{{localize 'SHADOWDARK_EXTRAS.party.place_members_tooltip'}}">
+					<i class="fas fa-map-marker-alt"></i>
+					{{localize "SHADOWDARK_EXTRAS.party.place_members"}}
+				</button>
+				<button type="button" data-action="reward-xp" data-tooltip="{{localize 'SHADOWDARK_EXTRAS.party.reward_xp_tooltip'}}">
+					<i class="fas fa-star"></i>
+					{{localize "SHADOWDARK_EXTRAS.party.reward_xp"}}
+				</button>
+				{{/if}}
+			</div>
+			
+			{{#if members.length}}
+			<div class="members-list">
+				{{#each members as |member|}}
+				<div class="member" data-uuid="{{member.uuid}}" data-member-id="{{member.memberKey}}">
+					<div class="member-portrait">
+						<img src="{{member.img}}" alt="{{member.name}}" data-action="open-member"/>
+						{{#if member.isNPC}}
+							{{#if ../owner}}
+							<div class="npc-count" data-tooltip="Spawn count">
+								<a class="npc-count-btn" data-action="npc-count-decrement" data-member-id="{{member.memberKey}}"><i class="fas fa-minus"></i></a>
+								<input class="npc-count-input" type="text" value="{{member.spawnFormula}}" data-action="npc-count-change" data-member-id="{{member.memberKey}}"/>
+								<a class="npc-count-btn" data-action="npc-count-increment" data-member-id="{{member.memberKey}}"><i class="fas fa-plus"></i></a>
+							</div>
+							{{/if}}
+						{{/if}}
+						{{#if ../owner}}
+						<a class="remove-member" data-action="remove-member" data-tooltip="{{localize 'SHADOWDARK_EXTRAS.party.remove_member'}}">
+							<i class="fas fa-times"></i>
+						</a>
+						{{/if}}
+					</div>
+					<div class="member-info">
+						<div class="member-header">
+							<a class="member-name" data-action="open-member">{{member.name}}</a>
+							<span class="member-class">{{member.className}}</span>
+						</div>
+						<div class="member-stats">
+							<div class="stat hp">
+								<span class="label">HP</span>
+								<span class="value">{{member.hp.value}} / {{member.hp.max}}</span>
+								<div class="hp-bar">
+									<div class="hp-fill" style="width: {{member.hpPercent}}%"></div>
+								</div>
+							</div>
+							<div class="stat ac">
+								<span class="label">AC</span>
+								<span class="value">{{member.ac}}</span>
+							</div>
+							{{#unless member.isNPC}}
+								<div class="stat level">
+								<span class="label">LVL</span>
+								<span class="value">{{member.level}}</span>
+							</div>
+								<div class="stat slots" data-tooltip="{{localize 'SHADOWDARK.inventory.slots'}}">
+									<span class="label">SLOTS</span>
+									<span class="value">{{member.slots.used}}/{{member.slots.max}}</span>
+								</div>
+							<div class="stat xp">
+								<span class="label">XP</span>
+								{{#if ../owner}}
+								<a class="xp-control" data-action="xp-decrement" data-member-id="{{member.memberKey}}"><i class="fas fa-minus"></i></a>
+								{{/if}}
+								<span class="value">{{member.xp.current}}/{{member.xp.next}}</span>
+								{{#if ../owner}}
+								<a class="xp-control" data-action="xp-increment" data-member-id="{{member.memberKey}}"><i class="fas fa-plus"></i></a>
+								{{/if}}
+							</div>
+							{{/unless}}
+						</div>
+						<div class="member-abilities">
+							<div class="ability" data-tooltip="{{localize 'SHADOWDARK.ability.str.long'}}">
+								<span class="label">STR</span>
+								<span class="mod">{{numberSigned member.abilities.str}}</span>
+							</div>
+							<div class="ability" data-tooltip="{{localize 'SHADOWDARK.ability.dex.long'}}">
+								<span class="label">DEX</span>
+								<span class="mod">{{numberSigned member.abilities.dex}}</span>
+							</div>
+							<div class="ability" data-tooltip="{{localize 'SHADOWDARK.ability.con.long'}}">
+								<span class="label">CON</span>
+								<span class="mod">{{numberSigned member.abilities.con}}</span>
+							</div>
+							<div class="ability" data-tooltip="{{localize 'SHADOWDARK.ability.int.long'}}">
+								<span class="label">INT</span>
+								<span class="mod">{{numberSigned member.abilities.int}}</span>
+							</div>
+							<div class="ability" data-tooltip="{{localize 'SHADOWDARK.ability.wis.long'}}">
+								<span class="label">WIS</span>
+								<span class="mod">{{numberSigned member.abilities.wis}}</span>
+							</div>
+							<div class="ability" data-tooltip="{{localize 'SHADOWDARK.ability.cha.long'}}">
+								<span class="label">CHA</span>
+								<span class="mod">{{numberSigned member.abilities.cha}}</span>
+							</div>
+						</div>
+					</div>
+					<div class="member-effects {{#unless member.effects.length}}empty{{/unless}}">
+						{{#each member.effects as |effect|}}
+						<div class="effect-icon" data-tooltip="{{effect.name}}">
+							<img src="{{effect.img}}" alt="{{effect.name}}"/>
+						</div>
+						{{/each}}
+					</div>
+				</div>
+				{{/each}}
+			</div>
+			{{else}}
+			<div class="members-empty">
+				<i class="fas fa-users fa-3x"></i>
+				<p>{{localize "SHADOWDARK_EXTRAS.party.no_members"}}</p>
+				<p class="hint">{{localize "SHADOWDARK_EXTRAS.party.drop_hint"}}</p>
+			</div>
+			{{/if}}
+		</div>
+
+		<!-- INVENTORY TAB -->
+		<div class="tab tab-inventory" data-group="primary" data-tab="tab-inventory">
+			<div class="inventory-grid">
+				<div class="inventory-main">
+					<!-- Carried Items -->
+					<div class="SD-box">
+						<div class="header">
+							<label>
+								{{#if owner}}
+								<a class="fa-solid fa-square-plus" data-action="create-item" data-tooltip="{{localize 'SHADOWDARK_EXTRAS.party.create_item'}}"></a>
+								{{/if}}
+								{{localize "SHADOWDARK_EXTRAS.party.items"}}
+							</label>
+								<span class="sdx-party-capacity {{#if inventorySlots.over}}over{{/if}}">
+									<span class="sdx-party-capacity-text">{{localize "SHADOWDARK.inventory.slots"}}: <span class="sdx-party-capacity-used">{{inventorySlots.used}}</span> / <span class="sdx-party-capacity-max">{{inventorySlots.max}}</span></span>
+									{{#if owner}}
+										<a class="fa-solid fa-gear" data-action="configure-party-slots" title="{{localize "SHADOWDARK_EXTRAS.party.slots.configure_tooltip"}}"></a>
+									{{/if}}
+								</span>
+						</div>
+						<div class="content">
+							<ol class="SD-list item-list party-item-list">
+								<li class="header">
+									<div class="item-name">
+										{{localize "SHADOWDARK_EXTRAS.party.item_name"}}
+									</div>
+									<div class="quantity">
+										{{localize "SHADOWDARK_EXTRAS.party.qty"}}
+									</div>
+									<div class="slots-cost">
+										{{localize "SHADOWDARK.inventory.slots"}}
+									</div>
+									<div class="actions"></div>
+								</li>
+
+								{{#each inventory.items as |item|}}
+								<li class="item" data-item-id="{{item._id}}" data-uuid="{{item.uuid}}">
+									<div class="item-image" style="background-image: url({{item.img}})" data-tooltip="{{localize 'SHADOWDARK.inventory.tooltip.item_chat'}}">
+										<i class="fas fa-comment fa-lg"></i>
+									</div>
+									<a class="item-name" data-action="show-details">
+										{{item.name}}
+									</a>
+									<div class="quantity">
+										{{#if item.showQuantity}}
+											{{#if ../owner}}
+											<a data-action="item-decrement" data-item-id="{{item._id}}" data-tooltip="{{localize 'SHADOWDARK.inventory.tooltip.item_decrement'}}">
+												<i class="fa-regular fa-minus fa-xs"></i>
+											</a>
+											{{/if}}
+											{{item.system.quantity}}
+											{{#if ../owner}}
+												<a data-action="item-increment" data-item-id="{{item._id}}" data-tooltip="{{localize 'SHADOWDARK.inventory.tooltip.item_increment'}}">
+													<i class="fa-regular fa-plus fa-xs"></i>
+												</a>
+											{{/if}}
+										{{else}}
+											1
+										{{/if}}
+									</div>
+									<div class="slots-cost">
+										{{item.slotsCost}}
+									</div>
+										<div class="actions">
+											{{#if item.isLightSource}}
+											<a data-action="toggle-light" data-item-id="{{item._id}}" data-tooltip="{{localize 'SHADOWDARK_EXTRAS.party.toggle_light_source'}}">
+												<i class="fas fa-sun {{#if item.lightActive}}light-active{{/if}}"></i>
+											</a>
+											{{/if}}
+										</div>
+								</li>
+								{{else}}
+								<li class="empty-list">
+									<em>{{localize "SHADOWDARK_EXTRAS.party.no_items"}}</em>
+								</li>
+								{{/each}}
+							</ol>
+						</div>
+					</div>
+
+					<!-- Treasure Items -->
+					{{#if inventory.treasure.length}}
+					<div class="SD-box">
+						<div class="header">
+							<label>{{localize "SHADOWDARK_EXTRAS.party.treasure"}}</label>
+							<span></span>
+						</div>
+						<div class="content">
+							<ol class="SD-list item-list party-item-list">
+								<li class="header">
+									<div class="item-name">
+										{{localize "SHADOWDARK_EXTRAS.party.item_name"}}
+									</div>
+									<div class="quantity">
+										{{localize "SHADOWDARK_EXTRAS.party.qty"}}
+									</div>
+									<div class="slots-cost">
+										{{localize "SHADOWDARK.inventory.slots"}}
+									</div>
+									<div class="actions"></div>
+								</li>
+								{{#each inventory.treasure as |item|}}
+								<li class="item" data-item-id="{{item._id}}" data-uuid="{{item.uuid}}">
+									<div class="item-image" style="background-image: url({{item.img}})" data-tooltip="{{localize 'SHADOWDARK.inventory.tooltip.item_chat'}}">
+										<i class="fas fa-comment fa-lg"></i>
+									</div>
+									<a class="item-name" data-action="show-details">
+										{{item.name}}
+									</a>
+									<div class="quantity">
+										{{#if item.showQuantity}}
+											{{item.system.quantity}}
+										{{else}}
+											1
+										{{/if}}
+									</div>
+									<div class="slots-cost">
+										{{item.slotsCost}}
+									</div>
+									<div class="actions"></div>
+								</li>
+								{{/each}}
+							</ol>
+						</div>
+					</div>
+					{{/if}}
+				</div>
+
+				<!-- Sidebar with Coins -->
+				<div class="inventory-sidebar">
+					<div class="SD-box">
+						<div class="header">
+							<label>{{localize "SHADOWDARK_EXTRAS.party.treasury"}}</label>
+							{{#if owner}}
+							<a class="fa-solid fa-plus" data-action="add-coins" data-tooltip="{{localize 'SHADOWDARK_EXTRAS.party.add_coins_tooltip'}}"></a>
+							{{/if}}
+						</div>
+						<div class="content">
+							<div class="party-coins-grid">
+								<label>{{localize "SHADOWDARK_EXTRAS.party.coin_gp"}}</label>
+								<input type="number" 
+									class="coin-value" 
+									data-coin="gp" 
+									value="{{coins.gp}}" 
+									min="0"
+									{{#unless owner}}disabled{{/unless}}
+								/>
+								
+								<label>{{localize "SHADOWDARK_EXTRAS.party.coin_sp"}}</label>
+								<input type="number" 
+									class="coin-value" 
+									data-coin="sp" 
+									value="{{coins.sp}}" 
+									min="0"
+									{{#unless owner}}disabled{{/unless}}
+								/>
+								
+								<label>{{localize "SHADOWDARK_EXTRAS.party.coin_cp"}}</label>
+								<input type="number" 
+									class="coin-value" 
+									data-coin="cp" 
+									value="{{coins.cp}}" 
+									min="0"
+									{{#unless owner}}disabled{{/unless}}
+								/>
+							</div>
+							<div class="party-coin-slots" data-tooltip="{{localize 'SHADOWDARK_EXTRAS.party.coin_slots_tooltip'}}">
+								<i class="fas fa-weight-hanging"></i>
+								<span>{{coinSlots}} {{localize "SHADOWDARK.inventory.slots"}}</span>
+							</div>
+							{{#if isGM}}
+							<div class="party-actions">
+								<button type="button" data-action="divide-coins" data-tooltip="{{localize 'SHADOWDARK_EXTRAS.party.divide_coins_tooltip'}}">
+									{{localize "SHADOWDARK_EXTRAS.party.divide_coins"}}
+								</button>
+							</div>
+							{{/if}}
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- DESCRIPTION TAB -->
+		<div class="tab tab-description" data-group="primary" data-tab="tab-description">
+			<div class="SD-box description-box">
+				<div class="header">
+					<label>{{localize "SHADOWDARK_EXTRAS.party.description"}}</label>
+					{{#if owner}}
+					<a data-action="edit-description" data-tooltip="{{localize 'SHADOWDARK_EXTRAS.party.edit_description'}}">
+						<i class="fas fa-edit"></i>
+					</a>
+					{{/if}}
+				</div>
+				<div class="content description-content">
+					{{#if descriptionHTML}}
+						{{{descriptionHTML}}}
+					{{else}}
+						<p class="empty-description">{{localize "SHADOWDARK_EXTRAS.party.no_description"}}</p>
+					{{/if}}
+				</div>
+			</div>
+		</div>
+
+	</section>
+</form>
