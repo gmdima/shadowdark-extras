@@ -1,7 +1,7 @@
 {
   "id": "shadowdark-extras",
   "title": "Shadowdark Extras",
-  "version": "1.52",
+  "version": "1.53",
   "compatibility": {
     "minimum": "13",
     "verified": "13"
@@ -37,7 +37,8 @@
     }
   ],
   "manifest": "https://github.com/gmdima/shadowdark-extras/releases/latest/download/module.json",
-  "download": "https://github.com/gmdima/shadowdark-extras/releases/download/v1.52/module.zip"
+  "download": "https://github.com/gmdima/shadowdark-extras/releases/download/1.53/module.zip"
 }
+
 
 
