@@ -2625,7 +2625,7 @@ input[data-sdx-free-carry]:disabled {
     position: relative;
     background: transparent !important;
     background-color: transparent !important;
-    min-height: 110px;
+    min-height: 125px;
     margin: 0;
 }
 
@@ -2690,8 +2690,8 @@ input[data-sdx-free-carry]:disabled {
     backdrop-filter: blur(2px);
     border-bottom-color: rgba(0, 0, 0, 0.5);
     margin: 0;
-    padding: 6px 12px;
-    margin-bottom: 7px;
+    padding: 0px 8px;
+    margin-bottom: 0px;
 }
 
 /* Tab links with white glow for readability */
@@ -2838,4 +2838,835 @@ input[data-sdx-free-carry]:disabled {
 
 .shadowdark.sheet .SD-header .sdx-header-settings-menu button.danger:hover {
     background: rgba(231, 76, 60, 0.2);
+}
+
+/* ============================================================
+   ENHANCED INTERACTIVE HEADER - Tidy5e Style
+   ============================================================ */
+
+/* When SD-header has enhanced header class, set up layout */
+.shadowdark.sheet .SD-header.sdx-enhanced-header {
+    position: relative;
+}
+
+/* The main enhanced content container */
+.sdx-enhanced-content {
+    display: flex;
+    align-items: stretch;
+    gap: 18px;
+    padding: 8px;
+    height: 100%;
+    min-height: 100px;
+    box-sizing: border-box;
+    position: relative;
+    z-index: 2;
+}
+
+/* Portrait container with HP bar overlay */
+.sdx-enhanced-content .sdx-portrait-container {
+    position: relative;
+    flex-shrink: 0;
+    width: 100px;
+    height: 100px;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.sdx-enhanced-content .sdx-portrait {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+/* HP Bar overlay at bottom of portrait */
+.sdx-enhanced-content .sdx-hp-bar-container {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 20px;
+    background: rgba(0, 0, 0, 0.7);
+    cursor: pointer;
+}
+
+.sdx-enhanced-content .sdx-hp-bar {
+    height: 100%;
+    transition: width 0.5s ease-out;
+    position: relative;
+}
+
+.sdx-enhanced-content .sdx-hp-text {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 11px;
+    font-weight: bold;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+    gap: 2px;
+}
+
+/* HP Input when editing */
+.sdx-enhanced-content .sdx-hp-input {
+    width: 36px;
+    height: 16px;
+    background: rgba(0, 0, 0, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    border-radius: 3px;
+    color: #fff;
+    font-size: 11px;
+    text-align: center;
+    padding: 0 2px;
+}
+
+.sdx-enhanced-content .sdx-hp-input:focus {
+    outline: none;
+    border-color: #4ade80;
+    background: rgba(0, 0, 0, 0.9);
+}
+
+/* Main content area (center) */
+.sdx-enhanced-content .sdx-header-main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+}
+
+/* Actor name row with title */
+.sdx-enhanced-content .sdx-actor-name-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Actor name input */
+.sdx-enhanced-content .sdx-actor-name {
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid transparent;
+    color: #fff;
+    font-size: 18px;
+    font-weight: bold;
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.8);
+    padding: 2px 4px;
+    margin: 0;
+    flex: 0 1 auto;
+    width: auto;
+    min-width: 100px;
+    max-width: 200px;
+    transition: border-color 0.2s ease;
+}
+
+.sdx-enhanced-content .sdx-actor-name:hover {
+    border-bottom-color: rgba(255, 255, 255, 0.3);
+}
+
+.sdx-enhanced-content .sdx-actor-name:focus {
+    outline: none;
+    border-bottom-color: rgba(255, 255, 255, 0.6);
+}
+
+/* Actor title (italic, next to name) */
+.sdx-enhanced-content .sdx-actor-title {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 14px;
+    font-style: italic;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.6);
+    white-space: nowrap;
+}
+
+/* Character details row (Ancestry, Class, Background) */
+.sdx-enhanced-content .sdx-char-details-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0 4px;
+    font-size: 10px;
+    color: rgba(255, 255, 255, 0.8);
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.6);
+}
+
+.sdx-enhanced-content .sdx-char-details-row span:not(:last-child)::after {
+    content: '•';
+    margin-left: 6px;
+    color: rgba(255, 255, 255, 0.4);
+}
+
+.sdx-enhanced-content .sdx-char-ancestry,
+.sdx-enhanced-content .sdx-char-class,
+.sdx-enhanced-content .sdx-char-background {
+    white-space: nowrap;
+}
+
+/* XP Row */
+.sdx-enhanced-content .sdx-xp-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0 4px;
+    font-size: 10px;
+}
+
+.sdx-enhanced-content .sdx-xp-label {
+    color: rgba(255, 255, 255, 0.7);
+    font-weight: 600;
+    text-transform: uppercase;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.6);
+}
+
+.sdx-enhanced-content .sdx-xp-value,
+.sdx-enhanced-content .sdx-xp-max,
+.sdx-enhanced-content .sdx-xp-separator {
+    color: rgba(255, 255, 255, 0.8);
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.6);
+}
+
+.sdx-enhanced-content .sdx-xp-bar {
+    flex: 1;
+    height: 8px;
+    background: rgba(0, 0, 0, 0.7);
+    border-radius: 4px;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.sdx-enhanced-content .sdx-xp-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #8b5cf6 0%, #a78bfa 100%);
+    border-radius: 3px;
+    transition: width 0.5s ease-out;
+}
+
+/* Stats Row - AC, Abilities, Initiative */
+.sdx-enhanced-content .sdx-stats-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+/* AC Container - Shield style */
+.sdx-enhanced-content .sdx-ac-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 52px;
+    background: linear-gradient(180deg, #3b82f6 0%, #2563eb 50%, #1d4ed8 100%);
+    clip-path: polygon(50% 0%, 100% 20%, 100% 75%, 50% 100%, 0% 75%, 0% 20%);
+    position: relative;
+    cursor: default;
+}
+
+.sdx-enhanced-content .sdx-ac-container::before {
+    content: '';
+    position: absolute;
+    inset: 2px;
+    background: linear-gradient(180deg, #1e3a5f 0%, #0f172a 100%);
+    clip-path: polygon(50% 0%, 100% 20%, 100% 75%, 50% 100%, 0% 75%, 0% 20%);
+}
+
+.sdx-enhanced-content .sdx-ac-value {
+    position: relative;
+    z-index: 1;
+    color: #fff;
+    font-size: 18px;
+    font-weight: bold;
+    line-height: 1;
+    text-shadow: 0 0 6px rgba(59, 130, 246, 0.8);
+}
+
+/* Abilities Container */
+.sdx-enhanced-content .sdx-abilities-container {
+    display: flex;
+    gap: 4px;
+}
+
+.sdx-enhanced-content .sdx-ability {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 48px;
+    background: rgba(0, 0, 0, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.sdx-enhanced-content .sdx-ability:hover {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.4);
+    transform: translateY(-2px);
+}
+
+.sdx-enhanced-content .sdx-ability-label {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 8px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.sdx-enhanced-content .sdx-ability-mod {
+    color: #fff;
+    font-size: 14px;
+    font-weight: bold;
+    line-height: 1.1;
+}
+
+.sdx-enhanced-content .sdx-ability-score {
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 9px;
+    line-height: 1;
+}
+
+/* Initiative Container */
+.sdx-enhanced-content .sdx-init-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 48px;
+    background: rgba(234, 179, 8, 0.4);
+    border: 1px solid rgba(234, 179, 8, 0.4);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.sdx-enhanced-content .sdx-init-container:hover {
+    background: rgba(234, 179, 8, 0.3);
+    border-color: rgba(234, 179, 8, 0.6);
+    transform: translateY(-2px);
+}
+
+.sdx-enhanced-content .sdx-init-label {
+    color: rgba(234, 179, 8, 0.9);
+    font-size: 8px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.sdx-enhanced-content .sdx-init-mod {
+    color: #fbbf24;
+    font-size: 14px;
+    font-weight: bold;
+    line-height: 1.1;
+}
+
+/* Right side container - Luck & Level */
+.sdx-enhanced-content .sdx-header-right {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 4px 0;
+}
+
+/* Luck Container */
+.sdx-enhanced-content .sdx-luck-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 44px;
+    background: rgba(239, 68, 68, 0.4);
+    border: 2px solid rgba(239, 68, 68, 0.5);
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    color: rgba(239, 68, 68, 0.6);
+    font-size: 18px;
+}
+
+.sdx-enhanced-content .sdx-luck-container:hover {
+    transform: scale(1.1);
+}
+
+.sdx-enhanced-content .sdx-luck-container.has-luck {
+    background: rgba(34, 197, 94, 0.5);
+    border-color: #22c55e;
+    box-shadow: 0 0 12px rgba(34, 197, 94, 0.5);
+    color: #22c55e;
+}
+
+.sdx-enhanced-content .sdx-luck-container.has-luck i {
+    text-shadow: 0 0 8px rgba(34, 197, 94, 0.8);
+}
+
+/* Level Container */
+.sdx-enhanced-content .sdx-level-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(99, 102, 241, 0.4);
+}
+
+.sdx-enhanced-content .sdx-level-value {
+    color: #fff;
+    font-size: 20px;
+    font-weight: bold;
+    line-height: 1;
+    text-shadow: 0 0 8px rgba(255, 255, 255, 0.5);
+}
+
+/* Integration with custom header backgrounds */
+.shadowdark.sheet .SD-header.sdx-enhanced-header.sdx-custom-header::before {
+    z-index: 1;
+}
+
+/* Ensure enhanced header content is above background */
+.shadowdark.sheet .SD-header.sdx-enhanced-header .sdx-enhanced-content {
+    position: relative;
+    z-index: 2;
+}
+
+/* ============================================
+   JOURNAL NOTES SYSTEM
+   ============================================ */
+
+.sdx-journal-notes {
+    display: flex;
+    height: 100%;
+    min-height: 400px;
+    gap: 0;
+    background: var(--color-bg-option, #f8f5e8);
+    border-radius: 0;
+    overflow: hidden;
+    flex: 1;
+    margin: -8px;
+    width: calc(100% + 16px);
+}
+
+/* Sidebar with page list */
+.sdx-journal-sidebar {
+    width: 160px;
+    min-width: 140px;
+    max-width: 180px;
+    background: linear-gradient(180deg, #1a1a1a 0%, #2a2a2a 100%);
+    border-right: 2px solid #111;
+    display: flex;
+    flex-direction: column;
+    padding: 0;
+}
+
+.sdx-journal-pages-list {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 8px 0;
+}
+
+.sdx-journal-page-item {
+    display: flex;
+    align-items: center;
+    padding: 6px 10px;
+    cursor: pointer;
+    color: #c0c0c0;
+    font-size: 13px;
+    border-left: 3px solid transparent;
+    transition: all 0.15s ease;
+    position: relative;
+}
+
+.sdx-journal-page-item:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+}
+
+.sdx-journal-page-item.active {
+    background: rgba(201, 170, 88, 0.2);
+    border-left-color: #c9aa58;
+    color: #c9aa58;
+}
+
+.sdx-page-number {
+    flex-shrink: 0;
+    width: 20px;
+    font-size: 11px;
+    opacity: 0.7;
+}
+
+.sdx-page-title {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-family: "Modesto Condensed", "Roboto Condensed", sans-serif;
+}
+
+.sdx-page-delete {
+    flex-shrink: 0;
+    width: 18px;
+    height: 18px;
+    padding: 0;
+    margin-left: 4px;
+    background: transparent;
+    border: none;
+    color: #888;
+    cursor: pointer;
+    opacity: 0;
+    transition: all 0.15s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 3px;
+}
+
+.sdx-journal-page-item:hover .sdx-page-delete {
+    opacity: 1;
+}
+
+.sdx-page-delete:hover {
+    color: #e74c3c;
+    background: rgba(231, 76, 60, 0.2);
+}
+
+/* Add Page Button */
+.sdx-journal-add-page {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    padding: 4px 6px;
+    margin: 4px 6px 6px 6px;
+    background: rgba(201, 170, 88, 0.15);
+    border: 1px solid rgba(201, 170, 88, 0.4);
+    border-radius: 3px;
+    color: #c9aa58;
+    font-size: 11px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    flex-shrink: 0;
+    box-sizing: border-box;
+    max-width: calc(100% - 12px);
+}
+
+.sdx-journal-add-page:hover {
+    background: rgba(201, 170, 88, 0.3);
+    border-color: #c9aa58;
+}
+
+.sdx-journal-add-page i {
+    font-size: 10px;
+}
+
+/* Page Content Area */
+.sdx-journal-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background: var(--color-bg-option, #f8f5e8);
+}
+
+.sdx-journal-page-header {
+    display: flex;
+    align-items: center;
+    padding: 8px 12px;
+    background: linear-gradient(180deg, #2a2a2a 0%, #1a1a1a 100%);
+    border-bottom: 2px solid #c9aa58;
+    gap: 8px;
+    margin-top: 6px;
+}
+
+.sdx-journal-page-title {
+    flex: 1;
+    margin: 0;
+    font-family: "Modesto Condensed", "Roboto Condensed", sans-serif;
+    font-size: 20px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #c9aa58;
+}
+
+.sdx-journal-page-title input {
+    width: 100%;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(201, 170, 88, 0.4);
+    border-radius: 3px;
+    color: #c9aa58;
+    font-family: inherit;
+    font-size: inherit;
+    text-transform: inherit;
+    letter-spacing: inherit;
+    padding: 4px 8px;
+}
+
+.sdx-journal-page-title input:focus {
+    outline: none;
+    border-color: #c9aa58;
+    box-shadow: 0 0 4px rgba(201, 170, 88, 0.3);
+}
+
+.sdx-journal-edit-btn {
+    flex-shrink: 0;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    background: rgba(201, 170, 88, 0.2);
+    border: 1px solid rgba(201, 170, 88, 0.4);
+    border-radius: 4px;
+    color: #c9aa58;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s ease;
+}
+
+.sdx-journal-edit-btn:hover {
+    background: rgba(201, 170, 88, 0.4);
+    border-color: #c9aa58;
+}
+
+/* Page content display */
+.sdx-journal-page-content {
+    flex: 1;
+    padding: 12px 16px;
+    overflow-y: auto;
+    color: #333;
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.sdx-journal-page-content p {
+    margin: 0 0 12px 0;
+}
+
+.sdx-journal-page-content h1,
+.sdx-journal-page-content h2,
+.sdx-journal-page-content h3 {
+    font-family: "Modesto Condensed", "Roboto Condensed", sans-serif;
+    color: #1a1a1a;
+    margin: 16px 0 8px 0;
+}
+
+.sdx-journal-page-content ul,
+.sdx-journal-page-content ol {
+    margin: 0 0 12px 0;
+    padding-left: 24px;
+}
+
+.sdx-journal-page-content a {
+    color: #2980b9;
+}
+
+/* Empty state */
+.sdx-journal-empty {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 32px;
+    color: #666;
+    text-align: center;
+}
+
+.sdx-journal-empty p {
+    margin: 4px 0;
+}
+
+/* ProseMirror editor integration */
+.sdx-journal-editor-wrapper {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.sdx-journal-editor-wrapper .editor-content {
+    flex: 1;
+    overflow-y: auto;
+}
+
+.sdx-journal-editor-wrapper .editor {
+    height: 100%;
+}
+
+.sdx-journal-editor-wrapper .editor-content .ProseMirror {
+    min-height: 200px;
+    padding: 12px;
+    background: var(--color-bg-option, #f8f5e8);
+}
+
+/* Edit mode popup */
+.sdx-journal-edit-dialog {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.sdx-journal-edit-dialog .editor-wrapper {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 300px;
+}
+
+.sdx-journal-edit-dialog .dialog-buttons {
+    display: flex;
+    gap: 8px;
+    padding-top: 12px;
+    justify-content: flex-end;
+}
+
+/* Scrollbar styling for journal */
+.sdx-journal-pages-list::-webkit-scrollbar,
+.sdx-journal-page-content::-webkit-scrollbar {
+    width: 6px;
+}
+
+.sdx-journal-pages-list::-webkit-scrollbar-track,
+.sdx-journal-page-content::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.1);
+    border-radius: 3px;
+}
+
+.sdx-journal-pages-list::-webkit-scrollbar-thumb {
+    background: rgba(201, 170, 88, 0.4);
+    border-radius: 3px;
+}
+
+.sdx-journal-page-content::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 3px;
+}
+
+.sdx-journal-pages-list::-webkit-scrollbar-thumb:hover,
+.sdx-journal-page-content::-webkit-scrollbar-thumb:hover {
+    background: rgba(201, 170, 88, 0.6);
+}
+
+/* Replace the Notes section completely */
+/* Only apply flex layout when the notes tab is active */
+section.tab-notes.active,
+section[data-tab="tab-notes"].active {
+    display: flex;
+    flex-direction: column;
+}
+
+section.tab-notes .sdx-journal-notes,
+section[data-tab="tab-notes"] .sdx-journal-notes {
+    position: relative;
+    flex: 1;
+    min-height: 0;
+}
+
+/* Hide original notes editor when journal is active */
+section.tab-notes.sdx-journal-active > .SD-hideable-section,
+section.tab-notes.sdx-journal-active > div:not(.sdx-journal-notes),
+section[data-tab="tab-notes"].sdx-journal-active > .SD-hideable-section,
+section[data-tab="tab-notes"].sdx-journal-active > div:not(.sdx-journal-notes) {
+    display: none !important;
+}
+
+/* Page navigation arrows at bottom (like journal pages) */
+.sdx-journal-nav {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 8px;
+    background: linear-gradient(180deg, #2a2a2a 0%, #1a1a1a 100%);
+    border-top: 1px solid #333;
+}
+
+.sdx-journal-nav-btn {
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    background: rgba(201, 170, 88, 0.2);
+    border: 1px solid rgba(201, 170, 88, 0.4);
+    border-radius: 4px;
+    color: #c9aa58;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s ease;
+}
+
+.sdx-journal-nav-btn:hover:not(:disabled) {
+    background: rgba(201, 170, 88, 0.4);
+    border-color: #c9aa58;
+}
+
+.sdx-journal-nav-btn:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
+.sdx-journal-page-indicator {
+    color: #888;
+    font-size: 12px;
+}
+
+/* Journal Editor Dialog Styles */
+.sdx-journal-editor-dialog .window-content {
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.sdx-journal-editor-dialog .sdx-journal-editor-form {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.sdx-journal-editor-dialog .form-group.stacked {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    margin: 0;
+}
+
+.sdx-journal-editor-dialog .form-group.stacked .editor {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.sdx-journal-editor-dialog .form-group.stacked .editor-content {
+    flex: 1;
+    overflow-y: auto;
+}
+
+.sdx-journal-editor-dialog .form-group.stacked .editor-content .ProseMirror {
+    min-height: 100%;
+    padding: 12px;
+}
+
+.sdx-journal-editor-dialog .sheet-footer {
+    padding: 8px;
+    border-top: 1px solid var(--color-border-light-1, #999);
+    flex-shrink: 0;
+}
+
+.sdx-journal-editor-dialog .sdx-editor-save {
+    flex: 1;
 }

@@ -806,9 +806,15 @@ export default class PartySheetSD extends ActorSheet {
 				const move = item.parent === this.actor;
 				await this._transferItemToActor(item, member, { move });
 
+				// Mask item name if unidentified and user is not GM
+				const isUnidentified = item.getFlag(MODULE_ID, "unidentified");
+				const displayName = (isUnidentified && !game.user.isGM)
+					? game.i18n.localize("SHADOWDARK_EXTRAS.item.unidentified.label")
+					: item.name;
+
 				ui.notifications.info(
 					game.i18n.format("SHADOWDARK_EXTRAS.party.item_transferred", {
-						item: item.name,
+						item: displayName,
 						member: member.name,
 					})
 				);
@@ -1595,9 +1601,15 @@ export default class PartySheetSD extends ActorSheet {
 						
 						await this._transferItemToActor(item, member, { move: true });
 						
+						// Mask item name if unidentified and user is not GM
+						const isUnidentified = item.getFlag(MODULE_ID, "unidentified");
+						const displayName = (isUnidentified && !game.user.isGM)
+							? game.i18n.localize("SHADOWDARK_EXTRAS.item.unidentified.label")
+							: item.name;
+
 						ui.notifications.info(
 							game.i18n.format("SHADOWDARK_EXTRAS.party.item_transferred", {
-								item: item.name,
+								item: displayName,
 								member: member.name
 							})
 						);

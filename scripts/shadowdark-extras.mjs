@@ -2950,6 +2950,16 @@ const npcActiveTabTracker = new Map();
 function registerSettings() {
 	// === FEATURE TOGGLES ===
 	
+	game.settings.register(MODULE_ID, "enableEnhancedHeader", {
+		name: game.i18n.localize("SHADOWDARK_EXTRAS.settings.enable_enhanced_header.name"),
+		hint: game.i18n.localize("SHADOWDARK_EXTRAS.settings.enable_enhanced_header.hint"),
+		scope: "world",
+		config: true,
+		default: false,
+		type: Boolean,
+		requiresReload: true,
+	});
+
 	game.settings.register(MODULE_ID, "enableRenown", {
 		name: game.i18n.localize("SHADOWDARK_EXTRAS.settings.enable_renown.name"),
 		hint: game.i18n.localize("SHADOWDARK_EXTRAS.settings.enable_renown.hint"),
@@ -3054,6 +3064,326 @@ function registerSettings() {
 		type: InventoryStylesApp,
 		restricted: true
 	});
+
+	// === JOURNAL NOTES ===
+	game.settings.register(MODULE_ID, "enableJournalNotes", {
+		name: game.i18n.localize("SHADOWDARK_EXTRAS.settings.enable_journal_notes.name"),
+		hint: game.i18n.localize("SHADOWDARK_EXTRAS.settings.enable_journal_notes.hint"),
+		scope: "world",
+		config: true,
+		default: true,
+		type: Boolean,
+		requiresReload: true
+	});
+}
+
+// ============================================
+// JOURNAL NOTES SYSTEM
+// ============================================
+
+/**
+ * Default structure for journal pages
+ */
+const DEFAULT_JOURNAL_PAGE = {
+	id: "",
+	name: "New Page",
+	content: ""
+};
+
+/**
+ * Generate a unique ID for journal pages
+ */
+function generateJournalPageId() {
+	return foundry.utils.randomID(16);
+}
+
+/**
+ * Get journal pages for an actor
+ */
+function getJournalPages(actor) {
+	return actor.getFlag(MODULE_ID, "journalPages") ?? [];
+}
+
+/**
+ * Get the active page ID for an actor (or first page if none set)
+ */
+function getActiveJournalPageId(actor) {
+	const activeId = actor.getFlag(MODULE_ID, "activeJournalPage");
+	const pages = getJournalPages(actor);
+	if (activeId && pages.find(p => p.id === activeId)) {
+		return activeId;
+	}
+	return pages[0]?.id ?? null;
+}
+
+/**
+ * Set the active journal page
+ */
+async function setActiveJournalPage(actor, pageId) {
+	await actor.setFlag(MODULE_ID, "activeJournalPage", pageId);
+}
+
+/**
+ * Add a new journal page
+ */
+async function addJournalPage(actor, name = null) {
+	const pages = getJournalPages(actor);
+	const newPage = {
+		id: generateJournalPageId(),
+		name: name || game.i18n.format("SHADOWDARK_EXTRAS.journal.default_page_name", { num: pages.length + 1 }),
+		content: ""
+	};
+	pages.push(newPage);
+	await actor.setFlag(MODULE_ID, "journalPages", pages);
+	await setActiveJournalPage(actor, newPage.id);
+	return newPage;
+}
+
+/**
+ * Update a journal page
+ */
+async function updateJournalPage(actor, pageId, updates) {
+	const pages = getJournalPages(actor);
+	const pageIndex = pages.findIndex(p => p.id === pageId);
+	if (pageIndex === -1) return null;
+	
+	pages[pageIndex] = foundry.utils.mergeObject(pages[pageIndex], updates);
+	await actor.setFlag(MODULE_ID, "journalPages", pages);
+	return pages[pageIndex];
+}
+
+/**
+ * Delete a journal page
+ */
+async function deleteJournalPage(actor, pageId) {
+	let pages = getJournalPages(actor);
+	pages = pages.filter(p => p.id !== pageId);
+	await actor.setFlag(MODULE_ID, "journalPages", pages);
+	
+	// If we deleted the active page, switch to first page
+	const activeId = getActiveJournalPageId(actor);
+	if (activeId === pageId || !activeId) {
+		await setActiveJournalPage(actor, pages[0]?.id ?? null);
+	}
+	return pages;
+}
+
+/**
+ * Inject the Journal Notes system into the player sheet Notes tab
+ */
+async function injectJournalNotes(app, html, actor) {
+	// Check if journal notes is enabled
+	try {
+		if (!game.settings.get(MODULE_ID, "enableJournalNotes")) return;
+	} catch {
+		return;
+	}
+
+	// Use the app's element directly - more reliable than the html parameter
+	const sheetElement = app.element;
+	if (!sheetElement || sheetElement.length === 0) {
+		console.log("SDX Journal: Sheet element not found");
+		return;
+	}
+	
+	// Find the notes tab - it's a section with class "tab-notes" and data-tab="tab-notes"
+	const notesTab = sheetElement.find('section.tab-notes[data-tab="tab-notes"]');
+	if (notesTab.length === 0) {
+		console.log("SDX Journal: Notes tab section not found");
+		return;
+	}
+	
+	// Prevent duplicate injection - check inside the notes tab specifically
+	if (notesTab.find('.sdx-journal-notes').length > 0) {
+		return;
+	}
+	
+	const targetTab = notesTab.first();
+
+	// Get journal pages data
+	let pages = getJournalPages(actor);
+	
+	// If no pages exist yet and there's existing notes content, migrate it
+	if (pages.length === 0) {
+		const existingNotes = actor.system?.notes || "";
+		const firstPage = {
+			id: generateJournalPageId(),
+			name: game.i18n.localize("SHADOWDARK_EXTRAS.journal.default_first_page"),
+			content: existingNotes
+		};
+		pages = [firstPage];
+		await actor.setFlag(MODULE_ID, "journalPages", pages);
+		await setActiveJournalPage(actor, firstPage.id);
+	}
+
+	// Get active page
+	const activePageId = getActiveJournalPageId(actor);
+	const activePage = pages.find(p => p.id === activePageId) || pages[0];
+
+	// Mark pages as active/inactive
+	const pagesWithActive = pages.map(p => ({
+		...p,
+		active: p.id === activePage?.id
+	}));
+
+	// Enrich the active page content
+	let activePageContent = "";
+	if (activePage) {
+		activePageContent = await foundry.applications.ux.TextEditor.implementation.enrichHTML(
+			activePage.content || "",
+			{
+				secrets: actor.isOwner,
+				async: true,
+				relativeTo: actor,
+			}
+		);
+	}
+
+	// Render the journal template
+	const templatePath = `modules/${MODULE_ID}/templates/journal-notes.hbs`;
+	const journalHtml = await renderTemplate(templatePath, {
+		pages: pagesWithActive,
+		activePage: activePage,
+		activePageContent: activePageContent,
+		editable: app.isEditable,
+		actorId: actor.id
+	});
+
+	// Remove any existing journal notes first
+	targetTab.find('.sdx-journal-notes').remove();
+	
+	// Hide ALL original content in the notes tab (the SD-hideable-section with the editor)
+	targetTab.children().each(function() {
+		if (!$(this).hasClass('sdx-journal-notes')) {
+			$(this).hide();
+		}
+	});
+	
+	// Mark tab as having journal active
+	targetTab.addClass("sdx-journal-active");
+	
+	// Append the journal inside the target tab only
+	targetTab.append(journalHtml);
+
+	// Activate event listeners
+	activateJournalListeners(app, html, actor);
+}
+
+/**
+ * Activate event listeners for the journal notes system
+ */
+function activateJournalListeners(app, html, actor) {
+	// Find the journal section specifically within the notes tab
+	const notesTab = app.element.find('section.tab-notes[data-tab="tab-notes"]');
+	const journalSection = notesTab.find('.sdx-journal-notes');
+	if (journalSection.length === 0) return;
+
+	// Page selection
+	journalSection.find('.sdx-journal-page-item').on('click', async (ev) => {
+		// Don't trigger if clicking delete button
+		if ($(ev.target).closest('.sdx-page-delete').length) return;
+		
+		const pageId = $(ev.currentTarget).data('page-id');
+		await setActiveJournalPage(actor, pageId);
+		app.render(false);
+	});
+
+	// Add page button
+	journalSection.find('[data-action="add-page"]').on('click', async (ev) => {
+		ev.preventDefault();
+		await addJournalPage(actor);
+		app.render(false);
+	});
+
+	// Delete page button
+	journalSection.find('[data-action="delete-page"]').on('click', async (ev) => {
+		ev.preventDefault();
+		ev.stopPropagation();
+		
+		const pageId = $(ev.currentTarget).data('page-id');
+		const pages = getJournalPages(actor);
+		const page = pages.find(p => p.id === pageId);
+		
+		// Confirm deletion
+		const confirmed = await Dialog.confirm({
+			title: game.i18n.localize("SHADOWDARK_EXTRAS.journal.delete_page_title"),
+			content: `<p>${game.i18n.format("SHADOWDARK_EXTRAS.journal.delete_page_confirm", { name: page?.name || "Page" })}</p>`,
+			yes: () => true,
+			no: () => false
+		});
+		
+		if (confirmed) {
+			await deleteJournalPage(actor, pageId);
+			app.render(false);
+		}
+	});
+
+	// Page title editing
+	journalSection.find('.sdx-page-title-input').on('change', async (ev) => {
+		const pageId = $(ev.currentTarget).data('page-id');
+		const newName = $(ev.currentTarget).val().trim() || game.i18n.localize("SHADOWDARK_EXTRAS.journal.untitled");
+		await updateJournalPage(actor, pageId, { name: newName });
+		app.render(false);
+	});
+
+	// Edit page content button
+	journalSection.find('[data-action="edit-page"]').on('click', async (ev) => {
+		ev.preventDefault();
+		const pageId = $(ev.currentTarget).data('page-id');
+		await openJournalPageEditor(actor, pageId, app);
+	});
+}
+
+/**
+ * Open the ProseMirror editor for a journal page
+ * Uses a custom FormApplication to properly initialize the editor
+ */
+async function openJournalPageEditor(actor, pageId, sheetApp) {
+	const pages = getJournalPages(actor);
+	const page = pages.find(p => p.id === pageId);
+	if (!page) return;
+
+	// Create a custom FormApplication for the editor
+	class JournalPageEditor extends FormApplication {
+		constructor(actor, page, sheetApp) {
+			// Pass the page content as the object data for the form
+			super({ content: page.content || "" }, {
+				title: game.i18n.format("SHADOWDARK_EXTRAS.journal.edit_page_title", { name: page.name }),
+				width: 650,
+				height: 500,
+				resizable: true,
+				classes: ["shadowdark", "shadowdark-extras", "sdx-journal-editor-dialog"]
+			});
+			this.actorDoc = actor;
+			this.page = page;
+			this.sheetApp = sheetApp;
+		}
+
+		static get defaultOptions() {
+			return foundry.utils.mergeObject(super.defaultOptions, {
+				template: `modules/${MODULE_ID}/templates/journal-editor.hbs`,
+				closeOnSubmit: true,
+				submitOnClose: false
+			});
+		}
+
+		async getData() {
+			// The object.content is passed from constructor, we return it for the template
+			return {
+				content: this.object.content || this.page.content || "",
+				pageName: this.page.name
+			};
+		}
+
+		async _updateObject(event, formData) {
+			const content = formData.content || "";
+			await updateJournalPage(this.actorDoc, this.page.id, { content: content });
+			this.sheetApp.render(false);
+		}
+	}
+
+	const editor = new JournalPageEditor(actor, page, sheetApp);
+	editor.render(true);
 }
 
 /**
@@ -3163,6 +3493,253 @@ function handleRenownUpdate(actor, formData) {
 		value = Math.max(0, Math.min(value, renownMax));
 		actor.setFlag(MODULE_ID, "renown", value);
 	}
+}
+
+// ============================================
+// ENHANCED HEADER
+// ============================================
+
+/**
+ * Inject the enhanced interactive header into player sheets
+ * Replaces the default header with HP bar, stats, AC, luck, XP, level display
+ */
+async function injectEnhancedHeader(app, html, actor) {
+	// Check if enhanced header is enabled
+	try {
+		if (!game.settings.get(MODULE_ID, "enableEnhancedHeader")) return;
+	} catch {
+		return;
+	}
+
+	if (actor.type !== "Player") return;
+
+	const $header = html.find('.SD-header').first();
+	if (!$header.length) return;
+
+	// Clean up any existing enhanced content first (in case of re-render)
+	$header.find('.sdx-enhanced-content').remove();
+	
+	// Mark as enhanced
+	$header.addClass('sdx-enhanced-header');
+
+	// Get actor data
+	const sys = actor.system;
+	const hp = sys.attributes?.hp || { value: 0, max: 0 };
+	const ac = sys.attributes?.ac?.value ?? 10;
+	const level = sys.level?.value ?? 1;
+	const xp = sys.level?.xp ?? 0;
+	const xpForNextLevel = getXpForNextLevel(level);
+	const xpPercent = xpForNextLevel > 0 ? Math.min(100, (xp / xpForNextLevel) * 100) : 0;
+	const luck = sys.luck?.available ?? false;
+
+	// Get character details - need to fetch actual item names from UUIDs
+	let ancestryName = '';
+	let className = '';
+	let backgroundName = '';
+	
+	try {
+		if (sys.ancestry) {
+			const ancestryItem = await fromUuid(sys.ancestry);
+			ancestryName = ancestryItem?.name || '';
+		}
+		if (sys.class) {
+			const classItem = await fromUuid(sys.class);
+			className = classItem?.name || '';
+		}
+		if (sys.background) {
+			const backgroundItem = await fromUuid(sys.background);
+			backgroundName = backgroundItem?.name || '';
+		}
+	} catch (e) {
+		console.warn("shadowdark-extras | Error fetching character details:", e);
+	}
+
+	const abilities = sys.abilities || {};
+	const abilityOrder = ['str', 'dex', 'con', 'int', 'wis', 'cha'];
+
+	// Calculate HP percentage for bar
+	const hpPercent = hp.max > 0 ? Math.min(100, Math.max(0, (hp.value / hp.max) * 100)) : 0;
+	const hpColor = hpPercent > 50 ? '#4ade80' : hpPercent > 25 ? '#fbbf24' : '#ef4444';
+
+	// Build abilities HTML
+	let abilitiesHtml = '';
+	for (const key of abilityOrder) {
+		const ab = abilities[key] || {};
+		const base = ab.base ?? 10;
+		const bonus = ab.bonus ?? 0;
+		const total = base + bonus;
+		const mod = ab.mod ?? Math.floor((total - 10) / 2);
+		const modSign = mod >= 0 ? '+' : '';
+		
+		abilitiesHtml += `
+			<div class="sdx-ability" data-ability="${key}" data-tooltip="${key.toUpperCase()}">
+				<div class="sdx-ability-label">${key.toUpperCase()}</div>
+				<div class="sdx-ability-mod">${modSign}${mod}</div>
+				<div class="sdx-ability-score">${total}</div>
+			</div>
+		`;
+	}
+
+	// Build the enhanced header content
+	const enhancedContent = `
+		<div class="sdx-enhanced-content">
+			<div class="sdx-portrait-container">
+				<img class="sdx-portrait" src="${actor.img}" data-edit="img" data-tooltip="${actor.name}" />
+				<div class="sdx-hp-bar-container" data-tooltip="HP: ${hp.value} / ${hp.max}">
+					<div class="sdx-hp-bar" style="width: ${hpPercent}%; background-color: ${hpColor};"></div>
+					<div class="sdx-hp-text">
+						<span class="sdx-hp-value" data-field="hp-value">${hp.value}</span>
+						<span class="sdx-hp-separator">/</span>
+						<span class="sdx-hp-max">${hp.max}</span>
+					</div>
+				</div>
+			</div>
+			
+			<div class="sdx-header-main">
+				<div class="sdx-actor-name-row">
+					<input class="sdx-actor-name" data-field="name" type="text" value="${actor.name}" placeholder="Character Name" />
+				</div>
+				
+				<div class="sdx-char-details-row">
+					${ancestryName ? `<span class="sdx-char-ancestry">${ancestryName}</span>` : ''}
+					${className ? `<span class="sdx-char-class">${className}</span>` : ''}
+					${backgroundName ? `<span class="sdx-char-background">${backgroundName}</span>` : ''}
+				</div>
+				
+				<div class="sdx-xp-row" data-tooltip="XP: ${xp} / ${xpForNextLevel}">
+					<span class="sdx-xp-label">XP</span>
+					<span class="sdx-xp-value">${xp}</span>
+					<span class="sdx-xp-separator">/</span>
+					<span class="sdx-xp-max">${xpForNextLevel}</span>
+					<div class="sdx-xp-bar">
+						<div class="sdx-xp-bar-fill" style="width: ${xpPercent}%;"></div>
+					</div>
+				</div>
+				
+				<div class="sdx-stats-row">
+					<div class="sdx-ac-container" data-tooltip="Armor Class">
+						<div class="sdx-ac-value">${ac}</div>
+					</div>
+					
+					<div class="sdx-abilities-container">
+						${abilitiesHtml}
+					</div>
+					
+					<div class="sdx-right-stats">
+						<div class="sdx-init-container" data-tooltip="Initiative" data-ability="dex">
+							<div class="sdx-init-mod">+${abilities.dex?.mod ?? 0}</div>
+							<div class="sdx-init-label">INIT</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			
+			<div class="sdx-header-right">
+				<div class="sdx-luck-container ${luck ? 'has-luck' : ''}" data-tooltip="Luck ${luck ? '(Available)' : '(Used)'}">
+					<i class="fas fa-clover"></i>
+				</div>
+				<div class="sdx-level-container" data-tooltip="Level">
+					<div class="sdx-level-value">${level}</div>
+				</div>
+			</div>
+		</div>
+	`;
+
+	// Clear the existing header content and inject enhanced version
+	const $portrait = $header.find('.portrait');
+	const $logo = $header.find('.shadowdark-logo');
+	const $title = $header.find('.SD-title');
+	
+	// Hide original elements
+	$portrait.hide();
+	$logo.hide();
+	$title.hide();
+
+	// Append enhanced content
+	$header.append(enhancedContent);
+
+	// Wire up interactivity
+	const $enhancedContent = $header.find('.sdx-enhanced-content');
+
+	// HP click to edit
+	$enhancedContent.find('.sdx-hp-bar-container').on('click', async (e) => {
+		if (!actor.isOwner) return;
+		e.stopPropagation();
+		
+		const $hpValue = $enhancedContent.find('.sdx-hp-value');
+		const currentHp = hp.value;
+		
+		// Create inline input
+		const $input = $(`<input type="number" class="sdx-hp-input" value="${currentHp}" min="0" max="${hp.max}" />`);
+		$hpValue.replaceWith($input);
+		$input.focus().select();
+		
+		const saveHp = async () => {
+			const newHp = Math.max(0, Math.min(hp.max, parseInt($input.val()) || 0));
+			await actor.update({ "system.attributes.hp.value": newHp });
+		};
+		
+		$input.on('blur', saveHp);
+		$input.on('keydown', (e) => {
+			if (e.key === 'Enter') {
+				e.preventDefault();
+				$input.blur();
+			} else if (e.key === 'Escape') {
+				$input.val(currentHp);
+				$input.blur();
+			}
+		});
+	});
+
+	// Luck toggle
+	$enhancedContent.find('.sdx-luck-container').on('click', async () => {
+		if (!actor.isOwner) return;
+		await actor.update({ "system.luck.available": !luck });
+	});
+
+	// Actor name change
+	$enhancedContent.find('.sdx-actor-name').on('change', async function() {
+		if (!actor.isOwner) return;
+		const newName = $(this).val().trim();
+		if (newName && newName !== actor.name) {
+			await actor.update({ "name": newName });
+		}
+	});
+
+	// Ability rolls on click
+	$enhancedContent.find('.sdx-ability').on('click', async function() {
+		const ability = $(this).data('ability');
+		if (actor.rollAbility) {
+			actor.rollAbility(ability);
+		}
+	});
+
+	// Initiative roll
+	$enhancedContent.find('.sdx-init-container').on('click', async () => {
+		if (actor.rollAbility) {
+			actor.rollAbility('dex');
+		}
+	});
+}
+
+/**
+ * Get the XP required for the next level in Shadowdark
+ */
+function getXpForNextLevel(currentLevel) {
+	// Shadowdark XP requirements per level
+	const xpTable = {
+		1: 10,
+		2: 20,
+		3: 40,
+		4: 80,
+		5: 160,
+		6: 320,
+		7: 640,
+		8: 1280,
+		9: 2560,
+		10: 5000 // Level 10+ (no standard progression)
+	};
+	return xpTable[currentLevel] || (currentLevel >= 10 ? 5000 : 10);
 }
 
 /**
@@ -3315,7 +3892,7 @@ function applyHeaderBackground(html, actor) {
 		
 		// Calculate from the top of header to the bottom of nav, relative to form
 		// Add extra padding to ensure it covers the full nav including border-bottom
-		const totalHeight = (navRect.bottom - formRect.top) + 26;
+		const totalHeight = (navRect.bottom - formRect.top) + 30;
 		$form.find('.sdx-header-bg-extension').css('height', totalHeight + 'px');
 	};
 	
@@ -4092,10 +4669,13 @@ async function transferItemToPlayer(sourceActor, item, targetActorId) {
 		return;
 	}
 	
-	const itemName = item.name;
+	// Get the display name - mask if unidentified and user is not GM
+	const itemName = (isUnidentified(item) && !game.user.isGM) 
+		? game.i18n.localize("SHADOWDARK_EXTRAS.item.unidentified.label")
+		: item.name;
 	
 	try {
-		console.log(`${MODULE_ID} | Transferring ${itemName} from ${sourceActor.name} to ${targetActor.name}`);
+		console.log(`${MODULE_ID} | Transferring ${item.name} from ${sourceActor.name} to ${targetActor.name}`);
 		
 		// Use Item Piles API to transfer the item
 		const result = await game.itempiles.API.transferItems(
@@ -4252,12 +4832,19 @@ Hooks.once("init", () => {
 		const num = parseInt(value) || 0;
 		return num >= 0 ? `+${num}` : `${num}`;
 	});
+
+	// Helper for simple math operations in templates
+	Handlebars.registerHelper("add", (a, b) => {
+		return (parseInt(a) || 0) + (parseInt(b) || 0);
+	});
 	
 	// Preload templates
 	loadTemplates([
 		`modules/${MODULE_ID}/templates/npc-inventory.hbs`,
 		`modules/${MODULE_ID}/templates/party.hbs`,
-		`modules/${MODULE_ID}/templates/trade-window.hbs`
+		`modules/${MODULE_ID}/templates/trade-window.hbs`,
+		`modules/${MODULE_ID}/templates/journal-notes.hbs`,
+		`modules/${MODULE_ID}/templates/journal-editor.hbs`
 	]);
 	
 	// Register the Party sheet early
@@ -4368,9 +4955,10 @@ Hooks.on("createActor", async (actor, options, userId) => {
 });
 
 // Inject Renown into player sheets
-Hooks.on("renderPlayerSheetSD", (app, html, data) => {
+Hooks.on("renderPlayerSheetSD", async (app, html, data) => {
 	if (app.actor?.type !== "Player") return;
 	
+	await injectEnhancedHeader(app, html, app.actor);
 	injectRenownSection(html, app.actor);
 	attachContainerContentsToActorSheet(app, html);
 	addUnidentifiedIndicatorForGM(app, html);
@@ -4380,6 +4968,7 @@ Hooks.on("renderPlayerSheetSD", (app, html, data) => {
 	injectAddCoinsButton(html, app.actor);
 	applyInventoryStylesToSheet(html, app.actor);
 	injectHeaderCustomization(app, html, app.actor);
+	await injectJournalNotes(app, html, app.actor);
 });
 
 // Inject Inventory tab into NPC sheets (but not Party sheets)

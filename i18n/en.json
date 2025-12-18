@@ -1,4 +1,6 @@
 {
+  "SHADOWDARK_EXTRAS.settings.enable_enhanced_header.name": "Enable Enhanced Header",
+  "SHADOWDARK_EXTRAS.settings.enable_enhanced_header.hint": "Replace the default player sheet header with an interactive header showing HP bar, AC, abilities, luck, XP, and level",
   "SHADOWDARK_EXTRAS.settings.renown_maximum.name": "Renown Maximum",
   "SHADOWDARK_EXTRAS.settings.renown_maximum.hint": "The maximum Renown value that players can achieve (default: 20)",
   "SHADOWDARK_EXTRAS.settings.enable_npc_inventory.name": "Enable NPC Inventory Tab",
@@ -17,6 +19,8 @@
   "SHADOWDARK_EXTRAS.settings.enable_multiselect.hint": "Allow Shift+Click and Ctrl+Click to select multiple items for bulk deletion",
   "SHADOWDARK_EXTRAS.settings.enable_add_coins_button.name": "Enable Add Coins Button",
   "SHADOWDARK_EXTRAS.settings.enable_add_coins_button.hint": "Add a + button to the Coins section for quickly adding or removing coins",
+  "SHADOWDARK_EXTRAS.settings.enable_journal_notes.name": "Enable Journal Notes",
+  "SHADOWDARK_EXTRAS.settings.enable_journal_notes.hint": "Replace the simple Notes tab with a multi-page journal system for player characters",
   "SHADOWDARK_EXTRAS.sheet.player.renown": "Renown",
   "SHADOWDARK_EXTRAS.light_source.candle": "Candle",
   "SHADOWDARK_EXTRAS.sheet.npc.tab.inventory": "Inventory",
@@ -220,5 +224,20 @@
 
   "SHADOWDARK_EXTRAS.header.customize_tooltip": "Customize Header",
   "SHADOWDARK_EXTRAS.header.select_image": "Select Background Image",
-  "SHADOWDARK_EXTRAS.header.remove_image": "Remove Background Image"
+  "SHADOWDARK_EXTRAS.header.remove_image": "Remove Background Image",
+
+  "SHADOWDARK_EXTRAS.journal.add_page": "Add Page",
+  "SHADOWDARK_EXTRAS.journal.delete_page": "Delete Page",
+  "SHADOWDARK_EXTRAS.journal.edit_page": "Edit Page",
+  "SHADOWDARK_EXTRAS.journal.no_pages": "No journal pages yet.",
+  "SHADOWDARK_EXTRAS.journal.add_page_hint": "Click 'Add Page' to create your first journal entry.",
+  "SHADOWDARK_EXTRAS.journal.page_title_placeholder": "Page Title",
+  "SHADOWDARK_EXTRAS.journal.default_page_name": "Page {num}",
+  "SHADOWDARK_EXTRAS.journal.default_first_page": "Notes",
+  "SHADOWDARK_EXTRAS.journal.untitled": "Untitled",
+  "SHADOWDARK_EXTRAS.journal.delete_page_title": "Delete Journal Page",
+  "SHADOWDARK_EXTRAS.journal.delete_page_confirm": "Are you sure you want to delete the page \"{name}\"? This cannot be undone.",
+  "SHADOWDARK_EXTRAS.journal.edit_page_title": "Edit: {name}",
+  "SHADOWDARK_EXTRAS.journal.save": "Save",
+  "SHADOWDARK_EXTRAS.journal.cancel": "Cancel"
 }
