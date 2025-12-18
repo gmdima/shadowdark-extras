@@ -1,4 +1,5 @@
 # Shadowdark-Extras
+<img width="908" height="287" alt="image" src="https://github.com/user-attachments/assets/2a8b6d83-1610-4cda-a008-dc0698eb92a9" />
 
 ---
 
@@ -48,13 +49,17 @@ Create and manage containers within your inventory:
 - Container descriptions — Shows contained items with clickable links
 - Edit button — Quick access to open container sheets
 
-![Container System](https://github.com/user-attachments/assets/7aec6d36-9dc0-4c9a-a2b6-6a5e0fdbe064)
+<img width="400" alt="image" src="https://github.com/user-attachments/assets/7aec6d36-9dc0-4c9a-a2b6-6a5e0fdbe064" />
 
 ## 🎭 Player Sheet Enhancements
-- Player's header background change - supports video as well
+- Player's header rewritten - supports video as well
 - Inventory items list color theme editor (from SDX module settings)
+- Notes as a journal system
+- 
+<img width="400" alt="image" src="https://github.com/user-attachments/assets/b2f7cdae-0a01-4591-a275-9ed66b2fd402" />
 
-![Player Sheet](https://github.com/user-attachments/assets/eb2f66c1-64d9-4f87-ac33-f92bb1dbb1c4)
+<img width="400" alt="image" src="https://github.com/user-attachments/assets/18578618-8838-48b2-aa70-f629077d5797" />
+
 
 ## 🎒 Inventory Enhancements
 - Gear Slots tracking — See used/max slots per item and total
