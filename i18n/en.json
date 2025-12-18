@@ -212,7 +212,13 @@
   "SHADOWDARK_EXTRAS.inventory_styles.text_color": "Text Color",
   "SHADOWDARK_EXTRAS.inventory_styles.text_shadow": "Text Shadow",
   "SHADOWDARK_EXTRAS.inventory_styles.border_left": "Left Border",
+  "SHADOWDARK_EXTRAS.inventory_styles.description_text_color": "Description Text Color",
+  "SHADOWDARK_EXTRAS.inventory_styles.description_text_shadow": "Description Text Shadow",
   "SHADOWDARK_EXTRAS.inventory_styles.preview": "Preview",
   "SHADOWDARK_EXTRAS.inventory_styles.preview_item_name": "Sample Item Name",
-  "SHADOWDARK_EXTRAS.inventory_styles.save": "Save Changes"
+  "SHADOWDARK_EXTRAS.inventory_styles.save": "Save Changes",
+
+  "SHADOWDARK_EXTRAS.header.customize_tooltip": "Customize Header",
+  "SHADOWDARK_EXTRAS.header.select_image": "Select Background Image",
+  "SHADOWDARK_EXTRAS.header.remove_image": "Remove Background Image"
 }
