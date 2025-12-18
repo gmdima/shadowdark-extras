@@ -33,6 +33,10 @@ Item-Piles integration — Full support for the Item Piles module
 Container descriptions — Shows contained items with clickable links
 Edit button — Quick access to open container sheets
 
+🎭 Player sheet enhancements
+Player's header background change - supports video as well
+Inventory items list color theme editor (from SDX module settings)
+
 🎒 Inventory Enhancements
 Gear Slots tracking — See used/max slots per item and total
 Multi-select — Shift+Click for range, Ctrl+Click for individual selection
