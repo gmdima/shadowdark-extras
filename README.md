@@ -1,4 +1,17 @@
-# shadowdark-extras
+# Shadowdark-Extras
+
+---
+
+### ☕ Support My Late-Night Coding Sessions
+
+<a href="https://ko-fi.com/kaleth" target="_blank">
+  <img src="https://storage.ko-fi.com/cdn/kofi2.png?v=3" alt="Buy Me a Coffee at ko-fi.com" height="45">
+</a>
+
+*This module is crafted during countless late nights, fueled by determination and way too little sleep. If Shadowdark Extras has made your games better, consider buying me a coffee — it helps keep the code flowing and the torches burning!* ☕🕯️
+
+---
+
 Foundryvtt v13 module to implement extra features for the shadowdark system, like npc inventory, unidentified items, party sheet etc.
 
 Enhance your Shadowdark RPG experience with this essential companion module that adds powerful party management tools and quality-of-life features for both players and GMs.
