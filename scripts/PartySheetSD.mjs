@@ -220,8 +220,9 @@ export default class PartySheetSD extends ActorSheet {
 		};
 		context.inventorySlots.over = context.inventorySlots.used > context.inventorySlots.max;
 		
-		// Get party description
-		context.descriptionHTML = await TextEditor.enrichHTML(
+		// Get party description (use namespaced TextEditor when available)
+		const enrichHTML = foundry?.applications?.ux?.TextEditor?.implementation?.enrichHTML ?? TextEditor.enrichHTML;
+		context.descriptionHTML = await enrichHTML(
 			this.actor.getFlag(MODULE_ID, "description") ?? "",
 			{
 				secrets: this.actor.isOwner,
@@ -362,7 +363,8 @@ export default class PartySheetSD extends ActorSheet {
 
 	/** @inheritdoc */
 	async _onDrop(event) {
-		const data = TextEditor.getDragEventData(event);
+		const getDragEventData = foundry?.applications?.ux?.TextEditor?.implementation?.getDragEventData ?? TextEditor.getDragEventData;
+		const data = getDragEventData(event);
 		if (data?.type === "Actor") {
 			if (!this.actor.isOwner) return;
 			const dropped = data.uuid ? await fromUuid(data.uuid) : game.actors.get(data.id);
@@ -1149,8 +1151,13 @@ export default class PartySheetSD extends ActorSheet {
 				try {
 					const imported = await Actor.implementation.create(member.toObject());
 					if (imported) {
-						// Set the source ID flag so we can find it later
-						await imported.setFlag("core", "sourceId", member.uuid);
+						// Record the compendium source on the imported actor without using the deprecated core.sourceId flag
+						try {
+							await imported.update({"_stats.compendiumSource": member.uuid});
+						} catch {
+							// Fallback to writing the legacy flag if update fails for any reason
+							await imported.setFlag("core", "sourceId", member.uuid);
+						}
 						existingActor = imported;
 						ui.notifications.info(
 							game.i18n.format("SHADOWDARK_EXTRAS.party.actor_imported", { name: member.name })

@@ -2212,7 +2212,8 @@ function injectBasicContainerUI(app, html) {
 			ev.preventDefault();
 			const originalEvent = ev.originalEvent ?? ev;
 			const ctrlMove = Boolean(originalEvent?.ctrlKey);
-			const data = TextEditor.getDragEventData(originalEvent);
+			const getDragEventData = foundry?.applications?.ux?.TextEditor?.implementation?.getDragEventData ?? TextEditor.getDragEventData;
+			const data = getDragEventData(originalEvent);
 			if (!data || data.type !== 'Item') return;
 			const dropped = await fromUuid(data.uuid);
 			if (!dropped || !(dropped instanceof Item)) return;
@@ -2511,7 +2512,8 @@ function maskUnidentifiedItemSheet(app, html) {
 		let newContent = bannerHtml;
 		if (unidentifiedDesc) {
 			// Enrich and display the unidentified description
-			TextEditor.enrichHTML(unidentifiedDesc, { async: true }).then(enriched => {
+			const enrichHTML = foundry?.applications?.ux?.TextEditor?.implementation?.enrichHTML ?? TextEditor.enrichHTML;
+			enrichHTML(unidentifiedDesc, { async: true }).then(enriched => {
 				newContent += `<div class="editor-content" style="padding: 10px;">${enriched}</div>`;
 				descTab.html(newContent);
 			});
@@ -2999,6 +3001,16 @@ function registerSettings() {
 		requiresReload: true,
 	});
 
+	game.settings.register(MODULE_ID, "enableEnhancedDetails", {
+		name: "Enable Player Sheet Tabs Theme Enhancement",
+		hint: "Enhances the Details tab with improved styling and organization to match the enhanced header theme.",
+		scope: "world",
+		config: true,
+		default: false,
+		type: Boolean,
+		requiresReload: true,
+	});
+
 	game.settings.register(MODULE_ID, "enableRenown", {
 		name: game.i18n.localize("SHADOWDARK_EXTRAS.settings.enable_renown.name"),
 		hint: game.i18n.localize("SHADOWDARK_EXTRAS.settings.enable_renown.hint"),
@@ -3294,7 +3306,8 @@ async function injectJournalNotes(app, html, actor) {
 	// Enrich the active page content
 	let activePageContent = "";
 	if (activePage) {
-		activePageContent = await foundry.applications.ux.TextEditor.implementation.enrichHTML(
+		const enrichHTMLImpl = foundry?.applications?.ux?.TextEditor?.implementation?.enrichHTML ?? TextEditor.enrichHTML;
+		activePageContent = await enrichHTMLImpl(
 			activePage.content || "",
 			{
 				secrets: actor.isOwner,
@@ -3306,7 +3319,8 @@ async function injectJournalNotes(app, html, actor) {
 
 	// Render the journal template
 	const templatePath = `modules/${MODULE_ID}/templates/journal-notes.hbs`;
-	const journalHtml = await renderTemplate(templatePath, {
+	const renderTpl = foundry?.applications?.handlebars?.renderTemplate ?? renderTemplate;
+	const journalHtml = await renderTpl(templatePath, {
 		pages: pagesWithActive,
 		activePage: activePage,
 		activePageContent: activePageContent,
@@ -3565,6 +3579,127 @@ function handleRenownUpdate(actor, formData) {
 // ============================================
 
 /**
+ * Add inline control buttons to effect/condition items
+ */
+function addInlineEffectControls($effectsTab, actor) {
+	const $items = $effectsTab.find('.item.effect');
+	
+	$items.each(function() {
+		const $item = $(this);
+		
+		// Skip if already has controls
+		if ($item.find('.sdx-effect-controls').length) return;
+		
+		const itemId = $item.data('item-id');
+		const itemUuid = $item.data('uuid');
+		
+		if (!itemId) return;
+		
+		// Create control buttons
+		const $controls = $(`
+			<div class="sdx-effect-controls">
+				<button type="button" class="sdx-effect-edit" data-tooltip="Edit" title="Edit">
+					<i class="fas fa-edit"></i>
+				</button>
+				<button type="button" class="sdx-effect-transfer" data-tooltip="Transfer to Player" title="Transfer to Player">
+					<i class="fas fa-share"></i>
+				</button>
+				<button type="button" class="sdx-effect-delete" data-tooltip="Delete" title="Delete">
+					<i class="fas fa-trash"></i>
+				</button>
+			</div>
+		`);
+		
+		// Add controls to the item
+		$item.append($controls);
+		
+		// Edit button
+		$controls.find('.sdx-effect-edit').on('click', async (e) => {
+			e.preventDefault();
+			e.stopPropagation();
+			const item = actor.items.get(itemId);
+			if (item) item.sheet.render(true);
+		});
+		
+		// Transfer button
+		$controls.find('.sdx-effect-transfer').on('click', async (e) => {
+			e.preventDefault();
+			e.stopPropagation();
+			const item = actor.items.get(itemId);
+			if (item && game.user.isGM) {
+				// Show player selection dialog
+				const players = game.users.filter(u => !u.isGM && u.active);
+				if (players.length === 0) {
+					ui.notifications.warn("No active players to transfer to");
+					return;
+				}
+				
+				const playerOptions = players.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
+				const content = `
+					<form>
+						<div class="form-group">
+							<label>Select Player:</label>
+							<select name="playerId">${playerOptions}</select>
+						</div>
+					</form>
+				`;
+				
+				new Dialog({
+					title: "Transfer Item to Player",
+					content: content,
+					buttons: {
+						transfer: {
+							icon: '<i class="fas fa-share"></i>',
+							label: "Transfer",
+							callback: async (html) => {
+								const playerId = html.find('[name="playerId"]').val();
+								const player = game.users.get(playerId);
+								const targetActor = player?.character;
+								
+								if (!targetActor) {
+									ui.notifications.error("Selected player has no assigned character");
+									return;
+								}
+								
+								const itemData = item.toObject();
+								await targetActor.createEmbeddedDocuments("Item", [itemData]);
+								await item.delete();
+								ui.notifications.info(`Transferred ${item.name} to ${targetActor.name}`);
+							}
+						},
+						cancel: {
+							icon: '<i class="fas fa-times"></i>',
+							label: "Cancel"
+						}
+					},
+					default: "transfer"
+				}).render(true);
+			}
+		});
+		
+		// Delete button
+		$controls.find('.sdx-effect-delete').on('click', async (e) => {
+			e.preventDefault();
+			e.stopPropagation();
+			const item = actor.items.get(itemId);
+			if (item) {
+				const confirm = await Dialog.confirm({
+					title: "Delete Effect",
+					content: `<p>Are you sure you want to delete <strong>${item.name}</strong>?</p>`,
+					yes: () => true,
+					no: () => false
+				});
+				
+				if (confirm) {
+					await item.delete();
+					ui.notifications.info(`Deleted ${item.name}`);
+				}
+			}
+		});
+	});
+}
+
+/**
  * Inject conditions quick toggles into the Effects tab
  */
 async function injectConditionsToggles(app, html, actor) {
@@ -3576,6 +3711,9 @@ async function injectConditionsToggles(app, html, actor) {
 
 	// Check if we've already injected (avoid duplicates on re-render)
 	if ($effectsTab.find('.sdx-conditions-toggles').length) return;
+	
+	// Add inline control buttons to existing effects/conditions
+	addInlineEffectControls($effectsTab, actor);
 
 	// Fetch all conditions from the compendium
 	const conditionsPack = game.packs.get("shadowdark.conditions");
@@ -3618,10 +3756,11 @@ async function injectConditionsToggles(app, html, actor) {
 		
 		// Check if any variant is active
 		const isActive = conditionGroup.some(condition => 
-			activeEffects.some(effect => 
-				effect.name === condition.name || 
-				effect.getFlag("core", "sourceId") === condition.uuid
-			)
+		    activeEffects.some(effect => 
+			    effect.name === condition.name || 
+			    (effect._stats?.compendiumSource === condition.uuid) ||
+			    (effect.flags?.core?.sourceId === condition.uuid)
+		    )
 		);
 
 		const displayName = baseName.replace('Condition: ', '');
@@ -3688,115 +3827,15 @@ async function injectConditionsToggles(app, html, actor) {
 			const conditionName = $toggle.data('condition-name');
 			const isActive = $toggle.hasClass('active');
 
-			if (isActive) {
-				await removeConditionFromActor(actor, conditionName, conditionUuid);
-			} else {
-				await addConditionToActor(actor, conditionUuid);
-			}
+					if (isActive) {
+						await removeConditionFromActor(actor, conditionName, conditionUuid);
+					} else {
+						await addConditionToActor(actor, conditionUuid);
+					}
 		}
 	});
 	
-	// Add tooltip handlers
-	$toggles.on('mouseenter', function(e) {
-		const $toggle = $(this);
-		const description = $toggle.data('condition-description');
-		
-		if (!description || description.trim() === '') return;
-		
-		// Convert UUID links to clickable elements
-		const enrichedDescription = convertUUIDLinksToClickable(description);
-		
-		// Create tooltip
-		const $tooltip = $(`<div class="sdx-condition-tooltip">${enrichedDescription}</div>`);
-		$('body').append($tooltip);
-		
-		// Position tooltip
-		const rect = $toggle[0].getBoundingClientRect();
-		const tooltipHeight = $tooltip.outerHeight();
-		const tooltipWidth = $tooltip.outerWidth();
-		
-		// Determine if there's more space on left or right
-		const spaceRight = window.innerWidth - rect.right;
-		const spaceLeft = rect.left;
-		
-		// Position horizontally
-		if (spaceRight > tooltipWidth + 10) {
-			// Show on right
-			$tooltip.css({
-				left: rect.right + 10 + 'px',
-				top: rect.top + (rect.height / 2) - (tooltipHeight / 2) + 'px'
-			});
-			$tooltip.addClass('sdx-tooltip-right');
-		} else if (spaceLeft > tooltipWidth + 10) {
-			// Show on left
-			$tooltip.css({
-				left: rect.left - tooltipWidth - 10 + 'px',
-				top: rect.top + (rect.height / 2) - (tooltipHeight / 2) + 'px'
-			});
-			$tooltip.addClass('sdx-tooltip-left');
-		} else {
-			// Show below if not enough space on sides
-			$tooltip.css({
-				left: rect.left + (rect.width / 2) - (tooltipWidth / 2) + 'px',
-				top: rect.bottom + 10 + 'px'
-			});
-			$tooltip.addClass('sdx-tooltip-bottom');
-		}
-		
-		// Store tooltip reference
-		$toggle.data('sdx-tooltip', $tooltip);
-		
-		// Handle UUID link clicks in tooltip
-		$tooltip.find('.sdx-uuid-link').on('click', async function(e) {
-			e.preventDefault();
-			e.stopPropagation();
-			const uuid = $(this).data('uuid');
-			if (uuid) {
-				const doc = await fromUuid(uuid);
-				if (doc?.sheet) {
-					doc.sheet.render(true);
-				}
-			}
-			// Close tooltip after click
-			$tooltip.remove();
-			$toggle.removeData('sdx-tooltip');
-			$toggle.removeData('sdx-tooltip-hovered');
-		});
-		
-		// Keep tooltip open when hovering over it
-		$tooltip.on('mouseenter', function() {
-			$toggle.data('sdx-tooltip-hovered', true);
-		});
-		
-		$tooltip.on('mouseleave', function() {
-			$toggle.data('sdx-tooltip-hovered', false);
-			// Small delay before removing to allow moving back to toggle
-			setTimeout(() => {
-				if (!$toggle.data('sdx-toggle-hovered') && !$toggle.data('sdx-tooltip-hovered')) {
-					$tooltip.remove();
-					$toggle.removeData('sdx-tooltip');
-				}
-			}, 100);
-		});
-	});
-	
-	$toggles.on('mouseleave', function(e) {
-		const $toggle = $(this);
-		$toggle.data('sdx-toggle-hovered', false);
-		
-		// Small delay before removing to allow moving to tooltip
-		setTimeout(() => {
-			const $tooltip = $toggle.data('sdx-tooltip');
-			if ($tooltip && !$toggle.data('sdx-tooltip-hovered')) {
-				$tooltip.remove();
-				$toggle.removeData('sdx-tooltip');
-			}
-		}, 100);
-	});
-	
-	$toggles.on('mouseenter', function(e) {
-		$(this).data('sdx-toggle-hovered', true);
-	});
+	// Tooltips removed per user request
 }
 
 /**
@@ -3849,7 +3888,8 @@ function showConditionSubmenu($toggle, variants, actor, activeEffects) {
 	for (const variant of variants) {
 		const isActive = activeEffects.some(effect => 
 			effect.name === variant.name || 
-			effect.getFlag("core", "sourceId") === variant.uuid
+			(effect._stats?.compendiumSource === variant.uuid) ||
+			(effect.flags?.core?.sourceId === variant.uuid)
 		);
 		
 		// Extract the variant part (e.g., "1", "Cha", etc.)
@@ -3919,11 +3959,23 @@ async function addConditionToActor(actor, conditionUuid) {
 			return;
 		}
 
-		// Check if condition already exists
-		const existing = actor.effects.find(e => 
-			e.name === condition.name || 
-			e.getFlag("core", "sourceId") === conditionUuid
-		);
+		// Check if condition already exists with improved matching
+		const existing = actor.effects.find(e => {
+			// Direct name match
+			if (e.name === condition.name) return true;
+			
+			// Source ID match (support new _stats.compendiumSource with fallback)
+			if (e._stats?.compendiumSource === conditionUuid) return true;
+			if (e.flags?.core?.sourceId === conditionUuid) return true;
+			
+			// Case-insensitive name match
+			if (e.name?.toLowerCase() === condition.name?.toLowerCase()) return true;
+			
+			// Check if the effect name contains the condition name
+			if (e.name?.toLowerCase().includes(condition.name?.toLowerCase())) return true;
+			
+			return false;
+		});
 		
 		if (existing) {
 			console.log(`${MODULE_ID} | Condition ${condition.name} already active`);
@@ -3939,9 +3991,9 @@ async function addConditionToActor(actor, conditionUuid) {
 			const effectData = sourceEffect.toObject();
 			
 			// Set flags to track origin
-			effectData.flags = effectData.flags || {};
-			effectData.flags.core = effectData.flags.core || {};
-			effectData.flags.core.sourceId = conditionUuid;
+			// Prefer the new _stats.compendiumSource property. Do not write the deprecated core.sourceId flag.
+			effectData._stats = effectData._stats || {};
+			effectData._stats.compendiumSource = conditionUuid;
 			effectData.flags[MODULE_ID] = effectData.flags[MODULE_ID] || {};
 			effectData.flags[MODULE_ID].conditionToggle = true;
 
@@ -3952,8 +4004,8 @@ async function addConditionToActor(actor, conditionUuid) {
 			const effectData = {
 				name: condition.name,
 				img: condition.img,
+				_stats: { compendiumSource: conditionUuid },
 				flags: {
-					core: { sourceId: conditionUuid },
 					[MODULE_ID]: { conditionToggle: true }
 				}
 			};
@@ -3974,7 +4026,8 @@ async function removeConditionFromActor(actor, conditionName, conditionUuid) {
 		// Find the effect(s) matching this condition
 		const effectsToRemove = actor.effects.filter(e => 
 			e.name === conditionName || 
-			e.getFlag("core", "sourceId") === conditionUuid ||
+			(e._stats?.compendiumSource === conditionUuid) ||
+			(e.flags?.core?.sourceId === conditionUuid) ||
 			(e.getFlag(MODULE_ID, "conditionToggle") && e.name === conditionName)
 		);
 
@@ -4003,13 +4056,440 @@ function updateConditionToggles(actor, html) {
 		const conditionUuid = $toggle.data('condition-uuid');
 		const conditionName = $toggle.data('condition-name');
 
-		const isActive = activeEffects.some(effect => 
-			effect.name === conditionName || 
-			effect.getFlag("core", "sourceId") === conditionUuid
-		);
+		// Check multiple ways to match the condition
+		const isActive = activeEffects.some(effect => {
+			// Direct name match
+			if (effect.name === conditionName) return true;
+			
+			// Source ID match (prefer new _stats.compendiumSource)
+			if (effect._stats?.compendiumSource === conditionUuid) return true;
+			if (effect.flags?.core?.sourceId === conditionUuid) return true;
+			
+			// Case-insensitive name match (sometimes names don't match exactly)
+			if (effect.name?.toLowerCase() === conditionName?.toLowerCase()) return true;
+			
+			// Check if the effect name contains the condition name (e.g., "Condition: Blind" contains "Blind")
+			if (effect.name?.toLowerCase().includes(conditionName?.toLowerCase())) return true;
+			
+			return false;
+		});
 
 		$toggle.toggleClass('active', isActive);
 	});
+}
+
+// ============================================
+// ENHANCED DETAILS TAB
+// ============================================
+
+/**
+ * Enhance the Details tab with improved styling and organization
+ */
+function enhanceDetailsTab(app, html, actor) {
+	// Check if enhanced details is enabled
+	try {
+		if (!game.settings.get(MODULE_ID, "enableEnhancedDetails")) return;
+	} catch {
+		return;
+	}
+
+	if (actor.type !== "Player") return;
+
+	const $detailsTab = html.find('.tab[data-tab="tab-details"]');
+	if (!$detailsTab.length) return;
+
+	// Add enhanced class to the details tab
+	$detailsTab.addClass('sdx-enhanced-details');
+
+	// Hide the level box (it's already in the enhanced header)
+	$detailsTab.find('.SD-box').first().hide();
+
+	// Function to extend header background into Details tab
+	const extendHeaderBg = () => {
+		const $form = html.closest('form');
+		const $bgExtension = $form.find('.sdx-header-bg-extension');
+		
+		if ($bgExtension.length) {
+			// Remove any existing details extension
+			$detailsTab.find('.sdx-details-bg-extension').remove();
+			
+			// Clone the background extension for the details tab
+			const $detailsBg = $bgExtension.clone();
+			$detailsBg.removeClass('sdx-header-bg-extension').addClass('sdx-details-bg-extension');
+			$detailsBg.css('height', '150px');
+			
+			// Add to the details tab
+			$detailsTab.append($detailsBg);
+		}
+	};
+	
+	// Try immediately and after a delay (in case header background is set up after this function)
+	extendHeaderBg();
+	setTimeout(extendHeaderBg, 100);
+	setTimeout(extendHeaderBg, 300);
+}
+
+// ============================================
+// ENHANCED ABILITIES TAB
+// ============================================
+
+/**
+ * Enhance the Abilities tab with improved styling and organization
+ */
+function enhanceAbilitiesTab(app, html, actor) {
+	// Check if enhanced details is enabled (use same setting)
+	try {
+		if (!game.settings.get(MODULE_ID, "enableEnhancedDetails")) return;
+	} catch {
+		return;
+	}
+
+	if (actor.type !== "Player") return;
+
+	const $abilitiesTab = html.find('.tab[data-tab="tab-abilities"]');
+	if (!$abilitiesTab.length) return;
+
+	// Add enhanced class to the abilities tab
+	$abilitiesTab.addClass('sdx-enhanced-abilities');
+
+	// Function to extend header background into Abilities tab
+	const extendHeaderBg = () => {
+		const $form = html.closest('form');
+		const $bgExtension = $form.find('.sdx-header-bg-extension');
+		
+		if ($bgExtension.length) {
+			// Remove any existing abilities extension
+			$abilitiesTab.find('.sdx-abilities-bg-extension').remove();
+			
+			// Clone the background extension for the abilities tab
+			const $abilitiesBg = $bgExtension.clone();
+			$abilitiesBg.removeClass('sdx-header-bg-extension').addClass('sdx-abilities-bg-extension');
+			$abilitiesBg.css('height', '150px');
+			
+			// Add to the abilities tab
+			$abilitiesTab.append($abilitiesBg);
+		}
+	};
+	
+	// Try immediately and after a delay (in case header background is set up after this function)
+	extendHeaderBg();
+	setTimeout(extendHeaderBg, 100);
+	setTimeout(extendHeaderBg, 300);
+}
+
+// ============================================
+// ENHANCED TALENTS TAB
+// ============================================
+
+/**
+ * Add inline control buttons to talent items
+ */
+function addInlineTalentControls($talentsTab, actor) {
+	const $items = $talentsTab.find('.item');
+	
+	$items.each(function() {
+		const $item = $(this);
+		
+		// Skip if already has controls
+		if ($item.find('.sdx-talent-controls').length) return;
+		
+		const itemId = $item.data('item-id');
+		
+		if (!itemId) return;
+		
+		// Create control buttons
+		const $controls = $(`
+			<div class="sdx-talent-controls">
+				<button type="button" class="sdx-talent-edit" data-tooltip="Edit" title="Edit">
+					<i class="fas fa-edit"></i>
+				</button>
+				<button type="button" class="sdx-talent-transfer" data-tooltip="Transfer to Player" title="Transfer to Player">
+					<i class="fas fa-share"></i>
+				</button>
+				<button type="button" class="sdx-talent-delete" data-tooltip="Delete" title="Delete">
+					<i class="fas fa-trash"></i>
+				</button>
+			</div>
+		`);
+		
+		// Add controls to the item
+		$item.append($controls);
+		
+		// Edit button
+		$controls.find('.sdx-talent-edit').on('click', async (e) => {
+			e.preventDefault();
+			e.stopPropagation();
+			const item = actor.items.get(itemId);
+			if (item) item.sheet.render(true);
+		});
+		
+		// Transfer button
+		$controls.find('.sdx-talent-transfer').on('click', async (e) => {
+			e.preventDefault();
+			e.stopPropagation();
+			const item = actor.items.get(itemId);
+			if (item && game.user.isGM) {
+				// Show player selection dialog
+				const players = game.users.filter(u => !u.isGM && u.active);
+				if (players.length === 0) {
+					ui.notifications.warn("No active players to transfer to");
+					return;
+				}
+				
+				const playerOptions = players.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
+				const content = `
+					<form>
+						<div class="form-group">
+							<label>Select Player:</label>
+							<select name="playerId">${playerOptions}</select>
+						</div>
+					</form>
+				`;
+				
+				new Dialog({
+					title: "Transfer Item to Player",
+					content: content,
+					buttons: {
+						transfer: {
+							icon: '<i class="fas fa-share"></i>',
+							label: "Transfer",
+							callback: async (html) => {
+								const playerId = html.find('[name="playerId"]').val();
+								const player = game.users.get(playerId);
+								const targetActor = player?.character;
+								
+								if (!targetActor) {
+									ui.notifications.error("Selected player has no assigned character");
+									return;
+								}
+								
+								const itemData = item.toObject();
+								await targetActor.createEmbeddedDocuments("Item", [itemData]);
+								await item.delete();
+								ui.notifications.info(`Transferred ${item.name} to ${targetActor.name}`);
+							}
+						},
+						cancel: {
+							icon: '<i class="fas fa-times"></i>',
+							label: "Cancel"
+						}
+					},
+					default: "transfer"
+				}).render(true);
+			}
+		});
+		
+		// Delete button
+		$controls.find('.sdx-talent-delete').on('click', async (e) => {
+			e.preventDefault();
+			e.stopPropagation();
+			const item = actor.items.get(itemId);
+			if (item) {
+				const confirm = await Dialog.confirm({
+					title: "Delete Talent",
+					content: `<p>Are you sure you want to delete <strong>${item.name}</strong>?</p>`,
+					yes: () => true,
+					no: () => false
+				});
+				
+				if (confirm) {
+					await item.delete();
+					ui.notifications.info(`Deleted ${item.name}`);
+				}
+			}
+		});
+	});
+}
+
+/**
+ * Enhance the Talents tab with improved styling and organization
+ */
+function enhanceTalentsTab(app, html, actor) {
+	// Check if enhanced details is enabled (use same setting)
+	try {
+		if (!game.settings.get(MODULE_ID, "enableEnhancedDetails")) return;
+	} catch {
+		return;
+	}
+
+	if (actor.type !== "Player") return;
+
+	const $talentsTab = html.find('.tab[data-tab="tab-talents"]');
+	if (!$talentsTab.length) return;
+
+	// Add enhanced class to the talents tab
+	$talentsTab.addClass('sdx-enhanced-talents');
+
+	// Function to extend header background into Talents tab
+	const extendHeaderBg = () => {
+		const $form = html.closest('form');
+		const $bgExtension = $form.find('.sdx-header-bg-extension');
+		
+		if ($bgExtension.length) {
+			// Remove any existing talents extension
+			$talentsTab.find('.sdx-talents-bg-extension').remove();
+			
+			// Clone the background extension for the talents tab
+			const $talentsBg = $bgExtension.clone();
+			$talentsBg.removeClass('sdx-header-bg-extension').addClass('sdx-talents-bg-extension');
+			$talentsBg.css('height', '150px');
+			
+			// Add to the talents tab
+			$talentsTab.append($talentsBg);
+		}
+	};
+	
+	// Try immediately and after a delay (in case header background is set up after this function)
+	extendHeaderBg();
+	setTimeout(extendHeaderBg, 100);
+	setTimeout(extendHeaderBg, 300);
+	
+	// Add inline control buttons to talent items
+	addInlineTalentControls($talentsTab, actor);
+}
+
+// ============================================
+// ENHANCED SPELLS TAB
+// ============================================
+
+/**
+ * Enhance the Spells tab with improved styling and organization
+ */
+function enhanceSpellsTab(app, html, actor) {
+	// Check if enhanced details is enabled (use same setting)
+	try {
+		if (!game.settings.get(MODULE_ID, "enableEnhancedDetails")) return;
+	} catch {
+		return;
+	}
+
+	if (actor.type !== "Player") return;
+
+	const $spellsTab = html.find('.tab[data-tab="tab-spells"]');
+	if (!$spellsTab.length) return;
+
+	// Add enhanced class to the spells tab
+	$spellsTab.addClass('sdx-enhanced-spells');
+
+	// Function to extend header background into Spells tab
+	const extendHeaderBg = () => {
+		const $form = html.closest('form');
+		const $bgExtension = $form.find('.sdx-header-bg-extension');
+		
+		if ($bgExtension.length) {
+			// Remove any existing spells extension
+			$spellsTab.find('.sdx-spells-bg-extension').remove();
+			
+			// Clone the background extension for the spells tab
+			const $spellsBg = $bgExtension.clone();
+			$spellsBg.removeClass('sdx-header-bg-extension').addClass('sdx-spells-bg-extension');
+			$spellsBg.css('height', '150px');
+			
+			// Add to the spells tab
+			$spellsTab.append($spellsBg);
+		}
+	};
+	
+	// Try immediately and after a delay (in case header background is set up after this function)
+	extendHeaderBg();
+	setTimeout(extendHeaderBg, 100);
+	setTimeout(extendHeaderBg, 300);
+}
+
+// ============================================
+// ENHANCED EFFECTS TAB
+// ============================================
+
+/**
+ * Enhance the Effects tab with improved styling and organization
+ */
+function enhanceEffectsTab(app, html, actor) {
+	// Check if enhanced details is enabled (use same setting)
+	try {
+		if (!game.settings.get(MODULE_ID, "enableEnhancedDetails")) return;
+	} catch {
+		return;
+	}
+
+	if (actor.type !== "Player") return;
+
+	const $effectsTab = html.find('.tab[data-tab="tab-effects"]');
+	if (!$effectsTab.length) return;
+
+	// Add enhanced class to the effects tab
+	$effectsTab.addClass('sdx-enhanced-effects');
+
+	// Function to extend header background into Effects tab
+	const extendHeaderBg = () => {
+		const $form = html.closest('form');
+		const $bgExtension = $form.find('.sdx-header-bg-extension');
+		
+		if ($bgExtension.length) {
+			// Remove any existing effects extension
+			$effectsTab.find('.sdx-effects-bg-extension').remove();
+			
+			// Clone the background extension for the effects tab
+			const $effectsBg = $bgExtension.clone();
+			$effectsBg.removeClass('sdx-header-bg-extension').addClass('sdx-effects-bg-extension');
+			$effectsBg.css('height', '150px');
+			
+			// Add to the effects tab
+			$effectsTab.append($effectsBg);
+		}
+	};
+	
+	// Try immediately and after a delay (in case header background is set up after this function)
+	extendHeaderBg();
+	setTimeout(extendHeaderBg, 100);
+	setTimeout(extendHeaderBg, 300);
+}
+
+// ============================================
+// ENHANCED INVENTORY TAB
+// ============================================
+
+/**
+ * Enhance the Inventory tab with improved styling and organization
+ */
+function enhanceInventoryTab(app, html, actor) {
+	// Check if enhanced details is enabled (use same setting)
+	try {
+		if (!game.settings.get(MODULE_ID, "enableEnhancedDetails")) return;
+	} catch {
+		return;
+	}
+
+	if (actor.type !== "Player") return;
+
+	const $inventoryTab = html.find('.tab[data-tab="tab-inventory"]');
+	if (!$inventoryTab.length) return;
+
+	// Add enhanced class to the inventory tab
+	$inventoryTab.addClass('sdx-enhanced-inventory');
+
+	// Function to extend header background into Inventory tab
+	const extendHeaderBg = () => {
+		const $form = html.closest('form');
+		const $bgExtension = $form.find('.sdx-header-bg-extension');
+		
+		if ($bgExtension.length) {
+			// Remove any existing inventory extension
+			$inventoryTab.find('.sdx-inventory-bg-extension').remove();
+			
+			// Clone the background extension for the inventory tab
+			const $inventoryBg = $bgExtension.clone();
+			$inventoryBg.removeClass('sdx-header-bg-extension').addClass('sdx-inventory-bg-extension');
+			$inventoryBg.css('height', '150px');
+			
+			// Add to the inventory tab
+			$inventoryTab.append($inventoryBg);
+		}
+	};
+	
+	// Try immediately and after a delay (in case header background is set up after this function)
+	extendHeaderBg();
+	setTimeout(extendHeaderBg, 100);
+	setTimeout(extendHeaderBg, 300);
 }
 
 // ============================================
@@ -4358,8 +4838,9 @@ function injectHeaderCustomization(app, html, actor) {
 	$header.find('.sdx-header-settings-btn').remove();
 	$header.find('.sdx-header-settings-menu').remove();
 	
-	// Apply any existing custom background
+	// Apply any existing custom backgrounds
 	applyHeaderBackground(html, actor);
+	applySheetBackground(html, actor);
 	
 	// Check if user can edit this actor (GM or owner)
 	const canEdit = game.user.isGM || actor.isOwner;
@@ -4377,18 +4858,32 @@ function injectHeaderCustomization(app, html, actor) {
 		</button>
 	`);
 	
-	// Create the settings menu
+	// Create the settings menu with separate header and sheet background options
 	const $settingsMenu = $(`
 		<div class="sdx-header-settings-menu">
-			<button type="button" class="sdx-header-select-image">
-				<i class="fas fa-image"></i>
-				<span>${game.i18n.localize("SHADOWDARK_EXTRAS.header.select_image") || "Select Image"}</span>
-			</button>
+			<div class="sdx-settings-section">
+				<div class="sdx-settings-label">Header Background</div>
+				<button type="button" class="sdx-header-select-image">
+					<i class="fas fa-image"></i>
+					<span>${game.i18n.localize("SHADOWDARK_EXTRAS.header.select_image") || "Select Image"}</span>
+				</button>
+				<button type="button" class="sdx-header-remove-image danger">
+					<i class="fas fa-trash"></i>
+					<span>${game.i18n.localize("SHADOWDARK_EXTRAS.header.remove_image") || "Remove"}</span>
+				</button>
+			</div>
 			<hr>
-			<button type="button" class="sdx-header-remove-image danger">
-				<i class="fas fa-trash"></i>
-				<span>${game.i18n.localize("SHADOWDARK_EXTRAS.header.remove_image") || "Remove Image"}</span>
-			</button>
+			<div class="sdx-settings-section">
+				<div class="sdx-settings-label">Sheet Background</div>
+				<button type="button" class="sdx-sheet-select-image">
+					<i class="fas fa-image"></i>
+					<span>${game.i18n.localize("SHADOWDARK_EXTRAS.header.select_image") || "Select Image"}</span>
+				</button>
+				<button type="button" class="sdx-sheet-remove-image danger">
+					<i class="fas fa-trash"></i>
+					<span>${game.i18n.localize("SHADOWDARK_EXTRAS.header.remove_image") || "Remove"}</span>
+				</button>
+			</div>
 		</div>
 	`);
 	
@@ -4455,12 +4950,51 @@ function injectHeaderCustomization(app, html, actor) {
 		// Force sheet re-render
 		app.render(false);
 	});
+	
+	// Handle select sheet background button
+	$settingsMenu.find('.sdx-sheet-select-image').on('click', async (event) => {
+		event.preventDefault();
+		event.stopPropagation();
+		
+		// Close the menu
+		$settingsBtn.removeClass('active');
+		$settingsMenu.removeClass('visible');
+		
+		// Open file picker - use imagevideo to allow webm files
+		const currentImage = actor.getFlag(MODULE_ID, "sheetBackground") || "";
+		const fp = new FilePicker({
+			type: "imagevideo",
+			current: currentImage,
+			callback: async (path) => {
+				await actor.setFlag(MODULE_ID, "sheetBackground", path);
+				// Force sheet re-render to apply the background properly
+				app.render(false);
+			}
+		});
+		fp.render(true);
+	});
+	
+	// Handle remove sheet background button
+	$settingsMenu.find('.sdx-sheet-remove-image').on('click', async (event) => {
+		event.preventDefault();
+		event.stopPropagation();
+		
+		// Close the menu
+		$settingsBtn.removeClass('active');
+		$settingsMenu.removeClass('visible');
+		
+		// Remove the custom sheet background
+		await actor.unsetFlag(MODULE_ID, "sheetBackground");
+		
+		// Force sheet re-render
+		app.render(false);
+	});
 }
 
 /**
  * Apply the custom header background if one is set
  * Supports both images and videos (mp4, webm)
- * Extends background to cover both header and navigation tabs
+ * Extends background to cover header and navigation tabs only
  */
 function applyHeaderBackground(html, actor) {
 	const headerBg = actor.getFlag(MODULE_ID, "headerBackground");
@@ -4525,6 +5059,101 @@ function applyHeaderBackground(html, actor) {
 	updateBgHeight();
 	setTimeout(updateBgHeight, 100);
 	setTimeout(updateBgHeight, 300);
+}
+
+/**
+ * Apply the custom sheet background to enhanced tabs if one is set
+ * Supports both images and videos (mp4, webm)
+ * Applied independently of header background
+ */
+function applySheetBackground(html, actor) {
+	const sheetBg = actor.getFlag(MODULE_ID, "sheetBackground");
+	
+	// Find the form - html might BE the form or contain it
+	let $form = html.is('form') ? html : html.find('form').first();
+	if (!$form.length) $form = html.closest('form');
+	if (!$form.length) return;
+	
+	// Check if it's a video file
+	const isVideo = sheetBg ? /\.(mp4|webm|ogg)$/i.test(sheetBg) : false;
+	
+	// Function to create background element
+	const createBgElement = (className) => {
+		if (!sheetBg) return null;
+		
+		const $bgExtension = $(`<div class="${className}"></div>`);
+		
+		if (isVideo) {
+			const videoType = sheetBg.split('.').pop().toLowerCase();
+			const $video = $(`
+				<video autoplay loop muted playsinline>
+					<source src="${sheetBg}" type="video/${videoType}">
+				</video>
+			`);
+			$bgExtension.append($video);
+		} else {
+			$bgExtension.css('background-image', `url("${sheetBg}")`);
+		}
+		
+		$bgExtension.css('height', '250px');
+		return $bgExtension;
+	};
+	
+	// Function to update all tab backgrounds
+	const updateTabBackgrounds = () => {
+		// Update Details tab
+		const $detailsTab = $form.find('.tab[data-tab="tab-details"].sdx-enhanced-details');
+		if ($detailsTab.length) {
+			$detailsTab.find('.sdx-details-bg-extension').remove();
+			const $detailsBg = createBgElement('sdx-details-bg-extension');
+			if ($detailsBg) $detailsTab.append($detailsBg);
+		}
+		
+		// Update Abilities tab
+		const $abilitiesTab = $form.find('.tab[data-tab="tab-abilities"].sdx-enhanced-abilities');
+		if ($abilitiesTab.length) {
+			$abilitiesTab.find('.sdx-abilities-bg-extension').remove();
+			const $abilitiesBg = createBgElement('sdx-abilities-bg-extension');
+			if ($abilitiesBg) $abilitiesTab.append($abilitiesBg);
+		}
+		
+		// Update Talents tab
+		const $talentsTab = $form.find('.tab[data-tab="tab-talents"].sdx-enhanced-talents');
+		if ($talentsTab.length) {
+			$talentsTab.find('.sdx-talents-bg-extension').remove();
+			const $talentsBg = createBgElement('sdx-talents-bg-extension');
+			if ($talentsBg) $talentsTab.append($talentsBg);
+		}
+		
+		// Update Spells tab
+		const $spellsTab = $form.find('.tab[data-tab="tab-spells"].sdx-enhanced-spells');
+		if ($spellsTab.length) {
+			$spellsTab.find('.sdx-spells-bg-extension').remove();
+			const $spellsBg = createBgElement('sdx-spells-bg-extension');
+			if ($spellsBg) $spellsTab.append($spellsBg);
+		}
+		
+		// Update Inventory tab
+		const $inventoryTab = $form.find('.tab[data-tab="tab-inventory"].sdx-enhanced-inventory');
+		if ($inventoryTab.length) {
+			$inventoryTab.find('.sdx-inventory-bg-extension').remove();
+			const $inventoryBg = createBgElement('sdx-inventory-bg-extension');
+			if ($inventoryBg) $inventoryTab.append($inventoryBg);
+		}
+		
+		// Update Effects tab
+		const $effectsTab = $form.find('.tab[data-tab="tab-effects"].sdx-enhanced-effects');
+		if ($effectsTab.length) {
+			$effectsTab.find('.sdx-effects-bg-extension').remove();
+			const $effectsBg = createBgElement('sdx-effects-bg-extension');
+			if ($effectsBg) $effectsTab.append($effectsBg);
+		}
+	};
+	
+	// Call immediately and with delays to ensure backgrounds are applied
+	updateTabBackgrounds();
+	setTimeout(updateTabBackgrounds, 150);
+	setTimeout(updateTabBackgrounds, 350);
 }
 
 /**
@@ -5563,6 +6192,12 @@ Hooks.on("renderPlayerSheetSD", async (app, html, data) => {
 	if (app.actor?.type !== "Player") return;
 	
 	await injectEnhancedHeader(app, html, app.actor);
+	enhanceDetailsTab(app, html, app.actor);
+	enhanceAbilitiesTab(app, html, app.actor);
+	enhanceSpellsTab(app, html, app.actor);
+	enhanceTalentsTab(app, html, app.actor);
+	enhanceInventoryTab(app, html, app.actor);
+	enhanceEffectsTab(app, html, app.actor);
 	injectRenownSection(html, app.actor);
 	attachContainerContentsToActorSheet(app, html);
 	addUnidentifiedIndicatorForGM(app, html);

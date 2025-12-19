@@ -2642,6 +2642,1277 @@ input[data-sdx-free-carry]:disabled {
 }
 
 /* ============================================
+   ENHANCED DETAILS TAB
+   ============================================ */
+
+/* Remove margins from content body when enhanced details is active */
+.shadowdark.sheet .tab-details.sdx-enhanced-details ~ .SD-content-body,
+.shadowdark.sheet:has(.tab-details.sdx-enhanced-details) .SD-content-body {
+    margin: 0px !important;
+    /* When the player sheet details enhancement is enabled we remove
+       the default content padding so the enhanced header and details
+       can extend into the content area. */
+    padding: 0px 0px 0px 0px !important;
+    overflow: auto;
+}
+.shadowdark.sheet .SD-content-body {
+    padding: 10px 10px 0px 10px !important;
+    overflow: auto;
+}
+
+.shadowdark.sheet .tab-details.sdx-enhanced-details {
+    background: linear-gradient(180deg, #000000 0%, #2f2b2b 100%) !important;
+    padding: 16px;
+    min-height: 100%;
+    position: relative;
+}
+
+/* Extended header background into details tab with upward fade at bottom */
+.shadowdark.sheet .tab-details.sdx-enhanced-details .sdx-details-bg-extension {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 250px;
+    z-index: 0;
+    pointer-events: none;
+    background-size: cover;
+    background-position: center bottom;
+    background-repeat: no-repeat;
+    overflow: hidden;
+    -webkit-mask-image: linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0.8) 30%, rgba(0,0,0,0.4) 60%, rgba(0,0,0,0) 100%);
+    mask-image: linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0.8) 30%, rgba(0,0,0,0.4) 60%, rgba(0,0,0,0) 100%);
+}
+
+.shadowdark.sheet .tab-details.sdx-enhanced-details .sdx-details-bg-extension video {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center bottom;
+}
+
+/* Ensure content is above the background extension */
+.shadowdark.sheet .tab-details.sdx-enhanced-details > *:not(.sdx-details-bg-extension) {
+    position: relative;
+    z-index: 1;
+}
+
+.shadowdark.sheet .tab-details.sdx-enhanced-details .grid-1-columns,
+.shadowdark.sheet .tab-details.sdx-enhanced-details .grid-2-columns,
+.shadowdark.sheet .tab-details.sdx-enhanced-details .grid-3-columns {
+    gap: 12px;
+}
+
+.shadowdark.sheet .tab-details.sdx-enhanced-details .SD-box {
+    background: rgba(0, 0, 0, 0.4) !important;
+border: 2px solid rgba(255, 255, 255, 0.4);
+    border-radius: 0px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.shadowdark.sheet .tab-details.sdx-enhanced-details .SD-box:hover {
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.shadowdark.sheet .tab-details.sdx-enhanced-details .SD-box .header {
+    background: #000000 !important;
+    color: rgba(255, 255, 255, 0.95) !important;
+    text-transform: uppercase;
+    font-size: 14px;
+    letter-spacing: 0.5px;
+    border-radius: 0px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+/* Hide only empty spans (background image spans), keep edit buttons visible */
+.shadowdark.sheet .tab-details.sdx-enhanced-details .SD-box .header span:empty {
+    display: none !important;
+}
+
+/* Remove background image from all spans in header */
+.shadowdark.sheet .tab-details.sdx-enhanced-details .SD-box .header span {
+    background-image: none !important;
+    background: none !important;
+}
+
+/* Make edit buttons visible and styled */
+.shadowdark.sheet .tab-details.sdx-enhanced-details .SD-box .header span .edit-button {
+    color: rgba(255, 255, 255, 0.7) !important;
+    font-size: 14px;
+}
+
+.shadowdark.sheet .tab-details.sdx-enhanced-details .SD-box .header span .edit-button:hover {
+    color: rgba(255, 255, 255, 1) !important;
+}
+
+/* New class for white category headers */
+.shadowdark.sheet .tab-details.sdx-enhanced-details .SD-box .header label,
+.shadowdark.sheet .tab-details.sdx-enhanced-details .sdx-header-label {
+    color: rgba(255, 255, 255, 0.95) !important;
+    font-weight: 700;
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
+    line-height: 1.4;
+    padding: 0;
+    margin: 0;
+    margin-left: 9px!important;
+}
+
+.shadowdark.sheet .tab-details.sdx-enhanced-details .SD-box .content {
+    padding: 0px 10px;
+    color: rgba(255, 255, 255, 0.9) !important;
+    font-size: 15px;
+    margin-top: 17px;
+    min-height: 15px;
+    margin-bottom: 9px;
+}
+
+/* Adjust grid layout for Details tab */
+.shadowdark.sheet.player .tab-details.sdx-enhanced-details .background-grid-a {
+    grid-template-columns: 2.2fr 2.9fr 2.5fr;
+}
+
+/* Make all text content white */
+.shadowdark.sheet .tab-details.sdx-enhanced-details .SD-box .content a,
+.shadowdark.sheet .tab-details.sdx-enhanced-details .SD-box .content .content-link {
+    color: rgba(255, 255, 255, 0.9) !important;
+}
+
+.shadowdark.sheet .tab-details.sdx-enhanced-details .SD-box .content a:hover,
+.shadowdark.sheet .tab-details.sdx-enhanced-details .SD-box .content .content-link:hover {
+    color: rgba(255, 255, 255, 1) !important;
+    text-decoration: underline;
+}
+
+.shadowdark.sheet .tab-details.sdx-enhanced-details .SD-box .content .value-grid {
+    color: rgba(255, 255, 255, 0.9) !important;
+}
+
+.shadowdark.sheet .tab-details.sdx-enhanced-details .SD-box .content input,
+.shadowdark.sheet .tab-details.sdx-enhanced-details .SD-box .content select {
+    background: rgba(50, 50, 48, 0.8);
+    border: 1px solid rgba(80, 80, 75, 0.5);
+    border-radius: 0px;
+    padding: 6px 10px;
+    color: rgba(255, 255, 255, 0.9) !important;
+    font-family: 'Modesto Condensed', 'Palatino Linotype', serif;
+}
+
+.shadowdark.sheet .tab-details.sdx-enhanced-details .SD-box .content select option {
+    background: rgba(30, 30, 28, 1);
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.shadowdark.sheet .tab-details.sdx-enhanced-details .SD-box .content input:focus,
+.shadowdark.sheet .tab-details.sdx-enhanced-details .SD-box .content select:focus {
+    background: rgba(60, 60, 58, 0.9);
+    border-color: rgba(120, 120, 110, 0.8);
+    box-shadow: 0 0 8px rgba(120, 120, 110, 0.4);
+    outline: none;
+}
+
+/* XP box styling */
+.shadowdark.sheet .tab-details.sdx-enhanced-details .SD-box .xp-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.shadowdark.sheet .tab-details.sdx-enhanced-details .SD-box .xp-container input {
+    text-align: center;
+    font-weight: 600;
+}
+
+/* Languages section */
+.shadowdark.sheet .tab-details.sdx-enhanced-details .SD-box.languages-box .content {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 12px 14px;
+}
+
+.shadowdark.sheet .tab-details.sdx-enhanced-details .SD-box.languages-box .SD-pill {
+    background: linear-gradient(135deg, rgba(80, 60, 100, 0.6) 0%, rgba(60, 45, 80, 0.5) 100%);
+    border: 1px solid rgba(120, 100, 140, 0.6);
+    padding: 6px 12px;
+    border-radius: 0px;
+    font-size: 14px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.95) !important;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+    transition: all 0.2s ease;
+}
+
+/* Tags in languages section */
+.shadowdark.sheet .tab-details.sdx-enhanced-details .SD-box .content .tags .tag {
+    background: linear-gradient(135deg, rgba(80, 60, 100, 0.6) 0%, rgba(60, 45, 80, 0.5) 100%) !important;
+    border: 1px solid rgba(120, 100, 140, 0.6) !important;
+    border-radius: 0px !important;
+    color: rgba(255, 255, 255, 0.95) !important;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+}
+
+.shadowdark.sheet .tab-details.sdx-enhanced-details .SD-box.languages-box .SD-pill:hover {
+    background: linear-gradient(135deg, rgba(100, 80, 120, 0.7) 0%, rgba(80, 65, 100, 0.6) 100%);
+    border-color: rgba(140, 120, 160, 0.8);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+}
+
+/* Boons section */
+.shadowdark.sheet .tab-details.sdx-enhanced-details .SD-box.boons-box .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* Style the boons wrapper as a box */
+.shadowdark.sheet .tab-details.sdx-enhanced-details > div > div:has(.SD-banner) {
+    background: linear-gradient(135deg, rgba(40, 40, 38, 0.9) 0%, rgba(30, 30, 28, 0.9) 100%);
+    border: 2px solid rgba(80, 80, 75, 0.6);
+    border-radius: 0px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    margin-top: 12px;
+}
+
+/* BOONS banner as header */
+.shadowdark.sheet .tab-details.sdx-enhanced-details .SD-banner {
+color: rgba(255, 255, 255, 0.95) !important;
+    text-transform: uppercase;
+    font-size: 18px;
+    letter-spacing: 0.5px;
+    /* border-radius: 0px; */
+    display: flex
+;
+    align-items: center;
+    justify-content: center;
+    font-family: "Old Newspaper Font";
+    padding-left: 9px;
+    /* border: white; */
+    background: rgba(0, 0, 0, 0.9) !important;
+    border: 2px solid rgba(255, 255, 255, 0.4);
+    border-radius: 0px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.shadowdark.sheet .tab-details.sdx-enhanced-details .boons-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.shadowdark.sheet .tab-details.sdx-enhanced-details .boon-item {
+    background: rgba(50, 50, 48, 0.6);
+    border: 1px solid rgba(80, 80, 75, 0.5);
+    border-radius: 0px;
+    padding: 10px;
+    transition: all 0.2s ease;
+    color: rgba(255, 255, 255, 0.85);
+}
+
+.shadowdark.sheet .tab-details.sdx-enhanced-details .boon-item:hover {
+    background: rgba(60, 60, 58, 0.7);
+    border-color: rgba(100, 100, 95, 0.7);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+}
+
+/* BOONS header styling */
+.shadowdark.sheet .tab-details.sdx-enhanced-details .SD-banner,
+.shadowdark.sheet .tab-details.sdx-enhanced-details .boons-header,
+.shadowdark.sheet .tab-details.sdx-enhanced-details h2,
+.shadowdark.sheet .tab-details.sdx-enhanced-details h3 {
+    color: rgba(255, 255, 255, 0.95) !important;
+    font-weight: 700;
+    font-size: 15px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
+    background: black;
+    font-family: "Old Newspaper Font";
+    padding-top: 2px;
+    line-height: 1.4;
+}
+
+/* Boons list styling */
+.shadowdark.sheet .tab-details.sdx-enhanced-details .SD-list {
+    background: transparent !important;
+    font-family: 'Modesto Condensed', 'Palatino Linotype', serif;
+    font-size: 16px;
+}
+
+.shadowdark.sheet .tab-details.sdx-enhanced-details .SD-list .header,
+.shadowdark.sheet .tab-details.sdx-enhanced-details .SD-list .item {
+    color: rgba(255, 255, 255, 0.9) !important;
+    font-family: 'Modesto Condensed', 'Palatino Linotype', serif;
+    font-size: 16px;
+}
+
+.shadowdark.sheet .tab-details.sdx-enhanced-details .SD-list .header .item-name,
+.shadowdark.sheet .tab-details.sdx-enhanced-details .SD-list .item .item-name {
+    color: rgba(255, 255, 255, 0.9) !important;
+    font-size: 16px;
+}
+
+.shadowdark.sheet .tab-details.sdx-enhanced-details .SD-list .item-name a {
+    color: rgba(255, 255, 255, 0.9) !important;
+    font-size: 16px;
+}
+
+.shadowdark.sheet .tab-details.sdx-enhanced-details .SD-list .flex-100-px {
+    color: rgba(255, 255, 255, 0.9) !important;
+    font-size: 16px;
+}
+
+/* ============================================
+   ENHANCED ABILITIES TAB
+   ============================================ */
+
+/* Remove margins from content body when enhanced abilities is active */
+.shadowdark.sheet .tab-abilities.sdx-enhanced-abilities ~ .SD-content-body,
+.shadowdark.sheet:has(.tab-abilities.sdx-enhanced-abilities) .SD-content-body {
+    margin: 0px !important;
+}
+
+.shadowdark.sheet .tab-abilities.sdx-enhanced-abilities {
+    background: linear-gradient(180deg, #000000 0%, #2f2b2b 100%) !important;
+    padding: 16px;
+    min-height: 100%;
+    position: relative;
+}
+
+/* Extended header background into abilities tab with upward fade at bottom */
+.shadowdark.sheet .tab-abilities.sdx-enhanced-abilities .sdx-abilities-bg-extension {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 250px;
+    z-index: 0;
+    pointer-events: none;
+    background-size: cover;
+    background-position: center bottom;
+    background-repeat: no-repeat;
+    overflow: hidden;
+    -webkit-mask-image: linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0.8) 30%, rgba(0,0,0,0.4) 60%, rgba(0,0,0,0) 100%);
+    mask-image: linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0.8) 30%, rgba(0,0,0,0.4) 60%, rgba(0,0,0,0) 100%);
+}
+
+.shadowdark.sheet .tab-abilities.sdx-enhanced-abilities .sdx-abilities-bg-extension video {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center bottom;
+}
+
+/* Ensure content is above the background extension */
+.shadowdark.sheet .tab-abilities.sdx-enhanced-abilities > *:not(.sdx-abilities-bg-extension) {
+    position: relative;
+    z-index: 1;
+}
+
+/* Boxes styling */
+.shadowdark.sheet .tab-abilities.sdx-enhanced-abilities .SD-box {
+    background: rgba(0, 0, 0, 0.4) !important;
+border: 2px solid rgba(255, 255, 255, 0.4);
+    border-radius: 0px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.shadowdark.sheet .tab-abilities.sdx-enhanced-abilities .SD-box:hover {
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Box headers - full black with white text */
+.shadowdark.sheet .tab-abilities.sdx-enhanced-abilities .SD-box .header,
+.shadowdark.sheet .tab-abilities.sdx-enhanced-abilities .SD-banner {
+    background: #000000 !important;
+    color: rgba(255, 255, 255, 0.95) !important;
+    text-transform: uppercase;
+    font-size: 14px;
+    letter-spacing: 0.5px;
+    border-radius: 0px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+/* Remove background image from all spans in header */
+.shadowdark.sheet .tab-abilities.sdx-enhanced-abilities .SD-box .header span {
+    background-image: none !important;
+}
+
+/* Hide background images from empty header spans but keep edit buttons visible */
+.shadowdark.sheet .tab-abilities.sdx-enhanced-abilities .SD-box .header span:empty {
+    display: none;
+}
+
+.shadowdark.sheet .tab-abilities.sdx-enhanced-abilities .SD-box .header span .edit-button {
+    display: inline-block;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+/* Remove background images from all spans in content */
+.shadowdark.sheet .tab-abilities.sdx-enhanced-abilities .SD-box .content span {
+    background-image: none !important;
+}
+
+/* Box content with white text */
+.shadowdark.sheet .tab-abilities.sdx-enhanced-abilities .SD-box .content {
+    color: rgba(255, 255, 255, 0.9);
+    padding: 0px 0px !important;
+    margin-top: 0px;
+    margin-bottom: 1px;
+    margin-left: 9px;
+}
+
+/* Ensure all text elements are white */
+.shadowdark.sheet .tab-abilities.sdx-enhanced-abilities .SD-box .content *,
+.shadowdark.sheet .tab-abilities.sdx-enhanced-abilities .SD-box .content a,
+.shadowdark.sheet .tab-abilities.sdx-enhanced-abilities .SD-box .content label,
+.shadowdark.sheet .tab-abilities.sdx-enhanced-abilities .SD-box .content span,
+.shadowdark.sheet .tab-abilities.sdx-enhanced-abilities .SD-box .content div {
+    color: rgba(255, 255, 255, 0.9) !important;
+}
+
+/* Input and select styling */
+.shadowdark.sheet .tab-abilities.sdx-enhanced-abilities input,
+.shadowdark.sheet .tab-abilities.sdx-enhanced-abilities select,
+.shadowdark.sheet .tab-abilities.sdx-enhanced-abilities textarea {
+    color: rgba(255, 255, 255, 0.9) !important;
+    background: rgba(0, 0, 0, 0.3);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Special abilities table styling */
+.shadowdark.sheet .tab-abilities.sdx-enhanced-abilities table {
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.shadowdark.sheet .tab-abilities.sdx-enhanced-abilities table th {
+    background: rgba(0, 0, 0, 0.5);
+    color: rgba(255, 255, 255, 0.95);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.shadowdark.sheet .tab-abilities.sdx-enhanced-abilities table td {
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Item links and ability names */
+.shadowdark.sheet .tab-abilities.sdx-enhanced-abilities .item-name a,
+.shadowdark.sheet .tab-abilities.sdx-enhanced-abilities .ability-name {
+    color: rgba(255, 255, 255, 0.95) !important;
+}
+
+/* Icons and buttons */
+.shadowdark.sheet .tab-abilities.sdx-enhanced-abilities .item-control,
+.shadowdark.sheet .tab-abilities.sdx-enhanced-abilities button {
+    color: rgba(255, 255, 255, 0.9);
+}
+
+/* Context menu fix - ensure readable text color */
+.shadowdark.sheet .tab-abilities.sdx-enhanced-abilities .context-menu,
+.shadowdark.sheet .tab-abilities.sdx-enhanced-abilities #context-menu {
+    color: #000000 !important;
+}
+
+.shadowdark.sheet .tab-abilities.sdx-enhanced-abilities .context-menu *,
+.shadowdark.sheet .tab-abilities.sdx-enhanced-abilities #context-menu * {
+    color: #000000 !important;
+}
+
+/* ============================================
+   ENHANCED TALENTS TAB
+   ============================================ */
+
+/* Remove margins from content body when enhanced talents is active */
+.shadowdark.sheet .tab-talents.sdx-enhanced-talents ~ .SD-content-body,
+.shadowdark.sheet:has(.tab-talents.sdx-enhanced-talents) .SD-content-body {
+    margin: 0px !important;
+}
+
+.shadowdark.sheet .tab-talents.sdx-enhanced-talents {
+    background: linear-gradient(180deg, #000000 0%, #2f2b2b 100%) !important;
+    padding: 16px;
+    min-height: 100%;
+    position: relative;
+}
+
+/* Extended header background into talents tab with upward fade at bottom */
+.shadowdark.sheet .tab-talents.sdx-enhanced-talents .sdx-talents-bg-extension {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 250px;
+    z-index: 0;
+    pointer-events: none;
+    background-size: cover;
+    background-position: center bottom;
+    background-repeat: no-repeat;
+    overflow: hidden;
+    -webkit-mask-image: linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0.8) 30%, rgba(0,0,0,0.4) 60%, rgba(0,0,0,0) 100%);
+    mask-image: linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0.8) 30%, rgba(0,0,0,0.4) 60%, rgba(0,0,0,0) 100%);
+}
+
+.shadowdark.sheet .tab-talents.sdx-enhanced-talents .sdx-talents-bg-extension video {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center bottom;
+}
+
+/* Ensure content is above the background extension */
+.shadowdark.sheet .tab-talents.sdx-enhanced-talents > *:not(.sdx-talents-bg-extension) {
+    position: relative;
+    z-index: 1;
+}
+
+/* Boxes styling */
+.shadowdark.sheet .tab-talents.sdx-enhanced-talents .SD-box {
+    background: rgba(0, 0, 0, 0.4) !important;
+border: 2px solid rgba(255, 255, 255, 0.4);
+    border-radius: 0px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.shadowdark.sheet .tab-talents.sdx-enhanced-talents .SD-box:hover {
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Box headers - full black with white text */
+.shadowdark.sheet .tab-talents.sdx-enhanced-talents .SD-box .header,
+.shadowdark.sheet .tab-talents.sdx-enhanced-talents .SD-banner {
+color: rgba(255, 255, 255, 0.95) !important;
+    text-transform: uppercase;
+    font-size: 18px;
+    letter-spacing: 0.5px;
+    /* border-radius: 0px; */
+    display: flex
+;
+    align-items: center;
+    justify-content: center;
+    font-family: "Old Newspaper Font";
+    padding-left: 9px;
+    /* border: white; */
+    background: rgba(0, 0, 0, 0.9) !important;
+    border: 2px solid rgba(255, 255, 255, 0.4);
+    border-radius: 0px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* Remove background image from all spans in header */
+.shadowdark.sheet .tab-talents.sdx-enhanced-talents .SD-box .header span {
+    background-image: none !important;
+}
+
+/* Hide background images from empty header spans but keep edit buttons visible */
+.shadowdark.sheet .tab-talents.sdx-enhanced-talents .SD-box .header span:empty {
+    display: none;
+}
+
+.shadowdark.sheet .tab-talents.sdx-enhanced-talents .SD-box .header span .edit-button {
+    display: inline-block;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+/* Remove background images from all spans in content */
+.shadowdark.sheet .tab-talents.sdx-enhanced-talents .SD-box .content span {
+    background-image: none !important;
+}
+
+/* Box content with white text */
+.shadowdark.sheet .tab-talents.sdx-enhanced-talents .SD-box .content {
+    color: rgba(255, 255, 255, 0.9);
+    padding: 0px 0px !important;
+    margin-top: 0px;
+    margin-bottom: 1px;
+    margin-left: 9px;
+}
+
+/* Header labels */
+.shadowdark.sheet .tab-talents.sdx-enhanced-talents .SD-box .header label {
+    color: rgba(255, 255, 255, 0.95) !important;
+    margin-left: 9px;
+}
+
+/* Ensure all text elements are white */
+.shadowdark.sheet .tab-talents.sdx-enhanced-talents .SD-box .content *,
+.shadowdark.sheet .tab-talents.sdx-enhanced-talents .SD-box .content a,
+.shadowdark.sheet .tab-talents.sdx-enhanced-talents .SD-box .content label,
+.shadowdark.sheet .tab-talents.sdx-enhanced-talents .SD-box .content span,
+.shadowdark.sheet .tab-talents.sdx-enhanced-talents .SD-box .content div {
+    color: rgba(255, 255, 255, 0.9) !important;
+}
+
+/* Input and select styling */
+.shadowdark.sheet .tab-talents.sdx-enhanced-talents input,
+.shadowdark.sheet .tab-talents.sdx-enhanced-talents select,
+.shadowdark.sheet .tab-talents.sdx-enhanced-talents textarea {
+    color: rgba(255, 255, 255, 0.9) !important;
+    background: rgba(0, 0, 0, 0.3);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Table styling */
+.shadowdark.sheet .tab-talents.sdx-enhanced-talents table {
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.shadowdark.sheet .tab-talents.sdx-enhanced-talents table th {
+    background: rgba(0, 0, 0, 0.5);
+    color: rgba(255, 255, 255, 0.95);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.shadowdark.sheet .tab-talents.sdx-enhanced-talents table td {
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Item links and talent names */
+.shadowdark.sheet .tab-talents.sdx-enhanced-talents .item-name a,
+.shadowdark.sheet .tab-talents.sdx-enhanced-talents .talent-name {
+    color: rgba(255, 255, 255, 0.95) !important;
+}
+
+/* Icons and buttons */
+.shadowdark.sheet .tab-talents.sdx-enhanced-talents .item-control,
+.shadowdark.sheet .tab-talents.sdx-enhanced-talents button {
+    color: rgba(255, 255, 255, 0.9);
+}
+
+/* SD-list styling for white text */
+.shadowdark.sheet .tab-talents.sdx-enhanced-talents .SD-list {
+    color: rgba(255, 255, 255, 0.9) !important;
+}
+
+.shadowdark.sheet .tab-talents.sdx-enhanced-talents .SD-list .header,
+.shadowdark.sheet .tab-talents.sdx-enhanced-talents .SD-list .item {
+    display: grid;
+    grid-template-columns: 53px 250px 80px 0px;
+    gap: 8px;
+    align-items: center;
+    color: rgba(255, 255, 255, 0.9) !important;
+}
+
+.shadowdark.sheet .tab-talents.sdx-enhanced-talents .SD-list .header .item-name,
+.shadowdark.sheet .tab-talents.sdx-enhanced-talents .SD-list .header .flex-100-px,
+.shadowdark.sheet .tab-talents.sdx-enhanced-talents .SD-list .item .item-name,
+.shadowdark.sheet .tab-talents.sdx-enhanced-talents .SD-list .item .flex-100-px {
+    color: rgba(255, 255, 255, 0.9) !important;
+}
+
+.shadowdark.sheet .tab-talents.sdx-enhanced-talents .flex-100-px {
+    color: rgba(255, 255, 255, 0.9) !important;
+}
+
+/* Inline talent controls */
+.shadowdark.sheet .tab-talents.sdx-enhanced-talents .sdx-talent-controls {
+    display: flex;
+    gap: 4px;
+    margin-left: auto;
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+.shadowdark.sheet .tab-talents.sdx-enhanced-talents .item:hover .sdx-talent-controls {
+    opacity: 1;
+}
+
+.shadowdark.sheet .tab-talents.sdx-enhanced-talents .sdx-talent-controls button {
+    background: rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 3px;
+    color: rgba(255, 255, 255, 0.9);
+    padding: 4px 8px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: all 0.2s;
+}
+
+.shadowdark.sheet .tab-talents.sdx-enhanced-talents .sdx-talent-controls button:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.4);
+    color: rgba(255, 255, 255, 1);
+}
+
+.shadowdark.sheet .tab-talents.sdx-enhanced-talents .sdx-talent-controls .sdx-talent-delete:hover {
+    background: rgba(139, 0, 0, 0.8);
+    border-color: rgba(255, 0, 0, 0.5);
+}
+
+/* ============================================
+   ENHANCED SPELLS TAB
+   ============================================ */
+
+/* Remove margins from content body when enhanced spells is active */
+.shadowdark.sheet .tab-spells.sdx-enhanced-spells ~ .SD-content-body,
+.shadowdark.sheet:has(.tab-spells.sdx-enhanced-spells) .SD-content-body {
+    margin: 0px !important;
+}
+
+.shadowdark.sheet .tab-spells.sdx-enhanced-spells {
+    background: linear-gradient(180deg, #000000 0%, #2f2b2b 100%) !important;
+    padding: 16px;
+    min-height: 100%;
+    position: relative;
+}
+
+/* Extended header background into spells tab with upward fade at bottom */
+.shadowdark.sheet .tab-spells.sdx-enhanced-spells .sdx-spells-bg-extension {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 250px;
+    z-index: 0;
+    pointer-events: none;
+    background-size: cover;
+    background-position: center bottom;
+    background-repeat: no-repeat;
+    overflow: hidden;
+    -webkit-mask-image: linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0.8) 30%, rgba(0,0,0,0.4) 60%, rgba(0,0,0,0) 100%);
+    mask-image: linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0.8) 30%, rgba(0,0,0,0.4) 60%, rgba(0,0,0,0) 100%);
+}
+
+.shadowdark.sheet .tab-spells.sdx-enhanced-spells .sdx-spells-bg-extension video {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center bottom;
+}
+
+/* Ensure content is above the background extension */
+.shadowdark.sheet .tab-spells.sdx-enhanced-spells > *:not(.sdx-spells-bg-extension) {
+    position: relative;
+    z-index: 1;
+}
+
+/* Banner styling */
+.shadowdark.sheet .tab-spells.sdx-enhanced-spells .SD-banner {
+    color: rgba(255, 255, 255, 0.95) !important;
+    text-transform: uppercase;
+    font-size: 18px;
+    letter-spacing: 0.5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: "Old Newspaper Font";
+    padding-left: 9px;
+    background: rgba(0, 0, 0, 0.9) !important;
+    border: 2px solid rgba(255, 255, 255, 0.4);
+    border-radius: 0px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* SD-list styling for white text */
+.shadowdark.sheet .tab-spells.sdx-enhanced-spells .SD-list {
+    color: rgba(255, 255, 255, 0.9) !important;
+}
+
+.shadowdark.sheet .tab-spells.sdx-enhanced-spells .SD-list .header {
+    background: rgba(0, 0, 0, 0.4) !important;
+    border-radius: 0px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    color: rgba(255, 255, 255, 0.95) !important;
+    text-transform: uppercase;
+    font-size: 14px;
+    letter-spacing: 0.5px;
+}
+
+.shadowdark.sheet .tab-spells.sdx-enhanced-spells .SD-list .header .item-name,
+.shadowdark.sheet .tab-spells.sdx-enhanced-spells .SD-list .header .duration,
+.shadowdark.sheet .tab-spells.sdx-enhanced-spells .SD-list .header .range,
+.shadowdark.sheet .tab-spells.sdx-enhanced-spells .SD-list .header .actions {
+    color: rgba(255, 255, 255, 0.9) !important;
+}
+
+.shadowdark.sheet .tab-spells.sdx-enhanced-spells .SD-list .item {
+    background: rgba(0, 0, 0, 0.3) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: rgba(255, 255, 255, 0.9) !important;
+}
+
+.shadowdark.sheet .tab-spells.sdx-enhanced-spells .SD-list .item:hover {
+    background: rgba(0, 0, 0, 0.5) !important;
+    border-color: rgba(255, 255, 255, 0.4);
+}
+
+.shadowdark.sheet .tab-spells.sdx-enhanced-spells .SD-list .item .item-name,
+.shadowdark.sheet .tab-spells.sdx-enhanced-spells .SD-list .item .duration,
+.shadowdark.sheet .tab-spells.sdx-enhanced-spells .SD-list .item .range,
+.shadowdark.sheet .tab-spells.sdx-enhanced-spells .SD-list .item .actions {
+    color: rgba(255, 255, 255, 0.9) !important;
+}
+
+.shadowdark.sheet .tab-spells.sdx-enhanced-spells .SD-list .item .item-name a {
+    color: rgba(255, 255, 255, 0.95) !important;
+}
+
+/* Item images */
+.shadowdark.sheet .tab-spells.sdx-enhanced-spells .item-image {
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Icons and buttons */
+.shadowdark.sheet .tab-spells.sdx-enhanced-spells .actions a,
+.shadowdark.sheet .tab-spells.sdx-enhanced-spells .actions i,
+.shadowdark.sheet .tab-spells.sdx-enhanced-spells button {
+    color: rgba(255, 255, 255, 0.9) !important;
+}
+
+.shadowdark.sheet .tab-spells.sdx-enhanced-spells .actions a:hover,
+.shadowdark.sheet .tab-spells.sdx-enhanced-spells button:hover {
+    color: rgba(255, 255, 255, 1) !important;
+}
+
+/* Input and select styling */
+.shadowdark.sheet .tab-spells.sdx-enhanced-spells input,
+.shadowdark.sheet .tab-spells.sdx-enhanced-spells select,
+.shadowdark.sheet .tab-spells.sdx-enhanced-spells textarea {
+    color: rgba(255, 255, 255, 0.9) !important;
+    background: rgba(0, 0, 0, 0.3);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+/* ============================================
+   ENHANCED INVENTORY TAB
+   ============================================ */
+
+/* Remove margins from content body when enhanced inventory is active */
+.shadowdark.sheet .tab-inventory.sdx-enhanced-inventory ~ .SD-content-body,
+.shadowdark.sheet:has(.tab-inventory.sdx-enhanced-inventory) .SD-content-body {
+    margin: 0px !important;
+}
+
+.shadowdark.sheet .tab-inventory.sdx-enhanced-inventory {
+    background: linear-gradient(180deg, #000000 0%, #2f2b2b 100%) !important;
+    padding: 16px;
+    min-height: 100%;
+    position: relative;
+}
+
+/* Extended header background into inventory tab with upward fade at bottom */
+.shadowdark.sheet .tab-inventory.sdx-enhanced-inventory .sdx-inventory-bg-extension {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 250px;
+    z-index: 0;
+    pointer-events: none;
+    background-size: cover;
+    background-position: center bottom;
+    background-repeat: no-repeat;
+    overflow: hidden;
+    -webkit-mask-image: linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0.8) 30%, rgba(0,0,0,0.4) 60%, rgba(0,0,0,0) 100%);
+    mask-image: linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0.8) 30%, rgba(0,0,0,0.4) 60%, rgba(0,0,0,0) 100%);
+}
+
+.shadowdark.sheet .tab-inventory.sdx-enhanced-inventory .sdx-inventory-bg-extension video {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center bottom;
+}
+
+/* Ensure content is above the background extension */
+.shadowdark.sheet .tab-inventory.sdx-enhanced-inventory > *:not(.sdx-inventory-bg-extension) {
+    position: relative;
+    z-index: 1;
+}
+
+/* Banner styling */
+.shadowdark.sheet .tab-inventory.sdx-enhanced-inventory .SD-banner {
+    color: rgba(255, 255, 255, 0.95) !important;
+    text-transform: uppercase;
+    font-size: 18px;
+    letter-spacing: 0.5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: "Old Newspaper Font";
+    padding-left: 9px;
+    background: rgba(0, 0, 0, 0.9) !important;
+    border: 2px solid rgba(255, 255, 255, 0.4);
+    border-radius: 0px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* SD-box styling (Slots, Coins, Gems) */
+.shadowdark.sheet .tab-inventory.sdx-enhanced-inventory .SD-box {
+    background: rgba(0, 0, 0, 0.4) !important;
+    border: 2px solid rgba(255, 255, 255, 0.4);
+    border-radius: 0px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.shadowdark.sheet .tab-inventory.sdx-enhanced-inventory .SD-box:hover {
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.shadowdark.sheet .tab-inventory.sdx-enhanced-inventory .SD-box .header {
+    background: #000000 !important;
+    color: rgba(255, 255, 255, 0.95) !important;
+    text-transform: uppercase;
+    font-size: 14px;
+    letter-spacing: 0.5px;
+}
+
+.shadowdark.sheet .tab-inventory.sdx-enhanced-inventory .SD-box .header span {
+    background-image: none !important;
+}
+
+.shadowdark.sheet .tab-inventory.sdx-enhanced-inventory .SD-box .content {
+    color: rgba(255, 255, 255, 0.9);
+    padding: 8px;
+}
+
+.shadowdark.sheet .tab-inventory.sdx-enhanced-inventory .SD-box .content * {
+    color: rgba(255, 255, 255, 0.9) !important;
+}
+
+/* SD-list styling */
+.shadowdark.sheet .tab-inventory.sdx-enhanced-inventory .SD-list {
+    color: rgba(255, 255, 255, 0.9) !important;
+}
+
+.shadowdark.sheet .tab-inventory.sdx-enhanced-inventory .SD-list .header {
+    background: rgba(0, 0, 0, 0.4) !important;
+
+    border-radius: 0px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    color: rgba(255, 255, 255, 0.95) !important;
+    text-transform: uppercase;
+    font-size: 14px;
+    letter-spacing: 0.5px;
+}
+
+.shadowdark.sheet .tab-inventory.sdx-enhanced-inventory .SD-list .header .item-name,
+.shadowdark.sheet .tab-inventory.sdx-enhanced-inventory .SD-list .header .quantity,
+.shadowdark.sheet .tab-inventory.sdx-enhanced-inventory .SD-list .header .slots,
+.shadowdark.sheet .tab-inventory.sdx-enhanced-inventory .SD-list .header .flex-80-px,
+.shadowdark.sheet .tab-inventory.sdx-enhanced-inventory .SD-list .header .actions {
+    color: rgba(255, 255, 255, 0.9) !important;
+}
+
+/* Item rows - ONLY style if they don't have inline style attribute (color-by-type disabled) */
+.shadowdark.sheet .tab-inventory.sdx-enhanced-inventory .SD-list .item:not([style*="background"]) {
+    background: rgba(0, 0, 0, 0.3) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.shadowdark.sheet .tab-inventory.sdx-enhanced-inventory .SD-list .item:not([style*="background"]):hover {
+    background: rgba(0, 0, 0, 0.5) !important;
+    border-color: rgba(255, 255, 255, 0.4);
+}
+
+/* Item text - ONLY style if parent doesn't have inline style (color-by-type disabled) */
+.shadowdark.sheet .tab-inventory.sdx-enhanced-inventory .SD-list .item:not([style*="background"]) .item-name,
+.shadowdark.sheet .tab-inventory.sdx-enhanced-inventory .SD-list .item:not([style*="background"]) .quantity,
+.shadowdark.sheet .tab-inventory.sdx-enhanced-inventory .SD-list .item:not([style*="background"]) .slots,
+.shadowdark.sheet .tab-inventory.sdx-enhanced-inventory .SD-list .item:not([style*="background"]) .flex-80-px {
+    color: rgba(255, 255, 255, 0.9) !important;
+}
+
+.shadowdark.sheet .tab-inventory.sdx-enhanced-inventory .SD-list .item:not([style*="background"]) .item-name a {
+    color: rgba(255, 255, 255, 0.95) !important;
+}
+
+/* Item images */
+.shadowdark.sheet .tab-inventory.sdx-enhanced-inventory .item-image {
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Icons and buttons */
+.shadowdark.sheet .tab-inventory.sdx-enhanced-inventory .actions a,
+.shadowdark.sheet .tab-inventory.sdx-enhanced-inventory .actions i,
+.shadowdark.sheet .tab-inventory.sdx-enhanced-inventory button {
+    color: rgba(255, 255, 255, 0.9) !important;
+}
+
+.shadowdark.sheet .tab-inventory.sdx-enhanced-inventory .actions a:hover,
+.shadowdark.sheet .tab-inventory.sdx-enhanced-inventory button:hover {
+    color: rgba(255, 255, 255, 1) !important;
+}
+
+/* Input and select styling */
+.shadowdark.sheet .tab-inventory.sdx-enhanced-inventory input,
+.shadowdark.sheet .tab-inventory.sdx-enhanced-inventory select,
+.shadowdark.sheet .tab-inventory.sdx-enhanced-inventory textarea {
+    color: rgba(255, 255, 255, 0.9) !important;
+    background: rgba(0, 0, 0, 0.3);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Inventory grid layout */
+.shadowdark.sheet .tab-inventory.sdx-enhanced-inventory .inventory-grid {
+    color: rgba(255, 255, 255, 0.9);
+}
+
+/* ============================================
+   ENHANCED EFFECTS TAB
+   ============================================ */
+
+/* Remove margins from content body when enhanced effects is active */
+.shadowdark.sheet .tab-effects.sdx-enhanced-effects ~ .SD-content-body,
+.shadowdark.sheet:has(.tab-effects.sdx-enhanced-effects) .SD-content-body {
+    margin: 0px !important;
+}
+
+.shadowdark.sheet .tab-effects.sdx-enhanced-effects {
+    background: linear-gradient(180deg, #000000 0%, #2f2b2b 100%) !important;
+    padding: 16px;
+    min-height: 100%;
+    position: relative;
+}
+
+/* Extended header background into effects tab with upward fade at bottom */
+.shadowdark.sheet .tab-effects.sdx-enhanced-effects .sdx-effects-bg-extension {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 250px;
+    z-index: 0;
+    pointer-events: none;
+    background-size: cover;
+    background-position: center bottom;
+    background-repeat: no-repeat;
+    overflow: hidden;
+    -webkit-mask-image: linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0.8) 30%, rgba(0,0,0,0.4) 60%, rgba(0,0,0,0) 100%);
+    mask-image: linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0.8) 30%, rgba(0,0,0,0.4) 60%, rgba(0,0,0,0) 100%);
+}
+
+.shadowdark.sheet .tab-effects.sdx-enhanced-effects .sdx-effects-bg-extension video {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center bottom;
+}
+
+/* Ensure content is above the background extension */
+.shadowdark.sheet .tab-effects.sdx-enhanced-effects > *:not(.sdx-effects-bg-extension) {
+    position: relative;
+    z-index: 1;
+}
+
+/* Boxes styling */
+.shadowdark.sheet .tab-effects.sdx-enhanced-effects .SD-box {
+    background: rgba(0, 0, 0, 0.4) !important;
+border: 2px solid rgba(255, 255, 255, 0.4);
+    border-radius: 0px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.shadowdark.sheet .tab-effects.sdx-enhanced-effects .SD-box:hover {
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Box headers - full black with white text */
+.shadowdark.sheet .tab-effects.sdx-enhanced-effects .SD-box .header,
+.shadowdark.sheet .tab-effects.sdx-enhanced-effects .SD-banner {
+color: rgba(255, 255, 255, 0.95) !important;
+    text-transform: uppercase;
+    font-size: 18px;
+    letter-spacing: 0.5px;
+    /* border-radius: 0px; */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: "Old Newspaper Font";
+    padding-left: 9px;
+    /* border: white; */
+    background: rgba(0, 0, 0, 0.9) !important;
+    border: 2px solid rgba(255, 255, 255, 0.4);
+    border-radius: 0px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* Remove background image from all spans in header */
+.shadowdark.sheet .tab-effects.sdx-enhanced-effects .SD-box .header span {
+    background-image: none !important;
+}
+
+/* Hide background images from empty header spans but keep edit buttons visible */
+.shadowdark.sheet .tab-effects.sdx-enhanced-effects .SD-box .header span:empty {
+    display: none;
+}
+
+.shadowdark.sheet .tab-effects.sdx-enhanced-effects .SD-box .header span .edit-button {
+    display: inline-block;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+/* Remove background images from all spans in content */
+.shadowdark.sheet .tab-effects.sdx-enhanced-effects .SD-box .content span {
+    background-image: none !important;
+}
+
+/* Box content with white text */
+.shadowdark.sheet .tab-effects.sdx-enhanced-effects .SD-box .content {
+    color: rgba(255, 255, 255, 0.9);
+    padding: 0px 0px !important;
+    margin-top: 0px;
+    margin-bottom: 1px;
+    margin-left: 9px;
+}
+
+/* Header labels */
+.shadowdark.sheet .tab-effects.sdx-enhanced-effects .SD-box .header label {
+    color: rgba(255, 255, 255, 0.95) !important;
+    margin-left: 9px;
+}
+
+/* Ensure all text elements are white */
+.shadowdark.sheet .tab-effects.sdx-enhanced-effects .SD-box .content *,
+.shadowdark.sheet .tab-effects.sdx-enhanced-effects .SD-box .content a,
+.shadowdark.sheet .tab-effects.sdx-enhanced-effects .SD-box .content label,
+.shadowdark.sheet .tab-effects.sdx-enhanced-effects .SD-box .content span,
+.shadowdark.sheet .tab-effects.sdx-enhanced-effects .SD-box .content div {
+    color: rgba(255, 255, 255, 0.9) !important;
+}
+
+/* Input and select styling */
+.shadowdark.sheet .tab-effects.sdx-enhanced-effects input,
+.shadowdark.sheet .tab-effects.sdx-enhanced-effects select,
+.shadowdark.sheet .tab-effects.sdx-enhanced-effects textarea {
+    color: rgba(255, 255, 255, 0.9) !important;
+    background: rgba(0, 0, 0, 0.3);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Table styling */
+.shadowdark.sheet .tab-effects.sdx-enhanced-effects table {
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.shadowdark.sheet .tab-effects.sdx-enhanced-effects table th {
+    background: rgba(0, 0, 0, 0.5);
+    color: rgba(255, 255, 255, 0.95);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.shadowdark.sheet .tab-effects.sdx-enhanced-effects table td {
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+/* SD-list styling for white text */
+.shadowdark.sheet .tab-effects.sdx-enhanced-effects .SD-list {
+    color: rgba(255, 255, 255, 0.9) !important;
+}
+
+.shadowdark.sheet .tab-effects.sdx-enhanced-effects .SD-list .header {
+    color: rgba(255, 255, 255, 0.9) !important;
+}
+
+.shadowdark.sheet .tab-effects.sdx-enhanced-effects .SD-list .header .item-name,
+.shadowdark.sheet .tab-effects.sdx-enhanced-effects .SD-list .header .flex-100-px {
+    color: rgba(255, 255, 255, 0.9) !important;
+}
+
+.shadowdark.sheet .tab-effects.sdx-enhanced-effects .SD-list .item {
+    color: rgba(255, 255, 255, 0.9) !important;
+}
+
+.shadowdark.sheet .tab-effects.sdx-enhanced-effects .SD-list .item .item-name,
+.shadowdark.sheet .tab-effects.sdx-enhanced-effects .SD-list .item .flex-100-px {
+    color: rgba(255, 255, 255, 0.9) !important;
+}
+
+.shadowdark.sheet .tab-effects.sdx-enhanced-effects .flex-100-px {
+    color: rgba(255, 255, 255, 0.9) !important;
+}
+
+/* Item links and effect names */
+.shadowdark.sheet .tab-effects.sdx-enhanced-effects .item-name a,
+.shadowdark.sheet .tab-effects.sdx-enhanced-effects .effect-name {
+    color: rgba(255, 255, 255, 0.95) !important;
+}
+
+/* Icons and buttons */
+.shadowdark.sheet .tab-effects.sdx-enhanced-effects .item-control,
+.shadowdark.sheet .tab-effects.sdx-enhanced-effects button {
+    color: rgba(255, 255, 255, 0.9);
+}
+
+/* H3 headings white text */
+.shadowdark.sheet .tab-effects.sdx-enhanced-effects h3 {
+    color: white !important;
+}
+
+/* Inline effect controls */
+.shadowdark.sheet .tab-effects.sdx-enhanced-effects .sdx-effect-controls {
+    display: flex;
+    gap: 4px;
+    margin-left: auto;
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+.shadowdark.sheet .tab-effects.sdx-enhanced-effects .item.effect:hover .sdx-effect-controls {
+    opacity: 1;
+}
+
+.shadowdark.sheet .tab-effects.sdx-enhanced-effects .sdx-effect-controls button {
+    background: rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 3px;
+    color: rgba(255, 255, 255, 0.9);
+    padding: 4px 8px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: all 0.2s;
+}
+
+.shadowdark.sheet .tab-effects.sdx-enhanced-effects .sdx-effect-controls button:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.4);
+    color: rgba(255, 255, 255, 1);
+}
+
+.shadowdark.sheet .tab-effects.sdx-enhanced-effects .sdx-effect-controls .sdx-effect-delete:hover {
+    background: rgba(139, 0, 0, 0.8);
+    border-color: rgba(255, 0, 0, 0.5);
+}
+
+/* Context menu fix - ensure it appears above content */
+.shadowdark.sheet .tab-effects.sdx-enhanced-effects #context-menu {
+    z-index: 10000 !important;
+    color: #000000 !important;
+}
+
+.shadowdark.sheet .tab-effects.sdx-enhanced-effects #context-menu * {
+    color: #000000 !important;
+}
+
+/* Keep quick conditions styling intact - don't override */
+
+/* ============================================
    CUSTOM HEADER BACKGROUND
    ============================================ */
 
@@ -2681,6 +3952,7 @@ input[data-sdx-free-carry]:disabled {
     background-position: center;
     background-repeat: no-repeat;
     overflow: hidden;
+    filter: brightness(0.85);
 }
 
 .sdx-header-bg-extension video {
@@ -2719,8 +3991,21 @@ input[data-sdx-free-carry]:disabled {
     margin-bottom: 0px;
 }
 
+/* Nav styling when enhanced header is active but no custom background */
+.shadowdark.sheet form:has(.SD-header.sdx-enhanced-header):not(:has(.sdx-header-bg-extension)) .SD-nav {
+    position: relative;
+    z-index: 1;
+    background: rgb(0 0 0);
+    backdrop-filter: blur(2px);
+    border-bottom-color: rgba(0, 0, 0, 0.5);
+    margin: 0;
+    padding: 0px 8px;
+    margin-bottom: 0px;
+}
+
 /* Tab links with white glow for readability */
-.shadowdark.sheet form:has(.sdx-header-bg-extension) .SD-nav a {
+.shadowdark.sheet form:has(.sdx-header-bg-extension) .SD-nav a,
+.shadowdark.sheet form:has(.SD-header.sdx-enhanced-header) .SD-nav a {
     color: #fff;
     text-shadow: 
         0 0 8px rgba(255, 255, 255, 0.3),
@@ -2728,7 +4013,8 @@ input[data-sdx-free-carry]:disabled {
         1px 1px 2px rgba(0, 0, 0, 0.3);
 }
 
-.shadowdark.sheet form:has(.sdx-header-bg-extension) .SD-nav a:hover {
+.shadowdark.sheet form:has(.sdx-header-bg-extension) .SD-nav a:hover,
+.shadowdark.sheet form:has(.SD-header.sdx-enhanced-header) .SD-nav a:hover {
     color: #fff;
     text-shadow: 
         0 0 12px rgba(255, 255, 255, 0.5),
@@ -2736,7 +4022,8 @@ input[data-sdx-free-carry]:disabled {
         1px 1px 2px rgba(0, 0, 0, 0.3);
 }
 
-.shadowdark.sheet form:has(.sdx-header-bg-extension) .SD-nav a.active {
+.shadowdark.sheet form:has(.sdx-header-bg-extension) .SD-nav a.active,
+.shadowdark.sheet form:has(.SD-header.sdx-enhanced-header) .SD-nav a.active {
     color: #fff;
     text-shadow: 
         0 0 12px rgba(255, 255, 255, 0.4),
@@ -2755,6 +4042,144 @@ input[data-sdx-free-carry]:disabled {
     background: rgba(0, 0, 0, 0.3);
     z-index: 0;
     pointer-events: none;
+}
+
+/* ============================================
+   ENHANCED TABS - SCROLLBAR STYLING
+   ============================================ */
+
+/* Webkit browsers (Chrome, Safari, Edge) */
+.shadowdark.sheet .tab-details.sdx-enhanced-details ::-webkit-scrollbar,
+.shadowdark.sheet .tab-abilities.sdx-enhanced-abilities ::-webkit-scrollbar,
+.shadowdark.sheet .tab-spells.sdx-enhanced-spells ::-webkit-scrollbar,
+.shadowdark.sheet .tab-talents.sdx-enhanced-talents ::-webkit-scrollbar,
+.shadowdark.sheet .tab-inventory.sdx-enhanced-inventory ::-webkit-scrollbar,
+.shadowdark.sheet .tab-effects.sdx-enhanced-effects ::-webkit-scrollbar,
+.shadowdark.sheet .tab-notes.sdx-journal-active ::-webkit-scrollbar,
+.shadowdark.sheet .tab-details.sdx-enhanced-details *::-webkit-scrollbar,
+.shadowdark.sheet .tab-abilities.sdx-enhanced-abilities *::-webkit-scrollbar,
+.shadowdark.sheet .tab-spells.sdx-enhanced-spells *::-webkit-scrollbar,
+.shadowdark.sheet .tab-talents.sdx-enhanced-talents *::-webkit-scrollbar,
+.shadowdark.sheet .tab-inventory.sdx-enhanced-inventory *::-webkit-scrollbar,
+.shadowdark.sheet .tab-effects.sdx-enhanced-effects *::-webkit-scrollbar,
+.shadowdark.sheet .tab-notes.sdx-journal-active *::-webkit-scrollbar {
+    width: 12px !important;
+    height: 12px !important;
+}
+
+/* Scrollbar track - pure black */
+.shadowdark.sheet .tab-details.sdx-enhanced-details ::-webkit-scrollbar-track,
+.shadowdark.sheet .tab-abilities.sdx-enhanced-abilities ::-webkit-scrollbar-track,
+.shadowdark.sheet .tab-spells.sdx-enhanced-spells ::-webkit-scrollbar-track,
+.shadowdark.sheet .tab-talents.sdx-enhanced-talents ::-webkit-scrollbar-track,
+.shadowdark.sheet .tab-inventory.sdx-enhanced-inventory ::-webkit-scrollbar-track,
+.shadowdark.sheet .tab-effects.sdx-enhanced-effects ::-webkit-scrollbar-track,
+.shadowdark.sheet .tab-notes.sdx-journal-active ::-webkit-scrollbar-track,
+.shadowdark.sheet .tab-details.sdx-enhanced-details *::-webkit-scrollbar-track,
+.shadowdark.sheet .tab-abilities.sdx-enhanced-abilities *::-webkit-scrollbar-track,
+.shadowdark.sheet .tab-spells.sdx-enhanced-spells *::-webkit-scrollbar-track,
+.shadowdark.sheet .tab-talents.sdx-enhanced-talents *::-webkit-scrollbar-track,
+.shadowdark.sheet .tab-inventory.sdx-enhanced-inventory *::-webkit-scrollbar-track,
+.shadowdark.sheet .tab-effects.sdx-enhanced-effects *::-webkit-scrollbar-track,
+.shadowdark.sheet .tab-notes.sdx-journal-active *::-webkit-scrollbar-track {
+    background: #000000 !important;
+    border: 1px solid #333333 !important;
+    border-radius: 0px !important;
+}
+
+/* Scrollbar thumb - dark gray */
+.shadowdark.sheet .tab-details.sdx-enhanced-details ::-webkit-scrollbar-thumb,
+.shadowdark.sheet .tab-abilities.sdx-enhanced-abilities ::-webkit-scrollbar-thumb,
+.shadowdark.sheet .tab-spells.sdx-enhanced-spells ::-webkit-scrollbar-thumb,
+.shadowdark.sheet .tab-talents.sdx-enhanced-talents ::-webkit-scrollbar-thumb,
+.shadowdark.sheet .tab-inventory.sdx-enhanced-inventory ::-webkit-scrollbar-thumb,
+.shadowdark.sheet .tab-effects.sdx-enhanced-effects ::-webkit-scrollbar-thumb,
+.shadowdark.sheet .tab-notes.sdx-journal-active ::-webkit-scrollbar-thumb,
+.shadowdark.sheet .tab-details.sdx-enhanced-details *::-webkit-scrollbar-thumb,
+.shadowdark.sheet .tab-abilities.sdx-enhanced-abilities *::-webkit-scrollbar-thumb,
+.shadowdark.sheet .tab-spells.sdx-enhanced-spells *::-webkit-scrollbar-thumb,
+.shadowdark.sheet .tab-talents.sdx-enhanced-talents *::-webkit-scrollbar-thumb,
+.shadowdark.sheet .tab-inventory.sdx-enhanced-inventory *::-webkit-scrollbar-thumb,
+.shadowdark.sheet .tab-effects.sdx-enhanced-effects *::-webkit-scrollbar-thumb,
+.shadowdark.sheet .tab-notes.sdx-journal-active *::-webkit-scrollbar-thumb {
+    background: #444444 !important;
+    border: 1px solid #666666 !important;
+    border-radius: 0px !important;
+}
+
+/* Scrollbar thumb hover - lighter gray */
+.shadowdark.sheet .tab-details.sdx-enhanced-details ::-webkit-scrollbar-thumb:hover,
+.shadowdark.sheet .tab-abilities.sdx-enhanced-abilities ::-webkit-scrollbar-thumb:hover,
+.shadowdark.sheet .tab-spells.sdx-enhanced-spells ::-webkit-scrollbar-thumb:hover,
+.shadowdark.sheet .tab-talents.sdx-enhanced-talents ::-webkit-scrollbar-thumb:hover,
+.shadowdark.sheet .tab-inventory.sdx-enhanced-inventory ::-webkit-scrollbar-thumb:hover,
+.shadowdark.sheet .tab-effects.sdx-enhanced-effects ::-webkit-scrollbar-thumb:hover,
+.shadowdark.sheet .tab-notes.sdx-journal-active ::-webkit-scrollbar-thumb:hover,
+.shadowdark.sheet .tab-details.sdx-enhanced-details *::-webkit-scrollbar-thumb:hover,
+.shadowdark.sheet .tab-abilities.sdx-enhanced-abilities *::-webkit-scrollbar-thumb:hover,
+.shadowdark.sheet .tab-spells.sdx-enhanced-spells *::-webkit-scrollbar-thumb:hover,
+.shadowdark.sheet .tab-talents.sdx-enhanced-talents *::-webkit-scrollbar-thumb:hover,
+.shadowdark.sheet .tab-inventory.sdx-enhanced-inventory *::-webkit-scrollbar-thumb:hover,
+.shadowdark.sheet .tab-effects.sdx-enhanced-effects *::-webkit-scrollbar-thumb:hover,
+.shadowdark.sheet .tab-notes.sdx-journal-active *::-webkit-scrollbar-thumb:hover {
+    background: #666666 !important;
+    border-color: #999999 !important;
+}
+
+/* Scrollbar thumb active - even lighter/white */
+.shadowdark.sheet .tab-details.sdx-enhanced-details ::-webkit-scrollbar-thumb:active,
+.shadowdark.sheet .tab-abilities.sdx-enhanced-abilities ::-webkit-scrollbar-thumb:active,
+.shadowdark.sheet .tab-spells.sdx-enhanced-spells ::-webkit-scrollbar-thumb:active,
+.shadowdark.sheet .tab-talents.sdx-enhanced-talents ::-webkit-scrollbar-thumb:active,
+.shadowdark.sheet .tab-inventory.sdx-enhanced-inventory ::-webkit-scrollbar-thumb:active,
+.shadowdark.sheet .tab-effects.sdx-enhanced-effects ::-webkit-scrollbar-thumb:active,
+.shadowdark.sheet .tab-notes.sdx-journal-active ::-webkit-scrollbar-thumb:active,
+.shadowdark.sheet .tab-details.sdx-enhanced-details *::-webkit-scrollbar-thumb:active,
+.shadowdark.sheet .tab-abilities.sdx-enhanced-abilities *::-webkit-scrollbar-thumb:active,
+.shadowdark.sheet .tab-spells.sdx-enhanced-spells *::-webkit-scrollbar-thumb:active,
+.shadowdark.sheet .tab-talents.sdx-enhanced-talents *::-webkit-scrollbar-thumb:active,
+.shadowdark.sheet .tab-inventory.sdx-enhanced-inventory *::-webkit-scrollbar-thumb:active,
+.shadowdark.sheet .tab-effects.sdx-enhanced-effects *::-webkit-scrollbar-thumb:active,
+.shadowdark.sheet .tab-notes.sdx-journal-active *::-webkit-scrollbar-thumb:active {
+    background: #888888 !important;
+    border-color: #CCCCCC !important;
+}
+
+/* Scrollbar corner (where horizontal and vertical scrollbars meet) */
+.shadowdark.sheet .tab-details.sdx-enhanced-details ::-webkit-scrollbar-corner,
+.shadowdark.sheet .tab-abilities.sdx-enhanced-abilities ::-webkit-scrollbar-corner,
+.shadowdark.sheet .tab-spells.sdx-enhanced-spells ::-webkit-scrollbar-corner,
+.shadowdark.sheet .tab-talents.sdx-enhanced-talents ::-webkit-scrollbar-corner,
+.shadowdark.sheet .tab-inventory.sdx-enhanced-inventory ::-webkit-scrollbar-corner,
+.shadowdark.sheet .tab-effects.sdx-enhanced-effects ::-webkit-scrollbar-corner,
+.shadowdark.sheet .tab-notes.sdx-journal-active ::-webkit-scrollbar-corner,
+.shadowdark.sheet .tab-details.sdx-enhanced-details *::-webkit-scrollbar-corner,
+.shadowdark.sheet .tab-abilities.sdx-enhanced-abilities *::-webkit-scrollbar-corner,
+.shadowdark.sheet .tab-spells.sdx-enhanced-spells *::-webkit-scrollbar-corner,
+.shadowdark.sheet .tab-talents.sdx-enhanced-talents *::-webkit-scrollbar-corner,
+.shadowdark.sheet .tab-inventory.sdx-enhanced-inventory *::-webkit-scrollbar-corner,
+.shadowdark.sheet .tab-effects.sdx-enhanced-effects *::-webkit-scrollbar-corner,
+.shadowdark.sheet .tab-notes.sdx-journal-active *::-webkit-scrollbar-corner {
+    background: #000000 !important;
+}
+
+/* Firefox scrollbar styling */
+.shadowdark.sheet .tab-details.sdx-enhanced-details,
+.shadowdark.sheet .tab-details.sdx-enhanced-details *,
+.shadowdark.sheet .tab-abilities.sdx-enhanced-abilities,
+.shadowdark.sheet .tab-abilities.sdx-enhanced-abilities *,
+.shadowdark.sheet .tab-spells.sdx-enhanced-spells,
+.shadowdark.sheet .tab-spells.sdx-enhanced-spells *,
+.shadowdark.sheet .tab-talents.sdx-enhanced-talents,
+.shadowdark.sheet .tab-talents.sdx-enhanced-talents *,
+.shadowdark.sheet .tab-inventory.sdx-enhanced-inventory,
+.shadowdark.sheet .tab-inventory.sdx-enhanced-inventory *,
+.shadowdark.sheet .tab-effects.sdx-enhanced-effects,
+.shadowdark.sheet .tab-effects.sdx-enhanced-effects *,
+.shadowdark.sheet .tab-notes.sdx-journal-active,
+.shadowdark.sheet .tab-notes.sdx-journal-active * {
+    scrollbar-width: thin !important;
+    scrollbar-color: #444444 #000000 !important;
 }
 
 /* Settings button for header customization */
@@ -2812,12 +4237,26 @@ input[data-sdx-free-carry]:disabled {
     border-radius: 6px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
     padding: 8px;
-    min-width: 180px;
+    min-width: 200px;
     display: none;
 }
 
 .shadowdark.sheet .SD-header .sdx-header-settings-menu.visible {
     display: block;
+}
+
+.shadowdark.sheet .SD-header .sdx-header-settings-menu .sdx-settings-section {
+    margin-bottom: 4px;
+}
+
+.shadowdark.sheet .SD-header .sdx-header-settings-menu .sdx-settings-label {
+    font-size: 11px;
+    color: #c9aa58;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin: 6px 4px 4px 4px;
+    font-weight: bold;
+    font-family: "Modesto Condensed", "Roboto Condensed", sans-serif;
 }
 
 .shadowdark.sheet .SD-header .sdx-header-settings-menu button {
@@ -2872,6 +4311,7 @@ input[data-sdx-free-carry]:disabled {
 /* When SD-header has enhanced header class, set up layout */
 .shadowdark.sheet .SD-header.sdx-enhanced-header {
     position: relative;
+    margin: 0;
 }
 
 /* The main enhanced content container */
@@ -3377,8 +4817,8 @@ input[data-sdx-free-carry]:disabled {
     border-radius: 0;
     overflow: hidden;
     flex: 1;
-    margin: -8px;
-    width: calc(100% + 16px);
+    margin: 0px;
+    /* width: calc(100% + 1px); */
 }
 
 /* Sidebar with page list */
@@ -3397,7 +4837,7 @@ input[data-sdx-free-carry]:disabled {
     flex: 1;
     overflow-y: auto;
     overflow-x: hidden;
-    padding: 8px 0;
+    padding: 8px 0px 3px 8px;
 }
 
 .sdx-journal-page-item {
@@ -3406,7 +4846,7 @@ input[data-sdx-free-carry]:disabled {
     padding: 6px 10px;
     cursor: pointer;
     color: #c0c0c0;
-    font-size: 13px;
+    font-size: 16px;
     border-left: 3px solid transparent;
     transition: all 0.15s ease;
     position: relative;
@@ -3472,7 +4912,7 @@ input[data-sdx-free-carry]:disabled {
     justify-content: center;
     gap: 4px;
     padding: 4px 6px;
-    margin: 4px 6px 6px 6px;
+    margin: 6px 3px 15px 21px;
     background: rgba(201, 170, 88, 0.15);
     border: 1px solid rgba(201, 170, 88, 0.4);
     border-radius: 3px;
@@ -3482,7 +4922,8 @@ input[data-sdx-free-carry]:disabled {
     transition: all 0.15s ease;
     flex-shrink: 0;
     box-sizing: border-box;
-    max-width: calc(100% - 12px);
+    max-width: calc(100% - 32px);
+    max-height: 29px;
 }
 
 .sdx-journal-add-page:hover {
@@ -3564,13 +5005,20 @@ input[data-sdx-free-carry]:disabled {
 }
 
 /* Page content display */
+.sdx-journal-page-header {
+    display: flex
+;
+    align-items: center;
+    padding: 8px 12px;
+    background: linear-gradient(180deg, #2a2a2a 0%, #1a1a1a 100%);
+    border-bottom: 2px solid #c9aa58;
+    gap: 8px;
+    margin-top: 0px;
+}
+
 .sdx-journal-page-content {
-    flex: 1;
-    padding: 12px 16px;
     overflow-y: auto;
-    color: #333;
-    font-size: 14px;
-    line-height: 1.6;
+    padding: 12px 12px 12px 20px;
 }
 
 .sdx-journal-page-content p {
@@ -3705,6 +5153,15 @@ section[data-tab="tab-notes"].sdx-journal-active > div:not(.sdx-journal-notes) {
     display: none !important;
 }
 
+/* Apply compact content-body only when Notes tab is active */
+.shadowdark.sheet .tab-notes.active ~ .SD-content-body,
+.shadowdark.sheet:has(.tab-notes.active) .SD-content-body,
+.shadowdark.sheet .tab-notes[data-tab="tab-notes"].active ~ .SD-content-body,
+.shadowdark.sheet:has(section[data-tab="tab-notes"].active) .SD-content-body {
+    padding: 0px 0px 0px 0px !important;
+    overflow: auto;
+}
+
 /* Page navigation arrows at bottom (like journal pages) */
 .sdx-journal-nav {
     display: flex;
@@ -3812,7 +5269,7 @@ section[data-tab="tab-notes"].sdx-journal-active > div:not(.sdx-journal-notes) {
     font-family: 'Modesto Condensed', 'Palatino Linotype', serif;
     font-size: 13px;
     font-weight: bold;
-    color: rgba(0, 0, 0, 0.7);
+    color: rgb(255 255 255 / 70%);
     text-transform: uppercase;
     letter-spacing: 0.5px;
 }
