@@ -2372,6 +2372,12 @@ function maskUnidentifiedItemsOnSheet(app, html) {
 		const item = actor.items?.get?.(itemId);
 		if (!item || !isUnidentified(item)) return;
 
+		// Mark item image as unidentified to hide chat icon
+		const $itemImage = $el.find('.item-image');
+		if ($itemImage.length) {
+			$itemImage.addClass('sdx-unidentified');
+		}
+
 		// Mask the item name
 		const $nameLink = $el.find('.item-name');
 		if ($nameLink.length) {
@@ -2945,6 +2951,39 @@ const NPC_INVENTORY_TYPES = [
 const npcActiveTabTracker = new Map();
 
 /**
+ * Enable chat icon on item images to show item in chat
+ */
+function enableItemChatIcon(app, html) {
+	const actor = app?.actor;
+	if (!actor) return;
+
+	// Handle click on item image (when it has the chat icon)
+	html.find('.item-image').off('click.sdxChat').on('click.sdxChat', async function(ev) {
+		// Only handle if this item-image has a comment icon
+		if (!$(this).find('.fa-comment').length) return;
+		
+		ev.preventDefault();
+		ev.stopPropagation();
+
+		const $itemRow = $(this).closest('.item[data-item-id]');
+		const itemId = $itemRow.data('itemId') ?? $itemRow.attr('data-item-id');
+		if (!itemId) return;
+
+		const item = actor.items.get(itemId);
+		if (!item) return;
+
+		// Check if unidentified (and user is not GM)
+		if (!game.user?.isGM && isUnidentified(item)) {
+			ui.notifications.warn("Cannot show unidentified item in chat");
+			return;
+		}
+
+		// Show item in chat
+		await item.sendToChat();
+	});
+}
+
+/**
  * Register module settings
  */
 function registerSettings() {
@@ -3074,6 +3113,32 @@ function registerSettings() {
 		default: true,
 		type: Boolean,
 		requiresReload: true
+	});
+
+	// === CONDITIONS THEME ===
+	game.settings.register(MODULE_ID, "conditionsTheme", {
+		name: "Conditions Theme",
+		hint: "Choose a visual theme for the quick conditions toggles",
+		scope: "world",
+		config: true,
+		default: "parchment",
+		type: String,
+		choices: {
+			parchment: "Parchment (Default)",
+			stone: "Stone Tablet",
+			leather: "Leather Bound",
+			iron: "Iron & Rust",
+			moss: "Moss & Decay",
+			blood: "Blood & Shadow"
+		},
+		onChange: () => {
+			// Re-render all open player sheets
+			for (const app of Object.values(ui.windows)) {
+				if (app.actor?.type === "Player") {
+					app.render();
+				}
+			}
+		}
 	});
 }
 
@@ -3496,6 +3561,458 @@ function handleRenownUpdate(actor, formData) {
 }
 
 // ============================================
+// CONDITIONS QUICK TOGGLES
+// ============================================
+
+/**
+ * Inject conditions quick toggles into the Effects tab
+ */
+async function injectConditionsToggles(app, html, actor) {
+	if (actor.type !== "Player") return;
+
+	// Find the active effects section
+	const $effectsTab = html.find('.tab[data-tab="tab-effects"]');
+	if (!$effectsTab.length) return;
+
+	// Check if we've already injected (avoid duplicates on re-render)
+	if ($effectsTab.find('.sdx-conditions-toggles').length) return;
+
+	// Fetch all conditions from the compendium
+	const conditionsPack = game.packs.get("shadowdark.conditions");
+	if (!conditionsPack) {
+		console.warn(`${MODULE_ID} | Conditions compendium not found`);
+		return;
+	}
+
+	const conditions = await conditionsPack.getDocuments();
+	if (!conditions || conditions.length === 0) return;
+
+	// Group conditions by base name (store minimal data, not document references)
+	const groupedConditions = groupConditionsByBaseName(conditions);
+	
+	// Convert grouped conditions to plain data objects to avoid holding document references
+	const conditionDataMap = {};
+	for (const [baseName, conditionGroup] of Object.entries(groupedConditions)) {
+		conditionDataMap[baseName] = conditionGroup.map(cond => ({
+			uuid: cond.uuid,
+			name: cond.name,
+			img: cond.img,
+			description: cond.system?.description?.value || cond.system?.description || ''
+		}));
+	}
+
+	// Get currently active effects on the actor
+	const activeEffects = actor.effects.contents || [];
+
+	// Get the selected theme
+	const theme = game.settings.get(MODULE_ID, "conditionsTheme") || "parchment";
+
+	// Build the toggles HTML
+	let togglesHtml = `<div class="sdx-conditions-toggles sdx-theme-${theme}">`;
+	togglesHtml += '<h3 class="sdx-conditions-header">Quick Conditions</h3>';
+	togglesHtml += '<div class="sdx-conditions-grid">';
+
+	for (const [baseName, conditionGroup] of Object.entries(conditionDataMap)) {
+		const hasVariants = conditionGroup.length > 1;
+		const firstCondition = conditionGroup[0];
+		
+		// Check if any variant is active
+		const isActive = conditionGroup.some(condition => 
+			activeEffects.some(effect => 
+				effect.name === condition.name || 
+				effect.getFlag("core", "sourceId") === condition.uuid
+			)
+		);
+
+		const displayName = baseName.replace('Condition: ', '');
+		
+		// Get description
+		const rawDescription = firstCondition.description || '';
+		// Keep HTML formatting but escape quotes for data attribute
+		const processedDescription = rawDescription.replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+
+		if (hasVariants) {
+			// Has multiple variants - show with dropdown indicator
+			togglesHtml += `
+				<div class="sdx-condition-toggle has-variants ${isActive ? 'active' : ''}" 
+					 data-condition-base="${baseName}"
+					 data-condition-description="${processedDescription.replace(/"/g, '&quot;')}">
+					<img src="${firstCondition.img}" alt="${displayName}" />
+					<span class="sdx-condition-name">${displayName}</span>
+					<i class="fas fa-caret-down"></i>
+				</div>
+			`;
+		} else {
+			// Single condition - direct toggle
+			togglesHtml += `
+				<div class="sdx-condition-toggle ${isActive ? 'active' : ''}" 
+					 data-condition-uuid="${firstCondition.uuid}"
+					 data-condition-name="${firstCondition.name}"
+					 data-condition-description="${processedDescription.replace(/"/g, '&quot;')}">
+					<img src="${firstCondition.img}" alt="${displayName}" />
+					<span class="sdx-condition-name">${displayName}</span>
+				</div>
+			`;
+		}
+	}
+
+	togglesHtml += '</div></div>';
+
+	// Insert after the active effects section
+	const $activeEffects = $effectsTab.find('.active-effects, .effects-list').last();
+	if ($activeEffects.length) {
+		$activeEffects.after(togglesHtml);
+	} else {
+		// Fallback: append to the tab
+		$effectsTab.append(togglesHtml);
+	}
+
+	// Attach event handlers
+	const $toggles = $effectsTab.find('.sdx-condition-toggle');
+	$toggles.on('click', async function(e) {
+		e.preventDefault();
+		e.stopPropagation();
+		
+		if (!actor.isOwner) return;
+
+		const $toggle = $(this);
+		
+		if ($toggle.hasClass('has-variants')) {
+			// Show submenu for variants
+			const baseName = $toggle.data('condition-base');
+			const variants = conditionDataMap[baseName];
+			showConditionSubmenu($toggle, variants, actor, activeEffects);
+		} else {
+			// Direct toggle for single condition
+			const conditionUuid = $toggle.data('condition-uuid');
+			const conditionName = $toggle.data('condition-name');
+			const isActive = $toggle.hasClass('active');
+
+			if (isActive) {
+				await removeConditionFromActor(actor, conditionName, conditionUuid);
+			} else {
+				await addConditionToActor(actor, conditionUuid);
+			}
+		}
+	});
+	
+	// Add tooltip handlers
+	$toggles.on('mouseenter', function(e) {
+		const $toggle = $(this);
+		const description = $toggle.data('condition-description');
+		
+		if (!description || description.trim() === '') return;
+		
+		// Convert UUID links to clickable elements
+		const enrichedDescription = convertUUIDLinksToClickable(description);
+		
+		// Create tooltip
+		const $tooltip = $(`<div class="sdx-condition-tooltip">${enrichedDescription}</div>`);
+		$('body').append($tooltip);
+		
+		// Position tooltip
+		const rect = $toggle[0].getBoundingClientRect();
+		const tooltipHeight = $tooltip.outerHeight();
+		const tooltipWidth = $tooltip.outerWidth();
+		
+		// Determine if there's more space on left or right
+		const spaceRight = window.innerWidth - rect.right;
+		const spaceLeft = rect.left;
+		
+		// Position horizontally
+		if (spaceRight > tooltipWidth + 10) {
+			// Show on right
+			$tooltip.css({
+				left: rect.right + 10 + 'px',
+				top: rect.top + (rect.height / 2) - (tooltipHeight / 2) + 'px'
+			});
+			$tooltip.addClass('sdx-tooltip-right');
+		} else if (spaceLeft > tooltipWidth + 10) {
+			// Show on left
+			$tooltip.css({
+				left: rect.left - tooltipWidth - 10 + 'px',
+				top: rect.top + (rect.height / 2) - (tooltipHeight / 2) + 'px'
+			});
+			$tooltip.addClass('sdx-tooltip-left');
+		} else {
+			// Show below if not enough space on sides
+			$tooltip.css({
+				left: rect.left + (rect.width / 2) - (tooltipWidth / 2) + 'px',
+				top: rect.bottom + 10 + 'px'
+			});
+			$tooltip.addClass('sdx-tooltip-bottom');
+		}
+		
+		// Store tooltip reference
+		$toggle.data('sdx-tooltip', $tooltip);
+		
+		// Handle UUID link clicks in tooltip
+		$tooltip.find('.sdx-uuid-link').on('click', async function(e) {
+			e.preventDefault();
+			e.stopPropagation();
+			const uuid = $(this).data('uuid');
+			if (uuid) {
+				const doc = await fromUuid(uuid);
+				if (doc?.sheet) {
+					doc.sheet.render(true);
+				}
+			}
+			// Close tooltip after click
+			$tooltip.remove();
+			$toggle.removeData('sdx-tooltip');
+			$toggle.removeData('sdx-tooltip-hovered');
+		});
+		
+		// Keep tooltip open when hovering over it
+		$tooltip.on('mouseenter', function() {
+			$toggle.data('sdx-tooltip-hovered', true);
+		});
+		
+		$tooltip.on('mouseleave', function() {
+			$toggle.data('sdx-tooltip-hovered', false);
+			// Small delay before removing to allow moving back to toggle
+			setTimeout(() => {
+				if (!$toggle.data('sdx-toggle-hovered') && !$toggle.data('sdx-tooltip-hovered')) {
+					$tooltip.remove();
+					$toggle.removeData('sdx-tooltip');
+				}
+			}, 100);
+		});
+	});
+	
+	$toggles.on('mouseleave', function(e) {
+		const $toggle = $(this);
+		$toggle.data('sdx-toggle-hovered', false);
+		
+		// Small delay before removing to allow moving to tooltip
+		setTimeout(() => {
+			const $tooltip = $toggle.data('sdx-tooltip');
+			if ($tooltip && !$toggle.data('sdx-tooltip-hovered')) {
+				$tooltip.remove();
+				$toggle.removeData('sdx-tooltip');
+			}
+		}, 100);
+	});
+	
+	$toggles.on('mouseenter', function(e) {
+		$(this).data('sdx-toggle-hovered', true);
+	});
+}
+
+/**
+ * Convert @UUID[...]{text} links to clickable spans
+ */
+function convertUUIDLinksToClickable(text) {
+	// Match @UUID[uuid]{label} or @UUID[uuid]
+	return text.replace(/@UUID\[([^\]]+)\](?:\{([^\}]+)\})?/g, (match, uuid, label) => {
+		const displayText = label || uuid.split('.').pop();
+		return `<span class="sdx-uuid-link" data-uuid="${uuid}">${displayText}</span>`;
+	});
+}
+
+/**
+ * Group conditions by their base name (without variant specifier)
+ */
+function groupConditionsByBaseName(conditions) {
+	const groups = {};
+	
+	for (const condition of conditions) {
+		const name = condition.name;
+		// Extract base name by removing variants like (1), (Cha), etc.
+		const baseName = name.replace(/\s*\([^)]+\)\s*$/, '').trim();
+		
+		if (!groups[baseName]) {
+			groups[baseName] = [];
+		}
+		groups[baseName].push(condition);
+	}
+	
+	// Sort groups alphabetically and sort variants within each group
+	const sortedGroups = {};
+	Object.keys(groups).sort().forEach(key => {
+		sortedGroups[key] = groups[key].sort((a, b) => a.name.localeCompare(b.name));
+	});
+	
+	return sortedGroups;
+}
+
+/**
+ * Show a submenu to select condition variant
+ */
+function showConditionSubmenu($toggle, variants, actor, activeEffects) {
+	// Remove any existing submenu
+	$('.sdx-condition-submenu').remove();
+	
+	// Build submenu HTML
+	let submenuHtml = '<div class="sdx-condition-submenu">';
+	
+	for (const variant of variants) {
+		const isActive = activeEffects.some(effect => 
+			effect.name === variant.name || 
+			effect.getFlag("core", "sourceId") === variant.uuid
+		);
+		
+		// Extract the variant part (e.g., "1", "Cha", etc.)
+		const match = variant.name.match(/\(([^)]+)\)\s*$/);
+		const variantLabel = match ? match[1] : variant.name.replace('Condition: ', '');
+		
+		submenuHtml += `
+			<div class="sdx-submenu-item ${isActive ? 'active' : ''}"
+				 data-condition-uuid="${variant.uuid}"
+				 data-condition-name="${variant.name}">
+				<span>${variantLabel}</span>
+				${isActive ? '<i class="fas fa-check"></i>' : ''}
+			</div>
+		`;
+	}
+	
+	submenuHtml += '</div>';
+	
+	// Append submenu
+	const $submenu = $(submenuHtml);
+	$toggle.append($submenu);
+	
+	// Position submenu
+	const rect = $toggle[0].getBoundingClientRect();
+	const submenuHeight = $submenu.outerHeight();
+	const spaceBelow = window.innerHeight - rect.bottom;
+	
+	if (spaceBelow < submenuHeight) {
+		$submenu.css('bottom', '100%').css('top', 'auto');
+	}
+	
+	// Handle submenu item clicks
+	$submenu.find('.sdx-submenu-item').on('click', async function(e) {
+		e.preventDefault();
+		e.stopPropagation();
+		
+		const $item = $(this);
+		const conditionUuid = $item.data('condition-uuid');
+		const conditionName = $item.data('condition-name');
+		const isActive = $item.hasClass('active');
+		
+		if (isActive) {
+			await removeConditionFromActor(actor, conditionName, conditionUuid);
+		} else {
+			await addConditionToActor(actor, conditionUuid);
+		}
+		
+		$submenu.remove();
+	});
+	
+	// Close submenu when clicking outside
+	setTimeout(() => {
+		$(document).one('click', () => {
+			$submenu.remove();
+		});
+	}, 10);
+}
+
+/**
+ * Add a condition to an actor by creating an active effect from the condition item
+ */
+async function addConditionToActor(actor, conditionUuid) {
+	try {
+		const condition = await fromUuid(conditionUuid);
+		if (!condition) {
+			ui.notifications.error(`Condition not found: ${conditionUuid}`);
+			return;
+		}
+
+		// Check if condition already exists
+		const existing = actor.effects.find(e => 
+			e.name === condition.name || 
+			e.getFlag("core", "sourceId") === conditionUuid
+		);
+		
+		if (existing) {
+			console.log(`${MODULE_ID} | Condition ${condition.name} already active`);
+			return;
+		}
+
+		// Get the effects from the condition item
+		const conditionEffects = condition.effects?.contents || [];
+		
+		if (conditionEffects.length > 0) {
+			// Copy the first effect from the condition
+			const sourceEffect = conditionEffects[0];
+			const effectData = sourceEffect.toObject();
+			
+			// Set flags to track origin
+			effectData.flags = effectData.flags || {};
+			effectData.flags.core = effectData.flags.core || {};
+			effectData.flags.core.sourceId = conditionUuid;
+			effectData.flags[MODULE_ID] = effectData.flags[MODULE_ID] || {};
+			effectData.flags[MODULE_ID].conditionToggle = true;
+
+			await actor.createEmbeddedDocuments("ActiveEffect", [effectData]);
+			ui.notifications.info(`Applied: ${condition.name}`);
+		} else {
+			// If the condition has no effects, create a basic status effect
+			const effectData = {
+				name: condition.name,
+				img: condition.img,
+				flags: {
+					core: { sourceId: conditionUuid },
+					[MODULE_ID]: { conditionToggle: true }
+				}
+			};
+			await actor.createEmbeddedDocuments("ActiveEffect", [effectData]);
+			ui.notifications.info(`Applied: ${condition.name}`);
+		}
+	} catch (error) {
+		console.error(`${MODULE_ID} | Error adding condition:`, error);
+		ui.notifications.error(`Failed to apply condition`);
+	}
+}
+
+/**
+ * Remove a condition from an actor
+ */
+async function removeConditionFromActor(actor, conditionName, conditionUuid) {
+	try {
+		// Find the effect(s) matching this condition
+		const effectsToRemove = actor.effects.filter(e => 
+			e.name === conditionName || 
+			e.getFlag("core", "sourceId") === conditionUuid ||
+			(e.getFlag(MODULE_ID, "conditionToggle") && e.name === conditionName)
+		);
+
+		if (effectsToRemove.length > 0) {
+			const ids = effectsToRemove.map(e => e.id);
+			await actor.deleteEmbeddedDocuments("ActiveEffect", ids);
+			ui.notifications.info(`Removed: ${conditionName}`);
+		}
+	} catch (error) {
+		console.error(`${MODULE_ID} | Error removing condition:`, error);
+		ui.notifications.error(`Failed to remove condition`);
+	}
+}
+
+/**
+ * Update condition toggles when effects change
+ */
+function updateConditionToggles(actor, html) {
+	const $toggles = html.find('.sdx-condition-toggle');
+	if (!$toggles.length) return;
+
+	const activeEffects = actor.effects.contents || [];
+
+	$toggles.each(function() {
+		const $toggle = $(this);
+		const conditionUuid = $toggle.data('condition-uuid');
+		const conditionName = $toggle.data('condition-name');
+
+		const isActive = activeEffects.some(effect => 
+			effect.name === conditionName || 
+			effect.getFlag("core", "sourceId") === conditionUuid
+		);
+
+		$toggle.toggleClass('active', isActive);
+	});
+}
+
+// ============================================
 // ENHANCED HEADER
 // ============================================
 
@@ -3530,7 +4047,11 @@ async function injectEnhancedHeader(app, html, actor) {
 	const xp = sys.level?.xp ?? 0;
 	const xpForNextLevel = getXpForNextLevel(level);
 	const xpPercent = xpForNextLevel > 0 ? Math.min(100, (xp / xpForNextLevel) * 100) : 0;
-	const luck = sys.luck?.available ?? false;
+	const levelUp = xp >= xpForNextLevel;
+	
+	// Check if pulp mode is enabled
+	const usePulpMode = game.settings.get("shadowdark", "usePulpMode");
+	const luck = usePulpMode ? (sys.luck?.remaining ?? 0) : (sys.luck?.available ?? false);
 
 	// Get character details - need to fetch actual item names from UUIDs
 	let ancestryName = '';
@@ -3580,6 +4101,27 @@ async function injectEnhancedHeader(app, html, actor) {
 		`;
 	}
 
+	// Build the luck container HTML based on mode
+	let luckHtml;
+	if (usePulpMode) {
+		// Pulp mode: show editable number
+		luckHtml = `
+			<div class="sdx-luck-container pulp-mode" data-tooltip="Luck Tokens: ${luck}">
+				<div class="sdx-luck-value">${luck}</div>
+				<div class="sdx-luck-label">LUCK</div>
+			</div>
+		`;
+	} else {
+		// Standard mode: show toggle icon
+		const hasLuck = luck ? 'has-luck' : '';
+		const luckStatus = luck ? 'Available' : 'Used';
+		luckHtml = `
+			<div class="sdx-luck-container standard-mode ${hasLuck}" data-tooltip="Luck (${luckStatus})">
+				<i class="fa-solid fa-dice-d20"></i>
+			</div>
+		`;
+	}
+
 	// Build the enhanced header content
 	const enhancedContent = `
 		<div class="sdx-enhanced-content">
@@ -3618,6 +4160,7 @@ async function injectEnhancedHeader(app, html, actor) {
 				
 				<div class="sdx-stats-row">
 					<div class="sdx-ac-container" data-tooltip="Armor Class">
+						<i class="fas fa-shield-halved"></i>
 						<div class="sdx-ac-value">${ac}</div>
 					</div>
 					
@@ -3635,11 +4178,12 @@ async function injectEnhancedHeader(app, html, actor) {
 			</div>
 			
 			<div class="sdx-header-right">
-				<div class="sdx-luck-container ${luck ? 'has-luck' : ''}" data-tooltip="Luck ${luck ? '(Available)' : '(Used)'}">
-					<i class="fas fa-clover"></i>
-				</div>
-				<div class="sdx-level-container" data-tooltip="Level">
-					<div class="sdx-level-value">${level}</div>
+				${luckHtml}
+				<div class="sdx-level-container ${levelUp ? 'can-level-up' : ''}" data-tooltip="${levelUp ? 'Ready to Level Up!' : 'Level'}">
+					${levelUp 
+						? '<i class="fas fa-arrow-up fa-beat"></i>' 
+						: `<div class="sdx-level-value">${level}</div><div class="sdx-level-label">LVL</div>`
+					}
 				</div>
 			</div>
 		</div>
@@ -3691,11 +4235,46 @@ async function injectEnhancedHeader(app, html, actor) {
 		});
 	});
 
-	// Luck toggle
-	$enhancedContent.find('.sdx-luck-container').on('click', async () => {
-		if (!actor.isOwner) return;
-		await actor.update({ "system.luck.available": !luck });
-	});
+	// Luck interaction - toggle or edit based on mode
+	const $luckContainer = $enhancedContent.find('.sdx-luck-container');
+	
+	if (usePulpMode) {
+		// Pulp mode: click to edit the number
+		$luckContainer.on('click', async (e) => {
+			if (!actor.isOwner) return;
+			e.stopPropagation();
+			
+			const $luckValue = $luckContainer.find('.sdx-luck-value');
+			const currentLuck = sys.luck?.remaining ?? 0;
+			
+			// Create inline input
+			const $input = $(`<input type="number" class="sdx-luck-input" value="${currentLuck}" min="0" />`);
+			$luckValue.replaceWith($input);
+			$input.focus().select();
+			
+			const saveLuck = async () => {
+				const newLuck = Math.max(0, parseInt($input.val()) || 0);
+				await actor.update({ "system.luck.remaining": newLuck });
+			};
+			
+			$input.on('blur', saveLuck);
+			$input.on('keydown', (e) => {
+				if (e.key === 'Enter') {
+					e.preventDefault();
+					$input.blur();
+				} else if (e.key === 'Escape') {
+					$input.val(currentLuck);
+					$input.blur();
+				}
+			});
+		});
+	} else {
+		// Standard mode: toggle on/off
+		$luckContainer.on('click', async () => {
+			if (!actor.isOwner) return;
+			await actor.update({ "system.luck.available": !luck });
+		});
+	}
 
 	// Actor name change
 	$enhancedContent.find('.sdx-actor-name').on('change', async function() {
@@ -3703,6 +4282,31 @@ async function injectEnhancedHeader(app, html, actor) {
 		const newName = $(this).val().trim();
 		if (newName && newName !== actor.name) {
 			await actor.update({ "name": newName });
+		}
+	});
+
+	// Level-up interaction
+	$enhancedContent.find('.sdx-level-container.can-level-up').on('click', async (e) => {
+		if (!actor.isOwner) return;
+		e.stopPropagation();
+		e.preventDefault();
+		
+		// Check if this is level 0 advancing
+		let actorClass = null;
+		try {
+			if (sys.class) {
+				actorClass = await fromUuid(sys.class);
+			}
+		} catch (err) {
+			console.warn("shadowdark-extras | Could not fetch actor class:", err);
+		}
+		
+		// Level 0 -> Level 1 uses Character Generator
+		if (level === 0 && actorClass?.name?.includes("Level 0")) {
+			new shadowdark.apps.CharacterGeneratorSD(actor._id).render(true);
+		} else {
+			// Standard level up
+			new shadowdark.apps.LevelUpSD(actor._id).render(true);
 		}
 	});
 
@@ -4969,6 +5573,8 @@ Hooks.on("renderPlayerSheetSD", async (app, html, data) => {
 	applyInventoryStylesToSheet(html, app.actor);
 	injectHeaderCustomization(app, html, app.actor);
 	await injectJournalNotes(app, html, app.actor);
+	await injectConditionsToggles(app, html, app.actor);
+	enableItemChatIcon(app, html);
 });
 
 // Inject Inventory tab into NPC sheets (but not Party sheets)
@@ -4987,6 +5593,7 @@ Hooks.on("renderNpcSheetSD", async (app, html, data) => {
 	addUnidentifiedIndicatorForGM(app, html);
 	maskUnidentifiedItemsOnSheet(app, html);
 	applyInventoryStylesToSheet(html, app.actor);
+	enableItemChatIcon(app, html);
 });
 
 // Apply inventory styles to Party sheets
@@ -5376,6 +5983,42 @@ Hooks.on("deleteActor", (actor, options, userId) => {
 			await party.setFlag(MODULE_ID, "members", newMemberIds);
 		}
 	});
+});
+
+// Update condition toggles when effects are created
+Hooks.on("createActiveEffect", (effect, options, userId) => {
+	const actor = effect.parent;
+	if (!actor || actor.type !== "Player") return;
+	
+	// Update the sheet if it's rendered
+	if (actor.sheet?.rendered) {
+		const html = actor.sheet.element;
+		updateConditionToggles(actor, html);
+	}
+});
+
+// Update condition toggles when effects are deleted
+Hooks.on("deleteActiveEffect", (effect, options, userId) => {
+	const actor = effect.parent;
+	if (!actor || actor.type !== "Player") return;
+	
+	// Update the sheet if it's rendered
+	if (actor.sheet?.rendered) {
+		const html = actor.sheet.element;
+		updateConditionToggles(actor, html);
+	}
+});
+
+// Update condition toggles when effects are updated
+Hooks.on("updateActiveEffect", (effect, changes, options, userId) => {
+	const actor = effect.parent;
+	if (!actor || actor.type !== "Player") return;
+	
+	// Update the sheet if it's rendered
+	if (actor.sheet?.rendered) {
+		const html = actor.sheet.element;
+		updateConditionToggles(actor, html);
+	}
 });
 
 console.log(`${MODULE_ID} | Module loaded`);
