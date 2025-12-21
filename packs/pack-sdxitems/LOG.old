@@ -1,0 +1,8 @@
+2025/12/21-16:58:25.214 d764 Recovering log #8
+2025/12/21-16:58:25.232 d764 Delete type=0 #8
+2025/12/21-16:58:25.233 d764 Delete type=3 #6
+2025/12/21-19:59:35.854 cc3c Level-0 table #13: started
+2025/12/21-19:59:35.854 cc3c Level-0 table #13: 0 bytes OK
+2025/12/21-19:59:35.858 cc3c Delete type=0 #11
+2025/12/21-19:59:35.871 cc3c Manual compaction at level-0 from '!items!7yL2cxB0ttxktRrr' @ 72057594037927935 : 1 .. '!items!lp45OyWFnbmFmn6G' @ 0 : 0; will stop at (end)
+2025/12/21-19:59:35.871 cc3c Manual compaction at level-1 from '!items!7yL2cxB0ttxktRrr' @ 72057594037927935 : 1 .. '!items!lp45OyWFnbmFmn6G' @ 0 : 0; will stop at (end)

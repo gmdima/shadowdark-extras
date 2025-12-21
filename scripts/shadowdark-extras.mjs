@@ -5,6 +5,8 @@
 
 import PartySheetSD from "./PartySheetSD.mjs";
 import TradeWindowSD, { initializeTradeSocket, showTradeDialog, ensureTradeJournal } from "./TradeWindowSD.mjs";
+import { CombatSettingsApp, registerCombatSettings, injectDamageCard, setupCombatSocket } from "./CombatSettingsSD.mjs";
+import { generateSpellConfig, generatePotionConfig, generateScrollConfig, generateWandConfig } from "./templates/ItemTypeConfigs.mjs";
 
 const MODULE_ID = "shadowdark-extras";
 const TRADE_JOURNAL_NAME = "__sdx_trade_sync__"; // Must match TradeWindowSD.mjs
@@ -310,6 +312,26 @@ class InventoryStylesApp extends FormApplication {
 			const $popup = $(ev.currentTarget).closest(".sdx-shadow-popup");
 			this._updateShadowValue($popup);
 			this._updateShadowPreview($popup);
+			this._updateLivePreview(html);
+		});
+
+		// ---- Remove Shadow Button ----
+		html.find(".sdx-shadow-remove").on("click", (ev) => {
+			ev.preventDefault();
+			const $popup = $(ev.currentTarget).closest(".sdx-shadow-popup");
+			const shadowType = $popup.data("shadow-type");
+			const $section = $popup.closest(".sdx-control-section");
+			
+			// Set shadow value to empty string (no shadow)
+			$section.find(`.sdx-shadow-value[data-shadow-type="${shadowType}"]`).val("").trigger("change");
+			
+			// Reset preview
+			$popup.find(".sdx-shadow-preview-text").css("text-shadow", "none");
+			
+			// Close the popup
+			$popup.slideUp(200);
+			
+			// Update live preview
 			this._updateLivePreview(html);
 		});
 
@@ -928,6 +950,48 @@ function setupUnidentifiedItemNameWrapper() {
 		configurable: true,
 		enumerable: originalDescriptor.enumerable
 	});
+}
+
+/**
+ * Wrap buildWeaponDisplay to ensure unidentified items show in bold
+ */
+function wrapBuildWeaponDisplayForUnidentified() {
+	// Only setup if unidentified feature is enabled (with guard)
+	try {
+		if (!game.settings.get(MODULE_ID, "enableUnidentified")) return;
+	} catch {
+		return; // Setting not registered yet
+	}
+	
+	console.log(`${MODULE_ID} | Wrapping ActorSD.buildWeaponDisplay for unidentified items`);
+	
+	if (!globalThis.shadowdark?.documents?.ActorSD) {
+		console.warn(`${MODULE_ID} | ActorSD not found, cannot wrap buildWeaponDisplay`);
+		return;
+	}
+	
+	const ActorSD = globalThis.shadowdark.documents.ActorSD;
+	const original = ActorSD.prototype.buildWeaponDisplay;
+	
+	ActorSD.prototype.buildWeaponDisplay = async function(options) {
+		// Call the original function
+		const result = await original.call(this, options);
+		
+		// If the weapon name is "Unidentified Item", ensure it has bold formatting
+		if (options.weaponName && options.weaponName.includes("Unidentified Item")) {
+			// Check if the bold tag is missing or if it's just plain text
+			const boldPattern = /<b[^>]*>Unidentified Item<\/b>/;
+			if (!boldPattern.test(result)) {
+				// Replace any occurrence of plain "Unidentified Item" with bolded version
+				return result.replace(
+					/Unidentified Item/g,
+					'<b style="font-size:16px">Unidentified Item</b>'
+				);
+			}
+		}
+		
+		return result;
+	};
 }
 
 /**
@@ -2996,17 +3060,18 @@ function registerSettings() {
 		hint: game.i18n.localize("SHADOWDARK_EXTRAS.settings.enable_enhanced_header.hint"),
 		scope: "world",
 		config: true,
-		default: false,
+		default: true,
 		type: Boolean,
 		requiresReload: true,
 	});
 
+	// Internal setting - always enabled, not shown in UI
 	game.settings.register(MODULE_ID, "enableEnhancedDetails", {
 		name: "Enable Player Sheet Tabs Theme Enhancement",
 		hint: "Enhances the Details tab with improved styling and organization to match the enhanced header theme.",
 		scope: "world",
-		config: true,
-		default: false,
+		config: false,
+		default: true,
 		type: Boolean,
 		requiresReload: true,
 	});
@@ -3127,6 +3192,17 @@ function registerSettings() {
 		requiresReload: true
 	});
 
+	// === ENHANCE SPELLS ===
+	game.settings.register(MODULE_ID, "enhanceSpells", {
+		name: "Enhance Spells",
+		hint: "Add damage/heal configuration to spell items for automatic spell damage application similar to weapon attacks.",
+		scope: "world",
+		config: true,
+		default: true,
+		type: Boolean,
+		requiresReload: true
+	});
+
 	// === CONDITIONS THEME ===
 	game.settings.register(MODULE_ID, "conditionsTheme", {
 		name: "Conditions Theme",
@@ -3152,6 +3228,9 @@ function registerSettings() {
 			}
 		}
 	});
+
+	// === COMBAT SETTINGS ===
+	registerCombatSettings();
 }
 
 // ============================================
@@ -3627,53 +3706,10 @@ function addInlineEffectControls($effectsTab, actor) {
 			e.stopPropagation();
 			const item = actor.items.get(itemId);
 			if (item && game.user.isGM) {
-				// Show player selection dialog
-				const players = game.users.filter(u => !u.isGM && u.active);
-				if (players.length === 0) {
-					ui.notifications.warn("No active players to transfer to");
-					return;
+				const targetActorId = await showTransferDialog(actor, item);
+				if (targetActorId) {
+					await transferItemToPlayer(actor, item, targetActorId);
 				}
-				
-				const playerOptions = players.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
-				const content = `
-					<form>
-						<div class="form-group">
-							<label>Select Player:</label>
-							<select name="playerId">${playerOptions}</select>
-						</div>
-					</form>
-				`;
-				
-				new Dialog({
-					title: "Transfer Item to Player",
-					content: content,
-					buttons: {
-						transfer: {
-							icon: '<i class="fas fa-share"></i>',
-							label: "Transfer",
-							callback: async (html) => {
-								const playerId = html.find('[name="playerId"]').val();
-								const player = game.users.get(playerId);
-								const targetActor = player?.character;
-								
-								if (!targetActor) {
-									ui.notifications.error("Selected player has no assigned character");
-									return;
-								}
-								
-								const itemData = item.toObject();
-								await targetActor.createEmbeddedDocuments("Item", [itemData]);
-								await item.delete();
-								ui.notifications.info(`Transferred ${item.name} to ${targetActor.name}`);
-							}
-						},
-						cancel: {
-							icon: '<i class="fas fa-times"></i>',
-							label: "Cancel"
-						}
-					},
-					default: "transfer"
-				}).render(true);
 			}
 		});
 		
@@ -4086,13 +4122,6 @@ function updateConditionToggles(actor, html) {
  * Enhance the Details tab with improved styling and organization
  */
 function enhanceDetailsTab(app, html, actor) {
-	// Check if enhanced details is enabled
-	try {
-		if (!game.settings.get(MODULE_ID, "enableEnhancedDetails")) return;
-	} catch {
-		return;
-	}
-
 	if (actor.type !== "Player") return;
 
 	const $detailsTab = html.find('.tab[data-tab="tab-details"]');
@@ -4103,30 +4132,6 @@ function enhanceDetailsTab(app, html, actor) {
 
 	// Hide the level box (it's already in the enhanced header)
 	$detailsTab.find('.SD-box').first().hide();
-
-	// Function to extend header background into Details tab
-	const extendHeaderBg = () => {
-		const $form = html.closest('form');
-		const $bgExtension = $form.find('.sdx-header-bg-extension');
-		
-		if ($bgExtension.length) {
-			// Remove any existing details extension
-			$detailsTab.find('.sdx-details-bg-extension').remove();
-			
-			// Clone the background extension for the details tab
-			const $detailsBg = $bgExtension.clone();
-			$detailsBg.removeClass('sdx-header-bg-extension').addClass('sdx-details-bg-extension');
-			$detailsBg.css('height', '150px');
-			
-			// Add to the details tab
-			$detailsTab.append($detailsBg);
-		}
-	};
-	
-	// Try immediately and after a delay (in case header background is set up after this function)
-	extendHeaderBg();
-	setTimeout(extendHeaderBg, 100);
-	setTimeout(extendHeaderBg, 300);
 }
 
 // ============================================
@@ -4137,13 +4142,6 @@ function enhanceDetailsTab(app, html, actor) {
  * Enhance the Abilities tab with improved styling and organization
  */
 function enhanceAbilitiesTab(app, html, actor) {
-	// Check if enhanced details is enabled (use same setting)
-	try {
-		if (!game.settings.get(MODULE_ID, "enableEnhancedDetails")) return;
-	} catch {
-		return;
-	}
-
 	if (actor.type !== "Player") return;
 
 	const $abilitiesTab = html.find('.tab[data-tab="tab-abilities"]');
@@ -4151,30 +4149,65 @@ function enhanceAbilitiesTab(app, html, actor) {
 
 	// Add enhanced class to the abilities tab
 	$abilitiesTab.addClass('sdx-enhanced-abilities');
-
-	// Function to extend header background into Abilities tab
-	const extendHeaderBg = () => {
-		const $form = html.closest('form');
-		const $bgExtension = $form.find('.sdx-header-bg-extension');
-		
-		if ($bgExtension.length) {
-			// Remove any existing abilities extension
-			$abilitiesTab.find('.sdx-abilities-bg-extension').remove();
-			
-			// Clone the background extension for the abilities tab
-			const $abilitiesBg = $bgExtension.clone();
-			$abilitiesBg.removeClass('sdx-header-bg-extension').addClass('sdx-abilities-bg-extension');
-			$abilitiesBg.css('height', '150px');
-			
-			// Add to the abilities tab
-			$abilitiesTab.append($abilitiesBg);
-		}
-	};
 	
-	// Try immediately and after a delay (in case header background is set up after this function)
-	extendHeaderBg();
-	setTimeout(extendHeaderBg, 100);
-	setTimeout(extendHeaderBg, 300);
+	// Fix bold formatting for unidentified weapons in abilities section
+	fixUnidentifiedWeaponBoldInAbilities($abilitiesTab);
+}
+
+/**
+ * Fix bold formatting for unidentified weapons in the abilities section
+ */
+function fixUnidentifiedWeaponBoldInAbilities($abilitiesTab) {
+	// Only fix if unidentified feature is enabled
+	try {
+		if (!game.settings.get(MODULE_ID, "enableUnidentified")) return;
+	} catch {
+		return;
+	}
+	
+	// Find all attack displays that contain "Unidentified Item" text
+	$abilitiesTab.find('.attack .rollable').each(function() {
+		const $rollable = $(this);
+		const html = $rollable.html();
+		
+		// Check if it contains "Unidentified Item" without proper bold formatting
+		if (html && html.includes('Unidentified Item')) {
+			// Replace plain text with bold version
+			const fixedHtml = html.replace(
+				/Unidentified Item/g,
+				'<b style="font-size:16px">Unidentified Item</b>'
+			);
+			$rollable.html(fixedHtml);
+		}
+	});
+}
+
+/**
+ * Fix bold formatting for unidentified weapons - runs for all users
+ */
+function fixUnidentifiedWeaponBoldForAllUsers(html) {
+	// Only fix if unidentified feature is enabled
+	try {
+		if (!game.settings.get(MODULE_ID, "enableUnidentified")) return;
+	} catch {
+		return;
+	}
+	
+	// Find all attack rollables that contain "Unidentified Item" text
+	html.find('.attack .rollable').each(function() {
+		const $rollable = $(this);
+		const currentHtml = $rollable.html();
+		
+		// Check if it contains "Unidentified Item" without proper bold formatting
+		if (currentHtml && currentHtml.includes('Unidentified Item') && !currentHtml.includes('<b')) {
+			// Replace plain text with bold version
+			const fixedHtml = currentHtml.replace(
+				/Unidentified Item/g,
+				'<b style="font-size:16px">Unidentified Item</b>'
+			);
+			$rollable.html(fixedHtml);
+		}
+	});
 }
 
 // ============================================
@@ -4229,53 +4262,10 @@ function addInlineTalentControls($talentsTab, actor) {
 			e.stopPropagation();
 			const item = actor.items.get(itemId);
 			if (item && game.user.isGM) {
-				// Show player selection dialog
-				const players = game.users.filter(u => !u.isGM && u.active);
-				if (players.length === 0) {
-					ui.notifications.warn("No active players to transfer to");
-					return;
+				const targetActorId = await showTransferDialog(actor, item);
+				if (targetActorId) {
+					await transferItemToPlayer(actor, item, targetActorId);
 				}
-				
-				const playerOptions = players.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
-				const content = `
-					<form>
-						<div class="form-group">
-							<label>Select Player:</label>
-							<select name="playerId">${playerOptions}</select>
-						</div>
-					</form>
-				`;
-				
-				new Dialog({
-					title: "Transfer Item to Player",
-					content: content,
-					buttons: {
-						transfer: {
-							icon: '<i class="fas fa-share"></i>',
-							label: "Transfer",
-							callback: async (html) => {
-								const playerId = html.find('[name="playerId"]').val();
-								const player = game.users.get(playerId);
-								const targetActor = player?.character;
-								
-								if (!targetActor) {
-									ui.notifications.error("Selected player has no assigned character");
-									return;
-								}
-								
-								const itemData = item.toObject();
-								await targetActor.createEmbeddedDocuments("Item", [itemData]);
-								await item.delete();
-								ui.notifications.info(`Transferred ${item.name} to ${targetActor.name}`);
-							}
-						},
-						cancel: {
-							icon: '<i class="fas fa-times"></i>',
-							label: "Cancel"
-						}
-					},
-					default: "transfer"
-				}).render(true);
 			}
 		});
 		
@@ -4305,13 +4295,6 @@ function addInlineTalentControls($talentsTab, actor) {
  * Enhance the Talents tab with improved styling and organization
  */
 function enhanceTalentsTab(app, html, actor) {
-	// Check if enhanced details is enabled (use same setting)
-	try {
-		if (!game.settings.get(MODULE_ID, "enableEnhancedDetails")) return;
-	} catch {
-		return;
-	}
-
 	if (actor.type !== "Player") return;
 
 	const $talentsTab = html.find('.tab[data-tab="tab-talents"]');
@@ -4319,30 +4302,6 @@ function enhanceTalentsTab(app, html, actor) {
 
 	// Add enhanced class to the talents tab
 	$talentsTab.addClass('sdx-enhanced-talents');
-
-	// Function to extend header background into Talents tab
-	const extendHeaderBg = () => {
-		const $form = html.closest('form');
-		const $bgExtension = $form.find('.sdx-header-bg-extension');
-		
-		if ($bgExtension.length) {
-			// Remove any existing talents extension
-			$talentsTab.find('.sdx-talents-bg-extension').remove();
-			
-			// Clone the background extension for the talents tab
-			const $talentsBg = $bgExtension.clone();
-			$talentsBg.removeClass('sdx-header-bg-extension').addClass('sdx-talents-bg-extension');
-			$talentsBg.css('height', '150px');
-			
-			// Add to the talents tab
-			$talentsTab.append($talentsBg);
-		}
-	};
-	
-	// Try immediately and after a delay (in case header background is set up after this function)
-	extendHeaderBg();
-	setTimeout(extendHeaderBg, 100);
-	setTimeout(extendHeaderBg, 300);
 	
 	// Add inline control buttons to talent items
 	addInlineTalentControls($talentsTab, actor);
@@ -4353,16 +4312,13 @@ function enhanceTalentsTab(app, html, actor) {
 // ============================================
 
 /**
+ * Fix context menu positioning for enhanced tabs
+ * The context menu needs to be positioned relative to the viewport when in fixed positioned tabs
+ */
+/**
  * Enhance the Spells tab with improved styling and organization
  */
 function enhanceSpellsTab(app, html, actor) {
-	// Check if enhanced details is enabled (use same setting)
-	try {
-		if (!game.settings.get(MODULE_ID, "enableEnhancedDetails")) return;
-	} catch {
-		return;
-	}
-
 	if (actor.type !== "Player") return;
 
 	const $spellsTab = html.find('.tab[data-tab="tab-spells"]');
@@ -4371,29 +4327,120 @@ function enhanceSpellsTab(app, html, actor) {
 	// Add enhanced class to the spells tab
 	$spellsTab.addClass('sdx-enhanced-spells');
 
-	// Function to extend header background into Spells tab
-	const extendHeaderBg = () => {
-		const $form = html.closest('form');
-		const $bgExtension = $form.find('.sdx-header-bg-extension');
+	// Add action buttons to spell items
+	$spellsTab.find('.item[data-item-id]').each((i, item) => {
+		const $item = $(item);
+		const itemId = $item.data('item-id');
 		
-		if ($bgExtension.length) {
-			// Remove any existing spells extension
-			$spellsTab.find('.sdx-spells-bg-extension').remove();
+		// Skip if buttons already added
+		if ($item.find('.sdx-spell-actions').length) return;
+		
+		// Find the item-name element
+		const $itemName = $item.find('.item-name');
+		if (!$itemName.length) return;
+		
+		// Create action buttons container
+		const $actions = $(`
+			<div class="sdx-spell-actions">
+				<a class="sdx-spell-btn sdx-edit-spell" data-tooltip="Edit" title="Edit">
+					<i class="fas fa-edit"></i>
+				</a>
+				<a class="sdx-spell-btn sdx-transfer-spell" data-tooltip="Transfer to Player" title="Transfer to Player">
+					<i class="fas fa-share"></i>
+				</a>
+				<a class="sdx-spell-btn sdx-delete-spell" data-tooltip="Delete" title="Delete">
+					<i class="fas fa-trash"></i>
+				</a>
+			</div>
+		`);
+		
+		// Insert actions after the item-name
+		$itemName.after($actions);
+		
+		// Edit button handler
+		$actions.find('.sdx-edit-spell').on('click', (e) => {
+			e.preventDefault();
+			e.stopPropagation();
+			const item = actor.items.get(itemId);
+			if (item) item.sheet.render(true);
+		});
+		
+		// Transfer button handler
+		$actions.find('.sdx-transfer-spell').on('click', async (e) => {
+			e.preventDefault();
+			e.stopPropagation();
+			const item = actor.items.get(itemId);
+			if (item && game.user.isGM) {
+				// Show player selection dialog
+				const players = game.users.filter(u => !u.isGM && u.active);
+				if (players.length === 0) {
+					ui.notifications.warn(game.i18n.localize("SHADOWDARK_EXTRAS.notifications.no_active_players"));
+					return;
+				}
+				
+				const playerOptions = players.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
+				const content = `
+					<form>
+						<div class="form-group">
+							<label>${game.i18n.localize("SHADOWDARK_EXTRAS.dialog.select_player")}</label>
+							<select name="playerId">${playerOptions}</select>
+						</div>
+					</form>
+				`;
+				
+				new Dialog({
+					title: game.i18n.localize("SHADOWDARK_EXTRAS.dialog.transfer_spell_title"),
+					content: content,
+					buttons: {
+						transfer: {
+							icon: '<i class="fas fa-share"></i>',
+							label: game.i18n.localize("SHADOWDARK_EXTRAS.dialog.transfer"),
+							callback: async (html) => {
+								const playerId = html.find('[name="playerId"]').val();
+								const player = game.users.get(playerId);
+								const targetActor = player?.character;
+								
+								if (!targetActor) {
+									ui.notifications.error(game.i18n.localize("SHADOWDARK_EXTRAS.notifications.no_character_assigned"));
+									return;
+								}
+								
+								const itemData = item.toObject();
+								await targetActor.createEmbeddedDocuments("Item", [itemData]);
+								await item.delete();
+								ui.notifications.info(game.i18n.format("SHADOWDARK_EXTRAS.notifications.item_transferred", {
+									item: item.name,
+									target: targetActor.name
+								}));
+							}
+						},
+						cancel: {
+							icon: '<i class="fas fa-times"></i>',
+							label: game.i18n.localize("SHADOWDARK_EXTRAS.dialog.cancel")
+						}
+					},
+					default: "transfer"
+				}).render(true);
+			}
+		});
+		
+		// Delete button handler
+		$actions.find('.sdx-delete-spell').on('click', async (e) => {
+			e.preventDefault();
+			e.stopPropagation();
+			const item = actor.items.get(itemId);
+			if (!item) return;
 			
-			// Clone the background extension for the spells tab
-			const $spellsBg = $bgExtension.clone();
-			$spellsBg.removeClass('sdx-header-bg-extension').addClass('sdx-spells-bg-extension');
-			$spellsBg.css('height', '150px');
+			const confirmed = await Dialog.confirm({
+				title: game.i18n.localize("SHADOWDARK_EXTRAS.inventory.delete_spell_title"),
+				content: `<p>${game.i18n.format("SHADOWDARK_EXTRAS.inventory.delete_spell_text", {name: item.name})}</p>`
+			});
 			
-			// Add to the spells tab
-			$spellsTab.append($spellsBg);
-		}
-	};
-	
-	// Try immediately and after a delay (in case header background is set up after this function)
-	extendHeaderBg();
-	setTimeout(extendHeaderBg, 100);
-	setTimeout(extendHeaderBg, 300);
+			if (confirmed) {
+				await item.delete();
+			}
+		});
+	});
 }
 
 // ============================================
@@ -4404,13 +4451,6 @@ function enhanceSpellsTab(app, html, actor) {
  * Enhance the Effects tab with improved styling and organization
  */
 function enhanceEffectsTab(app, html, actor) {
-	// Check if enhanced details is enabled (use same setting)
-	try {
-		if (!game.settings.get(MODULE_ID, "enableEnhancedDetails")) return;
-	} catch {
-		return;
-	}
-
 	if (actor.type !== "Player") return;
 
 	const $effectsTab = html.find('.tab[data-tab="tab-effects"]');
@@ -4418,30 +4458,6 @@ function enhanceEffectsTab(app, html, actor) {
 
 	// Add enhanced class to the effects tab
 	$effectsTab.addClass('sdx-enhanced-effects');
-
-	// Function to extend header background into Effects tab
-	const extendHeaderBg = () => {
-		const $form = html.closest('form');
-		const $bgExtension = $form.find('.sdx-header-bg-extension');
-		
-		if ($bgExtension.length) {
-			// Remove any existing effects extension
-			$effectsTab.find('.sdx-effects-bg-extension').remove();
-			
-			// Clone the background extension for the effects tab
-			const $effectsBg = $bgExtension.clone();
-			$effectsBg.removeClass('sdx-header-bg-extension').addClass('sdx-effects-bg-extension');
-			$effectsBg.css('height', '150px');
-			
-			// Add to the effects tab
-			$effectsTab.append($effectsBg);
-		}
-	};
-	
-	// Try immediately and after a delay (in case header background is set up after this function)
-	extendHeaderBg();
-	setTimeout(extendHeaderBg, 100);
-	setTimeout(extendHeaderBg, 300);
 }
 
 // ============================================
@@ -4452,13 +4468,6 @@ function enhanceEffectsTab(app, html, actor) {
  * Enhance the Inventory tab with improved styling and organization
  */
 function enhanceInventoryTab(app, html, actor) {
-	// Check if enhanced details is enabled (use same setting)
-	try {
-		if (!game.settings.get(MODULE_ID, "enableEnhancedDetails")) return;
-	} catch {
-		return;
-	}
-
 	if (actor.type !== "Player") return;
 
 	const $inventoryTab = html.find('.tab[data-tab="tab-inventory"]');
@@ -4466,30 +4475,6 @@ function enhanceInventoryTab(app, html, actor) {
 
 	// Add enhanced class to the inventory tab
 	$inventoryTab.addClass('sdx-enhanced-inventory');
-
-	// Function to extend header background into Inventory tab
-	const extendHeaderBg = () => {
-		const $form = html.closest('form');
-		const $bgExtension = $form.find('.sdx-header-bg-extension');
-		
-		if ($bgExtension.length) {
-			// Remove any existing inventory extension
-			$inventoryTab.find('.sdx-inventory-bg-extension').remove();
-			
-			// Clone the background extension for the inventory tab
-			const $inventoryBg = $bgExtension.clone();
-			$inventoryBg.removeClass('sdx-header-bg-extension').addClass('sdx-inventory-bg-extension');
-			$inventoryBg.css('height', '150px');
-			
-			// Add to the inventory tab
-			$inventoryTab.append($inventoryBg);
-		}
-	};
-	
-	// Try immediately and after a delay (in case header background is set up after this function)
-	extendHeaderBg();
-	setTimeout(extendHeaderBg, 100);
-	setTimeout(extendHeaderBg, 300);
 }
 
 // ============================================
@@ -4685,6 +4670,41 @@ async function injectEnhancedHeader(app, html, actor) {
 	// Wire up interactivity
 	const $enhancedContent = $header.find('.sdx-enhanced-content');
 
+	// Portrait click to launch tokenizer (if vtta-tokenizer module is active)
+	$enhancedContent.find('.sdx-portrait').on('click', async (e) => {
+		if (!actor.isOwner) return;
+		e.stopPropagation();
+		
+		// Check if vtta-tokenizer module is active and available
+		if (!window.Tokenizer && !game.modules.get("vtta-tokenizer")?.active) {
+			ui.notifications.warn("VTTA Tokenizer module is not active or available.");
+			return;
+		}
+		
+		try {
+			// Use tokenizeActor for direct tokenization, or launch for UI
+			if (window.Tokenizer?.tokenizeActor) {
+				await window.Tokenizer.tokenizeActor(actor);
+			} else if (window.Tokenizer?.launch) {
+				// Launch with options
+				const options = {
+					name: actor.name,
+					type: actor.type.toLowerCase(),
+					avatarFilename: actor.img
+				};
+				window.Tokenizer.launch(options, (response) => {
+					console.log("shadowdark-extras | Tokenizer response:", response);
+					ui.notifications.success(`Tokenizer completed for ${actor.name}!`);
+				});
+			} else {
+				ui.notifications.warn("Tokenizer API not found.");
+			}
+		} catch (error) {
+			console.error("shadowdark-extras | Error launching tokenizer:", error);
+			ui.notifications.error(`Failed to launch tokenizer: ${error.message}`);
+		}
+	});
+
 	// HP click to edit
 	$enhancedContent.find('.sdx-hp-bar-container').on('click', async (e) => {
 		if (!actor.isOwner) return;
@@ -4798,8 +4818,18 @@ async function injectEnhancedHeader(app, html, actor) {
 		}
 	});
 
-	// Initiative roll
+	// Initiative roll - if in combat, roll for combat initiative; otherwise just roll dex
 	$enhancedContent.find('.sdx-init-container').on('click', async () => {
+		// Check if there's an active combat and this actor has a combatant in it
+		if (game.combat) {
+			const combatant = game.combat.combatants.find(c => c.actorId === actor.id);
+			if (combatant) {
+				// Roll initiative for combat
+				await game.combat.rollInitiative(combatant.id, {updateTurn: false});
+				return;
+			}
+		}
+		// Fallback: just roll a dex check if not in combat
 		if (actor.rollAbility) {
 			actor.rollAbility('dex');
 		}
@@ -4810,20 +4840,11 @@ async function injectEnhancedHeader(app, html, actor) {
  * Get the XP required for the next level in Shadowdark
  */
 function getXpForNextLevel(currentLevel) {
-	// Shadowdark XP requirements per level
-	const xpTable = {
-		1: 10,
-		2: 20,
-		3: 40,
-		4: 80,
-		5: 160,
-		6: 320,
-		7: 640,
-		8: 1280,
-		9: 2560,
-		10: 5000 // Level 10+ (no standard progression)
-	};
-	return xpTable[currentLevel] || (currentLevel >= 10 ? 5000 : 10);
+	// Shadowdark XP requirements per level (linear progression: level * 10)
+	// Level 1 needs 10 XP to reach level 2
+	// Level 2 needs 20 XP to reach level 3
+	// Level 3 needs 30 XP to reach level 4, etc.
+	return currentLevel * 10;
 }
 
 /**
@@ -4840,7 +4861,6 @@ function injectHeaderCustomization(app, html, actor) {
 	
 	// Apply any existing custom backgrounds
 	applyHeaderBackground(html, actor);
-	applySheetBackground(html, actor);
 	
 	// Check if user can edit this actor (GM or owner)
 	const canEdit = game.user.isGM || actor.isOwner;
@@ -4858,7 +4878,7 @@ function injectHeaderCustomization(app, html, actor) {
 		</button>
 	`);
 	
-	// Create the settings menu with separate header and sheet background options
+	// Create the settings menu with header background option
 	const $settingsMenu = $(`
 		<div class="sdx-header-settings-menu">
 			<div class="sdx-settings-section">
@@ -4868,18 +4888,6 @@ function injectHeaderCustomization(app, html, actor) {
 					<span>${game.i18n.localize("SHADOWDARK_EXTRAS.header.select_image") || "Select Image"}</span>
 				</button>
 				<button type="button" class="sdx-header-remove-image danger">
-					<i class="fas fa-trash"></i>
-					<span>${game.i18n.localize("SHADOWDARK_EXTRAS.header.remove_image") || "Remove"}</span>
-				</button>
-			</div>
-			<hr>
-			<div class="sdx-settings-section">
-				<div class="sdx-settings-label">Sheet Background</div>
-				<button type="button" class="sdx-sheet-select-image">
-					<i class="fas fa-image"></i>
-					<span>${game.i18n.localize("SHADOWDARK_EXTRAS.header.select_image") || "Select Image"}</span>
-				</button>
-				<button type="button" class="sdx-sheet-remove-image danger">
 					<i class="fas fa-trash"></i>
 					<span>${game.i18n.localize("SHADOWDARK_EXTRAS.header.remove_image") || "Remove"}</span>
 				</button>
@@ -4950,45 +4958,6 @@ function injectHeaderCustomization(app, html, actor) {
 		// Force sheet re-render
 		app.render(false);
 	});
-	
-	// Handle select sheet background button
-	$settingsMenu.find('.sdx-sheet-select-image').on('click', async (event) => {
-		event.preventDefault();
-		event.stopPropagation();
-		
-		// Close the menu
-		$settingsBtn.removeClass('active');
-		$settingsMenu.removeClass('visible');
-		
-		// Open file picker - use imagevideo to allow webm files
-		const currentImage = actor.getFlag(MODULE_ID, "sheetBackground") || "";
-		const fp = new FilePicker({
-			type: "imagevideo",
-			current: currentImage,
-			callback: async (path) => {
-				await actor.setFlag(MODULE_ID, "sheetBackground", path);
-				// Force sheet re-render to apply the background properly
-				app.render(false);
-			}
-		});
-		fp.render(true);
-	});
-	
-	// Handle remove sheet background button
-	$settingsMenu.find('.sdx-sheet-remove-image').on('click', async (event) => {
-		event.preventDefault();
-		event.stopPropagation();
-		
-		// Close the menu
-		$settingsBtn.removeClass('active');
-		$settingsMenu.removeClass('visible');
-		
-		// Remove the custom sheet background
-		await actor.unsetFlag(MODULE_ID, "sheetBackground");
-		
-		// Force sheet re-render
-		app.render(false);
-	});
 }
 
 /**
@@ -5030,7 +4999,7 @@ function applyHeaderBackground(html, actor) {
 		
 		// Calculate from the top of header to the bottom of nav, relative to form
 		// Add extra padding to ensure it covers the full nav including border-bottom
-		const totalHeight = (navRect.bottom - formRect.top) + 30;
+		const totalHeight = (navRect.bottom - formRect.top) + 35;
 		$form.find('.sdx-header-bg-extension').css('height', totalHeight + 'px');
 	};
 	
@@ -5059,101 +5028,6 @@ function applyHeaderBackground(html, actor) {
 	updateBgHeight();
 	setTimeout(updateBgHeight, 100);
 	setTimeout(updateBgHeight, 300);
-}
-
-/**
- * Apply the custom sheet background to enhanced tabs if one is set
- * Supports both images and videos (mp4, webm)
- * Applied independently of header background
- */
-function applySheetBackground(html, actor) {
-	const sheetBg = actor.getFlag(MODULE_ID, "sheetBackground");
-	
-	// Find the form - html might BE the form or contain it
-	let $form = html.is('form') ? html : html.find('form').first();
-	if (!$form.length) $form = html.closest('form');
-	if (!$form.length) return;
-	
-	// Check if it's a video file
-	const isVideo = sheetBg ? /\.(mp4|webm|ogg)$/i.test(sheetBg) : false;
-	
-	// Function to create background element
-	const createBgElement = (className) => {
-		if (!sheetBg) return null;
-		
-		const $bgExtension = $(`<div class="${className}"></div>`);
-		
-		if (isVideo) {
-			const videoType = sheetBg.split('.').pop().toLowerCase();
-			const $video = $(`
-				<video autoplay loop muted playsinline>
-					<source src="${sheetBg}" type="video/${videoType}">
-				</video>
-			`);
-			$bgExtension.append($video);
-		} else {
-			$bgExtension.css('background-image', `url("${sheetBg}")`);
-		}
-		
-		$bgExtension.css('height', '250px');
-		return $bgExtension;
-	};
-	
-	// Function to update all tab backgrounds
-	const updateTabBackgrounds = () => {
-		// Update Details tab
-		const $detailsTab = $form.find('.tab[data-tab="tab-details"].sdx-enhanced-details');
-		if ($detailsTab.length) {
-			$detailsTab.find('.sdx-details-bg-extension').remove();
-			const $detailsBg = createBgElement('sdx-details-bg-extension');
-			if ($detailsBg) $detailsTab.append($detailsBg);
-		}
-		
-		// Update Abilities tab
-		const $abilitiesTab = $form.find('.tab[data-tab="tab-abilities"].sdx-enhanced-abilities');
-		if ($abilitiesTab.length) {
-			$abilitiesTab.find('.sdx-abilities-bg-extension').remove();
-			const $abilitiesBg = createBgElement('sdx-abilities-bg-extension');
-			if ($abilitiesBg) $abilitiesTab.append($abilitiesBg);
-		}
-		
-		// Update Talents tab
-		const $talentsTab = $form.find('.tab[data-tab="tab-talents"].sdx-enhanced-talents');
-		if ($talentsTab.length) {
-			$talentsTab.find('.sdx-talents-bg-extension').remove();
-			const $talentsBg = createBgElement('sdx-talents-bg-extension');
-			if ($talentsBg) $talentsTab.append($talentsBg);
-		}
-		
-		// Update Spells tab
-		const $spellsTab = $form.find('.tab[data-tab="tab-spells"].sdx-enhanced-spells');
-		if ($spellsTab.length) {
-			$spellsTab.find('.sdx-spells-bg-extension').remove();
-			const $spellsBg = createBgElement('sdx-spells-bg-extension');
-			if ($spellsBg) $spellsTab.append($spellsBg);
-		}
-		
-		// Update Inventory tab
-		const $inventoryTab = $form.find('.tab[data-tab="tab-inventory"].sdx-enhanced-inventory');
-		if ($inventoryTab.length) {
-			$inventoryTab.find('.sdx-inventory-bg-extension').remove();
-			const $inventoryBg = createBgElement('sdx-inventory-bg-extension');
-			if ($inventoryBg) $inventoryTab.append($inventoryBg);
-		}
-		
-		// Update Effects tab
-		const $effectsTab = $form.find('.tab[data-tab="tab-effects"].sdx-enhanced-effects');
-		if ($effectsTab.length) {
-			$effectsTab.find('.sdx-effects-bg-extension').remove();
-			const $effectsBg = createBgElement('sdx-effects-bg-extension');
-			if ($effectsBg) $effectsTab.append($effectsBg);
-		}
-	};
-	
-	// Call immediately and with delays to ensure backgrounds are applied
-	updateTabBackgrounds();
-	setTimeout(updateTabBackgrounds, 150);
-	setTimeout(updateTabBackgrounds, 350);
 }
 
 /**
@@ -5939,33 +5813,97 @@ async function transferItemToPlayer(sourceActor, item, targetActorId) {
 
 /**
  * Show dialog to select target player for transfer
+ * Enhanced with filtering for connected/assigned characters and Party actors
  */
 async function showTransferDialog(sourceActor, item) {
 	// Get all player characters that are not the source actor and have an owner
-	const players = game.actors.filter(a => {
-		if (a.type !== "Player" || a.id === sourceActor.id) return false;
-		// Check if the actor has any owner who can receive the item
-		return game.users.some(u => a.testUserPermission(u, "OWNER"));
+	const allPlayers = game.actors.filter(a => {
+		if (a.id === sourceActor.id) return false;
+		// Include Player type actors and Party type actors (NPC type with party flag)
+		const isParty = a.type === "NPC" && a.getFlag(MODULE_ID, "isParty");
+		if (a.type !== "Player" && !isParty) return false;
+		// For players, check if the actor has any owner who can receive the item
+		if (!isParty) {
+			return game.users.some(u => a.testUserPermission(u, "OWNER"));
+		}
+		return true; // Party actors are always available
 	});
 	
-	if (players.length === 0) {
+	if (allPlayers.length === 0) {
 		ui.notifications.warn(
 			game.i18n.localize("SHADOWDARK_EXTRAS.notifications.no_players_available")
 		);
 		return;
 	}
 	
-	// Build options HTML
-	const options = players.map(p => 
-		`<option value="${p.id}">${p.name}</option>`
-	).join("");
+	// Categorize actors and build searchable data
+	const partyActors = allPlayers.filter(a => a.type === "NPC" && a.getFlag(MODULE_ID, "isParty"));
+	const connectedAssigned = allPlayers.filter(a => {
+		if (a.type !== "Player") return false;
+		// Check if any connected user has this as their assigned character
+		return game.users.some(u => u.active && u.character?.id === a.id);
+	});
+	const otherPlayers = allPlayers.filter(a => {
+		if (a.type !== "Player") return false;
+		// Not connected/assigned
+		return !game.users.some(u => u.active && u.character?.id === a.id);
+	});
+	
+	// Build options HTML with optgroups and data attributes for searching
+	let optionsHtml = '';
+	
+	// Party actors first
+	if (partyActors.length > 0) {
+		optionsHtml += `<optgroup label="📦 Party Storage" data-group="party">`;
+		for (const p of partyActors) {
+			optionsHtml += `<option value="${p.id}" data-search="${p.name.toLowerCase()}">🎒 ${p.name}</option>`;
+		}
+		optionsHtml += `</optgroup>`;
+	}
+	
+	// Connected & Assigned characters
+	if (connectedAssigned.length > 0) {
+		optionsHtml += `<optgroup label="🟢 Connected Players" data-group="connected">`;
+		for (const p of connectedAssigned) {
+			const user = game.users.find(u => u.active && u.character?.id === p.id);
+			const userName = user ? user.name : '';
+			const displayUserName = userName ? ` (${userName})` : '';
+			const searchText = `${p.name} ${userName}`.toLowerCase();
+			optionsHtml += `<option value="${p.id}" data-search="${searchText}">🟢 ${p.name}${displayUserName}</option>`;
+		}
+		optionsHtml += `</optgroup>`;
+	}
+	
+	// Other player characters
+	if (otherPlayers.length > 0) {
+		optionsHtml += `<optgroup label="⚪ Other Characters" data-group="other">`;
+		for (const p of otherPlayers) {
+			// Find any owner for search purposes
+			const owners = game.users.filter(u => p.testUserPermission(u, "OWNER"));
+			const ownerNames = owners.map(u => u.name).join(' ');
+			const searchText = `${p.name} ${ownerNames}`.toLowerCase();
+			optionsHtml += `<option value="${p.id}" data-search="${searchText}">⚪ ${p.name}</option>`;
+		}
+		optionsHtml += `</optgroup>`;
+	}
 	
 	const content = `
 		<form>
+			<div class="form-group" style="margin-bottom: 8px;">
+				<label style="display: flex; align-items: center; gap: 8px;">
+					<input type="checkbox" id="sdx-filter-connected" checked />
+					Show only connected players
+				</label>
+			</div>
+			<div class="form-group" style="margin-bottom: 8px;">
+				<label>Search:</label>
+				<input type="text" id="sdx-transfer-search" placeholder="Type to filter by name..." 
+				       style="width: 100%;" autocomplete="off" />
+			</div>
 			<div class="form-group">
 				<label>${game.i18n.localize("SHADOWDARK_EXTRAS.dialog.select_recipient")}</label>
-				<select name="targetActorId" style="width: 100%;">
-					${options}
+				<select name="targetActorId" id="sdx-transfer-target" style="width: 100%; min-height: 200px;" size="10">
+					${optionsHtml}
 				</select>
 			</div>
 			<p>${game.i18n.format("SHADOWDARK_EXTRAS.dialog.transfer_item_warning", {item: item.name})}</p>
@@ -5973,7 +5911,7 @@ async function showTransferDialog(sourceActor, item) {
 	`;
 	
 	return new Promise((resolve) => {
-		new Dialog({
+		const dialog = new Dialog({
 			title: game.i18n.localize("SHADOWDARK_EXTRAS.dialog.transfer_item_title"),
 			content: content,
 			buttons: {
@@ -5991,7 +5929,59 @@ async function showTransferDialog(sourceActor, item) {
 					callback: () => resolve(null)
 				}
 			},
-			default: "transfer"
+			default: "transfer",
+			render: (html) => {
+				const $select = html.find('#sdx-transfer-target');
+				const $filterCheckbox = html.find('#sdx-filter-connected');
+				const $searchInput = html.find('#sdx-transfer-search');
+				
+				// Combined filter function for both checkbox and search
+				const updateFilter = () => {
+					const showOnlyConnected = $filterCheckbox.is(':checked');
+					const searchText = $searchInput.val().toLowerCase().trim();
+					
+					$select.find('optgroup').each(function() {
+						const $group = $(this);
+						const groupType = $group.data('group');
+						
+						// First, apply connected filter to groups
+						if (groupType === 'other' && showOnlyConnected) {
+							$group.hide();
+							return;
+						}
+						
+						// Then apply search filter to options within visible groups
+						let visibleCount = 0;
+						$group.find('option').each(function() {
+							const $option = $(this);
+							const optionSearch = $option.data('search') || '';
+							
+							if (searchText === '' || optionSearch.includes(searchText)) {
+								$option.show();
+								visibleCount++;
+							} else {
+								$option.hide();
+							}
+						});
+						
+						// Hide group if no visible options
+						$group.toggle(visibleCount > 0);
+					});
+					
+					// If current selection is now hidden, select first visible option
+					const $selectedOption = $select.find('option:selected');
+					if (!$selectedOption.is(':visible') || $selectedOption.parent('optgroup').is(':hidden')) {
+						$select.find('option:visible').first().prop('selected', true);
+					}
+				};
+				
+				updateFilter();
+				$filterCheckbox.on('change', updateFilter);
+				$searchInput.on('input', updateFilter);
+				
+				// Focus search input for immediate typing
+				setTimeout(() => $searchInput.focus(), 100);
+			}
 		}).render(true);
 	});
 }
@@ -6029,12 +6019,19 @@ function patchPlayerSheetForTransfers() {
 				if (item?.getFlag(MODULE_ID, "containerId")) return false;
 				// Don't allow transfer of containers (too complex to handle contents)
 				if (item?.getFlag(MODULE_ID, "isContainer")) return false;
-				// Check if there are other player characters available with owners
-				const otherPlayers = game.actors.filter(a => {
-					if (a.type !== "Player" || a.id === this.actor.id) return false;
-					return game.users.some(u => a.testUserPermission(u, "OWNER"));
+				// Check if there are other player characters or Party actors available
+				const otherActors = game.actors.filter(a => {
+					if (a.id === this.actor.id) return false;
+					// Include Party actors (NPC type with party flag)
+					const isParty = a.type === "NPC" && a.getFlag(MODULE_ID, "isParty");
+					if (a.type !== "Player" && !isParty) return false;
+					// For players, check if any user has owner permission
+					if (!isParty) {
+						return game.users.some(u => a.testUserPermission(u, "OWNER"));
+					}
+					return true; // Party actors always available
 				});
-				return otherPlayers.length > 0;
+				return otherActors.length > 0;
 			},
 			callback: async element => {
 				const itemId = element.dataset.itemId;
@@ -6128,10 +6125,43 @@ Hooks.once("ready", async () => {
 	patchCtrlMoveOnActorSheetDrops();
 	patchPlayerSheetForTransfers();
 	initializeTradeSocket();
+	
+	// Setup combat socket for damage application (requires socketlib)
+	if (typeof socketlib !== "undefined") {
+		setupCombatSocket();
+		console.log(`${MODULE_ID} | Combat socket initialized`);
+	} else {
+		console.warn(`${MODULE_ID} | socketlib not found, damage application may not work for non-GMs`);
+	}
+	
 	patchLightSourceTrackerForParty();
 	patchToggleItemDetailsForUnidentified();
 	setupUnidentifiedItemNameWrapper();
 	setupItemPilesUnidentifiedHooks();
+	wrapBuildWeaponDisplayForUnidentified();
+	
+	// Wrap ActorSD._learnSpell to preserve spell damage flags from scrolls
+	if (globalThis.shadowdark?.documents?.ActorSD) {
+		const ActorSD = globalThis.shadowdark.documents.ActorSD;
+		const original_learnSpell = ActorSD.prototype._learnSpell;
+		
+		ActorSD.prototype._learnSpell = async function(item) {
+			// Store the scroll ID temporarily so preCreateItem can access it
+			if (item && item.flags?.[MODULE_ID]?.spellDamage) {
+				await this.setFlag(MODULE_ID, "_learningFromScroll", item._id);
+			}
+			
+			// Call original method
+			const result = await original_learnSpell.call(this, item);
+			
+			// Clean up the temporary flag
+			await this.unsetFlag(MODULE_ID, "_learningFromScroll");
+			
+			return result;
+		};
+		
+		console.log(`${MODULE_ID} | Wrapped ActorSD._learnSpell to preserve spell damage flags`);
+	}
 	
 	// Ensure trade journal exists (GM only creates it)
 	await ensureTradeJournal();
@@ -6139,6 +6169,9 @@ Hooks.once("ready", async () => {
 
 // Preserve unidentified flags when items are created (covers item-piles transfers)
 Hooks.on("preCreateItem", (item, data, options, userId) => {
+	// Note: This hook handles unidentified flags for items created directly,
+	// but for spells converted via dialog, we wrap shadowdark.utils.createItemFromSpell instead
+	
 	// Check if unidentified feature is enabled
 	try {
 		if (!game.settings.get(MODULE_ID, "enableUnidentified")) return;
@@ -6153,6 +6186,23 @@ Hooks.on("preCreateItem", (item, data, options, userId) => {
 			[`flags.${MODULE_ID}.unidentified`]: true,
 			[`flags.${MODULE_ID}.unidentifiedDescription`]: data.flags[MODULE_ID].unidentifiedDescription || ""
 		});
+	}
+	
+	// Preserve spell damage flags when learning a spell from a scroll
+	// This handles the "Learn Spell" button functionality
+	if (item.type === "Spell" && item.parent) {
+		// Check if there's a scroll being learned from (stored in temporary flag)
+		const sourceScrollId = item.parent.getFlag(MODULE_ID, "_learningFromScroll");
+		if (sourceScrollId) {
+			const sourceScroll = item.parent.items.get(sourceScrollId);
+			if (sourceScroll && sourceScroll.flags?.[MODULE_ID]?.spellDamage) {
+				// Preserve the spell damage configuration from the scroll
+				item.updateSource({
+					[`flags.${MODULE_ID}.spellDamage`]: foundry.utils.duplicate(sourceScroll.flags[MODULE_ID].spellDamage)
+				});
+				console.log(`${MODULE_ID} | Preserved spell damage flags when learning from scroll:`, sourceScroll.name);
+			}
+		}
 	}
 });
 
@@ -6210,6 +6260,7 @@ Hooks.on("renderPlayerSheetSD", async (app, html, data) => {
 	await injectJournalNotes(app, html, app.actor);
 	await injectConditionsToggles(app, html, app.actor);
 	enableItemChatIcon(app, html);
+	fixUnidentifiedWeaponBoldForAllUsers(html);
 });
 
 // Inject Inventory tab into NPC sheets (but not Party sheets)
@@ -6240,6 +6291,1861 @@ Hooks.on("renderActorSheet", (app, html, data) => {
 	applyInventoryStylesToSheet(html, app.actor);
 });
 
+/**
+ * Enhance spell item sheets with damage/heal configuration
+ */
+async function enhanceSpellSheet(app, html) {
+	// Check if spell enhancement is enabled
+	try {
+		if (!game.settings.get(MODULE_ID, "enhanceSpells")) return;
+	} catch {
+		return;
+	}
+
+	// Only enhance Spell items
+	const item = app.item;
+	if (!item || item.type !== "Spell") return;
+
+	console.log(`${MODULE_ID} | Enhancing spell sheet for`, item.name);
+
+	// Remove any existing damage/heal boxes to prevent duplicates
+	html.find('.sdx-spell-damage-box').remove();
+
+	// Initialize flags if they don't exist
+	const spellDamageFlags = item.flags?.[MODULE_ID]?.spellDamage || {
+		enabled: false,
+		isDamage: true, // true = damage, false = heal
+		numDice: 1,
+		dieType: "d6",
+		bonus: 0,
+		damageType: "",
+		scaling: "every-level", // "none", "every-level", "every-other-level"
+		scalingDice: 1,
+		formula: "",
+		damageRequirement: "", // Formula that must evaluate to true for damage to apply
+		damageRequirementFailAction: "zero", // "zero" or "half" - what to do when requirement fails
+		effectsRequirement: "", // Formula that must evaluate to true for effects to apply
+		effects: [], // Array of effect document UUIDs
+		applyToTarget: true, // true = apply damage/heal to target, false = apply to self
+		effectsApplyToTarget: true // true = apply effects to target, false = apply to self
+	};
+	
+	// Initialize summoning flags
+	const summoningFlags = item.flags?.[MODULE_ID]?.summoning || {
+		enabled: false,
+		profiles: []
+	};
+	
+	// Combine all flags for template
+	const flags = {
+		...spellDamageFlags,
+		summoning: summoningFlags
+	};
+	
+	// Convert applyToTarget to boolean (in case it was stored as string)
+	const applyToTarget = spellDamageFlags.applyToTarget === "false" ? false : (spellDamageFlags.applyToTarget === false ? false : true);
+	const effectsApplyToTarget = spellDamageFlags.effectsApplyToTarget === "false" ? false : (spellDamageFlags.effectsApplyToTarget === false ? false : true);
+
+	// Preserve active tab across re-renders
+	if (!app._shadowdarkExtrasActiveTab) {
+		app._shadowdarkExtrasActiveTab = 'tab-details'; // Default to details
+	}
+	
+	// Check which tab is currently active
+	const $currentActiveTab = html.find('nav.SD-nav a.navigation-tab.active');
+	if ($currentActiveTab.length) {
+		const currentTab = $currentActiveTab.data('tab');
+		if (currentTab) {
+			app._shadowdarkExtrasActiveTab = currentTab;
+		}
+	}
+
+	// Create a new "Activity" tab after Details tab
+	const $tabs = html.find('nav.SD-nav');
+	
+	// Check if Activity tab already exists
+	if (!html.find('section[data-tab="tab-activity"]').length) {
+		// Add Activity tab to navigation (after Details)
+		const activityTabLink = `<a class="navigation-tab" data-tab="tab-activity">Activity</a>`;
+		const $detailsLink = $tabs.find('a[data-tab="tab-details"]');
+		if ($detailsLink.length) {
+			$detailsLink.after(activityTabLink);
+			console.log(`${MODULE_ID} | Activity tab link added to navigation`);
+		} else {
+			console.warn(`${MODULE_ID} | Could not find Details tab link`);
+		}
+		
+		// Create Activity tab content container with correct structure
+		const activityTabContent = `<section class="tab tab-activity" data-group="primary" data-tab="tab-activity"></section>`;
+		const $detailsTab = html.find('section.tab-details[data-tab="tab-details"]');
+		if ($detailsTab.length) {
+			$detailsTab.after(activityTabContent);
+			console.log(`${MODULE_ID} | Activity tab content created`);
+		} else {
+			console.warn(`${MODULE_ID} | Could not find Details tab content`);
+		}
+		
+		// Add click handler to track tab changes
+		$tabs.find('a.navigation-tab').on('click', function() {
+			const tabName = $(this).data('tab');
+			if (tabName) {
+				app._shadowdarkExtrasActiveTab = tabName;
+			}
+		});
+	}
+	
+	// Restore the previously active tab
+	setTimeout(() => {
+		const $targetTab = $tabs.find(`a.navigation-tab[data-tab="${app._shadowdarkExtrasActiveTab}"]`);
+		const $targetSection = html.find(`section[data-tab="${app._shadowdarkExtrasActiveTab}"]`);
+		
+		if ($targetTab.length && $targetSection.length) {
+			// Remove active class from all tabs
+			$tabs.find('a.navigation-tab').removeClass('active');
+			html.find('section[data-group="primary"]').removeClass('active');
+			
+			// Add active class to target tab
+			$targetTab.addClass('active');
+			$targetSection.addClass('active');
+		}
+	}, 0);
+	
+	// Find the Activity tab content
+	const $activityTab = html.find('section.tab-activity[data-tab="tab-activity"]');
+	if (!$activityTab.length) {
+		console.warn(`${MODULE_ID} | Activity tab not found in spell sheet`);
+		return;
+	}
+
+	console.log(`${MODULE_ID} | Activity tab found/created`);
+
+	// Build list of current effects from stored UUIDs
+	let effectsListHtml = '';
+	
+	// Handle case where effects might be a string instead of an array (from form submission)
+	let effectsArray = flags.effects || [];
+	if (typeof effectsArray === 'string') {
+		try {
+			effectsArray = JSON.parse(effectsArray);
+		} catch (err) {
+			console.warn(`${MODULE_ID} | Could not parse effects string:`, effectsArray, err);
+			effectsArray = [];
+		}
+	}
+	
+	// Normalize effects array - convert old UUID strings to new object format
+	effectsArray = effectsArray.map(effect => {
+		if (typeof effect === 'string') {
+			return { uuid: effect, duration: {} };
+		}
+		return effect;
+	});
+	
+	if (effectsArray && effectsArray.length > 0) {
+		console.log(`${MODULE_ID} | Loading ${effectsArray.length} effects from UUIDs:`, effectsArray);
+		
+		// Load all effects in parallel and wait for them all
+		const effectPromises = effectsArray.map(effect => fromUuid(effect.uuid || effect));
+		const effectDocs = await Promise.all(effectPromises);
+		
+		for (let i = 0; i < effectDocs.length; i++) {
+			const doc = effectDocs[i];
+			const effectData = effectsArray[i];
+			const uuid = effectData.uuid || effectData;
+			const duration = effectData.duration || {};
+			
+			if (doc) {
+				effectsListHtml += `
+					<div class="sdx-spell-effect-item" data-uuid="${uuid}" data-effect-index="${i}">
+						<div class="sdx-effect-header">
+							<img src="${doc.img || 'icons/svg/mystery-man.svg'}" alt="${doc.name}" />
+							<span class="sdx-effect-name">${doc.name}</span>
+							<a class="sdx-remove-effect" data-tooltip="Remove"><i class="fas fa-times"></i></a>
+						</div>
+						<div class="sdx-effect-duration-override">
+							<div class="sdx-duration-row">
+								<div class="sdx-duration-field">
+									<label>Seconds</label>
+									<input type="number" class="sdx-duration-input" data-field="seconds" value="${duration.seconds || ''}" placeholder="Default" />
+								</div>
+								<div class="sdx-duration-field">
+									<label>Start Time</label>
+									<input type="number" class="sdx-duration-input" data-field="startTime" value="${duration.startTime || ''}" placeholder="Default" />
+								</div>
+							</div>
+							<div class="sdx-duration-row">
+								<div class="sdx-duration-field">
+									<label>Rounds</label>
+									<input type="number" class="sdx-duration-input" data-field="rounds" value="${duration.rounds || ''}" placeholder="Default" />
+								</div>
+								<div class="sdx-duration-field">
+									<label>Turns</label>
+									<input type="number" class="sdx-duration-input" data-field="turns" value="${duration.turns || ''}" placeholder="Default" />
+								</div>
+							</div>
+							<div class="sdx-duration-row">
+								<div class="sdx-duration-field">
+									<label>Start Round</label>
+									<input type="number" class="sdx-duration-input" data-field="startRound" value="${duration.startRound || ''}" placeholder="Default" />
+								</div>
+								<div class="sdx-duration-field">
+									<label>Start Turn</label>
+									<input type="number" class="sdx-duration-input" data-field="startTurn" value="${duration.startTurn || ''}" placeholder="Default" />
+								</div>
+							</div>
+						</div>
+					</div>
+				`;
+			} else {
+				console.warn(`${MODULE_ID} | Could not load effect from UUID:`, uuid);
+			}
+		}
+		
+		console.log(`${MODULE_ID} | Loaded effects HTML, length:`, effectsListHtml.length);
+	}
+
+	// Build summons list HTML
+	let summonsList = '';
+	let summonProfilesArray = summoningFlags.profiles || [];
+	
+	// Handle case where profiles might be a string
+	if (typeof summonProfilesArray === 'string') {
+		try {
+			summonProfilesArray = JSON.parse(summonProfilesArray);
+		} catch (err) {
+			console.warn(`${MODULE_ID} | Could not parse summon profiles string:`, summonProfilesArray, err);
+			summonProfilesArray = [];
+		}
+	}
+	
+	if (summonProfilesArray && summonProfilesArray.length > 0) {
+		const { generateSummonProfileHTML } = await import(`./templates/SummoningConfig.mjs`);
+		for (let i = 0; i < summonProfilesArray.length; i++) {
+			const profile = summonProfilesArray[i];
+			summonsList += generateSummonProfileHTML(profile, i);
+		}
+	}
+
+	// Build the damage/heal UI HTML using template (now includes summoning)
+	const damageHealHtml = generateSpellConfig(MODULE_ID, flags, effectsListHtml, effectsArray, effectsApplyToTarget, summonsList, summonProfilesArray);
+
+	// Insert into Activity tab
+	$activityTab.append(damageHealHtml);
+	console.log(`${MODULE_ID} | Damage/Heal box inserted into Activity tab`);
+
+	// Prevent auto-submission of form inputs in Activity tab to avoid unwanted re-renders
+	$activityTab.find('input, select, textarea').on('change', function(e) {
+		e.stopPropagation(); // Prevent event from bubbling up to form auto-submit
+		
+		// Manually update the item without re-rendering
+		const fieldName = $(this).attr('name');
+		if (fieldName) {
+			let value = $(this).val();
+			
+			// Handle checkboxes
+			if ($(this).attr('type') === 'checkbox') {
+				value = $(this).is(':checked');
+			}
+			// Handle radio buttons
+			else if ($(this).attr('type') === 'radio' && !$(this).is(':checked')) {
+				return; // Don't update for unchecked radios
+			}
+			// Handle number inputs
+			else if ($(this).attr('type') === 'number') {
+				value = parseFloat(value) || 0;
+			}
+			
+			const updateData = {};
+			updateData[fieldName] = value;
+			
+			// Update without re-rendering
+			item.update(updateData, { render: false }).then(() => {
+				console.log(`${MODULE_ID} | Updated ${fieldName}:`, value);
+			}).catch(err => {
+				console.error(`${MODULE_ID} | Failed to update ${fieldName}:`, err);
+			});
+		}
+	});
+
+	// Attach toggle listener
+	html.find('.sdx-spell-damage-toggle').on('change', function() {
+		const $content = $(this).closest('.sdx-spell-damage-box').find('.sdx-spell-damage-content');
+		if ($(this).is(':checked')) {
+			$content.slideDown(200);
+		} else {
+			$content.slideUp(200);
+		}
+	});
+
+	// Handle formula type radio buttons
+	html.find('.sdx-formula-type-radio').on('change', function() {
+		const selectedType = $(this).val();
+		const $box = $(this).closest('.sdx-spell-damage-box');
+		
+		// Hide all formula sections
+		$box.find('.sdx-formula-section').hide();
+		
+		// Show the selected formula section
+		if (selectedType === 'basic') {
+			$box.find('.sdx-basic-formula').show();
+		} else if (selectedType === 'formula') {
+			$box.find('.sdx-custom-formula').show();
+		} else if (selectedType === 'tiered') {
+			$box.find('.sdx-tiered-formula').show();
+		}
+		
+		// Save the formula type preference
+		const updateData = {};
+		updateData[`flags.${MODULE_ID}.spellDamage.formulaType`] = selectedType;
+		item.update(updateData, { render: false });
+	});
+
+	// Attach drag and drop listeners for effects
+	const $dropArea = html.find('.sdx-spell-effects-drop-area');
+	const $effectsList = html.find('.sdx-spell-effects-list');
+	const $effectsData = html.find('.sdx-effects-data');
+
+	// Update the hidden input when effects change
+	function updateEffectsData() {
+		const effects = [];
+		$effectsList.find('.sdx-spell-effect-item').each(function() {
+			const $item = $(this);
+			const uuid = $item.data('uuid');
+			
+			// Collect duration overrides
+			const duration = {};
+			$item.find('.sdx-duration-input').each(function() {
+				const field = $(this).data('field');
+				const value = $(this).val();
+				if (value !== '') {
+					duration[field] = parseFloat(value);
+				}
+			});
+			
+			effects.push({ uuid, duration });
+		});
+		$effectsData.val(JSON.stringify(effects));
+		
+		// Save immediately to the item without re-rendering
+		const updateData = {};
+		updateData[`flags.${MODULE_ID}.spellDamage.effects`] = effects;
+		item.update(updateData, { render: false }).then(() => {
+			console.log(`${MODULE_ID} | Saved spell effects:`, effects);
+		}).catch(err => {
+			console.error(`${MODULE_ID} | Failed to save spell effects:`, err);
+		});
+		
+		// Remove "no effects" placeholder if we have effects
+		if (effects.length > 0) {
+			$effectsList.find('.sdx-no-effects').remove();
+		} else if ($effectsList.find('.sdx-spell-effect-item').length === 0) {
+			$effectsList.html('<div class="sdx-no-effects">Drag and drop conditions or effects here</div>');
+		}
+	}
+
+	// Handle drag over
+	$dropArea.on('dragover', function(event) {
+		event.preventDefault();
+		event.stopPropagation();
+		$(this).addClass('sdx-drag-over');
+	});
+
+	// Handle drag leave
+	$dropArea.on('dragleave', function(event) {
+		event.preventDefault();
+		event.stopPropagation();
+		$(this).removeClass('sdx-drag-over');
+	});
+
+	// Handle drop
+	$dropArea.on('drop', async function(event) {
+		event.preventDefault();
+		event.stopPropagation();
+		$(this).removeClass('sdx-drag-over');
+
+		try {
+			const data = JSON.parse(event.originalEvent.dataTransfer.getData('text/plain'));
+			
+			// Get the document from the dropped data
+			let doc = null;
+			if (data.uuid) {
+				doc = await fromUuid(data.uuid);
+			} else if (data.type === 'Item' && data.id) {
+				// Handle items from compendiums or world
+				if (data.pack) {
+					const pack = game.packs.get(data.pack);
+					doc = await pack.getDocument(data.id);
+				} else {
+					doc = game.items.get(data.id);
+				}
+			}
+
+			if (!doc) {
+				ui.notifications.warn('Could not load dropped item');
+				return;
+			}
+
+			// Check if it's an effect or condition type
+			const validTypes = ['Effect', 'Condition', 'NPC Feature'];
+			if (!validTypes.includes(doc.type)) {
+				ui.notifications.warn(`Only Effect, Condition, or NPC Feature items can be dropped here`);
+				return;
+			}
+
+			// Check if already added
+			const uuid = doc.uuid;
+			if ($effectsList.find(`[data-uuid="${uuid}"]`).length > 0) {
+				ui.notifications.info(`${doc.name} is already in the effects list`);
+				return;
+			}
+
+			// Add the effect to the list
+			const effectIndex = $effectsList.find('.sdx-spell-effect-item').length;
+			const effectHtml = `
+				<div class="sdx-spell-effect-item" data-uuid="${uuid}" data-effect-index="${effectIndex}">
+					<div class="sdx-effect-header">
+						<img src="${doc.img || 'icons/svg/mystery-man.svg'}" alt="${doc.name}" />
+						<span class="sdx-effect-name">${doc.name}</span>
+						<a class="sdx-remove-effect" data-tooltip="Remove"><i class="fas fa-times"></i></a>
+					</div>
+					<div class="sdx-effect-duration-override">
+						<div class="sdx-duration-row">
+							<div class="sdx-duration-field">
+								<label>Seconds</label>
+								<input type="number" class="sdx-duration-input" data-field="seconds" value="" placeholder="Default" />
+							</div>
+							<div class="sdx-duration-field">
+								<label>Start Time</label>
+								<input type="number" class="sdx-duration-input" data-field="startTime" value="" placeholder="Default" />
+							</div>
+						</div>
+						<div class="sdx-duration-row">
+							<div class="sdx-duration-field">
+								<label>Rounds</label>
+								<input type="number" class="sdx-duration-input" data-field="rounds" value="" placeholder="Default" />
+							</div>
+							<div class="sdx-duration-field">
+								<label>Turns</label>
+								<input type="number" class="sdx-duration-input" data-field="turns" value="" placeholder="Default" />
+							</div>
+						</div>
+						<div class="sdx-duration-row">
+							<div class="sdx-duration-field">
+								<label>Start Round</label>
+								<input type="number" class="sdx-duration-input" data-field="startRound" value="" placeholder="Default" />
+							</div>
+							<div class="sdx-duration-field">
+								<label>Start Turn</label>
+								<input type="number" class="sdx-duration-input" data-field="startTurn" value="" placeholder="Default" />
+							</div>
+						</div>
+					</div>
+				</div>
+			`;
+			
+			$effectsList.find('.sdx-no-effects').remove();
+			$effectsList.append(effectHtml);
+			updateEffectsData();
+
+			ui.notifications.info(`Added ${doc.name} to spell effects`);
+		} catch (err) {
+			console.error(`${MODULE_ID} | Error handling drop:`, err);
+			ui.notifications.error('Failed to add effect');
+		}
+	});
+
+	// Handle remove effect button
+	html.on('click', '.sdx-remove-effect', function(event) {
+		event.preventDefault();
+		event.stopPropagation();
+		
+		$(this).closest('.sdx-spell-effect-item').remove();
+		updateEffectsData();
+	});
+
+	// Handle duration input changes
+	html.on('change', '.sdx-duration-input', function() {
+		updateEffectsData();
+	});
+
+	// Also save applyToTarget when radio buttons change
+	html.on('change', 'input[name="flags.shadowdark-extras.spellDamage.applyToTarget"]', function() {
+		const applyToTargetValue = $(this).val() === 'true';
+		const updateData = {};
+		updateData[`flags.${MODULE_ID}.spellDamage.applyToTarget`] = applyToTargetValue;
+		
+		item.update(updateData).then(() => {
+			console.log(`${MODULE_ID} | Saved applyToTarget:`, applyToTargetValue);
+		}).catch(err => {
+			console.error(`${MODULE_ID} | Failed to save applyToTarget:`, err);
+		});
+	});
+
+	// ===== SUMMONING HANDLERS =====
+	
+	// Toggle summoning section
+	html.on('change', '.sdx-summoning-toggle', function(e) {
+		e.stopPropagation();
+		const enabled = $(this).prop('checked');
+		
+		console.log(`${MODULE_ID} | Summoning toggle changed to:`, enabled);
+		
+		// Save the enabled state
+		const updateData = {};
+		updateData[`flags.${MODULE_ID}.summoning.enabled`] = enabled;
+		item.update(updateData, { render: false }).then(() => {
+			console.log(`${MODULE_ID} | Summoning enabled state saved:`, enabled);
+		});
+	});
+	
+	// Add summon profile button
+	html.on('click', '.sdx-add-summon-btn', async function(e) {
+		e.preventDefault();
+		e.stopPropagation();
+		
+		const { generateSummonProfileHTML } = await import(`./templates/SummoningConfig.mjs`);
+		const $summonsList = $(this).closest('.sdx-summoning-content').find('.sdx-summons-list');
+		const index = $summonsList.find('.sdx-summon-profile').length;
+		
+		const newProfile = {
+			creatureUuid: '',
+			creatureName: '',
+			creatureImg: '',
+			count: '1',
+			displayName: ''
+		};
+		
+		const profileHtml = generateSummonProfileHTML(newProfile, index);
+		$summonsList.find('.sdx-no-summons').remove();
+		$summonsList.append(profileHtml);
+		
+		updateSummonsData();
+	});
+	
+	// Remove summon profile
+	html.on('click', '.sdx-remove-summon-btn', function(e) {
+		e.preventDefault();
+		e.stopPropagation();
+		
+		$(this).closest('.sdx-summon-profile').remove();
+		
+		// Re-index remaining profiles
+		const $summonsList = $(this).closest('.sdx-summons-list');
+		$summonsList.find('.sdx-summon-profile').each(function(idx) {
+			$(this).attr('data-index', idx);
+			$(this).find('.sdx-remove-summon-btn').attr('data-index', idx);
+		});
+		
+		updateSummonsData();
+	});
+	
+	// Handle summon profile input changes
+	html.on('change input', '.sdx-summon-count, .sdx-summon-display-name', function(e) {
+		e.stopPropagation(); // Prevent form auto-submit
+		updateSummonsData();
+	});
+	
+	// Handle drop on creature drop zone
+	html.on('dragover', '.sdx-summon-creature-drop', function(event) {
+		event.preventDefault();
+		event.stopPropagation();
+		$(this).addClass('sdx-drag-over');
+	});
+	
+	html.on('dragleave', '.sdx-summon-creature-drop', function(event) {
+		event.preventDefault();
+		event.stopPropagation();
+		$(this).removeClass('sdx-drag-over');
+	});
+	
+	html.on('drop', '.sdx-summon-creature-drop', async function(event) {
+		event.preventDefault();
+		event.stopPropagation();
+		$(this).removeClass('sdx-drag-over');
+		
+		try {
+			const data = JSON.parse(event.originalEvent.dataTransfer.getData('text/plain'));
+			
+			// Get the document from the dropped data
+			let doc = null;
+			if (data.uuid) {
+				doc = await fromUuid(data.uuid);
+			} else if (data.type === 'Actor' && data.id) {
+				// Handle actors from compendiums or world
+				if (data.pack) {
+					const pack = game.packs.get(data.pack);
+					doc = await pack.getDocument(data.id);
+				} else {
+					doc = game.actors.get(data.id);
+				}
+			}
+			
+			if (!doc) {
+				ui.notifications.warn('Could not load dropped actor');
+				return;
+			}
+			
+			// Must be an Actor
+			if (!(doc instanceof Actor)) {
+				ui.notifications.warn('Only actors can be dropped here');
+				return;
+			}
+			
+			// Update the profile display
+			const $profile = $(this).closest('.sdx-summon-profile');
+			const creatureName = doc.name;
+			const creatureImg = doc.img || doc.prototypeToken?.texture?.src || 'icons/svg/mystery-man.svg';
+			const creatureUuid = doc.uuid;
+			
+			// Update hidden inputs
+			$profile.find('.sdx-creature-uuid').val(creatureUuid);
+			$profile.find('.sdx-creature-name').val(creatureName);
+			$profile.find('.sdx-creature-img').val(creatureImg);
+			
+			// Update display
+			$(this).html(`
+				<div class="sdx-summon-creature-display" data-uuid="${creatureUuid}">
+					<img src="${creatureImg}" alt="${creatureName}" style="width: 40px; height: 40px; border-radius: 4px;" />
+					<span style="margin-left: 4px; font-size: 0.9em;">${creatureName}</span>
+				</div>
+			`);
+			
+			updateSummonsData();
+			ui.notifications.info(`Added ${creatureName} to summon profile`);
+		} catch (err) {
+			console.error(`${MODULE_ID} | Error handling creature drop:`, err);
+			ui.notifications.error('Failed to add creature');
+		}
+	});
+	
+	// Function to collect and save summons data
+	function updateSummonsData() {
+		const profiles = [];
+		html.find('.sdx-summon-profile').each(function() {
+			const $profile = $(this);
+			profiles.push({
+				creatureUuid: $profile.find('.sdx-creature-uuid').val(),
+				creatureName: $profile.find('.sdx-creature-name').val(),
+				creatureImg: $profile.find('.sdx-creature-img').val(),
+				count: $profile.find('.sdx-summon-count').val() || '1',
+				displayName: $profile.find('.sdx-summon-display-name').val() || ''
+			});
+		});
+		
+		// Update hidden input
+		html.find('.sdx-summons-data').val(JSON.stringify(profiles));
+		
+		// Save to item
+		const updateData = {};
+		updateData[`flags.${MODULE_ID}.summoning.profiles`] = profiles;
+		item.update(updateData, { render: false }).then(() => {
+			console.log(`${MODULE_ID} | Saved summon profiles:`, profiles);
+		}).catch(err => {
+			console.error(`${MODULE_ID} | Failed to save summon profiles:`, err);
+		});
+	}
+
+	console.log(`${MODULE_ID} | Spell sheet enhanced for`, item.name);
+}
+
+/**
+ * Enhance Potion item sheets with damage/heal and conditions UI
+ */
+async function enhancePotionSheet(app, html) {
+	// Check if spell enhancement is enabled (reuse spell enhancement setting)
+	try {
+		if (!game.settings.get(MODULE_ID, "enhanceSpells")) return;
+	} catch {
+		return;
+	}
+
+	// Only enhance Potion items
+	const item = app.item;
+	if (!item || item.type !== "Potion") return;
+
+	console.log(`${MODULE_ID} | Enhancing potion sheet for`, item.name);
+
+	// Remove any existing damage/heal boxes to prevent duplicates
+	html.find('.sdx-spell-damage-box').remove();
+
+	// Initialize flags if they don't exist
+	const flags = item.flags?.[MODULE_ID]?.spellDamage || {
+		enabled: false,
+		isDamage: true, // true = damage, false = heal
+		numDice: 1,
+		dieType: "d6",
+		bonus: 0,
+		damageType: "",
+		scaling: "none", // potions don't scale by level
+		scalingDice: 0,
+		formula: "",
+		damageRequirement: "", // Formula that must evaluate to true for damage to apply
+		damageRequirementFailAction: "zero", // "zero" or "half" - what to do when requirement fails
+		effectsRequirement: "", // Formula that must evaluate to true for effects to apply
+		effects: [], // Array of effect document UUIDs
+		applyToTarget: false, // potions apply to self (drinker) by default
+		effectsApplyToTarget: false // potions apply effects to self by default
+	};
+	
+	// Convert applyToTarget to boolean (in case it was stored as string)
+	const applyToTarget = flags.applyToTarget === "true" ? true : (flags.applyToTarget === true ? true : false);
+	const effectsApplyToTarget = flags.effectsApplyToTarget === "true" ? true : (flags.effectsApplyToTarget === true ? true : false);
+
+	// Preserve active tab across re-renders
+	if (!app._shadowdarkExtrasActiveTab) {
+		app._shadowdarkExtrasActiveTab = 'tab-details'; // Default to details
+	}
+	
+	// Check which tab is currently active
+	const $currentActiveTab = html.find('nav.SD-nav a.navigation-tab.active');
+	if ($currentActiveTab.length) {
+		const currentTab = $currentActiveTab.data('tab');
+		if (currentTab) {
+			app._shadowdarkExtrasActiveTab = currentTab;
+		}
+	}
+
+	// Create a new "Activity" tab after Details tab
+	const $tabs = html.find('nav.SD-nav');
+	
+	// Check if Activity tab already exists
+	if (!html.find('section[data-tab="tab-activity"]').length) {
+		// Add Activity tab to navigation (after Details)
+		const activityTabLink = `<a class="navigation-tab" data-tab="tab-activity">Activity</a>`;
+		const $detailsLink = $tabs.find('a[data-tab="tab-details"]');
+		if ($detailsLink.length) {
+			$detailsLink.after(activityTabLink);
+			console.log(`${MODULE_ID} | Activity tab link added to navigation`);
+		} else {
+			console.warn(`${MODULE_ID} | Could not find Details tab link`);
+		}
+		
+		// Create Activity tab content container with correct structure
+		const activityTabContent = `<section class="tab tab-activity" data-group="primary" data-tab="tab-activity"></section>`;
+		const $detailsTab = html.find('section.tab-details[data-tab="tab-details"]');
+		if ($detailsTab.length) {
+			$detailsTab.after(activityTabContent);
+			console.log(`${MODULE_ID} | Activity tab content created`);
+		} else {
+			console.warn(`${MODULE_ID} | Could not find Details tab content`);
+		}
+		
+		// Add click handler to track tab changes
+		$tabs.find('a.navigation-tab').on('click', function() {
+			const tabName = $(this).data('tab');
+			if (tabName) {
+				app._shadowdarkExtrasActiveTab = tabName;
+			}
+		});
+	}
+	
+	// Restore the previously active tab
+	setTimeout(() => {
+		const $targetTab = $tabs.find(`a.navigation-tab[data-tab="${app._shadowdarkExtrasActiveTab}"]`);
+		const $targetSection = html.find(`section[data-tab="${app._shadowdarkExtrasActiveTab}"]`);
+		
+		if ($targetTab.length && $targetSection.length) {
+			// Remove active class from all tabs
+			$tabs.find('a.navigation-tab').removeClass('active');
+			html.find('section[data-group="primary"]').removeClass('active');
+			
+			// Add active class to target tab
+			$targetTab.addClass('active');
+			$targetSection.addClass('active');
+		}
+	}, 0);
+	
+	// Find the Activity tab content
+	const $activityTab = html.find('section.tab-activity[data-tab="tab-activity"]');
+	if (!$activityTab.length) {
+		console.warn(`${MODULE_ID} | Activity tab not found in potion sheet`);
+		return;
+	}
+
+	console.log(`${MODULE_ID} | Activity tab found/created`);
+
+	// Build list of current effects from stored UUIDs
+	let effectsListHtml = '';
+	
+	// Handle case where effects might be a string instead of an array (from form submission)
+	let effectsArray = flags.effects || [];
+	if (typeof effectsArray === 'string') {
+		try {
+			effectsArray = JSON.parse(effectsArray);
+		} catch (err) {
+			console.warn(`${MODULE_ID} | Could not parse effects string:`, effectsArray, err);
+			effectsArray = [];
+		}
+	}
+	
+	// Normalize effects array - convert old UUID strings to new object format
+	effectsArray = effectsArray.map(effect => {
+		if (typeof effect === 'string') {
+			return { uuid: effect, duration: {} };
+		}
+		return effect;
+	});
+	
+	if (effectsArray && effectsArray.length > 0) {
+		console.log(`${MODULE_ID} | Loading ${effectsArray.length} effects from UUIDs:`, effectsArray);
+		
+		// Load all effects in parallel and wait for them all
+		const effectPromises = effectsArray.map(effect => fromUuid(effect.uuid || effect));
+		const effectDocs = await Promise.all(effectPromises);
+		
+		for (let i = 0; i < effectDocs.length; i++) {
+			const doc = effectDocs[i];
+			const effectData = effectsArray[i];
+			const uuid = effectData.uuid || effectData;
+			const duration = effectData.duration || {};
+			
+			if (doc) {
+				effectsListHtml += `
+					<div class="sdx-spell-effect-item" data-uuid="${uuid}" data-effect-index="${i}">
+						<div class="sdx-effect-header">
+							<img src="${doc.img || 'icons/svg/mystery-man.svg'}" alt="${doc.name}" />
+							<span class="sdx-effect-name">${doc.name}</span>
+							<a class="sdx-remove-effect" data-tooltip="Remove"><i class="fas fa-times"></i></a>
+						</div>
+						<div class="sdx-effect-duration-override">
+							<div class="sdx-duration-row">
+								<div class="sdx-duration-field">
+									<label>Seconds</label>
+									<input type="number" class="sdx-duration-input" data-field="seconds" value="${duration.seconds || ''}" placeholder="Default" />
+								</div>
+								<div class="sdx-duration-field">
+									<label>Start Time</label>
+									<input type="number" class="sdx-duration-input" data-field="startTime" value="${duration.startTime || ''}" placeholder="Default" />
+								</div>
+							</div>
+							<div class="sdx-duration-row">
+								<div class="sdx-duration-field">
+									<label>Rounds</label>
+									<input type="number" class="sdx-duration-input" data-field="rounds" value="${duration.rounds || ''}" placeholder="Default" />
+								</div>
+								<div class="sdx-duration-field">
+									<label>Turns</label>
+									<input type="number" class="sdx-duration-input" data-field="turns" value="${duration.turns || ''}" placeholder="Default" />
+								</div>
+							</div>
+							<div class="sdx-duration-row">
+								<div class="sdx-duration-field">
+									<label>Start Round</label>
+									<input type="number" class="sdx-duration-input" data-field="startRound" value="${duration.startRound || ''}" placeholder="Default" />
+								</div>
+								<div class="sdx-duration-field">
+									<label>Start Turn</label>
+									<input type="number" class="sdx-duration-input" data-field="startTurn" value="${duration.startTurn || ''}" placeholder="Default" />
+								</div>
+							</div>
+						</div>
+					</div>
+				`;
+			} else {
+				console.warn(`${MODULE_ID} | Could not load effect from UUID:`, uuid);
+			}
+		}
+		
+		console.log(`${MODULE_ID} | Loaded effects HTML, length:`, effectsListHtml.length);
+	}
+
+	// Build the damage/heal UI HTML using template
+	const damageHealHtml = generatePotionConfig(MODULE_ID, flags, effectsListHtml, effectsArray, effectsApplyToTarget);
+
+	// Insert into Activity tab
+	$activityTab.append(damageHealHtml);
+	console.log(`${MODULE_ID} | Damage/Heal box inserted into Activity tab`);
+
+	// Prevent auto-submission of form inputs in Activity tab to avoid unwanted re-renders
+	$activityTab.find('input, select, textarea').on('change', function(e) {
+		e.stopPropagation(); // Prevent event from bubbling up to form auto-submit
+		
+		// Manually update the item without re-rendering
+		const fieldName = $(this).attr('name');
+		if (fieldName) {
+			let value = $(this).val();
+			
+			// Handle checkboxes
+			if ($(this).attr('type') === 'checkbox') {
+				value = $(this).is(':checked');
+			}
+			// Handle radio buttons
+			else if ($(this).attr('type') === 'radio' && !$(this).is(':checked')) {
+				return; // Don't update for unchecked radios
+			}
+			// Handle number inputs
+			else if ($(this).attr('type') === 'number') {
+				value = parseFloat(value) || 0;
+			}
+			
+			const updateData = {};
+			updateData[fieldName] = value;
+			
+			// Update without re-rendering
+			item.update(updateData, { render: false }).then(() => {
+				console.log(`${MODULE_ID} | Updated ${fieldName}:`, value);
+			}).catch(err => {
+				console.error(`${MODULE_ID} | Failed to update ${fieldName}:`, err);
+			});
+		}
+	});
+
+	// Attach toggle listener
+	html.find('.sdx-spell-damage-toggle').on('change', function() {
+		const $content = $(this).closest('.sdx-spell-damage-box').find('.sdx-spell-damage-content');
+		if ($(this).is(':checked')) {
+			$content.slideDown(200);
+		} else {
+			$content.slideUp(200);
+		}
+	});
+
+	// Handle formula type radio buttons
+	html.find('.sdx-formula-type-radio').on('change', function() {
+		const selectedType = $(this).val();
+		const $box = $(this).closest('.sdx-spell-damage-box');
+		
+		// Hide all formula sections
+		$box.find('.sdx-formula-section').hide();
+		
+		// Show the selected formula section
+		if (selectedType === 'basic') {
+			$box.find('.sdx-basic-formula').show();
+		} else if (selectedType === 'formula') {
+			$box.find('.sdx-custom-formula').show();
+		} else if (selectedType === 'tiered') {
+			$box.find('.sdx-tiered-formula').show();
+		}
+		
+		// Save the formula type preference
+		const updateData = {};
+		updateData[`flags.${MODULE_ID}.spellDamage.formulaType`] = selectedType;
+		item.update(updateData, { render: false });
+	});
+
+	// Attach drag and drop listeners for effects
+	const $dropArea = html.find('.sdx-spell-effects-drop-area');
+	const $effectsList = html.find('.sdx-spell-effects-list');
+	const $effectsData = html.find('.sdx-effects-data');
+
+	// Update the hidden input when effects change
+	function updateEffectsData() {
+		const effects = [];
+		$effectsList.find('.sdx-spell-effect-item').each(function() {
+			const $item = $(this);
+			const uuid = $item.data('uuid');
+			
+			// Collect duration overrides
+			const duration = {};
+			$item.find('.sdx-duration-input').each(function() {
+				const field = $(this).data('field');
+				const value = $(this).val();
+				if (value && value.trim() !== '') {
+					duration[field] = parseFloat(value);
+				}
+			});
+			
+			effects.push({ uuid, duration });
+		});
+		$effectsData.val(JSON.stringify(effects));
+		
+		// Save immediately to the item
+		const updateData = {};
+		updateData[`flags.${MODULE_ID}.spellDamage.effects`] = effects;
+		item.update(updateData).then(() => {
+			console.log(`${MODULE_ID} | Saved potion effects:`, effects);
+		}).catch(err => {
+			console.error(`${MODULE_ID} | Failed to save potion effects:`, err);
+		});
+		
+		// Remove "no effects" placeholder if we have effects
+		if (effects.length > 0) {
+			$effectsList.find('.sdx-no-effects').remove();
+		} else if ($effectsList.find('.sdx-spell-effect-item').length === 0) {
+			$effectsList.html('<div class="sdx-no-effects">Drag and drop conditions or effects here</div>');
+		}
+	}
+
+	// Handle drag over
+	$dropArea.on('dragover', function(event) {
+		event.preventDefault();
+		event.stopPropagation();
+		$(this).addClass('sdx-drag-over');
+	});
+
+	// Handle drag leave
+	$dropArea.on('dragleave', function(event) {
+		event.preventDefault();
+		event.stopPropagation();
+		$(this).removeClass('sdx-drag-over');
+	});
+
+	// Handle drop
+	$dropArea.on('drop', async function(event) {
+		event.preventDefault();
+		event.stopPropagation();
+		$(this).removeClass('sdx-drag-over');
+
+		try {
+			const data = JSON.parse(event.originalEvent.dataTransfer.getData('text/plain'));
+			
+			// Get the document from the dropped data
+			let doc = null;
+			if (data.uuid) {
+				doc = await fromUuid(data.uuid);
+			} else if (data.type === 'Item' && data.id) {
+				// Handle items from compendiums or world
+				if (data.pack) {
+					const pack = game.packs.get(data.pack);
+					doc = await pack.getDocument(data.id);
+				} else {
+					doc = game.items.get(data.id);
+				}
+			}
+
+			if (!doc) {
+				ui.notifications.warn('Could not load dropped item');
+				return;
+			}
+
+			// Check if it's an effect or condition type
+			const validTypes = ['Effect', 'Condition', 'NPC Feature'];
+			if (!validTypes.includes(doc.type)) {
+				ui.notifications.warn(`Only Effect, Condition, or NPC Feature items can be dropped here`);
+				return;
+			}
+
+			// Check if already added
+			const uuid = doc.uuid;
+			if ($effectsList.find(`[data-uuid="${uuid}"]`).length > 0) {
+				ui.notifications.info(`${doc.name} is already in the effects list`);
+				return;
+			}
+
+			// Add the effect to the list
+			const effectHtml = `
+				<div class="sdx-spell-effect-item" data-uuid="${uuid}">
+					<img src="${doc.img || 'icons/svg/mystery-man.svg'}" alt="${doc.name}" />
+					<span>${doc.name}</span>
+					<a class="sdx-remove-effect" data-tooltip="Remove"><i class="fas fa-times"></i></a>
+				</div>
+			`;
+			
+			$effectsList.find('.sdx-no-effects').remove();
+			$effectsList.append(effectHtml);
+			updateEffectsData();
+
+			ui.notifications.info(`Added ${doc.name} to potion effects`);
+		} catch (err) {
+			console.error(`${MODULE_ID} | Error handling drop:`, err);
+			ui.notifications.error('Failed to add effect');
+		}
+	});
+
+	// Handle remove effect button
+	html.on('click', '.sdx-remove-effect', function(event) {
+		event.preventDefault();
+		event.stopPropagation();
+		
+		$(this).closest('.sdx-spell-effect-item').remove();
+		updateEffectsData();
+	});
+
+	// Also save effectsApplyToTarget when radio buttons change
+	html.on('change', 'input[name="flags.shadowdark-extras.spellDamage.effectsApplyToTarget"]', function() {
+		const effectsApplyToTargetValue = $(this).val() === 'true';
+		const updateData = {};
+		updateData[`flags.${MODULE_ID}.spellDamage.effectsApplyToTarget`] = effectsApplyToTargetValue;
+		
+		item.update(updateData).then(() => {
+			console.log(`${MODULE_ID} | Saved effectsApplyToTarget:`, effectsApplyToTargetValue);
+		}).catch(err => {
+			console.error(`${MODULE_ID} | Failed to save effectsApplyToTarget:`, err);
+		});
+	});
+
+	console.log(`${MODULE_ID} | Potion sheet enhanced for`, item.name);
+}
+
+/**
+ * Enhance Scroll item sheets with damage/heal and conditions UI
+ */
+async function enhanceScrollSheet(app, html) {
+	// Check if spell enhancement is enabled (reuse spell enhancement setting)
+	try {
+		if (!game.settings.get(MODULE_ID, "enhanceSpells")) return;
+	} catch {
+		return;
+	}
+
+	// Only enhance Scroll items
+	const item = app.item;
+	if (!item || item.type !== "Scroll") return;
+
+	console.log(`${MODULE_ID} | Enhancing scroll sheet for`, item.name);
+
+	// Remove any existing damage/heal boxes to prevent duplicates
+	html.find('.sdx-spell-damage-box').remove();
+
+	// Initialize flags if they don't exist
+	const flags = item.flags?.[MODULE_ID]?.spellDamage || {
+		enabled: false,
+		isDamage: true, // true = damage, false = heal
+		numDice: 1,
+		dieType: "d6",
+		bonus: 0,
+		damageType: "",
+		scaling: "none", // scrolls typically don't scale (fixed spell level)
+		scalingDice: 0,
+		formula: "",
+		damageRequirement: "", // Formula that must evaluate to true for damage to apply
+		damageRequirementFailAction: "zero", // "zero" or "half" - what to do when requirement fails
+		effectsRequirement: "", // Formula that must evaluate to true for effects to apply
+		effects: [], // Array of effect document UUIDs
+		applyToTarget: true, // scrolls apply to target by default
+		effectsApplyToTarget: true // scrolls apply effects to target by default
+	};
+	
+	// Convert applyToTarget to boolean (in case it was stored as string)
+	const applyToTarget = flags.applyToTarget === "false" ? false : (flags.applyToTarget === false ? false : true);
+	const effectsApplyToTarget = flags.effectsApplyToTarget === "false" ? false : (flags.effectsApplyToTarget === false ? false : true);
+
+	// Preserve active tab across re-renders
+	if (!app._shadowdarkExtrasActiveTab) {
+		app._shadowdarkExtrasActiveTab = 'tab-details'; // Default to details
+	}
+	
+	// Check which tab is currently active
+	const $currentActiveTab = html.find('nav.SD-nav a.navigation-tab.active');
+	if ($currentActiveTab.length) {
+		const currentTab = $currentActiveTab.data('tab');
+		if (currentTab) {
+			app._shadowdarkExtrasActiveTab = currentTab;
+		}
+	}
+
+	// Create a new "Activity" tab after Details tab
+	const $tabs = html.find('nav.SD-nav');
+	
+	// Check if Activity tab already exists
+	if (!html.find('section[data-tab="tab-activity"]').length) {
+		// Add Activity tab to navigation (after Details)
+		const activityTabLink = `<a class="navigation-tab" data-tab="tab-activity">Activity</a>`;
+		const $detailsLink = $tabs.find('a[data-tab="tab-details"]');
+		if ($detailsLink.length) {
+			$detailsLink.after(activityTabLink);
+			console.log(`${MODULE_ID} | Activity tab link added to navigation`);
+		} else {
+			console.warn(`${MODULE_ID} | Could not find Details tab link`);
+		}
+		
+		// Create Activity tab content container with correct structure
+		const activityTabContent = `<section class="tab tab-activity" data-group="primary" data-tab="tab-activity"></section>`;
+		const $detailsTab = html.find('section.tab-details[data-tab="tab-details"]');
+		if ($detailsTab.length) {
+			$detailsTab.after(activityTabContent);
+			console.log(`${MODULE_ID} | Activity tab content created`);
+		} else {
+			console.warn(`${MODULE_ID} | Could not find Details tab content`);
+		}
+		
+		// Add click handler to track tab changes
+		$tabs.find('a.navigation-tab').on('click', function() {
+			const tabName = $(this).data('tab');
+			if (tabName) {
+				app._shadowdarkExtrasActiveTab = tabName;
+			}
+		});
+	}
+	
+	// Restore the previously active tab
+	setTimeout(() => {
+		const $targetTab = $tabs.find(`a.navigation-tab[data-tab="${app._shadowdarkExtrasActiveTab}"]`);
+		const $targetSection = html.find(`section[data-tab="${app._shadowdarkExtrasActiveTab}"]`);
+		
+		if ($targetTab.length && $targetSection.length) {
+			// Remove active class from all tabs
+			$tabs.find('a.navigation-tab').removeClass('active');
+			html.find('section[data-group="primary"]').removeClass('active');
+			
+			// Add active class to target tab
+			$targetTab.addClass('active');
+			$targetSection.addClass('active');
+		}
+	}, 0);
+	
+	// Find the Activity tab content
+	const $activityTab = html.find('section.tab-activity[data-tab="tab-activity"]');
+	if (!$activityTab.length) {
+		console.warn(`${MODULE_ID} | Activity tab not found in scroll sheet`);
+		return;
+	}
+
+	console.log(`${MODULE_ID} | Activity tab found/created`);
+
+	// Build list of current effects from stored UUIDs
+	let effectsListHtml = '';
+	
+	// Handle case where effects might be a string instead of an array (from form submission)
+	let effectsArray = flags.effects || [];
+	if (typeof effectsArray === 'string') {
+		try {
+			effectsArray = JSON.parse(effectsArray);
+		} catch (err) {
+			console.warn(`${MODULE_ID} | Could not parse effects string:`, effectsArray, err);
+			effectsArray = [];
+		}
+	}
+	
+	// Normalize effects array - convert old UUID strings to new object format
+	effectsArray = effectsArray.map(effect => {
+		if (typeof effect === 'string') {
+			return { uuid: effect, duration: {} };
+		}
+		return effect;
+	});
+	
+	if (effectsArray && effectsArray.length > 0) {
+		console.log(`${MODULE_ID} | Loading ${effectsArray.length} effects from UUIDs:`, effectsArray);
+		
+		// Load all effects in parallel and wait for them all
+		const effectPromises = effectsArray.map(effect => fromUuid(effect.uuid || effect));
+		const effectDocs = await Promise.all(effectPromises);
+		
+		for (let i = 0; i < effectDocs.length; i++) {
+			const doc = effectDocs[i];
+			const effectData = effectsArray[i];
+			const uuid = effectData.uuid || effectData;
+			const duration = effectData.duration || {};
+			
+			if (doc) {
+				effectsListHtml += `
+					<div class="sdx-spell-effect-item" data-uuid="${uuid}" data-effect-index="${i}">
+						<div class="sdx-effect-header">
+							<img src="${doc.img || 'icons/svg/mystery-man.svg'}" alt="${doc.name}" />
+							<span class="sdx-effect-name">${doc.name}</span>
+							<a class="sdx-remove-effect" data-tooltip="Remove"><i class="fas fa-times"></i></a>
+						</div>
+						<div class="sdx-effect-duration-override">
+							<div class="sdx-duration-row">
+								<div class="sdx-duration-field">
+									<label>Seconds</label>
+									<input type="number" class="sdx-duration-input" data-field="seconds" value="${duration.seconds || ''}" placeholder="Default" />
+								</div>
+								<div class="sdx-duration-field">
+									<label>Start Time</label>
+									<input type="number" class="sdx-duration-input" data-field="startTime" value="${duration.startTime || ''}" placeholder="Default" />
+								</div>
+							</div>
+							<div class="sdx-duration-row">
+								<div class="sdx-duration-field">
+									<label>Rounds</label>
+									<input type="number" class="sdx-duration-input" data-field="rounds" value="${duration.rounds || ''}" placeholder="Default" />
+								</div>
+								<div class="sdx-duration-field">
+									<label>Turns</label>
+									<input type="number" class="sdx-duration-input" data-field="turns" value="${duration.turns || ''}" placeholder="Default" />
+								</div>
+							</div>
+							<div class="sdx-duration-row">
+								<div class="sdx-duration-field">
+									<label>Start Round</label>
+									<input type="number" class="sdx-duration-input" data-field="startRound" value="${duration.startRound || ''}" placeholder="Default" />
+								</div>
+								<div class="sdx-duration-field">
+									<label>Start Turn</label>
+									<input type="number" class="sdx-duration-input" data-field="startTurn" value="${duration.startTurn || ''}" placeholder="Default" />
+								</div>
+							</div>
+						</div>
+					</div>
+				`;
+			} else {
+				console.warn(`${MODULE_ID} | Could not load effect from UUID:`, uuid);
+			}
+		}
+		
+		console.log(`${MODULE_ID} | Loaded effects HTML, length:`, effectsListHtml.length);
+	}
+
+	// Build the damage/heal UI HTML
+	const damageHealHtml = generateScrollConfig(MODULE_ID, flags, effectsListHtml, effectsArray, effectsApplyToTarget);
+
+	// Insert into Activity tab
+	$activityTab.append(damageHealHtml);
+	console.log(`${MODULE_ID} | Damage/Heal box inserted into Activity tab`);
+
+	// Prevent auto-submission of form inputs in Activity tab to avoid unwanted re-renders
+	$activityTab.find('input, select, textarea').on('change', function(e) {
+		e.stopPropagation(); // Prevent event from bubbling up to form auto-submit
+		
+		// Manually update the item without re-rendering
+		const fieldName = $(this).attr('name');
+		if (fieldName) {
+			let value = $(this).val();
+			
+			// Handle checkboxes
+			if ($(this).attr('type') === 'checkbox') {
+				value = $(this).is(':checked');
+			}
+			// Handle radio buttons
+			else if ($(this).attr('type') === 'radio' && !$(this).is(':checked')) {
+				return; // Don't update for unchecked radios
+			}
+			// Handle number inputs
+			else if ($(this).attr('type') === 'number') {
+				value = parseFloat(value) || 0;
+			}
+			
+			const updateData = {};
+			updateData[fieldName] = value;
+			
+			// Update without re-rendering
+			item.update(updateData, { render: false }).then(() => {
+				console.log(`${MODULE_ID} | Updated ${fieldName}:`, value);
+			}).catch(err => {
+				console.error(`${MODULE_ID} | Failed to update ${fieldName}:`, err);
+			});
+		}
+	});
+
+	// Attach toggle listener
+	html.find('.sdx-spell-damage-toggle').on('change', function() {
+		const $content = $(this).closest('.sdx-spell-damage-box').find('.sdx-spell-damage-content');
+		if ($(this).is(':checked')) {
+			$content.slideDown(200);
+		} else {
+			$content.slideUp(200);
+		}
+	});
+
+	// Handle formula type radio buttons
+	html.find('.sdx-formula-type-radio').on('change', function() {
+		const selectedType = $(this).val();
+		const $box = $(this).closest('.sdx-spell-damage-box');
+		
+		// Hide all formula sections
+		$box.find('.sdx-formula-section').hide();
+		
+		// Show the selected formula section
+		if (selectedType === 'basic') {
+			$box.find('.sdx-basic-formula').show();
+		} else if (selectedType === 'formula') {
+			$box.find('.sdx-custom-formula').show();
+		} else if (selectedType === 'tiered') {
+			$box.find('.sdx-tiered-formula').show();
+		}
+		
+		// Save the formula type preference
+		const updateData = {};
+		updateData[`flags.${MODULE_ID}.spellDamage.formulaType`] = selectedType;
+		item.update(updateData, { render: false });
+	});
+
+	// Attach drag and drop listeners for effects
+	const $dropArea = html.find('.sdx-spell-effects-drop-area');
+	const $effectsList = html.find('.sdx-spell-effects-list');
+	const $effectsData = html.find('.sdx-effects-data');
+
+	function updateEffectsData() {
+		const effects = [];
+		$effectsList.find('.sdx-spell-effect-item').each(function() {
+			const $item = $(this);
+			const uuid = $item.data('uuid');
+			
+			// Collect duration overrides
+			const duration = {};
+			$item.find('.sdx-duration-input').each(function() {
+				const field = $(this).data('field');
+				const value = $(this).val();
+				if (value && value.trim() !== '') {
+					duration[field] = parseFloat(value);
+				}
+			});
+			
+			effects.push({ uuid, duration });
+		});
+		$effectsData.val(JSON.stringify(effects));
+		
+		const updateData = {};
+		updateData[`flags.${MODULE_ID}.spellDamage.effects`] = effects;
+		item.update(updateData);
+		
+		if (effects.length > 0) {
+			$effectsList.find('.sdx-no-effects').remove();
+		} else if ($effectsList.find('.sdx-spell-effect-item').length === 0) {
+			$effectsList.html('<div class="sdx-no-effects">Drag and drop conditions or effects here</div>');
+		}
+	}
+
+	$dropArea.on('dragover', function(event) {
+		event.preventDefault();
+		event.stopPropagation();
+		$(this).addClass('sdx-drag-over');
+	});
+
+	$dropArea.on('dragleave', function(event) {
+		event.preventDefault();
+		event.stopPropagation();
+		$(this).removeClass('sdx-drag-over');
+	});
+
+	$dropArea.on('drop', async function(event) {
+		event.preventDefault();
+		event.stopPropagation();
+		$(this).removeClass('sdx-drag-over');
+
+		try {
+			const data = JSON.parse(event.originalEvent.dataTransfer.getData('text/plain'));
+			
+			let doc = null;
+			if (data.uuid) {
+				doc = await fromUuid(data.uuid);
+			} else if (data.type === 'Item' && data.id) {
+				if (data.pack) {
+					const pack = game.packs.get(data.pack);
+					doc = await pack.getDocument(data.id);
+				} else {
+					doc = game.items.get(data.id);
+				}
+			}
+
+			if (!doc) {
+				ui.notifications.warn('Could not load dropped item');
+				return;
+			}
+
+			const validTypes = ['Effect', 'Condition', 'NPC Feature'];
+			if (!validTypes.includes(doc.type)) {
+				ui.notifications.warn(`Only Effect, Condition, or NPC Feature items can be dropped here`);
+				return;
+			}
+
+			const uuid = doc.uuid;
+			if ($effectsList.find(`[data-uuid="${uuid}"]`).length > 0) {
+				ui.notifications.info(`${doc.name} is already in the effects list`);
+				return;
+			}
+
+			const effectHtml = `
+				<div class="sdx-spell-effect-item" data-uuid="${uuid}">
+					<img src="${doc.img || 'icons/svg/mystery-man.svg'}" alt="${doc.name}" />
+					<span>${doc.name}</span>
+					<a class="sdx-remove-effect" data-tooltip="Remove"><i class="fas fa-times"></i></a>
+				</div>
+			`;
+			
+			$effectsList.find('.sdx-no-effects').remove();
+			$effectsList.append(effectHtml);
+			updateEffectsData();
+
+			ui.notifications.info(`Added ${doc.name} to scroll effects`);
+		} catch (err) {
+			console.error(`${MODULE_ID} | Error handling drop:`, err);
+			ui.notifications.error('Failed to add effect');
+		}
+	});
+
+	html.on('click', '.sdx-remove-effect', function(event) {
+		event.preventDefault();
+		event.stopPropagation();
+		
+		$(this).closest('.sdx-spell-effect-item').remove();
+		updateEffectsData();
+	});
+
+	html.on('change', 'input[name="flags.shadowdark-extras.spellDamage.effectsApplyToTarget"]', function() {
+		const effectsApplyToTargetValue = $(this).val() === 'true';
+		const updateData = {};
+		updateData[`flags.${MODULE_ID}.spellDamage.effectsApplyToTarget`] = effectsApplyToTargetValue;
+		item.update(updateData);
+	});
+
+	console.log(`${MODULE_ID} | Scroll sheet enhanced for`, item.name);
+}
+
+/**
+ * Enhance Wand item sheets with damage/heal and conditions UI
+ */
+async function enhanceWandSheet(app, html) {
+	// Check if spell enhancement is enabled (reuse spell enhancement setting)
+	try {
+		if (!game.settings.get(MODULE_ID, "enhanceSpells")) return;
+	} catch {
+		return;
+	}
+
+	// Only enhance Wand items
+	const item = app.item;
+	if (!item || item.type !== "Wand") return;
+
+	console.log(`${MODULE_ID} | Enhancing wand sheet for`, item.name);
+
+	// Remove any existing damage/heal boxes to prevent duplicates
+	html.find('.sdx-spell-damage-box').remove();
+
+	// Initialize flags if they don't exist
+	const flags = item.flags?.[MODULE_ID]?.spellDamage || {
+		enabled: false,
+		isDamage: true,
+		numDice: 1,
+		dieType: "d6",
+		bonus: 0,
+		damageType: "",
+		scaling: "none",
+		scalingDice: 0,
+		formula: "",
+		damageRequirement: "",
+		damageRequirementFailAction: "zero",
+		effectsRequirement: "",
+		effects: [],
+		applyToTarget: true,
+		effectsApplyToTarget: true
+	};
+	
+	const applyToTarget = flags.applyToTarget === "false" ? false : (flags.applyToTarget === false ? false : true);
+	const effectsApplyToTarget = flags.effectsApplyToTarget === "false" ? false : (flags.effectsApplyToTarget === false ? false : true);
+
+	// Preserve active tab across re-renders
+	if (!app._shadowdarkExtrasActiveTab) {
+		app._shadowdarkExtrasActiveTab = 'tab-details'; // Default to details
+	}
+	
+	// Check which tab is currently active
+	const $currentActiveTab = html.find('nav.SD-nav a.navigation-tab.active');
+	if ($currentActiveTab.length) {
+		const currentTab = $currentActiveTab.data('tab');
+		if (currentTab) {
+			app._shadowdarkExtrasActiveTab = currentTab;
+		}
+	}
+
+	// Create a new "Activity" tab after Details tab
+	const $tabs = html.find('nav.SD-nav');
+	
+	// Check if Activity tab already exists
+	if (!html.find('section[data-tab="tab-activity"]').length) {
+		// Add Activity tab to navigation (after Details)
+		const activityTabLink = `<a class="navigation-tab" data-tab="tab-activity">Activity</a>`;
+		const $detailsLink = $tabs.find('a[data-tab="tab-details"]');
+		if ($detailsLink.length) {
+			$detailsLink.after(activityTabLink);
+			console.log(`${MODULE_ID} | Activity tab link added to navigation`);
+		} else {
+			console.warn(`${MODULE_ID} | Could not find Details tab link`);
+		}
+		
+		// Create Activity tab content container with correct structure
+		const activityTabContent = `<section class="tab tab-activity" data-group="primary" data-tab="tab-activity"></section>`;
+		const $detailsTab = html.find('section.tab-details[data-tab="tab-details"]');
+		if ($detailsTab.length) {
+			$detailsTab.after(activityTabContent);
+			console.log(`${MODULE_ID} | Activity tab content created`);
+		} else {
+			console.warn(`${MODULE_ID} | Could not find Details tab content`);
+		}
+		
+		// Add click handler to track tab changes
+		$tabs.find('a.navigation-tab').on('click', function() {
+			const tabName = $(this).data('tab');
+			if (tabName) {
+				app._shadowdarkExtrasActiveTab = tabName;
+			}
+		});
+	}
+	
+	// Restore the previously active tab
+	setTimeout(() => {
+		const $targetTab = $tabs.find(`a.navigation-tab[data-tab="${app._shadowdarkExtrasActiveTab}"]`);
+		const $targetSection = html.find(`section[data-tab="${app._shadowdarkExtrasActiveTab}"]`);
+		
+		if ($targetTab.length && $targetSection.length) {
+			// Remove active class from all tabs
+			$tabs.find('a.navigation-tab').removeClass('active');
+			html.find('section[data-group="primary"]').removeClass('active');
+			
+			// Add active class to target tab
+			$targetTab.addClass('active');
+			$targetSection.addClass('active');
+		}
+	}, 0);
+	
+	// Find the Activity tab content
+	const $activityTab = html.find('section.tab-activity[data-tab="tab-activity"]');
+	if (!$activityTab.length) {
+		console.warn(`${MODULE_ID} | Activity tab not found in wand sheet`);
+		return;
+	}
+
+	console.log(`${MODULE_ID} | Activity tab found/created`);
+
+	let effectsListHtml = '';
+	let effectsArray = flags.effects || [];
+	if (typeof effectsArray === 'string') {
+		try {
+			effectsArray = JSON.parse(effectsArray);
+		} catch (err) {
+			effectsArray = [];
+		}
+	}
+	
+	// Normalize effects array - convert old UUID strings to new object format
+	effectsArray = effectsArray.map(effect => {
+		if (typeof effect === 'string') {
+			return { uuid: effect, duration: {} };
+		}
+		return effect;
+	});
+	
+	if (effectsArray && effectsArray.length > 0) {
+		const effectPromises = effectsArray.map(effect => fromUuid(effect.uuid || effect));
+		const effectDocs = await Promise.all(effectPromises);
+		
+		for (let i = 0; i < effectDocs.length; i++) {
+			const doc = effectDocs[i];
+			const effectData = effectsArray[i];
+			const uuid = effectData.uuid || effectData;
+			const duration = effectData.duration || {};
+			
+			if (doc) {
+				effectsListHtml += `
+					<div class="sdx-spell-effect-item" data-uuid="${uuid}" data-effect-index="${i}">
+						<div class="sdx-effect-header">
+							<img src="${doc.img || 'icons/svg/mystery-man.svg'}" alt="${doc.name}" />
+							<span class="sdx-effect-name">${doc.name}</span>
+							<a class="sdx-remove-effect" data-tooltip="Remove"><i class="fas fa-times"></i></a>
+						</div>
+						<div class="sdx-effect-duration-override">
+							<div class="sdx-duration-row">
+								<div class="sdx-duration-field">
+									<label>Seconds</label>
+									<input type="number" class="sdx-duration-input" data-field="seconds" value="${duration.seconds || ''}" placeholder="Default" />
+								</div>
+								<div class="sdx-duration-field">
+									<label>Start Time</label>
+									<input type="number" class="sdx-duration-input" data-field="startTime" value="${duration.startTime || ''}" placeholder="Default" />
+								</div>
+							</div>
+							<div class="sdx-duration-row">
+								<div class="sdx-duration-field">
+									<label>Rounds</label>
+									<input type="number" class="sdx-duration-input" data-field="rounds" value="${duration.rounds || ''}" placeholder="Default" />
+								</div>
+								<div class="sdx-duration-field">
+									<label>Turns</label>
+									<input type="number" class="sdx-duration-input" data-field="turns" value="${duration.turns || ''}" placeholder="Default" />
+								</div>
+							</div>
+							<div class="sdx-duration-row">
+								<div class="sdx-duration-field">
+									<label>Start Round</label>
+									<input type="number" class="sdx-duration-input" data-field="startRound" value="${duration.startRound || ''}" placeholder="Default" />
+								</div>
+								<div class="sdx-duration-field">
+									<label>Start Turn</label>
+									<input type="number" class="sdx-duration-input" data-field="startTurn" value="${duration.startTurn || ''}" placeholder="Default" />
+								</div>
+							</div>
+						</div>
+					</div>
+				`;
+			}
+		}
+	}
+
+	const damageHealHtml = generateWandConfig(MODULE_ID, flags, effectsListHtml, effectsArray, effectsApplyToTarget);
+
+	// Insert into Activity tab
+	$activityTab.append(damageHealHtml);
+	console.log(`${MODULE_ID} | Damage/Heal box inserted into Activity tab`);
+
+	// Prevent auto-submission of form inputs in Activity tab to avoid unwanted re-renders
+	$activityTab.find('input, select, textarea').on('change', function(e) {
+		e.stopPropagation(); // Prevent event from bubbling up to form auto-submit
+		
+		// Manually update the item without re-rendering
+		const fieldName = $(this).attr('name');
+		if (fieldName) {
+			let value = $(this).val();
+			
+			// Handle checkboxes
+			if ($(this).attr('type') === 'checkbox') {
+				value = $(this).is(':checked');
+			}
+			// Handle radio buttons
+			else if ($(this).attr('type') === 'radio' && !$(this).is(':checked')) {
+				return; // Don't update for unchecked radios
+			}
+			// Handle number inputs
+			else if ($(this).attr('type') === 'number') {
+				value = parseFloat(value) || 0;
+			}
+			
+			const updateData = {};
+			updateData[fieldName] = value;
+			
+			// Update without re-rendering
+			item.update(updateData, { render: false }).then(() => {
+				console.log(`${MODULE_ID} | Updated ${fieldName}:`, value);
+			}).catch(err => {
+				console.error(`${MODULE_ID} | Failed to update ${fieldName}:`, err);
+			});
+		}
+	});
+
+	html.find('.sdx-spell-damage-toggle').on('change', function() {
+		const $content = $(this).closest('.sdx-spell-damage-box').find('.sdx-spell-damage-content');
+		if ($(this).is(':checked')) {
+			$content.slideDown(200);
+		} else {
+			$content.slideUp(200);
+		}
+	});
+
+	// Handle formula type radio buttons
+	html.find('.sdx-formula-type-radio').on('change', function() {
+		const selectedType = $(this).val();
+		const $box = $(this).closest('.sdx-spell-damage-box');
+		
+		// Hide all formula sections
+		$box.find('.sdx-formula-section').hide();
+		
+		// Show the selected formula section
+		if (selectedType === 'basic') {
+			$box.find('.sdx-basic-formula').show();
+		} else if (selectedType === 'formula') {
+			$box.find('.sdx-custom-formula').show();
+		} else if (selectedType === 'tiered') {
+			$box.find('.sdx-tiered-formula').show();
+		}
+		
+		// Save the formula type preference
+		const updateData = {};
+		updateData[`flags.${MODULE_ID}.spellDamage.formulaType`] = selectedType;
+		item.update(updateData, { render: false });
+	});
+
+	const $dropArea = html.find('.sdx-spell-effects-drop-area');
+	const $effectsList = html.find('.sdx-spell-effects-list');
+	const $effectsData = html.find('.sdx-effects-data');
+
+	function updateEffectsData() {
+		const effects = [];
+		$effectsList.find('.sdx-spell-effect-item').each(function() {
+			const $item = $(this);
+			const uuid = $item.data('uuid');
+			
+			// Collect duration overrides
+			const duration = {};
+			$item.find('.sdx-duration-input').each(function() {
+				const field = $(this).data('field');
+				const value = $(this).val();
+				if (value && value.trim() !== '') {
+					duration[field] = parseFloat(value);
+				}
+			});
+			
+			effects.push({ uuid, duration });
+		});
+		$effectsData.val(JSON.stringify(effects));
+		
+		const updateData = {};
+		updateData[`flags.${MODULE_ID}.spellDamage.effects`] = effects;
+		item.update(updateData);
+		
+		if (effects.length > 0) {
+			$effectsList.find('.sdx-no-effects').remove();
+		} else if ($effectsList.find('.sdx-spell-effect-item').length === 0) {
+			$effectsList.html('<div class="sdx-no-effects">Drag and drop conditions or effects here</div>');
+		}
+	}
+
+	$dropArea.on('dragover', function(event) {
+		event.preventDefault();
+		event.stopPropagation();
+		$(this).addClass('sdx-drag-over');
+	});
+
+	$dropArea.on('dragleave', function(event) {
+		event.preventDefault();
+		event.stopPropagation();
+		$(this).removeClass('sdx-drag-over');
+	});
+
+	$dropArea.on('drop', async function(event) {
+		event.preventDefault();
+		event.stopPropagation();
+		$(this).removeClass('sdx-drag-over');
+
+		try {
+			const data = JSON.parse(event.originalEvent.dataTransfer.getData('text/plain'));
+			
+			let doc = null;
+			if (data.uuid) {
+				doc = await fromUuid(data.uuid);
+			} else if (data.type === 'Item' && data.id) {
+				if (data.pack) {
+					const pack = game.packs.get(data.pack);
+					doc = await pack.getDocument(data.id);
+				} else {
+					doc = game.items.get(data.id);
+				}
+			}
+
+			if (!doc) {
+				ui.notifications.warn('Could not load dropped item');
+				return;
+			}
+
+			const validTypes = ['Effect', 'Condition', 'NPC Feature'];
+			if (!validTypes.includes(doc.type)) {
+				ui.notifications.warn(`Only Effect, Condition, or NPC Feature items can be dropped here`);
+				return;
+			}
+
+			const uuid = doc.uuid;
+			if ($effectsList.find(`[data-uuid="${uuid}"]`).length > 0) {
+				ui.notifications.info(`${doc.name} is already in the effects list`);
+				return;
+			}
+
+			const effectHtml = `
+				<div class="sdx-spell-effect-item" data-uuid="${uuid}">
+					<img src="${doc.img || 'icons/svg/mystery-man.svg'}" alt="${doc.name}" />
+					<span>${doc.name}</span>
+					<a class="sdx-remove-effect" data-tooltip="Remove"><i class="fas fa-times"></i></a>
+				</div>
+			`;
+			
+			$effectsList.find('.sdx-no-effects').remove();
+			$effectsList.append(effectHtml);
+			updateEffectsData();
+
+			ui.notifications.info(`Added ${doc.name} to wand effects`);
+		} catch (err) {
+			console.error(`${MODULE_ID} | Error handling drop:`, err);
+			ui.notifications.error('Failed to add effect');
+		}
+	});
+
+	html.on('click', '.sdx-remove-effect', function(event) {
+		event.preventDefault();
+		event.stopPropagation();
+		
+		$(this).closest('.sdx-spell-effect-item').remove();
+		updateEffectsData();
+	});
+
+	html.on('change', 'input[name="flags.shadowdark-extras.spellDamage.effectsApplyToTarget"]', function() {
+		const effectsApplyToTargetValue = $(this).val() === 'true';
+		const updateData = {};
+		updateData[`flags.${MODULE_ID}.spellDamage.effectsApplyToTarget`] = effectsApplyToTargetValue;
+		item.update(updateData);
+	});
+
+	console.log(`${MODULE_ID} | Wand sheet enhanced for`, item.name);
+}
+
 // Inject container UI into Basic item sheets
 Hooks.on("renderItemSheet", (app, html, data) => {
 	try {
@@ -6260,6 +8166,30 @@ Hooks.on("renderItemSheet", (app, html, data) => {
 		console.error(`${MODULE_ID} | Failed to mask unidentified item sheet`, err);
 	}
 
+	try {
+		enhanceSpellSheet(app, html);
+	} catch (err) {
+		console.error(`${MODULE_ID} | Failed to enhance spell sheet`, err);
+	}
+
+	try {
+		enhancePotionSheet(app, html);
+	} catch (err) {
+		console.error(`${MODULE_ID} | Failed to enhance potion sheet`, err);
+	}
+
+	try {
+		enhanceScrollSheet(app, html);
+	} catch (err) {
+		console.error(`${MODULE_ID} | Failed to enhance scroll sheet`, err);
+	}
+
+	try {
+		enhanceWandSheet(app, html);
+	} catch (err) {
+		console.error(`${MODULE_ID} | Failed to enhance wand sheet`, err);
+	}
+
 	// Hide already-rendered Effects tab elements for non-GM players viewing unidentified items
 	try {
 		const item = app?.item;
@@ -6269,6 +8199,33 @@ Hooks.on("renderItemSheet", (app, html, data) => {
 		}
 	} catch (err) {
 		console.error(`${MODULE_ID} | Failed to hide effects tab`, err);
+	}
+});
+
+// Convert string values to booleans for spell damage flags
+Hooks.on("preUpdateItem", (item, updateData, options, userId) => {
+	// Check if we're updating spell damage applyToTarget
+	const applyToTargetPath = `flags.${MODULE_ID}.spellDamage.applyToTarget`;
+	if (foundry.utils.hasProperty(updateData, applyToTargetPath)) {
+		const value = foundry.utils.getProperty(updateData, applyToTargetPath);
+		// Convert string to boolean
+		if (value === "true" || value === true) {
+			foundry.utils.setProperty(updateData, applyToTargetPath, true);
+		} else if (value === "false" || value === false) {
+			foundry.utils.setProperty(updateData, applyToTargetPath, false);
+		}
+	}
+	
+	// Check if we're updating spell effectsApplyToTarget
+	const effectsApplyToTargetPath = `flags.${MODULE_ID}.spellDamage.effectsApplyToTarget`;
+	if (foundry.utils.hasProperty(updateData, effectsApplyToTargetPath)) {
+		const value = foundry.utils.getProperty(updateData, effectsApplyToTargetPath);
+		// Convert string to boolean
+		if (value === "true" || value === true) {
+			foundry.utils.setProperty(updateData, effectsApplyToTargetPath, true);
+		} else if (value === "false" || value === false) {
+			foundry.utils.setProperty(updateData, effectsApplyToTargetPath, false);
+		}
 	}
 });
 
@@ -6353,6 +8310,37 @@ Hooks.on("renderChatMessage", (message, html, data) => {
 	$card.find('.card-content').html('');
 });
 
+// Store original user's targets in chat message flags (for damage cards)
+Hooks.on("preCreateChatMessage", (message, data, options, userId) => {
+	try {
+		// Get current user's targets
+		const targets = Array.from(game.user.targets || []);
+		if (targets.length === 0) {
+			console.log(`${MODULE_ID} | No targets to store in message`);
+			return;
+		}
+		
+		// Store target token IDs in message flags
+		const targetIds = targets.map(t => t.id);
+		message.updateSource({
+			"flags.shadowdark-extras.targetIds": targetIds
+		});
+		
+		console.log(`${MODULE_ID} | Stored ${targetIds.length} targets in message flags:`, targetIds);
+	} catch (err) {
+		console.error(`${MODULE_ID} | Failed to store targets in message`, err);
+	}
+});
+
+// Inject damage card into chat messages
+Hooks.on("renderChatMessage", (message, html, data) => {
+	try {
+		injectDamageCard(message, html, data);
+	} catch (err) {
+		console.error(`${MODULE_ID} | Failed to inject damage card`, err);
+	}
+});
+
 // Wrap ItemSheet getData to modify context before rendering
 Hooks.once("ready", () => {
 	if (!globalThis.ItemSheet?.prototype?.getData) return;
@@ -6371,6 +8359,43 @@ Hooks.once("ready", () => {
 		
 		return data;
 	};
+	
+	// CRITICAL FIX: Wrap Shadowdark's createItemFromSpell to preserve our spell damage flags
+	// The system's function only copies type/name/system/img, stripping all flags
+	if (globalThis.shadowdark?.utils?.createItemFromSpell) {
+		const originalCreateItemFromSpell = globalThis.shadowdark.utils.createItemFromSpell;
+		
+		globalThis.shadowdark.utils.createItemFromSpell = async function(type, spell) {
+			// Call the original function to get the base item data
+			const itemData = await originalCreateItemFromSpell.call(this, type, spell);
+			
+			// Initialize flags object if needed
+			itemData.flags = itemData.flags || {};
+			itemData.flags[MODULE_ID] = itemData.flags[MODULE_ID] || {};
+			
+			// Preserve spell damage configuration flags
+			if (spell.flags?.[MODULE_ID]?.spellDamage) {
+				itemData.flags[MODULE_ID].spellDamage = foundry.utils.duplicate(spell.flags[MODULE_ID].spellDamage);
+				console.log(`${MODULE_ID} | Preserved spell damage flags for ${spell.name} -> ${itemData.name}`, itemData.flags[MODULE_ID].spellDamage);
+			}
+			
+			// Preserve summoning configuration flags
+			if (spell.flags?.[MODULE_ID]?.summoning) {
+				itemData.flags[MODULE_ID].summoning = foundry.utils.duplicate(spell.flags[MODULE_ID].summoning);
+				console.log(`${MODULE_ID} | Preserved summoning flags for ${spell.name} -> ${itemData.name}`, itemData.flags[MODULE_ID].summoning);
+			}
+			
+			// Preserve unidentified flags
+			if (spell.flags?.[MODULE_ID]?.unidentified) {
+				itemData.flags[MODULE_ID].unidentified = spell.flags[MODULE_ID].unidentified;
+				itemData.flags[MODULE_ID].unidentifiedDescription = spell.flags[MODULE_ID].unidentifiedDescription || "";
+			}
+			
+			return itemData;
+		};
+		
+		console.log(`${MODULE_ID} | Wrapped shadowdark.utils.createItemFromSpell to preserve spell flags`);
+	}
 });
 
 // Keep container slot values in sync when contained items change

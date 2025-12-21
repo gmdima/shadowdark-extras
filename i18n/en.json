@@ -128,6 +128,8 @@
   "SHADOWDARK_EXTRAS.inventory.delete_item": "Delete Item",
   "SHADOWDARK_EXTRAS.inventory.edit_container": "Open Container",
   "SHADOWDARK_EXTRAS.inventory.delete_confirm_title": "Delete Item",
+  "SHADOWDARK_EXTRAS.inventory.delete_spell_title": "Delete Spell",
+  "SHADOWDARK_EXTRAS.inventory.delete_spell_text": "Are you sure you want to delete {name}?",
   "SHADOWDARK_EXTRAS.inventory.delete_confirm_single": "Are you sure you want to delete <strong>{name}</strong>?",
   "SHADOWDARK_EXTRAS.inventory.delete_confirm_multiple": "Are you sure you want to delete <strong>{count}</strong> selected items?",
   "SHADOWDARK_EXTRAS.inventory.delete_selected": "Delete {count} Selected Items",
@@ -137,9 +139,12 @@
   "SHADOWDARK_EXTRAS.context_menu.trade_with_player": "Trade with Player",
 
   "SHADOWDARK_EXTRAS.dialog.transfer_item_title": "Transfer Item to Player",
+  "SHADOWDARK_EXTRAS.dialog.transfer_spell_title": "Transfer Spell to Player",
   "SHADOWDARK_EXTRAS.dialog.select_recipient": "Select Recipient:",
+  "SHADOWDARK_EXTRAS.dialog.select_player": "Select Player:",
   "SHADOWDARK_EXTRAS.dialog.transfer_item_warning": "This will transfer <strong>{item}</strong> to the selected player's character.",
   "SHADOWDARK_EXTRAS.dialog.transfer": "Transfer",
+  "SHADOWDARK_EXTRAS.dialog.cancel": "Cancel",
 
   "SHADOWDARK_EXTRAS.notifications.item_moved": "{item} moved to {target}",
   "SHADOWDARK_EXTRAS.notifications.item_copied": "{item} copied to {target}",
@@ -150,6 +155,8 @@
   "SHADOWDARK_EXTRAS.notifications.transfer_no_owner": "No owner found for target character",
   "SHADOWDARK_EXTRAS.notifications.transfer_failed": "Transfer failed - please try again",
   "SHADOWDARK_EXTRAS.notifications.no_players_available": "No other player characters available for transfer",
+  "SHADOWDARK_EXTRAS.notifications.no_active_players": "No active players to transfer to",
+  "SHADOWDARK_EXTRAS.notifications.no_character_assigned": "Selected player has no assigned character",
 
   "SHADOWDARK_EXTRAS.trade.title": "Trade",
   "SHADOWDARK_EXTRAS.trade.title_with_player": "Trade with {player}",
@@ -197,6 +204,11 @@
   "SHADOWDARK_EXTRAS.trade.failed": "Trade failed - please try again",
   "SHADOWDARK_EXTRAS.trade.coins_offered": "Coins",
   "SHADOWDARK_EXTRAS.trade.not_enough_coins": "You don't have enough {type} (available: {available})",
+
+  "SHADOWDARK_EXTRAS.dialog.filter_connected": "Show only connected players",
+  "SHADOWDARK_EXTRAS.dialog.party_storage": "Party Storage",
+  "SHADOWDARK_EXTRAS.dialog.connected_players": "Connected Players",
+  "SHADOWDARK_EXTRAS.dialog.other_characters": "Other Characters",
 
   "SHADOWDARK_EXTRAS.settings.inventory_styles.name": "Inventory Item Styles",
   "SHADOWDARK_EXTRAS.settings.inventory_styles.label": "Edit Inventory CSS",

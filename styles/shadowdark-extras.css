@@ -509,7 +509,7 @@
     content: none !important;
 }
 
-.shadowdark-extras-party .party-header .portrait {
+.shadowdark-extras-party .party-header .party-portrait {
     border: 2px solid var(--party-border);
     width: 50px;
     height: 50px;
@@ -2537,6 +2537,34 @@ input[data-sdx-free-carry]:disabled {
     font-weight: 600;
 }
 
+/* ---- Shadow Remove Button ---- */
+.sdx-shadow-actions {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.sdx-shadow-remove {
+    width: 100%;
+    padding: 8px 12px;
+    background: rgba(231, 76, 60, 0.2);
+    border: 1px solid rgba(231, 76, 60, 0.4);
+    border-radius: 6px;
+    color: #e74c3c;
+    font-size: 0.85em;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.sdx-shadow-remove:hover {
+    background: rgba(231, 76, 60, 0.3);
+    border-color: rgba(231, 76, 60, 0.6);
+}
+
+.sdx-shadow-remove i {
+    margin-right: 6px;
+}
+
 /* ---- Border Builder ---- */
 .sdx-border-builder select {
     width: 100%;
@@ -2640,6 +2668,7 @@ input[data-sdx-free-carry]:disabled {
 .shadowdark .SD-list > li .item-image.sdx-unidentified .fas.fa-comment {
     display: none !important;
 }
+
 
 /* ============================================
    ENHANCED DETAILS TAB
@@ -3401,7 +3430,7 @@ color: rgba(255, 255, 255, 0.95) !important;
 }
 
 /* Ensure content is above the background extension */
-.shadowdark.sheet .tab-spells.sdx-enhanced-spells > *:not(.sdx-spells-bg-extension) {
+.shadowdark.sheet .tab-spells.sdx-enhanced-spells > *:not(.sdx-spells-bg-extension):not(#context-menu) {
     position: relative;
     z-index: 1;
 }
@@ -3465,6 +3494,63 @@ color: rgba(255, 255, 255, 0.95) !important;
 
 .shadowdark.sheet .tab-spells.sdx-enhanced-spells .SD-list .item .item-name a {
     color: rgba(255, 255, 255, 0.95) !important;
+}
+
+/* Spell action buttons */
+.sdx-spell-actions {
+    display: inline-flex;
+    gap: 4px;
+    margin-left: 8px;
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+.shadowdark.sheet .tab-spells.sdx-enhanced-spells .SD-list .item:hover .sdx-spell-actions {
+    opacity: 1;
+}
+
+.sdx-spell-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    border-radius: 3px;
+    background: rgba(0, 0, 0, 0.3);
+    color: rgba(255, 255, 255, 0.7) !important;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.sdx-spell-btn:hover {
+    background: rgba(0, 0, 0, 0.5);
+    color: rgba(255, 255, 255, 1) !important;
+    transform: scale(1.1);
+}
+
+.sdx-spell-btn i {
+    font-size: 10px;
+}
+
+.sdx-delete-spell:hover {
+    background: rgba(139, 0, 0, 0.7) !important;
+    color: #fff !important;
+}
+
+.sdx-edit-spell:hover {
+    background: rgba(0, 100, 200, 0.7) !important;
+    color: #fff !important;
+}
+
+.sdx-transfer-spell:hover {
+    background: rgba(0, 139, 0, 0.7) !important;
+    color: #fff !important;
+}
+
+/* Ensure nav doesn't clip context menu */
+.shadowdark.sheet .tab-spells.sdx-enhanced-spells nav {
+    overflow: visible !important;
 }
 
 /* Item images */
@@ -3987,7 +4073,7 @@ color: rgba(255, 255, 255, 0.95) !important;
     backdrop-filter: blur(2px);
     border-bottom-color: rgba(0, 0, 0, 0.5);
     margin: 0;
-    padding: 0px 8px;
+    padding: 5px 8px;
     margin-bottom: 0px;
 }
 
@@ -4307,9 +4393,22 @@ color: rgba(255, 255, 255, 0.95) !important;
 /* ============================================================
    ENHANCED INTERACTIVE HEADER - Tidy5e Style
    ============================================================ */
-
+.shadowdark.sheet.player .SD-header {
+    margin: 0px!important;
+}
+.shadowdark.sheet.player .SD-nav {
+    margin: 0px 0px 0px 0px !important;
+}
+.shadowdark.sheet.player .SD-nav a {
+    margin: 0!important;
+    padding: 0!important;
+    color: #ffffff!important;
+}
+.shadowdark.sheet.player .SD-nav a.active {
+    color: #ffffff!important;
+}
 /* When SD-header has enhanced header class, set up layout */
-.shadowdark.sheet .SD-header.sdx-enhanced-header {
+.shadowdark.sheet.player .SD-header.sdx-enhanced-header {
     position: relative;
     margin: 0;
 }
@@ -4344,6 +4443,12 @@ color: rgba(255, 255, 255, 0.95) !important;
     height: 100%;
     object-fit: cover;
     display: block;
+    cursor: pointer;
+    transition: filter 0.2s ease;
+}
+
+.sdx-enhanced-content .sdx-portrait:hover {
+    filter: brightness(1.1);
 }
 
 /* HP Bar overlay at bottom of portrait */
@@ -5799,4 +5904,564 @@ section[data-tab="tab-notes"].sdx-journal-active > div:not(.sdx-journal-notes) {
 
 .sdx-conditions-toggles.sdx-theme-blood .sdx-submenu-item.active {
     background: rgba(140, 60, 60, 0.7);
+}
+
+/* ============================================
+   COMBAT SETTINGS - DAMAGE CARD
+   ============================================ */
+
+/* Damage Card Container */
+.sdx-damage-card {
+    margin-top: 8px;
+    background: rgba(240, 235, 225, 0.95);
+    border: 1px solid rgba(100, 90, 80, 0.3);
+    border-radius: 4px;
+    overflow: hidden;
+    font-family: "Signika", sans-serif;
+}
+
+.sdx-damage-card-header {
+    background: linear-gradient(180deg, rgba(180, 170, 160, 0.3) 0%, rgba(160, 150, 140, 0.2) 100%);
+    padding: 6px 12px;
+    text-align: center;
+    font-size: 11px;
+    font-weight: bold;
+    color: rgba(60, 50, 40, 0.8);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 1px solid rgba(100, 90, 80, 0.2);
+}
+
+.sdx-damage-card-header i {
+    font-size: 10px;
+    opacity: 0.7;
+}
+
+.sdx-damage-card-tabs {
+    display: flex;
+    background: rgba(200, 190, 180, 0.15);
+    border-bottom: 1px solid rgba(100, 90, 80, 0.2);
+}
+
+.sdx-damage-card-tabs .sdx-tab {
+    flex: 1;
+    padding: 8px 12px;
+    text-align: center;
+    font-size: 10px;
+    font-weight: bold;
+    color: rgba(60, 50, 40, 0.6);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    border-right: 1px solid rgba(100, 90, 80, 0.1);
+    transition: all 0.2s ease;
+}
+
+.sdx-damage-card-tabs .sdx-tab:last-child {
+    border-right: none;
+}
+
+.sdx-damage-card-tabs .sdx-tab.active {
+    background: rgba(150, 130, 110, 0.15);
+    color: rgba(40, 30, 20, 0.9);
+}
+
+.sdx-damage-card-tabs .sdx-tab i {
+    margin-right: 4px;
+    font-size: 9px;
+}
+
+.sdx-damage-card-content {
+    padding: 8px;
+}
+
+/* Targets Section */
+.sdx-damage-targets {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.sdx-target-item {
+    background: rgba(255, 255, 255, 0.5);
+    border: 1px solid rgba(100, 90, 80, 0.2);
+    border-radius: 3px;
+    padding: 8px;
+}
+
+.sdx-target-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid rgba(100, 90, 80, 0.1);
+}
+
+.sdx-target-img {
+    width: 40px;
+    height: 40px;
+    border-radius: 3px;
+    border: 1px solid rgba(100, 90, 80, 0.3);
+    object-fit: cover;
+}
+
+.sdx-target-name {
+    flex: 1;
+    font-size: 14px;
+    font-weight: 600;
+    color: rgba(40, 30, 20, 0.9);
+}
+
+.sdx-damage-preview {
+    font-size: 18px;
+    font-weight: bold;
+    color: #c41e3a;
+    min-width: 40px;
+    text-align: right;
+}
+
+.sdx-damage-preview .sdx-damage-value {
+    color: #c41e3a;
+}
+
+/* Multipliers */
+.sdx-multipliers {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+}
+
+.sdx-multiplier-btn {
+    min-width: 30px;
+    height: 32px;
+    padding: 4px 8px;
+    background: rgba(255, 255, 255, 0.8);
+    border: 1px solid rgba(100, 90, 80, 0.3);
+    border-radius: 3px;
+    color: rgba(60, 50, 40, 0.8);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    text-align: center;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.sdx-multiplier-btn:hover {
+    background: rgba(255, 255, 255, 1);
+    border-color: rgba(80, 70, 60, 0.4);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transform: translateY(-1px);
+}
+
+.sdx-multiplier-btn.active {
+    background: rgba(50, 40, 30, 0.85);
+    border-color: rgba(40, 30, 20, 0.9);
+    color: #ffffff;
+    box-shadow: 0 0 0 2px rgba(50, 40, 30, 0.3), 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Apply Button */
+.sdx-damage-actions {
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid rgba(100, 90, 80, 0.15);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+/* Summoning Card (standalone) */
+.sdx-summoning-card {
+    margin-top: 8px;
+    padding: 8px;
+    background: rgba(40, 30, 20, 0.05);
+    border: 1px solid rgba(100, 90, 80, 0.15);
+    border-radius: 3px;
+}
+
+.sdx-summoning-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.sdx-apply-damage-btn,
+.sdx-apply-condition-btn,
+.sdx-summon-creatures-btn {
+    width: 100%;
+    padding: 8px 16px;
+    background: rgba(255, 255, 255, 0.9);
+    border: 1px solid rgba(100, 90, 80, 0.3);
+    border-radius: 3px;
+    color: rgba(40, 30, 20, 0.9);
+    font-size: 12px;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.sdx-apply-damage-btn:hover,
+.sdx-apply-condition-btn:hover,
+.sdx-summon-creatures-btn:hover {
+    background: rgba(255, 255, 255, 1);
+    border-color: rgba(80, 70, 60, 0.4);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+    transform: translateY(-1px);
+}
+
+.sdx-apply-damage-btn:disabled,
+.sdx-apply-condition-btn:disabled,
+.sdx-summon-creatures-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.sdx-apply-damage-btn i,
+.sdx-apply-condition-btn i,
+.sdx-summon-creatures-btn i {
+    margin-right: 6px;
+}
+
+/* Combat Settings Form */
+.sdx-combat-settings-form {
+    padding: 16px;
+}
+
+.sdx-settings-section {
+    margin-bottom: 20px;
+}
+
+.sdx-settings-section h3 {
+    color: #c9aa58;
+    font-size: 16px;
+    margin: 0 0 8px 0;
+    padding-bottom: 8px;
+    border-bottom: 1px solid rgba(120, 90, 70, 0.5);
+}
+
+.sdx-settings-section h3 i {
+    margin-right: 8px;
+}
+
+.sdx-settings-hint {
+    font-size: 12px;
+    color: #000000;
+    margin: 0 0 12px 0;
+    font-style: italic;
+}
+
+.sdx-setting-item {
+    margin-bottom: 16px;
+    padding: 12px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
+}
+
+.sdx-setting-header {
+    margin-bottom: 6px;
+}
+
+.sdx-setting-header label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+}
+
+.sdx-setting-header input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+}
+
+.sdx-setting-hint {
+    font-size: 11px;
+    color: #000000;
+    margin: 4px 0px 0px 26px;
+    font-style: italic;
+}
+
+.sdx-subsettings {
+    margin-left: 26px;
+    padding-left: 12px;
+    border-left: 2px solid rgba(120, 90, 70, 0.3);
+    transition: opacity 0.3s ease;
+}
+
+.sdx-multiplier-config {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.sdx-multiplier-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 3px;
+}
+
+.sdx-multiplier-item input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+}
+
+.sdx-multiplier-item label {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+.sdx-mult-label {
+    font-weight: bold;
+    color: #2f2a1d;
+}
+
+.sdx-mult-value {
+    color: #000000;
+    font-size: 11px;
+}
+
+/* ============================================
+   SPELL DAMAGE/HEAL ENHANCEMENT STYLES
+   ============================================ */
+
+.sdx-spell-damage-box {
+    margin-top: 0px;
+    margin-bottom: 14px;
+}
+.sdx-unidentified-box {
+    margin-top: 0px;
+    margin-bottom: 14px;
+    height: 76px;
+}
+.sdx-spell-damage-box.grid-colspan-3 {
+    grid-column: span 2;
+}
+
+.sdx-spell-damage-box .header.light label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+}
+
+.sdx-spell-damage-box .header.light input[type="checkbox"] {
+    margin: 0;
+}
+
+.sdx-spell-damage-content .SD-grid {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 8px;
+    align-items: center;
+}
+
+.sdx-spell-damage-content .SD-grid h3 {
+    margin: 0;
+    padding: 0;
+    font-size: 12px;
+    font-weight: bold;
+    color: #000;
+    text-transform: uppercase;
+}
+
+.sdx-spell-damage-content input[type="number"],
+.sdx-spell-damage-content input[type="text"],
+.sdx-spell-damage-content select {
+    padding: 4px 8px;
+    background: rgba(255, 255, 255, 0.9);
+    border: 1px solid #5a4a3a;
+    border-radius: 3px;
+    color: #000;
+    font-size: 12px;
+}
+
+.sdx-spell-damage-content input[type="number"]:focus,
+.sdx-spell-damage-content input[type="text"]:focus,
+.sdx-spell-damage-content select:focus {
+    outline: none;
+    border-color: #c9aa58;
+}
+
+.sdx-spell-effects-drop-area {
+    min-height: 100px;
+    padding: 5px;
+    background: rgba(255, 255, 255, 0.9);
+    border: 2px dashed #5a4a3a;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    margin: 4px 10px 4px 10px;
+}
+
+.sdx-spell-effects-drop-area.sdx-drag-over {
+    background: rgba(201, 170, 88, 0.2);
+    border-color: #c9aa58;
+}
+
+.sdx-spell-effects-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.sdx-no-effects {
+    color: #666;
+    font-style: italic;
+    text-align: center;
+    padding: 16px;
+}
+
+.sdx-spell-effect-item {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 8px;
+    background: rgba(255, 255, 255, 0.5);
+    border: 1px solid #5a4a3a;
+    border-radius: 3px;
+    transition: background 0.15s ease;
+    margin-bottom: 8px;
+}
+
+.sdx-spell-effect-item:hover {
+    background: rgba(255, 255, 255, 0.8);
+}
+
+/* Effect header with name and remove button */
+.sdx-effect-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.sdx-spell-effect-item img {
+    width: 24px;
+    height: 24px;
+    border-radius: 3px;
+    border: 1px solid #5a4a3a;
+    flex-shrink: 0;
+}
+
+.sdx-effect-name {
+    flex: 1;
+    font-weight: bold;
+    color: #000;
+}
+
+.sdx-spell-effect-item .sdx-remove-effect {
+    color: #d9534f;
+    cursor: pointer;
+    padding: 2px 4px;
+    border-radius: 2px;
+    transition: all 0.15s ease;
+    flex-shrink: 0;
+}
+
+.sdx-spell-effect-item .sdx-remove-effect:hover {
+    background: rgba(217, 83, 79, 0.1);
+    color: #c9302c;
+}
+
+/* Duration override section */
+.sdx-effect-duration-override {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 6px;
+    background: rgba(0, 0, 0, 0.05);
+    border-radius: 3px;
+    border: 1px dashed #8a7a6a;
+}
+
+.sdx-duration-row {
+    display: flex;
+    gap: 8px;
+}
+
+.sdx-duration-field {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.sdx-duration-field label {
+    font-size: 9px;
+    font-weight: 600;
+    color: #5a4a3a;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.sdx-duration-input {
+    width: 100%;
+    padding: 3px 6px;
+    border: 1px solid #8a7a6a;
+    border-radius: 2px;
+    background: rgba(255, 255, 255, 0.9);
+    font-size: 11px;
+    text-align: center;
+}
+
+.sdx-duration-input:focus {
+    outline: none;
+    border-color: #5a4a3a;
+    background: #fff;
+}
+
+.sdx-duration-input::placeholder {
+    color: #999;
+    font-style: italic;
+}
+
+.sdx-spell-effects-select {
+    min-height: 80px !important;
+    grid-column: span 2;
+}
+
+.sdx-spell-damage-type-input {
+    width: 100%;
+}
+
+/* Requirement field styling */
+.sdx-spell-damage-content input[name*="Requirement"],
+.sdx-spell-damage-box input[name*="Requirement"] {
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    background: rgba(255, 255, 230, 0.95);
+    border-left: 3px solid #c9aa58;
+}
+
+.sdx-spell-damage-content input[name*="Requirement"]::placeholder,
+.sdx-spell-damage-box input[name*="Requirement"]::placeholder {
+    font-family: inherit;
+    font-style: italic;
+    color: #888;
+}
+
+.sdx-spell-damage-content input[name*="Requirement"]:focus,
+.sdx-spell-damage-box input[name*="Requirement"]:focus {
+    background: rgba(255, 255, 200, 1);
+    border-left-color: #d4af37;
+}
+
+/* ============================================
+   UNIDENTIFIED WEAPON BOLD FIX
+   ============================================ */
+/* Ensure weapon names in abilities section are bold, including unidentified items */
+.shadowdark.sheet.player .attack .rollable b,
+.shadowdark.sheet.npc .attack .rollable b {
+    font-weight: bold !important;
 }

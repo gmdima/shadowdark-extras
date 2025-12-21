@@ -882,33 +882,88 @@ export async function initiateTradeWithPlayer(localActor, remoteActor) {
 
 /**
  * Show dialog to select player for trading
+ * Enhanced with filtering for connected/assigned characters
+ * Note: Party actors are excluded from trading - use Transfer to Player for moving items to Party storage
  */
 export async function showTradeDialog(localActor) {
-	const players = game.actors.filter(a => {
-		if (a.type !== "Player" || a.id === localActor.id) return false;
+	// Get all player characters that are not the source actor and have an active owner
+	// Note: Party actors excluded - trading requires another player to accept
+	const allPlayers = game.actors.filter(a => {
+		if (a.id === localActor.id) return false;
+		// Only Player type actors can trade (requires another player)
+		if (a.type !== "Player") return false;
+		// Check if the actor has any active owner who can trade
 		return game.users.some(u => a.testUserPermission(u, "OWNER") && u.id !== game.user.id && u.active);
 	});
 	
-	if (players.length === 0) {
+	if (allPlayers.length === 0) {
 		ui.notifications.warn(game.i18n.localize("SHADOWDARK_EXTRAS.trade.no_players"));
 		return;
 	}
 	
-	const options = players.map(p => `<option value="${p.id}">${p.name}</option>`).join("");
+	// Categorize actors
+	const connectedAssigned = allPlayers.filter(a => {
+		// Check if any connected user (not current user) has this as their assigned character
+		return game.users.some(u => u.active && u.id !== game.user.id && u.character?.id === a.id);
+	});
+	const otherPlayers = allPlayers.filter(a => {
+		// Not connected/assigned
+		return !game.users.some(u => u.active && u.id !== game.user.id && u.character?.id === a.id);
+	});
+	
+	// Build options HTML with optgroups and data attributes for searching
+	let optionsHtml = '';
+	
+	// Connected & Assigned characters
+	if (connectedAssigned.length > 0) {
+		optionsHtml += `<optgroup label="🟢 Connected Players" data-group="connected">`;
+		for (const p of connectedAssigned) {
+			const user = game.users.find(u => u.active && u.id !== game.user.id && u.character?.id === p.id);
+			const userName = user ? user.name : '';
+			const displayUserName = userName ? ` (${userName})` : '';
+			const searchText = `${p.name} ${userName}`.toLowerCase();
+			optionsHtml += `<option value="${p.id}" data-search="${searchText}">🟢 ${p.name}${displayUserName}</option>`;
+		}
+		optionsHtml += `</optgroup>`;
+	}
+	
+	// Other player characters (only shown when filter is unchecked)
+	if (otherPlayers.length > 0) {
+		optionsHtml += `<optgroup label="⚪ Other Characters" data-group="other">`;
+		for (const p of otherPlayers) {
+			// Find any owner for search purposes
+			const owners = game.users.filter(u => p.testUserPermission(u, "OWNER"));
+			const ownerNames = owners.map(u => u.name).join(' ');
+			const searchText = `${p.name} ${ownerNames}`.toLowerCase();
+			optionsHtml += `<option value="${p.id}" data-search="${searchText}">⚪ ${p.name}</option>`;
+		}
+		optionsHtml += `</optgroup>`;
+	}
 	
 	const content = `
 		<form>
+			<div class="form-group" style="margin-bottom: 8px;">
+				<label style="display: flex; align-items: center; gap: 8px;">
+					<input type="checkbox" id="sdx-filter-connected" checked />
+					Show only connected players
+				</label>
+			</div>
+			<div class="form-group" style="margin-bottom: 8px;">
+				<label>Search:</label>
+				<input type="text" id="sdx-trade-search" placeholder="Type to filter by name..." 
+				       style="width: 100%;" autocomplete="off" />
+			</div>
 			<div class="form-group">
 				<label>${game.i18n.localize("SHADOWDARK_EXTRAS.trade.select_player")}</label>
-				<select name="targetActorId" style="width: 100%;">
-					${options}
+				<select name="targetActorId" id="sdx-trade-target" style="width: 100%; min-height: 200px;" size="10">
+					${optionsHtml}
 				</select>
 			</div>
 		</form>
 	`;
 	
 	return new Promise((resolve) => {
-		new Dialog({
+		const dialog = new Dialog({
 			title: game.i18n.localize("SHADOWDARK_EXTRAS.trade.initiate_title"),
 			content: content,
 			buttons: {
@@ -930,7 +985,59 @@ export async function showTradeDialog(localActor) {
 					callback: () => resolve(false)
 				}
 			},
-			default: "trade"
+			default: "trade",
+			render: (html) => {
+				const $select = html.find('#sdx-trade-target');
+				const $filterCheckbox = html.find('#sdx-filter-connected');
+				const $searchInput = html.find('#sdx-trade-search');
+				
+				// Combined filter function for both checkbox and search
+				const updateFilter = () => {
+					const showOnlyConnected = $filterCheckbox.is(':checked');
+					const searchText = $searchInput.val().toLowerCase().trim();
+					
+					$select.find('optgroup').each(function() {
+						const $group = $(this);
+						const groupType = $group.data('group');
+						
+						// First, apply connected filter to groups
+						if (groupType === 'other' && showOnlyConnected) {
+							$group.hide();
+							return;
+						}
+						
+						// Then apply search filter to options within visible groups
+						let visibleCount = 0;
+						$group.find('option').each(function() {
+							const $option = $(this);
+							const optionSearch = $option.data('search') || '';
+							
+							if (searchText === '' || optionSearch.includes(searchText)) {
+								$option.show();
+								visibleCount++;
+							} else {
+								$option.hide();
+							}
+						});
+						
+						// Hide group if no visible options
+						$group.toggle(visibleCount > 0);
+					});
+					
+					// If current selection is now hidden, select first visible option
+					const $selectedOption = $select.find('option:selected');
+					if (!$selectedOption.is(':visible') || $selectedOption.parent('optgroup').is(':hidden')) {
+						$select.find('option:visible').first().prop('selected', true);
+					}
+				};
+				
+				updateFilter();
+				$filterCheckbox.on('change', updateFilter);
+				$searchInput.on('input', updateFilter);
+				
+				// Focus search input for immediate typing
+				setTimeout(() => $searchInput.focus(), 100);
+			}
 		}).render(true);
 	});
 }

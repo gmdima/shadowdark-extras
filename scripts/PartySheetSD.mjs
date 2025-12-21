@@ -461,8 +461,7 @@ export default class PartySheetSD extends ActorSheet {
 
 	/**
 	 * Calculate how many slots the party coins occupy
-	 * 1 slot per 100gp of value
-	 * 10sp = 1gp, 10cp = 1sp (so 100cp = 1gp)
+	 * 1 slot per 100 coins total (regardless of type)
 	 * @returns {number}
 	 */
 	_calculateCoinSlots() {
@@ -471,11 +470,11 @@ export default class PartySheetSD extends ActorSheet {
 		const sp = Math.max(0, parseInt(coins.sp) || 0);
 		const cp = Math.max(0, parseInt(coins.cp) || 0);
 		
-		// Convert everything to GP value: 10sp = 1gp, 100cp = 1gp
-		const totalGpValue = gp + (sp / 10) + (cp / 100);
+		// Total number of coins
+		const totalCoins = gp + sp + cp;
 		
-		// 1 slot per 100gp of value, rounded up
-		return Math.ceil(totalGpValue / 100);
+		// 1 slot per 100 coins, rounded up
+		return Math.ceil(totalCoins / 100);
 	}
 
 	_calculateActorInventorySlotsUsed(actor) {
@@ -485,7 +484,29 @@ export default class PartySheetSD extends ActorSheet {
 		for (const item of actor.items) {
 			total += this._calculateItemSlotsCost(item, freeCarrySeen);
 		}
+		// Add coin slots for this actor
+		total += this._calculateActorCoinSlots(actor);
 		return total;
+	}
+
+	/**
+	 * Calculate how many slots an actor's coins occupy
+	 * 1 slot per 100 coins total (regardless of type)
+	 * @param {Actor} actor - The actor to calculate coin slots for
+	 * @returns {number}
+	 */
+	_calculateActorCoinSlots(actor) {
+		if (!actor?.system?.coins) return 0;
+		const coins = actor.system.coins;
+		const gp = Math.max(0, parseInt(coins.gp) || 0);
+		const sp = Math.max(0, parseInt(coins.sp) || 0);
+		const cp = Math.max(0, parseInt(coins.cp) || 0);
+		
+		// Total number of coins
+		const totalCoins = gp + sp + cp;
+		
+		// 1 slot per 100 coins, rounded up
+		return Math.ceil(totalCoins / 100);
 	}
 
 	_calculateInventorySlotsUsed() {
