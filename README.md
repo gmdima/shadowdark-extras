@@ -17,6 +17,18 @@ Enhance your Shadowdark RPG experience with this essential companion module that
 
 All settings enabled by default. You can turn them off from module settings
 
+## Automatic damage/healing/items applications
+
+<img width="427" alt="image" src="https://github.com/user-attachments/assets/736b68fb-a792-4331-a72d-c077ac5012f8" />
+
+
+## Spells/scrolls/wands/potions Activities
+<img width="900" alt="image" src="https://github.com/user-attachments/assets/c915da26-4188-459c-baf5-7d82c5a0b64d" />
+
+## Weapons activities
+<img width="700" alt="image" src="https://github.com/user-attachments/assets/ab0e6e93-6127-4978-be6d-af4e7e785f48" />
+
+
 ## 📦 Trading System
 Trade items and coins between players (GM must be online - item piles installed)
 Multiple trading between multiple players at the same time is also working.
@@ -38,7 +50,8 @@ Take control of your adventuring party with a dedicated Party actor type:
 - Added a + button to add coins easily in party inventory treasury
 - Party actors created with token vision same as players. Party tokens can be used on scenes to represent the party and torches can be light up from the party inventory. Tracked from the normal light tracker macro.
 
-![Party Sheet](https://github.com/user-attachments/assets/59874a44-c5dd-426a-b426-fb83e7b50204)
+<img width="800"  alt="image" src="https://github.com/user-attachments/assets/a50bf65c-6747-4bc8-8663-7d0baae26b0a" />
+
 
 ## 📦 Container System
 Create and manage containers within your inventory:
@@ -56,9 +69,8 @@ Create and manage containers within your inventory:
 - Inventory items list color theme editor (from SDX module settings)
 - Notes as a journal system
 - 
-<img width="400" alt="image" src="https://github.com/user-attachments/assets/b2f7cdae-0a01-4591-a275-9ed66b2fd402" />
+<img width="800" alt="image" src="https://github.com/user-attachments/assets/6c04de19-fc64-4dd5-8556-dba73c8606a7" />
 
-<img width="400" alt="image" src="https://github.com/user-attachments/assets/18578618-8838-48b2-aa70-f629077d5797" />
 
 
 ## 🎒 Inventory Enhancements
