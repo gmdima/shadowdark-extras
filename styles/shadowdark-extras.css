@@ -6303,7 +6303,7 @@ section[data-tab="tab-notes"].sdx-journal-active > div:not(.sdx-journal-notes) {
 .sdx-unidentified-box {
     margin-top: 0px;
     margin-bottom: 14px;
-    height: 76px;
+    height: 125px;
 }
 .sdx-spell-damage-box.grid-colspan-3 {
     grid-column: span 2;

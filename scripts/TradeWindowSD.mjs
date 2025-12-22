@@ -224,8 +224,26 @@ export default class TradeWindowSD extends HandlebarsApplicationMixin(Applicatio
 		context.tradeId = this.tradeId;
 		context.localActor = this.localActor;
 		context.remoteActor = this.remoteActor;
-		context.localItems = localState.items;
-		context.remoteItems = remoteState.items;
+		
+		// Process items to mask unidentified names for non-GM users
+		const processItems = (items) => {
+			if (game.user?.isGM) return items;
+			return items.map(itemData => {
+				const isUnidentified = itemData.flags?.[MODULE_ID]?.unidentified === true;
+				if (isUnidentified) {
+					// Get custom unidentified name or default
+					const customName = itemData.flags?.[MODULE_ID]?.unidentifiedName;
+					const maskedName = (customName && customName.trim()) 
+						? customName.trim() 
+						: game.i18n.localize("SHADOWDARK_EXTRAS.item.unidentified.label");
+					return { ...itemData, name: maskedName, _realName: itemData.name };
+				}
+				return itemData;
+			});
+		};
+		
+		context.localItems = processItems(localState.items);
+		context.remoteItems = processItems(remoteState.items);
 		context.localCoins = localState.coins;
 		context.remoteCoins = remoteState.coins;
 		context.localLocked = localState.locked;

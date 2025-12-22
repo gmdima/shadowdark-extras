@@ -120,6 +120,8 @@
   "SHADOWDARK_EXTRAS.item.unidentified.label": "Unidentified Item",
   "SHADOWDARK_EXTRAS.item.unidentified.checkbox_label": "Unidentified",
   "SHADOWDARK_EXTRAS.item.unidentified.checkbox_hint": "When checked, players cannot see the real name or description of this item.",
+  "SHADOWDARK_EXTRAS.item.unidentified.name_label": "Unidentified Name",
+  "SHADOWDARK_EXTRAS.item.unidentified.name_hint": "Custom name shown to players (leave empty for 'Unidentified Item')",
   "SHADOWDARK_EXTRAS.item.unidentified.box_label": "Item Properties",
   "SHADOWDARK_EXTRAS.item.unidentified.description_label": "Unidentified Description",
   "SHADOWDARK_EXTRAS.item.unidentified.description_hint": "This description is shown to players when the item is unidentified. Leave empty to show nothing.",

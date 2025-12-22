@@ -893,6 +893,33 @@ function isUnidentified(item) {
 }
 
 /**
+ * Get the masked name for an unidentified item
+ * Returns custom unidentified name if set, otherwise the default "Unidentified Item" label
+ * @param {Item} item - The item to get masked name for
+ * @returns {string} - The masked name to display
+ */
+function getUnidentifiedName(item) {
+	const customName = item?.getFlag?.(MODULE_ID, "unidentifiedName");
+	if (customName && customName.trim()) {
+		return customName.trim();
+	}
+	return game.i18n.localize("SHADOWDARK_EXTRAS.item.unidentified.label");
+}
+
+/**
+ * Get the masked name from item data (for packed items, etc.)
+ * @param {Object} itemData - The item data object
+ * @returns {string} - The masked name to display
+ */
+function getUnidentifiedNameFromData(itemData) {
+	const customName = itemData?.flags?.[MODULE_ID]?.unidentifiedName;
+	if (customName && customName.trim()) {
+		return customName.trim();
+	}
+	return game.i18n.localize("SHADOWDARK_EXTRAS.item.unidentified.label");
+}
+
+/**
  * Check if the current user can see the true name of an item
  * GMs can always see true names
  * @param {Item} item - The item to check
@@ -939,9 +966,9 @@ function setupUnidentifiedItemNameWrapper() {
 		get: function() {
 			const realName = originalGetter.call(this);
 			
-			// If this item is unidentified and user is not GM, return the unidentified label
+			// If this item is unidentified and user is not GM, return the custom or default unidentified name
 			if (isUnidentified(this) && !game.user?.isGM) {
-				return game.i18n.localize("SHADOWDARK_EXTRAS.item.unidentified.label");
+				return getUnidentifiedName(this);
 			}
 			
 			return realName;
@@ -977,15 +1004,18 @@ function wrapBuildWeaponDisplayForUnidentified() {
 		// Call the original function
 		const result = await original.call(this, options);
 		
-		// If the weapon name is "Unidentified Item", ensure it has bold formatting
-		if (options.weaponName && options.weaponName.includes("Unidentified Item")) {
+		// Check if the weapon is unidentified by looking up the item
+		// The weaponName might be a custom unidentified name or the default
+		if (options.item && isUnidentified(options.item) && !game.user?.isGM) {
+			const maskedName = getUnidentifiedName(options.item);
 			// Check if the bold tag is missing or if it's just plain text
-			const boldPattern = /<b[^>]*>Unidentified Item<\/b>/;
+			const escapedName = maskedName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+			const boldPattern = new RegExp(`<b[^>]*>${escapedName}<\\/b>`);
 			if (!boldPattern.test(result)) {
-				// Replace any occurrence of plain "Unidentified Item" with bolded version
+				// Replace any occurrence of plain masked name with bolded version
 				return result.replace(
-					/Unidentified Item/g,
-					'<b style="font-size:16px">Unidentified Item</b>'
+					new RegExp(escapedName, 'g'),
+					`<b style="font-size:16px">${maskedName}</b>`
 				);
 			}
 		}
@@ -1013,7 +1043,8 @@ function setupItemPilesUnidentifiedHooks() {
 	
 	console.log(`${MODULE_ID} | Setting up item-piles unidentified item hooks`);
 	
-	const getMaskedName = () => game.i18n.localize("SHADOWDARK_EXTRAS.item.unidentified.label");
+	// Default masked name fallback
+	const getDefaultMaskedName = () => game.i18n.localize("SHADOWDARK_EXTRAS.item.unidentified.label");
 	
 	/**
 	 * Mask the item name in an HTML element if the item is unidentified
@@ -1024,7 +1055,8 @@ function setupItemPilesUnidentifiedHooks() {
 		if (game.user?.isGM) return; // GM sees real names
 		if (!item || !isUnidentified(item)) return;
 		
-		const maskedName = getMaskedName();
+		// Get the item-specific masked name
+		const maskedName = getUnidentifiedName(item);
 		const $el = $(element);
 		
 		// Replace tooltip/title attributes that might show the real name
@@ -1096,7 +1128,7 @@ function setupItemPilesUnidentifiedHooks() {
 		if (game.user?.isGM) return;
 		if (!item || !isUnidentified(item)) return;
 		
-		const maskedName = getMaskedName();
+		const maskedName = getUnidentifiedName(item);
 		const realName = item._source?.name || item.name;
 		const $el = $(element);
 		
@@ -1127,6 +1159,11 @@ function setupItemPilesUnidentifiedHooks() {
 					itemData.flags = itemData.flags || {};
 					itemData.flags[MODULE_ID] = itemData.flags[MODULE_ID] || {};
 					itemData.flags[MODULE_ID].unidentified = true;
+					// Also copy the unidentified name if present
+					const unidentifiedName = sourceItem.getFlag(MODULE_ID, "unidentifiedName");
+					if (unidentifiedName) {
+						itemData.flags[MODULE_ID].unidentifiedName = unidentifiedName;
+					}
 					// Also copy the unidentified description if present
 					const unidentifiedDesc = sourceItem.getFlag(MODULE_ID, "unidentifiedDescription");
 					if (unidentifiedDesc) {
@@ -1159,6 +1196,10 @@ function setupItemPilesUnidentifiedHooks() {
 					itemData.flags = itemData.flags || {};
 					itemData.flags[MODULE_ID] = itemData.flags[MODULE_ID] || {};
 					itemData.flags[MODULE_ID].unidentified = true;
+					const unidentifiedName = sourceItem.getFlag(MODULE_ID, "unidentifiedName");
+					if (unidentifiedName) {
+						itemData.flags[MODULE_ID].unidentifiedName = unidentifiedName;
+					}
 					const unidentifiedDesc = sourceItem.getFlag(MODULE_ID, "unidentifiedDescription");
 					if (unidentifiedDesc) {
 						itemData.flags[MODULE_ID].unidentifiedDescription = unidentifiedDesc;
@@ -1214,7 +1255,7 @@ function setupItemPilesUnidentifiedHooks() {
 	// Hook into Dialog rendering to mask item names in drop dialogs
 	Hooks.on("renderDialog", (app, html, data) => {
 		if (game.user?.isGM) return;
-		maskUnidentifiedNamesInElement(html, getMaskedName);
+		maskUnidentifiedNamesInElement(html, getDefaultMaskedName);
 	});
 	
 	// Hook into Application rendering to catch item-piles Svelte apps
@@ -1230,7 +1271,7 @@ function setupItemPilesUnidentifiedHooks() {
 		                    html.find("[class*='item-piles']").length > 0;
 		
 		if (isItemPiles) {
-			maskUnidentifiedNamesInElement(html, getMaskedName);
+			maskUnidentifiedNamesInElement(html, getDefaultMaskedName);
 		}
 	});
 	
@@ -1251,12 +1292,12 @@ function setupItemPilesUnidentifiedHooks() {
 					    $node.hasClass("item-piles-flexrow") ||
 					    $node.find("[class*='item-piles']").length > 0 ||
 					    node.className?.includes?.("item-piles")) {
-						maskUnidentifiedNamesInElement($node, getMaskedName);
+						maskUnidentifiedNamesInElement($node, getDefaultMaskedName);
 					}
 					
 					// Also check window titles
 					if ($node.hasClass("window-title") || $node.find(".window-title").length > 0) {
-						maskUnidentifiedNamesInElement($node, getMaskedName);
+						maskUnidentifiedNamesInElement($node, getDefaultMaskedName);
 					}
 				}
 			}
@@ -1279,30 +1320,34 @@ function setupItemPilesUnidentifiedHooks() {
 		
 		if (!isItemPilesMessage) return;
 		
-		maskUnidentifiedNamesInElement(html, getMaskedName);
+		maskUnidentifiedNamesInElement(html, getDefaultMaskedName);
 	});
 }
 
 /**
  * Mask all unidentified item names in an HTML element
  * @param {jQuery} html - The HTML element to process
- * @param {Function} getMaskedName - Function to get the masked name string
+ * @param {Function} getDefaultMaskedName - Function to get the default masked name string
  */
-function maskUnidentifiedNamesInElement(html, getMaskedName) {
-	const maskedName = getMaskedName();
+function maskUnidentifiedNamesInElement(html, getDefaultMaskedName) {
+	const defaultMaskedName = getDefaultMaskedName();
 	
-	// Build set of unidentified item names from all actors
-	const unidentifiedNames = new Set();
+	// Build map of unidentified item real names to their masked names
+	const unidentifiedNameMap = new Map();
 	for (const actor of game.actors) {
 		for (const item of actor.items) {
 			if (isUnidentified(item)) {
 				const realName = item._source?.name;
-				if (realName) unidentifiedNames.add(realName);
+				if (realName) {
+					// Use custom unidentified name if set, otherwise default
+					const maskedName = getUnidentifiedName(item);
+					unidentifiedNameMap.set(realName, maskedName);
+				}
 			}
 		}
 	}
 	
-	if (unidentifiedNames.size === 0) return;
+	if (unidentifiedNameMap.size === 0) return;
 	
 	// Replace item names in text nodes
 	html.find("*").addBack().contents().filter(function() {
@@ -1310,7 +1355,7 @@ function maskUnidentifiedNamesInElement(html, getMaskedName) {
 	}).each((i, node) => {
 		let text = node.textContent;
 		let changed = false;
-		for (const realName of unidentifiedNames) {
+		for (const [realName, maskedName] of unidentifiedNameMap) {
 			if (text.includes(realName)) {
 				text = text.replace(new RegExp(realName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), maskedName);
 				changed = true;
@@ -1324,7 +1369,7 @@ function maskUnidentifiedNamesInElement(html, getMaskedName) {
 	// Also check and replace in title attributes and data-tooltip
 	html.find("[title], [data-tooltip]").each((i, el) => {
 		const $el = $(el);
-		for (const realName of unidentifiedNames) {
+		for (const [realName, maskedName] of unidentifiedNameMap) {
 			if ($el.attr("title")?.includes(realName)) {
 				$el.attr("title", $el.attr("title").replace(new RegExp(realName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), maskedName));
 			}
@@ -1338,7 +1383,7 @@ function maskUnidentifiedNamesInElement(html, getMaskedName) {
 function getDisplayName(item, user = game.user) {
 	if (!item) return "";
 	if (isUnidentified(item) && !user?.isGM) {
-		return game.i18n.localize("SHADOWDARK_EXTRAS.item.unidentified.label");
+		return getUnidentifiedName(item);
 	}
 	return item.name ?? "";
 }
@@ -1356,7 +1401,7 @@ function getDisplayNameFromData(itemData, user = game.user) {
 	if (!itemData) return "";
 	const unidentified = Boolean(itemData?.flags?.[MODULE_ID]?.unidentified);
 	if (unidentified && !user?.isGM) {
-		return game.i18n.localize("SHADOWDARK_EXTRAS.item.unidentified.label");
+		return getUnidentifiedNameFromData(itemData);
 	}
 	return itemData.name ?? "";
 }
@@ -1763,6 +1808,9 @@ function injectUnidentifiedCheckbox(app, html) {
 	const isEditable = Boolean(app.isEditable);
 	const label = game.i18n.localize("SHADOWDARK_EXTRAS.item.unidentified.checkbox_label");
 	const hint = game.i18n.localize("SHADOWDARK_EXTRAS.item.unidentified.checkbox_hint");
+	const nameLabel = game.i18n.localize("SHADOWDARK_EXTRAS.item.unidentified.name_label");
+	const nameHint = game.i18n.localize("SHADOWDARK_EXTRAS.item.unidentified.name_hint");
+	const currentUnidentifiedName = item.getFlag(MODULE_ID, "unidentifiedName") ?? "";
 
 	// Find the ITEM PROPERTIES box and add the checkbox there
 	const itemPropertiesBox = detailsTab.find('.SD-box').filter((_, box) => {
@@ -1775,13 +1823,20 @@ function injectUnidentifiedCheckbox(app, html) {
 		<input type="checkbox" ${isUnidentified(item) ? "checked" : ""} ${isEditable ? "" : "disabled"} title="${foundry.utils.escapeHTML(hint)}" class="sdx-unidentified-property" />
 	`;
 
+	const nameInputHtml = `
+		<h3>${foundry.utils.escapeHTML(nameLabel)}</h3>
+		<input type="text" value="${foundry.utils.escapeHTML(currentUnidentifiedName)}" ${isEditable ? "" : "disabled"} title="${foundry.utils.escapeHTML(nameHint)}" placeholder="${foundry.utils.escapeHTML(game.i18n.localize("SHADOWDARK_EXTRAS.item.unidentified.label"))}" class="sdx-unidentified-name" style="grid-column: span 2; width: 100%;" />
+	`;
+
 	if (itemPropertiesBox.length) {
 		// Insert the checkbox at the end of the ITEM PROPERTIES content (inside the SD-grid)
 		const grid = itemPropertiesBox.find('.content .SD-grid').first();
 		if (grid.length) {
 			grid.append(toggleHtml);
+			grid.append(nameInputHtml);
 		} else {
 			itemPropertiesBox.find('.content').first().append(toggleHtml);
+			itemPropertiesBox.find('.content').first().append(nameInputHtml);
 		}
 	} else {
 		// For item types without ITEM PROPERTIES box (Potion, Scroll, Spell, Wand, etc.)
@@ -1798,6 +1853,7 @@ function injectUnidentifiedCheckbox(app, html) {
 					<div class="content">
 						<div class="SD-grid right">
 							${toggleHtml}
+							${nameInputHtml}
 						</div>
 					</div>
 				</div>
@@ -1823,6 +1879,18 @@ function injectUnidentifiedCheckbox(app, html) {
 		const enabled = Boolean(ev.currentTarget.checked);
 		await item.setFlag(MODULE_ID, "unidentified", enabled);
 		app.render();
+	});
+
+	// Bind name input
+	const nameInput = html.find("input.sdx-unidentified-name").first();
+	nameInput.on("change", async (ev) => {
+		if (!isEditable) return;
+		const newName = ev.currentTarget.value.trim();
+		if (newName) {
+			await item.setFlag(MODULE_ID, "unidentifiedName", newName);
+		} else {
+			await item.unsetFlag(MODULE_ID, "unidentifiedName");
+		}
 	});
 
 	// Add unidentified description editor on the Description tab
@@ -2043,7 +2111,7 @@ function injectBasicContainerUI(app, html) {
 			? (entry.flags?.[MODULE_ID]?.unidentified === true)
 			: isUnidentified(entry);
 		const name = isItemUnidentified && !game.user?.isGM
-			? game.i18n.localize("SHADOWDARK_EXTRAS.item.unidentified.label")
+			? (isData ? getUnidentifiedNameFromData(entry) : getUnidentifiedName(entry))
 			: (isData ? (entry.name ?? "") : entry.name);
 		const img = isData ? (entry.img ?? "") : entry.img;
 		const qty = Number(entry.system?.quantity ?? 1);
@@ -2427,8 +2495,6 @@ function maskUnidentifiedItemsOnSheet(app, html) {
 	if (!actor) return;
 	if (game.user?.isGM) return; // GM sees real names
 
-	const maskedName = game.i18n.localize("SHADOWDARK_EXTRAS.item.unidentified.label");
-
 	// Mask item names in the inventory list
 	html.find('.item[data-item-id]').each((_, el) => {
 		const $el = $(el);
@@ -2436,6 +2502,8 @@ function maskUnidentifiedItemsOnSheet(app, html) {
 		if (!itemId) return;
 		const item = actor.items?.get?.(itemId);
 		if (!item || !isUnidentified(item)) return;
+
+		const maskedName = getUnidentifiedName(item);
 
 		// Mark item image as unidentified to hide chat icon
 		const $itemImage = $el.find('.item-image');
@@ -2472,6 +2540,8 @@ function maskUnidentifiedItemsOnSheet(app, html) {
 		const item = actor.items?.get?.(itemId);
 		if (!item || !isUnidentified(item)) return;
 
+		const maskedName = getUnidentifiedName(item);
+
 		// The attack display format is: "WeaponName (handedness), modifier, damage, properties"
 		// We need to replace the weapon name while keeping the rest
 		const currentHtml = $el.html();
@@ -2495,7 +2565,7 @@ function maskUnidentifiedItemSheet(app, html) {
 
 	console.log(`${MODULE_ID} | Masking unidentified item sheet for: ${item.name}`);
 
-	const maskedName = game.i18n.localize("SHADOWDARK_EXTRAS.item.unidentified.label");
+	const maskedName = getUnidentifiedName(item);
 
 	// Make the sheet non-editable to prevent form submission
 	app.options.editable = false;
@@ -2608,27 +2678,25 @@ function maskUnidentifiedItemInDialog(app, html, data) {
 
 	if (game.user?.isGM) return; // GM sees real names
 
-	const maskedName = game.i18n.localize("SHADOWDARK_EXTRAS.item.unidentified.label");
-	
-	// Build a set of real names from unidentified items the player can see
-	// Check all actors the player owns or has observer permission on
-	const unidentifiedNames = new Set();
+	// Build a map of real names to masked names from unidentified items the player can see
+	const unidentifiedNameMap = new Map();
 	for (const actor of game.actors) {
 		if (!actor.testUserPermission(game.user, "OBSERVER")) continue;
 		for (const item of actor.items) {
 			if (isUnidentified(item)) {
-				unidentifiedNames.add(item.name);
+				// Map real name to custom masked name
+				unidentifiedNameMap.set(item.name, getUnidentifiedName(item));
 			}
 		}
 	}
 	
-	if (unidentifiedNames.size === 0) return;
+	if (unidentifiedNameMap.size === 0) return;
 
 	// Mask the window title
 	const $title = app.element?.find('.window-title');
 	if ($title?.length) {
 		let titleText = $title.text();
-		for (const realName of unidentifiedNames) {
+		for (const [realName, maskedName] of unidentifiedNameMap) {
 			if (titleText.includes(realName)) {
 				titleText = titleText.replaceAll(realName, maskedName);
 			}
@@ -2640,7 +2708,7 @@ function maskUnidentifiedItemInDialog(app, html, data) {
 	html.find('h2').each((_, el) => {
 		const $el = $(el);
 		let text = $el.text();
-		for (const realName of unidentifiedNames) {
+		for (const [realName, maskedName] of unidentifiedNameMap) {
 			if (text.includes(realName)) {
 				text = text.replaceAll(realName, maskedName);
 			}
@@ -2652,7 +2720,7 @@ function maskUnidentifiedItemInDialog(app, html, data) {
 	html.find('label, span, p').each((_, el) => {
 		const $el = $(el);
 		let text = $el.text();
-		for (const realName of unidentifiedNames) {
+		for (const [realName, maskedName] of unidentifiedNameMap) {
 			if (text.includes(realName)) {
 				text = text.replaceAll(realName, maskedName);
 			}
@@ -3638,6 +3706,27 @@ function insertRenownAfter(targetElement, actor) {
 	`;
 	
 	targetElement.after(renownHtml);
+	
+	// Add event listener to enforce maximum only (allow negative values)
+	const renownInput = targetElement.parent().find(`input[name="flags.${MODULE_ID}.renown"]`);
+	renownInput.on('input change blur', function() {
+		let val = parseFloat(this.value);
+		const maxRenown = game.settings.get(MODULE_ID, "renownMaximum") ?? 20;
+		
+		// If invalid, set to 0
+		if (isNaN(val)) {
+			val = 0;
+		}
+		// Clamp to max only
+		if (val > maxRenown) {
+			val = maxRenown;
+		}
+		
+		// Update the input if changed
+		if (parseFloat(this.value) !== val) {
+			this.value = val;
+		}
+	});
 }
 
 /**
@@ -3648,7 +3737,8 @@ function handleRenownUpdate(actor, formData) {
 	if (formData.hasOwnProperty(renownKey)) {
 		const renownMax = game.settings.get(MODULE_ID, "renownMaximum");
 		let value = parseInt(formData[renownKey]) || 0;
-		value = Math.max(0, Math.min(value, renownMax));
+		// Only enforce maximum, allow negative values
+		value = Math.min(value, renownMax);
 		actor.setFlag(MODULE_ID, "renown", value);
 	}
 }
@@ -5422,7 +5512,7 @@ function patchToggleItemDetailsForUnidentified() {
 
 		// For unidentified items viewed by non-GM, show masked content
 		const unidentifiedDesc = item.getFlag?.(MODULE_ID, "unidentifiedDescription") ?? "";
-		const maskedName = game.i18n.localize("SHADOWDARK_EXTRAS.item.unidentified.label");
+		const maskedName = getUnidentifiedName(item);
 		
 		// Build minimal details content
 		let details = "";
@@ -5797,7 +5887,7 @@ async function transferItemToPlayer(sourceActor, item, targetActorId) {
 	
 	// Get the display name - mask if unidentified and user is not GM
 	const itemName = (isUnidentified(item) && !game.user.isGM) 
-		? game.i18n.localize("SHADOWDARK_EXTRAS.item.unidentified.label")
+		? getUnidentifiedName(item)
 		: item.name;
 	
 	try {
@@ -6203,6 +6293,7 @@ Hooks.on("preCreateItem", (item, data, options, userId) => {
 		// Flag is present, make sure it's set on the item
 		item.updateSource({
 			[`flags.${MODULE_ID}.unidentified`]: true,
+			[`flags.${MODULE_ID}.unidentifiedName`]: data.flags[MODULE_ID].unidentifiedName || "",
 			[`flags.${MODULE_ID}.unidentifiedDescription`]: data.flags[MODULE_ID].unidentifiedDescription || ""
 		});
 	}
@@ -9400,8 +9491,6 @@ Hooks.on("renderChatMessage", (message, html, data) => {
 
 	if (game.user?.isGM) return; // GM sees real names
 
-	const maskedName = game.i18n.localize("SHADOWDARK_EXTRAS.item.unidentified.label");
-
 	// Check if this is an item-related chat card
 	const $card = html.find('.item-card, .chat-card');
 	if (!$card.length) return;
@@ -9418,7 +9507,8 @@ Hooks.on("renderChatMessage", (message, html, data) => {
 	const item = actor.items.get(itemId);
 	if (!item || !isUnidentified(item)) return;
 
-	const realName = item.name;
+	const maskedName = getUnidentifiedName(item);
+	const realName = item._source?.name || item.name;
 
 	// Mask the message flavor text (appears above the card, e.g., "Attack roll with Boomerang")
 	html.find('.flavor-text, .message-header .flavor, .message-content > p').each((_, el) => {
@@ -9802,7 +9892,8 @@ Hooks.on("preUpdateActor", (actor, changes, options, userId) => {
 	if (changes.flags?.[MODULE_ID]?.renown !== undefined) {
 		const renownMax = game.settings.get(MODULE_ID, "renownMaximum");
 		let value = parseInt(changes.flags[MODULE_ID].renown) || 0;
-		value = Math.max(0, Math.min(value, renownMax));
+		// Only enforce maximum, allow negative values
+		value = Math.min(value, renownMax);
 		changes.flags[MODULE_ID].renown = value;
 	}
 	
