@@ -287,6 +287,7 @@ export function registerCombatSettings() {
 
 // Track which messages have already spawned creatures (in-memory cache)
 const _spawnedMessages = new Set();
+const _itemGiveMessages = new Set();
 
 /**
  * Inject damage card into chat messages
@@ -346,10 +347,30 @@ export async function injectDamageCard(message, html, data) {
 	
 	// Get the item from the chat card if it exists
 	const cardData = html.find('.chat-card').data();
+	console.log("shadowdark-extras | Card data:", cardData);
 	let itemType = null; // Track the item type
 	if (cardData?.actorId && cardData?.itemId) {
 		casterActor = game.actors.get(cardData.actorId);
 		item = casterActor?.items.get(cardData.itemId);
+		console.log("shadowdark-extras | Retrieved item:", item?.name, "from actor:", casterActor?.name);
+		
+		// If item not found (consumed), try to get it from message flags
+		if (!item && message.flags?.[MODULE_ID]?.itemConfig) {
+			const storedConfig = message.flags[MODULE_ID].itemConfig;
+			console.log("shadowdark-extras | Item not found on actor, using stored config:", storedConfig);
+			
+			// Create a minimal item-like object with the stored configuration
+			item = {
+				name: storedConfig.name,
+				type: storedConfig.type,
+				flags: {
+					[MODULE_ID]: {
+						summoning: storedConfig.summoning,
+						itemGive: storedConfig.itemGive
+					}
+				}
+			};
+		}
 		
 		// Check if this is a spell or potion type item with damage configuration or effects
 		if (item && ["Spell", "Scroll", "Wand", "NPC Spell", "Potion"].includes(item.type)) {
@@ -425,6 +446,40 @@ export async function injectDamageCard(message, html, data) {
 			
 			// Automatically spawn creatures when spell is cast
 			await spawnSummonedCreatures(casterActor, item, profiles);
+		}
+	}
+
+	const itemGiveConfig = item?.flags?.[MODULE_ID]?.itemGive;
+	console.log("shadowdark-extras | Checking item give - item:", item?.name, "type:", itemType, "config:", itemGiveConfig);
+	if (itemGiveConfig?.enabled && itemGiveConfig?.profiles && itemGiveConfig.profiles.length > 0) {
+		console.log("shadowdark-extras | Item give configured");
+		if (message.author.id !== game.user.id) {
+			console.log("shadowdark-extras | Skipping item give - not the message author");
+		} else if (_itemGiveMessages.has(message.id)) {
+			console.log("shadowdark-extras | Skipping item give - already processed this message");
+		} else {
+			let shouldGive = true;
+			if (!["Potion", "Scroll", "Wand"].includes(itemType)) {
+				const shadowdarkRolls = message.flags?.shadowdark?.rolls;
+				const mainRoll = shadowdarkRolls?.main;
+				if (!mainRoll || mainRoll.success !== true) {
+					console.log("shadowdark-extras | Spell cast failed, not giving items");
+					shouldGive = false;
+				}
+			}
+			if (shouldGive) {
+				_itemGiveMessages.add(message.id);
+				let profiles = itemGiveConfig.profiles;
+				if (typeof profiles === 'string') {
+					try {
+						profiles = JSON.parse(profiles);
+					} catch (err) {
+						console.error("shadowdark-extras | Failed to parse item give profiles:", err);
+						profiles = [];
+					}
+				}
+				await giveItemsToCaster(casterActor, item, profiles);
+			}
 		}
 	}
 	
@@ -1265,6 +1320,69 @@ async function spawnSummonedCreatures(casterActor, item, profiles) {
 	} catch (err) {
 		console.error("shadowdark-extras | Error summoning creatures:", err);
 		ui.notifications.error("Failed to summon creatures: " + err.message);
+	}
+}
+
+async function giveItemsToCaster(casterActor, item, profiles) {
+	console.log("shadowdark-extras | Giving configured items to caster");
+	if (!casterActor) {
+		console.warn("shadowdark-extras | No caster actor available to receive items");
+		return;
+	}
+	if (!profiles || profiles.length === 0) {
+		console.warn("shadowdark-extras | No item profiles provided");
+		return;
+	}
+	const itemsToCreate = [];
+	for (const profile of profiles) {
+		if (!profile || !profile.itemUuid) continue;
+		let quantity = 1;
+		const qtyValue = (profile.quantity || '1').toString().trim();
+		if (qtyValue.includes('d')) {
+			try {
+				const roll = new Roll(qtyValue);
+				await roll.evaluate();
+				quantity = Math.max(1, roll.total || 1);
+				await roll.toMessage({
+					flavor: `Item giver: ${profile.itemName || item.name || 'Item'}`,
+					speaker: ChatMessage.getSpeaker({ actor: casterActor })
+				});
+			} catch (err) {
+				console.warn("shadowdark-extras | Invalid item quantity formula, defaulting to 1:", qtyValue, err);
+				quantity = 1;
+			}
+		} else if (qtyValue !== '') {
+			const parsed = parseInt(qtyValue);
+			if (!Number.isNaN(parsed)) {
+				quantity = Math.max(1, parsed);
+			}
+		}
+		try {
+			const sourceItem = await fromUuid(profile.itemUuid);
+			if (!sourceItem || !(sourceItem instanceof Item)) {
+				console.warn(`shadowdark-extras | Skipping item give for invalid source: ${profile.itemName}`);
+				continue;
+			}
+			const itemData = duplicate(sourceItem.toObject());
+			delete itemData._id;
+			if (!itemData.system) itemData.system = {};
+			itemData.system.quantity = quantity;
+			itemsToCreate.push(itemData);
+		} catch (err) {
+			console.error("shadowdark-extras | Failed to load item for item giver:", err);
+		}
+	}
+	if (itemsToCreate.length === 0) {
+		console.warn("shadowdark-extras | No valid items were available to create");
+		return;
+	}
+	try {
+		const createdItems = await casterActor.createEmbeddedDocuments("Item", itemsToCreate);
+		const itemSummaries = createdItems.map(createdItem => `${createdItem.name} x${createdItem.system?.quantity || 1}`);
+		ui.notifications.info(`Granted ${itemSummaries.join(', ')} to ${casterActor.name}`);
+	} catch (err) {
+		console.error("shadowdark-extras | Failed to add items to caster:", err);
+		ui.notifications.error("Failed to grant items to caster: " + err.message);
 	}
 }
 

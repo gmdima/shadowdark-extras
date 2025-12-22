@@ -176,6 +176,24 @@
     gap: 10px;
 }
 
+.shadowdark-extras-npc-inventory .npc-slot-summary .content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 4px;
+}
+
+.shadowdark-extras-npc-inventory .npc-slot-total {
+    font-size: 2rem;
+    font-weight: 700;
+}
+
+.shadowdark-extras-npc-inventory .npc-slot-breakdown {
+    font-size: 0.85rem;
+    color: rgba(0, 0, 0, 0.6);
+}
+
 /* Item list styling */
 .shadowdark-extras-npc-inventory .npc-item-list {
     list-style: none;
@@ -478,7 +496,7 @@
 .shadowdark-extras-party .SD-header,
 .shadowdark-extras-party header {
     min-height: unset !important;
-    height: auto !important;
+    height: 36px !important;
     flex: 0 0 auto !important;
     background-image: none !important;
 }
@@ -568,6 +586,8 @@
     border-bottom: 1px solid var(--party-border);
     flex: 0 0 auto !important;
     min-height: unset !important;
+    height: 52px;
+    margin: 0px;
 }
 
 .shadowdark-extras-party .SD-nav .navigation-tab {
@@ -4918,7 +4938,7 @@ color: rgba(255, 255, 255, 0.95) !important;
     height: 100%;
     min-height: 400px;
     gap: 0;
-    background: var(--color-bg-option, #f8f5e8);
+    background: #000000;
     border-radius: 0;
     overflow: hidden;
     flex: 1;
@@ -4931,8 +4951,8 @@ color: rgba(255, 255, 255, 0.95) !important;
     width: 160px;
     min-width: 140px;
     max-width: 180px;
-    background: linear-gradient(180deg, #1a1a1a 0%, #2a2a2a 100%);
-    border-right: 2px solid #111;
+    background: #1a1a1a;
+    border-right: 2px solid #333333;
     display: flex;
     flex-direction: column;
     padding: 0;
@@ -4950,7 +4970,7 @@ color: rgba(255, 255, 255, 0.95) !important;
     align-items: center;
     padding: 6px 10px;
     cursor: pointer;
-    color: #c0c0c0;
+    color: #cccccc;
     font-size: 16px;
     border-left: 3px solid transparent;
     transition: all 0.15s ease;
@@ -4958,14 +4978,14 @@ color: rgba(255, 255, 255, 0.95) !important;
 }
 
 .sdx-journal-page-item:hover {
-    background: rgba(255, 255, 255, 0.1);
-    color: #fff;
+    background: rgba(255, 255, 255, 0.15);
+    color: #ffffff;
 }
 
 .sdx-journal-page-item.active {
-    background: rgba(201, 170, 88, 0.2);
-    border-left-color: #c9aa58;
-    color: #c9aa58;
+    background: rgba(80, 80, 80, 0.5);
+    border-left-color: #888888;
+    color: #ffffff;
 }
 
 .sdx-page-number {
@@ -4991,7 +5011,7 @@ color: rgba(255, 255, 255, 0.95) !important;
     margin-left: 4px;
     background: transparent;
     border: none;
-    color: #888;
+    color: #666666;
     cursor: pointer;
     opacity: 0;
     transition: all 0.15s ease;
@@ -5006,8 +5026,8 @@ color: rgba(255, 255, 255, 0.95) !important;
 }
 
 .sdx-page-delete:hover {
-    color: #e74c3c;
-    background: rgba(231, 76, 60, 0.2);
+    color: #ff4444;
+    background: rgba(255, 68, 68, 0.2);
 }
 
 /* Add Page Button */
@@ -5018,10 +5038,10 @@ color: rgba(255, 255, 255, 0.95) !important;
     gap: 4px;
     padding: 4px 6px;
     margin: 6px 3px 15px 21px;
-    background: rgba(201, 170, 88, 0.15);
-    border: 1px solid rgba(201, 170, 88, 0.4);
+    background: #2a2a2a;
+    border: 1px solid #555555;
     border-radius: 3px;
-    color: #c9aa58;
+    color: #ffffff;
     font-size: 11px;
     cursor: pointer;
     transition: all 0.15s ease;
@@ -5032,8 +5052,8 @@ color: rgba(255, 255, 255, 0.95) !important;
 }
 
 .sdx-journal-add-page:hover {
-    background: rgba(201, 170, 88, 0.3);
-    border-color: #c9aa58;
+    background: #3a3a3a;
+    border-color: #888888;
 }
 
 .sdx-journal-add-page i {
@@ -5046,15 +5066,15 @@ color: rgba(255, 255, 255, 0.95) !important;
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    background: var(--color-bg-option, #f8f5e8);
+    background: #0b0b0b;
 }
 
 .sdx-journal-page-header {
     display: flex;
     align-items: center;
     padding: 8px 12px;
-    background: linear-gradient(180deg, #2a2a2a 0%, #1a1a1a 100%);
-    border-bottom: 2px solid #c9aa58;
+    background: #1a1a1a;
+    border-bottom: 2px solid #444444;
     gap: 8px;
     margin-top: 6px;
 }
@@ -5066,15 +5086,15 @@ color: rgba(255, 255, 255, 0.95) !important;
     font-size: 20px;
     text-transform: uppercase;
     letter-spacing: 1px;
-    color: #c9aa58;
+    color: #ffffff;
 }
 
 .sdx-journal-page-title input {
     width: 100%;
-    background: rgba(0, 0, 0, 0.3);
-    border: 1px solid rgba(201, 170, 88, 0.4);
+    background: #0a0a0a;
+    border: 1px solid #555555;
     border-radius: 3px;
-    color: #c9aa58;
+    color: #ffffff;
     font-family: inherit;
     font-size: inherit;
     text-transform: inherit;
@@ -5084,8 +5104,8 @@ color: rgba(255, 255, 255, 0.95) !important;
 
 .sdx-journal-page-title input:focus {
     outline: none;
-    border-color: #c9aa58;
-    box-shadow: 0 0 4px rgba(201, 170, 88, 0.3);
+    border-color: #888888;
+    box-shadow: 0 0 4px rgba(136, 136, 136, 0.3);
 }
 
 .sdx-journal-edit-btn {
@@ -5093,10 +5113,10 @@ color: rgba(255, 255, 255, 0.95) !important;
     width: 28px;
     height: 28px;
     padding: 0;
-    background: rgba(201, 170, 88, 0.2);
-    border: 1px solid rgba(201, 170, 88, 0.4);
+    background: #2a2a2a;
+    border: 1px solid #555555;
     border-radius: 4px;
-    color: #c9aa58;
+    color: #ffffff;
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -5105,18 +5125,17 @@ color: rgba(255, 255, 255, 0.95) !important;
 }
 
 .sdx-journal-edit-btn:hover {
-    background: rgba(201, 170, 88, 0.4);
-    border-color: #c9aa58;
+    background: #3a3a3a;
+    border-color: #888888;
 }
 
 /* Page content display */
 .sdx-journal-page-header {
-    display: flex
-;
+    display: flex;
     align-items: center;
     padding: 8px 12px;
-    background: linear-gradient(180deg, #2a2a2a 0%, #1a1a1a 100%);
-    border-bottom: 2px solid #c9aa58;
+    background: #1a1a1a;
+    border-bottom: 2px solid #444444;
     gap: 8px;
     margin-top: 0px;
 }
@@ -5128,13 +5147,21 @@ color: rgba(255, 255, 255, 0.95) !important;
 
 .sdx-journal-page-content p {
     margin: 0 0 12px 0;
+    color: #ffffff;
 }
-
+.sdx-journal-page-content hr {
+    border: none;
+    border-top: solid 1px #000000;
+    margin: 4px 0px 4px 0px;
+    color: #ffffff !important;
+    background-image: linear-gradient(90deg, transparent 0%, #ffffff 50%, transparent 100%) !important;
+}
 .sdx-journal-page-content h1,
 .sdx-journal-page-content h2,
-.sdx-journal-page-content h3 {
-    font-family: "Modesto Condensed", "Roboto Condensed", sans-serif;
-    color: #1a1a1a;
+.sdx-journal-page-content h3,
+.sdx-journal-page-content h4,
+.sdx-journal-page-content h5 {
+    color: #ffffff!important;
     margin: 16px 0 8px 0;
 }
 
@@ -5142,10 +5169,19 @@ color: rgba(255, 255, 255, 0.95) !important;
 .sdx-journal-page-content ol {
     margin: 0 0 12px 0;
     padding-left: 24px;
+    color: #ffffff!important;
+}
+
+.sdx-journal-page-content li {
+    color: #ffffff!important;
 }
 
 .sdx-journal-page-content a {
-    color: #2980b9;
+    color: #aaaaaa!important;
+}
+
+.sdx-journal-page-content a:hover {
+    color: #ffffff;
 }
 
 /* Empty state */
@@ -5156,7 +5192,7 @@ color: rgba(255, 255, 255, 0.95) !important;
     align-items: center;
     justify-content: center;
     padding: 32px;
-    color: #666;
+    color: #888888;
     text-align: center;
 }
 
@@ -5184,7 +5220,30 @@ color: rgba(255, 255, 255, 0.95) !important;
 .sdx-journal-editor-wrapper .editor-content .ProseMirror {
     min-height: 200px;
     padding: 12px;
-    background: var(--color-bg-option, #f8f5e8);
+    background: #000000;
+    color: #ffffff;
+}
+
+.sdx-journal-editor-wrapper .editor-content .ProseMirror p {
+    color: #ffffff;
+}
+
+.sdx-journal-editor-wrapper .editor-content .ProseMirror h1,
+.sdx-journal-editor-wrapper .editor-content .ProseMirror h2,
+.sdx-journal-editor-wrapper .editor-content .ProseMirror h3,
+.sdx-journal-editor-wrapper .editor-content .ProseMirror h4,
+.sdx-journal-editor-wrapper .editor-content .ProseMirror h5,
+.sdx-journal-editor-wrapper .editor-content .ProseMirror h6 {
+    color: #ffffff;
+}
+
+.sdx-journal-editor-wrapper .editor-content .ProseMirror ul,
+.sdx-journal-editor-wrapper .editor-content .ProseMirror ol {
+    color: #ffffff;
+}
+
+.sdx-journal-editor-wrapper .editor-content .ProseMirror li {
+    color: #ffffff;
 }
 
 /* Edit mode popup */
@@ -5216,23 +5275,23 @@ color: rgba(255, 255, 255, 0.95) !important;
 
 .sdx-journal-pages-list::-webkit-scrollbar-track,
 .sdx-journal-page-content::-webkit-scrollbar-track {
-    background: rgba(0, 0, 0, 0.1);
+    background: #0a0a0a;
     border-radius: 3px;
 }
 
 .sdx-journal-pages-list::-webkit-scrollbar-thumb {
-    background: rgba(201, 170, 88, 0.4);
+    background: #444444;
     border-radius: 3px;
 }
 
 .sdx-journal-page-content::-webkit-scrollbar-thumb {
-    background: rgba(0, 0, 0, 0.2);
+    background: #333333;
     border-radius: 3px;
 }
 
 .sdx-journal-pages-list::-webkit-scrollbar-thumb:hover,
 .sdx-journal-page-content::-webkit-scrollbar-thumb:hover {
-    background: rgba(201, 170, 88, 0.6);
+    background: #666666;
 }
 
 /* Replace the Notes section completely */

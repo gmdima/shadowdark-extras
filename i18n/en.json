@@ -29,6 +29,7 @@
   "SHADOWDARK_EXTRAS.sheet.npc.inventory.qty": "Qty",
   "SHADOWDARK_EXTRAS.sheet.npc.inventory.treasure": "Treasure",
   "SHADOWDARK_EXTRAS.sheet.npc.inventory.coins": "Coins",
+  "SHADOWDARK_EXTRAS.sheet.npc.inventory.slots_used": "Slots Used",
   "SHADOWDARK_EXTRAS.sheet.npc.inventory.new_item": "New Item",
   "SHADOWDARK_EXTRAS.party.name": "Party",
   "SHADOWDARK_EXTRAS.party.name_placeholder": "Party Name",

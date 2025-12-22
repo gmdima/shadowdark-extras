@@ -94,6 +94,18 @@
 
 		<!-- Sidebar with Coins -->
 		<div class="inventory-sidebar">
+			<div class="SD-box npc-slot-summary">
+				<div class="header">
+					<label>{{localize "SHADOWDARK_EXTRAS.sheet.npc.inventory.slots_used"}}</label>
+					<span></span>
+				</div>
+				<div class="content">
+					<div class="npc-slot-total">{{npcSlotsUsed}}</div>
+					<div class="npc-slot-breakdown">
+						{{localize "SHADOWDARK_EXTRAS.sheet.npc.inventory.items"}}: {{npcItemSlots}} · {{localize "SHADOWDARK_EXTRAS.sheet.npc.inventory.coins"}}: {{npcCoinSlots}}
+					</div>
+				</div>
+			</div>
 			<div class="SD-box">
 				<div class="header">
 					<label>{{localize "SHADOWDARK_EXTRAS.sheet.npc.inventory.coins"}}</label>

@@ -5189,6 +5189,7 @@ function injectTradeButton(html, actor) {
 function prepareNpcInventory(actor) {
 	const inventory = [];
 	const treasure = [];
+	let slotsUsed = 0;
 	
 	for (const item of actor.items) {
 		if (!NPC_INVENTORY_TYPES.includes(item.type)) continue;
@@ -5196,6 +5197,10 @@ function prepareNpcInventory(actor) {
 		
 		const itemData = item.toObject();
 		itemData.uuid = `Actor.${actor._id}.Item.${item._id}`;
+		const itemSlots = calculateSlotsCostForItemData(itemData);
+		if (Number.isFinite(itemSlots)) {
+			slotsUsed += Math.max(0, itemSlots);
+		}
 		
 		// Check if item should show quantity
 		itemData.showQuantity = item.system.isAmmunition || 
@@ -5214,7 +5219,7 @@ function prepareNpcInventory(actor) {
 	inventory.sort((a, b) => a.name.localeCompare(b.name));
 	treasure.sort((a, b) => a.name.localeCompare(b.name));
 	
-	return { inventory, treasure };
+	return { inventory, treasure, slotsUsed };
 }
 
 /**
@@ -5226,6 +5231,14 @@ function getNpcCoins(actor) {
 		sp: actor.getFlag(MODULE_ID, "coins.sp") ?? 0,
 		cp: actor.getFlag(MODULE_ID, "coins.cp") ?? 0
 	};
+}
+
+function calculateNpcCoinSlots(coins) {
+	const gp = Number(coins?.gp ?? 0) || 0;
+	const sp = Number(coins?.sp ?? 0) || 0;
+	const cp = Number(coins?.cp ?? 0) || 0;
+	const totalGpValue = gp + sp / 10 + cp / 100;
+	return Math.max(0, Math.floor(totalGpValue / 100));
 }
 
 /**
@@ -5242,8 +5255,11 @@ async function injectNpcInventoryTab(app, html, data) {
 	abilitiesTab.after(inventoryTabHtml);
 	
 	// Prepare inventory data
-	const { inventory, treasure } = prepareNpcInventory(actor);
+	const { inventory, treasure, slotsUsed } = prepareNpcInventory(actor);
 	const coins = getNpcCoins(actor);
+	const coinSlots = calculateNpcCoinSlots(coins);
+	const safeItemSlots = Math.max(0, Number.isFinite(slotsUsed) ? slotsUsed : 0);
+	const totalSlotsUsed = safeItemSlots + coinSlots;
 	
 	// Load and render the template
 	const templatePath = `modules/${MODULE_ID}/templates/npc-inventory.hbs`;
@@ -5251,6 +5267,9 @@ async function injectNpcInventoryTab(app, html, data) {
 		npcInventory: inventory,
 		npcTreasure: treasure,
 		npcCoins: coins,
+		npcSlotsUsed: totalSlotsUsed,
+		npcItemSlots: safeItemSlots,
+		npcCoinSlots: coinSlots,
 		owner: actor.isOwner
 	};
 	
@@ -6336,10 +6355,17 @@ async function enhanceSpellSheet(app, html) {
 		profiles: []
 	};
 	
+	// Initialize item give flags
+	const itemGiveFlags = item.flags?.[MODULE_ID]?.itemGive || {
+		enabled: false,
+		profiles: []
+	};
+	
 	// Combine all flags for template
 	const flags = {
 		...spellDamageFlags,
-		summoning: summoningFlags
+		summoning: summoningFlags,
+		itemGive: itemGiveFlags
 	};
 	
 	// Convert applyToTarget to boolean (in case it was stored as string)
@@ -6526,8 +6552,28 @@ async function enhanceSpellSheet(app, html) {
 		}
 	}
 
+	let itemGiveList = '';
+	let itemGiveProfilesArray = itemGiveFlags.profiles || [];
+
+	if (typeof itemGiveProfilesArray === 'string') {
+		try {
+			itemGiveProfilesArray = JSON.parse(itemGiveProfilesArray);
+		} catch (err) {
+			console.warn(`${MODULE_ID} | Could not parse item give profiles string:`, itemGiveProfilesArray, err);
+			itemGiveProfilesArray = [];
+		}
+	}
+
+	if (itemGiveProfilesArray && itemGiveProfilesArray.length > 0) {
+		const { generateItemGiveProfileHTML } = await import(`./templates/ItemGiveConfig.mjs`);
+		for (let i = 0; i < itemGiveProfilesArray.length; i++) {
+			const profile = itemGiveProfilesArray[i];
+			itemGiveList += generateItemGiveProfileHTML(profile, i);
+		}
+	}
+
 	// Build the damage/heal UI HTML using template (now includes summoning)
-	const damageHealHtml = generateSpellConfig(MODULE_ID, flags, effectsListHtml, effectsArray, effectsApplyToTarget, summonsList, summonProfilesArray);
+	const damageHealHtml = generateSpellConfig(MODULE_ID, flags, effectsListHtml, effectsArray, effectsApplyToTarget, summonsList, summonProfilesArray, itemGiveList, itemGiveProfilesArray);
 
 	// Insert into Activity tab
 	$activityTab.append(damageHealHtml);
@@ -6945,6 +6991,133 @@ async function enhanceSpellSheet(app, html) {
 		});
 	}
 
+	// ---- Item give handlers ----
+	html.on('change', '.sdx-item-give-toggle', function(e) {
+		e.stopPropagation();
+		const enabled = $(this).is(':checked');
+		const updateData = {};
+		updateData[`flags.${MODULE_ID}.itemGive.enabled`] = enabled;
+		item.update(updateData, { render: false }).then(() => {
+			console.log(`${MODULE_ID} | Item give enabled state saved:`, enabled);
+		});
+	});
+
+	html.on('click', '.sdx-add-item-give-btn', async function(e) {
+		e.preventDefault();
+		e.stopPropagation();
+		const { generateItemGiveProfileHTML } = await import(`./templates/ItemGiveConfig.mjs`);
+		const $list = $(this).closest('.sdx-item-give-content').find('.sdx-item-give-list');
+		const index = $list.find('.sdx-item-give-profile').length;
+		const newProfile = {
+			itemUuid: '',
+			itemName: '',
+			itemImg: '',
+			quantity: '1'
+		};
+		$list.find('.sdx-no-items').remove();
+		$list.append(generateItemGiveProfileHTML(newProfile, index));
+		updateItemGiveData();
+	});
+
+	html.on('click', '.sdx-remove-item-give-btn', function(e) {
+		e.preventDefault();
+		e.stopPropagation();
+		$(this).closest('.sdx-item-give-profile').remove();
+		updateItemGiveData();
+	});
+
+	html.on('change input', '.sdx-item-give-quantity', function(e) {
+		e.stopPropagation();
+		updateItemGiveData();
+	});
+
+	html.on('dragover', '.sdx-item-give-drop', function(event) {
+		event.preventDefault();
+		event.stopPropagation();
+		$(this).addClass('sdx-drag-over');
+	});
+
+	html.on('dragleave', '.sdx-item-give-drop', function(event) {
+		event.preventDefault();
+		event.stopPropagation();
+		$(this).removeClass('sdx-drag-over');
+	});
+
+	html.on('drop', '.sdx-item-give-drop', async function(event) {
+		event.preventDefault();
+		event.stopPropagation();
+		$(this).removeClass('sdx-drag-over');
+		try {
+			const data = JSON.parse(event.originalEvent.dataTransfer.getData('text/plain'));
+			let doc = null;
+			if (data.uuid) {
+				doc = await fromUuid(data.uuid);
+			} else if (data.type === 'Item' && data.id) {
+				if (data.pack) {
+					const pack = game.packs.get(data.pack);
+					doc = await pack.getDocument(data.id);
+				} else {
+					doc = game.items.get(data.id);
+				}
+			}
+			if (!doc) {
+				ui.notifications.warn('Could not load dropped item');
+				return;
+			}
+			if (!(doc instanceof Item)) {
+				ui.notifications.warn('Only items can be dropped here');
+				return;
+			}
+			const $profile = $(this).closest('.sdx-item-give-profile');
+			const itemName = doc.name;
+			const itemImg = doc.img || 'icons/svg/mystery-man.svg';
+			const itemUuid = doc.uuid;
+			$profile.find('.sdx-item-give-uuid').val(itemUuid);
+			$profile.find('.sdx-item-give-name').val(itemName);
+			$profile.find('.sdx-item-give-img').val(itemImg);
+			$(this).html(`
+				<div class="sdx-item-give-display" data-uuid="${itemUuid}">
+					<img src="${itemImg}" alt="${itemName}" style="width: 40px; height: 40px; border-radius: 4px;" />
+					<span style="margin-left: 4px; font-size: 0.9em;">${itemName}</span>
+				</div>
+			`);
+			updateItemGiveData();
+			ui.notifications.info(`Added ${itemName} to caster item list`);
+		} catch (err) {
+			console.error(`${MODULE_ID} | Error handling item drop:`, err);
+			ui.notifications.error('Failed to add item');
+		}
+	});
+
+	function updateItemGiveData() {
+		const profiles = [];
+		html.find('.sdx-item-give-profile').each(function(idx) {
+			const $profile = $(this);
+			$profile.attr('data-index', idx);
+			$profile.find('.sdx-remove-item-give-btn').attr('data-index', idx);
+			profiles.push({
+				itemUuid: $profile.find('.sdx-item-give-uuid').val(),
+				itemName: $profile.find('.sdx-item-give-name').val(),
+				itemImg: $profile.find('.sdx-item-give-img').val(),
+				quantity: $profile.find('.sdx-item-give-quantity').val() || '1'
+			});
+		});
+		const $list = html.find('.sdx-item-give-list');
+		if (profiles.length === 0) {
+			$list.html('<div class="sdx-no-items">Drop an item here to grant it to the caster on success</div>');
+		} else {
+			$list.find('.sdx-no-items').remove();
+		}
+		html.find('.sdx-item-give-data').val(JSON.stringify(profiles));
+		const updateData = {};
+		updateData[`flags.${MODULE_ID}.itemGive.profiles`] = profiles;
+		item.update(updateData, { render: false }).then(() => {
+			console.log(`${MODULE_ID} | Saved item give profiles:`, profiles);
+		}).catch(err => {
+			console.error(`${MODULE_ID} | Failed to save item give profiles:`, err);
+		});
+	}
+
 	console.log(`${MODULE_ID} | Spell sheet enhanced for`, item.name);
 }
 
@@ -6969,7 +7142,7 @@ async function enhancePotionSheet(app, html) {
 	html.find('.sdx-spell-damage-box').remove();
 
 	// Initialize flags if they don't exist
-	const flags = item.flags?.[MODULE_ID]?.spellDamage || {
+	const spellDamageFlags = item.flags?.[MODULE_ID]?.spellDamage || {
 		enabled: false,
 		isDamage: true, // true = damage, false = heal
 		numDice: 1,
@@ -6985,6 +7158,25 @@ async function enhancePotionSheet(app, html) {
 		effects: [], // Array of effect document UUIDs
 		applyToTarget: false, // potions apply to self (drinker) by default
 		effectsApplyToTarget: false // potions apply effects to self by default
+	};
+	
+	// Initialize summoning flags
+	const summoningFlags = item.flags?.[MODULE_ID]?.summoning || {
+		enabled: false,
+		profiles: []
+	};
+	
+	// Initialize item give flags
+	const itemGiveFlags = item.flags?.[MODULE_ID]?.itemGive || {
+		enabled: false,
+		profiles: []
+	};
+	
+	// Combine all flags for template
+	const flags = {
+		...spellDamageFlags,
+		summoning: summoningFlags,
+		itemGive: itemGiveFlags
 	};
 	
 	// Convert applyToTarget to boolean (in case it was stored as string)
@@ -7149,8 +7341,50 @@ async function enhancePotionSheet(app, html) {
 		console.log(`${MODULE_ID} | Loaded effects HTML, length:`, effectsListHtml.length);
 	}
 
+	// Build summons list HTML
+	let summonsList = '';
+	let summonProfilesArray = summoningFlags.profiles || [];
+	
+	// Handle case where profiles might be a string
+	if (typeof summonProfilesArray === 'string') {
+		try {
+			summonProfilesArray = JSON.parse(summonProfilesArray);
+		} catch (err) {
+			console.warn(`${MODULE_ID} | Could not parse summon profiles string:`, summonProfilesArray, err);
+			summonProfilesArray = [];
+		}
+	}
+	
+	if (summonProfilesArray && summonProfilesArray.length > 0) {
+		const { generateSummonProfileHTML } = await import(`./templates/SummoningConfig.mjs`);
+		for (let i = 0; i < summonProfilesArray.length; i++) {
+			const profile = summonProfilesArray[i];
+			summonsList += generateSummonProfileHTML(profile, i);
+		}
+	}
+
+	let itemGiveList = '';
+	let itemGiveProfilesArray = itemGiveFlags.profiles || [];
+
+	if (typeof itemGiveProfilesArray === 'string') {
+		try {
+			itemGiveProfilesArray = JSON.parse(itemGiveProfilesArray);
+		} catch (err) {
+			console.warn(`${MODULE_ID} | Could not parse item give profiles string:`, itemGiveProfilesArray, err);
+			itemGiveProfilesArray = [];
+		}
+	}
+
+	if (itemGiveProfilesArray && itemGiveProfilesArray.length > 0) {
+		const { generateItemGiveProfileHTML } = await import(`./templates/ItemGiveConfig.mjs`);
+		for (let i = 0; i < itemGiveProfilesArray.length; i++) {
+			const profile = itemGiveProfilesArray[i];
+			itemGiveList += generateItemGiveProfileHTML(profile, i);
+		}
+	}
+
 	// Build the damage/heal UI HTML using template
-	const damageHealHtml = generatePotionConfig(MODULE_ID, flags, effectsListHtml, effectsArray, effectsApplyToTarget);
+	const damageHealHtml = generatePotionConfig(MODULE_ID, flags, effectsListHtml, effectsArray, effectsApplyToTarget, summonsList, summonProfilesArray, itemGiveList, itemGiveProfilesArray);
 
 	// Insert into Activity tab
 	$activityTab.append(damageHealHtml);
@@ -7364,6 +7598,273 @@ async function enhancePotionSheet(app, html) {
 		});
 	});
 
+	// ---- Summoning handlers ----
+	html.on('change', '.sdx-summoning-toggle', function(e) {
+		e.stopPropagation();
+		const enabled = $(this).is(':checked');
+		const updateData = {};
+		updateData[`flags.${MODULE_ID}.summoning.enabled`] = enabled;
+		item.update(updateData, { render: false }).then(() => {
+			console.log(`${MODULE_ID} | Summoning enabled state saved:`, enabled);
+		});
+	});
+
+	html.on('click', '.sdx-add-summon-btn', async function(e) {
+		e.preventDefault();
+		e.stopPropagation();
+		const { generateSummonProfileHTML } = await import(`./templates/SummoningConfig.mjs`);
+		const $list = $(this).closest('.sdx-summoning-content').find('.sdx-summon-list');
+		const index = $list.find('.sdx-summon-profile').length;
+		const newProfile = {
+			creatureUuid: '',
+			creatureName: '',
+			creatureImg: '',
+			count: '1',
+			displayName: ''
+		};
+		$list.find('.sdx-no-summons').remove();
+		$list.append(generateSummonProfileHTML(newProfile, index));
+		updateSummonsData();
+	});
+
+	html.on('click', '.sdx-remove-summon-btn', function(e) {
+		e.preventDefault();
+		e.stopPropagation();
+		$(this).closest('.sdx-summon-profile').remove();
+		updateSummonsData();
+	});
+
+	html.on('change input', '.sdx-summon-count, .sdx-summon-display-name', function(e) {
+		e.stopPropagation();
+		updateSummonsData();
+	});
+
+	html.on('dragover', '.sdx-summon-creature-drop', function(event) {
+		event.preventDefault();
+		event.stopPropagation();
+		$(this).addClass('sdx-drag-over');
+	});
+	
+	html.on('dragleave', '.sdx-summon-creature-drop', function(event) {
+		event.preventDefault();
+		event.stopPropagation();
+		$(this).removeClass('sdx-drag-over');
+	});
+	
+	html.on('drop', '.sdx-summon-creature-drop', async function(event) {
+		event.preventDefault();
+		event.stopPropagation();
+		$(this).removeClass('sdx-drag-over');
+		
+		try {
+			const data = JSON.parse(event.originalEvent.dataTransfer.getData('text/plain'));
+			
+			// Get the document from the dropped data
+			let doc = null;
+			if (data.uuid) {
+				doc = await fromUuid(data.uuid);
+			} else if (data.type === 'Actor' && data.id) {
+				// Handle actors from compendiums or world
+				if (data.pack) {
+					const pack = game.packs.get(data.pack);
+					doc = await pack.getDocument(data.id);
+				} else {
+					doc = game.actors.get(data.id);
+				}
+			}
+			
+			if (!doc) {
+				ui.notifications.warn('Could not load dropped actor');
+				return;
+			}
+			
+			// Must be an Actor
+			if (!(doc instanceof Actor)) {
+				ui.notifications.warn('Only actors can be dropped here');
+				return;
+			}
+			
+			// Update the profile display
+			const $profile = $(this).closest('.sdx-summon-profile');
+			const creatureName = doc.name;
+			const creatureImg = doc.img || doc.prototypeToken?.texture?.src || 'icons/svg/mystery-man.svg';
+			const creatureUuid = doc.uuid;
+			
+			// Update hidden inputs
+			$profile.find('.sdx-creature-uuid').val(creatureUuid);
+			$profile.find('.sdx-creature-name').val(creatureName);
+			$profile.find('.sdx-creature-img').val(creatureImg);
+			
+			// Update display
+			$(this).html(`
+				<div class="sdx-summon-creature-display" data-uuid="${creatureUuid}">
+					<img src="${creatureImg}" alt="${creatureName}" style="width: 40px; height: 40px; border-radius: 4px;" />
+					<span style="margin-left: 4px; font-size: 0.9em;">${creatureName}</span>
+				</div>
+			`);
+			
+			updateSummonsData();
+			ui.notifications.info(`Added ${creatureName} to summon profile`);
+		} catch (err) {
+			console.error(`${MODULE_ID} | Error handling creature drop:`, err);
+			ui.notifications.error('Failed to add creature');
+		}
+	});
+	
+	// Function to collect and save summons data
+	function updateSummonsData() {
+		const profiles = [];
+		html.find('.sdx-summon-profile').each(function() {
+			const $profile = $(this);
+			profiles.push({
+				creatureUuid: $profile.find('.sdx-creature-uuid').val(),
+				creatureName: $profile.find('.sdx-creature-name').val(),
+				creatureImg: $profile.find('.sdx-creature-img').val(),
+				count: $profile.find('.sdx-summon-count').val() || '1',
+				displayName: $profile.find('.sdx-summon-display-name').val() || ''
+			});
+		});
+		
+		// Update hidden input
+		html.find('.sdx-summons-data').val(JSON.stringify(profiles));
+		
+		// Save to item
+		const updateData = {};
+		updateData[`flags.${MODULE_ID}.summoning.profiles`] = profiles;
+		item.update(updateData, { render: false }).then(() => {
+			console.log(`${MODULE_ID} | Saved summon profiles:`, profiles);
+		}).catch(err => {
+			console.error(`${MODULE_ID} | Failed to save summon profiles:`, err);
+		});
+	}
+
+	// ---- Item give handlers ----
+	html.on('change', '.sdx-item-give-toggle', function(e) {
+		e.stopPropagation();
+		const enabled = $(this).is(':checked');
+		const updateData = {};
+		updateData[`flags.${MODULE_ID}.itemGive.enabled`] = enabled;
+		item.update(updateData, { render: false }).then(() => {
+			console.log(`${MODULE_ID} | Item give enabled state saved:`, enabled);
+		});
+	});
+
+	html.on('click', '.sdx-add-item-give-btn', async function(e) {
+		e.preventDefault();
+		e.stopPropagation();
+		const { generateItemGiveProfileHTML } = await import(`./templates/ItemGiveConfig.mjs`);
+		const $list = $(this).closest('.sdx-item-give-content').find('.sdx-item-give-list');
+		const index = $list.find('.sdx-item-give-profile').length;
+		const newProfile = {
+			itemUuid: '',
+			itemName: '',
+			itemImg: '',
+			quantity: '1'
+		};
+		$list.find('.sdx-no-items').remove();
+		$list.append(generateItemGiveProfileHTML(newProfile, index));
+		updateItemGiveData();
+	});
+
+	html.on('click', '.sdx-remove-item-give-btn', function(e) {
+		e.preventDefault();
+		e.stopPropagation();
+		$(this).closest('.sdx-item-give-profile').remove();
+		updateItemGiveData();
+	});
+
+	html.on('change input', '.sdx-item-give-quantity', function(e) {
+		e.stopPropagation();
+		updateItemGiveData();
+	});
+
+	html.on('dragover', '.sdx-item-give-drop', function(event) {
+		event.preventDefault();
+		event.stopPropagation();
+		$(this).addClass('sdx-drag-over');
+	});
+
+	html.on('dragleave', '.sdx-item-give-drop', function(event) {
+		event.preventDefault();
+		event.stopPropagation();
+		$(this).removeClass('sdx-drag-over');
+	});
+
+	html.on('drop', '.sdx-item-give-drop', async function(event) {
+		event.preventDefault();
+		event.stopPropagation();
+		$(this).removeClass('sdx-drag-over');
+		try {
+			const data = JSON.parse(event.originalEvent.dataTransfer.getData('text/plain'));
+			let doc = null;
+			if (data.uuid) {
+				doc = await fromUuid(data.uuid);
+			} else if (data.type === 'Item' && data.id) {
+				if (data.pack) {
+					const pack = game.packs.get(data.pack);
+					doc = await pack.getDocument(data.id);
+				} else {
+					doc = game.items.get(data.id);
+				}
+			}
+			if (!doc) {
+				ui.notifications.warn('Could not load dropped item');
+				return;
+			}
+			if (!(doc instanceof Item)) {
+				ui.notifications.warn('Only items can be dropped here');
+				return;
+			}
+			const $profile = $(this).closest('.sdx-item-give-profile');
+			const itemName = doc.name;
+			const itemImg = doc.img || 'icons/svg/mystery-man.svg';
+			const itemUuid = doc.uuid;
+			$profile.find('.sdx-item-give-uuid').val(itemUuid);
+			$profile.find('.sdx-item-give-name').val(itemName);
+			$profile.find('.sdx-item-give-img').val(itemImg);
+			$(this).html(`
+				<div class="sdx-item-give-display" data-uuid="${itemUuid}">
+					<img src="${itemImg}" alt="${itemName}" style="width: 40px; height: 40px; border-radius: 4px;" />
+					<span style="margin-left: 4px; font-size: 0.9em;">${itemName}</span>
+				</div>
+			`);
+			updateItemGiveData();
+			ui.notifications.info(`Added ${itemName} to caster item list`);
+		} catch (err) {
+			console.error(`${MODULE_ID} | Error handling item drop:`, err);
+			ui.notifications.error('Failed to add item');
+		}
+	});
+
+	function updateItemGiveData() {
+		const profiles = [];
+		html.find('.sdx-item-give-profile').each(function(idx) {
+			const $profile = $(this);
+			$profile.attr('data-index', idx);
+			$profile.find('.sdx-remove-item-give-btn').attr('data-index', idx);
+			profiles.push({
+				itemUuid: $profile.find('.sdx-item-give-uuid').val(),
+				itemName: $profile.find('.sdx-item-give-name').val(),
+				itemImg: $profile.find('.sdx-item-give-img').val(),
+				quantity: $profile.find('.sdx-item-give-quantity').val() || '1'
+			});
+		});
+		const $list = html.find('.sdx-item-give-list');
+		if (profiles.length === 0) {
+			$list.html('<div class="sdx-no-items">Drop an item here to grant it to the caster on success</div>');
+		} else {
+			$list.find('.sdx-no-items').remove();
+		}
+		html.find('.sdx-item-give-data').val(JSON.stringify(profiles));
+		const updateData = {};
+		updateData[`flags.${MODULE_ID}.itemGive.profiles`] = profiles;
+		item.update(updateData, { render: false }).then(() => {
+			console.log(`${MODULE_ID} | Saved item give profiles:`, profiles);
+		}).catch(err => {
+			console.error(`${MODULE_ID} | Failed to save item give profiles:`, err);
+		});
+	}
+
 	console.log(`${MODULE_ID} | Potion sheet enhanced for`, item.name);
 }
 
@@ -7384,11 +7885,14 @@ async function enhanceScrollSheet(app, html) {
 
 	console.log(`${MODULE_ID} | Enhancing scroll sheet for`, item.name);
 
+	// Debug: Log all flags
+	console.log(`${MODULE_ID} | Scroll flags:`, item.flags?.[MODULE_ID]);
+
 	// Remove any existing damage/heal boxes to prevent duplicates
 	html.find('.sdx-spell-damage-box').remove();
 
 	// Initialize flags if they don't exist
-	const flags = item.flags?.[MODULE_ID]?.spellDamage || {
+	const spellDamageFlags = item.flags?.[MODULE_ID]?.spellDamage || {
 		enabled: false,
 		isDamage: true, // true = damage, false = heal
 		numDice: 1,
@@ -7404,6 +7908,25 @@ async function enhanceScrollSheet(app, html) {
 		effects: [], // Array of effect document UUIDs
 		applyToTarget: true, // scrolls apply to target by default
 		effectsApplyToTarget: true // scrolls apply effects to target by default
+	};
+	
+	// Initialize summoning flags
+	const summoningFlags = item.flags?.[MODULE_ID]?.summoning || {
+		enabled: false,
+		profiles: []
+	};
+	
+	// Initialize item give flags
+	const itemGiveFlags = item.flags?.[MODULE_ID]?.itemGive || {
+		enabled: false,
+		profiles: []
+	};
+	
+	// Combine all flags for template
+	const flags = {
+		...spellDamageFlags,
+		summoning: summoningFlags,
+		itemGive: itemGiveFlags
 	};
 	
 	// Convert applyToTarget to boolean (in case it was stored as string)
@@ -7568,8 +8091,50 @@ async function enhanceScrollSheet(app, html) {
 		console.log(`${MODULE_ID} | Loaded effects HTML, length:`, effectsListHtml.length);
 	}
 
+	// Build summons list HTML
+	let summonsList = '';
+	let summonProfilesArray = summoningFlags.profiles || [];
+	
+	// Handle case where profiles might be a string
+	if (typeof summonProfilesArray === 'string') {
+		try {
+			summonProfilesArray = JSON.parse(summonProfilesArray);
+		} catch (err) {
+			console.warn(`${MODULE_ID} | Could not parse summon profiles string:`, summonProfilesArray, err);
+			summonProfilesArray = [];
+		}
+	}
+	
+	if (summonProfilesArray && summonProfilesArray.length > 0) {
+		const { generateSummonProfileHTML } = await import(`./templates/SummoningConfig.mjs`);
+		for (let i = 0; i < summonProfilesArray.length; i++) {
+			const profile = summonProfilesArray[i];
+			summonsList += generateSummonProfileHTML(profile, i);
+		}
+	}
+
+	let itemGiveList = '';
+	let itemGiveProfilesArray = itemGiveFlags.profiles || [];
+
+	if (typeof itemGiveProfilesArray === 'string') {
+		try {
+			itemGiveProfilesArray = JSON.parse(itemGiveProfilesArray);
+		} catch (err) {
+			console.warn(`${MODULE_ID} | Could not parse item give profiles string:`, itemGiveProfilesArray, err);
+			itemGiveProfilesArray = [];
+		}
+	}
+
+	if (itemGiveProfilesArray && itemGiveProfilesArray.length > 0) {
+		const { generateItemGiveProfileHTML } = await import(`./templates/ItemGiveConfig.mjs`);
+		for (let i = 0; i < itemGiveProfilesArray.length; i++) {
+			const profile = itemGiveProfilesArray[i];
+			itemGiveList += generateItemGiveProfileHTML(profile, i);
+		}
+	}
+
 	// Build the damage/heal UI HTML
-	const damageHealHtml = generateScrollConfig(MODULE_ID, flags, effectsListHtml, effectsArray, effectsApplyToTarget);
+	const damageHealHtml = generateScrollConfig(MODULE_ID, flags, effectsListHtml, effectsArray, effectsApplyToTarget, summonsList, summonProfilesArray, itemGiveList, itemGiveProfilesArray);
 
 	// Insert into Activity tab
 	$activityTab.append(damageHealHtml);
@@ -7761,6 +8326,273 @@ async function enhanceScrollSheet(app, html) {
 		item.update(updateData);
 	});
 
+	// ---- Summoning handlers ----
+	html.on('change', '.sdx-summoning-toggle', function(e) {
+		e.stopPropagation();
+		const enabled = $(this).is(':checked');
+		const updateData = {};
+		updateData[`flags.${MODULE_ID}.summoning.enabled`] = enabled;
+		item.update(updateData, { render: false }).then(() => {
+			console.log(`${MODULE_ID} | Summoning enabled state saved:`, enabled);
+		});
+	});
+
+	html.on('click', '.sdx-add-summon-btn', async function(e) {
+		e.preventDefault();
+		e.stopPropagation();
+		const { generateSummonProfileHTML } = await import(`./templates/SummoningConfig.mjs`);
+		const $list = $(this).closest('.sdx-summoning-content').find('.sdx-summon-list');
+		const index = $list.find('.sdx-summon-profile').length;
+		const newProfile = {
+			creatureUuid: '',
+			creatureName: '',
+			creatureImg: '',
+			count: '1',
+			displayName: ''
+		};
+		$list.find('.sdx-no-summons').remove();
+		$list.append(generateSummonProfileHTML(newProfile, index));
+		updateSummonsData();
+	});
+
+	html.on('click', '.sdx-remove-summon-btn', function(e) {
+		e.preventDefault();
+		e.stopPropagation();
+		$(this).closest('.sdx-summon-profile').remove();
+		updateSummonsData();
+	});
+
+	html.on('change input', '.sdx-summon-count, .sdx-summon-display-name', function(e) {
+		e.stopPropagation();
+		updateSummonsData();
+	});
+
+	html.on('dragover', '.sdx-summon-creature-drop', function(event) {
+		event.preventDefault();
+		event.stopPropagation();
+		$(this).addClass('sdx-drag-over');
+	});
+	
+	html.on('dragleave', '.sdx-summon-creature-drop', function(event) {
+		event.preventDefault();
+		event.stopPropagation();
+		$(this).removeClass('sdx-drag-over');
+	});
+	
+	html.on('drop', '.sdx-summon-creature-drop', async function(event) {
+		event.preventDefault();
+		event.stopPropagation();
+		$(this).removeClass('sdx-drag-over');
+		
+		try {
+			const data = JSON.parse(event.originalEvent.dataTransfer.getData('text/plain'));
+			
+			// Get the document from the dropped data
+			let doc = null;
+			if (data.uuid) {
+				doc = await fromUuid(data.uuid);
+			} else if (data.type === 'Actor' && data.id) {
+				// Handle actors from compendiums or world
+				if (data.pack) {
+					const pack = game.packs.get(data.pack);
+					doc = await pack.getDocument(data.id);
+				} else {
+					doc = game.actors.get(data.id);
+				}
+			}
+			
+			if (!doc) {
+				ui.notifications.warn('Could not load dropped actor');
+				return;
+			}
+			
+			// Must be an Actor
+			if (!(doc instanceof Actor)) {
+				ui.notifications.warn('Only actors can be dropped here');
+				return;
+			}
+			
+			// Update the profile display
+			const $profile = $(this).closest('.sdx-summon-profile');
+			const creatureName = doc.name;
+			const creatureImg = doc.img || doc.prototypeToken?.texture?.src || 'icons/svg/mystery-man.svg';
+			const creatureUuid = doc.uuid;
+			
+			// Update hidden inputs
+			$profile.find('.sdx-creature-uuid').val(creatureUuid);
+			$profile.find('.sdx-creature-name').val(creatureName);
+			$profile.find('.sdx-creature-img').val(creatureImg);
+			
+			// Update display
+			$(this).html(`
+				<div class="sdx-summon-creature-display" data-uuid="${creatureUuid}">
+					<img src="${creatureImg}" alt="${creatureName}" style="width: 40px; height: 40px; border-radius: 4px;" />
+					<span style="margin-left: 4px; font-size: 0.9em;">${creatureName}</span>
+				</div>
+			`);
+			
+			updateSummonsData();
+			ui.notifications.info(`Added ${creatureName} to summon profile`);
+		} catch (err) {
+			console.error(`${MODULE_ID} | Error handling creature drop:`, err);
+			ui.notifications.error('Failed to add creature');
+		}
+	});
+	
+	// Function to collect and save summons data
+	function updateSummonsData() {
+		const profiles = [];
+		html.find('.sdx-summon-profile').each(function() {
+			const $profile = $(this);
+			profiles.push({
+				creatureUuid: $profile.find('.sdx-creature-uuid').val(),
+				creatureName: $profile.find('.sdx-creature-name').val(),
+				creatureImg: $profile.find('.sdx-creature-img').val(),
+				count: $profile.find('.sdx-summon-count').val() || '1',
+				displayName: $profile.find('.sdx-summon-display-name').val() || ''
+			});
+		});
+		
+		// Update hidden input
+		html.find('.sdx-summons-data').val(JSON.stringify(profiles));
+		
+		// Save to item
+		const updateData = {};
+		updateData[`flags.${MODULE_ID}.summoning.profiles`] = profiles;
+		item.update(updateData, { render: false }).then(() => {
+			console.log(`${MODULE_ID} | Saved summon profiles:`, profiles);
+		}).catch(err => {
+			console.error(`${MODULE_ID} | Failed to save summon profiles:`, err);
+		});
+	}
+
+	// ---- Item give handlers ----
+	html.on('change', '.sdx-item-give-toggle', function(e) {
+		e.stopPropagation();
+		const enabled = $(this).is(':checked');
+		const updateData = {};
+		updateData[`flags.${MODULE_ID}.itemGive.enabled`] = enabled;
+		item.update(updateData, { render: false }).then(() => {
+			console.log(`${MODULE_ID} | Item give enabled state saved:`, enabled);
+		});
+	});
+
+	html.on('click', '.sdx-add-item-give-btn', async function(e) {
+		e.preventDefault();
+		e.stopPropagation();
+		const { generateItemGiveProfileHTML } = await import(`./templates/ItemGiveConfig.mjs`);
+		const $list = $(this).closest('.sdx-item-give-content').find('.sdx-item-give-list');
+		const index = $list.find('.sdx-item-give-profile').length;
+		const newProfile = {
+			itemUuid: '',
+			itemName: '',
+			itemImg: '',
+			quantity: '1'
+		};
+		$list.find('.sdx-no-items').remove();
+		$list.append(generateItemGiveProfileHTML(newProfile, index));
+		updateItemGiveData();
+	});
+
+	html.on('click', '.sdx-remove-item-give-btn', function(e) {
+		e.preventDefault();
+		e.stopPropagation();
+		$(this).closest('.sdx-item-give-profile').remove();
+		updateItemGiveData();
+	});
+
+	html.on('change input', '.sdx-item-give-quantity', function(e) {
+		e.stopPropagation();
+		updateItemGiveData();
+	});
+
+	html.on('dragover', '.sdx-item-give-drop', function(event) {
+		event.preventDefault();
+		event.stopPropagation();
+		$(this).addClass('sdx-drag-over');
+	});
+
+	html.on('dragleave', '.sdx-item-give-drop', function(event) {
+		event.preventDefault();
+		event.stopPropagation();
+		$(this).removeClass('sdx-drag-over');
+	});
+
+	html.on('drop', '.sdx-item-give-drop', async function(event) {
+		event.preventDefault();
+		event.stopPropagation();
+		$(this).removeClass('sdx-drag-over');
+		try {
+			const data = JSON.parse(event.originalEvent.dataTransfer.getData('text/plain'));
+			let doc = null;
+			if (data.uuid) {
+				doc = await fromUuid(data.uuid);
+			} else if (data.type === 'Item' && data.id) {
+				if (data.pack) {
+					const pack = game.packs.get(data.pack);
+					doc = await pack.getDocument(data.id);
+				} else {
+					doc = game.items.get(data.id);
+				}
+			}
+			if (!doc) {
+				ui.notifications.warn('Could not load dropped item');
+				return;
+			}
+			if (!(doc instanceof Item)) {
+				ui.notifications.warn('Only items can be dropped here');
+				return;
+			}
+			const $profile = $(this).closest('.sdx-item-give-profile');
+			const itemName = doc.name;
+			const itemImg = doc.img || 'icons/svg/mystery-man.svg';
+			const itemUuid = doc.uuid;
+			$profile.find('.sdx-item-give-uuid').val(itemUuid);
+			$profile.find('.sdx-item-give-name').val(itemName);
+			$profile.find('.sdx-item-give-img').val(itemImg);
+			$(this).html(`
+				<div class="sdx-item-give-display" data-uuid="${itemUuid}">
+					<img src="${itemImg}" alt="${itemName}" style="width: 40px; height: 40px; border-radius: 4px;" />
+					<span style="margin-left: 4px; font-size: 0.9em;">${itemName}</span>
+				</div>
+			`);
+			updateItemGiveData();
+			ui.notifications.info(`Added ${itemName} to caster item list`);
+		} catch (err) {
+			console.error(`${MODULE_ID} | Error handling item drop:`, err);
+			ui.notifications.error('Failed to add item');
+		}
+	});
+
+	function updateItemGiveData() {
+		const profiles = [];
+		html.find('.sdx-item-give-profile').each(function(idx) {
+			const $profile = $(this);
+			$profile.attr('data-index', idx);
+			$profile.find('.sdx-remove-item-give-btn').attr('data-index', idx);
+			profiles.push({
+				itemUuid: $profile.find('.sdx-item-give-uuid').val(),
+				itemName: $profile.find('.sdx-item-give-name').val(),
+				itemImg: $profile.find('.sdx-item-give-img').val(),
+				quantity: $profile.find('.sdx-item-give-quantity').val() || '1'
+			});
+		});
+		const $list = html.find('.sdx-item-give-list');
+		if (profiles.length === 0) {
+			$list.html('<div class="sdx-no-items">Drop an item here to grant it to the caster on success</div>');
+		} else {
+			$list.find('.sdx-no-items').remove();
+		}
+		html.find('.sdx-item-give-data').val(JSON.stringify(profiles));
+		const updateData = {};
+		updateData[`flags.${MODULE_ID}.itemGive.profiles`] = profiles;
+		item.update(updateData, { render: false }).then(() => {
+			console.log(`${MODULE_ID} | Saved item give profiles:`, profiles);
+		}).catch(err => {
+			console.error(`${MODULE_ID} | Failed to save item give profiles:`, err);
+		});
+	}
+
 	console.log(`${MODULE_ID} | Scroll sheet enhanced for`, item.name);
 }
 
@@ -7785,7 +8617,7 @@ async function enhanceWandSheet(app, html) {
 	html.find('.sdx-spell-damage-box').remove();
 
 	// Initialize flags if they don't exist
-	const flags = item.flags?.[MODULE_ID]?.spellDamage || {
+	const spellDamageFlags = item.flags?.[MODULE_ID]?.spellDamage || {
 		enabled: false,
 		isDamage: true,
 		numDice: 1,
@@ -7801,6 +8633,25 @@ async function enhanceWandSheet(app, html) {
 		effects: [],
 		applyToTarget: true,
 		effectsApplyToTarget: true
+	};
+	
+	// Initialize summoning flags
+	const summoningFlags = item.flags?.[MODULE_ID]?.summoning || {
+		enabled: false,
+		profiles: []
+	};
+	
+	// Initialize item give flags
+	const itemGiveFlags = item.flags?.[MODULE_ID]?.itemGive || {
+		enabled: false,
+		profiles: []
+	};
+	
+	// Combine all flags for template
+	const flags = {
+		...spellDamageFlags,
+		summoning: summoningFlags,
+		itemGive: itemGiveFlags
 	};
 	
 	const applyToTarget = flags.applyToTarget === "false" ? false : (flags.applyToTarget === false ? false : true);
@@ -7953,7 +8804,49 @@ async function enhanceWandSheet(app, html) {
 		}
 	}
 
-	const damageHealHtml = generateWandConfig(MODULE_ID, flags, effectsListHtml, effectsArray, effectsApplyToTarget);
+	// Build summons list HTML
+	let summonsList = '';
+	let summonProfilesArray = summoningFlags.profiles || [];
+	
+	// Handle case where profiles might be a string
+	if (typeof summonProfilesArray === 'string') {
+		try {
+			summonProfilesArray = JSON.parse(summonProfilesArray);
+		} catch (err) {
+			console.warn(`${MODULE_ID} | Could not parse summon profiles string:`, summonProfilesArray, err);
+			summonProfilesArray = [];
+		}
+	}
+	
+	if (summonProfilesArray && summonProfilesArray.length > 0) {
+		const { generateSummonProfileHTML } = await import(`./templates/SummoningConfig.mjs`);
+		for (let i = 0; i < summonProfilesArray.length; i++) {
+			const profile = summonProfilesArray[i];
+			summonsList += generateSummonProfileHTML(profile, i);
+		}
+	}
+
+	let itemGiveList = '';
+	let itemGiveProfilesArray = itemGiveFlags.profiles || [];
+
+	if (typeof itemGiveProfilesArray === 'string') {
+		try {
+			itemGiveProfilesArray = JSON.parse(itemGiveProfilesArray);
+		} catch (err) {
+			console.warn(`${MODULE_ID} | Could not parse item give profiles string:`, itemGiveProfilesArray, err);
+			itemGiveProfilesArray = [];
+		}
+	}
+
+	if (itemGiveProfilesArray && itemGiveProfilesArray.length > 0) {
+		const { generateItemGiveProfileHTML } = await import(`./templates/ItemGiveConfig.mjs`);
+		for (let i = 0; i < itemGiveProfilesArray.length; i++) {
+			const profile = itemGiveProfilesArray[i];
+			itemGiveList += generateItemGiveProfileHTML(profile, i);
+		}
+	}
+
+	const damageHealHtml = generateWandConfig(MODULE_ID, flags, effectsListHtml, effectsArray, effectsApplyToTarget, summonsList, summonProfilesArray, itemGiveList, itemGiveProfilesArray);
 
 	// Insert into Activity tab
 	$activityTab.append(damageHealHtml);
@@ -8143,6 +9036,273 @@ async function enhanceWandSheet(app, html) {
 		item.update(updateData);
 	});
 
+	// ---- Summoning handlers ----
+	html.on('change', '.sdx-summoning-toggle', function(e) {
+		e.stopPropagation();
+		const enabled = $(this).is(':checked');
+		const updateData = {};
+		updateData[`flags.${MODULE_ID}.summoning.enabled`] = enabled;
+		item.update(updateData, { render: false }).then(() => {
+			console.log(`${MODULE_ID} | Summoning enabled state saved:`, enabled);
+		});
+	});
+
+	html.on('click', '.sdx-add-summon-btn', async function(e) {
+		e.preventDefault();
+		e.stopPropagation();
+		const { generateSummonProfileHTML } = await import(`./templates/SummoningConfig.mjs`);
+		const $list = $(this).closest('.sdx-summoning-content').find('.sdx-summon-list');
+		const index = $list.find('.sdx-summon-profile').length;
+		const newProfile = {
+			creatureUuid: '',
+			creatureName: '',
+			creatureImg: '',
+			count: '1',
+			displayName: ''
+		};
+		$list.find('.sdx-no-summons').remove();
+		$list.append(generateSummonProfileHTML(newProfile, index));
+		updateSummonsData();
+	});
+
+	html.on('click', '.sdx-remove-summon-btn', function(e) {
+		e.preventDefault();
+		e.stopPropagation();
+		$(this).closest('.sdx-summon-profile').remove();
+		updateSummonsData();
+	});
+
+	html.on('change input', '.sdx-summon-count, .sdx-summon-display-name', function(e) {
+		e.stopPropagation();
+		updateSummonsData();
+	});
+
+	html.on('dragover', '.sdx-summon-creature-drop', function(event) {
+		event.preventDefault();
+		event.stopPropagation();
+		$(this).addClass('sdx-drag-over');
+	});
+	
+	html.on('dragleave', '.sdx-summon-creature-drop', function(event) {
+		event.preventDefault();
+		event.stopPropagation();
+		$(this).removeClass('sdx-drag-over');
+	});
+	
+	html.on('drop', '.sdx-summon-creature-drop', async function(event) {
+		event.preventDefault();
+		event.stopPropagation();
+		$(this).removeClass('sdx-drag-over');
+		
+		try {
+			const data = JSON.parse(event.originalEvent.dataTransfer.getData('text/plain'));
+			
+			// Get the document from the dropped data
+			let doc = null;
+			if (data.uuid) {
+				doc = await fromUuid(data.uuid);
+			} else if (data.type === 'Actor' && data.id) {
+				// Handle actors from compendiums or world
+				if (data.pack) {
+					const pack = game.packs.get(data.pack);
+					doc = await pack.getDocument(data.id);
+				} else {
+					doc = game.actors.get(data.id);
+				}
+			}
+			
+			if (!doc) {
+				ui.notifications.warn('Could not load dropped actor');
+				return;
+			}
+			
+			// Must be an Actor
+			if (!(doc instanceof Actor)) {
+				ui.notifications.warn('Only actors can be dropped here');
+				return;
+			}
+			
+			// Update the profile display
+			const $profile = $(this).closest('.sdx-summon-profile');
+			const creatureName = doc.name;
+			const creatureImg = doc.img || doc.prototypeToken?.texture?.src || 'icons/svg/mystery-man.svg';
+			const creatureUuid = doc.uuid;
+			
+			// Update hidden inputs
+			$profile.find('.sdx-creature-uuid').val(creatureUuid);
+			$profile.find('.sdx-creature-name').val(creatureName);
+			$profile.find('.sdx-creature-img').val(creatureImg);
+			
+			// Update display
+			$(this).html(`
+				<div class="sdx-summon-creature-display" data-uuid="${creatureUuid}">
+					<img src="${creatureImg}" alt="${creatureName}" style="width: 40px; height: 40px; border-radius: 4px;" />
+					<span style="margin-left: 4px; font-size: 0.9em;">${creatureName}</span>
+				</div>
+			`);
+			
+			updateSummonsData();
+			ui.notifications.info(`Added ${creatureName} to summon profile`);
+		} catch (err) {
+			console.error(`${MODULE_ID} | Error handling creature drop:`, err);
+			ui.notifications.error('Failed to add creature');
+		}
+	});
+	
+	// Function to collect and save summons data
+	function updateSummonsData() {
+		const profiles = [];
+		html.find('.sdx-summon-profile').each(function() {
+			const $profile = $(this);
+			profiles.push({
+				creatureUuid: $profile.find('.sdx-creature-uuid').val(),
+				creatureName: $profile.find('.sdx-creature-name').val(),
+				creatureImg: $profile.find('.sdx-creature-img').val(),
+				count: $profile.find('.sdx-summon-count').val() || '1',
+				displayName: $profile.find('.sdx-summon-display-name').val() || ''
+			});
+		});
+		
+		// Update hidden input
+		html.find('.sdx-summons-data').val(JSON.stringify(profiles));
+		
+		// Save to item
+		const updateData = {};
+		updateData[`flags.${MODULE_ID}.summoning.profiles`] = profiles;
+		item.update(updateData, { render: false }).then(() => {
+			console.log(`${MODULE_ID} | Saved summon profiles:`, profiles);
+		}).catch(err => {
+			console.error(`${MODULE_ID} | Failed to save summon profiles:`, err);
+		});
+	}
+
+	// ---- Item give handlers ----
+	html.on('change', '.sdx-item-give-toggle', function(e) {
+		e.stopPropagation();
+		const enabled = $(this).is(':checked');
+		const updateData = {};
+		updateData[`flags.${MODULE_ID}.itemGive.enabled`] = enabled;
+		item.update(updateData, { render: false }).then(() => {
+			console.log(`${MODULE_ID} | Item give enabled state saved:`, enabled);
+		});
+	});
+
+	html.on('click', '.sdx-add-item-give-btn', async function(e) {
+		e.preventDefault();
+		e.stopPropagation();
+		const { generateItemGiveProfileHTML } = await import(`./templates/ItemGiveConfig.mjs`);
+		const $list = $(this).closest('.sdx-item-give-content').find('.sdx-item-give-list');
+		const index = $list.find('.sdx-item-give-profile').length;
+		const newProfile = {
+			itemUuid: '',
+			itemName: '',
+			itemImg: '',
+			quantity: '1'
+		};
+		$list.find('.sdx-no-items').remove();
+		$list.append(generateItemGiveProfileHTML(newProfile, index));
+		updateItemGiveData();
+	});
+
+	html.on('click', '.sdx-remove-item-give-btn', function(e) {
+		e.preventDefault();
+		e.stopPropagation();
+		$(this).closest('.sdx-item-give-profile').remove();
+		updateItemGiveData();
+	});
+
+	html.on('change input', '.sdx-item-give-quantity', function(e) {
+		e.stopPropagation();
+		updateItemGiveData();
+	});
+
+	html.on('dragover', '.sdx-item-give-drop', function(event) {
+		event.preventDefault();
+		event.stopPropagation();
+		$(this).addClass('sdx-drag-over');
+	});
+
+	html.on('dragleave', '.sdx-item-give-drop', function(event) {
+		event.preventDefault();
+		event.stopPropagation();
+		$(this).removeClass('sdx-drag-over');
+	});
+
+	html.on('drop', '.sdx-item-give-drop', async function(event) {
+		event.preventDefault();
+		event.stopPropagation();
+		$(this).removeClass('sdx-drag-over');
+		try {
+			const data = JSON.parse(event.originalEvent.dataTransfer.getData('text/plain'));
+			let doc = null;
+			if (data.uuid) {
+				doc = await fromUuid(data.uuid);
+			} else if (data.type === 'Item' && data.id) {
+				if (data.pack) {
+					const pack = game.packs.get(data.pack);
+					doc = await pack.getDocument(data.id);
+				} else {
+					doc = game.items.get(data.id);
+				}
+			}
+			if (!doc) {
+				ui.notifications.warn('Could not load dropped item');
+				return;
+			}
+			if (!(doc instanceof Item)) {
+				ui.notifications.warn('Only items can be dropped here');
+				return;
+			}
+			const $profile = $(this).closest('.sdx-item-give-profile');
+			const itemName = doc.name;
+			const itemImg = doc.img || 'icons/svg/mystery-man.svg';
+			const itemUuid = doc.uuid;
+			$profile.find('.sdx-item-give-uuid').val(itemUuid);
+			$profile.find('.sdx-item-give-name').val(itemName);
+			$profile.find('.sdx-item-give-img').val(itemImg);
+			$(this).html(`
+				<div class="sdx-item-give-display" data-uuid="${itemUuid}">
+					<img src="${itemImg}" alt="${itemName}" style="width: 40px; height: 40px; border-radius: 4px;" />
+					<span style="margin-left: 4px; font-size: 0.9em;">${itemName}</span>
+				</div>
+			`);
+			updateItemGiveData();
+			ui.notifications.info(`Added ${itemName} to caster item list`);
+		} catch (err) {
+			console.error(`${MODULE_ID} | Error handling item drop:`, err);
+			ui.notifications.error('Failed to add item');
+		}
+	});
+
+	function updateItemGiveData() {
+		const profiles = [];
+		html.find('.sdx-item-give-profile').each(function(idx) {
+			const $profile = $(this);
+			$profile.attr('data-index', idx);
+			$profile.find('.sdx-remove-item-give-btn').attr('data-index', idx);
+			profiles.push({
+				itemUuid: $profile.find('.sdx-item-give-uuid').val(),
+				itemName: $profile.find('.sdx-item-give-name').val(),
+				itemImg: $profile.find('.sdx-item-give-img').val(),
+				quantity: $profile.find('.sdx-item-give-quantity').val() || '1'
+			});
+		});
+		const $list = html.find('.sdx-item-give-list');
+		if (profiles.length === 0) {
+			$list.html('<div class="sdx-no-items">Drop an item here to grant it to the caster on success</div>');
+		} else {
+			$list.find('.sdx-no-items').remove();
+		}
+		html.find('.sdx-item-give-data').val(JSON.stringify(profiles));
+		const updateData = {};
+		updateData[`flags.${MODULE_ID}.itemGive.profiles`] = profiles;
+		item.update(updateData, { render: false }).then(() => {
+			console.log(`${MODULE_ID} | Saved item give profiles:`, profiles);
+		}).catch(err => {
+			console.error(`${MODULE_ID} | Failed to save item give profiles:`, err);
+		});
+	}
+
 	console.log(`${MODULE_ID} | Wand sheet enhanced for`, item.name);
 }
 
@@ -8315,20 +9475,54 @@ Hooks.on("preCreateChatMessage", (message, data, options, userId) => {
 	try {
 		// Get current user's targets
 		const targets = Array.from(game.user.targets || []);
-		if (targets.length === 0) {
-			console.log(`${MODULE_ID} | No targets to store in message`);
-			return;
+		if (targets.length > 0) {
+			// Store target token IDs in message flags
+			const targetIds = targets.map(t => t.id);
+			message.updateSource({
+				"flags.shadowdark-extras.targetIds": targetIds
+			});
+			console.log(`${MODULE_ID} | Stored ${targetIds.length} targets in message flags:`, targetIds);
 		}
 		
-		// Store target token IDs in message flags
-		const targetIds = targets.map(t => t.id);
-		message.updateSource({
-			"flags.shadowdark-extras.targetIds": targetIds
-		});
+		// Store item configuration for consumables (scrolls, potions, wands)
+		// This is needed because these items are consumed and removed from the actor
+		// before the chat message is processed
+		const content = message.content || '';
+		const actorIdMatch = content.match(/data-actor-id="([^"]+)"/);
+		const itemIdMatch = content.match(/data-item-id="([^"]+)"/);
 		
-		console.log(`${MODULE_ID} | Stored ${targetIds.length} targets in message flags:`, targetIds);
+		if (actorIdMatch && itemIdMatch) {
+			const actorId = actorIdMatch[1];
+			const itemId = itemIdMatch[1];
+			const actor = game.actors.get(actorId);
+			const item = actor?.items.get(itemId);
+			
+			if (item && ["Scroll", "Potion", "Wand"].includes(item.type)) {
+				// Store the item type and relevant configurations
+				const itemConfig = {
+					type: item.type,
+					name: item.name
+				};
+				
+				// Store summoning config if it exists
+				if (item.flags?.[MODULE_ID]?.summoning) {
+					itemConfig.summoning = foundry.utils.duplicate(item.flags[MODULE_ID].summoning);
+				}
+				
+				// Store itemGive config if it exists
+				if (item.flags?.[MODULE_ID]?.itemGive) {
+					itemConfig.itemGive = foundry.utils.duplicate(item.flags[MODULE_ID].itemGive);
+				}
+				
+				message.updateSource({
+					"flags.shadowdark-extras.itemConfig": itemConfig
+				});
+				
+				console.log(`${MODULE_ID} | Stored item config for ${item.name}:`, itemConfig);
+			}
+		}
 	} catch (err) {
-		console.error(`${MODULE_ID} | Failed to store targets in message`, err);
+		console.error(`${MODULE_ID} | Failed to store data in message`, err);
 	}
 });
 
@@ -8383,6 +9577,12 @@ Hooks.once("ready", () => {
 			if (spell.flags?.[MODULE_ID]?.summoning) {
 				itemData.flags[MODULE_ID].summoning = foundry.utils.duplicate(spell.flags[MODULE_ID].summoning);
 				console.log(`${MODULE_ID} | Preserved summoning flags for ${spell.name} -> ${itemData.name}`, itemData.flags[MODULE_ID].summoning);
+			}
+			
+			// Preserve item give configuration flags
+			if (spell.flags?.[MODULE_ID]?.itemGive) {
+				itemData.flags[MODULE_ID].itemGive = foundry.utils.duplicate(spell.flags[MODULE_ID].itemGive);
+				console.log(`${MODULE_ID} | Preserved item give flags for ${spell.name} -> ${itemData.name}`, itemData.flags[MODULE_ID].itemGive);
 			}
 			
 			// Preserve unidentified flags
@@ -8619,6 +9819,54 @@ Hooks.on("preUpdateActor", (actor, changes, options, userId) => {
 Hooks.on("updateActor", (actor, changes, options, userId) => {
 	// If a Player actor was updated, check if they're in any parties and re-render those sheets
 	if (actor.type !== "Player") return;
+	
+	// Find all open party sheets that contain this actor as a member
+	for (const app of Object.values(ui.windows)) {
+		if (app instanceof PartySheetSD) {
+			const memberIds = app.memberIds;
+			if (memberIds.includes(actor.id)) {
+				app.render();
+			}
+		}
+	}
+});
+
+// Re-render party sheets when items are updated on member actors
+Hooks.on("updateItem", (item, changes, options, userId) => {
+	const actor = item.parent;
+	if (!actor || actor.type !== "Player") return;
+	
+	// Find all open party sheets that contain this actor as a member
+	for (const app of Object.values(ui.windows)) {
+		if (app instanceof PartySheetSD) {
+			const memberIds = app.memberIds;
+			if (memberIds.includes(actor.id)) {
+				app.render();
+			}
+		}
+	}
+});
+
+// Re-render party sheets when items are created on member actors
+Hooks.on("createItem", (item, options, userId) => {
+	const actor = item.parent;
+	if (!actor || actor.type !== "Player") return;
+	
+	// Find all open party sheets that contain this actor as a member
+	for (const app of Object.values(ui.windows)) {
+		if (app instanceof PartySheetSD) {
+			const memberIds = app.memberIds;
+			if (memberIds.includes(actor.id)) {
+				app.render();
+			}
+		}
+	}
+});
+
+// Re-render party sheets when items are deleted from member actors
+Hooks.on("deleteItem", (item, options, userId) => {
+	const actor = item.parent;
+	if (!actor || actor.type !== "Player") return;
 	
 	// Find all open party sheets that contain this actor as a member
 	for (const app of Object.values(ui.windows)) {

@@ -473,8 +473,8 @@ export default class PartySheetSD extends ActorSheet {
 		// Total number of coins
 		const totalCoins = gp + sp + cp;
 		
-		// 1 slot per 100 coins, rounded up
-		return Math.ceil(totalCoins / 100);
+		// 1 slot per 100 coins, rounded down
+		return Math.floor(totalCoins / 100);
 	}
 
 	_calculateActorInventorySlotsUsed(actor) {
@@ -505,8 +505,8 @@ export default class PartySheetSD extends ActorSheet {
 		// Total number of coins
 		const totalCoins = gp + sp + cp;
 		
-		// 1 slot per 100 coins, rounded up
-		return Math.ceil(totalCoins / 100);
+		// 1 slot per 100 coins, rounded down
+		return Math.floor(totalCoins / 100);
 	}
 
 	_calculateInventorySlotsUsed() {
