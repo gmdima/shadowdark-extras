@@ -476,15 +476,18 @@
 
 /* Party sheet base - dark elegant theme */
 .shadowdark-extras-party {
-    --party-bg-dark: #1a1a1a;
-    --party-bg-medium: #252525;
-    --party-bg-light: #333;
-    --party-border: #444;
+    --party-bg-dark: #0a0a0a;
+    --party-bg-medium: #111111;
+    --party-bg-light: #1a1a1a;
+    --party-border: #333;
     --party-text: #e0e0e0;
-    --party-text-muted: #999;
-    --party-accent: #c9a961;
+    --party-text-muted: #888;
+    --party-accent: #2c2c2c;
+    --party-accent-glow: rgba(201, 169, 97, 0.3);
     --party-danger: #c41e3a;
     background: var(--party-bg-dark) !important;
+    min-width: 680px;
+    min-height: 610px;
 }
 
 .shadowdark-extras-party form {
@@ -494,9 +497,9 @@
 
 /* Override any Shadowdark system header styles */
 .shadowdark-extras-party .SD-header,
-.shadowdark-extras-party header {
-    min-height: unset !important;
-    height: 36px !important;
+.shadowdark-extras-party header.party-header {
+    min-height: 80px !important;
+    height: auto !important;
     flex: 0 0 auto !important;
     background-image: none !important;
 }
@@ -507,18 +510,20 @@
     flex: 0 0 auto !important;
 }
 
-/* Party Header - redesigned */
+/* Party Header - redesigned elegant style */
 .shadowdark-extras-party .party-header {
     display: flex;
     align-items: center;
-    gap: 12px;
-    background: var(--party-bg-dark) !important;
-    padding: 8px 12px;
+    gap: 15px;
+    background: linear-gradient(180deg, #1a1a1a 0%, #0d0d0d 100%) !important;
+    padding: 15px 20px;
     margin: 0;
     border: none;
-    min-height: unset !important;
+    border-bottom: 1px solid var(--party-border);
+    min-height: 80px !important;
     height: auto !important;
     flex: 0 0 auto !important;
+    position: relative;
 }
 
 .shadowdark-extras-party .party-header::before,
@@ -528,16 +533,26 @@
 }
 
 .shadowdark-extras-party .party-header .party-portrait {
-    border: 2px solid var(--party-border);
-    width: 50px;
-    height: 50px;
+    border: 2px solid #c0c0c0;
+    border-radius: 4px;
+    width: 65px;
+    height: 65px;
     flex-shrink: 0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+    cursor: pointer;
+    transition: all 0.5s ease;
+}
+
+.shadowdark-extras-party .party-header .party-portrait:hover {
+    border-color: #fff;
+    box-shadow: 0 0 12px var(--party-accent-glow);
 }
 
 .shadowdark-extras-party .party-header-content {
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 6px;
+    flex: 1;
 }
 
 .shadowdark-extras-party .party-title {
@@ -546,72 +561,288 @@
 }
 
 .shadowdark-extras-party .party-title input {
-    font-size: 1.4em;
+font-size: 28px;
     font-weight: bold;
     color: var(--party-text);
     background: transparent;
     border: none;
+    font-family: "Old Newspaper Font";
     border-bottom: 1px solid transparent;
-    padding: 0;
+    padding: 2px 0;
     width: auto;
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
 }
 
 .shadowdark-extras-party .party-title input:hover,
 .shadowdark-extras-party .party-title input:focus {
-    border-bottom-color: var(--party-border);
+    border-bottom-color: var(--party-accent);
+    color: #fff;
 }
 
 .shadowdark-extras-party .party-summary {
     display: flex;
-    gap: 15px;
+    gap: 20px;
 }
 
 .shadowdark-extras-party .party-stat {
     display: flex;
     align-items: center;
-    gap: 5px;
-    font-size: 0.9em;
+    gap: 6px;
+    font-size: 0.95em;
     color: var(--party-text);
+    padding: 4px 8px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 4px;
 }
 
 .shadowdark-extras-party .party-stat i {
     color: var(--party-accent);
-    width: 14px;
+    width: 16px;
     text-align: center;
 }
 
-/* Navigation tabs */
+/* Navigation tabs - enhanced elegant style */
 .shadowdark-extras-party .SD-nav {
-    background: var(--party-bg-medium);
+    background: linear-gradient(180deg, #0d0d0d 0%, #000000 100%);
     border-bottom: 1px solid var(--party-border);
     flex: 0 0 auto !important;
     min-height: unset !important;
-    height: 52px;
+    height: 40px;
     margin: 0px;
+    padding: 0 10px;
+    display: flex;
+    align-items: stretch;
+    position: relative;
+    z-index: 1;
 }
 
 .shadowdark-extras-party .SD-nav .navigation-tab {
     color: var(--party-text-muted);
-    padding: 8px 16px;
+    padding: 7px 18px;
+    font-size: 1.5em;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 3px solid transparent;
+    transition: all 0.2s ease;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
 }
 
 .shadowdark-extras-party .SD-nav .navigation-tab:hover {
     color: var(--party-text);
+    background: rgba(255, 255, 255, 0.03);
+    text-shadow: 0 0 8px rgba(255, 255, 255, 0.2);
 }
 
 .shadowdark-extras-party .SD-nav .navigation-tab.active {
-    color: var(--party-text);
-    border-bottom: 2px solid var(--party-accent);
+    color: #fff;
+    border-bottom: 3px solid transparent;
+    text-shadow: 
+        0 0 10px rgba(255, 255, 255, 0.5),
+        0 0 20px rgba(255, 255, 255, 0.3),
+        0 0 30px rgba(255, 255, 255, 0.2);
 }
 
 .shadowdark-extras-party .SD-nav .navigation-tab i {
-    margin-right: 6px;
+    margin-right: 8px;
+    font-size: 0.9em;
 }
 
 /* Content body */
 .shadowdark-extras-party .SD-content-body {
     background: var(--party-bg-medium);
     padding: 15px;
+}
+
+/* ============================================
+   PARTY SHEET CUSTOM HEADER BACKGROUND
+   ============================================ */
+
+/* Background extension for party header */
+.sdx-party-header-bg-extension {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 0;
+    pointer-events: none;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    overflow: hidden;
+    filter: brightness(0.75);
+}
+
+.sdx-party-header-bg-extension video {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Party header with custom background */
+.shadowdark-extras-party .party-header.sdx-custom-party-header {
+    background: transparent !important;
+    position: relative;
+}
+
+.shadowdark-extras-party .party-header.sdx-custom-party-header > *:not(.sdx-header-settings-btn):not(.sdx-header-settings-menu) {
+    position: relative;
+    z-index: 1;
+}
+
+/* Semi-transparent overlay for party header with custom bg */
+.shadowdark-extras-party .party-header.sdx-custom-party-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.4);
+    z-index: 0;
+    pointer-events: none;
+}
+
+/* Nav styling when party has custom header background */
+.shadowdark-extras-party form:has(.sdx-party-header-bg-extension) .SD-nav {
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(2px);
+}
+
+.shadowdark-extras-party form:has(.sdx-party-header-bg-extension) .SD-nav .navigation-tab {
+    color: #ccc;
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.8);
+}
+
+.shadowdark-extras-party form:has(.sdx-party-header-bg-extension) .SD-nav .navigation-tab:hover {
+    color: #fff;
+    text-shadow: 0 0 8px rgba(255, 255, 255, 0.3);
+}
+
+.shadowdark-extras-party form:has(.sdx-party-header-bg-extension) .SD-nav .navigation-tab.active {
+    color: #fff;
+    text-shadow: 0 0 10px rgb(255 255 255 / 80%);
+}
+
+/* Window title bar styling for party sheet */
+.shadowdark-extras-party.window-app .window-header {
+    background: linear-gradient(180deg, #1a1a1a 0%, #0d0d0d 100%);
+    border-bottom: 1px solid var(--party-border);
+}
+
+.shadowdark-extras-party.window-app .window-header .window-title {
+    color: var(--party-text);
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.shadowdark-extras-party.window-app .window-header .header-button {
+    color: var(--party-text-muted);
+}
+
+.shadowdark-extras-party.window-app .window-header .header-button:hover {
+    color: var(--party-accent);
+}
+
+/* Window header with custom background */
+.shadowdark-extras-party.window-app:has(.sdx-party-header-bg-extension) .window-header {
+    position: relative;
+    z-index: 10;
+    background: rgba(0, 0, 0, 0.7);
+}
+
+.shadowdark-extras-party.window-app:has(.sdx-party-header-bg-extension) .window-header .window-title,
+.shadowdark-extras-party.window-app:has(.sdx-party-header-bg-extension) .window-header .header-button {
+    color: #fff;
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.8);
+}
+
+/* Settings button styling for party header */
+.shadowdark-extras-party .party-header .sdx-header-settings-btn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    background: rgba(0, 0, 0, 0.5);
+    border: 1px solid var(--party-border);
+    border-radius: 4px;
+    color: var(--party-text-muted);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    transition: all 0.2s ease;
+}
+
+.shadowdark-extras-party .party-header .sdx-header-settings-btn:hover {
+    background: rgba(0, 0, 0, 0.7);
+    color: var(--party-accent);
+    border-color: var(--party-accent);
+}
+
+.shadowdark-extras-party .party-header .sdx-header-settings-btn.active {
+    background: var(--party-accent);
+    color: #000;
+    border-color: var(--party-accent);
+}
+
+/* Settings menu for party header */
+.shadowdark-extras-party .party-header .sdx-header-settings-menu {
+    position: absolute;
+    top: 40px;
+    right: 8px;
+    background: var(--party-bg-dark);
+    border: 1px solid var(--party-border);
+    border-radius: 6px;
+    padding: 12px;
+    display: none;
+    flex-direction: column;
+    gap: 10px;
+    z-index: 100;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+    min-width: 180px;
+}
+
+.shadowdark-extras-party .party-header .sdx-header-settings-menu.visible {
+    display: flex;
+}
+
+.shadowdark-extras-party .party-header .sdx-header-settings-menu .sdx-settings-label {
+    color: var(--party-text-muted);
+    font-size: 0.8em;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 6px;
+}
+
+.shadowdark-extras-party .party-header .sdx-header-settings-menu button {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    background: var(--party-bg-light);
+    border: 1px solid var(--party-border);
+    border-radius: 4px;
+    color: var(--party-text);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 0.9em;
+}
+
+.shadowdark-extras-party .party-header .sdx-header-settings-menu button:hover {
+    background: var(--party-border);
+    border-color: var(--party-accent);
+}
+
+.shadowdark-extras-party .party-header .sdx-header-settings-menu button.danger:hover {
+    background: rgba(196, 30, 58, 0.3);
+    border-color: var(--party-danger);
+    color: #ff6b6b;
 }
 
 /* Party Actions */
@@ -622,7 +853,7 @@
 }
 
 .shadowdark-extras-party .party-actions button {
-    padding: 8px 16px;
+    padding: 1px 16px;
     background: var(--party-bg-light);
     color: var(--party-text);
     border: 1px solid var(--party-border);
@@ -3405,6 +3636,11 @@ color: rgba(255, 255, 255, 0.95) !important;
     border-color: rgba(255, 0, 0, 0.5);
 }
 
+/* Expanded item description - position under name column (column 2), not image column */
+.shadowdark.sheet .tab-talents.sdx-enhanced-talents .SD-list .item.expanded .item-details {
+    grid-column: 2 / -1;
+}
+
 /* ============================================
    ENHANCED SPELLS TAB
    ============================================ */
@@ -4545,7 +4781,8 @@ color: rgba(255, 255, 255, 0.95) !important;
     border: none;
     border-bottom: 1px solid transparent;
     color: #fff;
-    font-size: 18px;
+    font-size: 28px;
+        font-family: "Old Newspaper Font";
     font-weight: bold;
     text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.8);
     padding: 2px 4px;
@@ -5970,6 +6207,12 @@ section[data-tab="tab-notes"].sdx-journal-active > div:not(.sdx-journal-notes) {
    ============================================ */
 
 /* Damage Card Container */
+/* Hide the original Shadowdark damage roll section when our damage card is present */
+.chat-message:has(.sdx-damage-card) .card-damage-roll-single,
+.chat-message:has(.sdx-damage-card) .card-damage-rolls {
+    display: none;
+}
+
 .sdx-damage-card {
     margin-top: 8px;
     background: rgba(240, 235, 225, 0.95);
@@ -5994,6 +6237,128 @@ section[data-tab="tab-notes"].sdx-journal-active > div:not(.sdx-journal-notes) {
 .sdx-damage-card-header i {
     font-size: 10px;
     opacity: 0.7;
+}
+
+/* Roll Breakdown Section */
+.sdx-roll-breakdown {
+    background: rgba(255, 255, 255, 0.6);
+    border-bottom: 1px solid rgba(100, 90, 80, 0.2);
+    padding: 8px 12px;
+}
+
+.sdx-roll-formula {
+    text-align: center;
+    font-size: 12px;
+    font-weight: bold;
+    color: rgba(60, 50, 40, 0.7);
+    margin-bottom: 4px;
+    font-family: 'Courier New', monospace;
+}
+
+.sdx-roll-result {
+    text-align: center;
+    margin-bottom: 8px;
+}
+
+.sdx-roll-total {
+display: inline-block;
+    font-size: 21px;
+    font-weight: bold;
+    color: #ffffff;
+    background: rgb(0 0 0 / 89%);
+    border: 2px solid rgba(201, 170, 88, 0.5);
+    border-radius: 4px;
+    padding: 0px 0px;
+    min-width: 40px;
+}
+
+.sdx-roll-dice {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 6px;
+}
+
+.sdx-dice-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 8px;
+    background: rgba(0, 0, 0, 0.05);
+    border-radius: 3px;
+}
+
+.sdx-dice-label {
+    font-size: 11px;
+    font-weight: bold;
+    color: rgba(60, 50, 40, 0.7);
+    min-width: 35px;
+}
+
+.sdx-dice-results {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+    flex: 1;
+}
+
+.sdx-die {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    background: rgba(255, 255, 255, 0.9);
+    border: 1px solid rgba(100, 90, 80, 0.3);
+    border-radius: 3px;
+    font-size: 11px;
+    font-weight: bold;
+    color: #2a2218;
+}
+
+.sdx-die.sdx-die-max {
+    background: rgba(76, 175, 80, 0.3);
+    border-color: rgba(76, 175, 80, 0.6);
+    color: #2e7d32;
+}
+
+.sdx-die.sdx-die-min {
+    background: rgba(244, 67, 54, 0.2);
+    border-color: rgba(244, 67, 54, 0.5);
+    color: #c62828;
+}
+
+.sdx-dice-sum {
+    font-size: 11px;
+    font-weight: bold;
+    color: rgba(60, 50, 40, 0.8);
+    min-width: 30px;
+    text-align: right;
+}
+
+.sdx-roll-bonuses {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    padding-top: 6px;
+    border-top: 1px dashed rgba(100, 90, 80, 0.2);
+}
+
+.sdx-bonus-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 11px;
+    padding: 2px 8px;
+}
+
+.sdx-bonus-item .sdx-bonus-label {
+    color: rgba(60, 50, 40, 0.7);
+}
+
+.sdx-bonus-item .sdx-bonus-val {
+    font-weight: bold;
+    color: #2a2218;
 }
 
 .sdx-damage-card-tabs {
@@ -6293,196 +6658,312 @@ section[data-tab="tab-notes"].sdx-journal-active > div:not(.sdx-journal-notes) {
 }
 
 /* ============================================
-   SPELL DAMAGE/HEAL ENHANCEMENT STYLES
+   ACTIVITY TAB - PROFESSIONAL UI STYLES
    ============================================ */
 
-.sdx-spell-damage-box {
-    margin-top: 0px;
-    margin-bottom: 14px;
+/* Main section boxes - consistent card styling */
+.sdx-spell-damage-box,
+.sdx-summoning-box,
+.sdx-item-give-box {
+    margin-top: 0;
+    margin-bottom: 16px;
+    background: rgba(60, 50, 30, 0.1);
+    border: 2px solid rgba(100, 80, 40, 0.5);
+    border-radius: 6px;
+    box-shadow: none;
+    overflow: hidden;
 }
+
 .sdx-unidentified-box {
     margin-top: 0px;
     margin-bottom: 14px;
     height: 125px;
 }
-.sdx-spell-damage-box.grid-colspan-3 {
+
+.sdx-spell-damage-box.grid-colspan-3,
+.sdx-summoning-box.grid-colspan-3,
+.sdx-item-give-box.grid-colspan-3 {
     grid-column: span 2;
 }
 
-.sdx-spell-damage-box .header.light label {
+/* Section headers - match weapon bonus style */
+.sdx-spell-damage-box .header.light,
+.sdx-summoning-box .header.light,
+.sdx-item-give-box .header.light {
+    background: rgba(60, 50, 30, 0.15);
+    border-bottom: 2px solid rgba(100, 80, 40, 0.5);
+    padding: 2px 12px;
+}
+
+.sdx-spell-damage-box .header.light label,
+.sdx-summoning-box .header.light label,
+.sdx-item-give-box .header.light label {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 13px;
+    color: #4a3c28;
+    letter-spacing: 0.3px;
+}
+
+.sdx-spell-damage-box .header.light input[type="checkbox"],
+.sdx-summoning-box .header.light input[type="checkbox"],
+.sdx-item-give-box .header.light input[type="checkbox"] {
+    margin: 0;
+    width: 18px;
+    height: 18px;
+    accent-color: #7a5a30;
     cursor: pointer;
 }
 
-.sdx-spell-damage-box .header.light input[type="checkbox"] {
-    margin: 0;
+/* Content area padding */
+.sdx-spell-damage-content,
+.sdx-summoning-content,
+.sdx-item-give-content {
+    padding: 12px;
 }
 
-.sdx-spell-damage-content .SD-grid {
+/* Grid layout for form fields */
+.sdx-spell-damage-content .SD-grid,
+.sdx-summoning-content .SD-grid,
+.sdx-item-give-content .SD-grid {
     display: grid;
     grid-template-columns: auto 1fr;
-    gap: 8px;
+    gap: 10px;
     align-items: center;
 }
 
-.sdx-spell-damage-content .SD-grid h3 {
+/* Section labels - match weapon bonus style */
+.sdx-spell-damage-content .SD-grid h3,
+.sdx-summoning-content .SD-grid h3,
+.sdx-item-give-content .SD-grid h3 {
     margin: 0;
     padding: 0;
-    font-size: 12px;
+    font-size: 11px;
     font-weight: bold;
-    color: #000;
+    color: #4a3c28;
     text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
+/* Full-width section headers */
+.sdx-spell-damage-content .SD-grid h3[style*="grid-column: 1 / -1"],
+.sdx-summoning-content .SD-grid h3[style*="grid-column: 1 / -1"],
+.sdx-item-give-content .SD-grid h3[style*="grid-column: 1 / -1"] {
+    margin-top: 12px;
+    margin-bottom: 8px;
+    padding-bottom: 6px;
+    border-bottom: 2px solid rgba(100, 80, 40, 0.3);
+    font-size: 12px;
+    color: #5a4a2a;
+}
+
+/* Form inputs - match weapon bonus style */
 .sdx-spell-damage-content input[type="number"],
 .sdx-spell-damage-content input[type="text"],
-.sdx-spell-damage-content select {
-    padding: 4px 8px;
-    background: rgba(255, 255, 255, 0.9);
-    border: 1px solid #5a4a3a;
-    border-radius: 3px;
-    color: #000;
+.sdx-spell-damage-content select,
+.sdx-summoning-content input[type="number"],
+.sdx-summoning-content input[type="text"],
+.sdx-summoning-content select,
+.sdx-item-give-content input[type="number"],
+.sdx-item-give-content input[type="text"],
+.sdx-item-give-content select {
+    padding: 6px 10px;
+    background: rgba(255, 255, 255, 0.6);
+    border: 1px solid rgba(100, 80, 40, 0.5);
+    border-radius: 4px;
+    color: #2a2218;
     font-size: 12px;
+    transition: all 0.2s ease;
+    box-shadow: none;
+}
+
+.sdx-spell-damage-content input[type="number"]:hover,
+.sdx-spell-damage-content input[type="text"]:hover,
+.sdx-spell-damage-content select:hover,
+.sdx-summoning-content input:hover,
+.sdx-summoning-content select:hover,
+.sdx-item-give-content input:hover,
+.sdx-item-give-content select:hover {
+    border-color: rgba(100, 80, 40, 0.7);
 }
 
 .sdx-spell-damage-content input[type="number"]:focus,
 .sdx-spell-damage-content input[type="text"]:focus,
-.sdx-spell-damage-content select:focus {
+.sdx-spell-damage-content select:focus,
+.sdx-summoning-content input:focus,
+.sdx-summoning-content select:focus,
+.sdx-item-give-content input:focus,
+.sdx-item-give-content select:focus {
     outline: none;
-    border-color: #c9aa58;
+    border-color: #7a5a30;
+    box-shadow: 0 0 0 2px rgba(122, 90, 48, 0.2);
 }
 
+/* Effects/Conditions drop area - match weapon bonus style */
 .sdx-spell-effects-drop-area {
-    min-height: 100px;
-    padding: 5px;
-    background: rgba(255, 255, 255, 0.9);
-    border: 2px dashed #5a4a3a;
-    border-radius: 4px;
-    transition: all 0.2s ease;
-    margin: 4px 10px 4px 10px;
+    min-height: 80px;
+    padding: 12px;
+    background: rgba(255, 255, 255, 0.4);
+    border: 2px dashed rgba(100, 80, 40, 0.4);
+    border-radius: 6px;
+    transition: all 0.25s ease;
+    margin: 8px 0;
+    position: relative;
+}
+
+.sdx-spell-effects-drop-area::before {
+    display: none;
+}
+
+.sdx-spell-effects-drop-area:hover {
+    border-color: rgba(100, 80, 40, 0.6);
+    background: rgba(255, 255, 255, 0.5);
 }
 
 .sdx-spell-effects-drop-area.sdx-drag-over {
-    background: rgba(201, 170, 88, 0.2);
-    border-color: #c9aa58;
+    background: rgba(122, 90, 48, 0.1);
+    border-color: #7a5a30;
+    border-style: dashed;
+    box-shadow: none;
 }
 
 .sdx-spell-effects-list {
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 8px;
 }
 
-.sdx-no-effects {
-    color: #666;
+/* Empty state placeholder */
+.sdx-no-effects,
+.sdx-no-summons,
+.sdx-no-items {
+    color: #5a5040;
     font-style: italic;
     text-align: center;
-    padding: 16px;
+    padding: 20px 16px;
+    font-size: 12px;
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 4px;
+    border: 1px dashed rgba(100, 80, 40, 0.3);
 }
 
+/* Effect item cards - match weapon bonus style */
 .sdx-spell-effect-item {
     display: flex;
     flex-direction: column;
-    gap: 8px;
-    padding: 8px;
+    gap: 10px;
+    padding: 10px;
     background: rgba(255, 255, 255, 0.5);
-    border: 1px solid #5a4a3a;
-    border-radius: 3px;
-    transition: background 0.15s ease;
-    margin-bottom: 8px;
+    border: 1px solid rgba(100, 80, 40, 0.4);
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    box-shadow: none;
 }
 
 .sdx-spell-effect-item:hover {
-    background: rgba(255, 255, 255, 0.8);
+    background: rgba(255, 255, 255, 0.7);
+    border-color: rgba(100, 80, 40, 0.5);
+    box-shadow: none;
+    transform: none;
 }
 
 /* Effect header with name and remove button */
 .sdx-effect-header {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
 }
 
 .sdx-spell-effect-item img {
-    width: 24px;
-    height: 24px;
-    border-radius: 3px;
-    border: 1px solid #5a4a3a;
+    width: 32px;
+    height: 32px;
+    border-radius: 4px;
+    border: 1px solid rgba(100, 80, 40, 0.4);
     flex-shrink: 0;
+    box-shadow: none;
 }
 
 .sdx-effect-name {
     flex: 1;
     font-weight: bold;
-    color: #000;
+    font-size: 12px;
+    color: #2a2218;
 }
 
 .sdx-spell-effect-item .sdx-remove-effect {
-    color: #d9534f;
+    color: rgba(180, 60, 60, 0.7);
     cursor: pointer;
-    padding: 2px 4px;
-    border-radius: 2px;
-    transition: all 0.15s ease;
+    padding: 6px 8px;
+    border-radius: 4px;
+    transition: all 0.2s ease;
     flex-shrink: 0;
 }
 
 .sdx-spell-effect-item .sdx-remove-effect:hover {
-    background: rgba(217, 83, 79, 0.1);
-    color: #c9302c;
+    background: rgba(180, 60, 60, 0.15);
+    color: #b43c3c;
 }
 
-/* Duration override section */
+/* Duration override section - match weapon bonus fieldset style */
 .sdx-effect-duration-override {
     display: flex;
     flex-direction: column;
-    gap: 6px;
-    padding: 6px;
-    background: rgba(0, 0, 0, 0.05);
-    border-radius: 3px;
-    border: 1px dashed #8a7a6a;
+    gap: 8px;
+    padding: 10px;
+    background: rgba(60, 50, 30, 0.08);
+    border-radius: 4px;
+    border: 1px solid rgba(100, 80, 40, 0.3);
 }
 
 .sdx-duration-row {
     display: flex;
-    gap: 8px;
+    gap: 10px;
 }
 
 .sdx-duration-field {
     flex: 1;
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: 4px;
 }
 
 .sdx-duration-field label {
     font-size: 9px;
-    font-weight: 600;
-    color: #5a4a3a;
+    font-weight: bold;
+    color: #5a4a2a;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    letter-spacing: 0.6px;
 }
 
 .sdx-duration-input {
     width: 100%;
-    padding: 3px 6px;
-    border: 1px solid #8a7a6a;
-    border-radius: 2px;
-    background: rgba(255, 255, 255, 0.9);
+    padding: 5px 8px;
+    border: 1px solid rgba(100, 80, 40, 0.5);
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.6);
     font-size: 11px;
     text-align: center;
+    transition: all 0.2s ease;
+}
+
+.sdx-duration-input:hover {
+    border-color: rgba(100, 80, 40, 0.7);
 }
 
 .sdx-duration-input:focus {
     outline: none;
-    border-color: #5a4a3a;
-    background: #fff;
+    border-color: #7a5a30;
+    background: rgba(255, 255, 255, 0.8);
+    box-shadow: 0 0 0 2px rgba(122, 90, 48, 0.2);
 }
 
 .sdx-duration-input::placeholder {
-    color: #999;
+    color: #8a7a60;
     font-style: italic;
+    font-size: 10px;
 }
 
 .sdx-spell-effects-select {
@@ -6494,13 +6975,345 @@ section[data-tab="tab-notes"].sdx-journal-active > div:not(.sdx-journal-notes) {
     width: 100%;
 }
 
+/* Radio button groups - match weapon bonus style */
+.sdx-spell-damage-content div[style*="display: flex"][style*="gap: 8px"] label,
+.sdx-summoning-content div[style*="display: flex"][style*="gap: 8px"] label,
+.sdx-item-give-content div[style*="display: flex"][style*="gap: 8px"] label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    background: rgba(255, 255, 255, 0.5);
+    border: 1px solid rgba(100, 80, 40, 0.4);
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 12px;
+}
+
+.sdx-spell-damage-content div[style*="display: flex"][style*="gap: 8px"] label:hover {
+    background: rgba(255, 255, 255, 0.7);
+    border-color: rgba(100, 80, 40, 0.5);
+}
+
+.sdx-spell-damage-content div[style*="display: flex"][style*="gap: 8px"] label:has(input:checked) {
+    background: rgba(122, 90, 48, 0.15);
+    border-color: rgba(100, 80, 40, 0.6);
+}
+
+/* Add buttons - match weapon bonus style */
+.sdx-add-summon-btn,
+.sdx-add-item-give-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    padding: 8px 16px;
+    background: rgba(255, 255, 255, 0.5);
+    border: 1px solid rgba(100, 80, 40, 0.5);
+    border-radius: 4px;
+    color: #4a3c28;
+    font-size: 12px;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: none;
+}
+
+.sdx-add-summon-btn:hover,
+.sdx-add-item-give-btn:hover {
+    background: rgba(255, 255, 255, 0.7);
+    border-color: #7a5a30;
+    box-shadow: none;
+    transform: none;
+}
+
+.sdx-add-summon-btn i,
+.sdx-add-item-give-btn i {
+    font-size: 11px;
+    opacity: 0.8;
+}
+
+/* Summon/Item profile cards */
+.sdx-summon-profile,
+.sdx-item-give-profile {
+    padding: 10px;
+    background: rgba(255, 255, 255, 0.5);
+    border: 1px solid rgba(100, 80, 40, 0.4);
+    border-radius: 4px;
+    box-shadow: none;
+    transition: all 0.2s ease;
+}
+
+.sdx-summon-profile:hover,
+.sdx-item-give-profile:hover {
+    border-color: rgba(100, 80, 40, 0.5);
+    box-shadow: none;
+}
+
+/* Creature/Item drop zones */
+.sdx-summon-creature-drop,
+.sdx-item-give-drop {
+    min-height: 56px !important;
+    min-width: 130px;
+    border: 2px dashed rgba(100, 80, 40, 0.4) !important;
+    border-radius: 4px !important;
+    padding: 8px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    background: rgba(255, 255, 255, 0.4) !important;
+    transition: all 0.2s ease !important;
+    overflow: hidden !important;
+    max-width: 130px;
+}
+
+.sdx-summon-creature-drop:hover,
+.sdx-item-give-drop:hover {
+    border-color: rgba(100, 80, 40, 0.6) !important;
+    background: rgba(255, 255, 255, 0.5) !important;
+}
+
+.sdx-summon-creature-drop span,
+.sdx-item-give-drop span {
+    color: #5a5040 !important;
+    font-size: 11px !important;
+    font-style: italic;
+}
+
+/* Creature/Item display when populated */
+.sdx-summon-creature-display,
+.sdx-item-give-display {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    overflow: hidden;
+}
+
+.sdx-summon-creature-display img,
+.sdx-item-give-display img {
+    width: 40px !important;
+    height: 40px !important;
+    min-width: 40px !important;
+    border-radius: 4px !important;
+    border: 1px solid rgba(100, 80, 40, 0.4) !important;
+    box-shadow: none !important;
+    flex-shrink: 0;
+}
+
+.sdx-summon-creature-display span,
+.sdx-item-give-display span {
+    font-weight: bold !important;
+    font-size: 12px !important;
+    color: #2a2218 !important;
+    font-style: normal !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+}
+
+/* Remove buttons */
+.sdx-remove-summon-btn,
+.sdx-remove-item-give-btn {
+    width: 36px !important;
+    height: 36px !important;
+    padding: 0 !important;
+    background: rgba(180, 60, 60, 0.1) !important;
+    border: 1px solid rgba(180, 60, 60, 0.3) !important;
+    border-radius: 4px !important;
+    color: rgba(180, 60, 60, 0.8) !important;
+    cursor: pointer;
+    transition: all 0.2s ease !important;
+}
+
+.sdx-remove-summon-btn:hover,
+.sdx-remove-item-give-btn:hover {
+    background: rgba(180, 60, 60, 0.2) !important;
+    border-color: rgba(180, 60, 60, 0.5) !important;
+    color: #b43c3c !important;
+}
+
+/* Profile field labels */
+.sdx-summon-profile label[style*="font-size: 0.85em"],
+.sdx-item-give-profile label[style*="font-size: 0.85em"] {
+    font-size: 10px !important;
+    font-weight: bold !important;
+    color: #5a4a2a !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.5px !important;
+        min-width: 565px;
+}
+
+/* Summons/Items list containers */
+.sdx-summons-list,
+.sdx-item-give-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px !important;
+}
+
+/* Section titles */
+.sdx-section-title {
+    grid-column: 1 / -1;
+    margin: 16px 0px 8px 8px;
+    padding-bottom: 6px;
+    border-bottom: 2px solid rgba(201, 170, 88, 0.4);
+    font-size: 12px;
+    font-weight: 700;
+    color: #3d3426;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.sdx-section-title-small {
+    margin-top: 12px;
+    padding-bottom: 4px;
+    border-bottom: 1px solid rgba(90, 74, 58, 0.2);
+    font-size: 11px;
+}
+
+.sdx-help-icon {
+    font-size: 0.85em;
+    opacity: 0.5;
+    cursor: help;
+    margin-left: 4px;
+    transition: opacity 0.2s ease;
+}
+
+.sdx-help-icon:hover {
+    opacity: 0.8;
+}
+
+/* Full width input */
+.sdx-full-width-input {
+    grid-column: 1 / -1;
+    width: 100%;
+}
+
+/* Radio button groups */
+.sdx-radio-group {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.sdx-radio-label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.8) 0%, rgba(250, 248, 245, 0.8) 100%);
+    border: 1px solid rgba(90, 74, 58, 0.25);
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 12px;
+    font-weight: 500;
+    color: #3d3426;
+}
+
+.sdx-radio-label:hover {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(252, 250, 248, 0.95) 100%);
+    border-color: rgba(90, 74, 58, 0.4);
+}
+
+.sdx-radio-label:has(input:checked) {
+    background: linear-gradient(135deg, rgba(201, 170, 88, 0.2) 0%, rgba(201, 170, 88, 0.1) 100%);
+    border-color: rgba(201, 170, 88, 0.5);
+    box-shadow: 0 0 0 2px rgba(201, 170, 88, 0.1);
+}
+
+.sdx-radio-label input[type="radio"] {
+    accent-color: #c9aa58;
+}
+
+/* Empty state with icon */
+.sdx-no-effects i,
+.sdx-no-summons i,
+.sdx-no-items i {
+    margin-right: 6px;
+    opacity: 0.6;
+}
+
+/* Section checkbox label */
+.sdx-section-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+}
+
+.sdx-section-checkbox span {
+    font-weight: 600;
+}
+
+/* Profile grid layout */
+.sdx-profile-grid {
+    display: grid;
+    grid-template-columns: 1fr auto auto auto;
+    align-items: center;
+    gap: 12px;
+}
+
+.sdx-profile-field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.sdx-profile-field label {
+    font-size: 10px;
+    font-weight: 700;
+    color: #6a5a4a;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.sdx-profile-field input {
+    padding: 6px 10px;
+    background: rgba(255, 255, 255, 0.95);
+    border: 1px solid rgba(90, 74, 58, 0.35);
+    border-radius: 4px;
+    color: #2d251c;
+    font-size: 12px;
+    transition: all 0.2s ease;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.06);
+    min-width: 80px;
+}
+
+.sdx-profile-field input:hover {
+    border-color: rgba(90, 74, 58, 0.5);
+}
+
+.sdx-profile-field input:focus {
+    outline: none;
+    border-color: #c9aa58;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.06), 0 0 0 3px rgba(201, 170, 88, 0.15);
+}
+
+/* Drop zone icons */
+.sdx-summon-creature-drop i,
+.sdx-item-give-drop i {
+    margin-right: 4px;
+    opacity: 0.5;
+}
+
 /* Requirement field styling */
 .sdx-spell-damage-content input[name*="Requirement"],
 .sdx-spell-damage-box input[name*="Requirement"] {
     font-family: 'Courier New', monospace;
     font-size: 11px;
+    margin-left: 8px;
     background: rgba(255, 255, 230, 0.95);
     border-left: 3px solid #c9aa58;
+    width: auto;
+    margin-right: 5px;
 }
 
 .sdx-spell-damage-content input[name*="Requirement"]::placeholder,
@@ -6523,4 +7336,549 @@ section[data-tab="tab-notes"].sdx-journal-active > div:not(.sdx-journal-notes) {
 .shadowdark.sheet.player .attack .rollable b,
 .shadowdark.sheet.npc .attack .rollable b {
     font-weight: bold !important;
+}
+
+/* ============================================
+   WEAPON BONUS CONFIGURATION STYLES
+   ============================================ */
+
+.sdx-weapon-bonus-config {
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* Enable toggle section */
+.sdx-bonus-enable {
+    padding: 10px;
+    background: rgba(60, 50, 30, 0.15);
+    border-radius: 6px;
+    border: 2px solid rgba(100, 80, 40, 0.5);
+}
+
+.sdx-toggle-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    color: #4a3c28;
+}
+
+.sdx-toggle-label input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+}
+
+/* Content area - can be disabled */
+.sdx-bonus-content {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    transition: opacity 0.3s ease;
+}
+
+.sdx-bonus-content.sdx-disabled {
+    opacity: 0.4;
+    pointer-events: none;
+}
+
+/* Fieldset styling */
+.sdx-bonus-fieldset {
+    border: 2px solid rgba(100, 80, 40, 0.5);
+    border-radius: 6px;
+    padding: 12px;
+    margin: 0;
+    background: rgba(60, 50, 30, 0.1);
+}
+
+.sdx-bonus-fieldset legend {
+    font-weight: bold;
+    color: #5a4a2a;
+    padding: 0 8px;
+    font-size: 13px;
+    background: #d4c4a0;
+}
+
+.sdx-bonus-fieldset legend i {
+    margin-right: 6px;
+    color: #7a5a30;
+}
+
+/* Individual bonus field */
+.sdx-bonus-field {
+    margin-bottom: 12px;
+}
+
+.sdx-bonus-field:last-child {
+    margin-bottom: 0;
+}
+
+.sdx-bonus-field label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 4px;
+    color: #4a3c28;
+}
+
+.sdx-bonus-field input[type="text"] {
+    width: 100%;
+    padding: 6px 10px;
+    border: 1px solid rgba(100, 80, 40, 0.5);
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.6);
+    color: #2a2218;
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+}
+
+.sdx-bonus-field input[type="text"]:focus {
+    border-color: #7a5a30;
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(100, 80, 40, 0.3);
+}
+
+.sdx-bonus-field .hint {
+    margin: 4px 0 0 0;
+    font-size: 11px;
+    color: #5a5040;
+    font-style: italic;
+}
+
+/* Section hint */
+.sdx-section-hint {
+    margin: 0 0 10px 0;
+    font-size: 11px;
+    color: #5a5040;
+    font-style: italic;
+}
+
+/* Requirements list */
+.sdx-requirements-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 10px;
+}
+
+.sdx-requirement-row {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    padding: 6px;
+    background: rgba(255, 255, 255, 0.4);
+    border-radius: 4px;
+    border: 1px solid rgba(100, 80, 40, 0.3);
+}
+
+.sdx-requirement-row select {
+    padding: 4px 8px;
+    border: 1px solid rgba(100, 80, 40, 0.4);
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.7);
+    color: #2a2218;
+    font-size: 11px;
+}
+
+.sdx-requirement-row .sdx-req-type {
+    flex: 0 0 160px;
+}
+
+.sdx-requirement-row .sdx-req-operator {
+    flex: 0 0 130px;
+}
+
+.sdx-requirement-row .sdx-req-value {
+    flex: 1;
+    padding: 4px 8px;
+    border: 1px solid rgba(100, 80, 40, 0.4);
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.7);
+    color: #2a2218;
+    font-size: 11px;
+}
+
+.sdx-requirement-row .sdx-remove-requirement {
+    flex: 0 0 28px;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border: none;
+    border-radius: 4px;
+    background: rgba(180, 60, 60, 0.6);
+    color: #fff;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.sdx-requirement-row .sdx-remove-requirement:hover {
+    background: rgba(180, 60, 60, 0.8);
+}
+
+/* Add requirement button */
+.sdx-add-requirement {
+    padding: 6px 12px;
+    border: 2px dashed rgba(100, 80, 40, 0.5);
+    border-radius: 4px;
+    background: transparent;
+    color: #5a4a2a;
+    cursor: pointer;
+    font-size: 12px;
+    transition: all 0.2s ease;
+}
+
+.sdx-add-requirement:hover {
+    background: rgba(100, 80, 40, 0.1);
+    border-style: solid;
+}
+
+.sdx-add-requirement i {
+    margin-right: 6px;
+}
+
+/* Effects drop area */
+.sdx-effects-drop-area {
+    min-height: 80px;
+    border: 2px dashed rgba(100, 80, 40, 0.4);
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.3);
+    position: relative;
+    transition: all 0.2s ease;
+}
+
+.sdx-effects-drop-area.sdx-drag-over {
+    border-color: #7a5a30;
+    background: rgba(100, 80, 40, 0.15);
+    box-shadow: inset 0 0 20px rgba(100, 80, 40, 0.2);
+}
+
+.sdx-effects-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 8px;
+}
+
+.sdx-drop-placeholder {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    color: #5a5040;
+    font-size: 12px;
+}
+
+.sdx-drop-placeholder.hidden {
+    display: none;
+}
+
+.sdx-drop-placeholder i {
+    font-size: 24px;
+    opacity: 0.6;
+}
+
+/* Effect row */
+.sdx-effect-row {
+    background: rgba(255, 255, 255, 0.5);
+    border: 1px solid rgba(100, 80, 40, 0.4);
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.sdx-effect-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 10px;
+    background: rgba(100, 80, 40, 0.15);
+}
+
+.sdx-effect-img {
+    width: 32px;
+    height: 32px;
+    border-radius: 4px;
+    border: 1px solid rgba(100, 80, 40, 0.5);
+}
+
+.sdx-effect-name {
+    flex: 1;
+    font-weight: bold;
+    color: #2a2218;
+}
+
+.sdx-effect-chance {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    color: #5a5040;
+}
+
+.sdx-effect-chance label {
+    font-weight: normal;
+}
+
+.sdx-effect-chance-input {
+    width: 50px;
+    padding: 2px 4px;
+    border: 1px solid rgba(100, 80, 40, 0.4);
+    border-radius: 3px;
+    background: rgba(255, 255, 255, 0.7);
+    color: #2a2218;
+    text-align: center;
+    font-size: 11px;
+}
+
+.sdx-remove-effect {
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border: none;
+    border-radius: 4px;
+    background: rgba(180, 60, 60, 0.6);
+    color: #fff;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.sdx-remove-effect:hover {
+    background: rgba(180, 60, 60, 0.8);
+}
+
+/* Effect requirements */
+.sdx-effect-requirements {
+    padding: 8px 10px;
+    border-top: 1px solid rgba(100, 80, 40, 0.3);
+}
+
+.sdx-effect-reqs-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 6px;
+    font-size: 11px;
+    color: #5a5040;
+}
+
+.sdx-add-effect-requirement {
+    width: 22px;
+    height: 22px;
+    padding: 0;
+    border: 1px dashed rgba(100, 80, 40, 0.5);
+    border-radius: 3px;
+    background: transparent;
+    color: #5a4a2a;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+}
+
+.sdx-add-effect-requirement:hover {
+    background: rgba(100, 80, 40, 0.1);
+    border-style: solid;
+}
+
+.sdx-effect-reqs-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.sdx-effect-req-row {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+    padding: 4px;
+    background: rgba(255, 255, 255, 0.4);
+    border-radius: 3px;
+}
+
+.sdx-effect-req-row select {
+    padding: 2px 6px;
+    border: 1px solid rgba(100, 80, 40, 0.4);
+    border-radius: 3px;
+    background: rgba(255, 255, 255, 0.7);
+    color: #2a2218;
+    font-size: 10px;
+}
+
+.sdx-effect-req-row .sdx-effect-req-type {
+    flex: 0 0 120px;
+}
+
+.sdx-effect-req-row .sdx-effect-req-operator {
+    flex: 0 0 100px;
+}
+
+.sdx-effect-req-row .sdx-effect-req-value {
+    flex: 1;
+    padding: 2px 6px;
+    border: 1px solid rgba(100, 80, 40, 0.4);
+    border-radius: 3px;
+    background: rgba(255, 255, 255, 0.7);
+    color: #2a2218;
+    font-size: 10px;
+}
+
+.sdx-remove-effect-requirement {
+    width: 22px;
+    height: 22px;
+    padding: 0;
+    border: none;
+    border-radius: 3px;
+    background: rgba(180, 60, 60, 0.6);
+    color: #fff;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+}
+
+.sdx-remove-effect-requirement:hover {
+    background: rgba(180, 60, 60, 0.8);
+}
+
+/* Formula reference section */
+.sdx-formula-reference {
+    background: rgba(60, 50, 80, 0.1);
+}
+
+.sdx-reference-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+.sdx-reference-column h4 {
+    margin: 0 0 8px 0;
+    font-size: 12px;
+    color: #5a4a2a;
+    border-bottom: 1px solid rgba(100, 80, 40, 0.4);
+    padding-bottom: 4px;
+}
+
+.sdx-reference-column {
+    font-size: 11px;
+    line-height: 1.6;
+    color: #4a4030;
+}
+
+.sdx-reference-column code {
+    background: rgba(60, 50, 30, 0.2);
+    padding: 1px 4px;
+    border-radius: 3px;
+    font-family: 'Courier New', monospace;
+    color: #2a5a30;
+    font-size: 10px;
+    border: 1px solid rgba(100, 80, 40, 0.3);
+}
+
+.sdx-reference-column strong {
+    color: #3a2a18;
+}
+
+/* ============================================
+   WEAPON BONUS CHAT DISPLAY
+   ============================================ */
+
+.sdx-weapon-bonus-display {
+    margin-top: 8px;
+    padding: 8px;
+    background: linear-gradient(135deg, rgba(74, 26, 26, 0.4) 0%, rgba(0, 0, 0, 0.3) 100%);
+    border: 1px solid rgba(201, 170, 88, 0.4);
+    border-radius: 6px;
+}
+
+.sdx-bonus-header {
+    font-weight: bold;
+    color: #c9aa58;
+    font-size: 12px;
+    margin-bottom: 6px;
+    padding-bottom: 4px;
+    border-bottom: 1px solid rgba(201, 170, 88, 0.3);
+}
+
+.sdx-bonus-header i {
+    margin-right: 6px;
+}
+
+.sdx-bonus-line {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin: 4px 0;
+    font-size: 11px;
+}
+
+.sdx-bonus-label {
+    color: #aaa;
+    flex: 0 0 100px;
+}
+
+.sdx-bonus-value {
+    font-weight: bold;
+    color: #7ec699;
+    font-size: 13px;
+}
+
+.sdx-bonus-formula {
+    color: #888;
+    font-family: 'Courier New', monospace;
+    font-size: 10px;
+}
+
+/* Weapon bonus breakdown in damage card */
+.sdx-damage-card .sdx-weapon-bonus-breakdown {
+margin: 8px 0;
+    padding: 8px;
+    background: linear-gradient(135deg, rgb(0 0 0 / 40%) 0%, rgb(0 0 0) 100%);
+    border: 1px solid rgba(201, 170, 88, 0.4);
+    border-radius: 6px;
+}
+
+.sdx-damage-card .sdx-weapon-bonus-breakdown .sdx-bonus-header {
+    font-weight: bold;
+    color: #c9aa58;
+    font-size: 11px;
+    margin-bottom: 6px;
+    padding-bottom: 4px;
+    border-bottom: 1px solid rgba(201, 170, 88, 0.3);
+}
+
+.sdx-damage-card .sdx-weapon-bonus-breakdown .sdx-bonus-line {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin: 4px 0;
+    font-size: 10px;
+}
+
+.sdx-damage-card .sdx-weapon-bonus-breakdown .sdx-bonus-label {
+    color: #aaa;
+    flex: 0 0 85px;
+}
+
+.sdx-damage-card .sdx-weapon-bonus-breakdown .sdx-bonus-value {
+    font-weight: bold;
+    color: #7ec699;
+    font-size: 12px;
+}
+
+.sdx-damage-card .sdx-weapon-bonus-breakdown .sdx-bonus-formula {
+    color: #888;
+    font-family: 'Courier New', monospace;
+    font-size: 9px;
 }

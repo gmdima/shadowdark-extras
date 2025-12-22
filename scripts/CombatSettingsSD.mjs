@@ -3,6 +3,8 @@
  * Adds enhanced damage card features similar to midi-qol
  */
 
+import { getWeaponBonuses, getWeaponEffectsToApply, evaluateRequirements, calculateWeaponBonusDamage } from "./WeaponBonusConfig.mjs";
+
 const MODULE_ID = "shadowdark-extras";
 let socketlibSocket = null;
 
@@ -163,30 +165,35 @@ export function setupCombatSocket() {
                 return false;
             }
             
-            // Create the effect on the actor
+            // Create the Effect Item on the actor
+            // This is the correct approach - the Effect Item has transfer: true on its embedded ActiveEffects,
+            // which Foundry automatically applies to the actor. This ensures the effect shows up properly
+            // in the Effects and Conditions section with correct source attribution.
             const effectData = effectDoc.toObject();
             
-            // If the effect document has embedded effects, use those
-            if (effectDoc.effects && effectDoc.effects.size > 0) {
-                const embeddedEffects = Array.from(effectDoc.effects.values()).map(e => {
-                    const effect = e.toObject();
-                    
-                    // Apply duration overrides if provided
-                    if (data.duration && Object.keys(data.duration).length > 0) {
-                        effect.duration = effect.duration || {};
-                        Object.assign(effect.duration, data.duration);
-                        console.log("shadowdark-extras | Applied duration override:", data.duration);
-                    }
-                    
+            // Apply duration overrides to embedded effects if provided
+            if (data.duration && Object.keys(data.duration).length > 0 && effectData.effects) {
+                effectData.effects = effectData.effects.map(effect => {
+                    effect.duration = effect.duration || {};
+                    Object.assign(effect.duration, data.duration);
                     return effect;
                 });
-                await token.actor.createEmbeddedDocuments("ActiveEffect", embeddedEffects);
-                console.log("shadowdark-extras | Applied embedded effects from:", effectDoc.name);
-            } else {
-                // Otherwise create the item on the actor (for Effect type items)
-                await token.actor.createEmbeddedDocuments("Item", [effectData]);
-                console.log("shadowdark-extras | Applied effect item:", effectDoc.name);
+                console.log("shadowdark-extras | Applied duration override to effect item:", data.duration);
             }
+            
+            // Also apply duration to the item's system.duration if it exists
+            if (data.duration && effectData.system?.duration) {
+                if (data.duration.rounds) {
+                    effectData.system.duration.value = String(data.duration.rounds);
+                    effectData.system.duration.type = "rounds";
+                }
+            }
+            
+            // Rename the effect item to indicate it came from the spell
+            // effectData.name = `Spell Effect: ${effectData.name}`;
+            
+            await token.actor.createEmbeddedDocuments("Item", [effectData]);
+            console.log("shadowdark-extras | Applied effect item:", effectDoc.name, "to", token.actor.name);
             
             return true;
         } catch (error) {
@@ -248,7 +255,7 @@ export const DEFAULT_COMBAT_SETTINGS = {
 		showTargets: true,
 		showMultipliers: true,
 		showApplyButton: true,
-		autoApplyDamage: false,
+		autoApplyDamage: true,
 		damageMultipliers: [
 			{ value: 0, label: "×", enabled: true },
 			{ value: -1, label: "-1", enabled: false },
@@ -278,7 +285,7 @@ export function registerCombatSettings() {
 	game.settings.registerMenu(MODULE_ID, "combatSettingsMenu", {
 		name: "Combat Settings",
 		label: "Configure Combat Settings",
-		hint: "Configure enhanced combat features like damage cards and target management",
+		hint: "Configure enhanced combat features like auto apply damage, damage cards and target management",
 		icon: "fas fa-crossed-swords",
 		type: CombatSettingsApp,
 		restricted: true
@@ -289,11 +296,21 @@ export function registerCombatSettings() {
 const _spawnedMessages = new Set();
 const _itemGiveMessages = new Set();
 
+// Track messages that have already had damage cards injected to prevent duplicates
+const _damageCardInjected = new Set();
+
 /**
  * Inject damage card into chat messages
  */
 export async function injectDamageCard(message, html, data) {
 	console.log("shadowdark-extras | injectDamageCard called", { message, html, data });
+	
+	// Prevent duplicate injection for the same message
+	const messageKey = message.id;
+	if (_damageCardInjected.has(messageKey)) {
+		console.log("shadowdark-extras | Damage card already injected for this message, skipping");
+		return;
+	}
 	
 	// Check if damage card feature is enabled
 	let settings;
@@ -825,7 +842,43 @@ export async function injectDamageCard(message, html, data) {
 		console.log("shadowdark-extras | Spell has effects to apply:", spellEffects);
 	}
 	
-	if (totalDamage === 0 && spellEffects.length === 0) {
+	// Check if weapon has effects to apply (from weapon bonus config)
+	let weaponEffects = [];
+	let weaponBonusDamage = null;
+	if (item?.type === "Weapon") {
+		const weaponBonusFlags = item.flags?.[MODULE_ID]?.weaponBonus;
+		if (weaponBonusFlags?.enabled) {
+			// Get target for requirement evaluation
+			const targetToken = targets[0];
+			const targetActor = targetToken?.actor;
+			
+			// Check if this was a critical hit
+			const shadowdarkRolls = message.flags?.shadowdark?.rolls;
+			const mainRoll = shadowdarkRolls?.main;
+			const isCritical = mainRoll?.critical === "success";
+			
+			// Get weapon effects to apply
+			weaponEffects = getWeaponEffectsToApply(item, actor, targetActor);
+			console.log("shadowdark-extras | Weapon has effects to apply:", weaponEffects);
+			
+			// Calculate weapon bonus damage
+			try {
+				weaponBonusDamage = await calculateWeaponBonusDamage(item, actor, targetActor, isCritical);
+				if (weaponBonusDamage.requirementsMet && (weaponBonusDamage.totalBonus !== 0 || weaponBonusDamage.criticalBonus !== 0)) {
+					// Add bonus damage to total (but show it separately in the card)
+					totalDamage += weaponBonusDamage.totalBonus + weaponBonusDamage.criticalBonus;
+					console.log("shadowdark-extras | Added weapon bonus damage:", weaponBonusDamage);
+				}
+			} catch (err) {
+				console.warn("shadowdark-extras | Failed to calculate weapon bonus damage:", err);
+			}
+		}
+	}
+	
+	// Combine spell effects and weapon effects
+	const allEffects = [...spellEffects, ...weaponEffects];
+	
+	if (totalDamage === 0 && allEffects.length === 0) {
 		console.log("shadowdark-extras | No damage or effects to apply");
 		return; // Nothing to apply
 	}
@@ -836,8 +889,8 @@ export async function injectDamageCard(message, html, data) {
 
 	console.log("shadowdark-extras | Building damage card HTML...");
 
-	// Build the damage card HTML
-	const cardHtml = buildDamageCardHtml(actor, cardTargets, totalDamage, damageType, spellEffects, spellDamageConfig, settings, message);
+	// Build the damage card HTML (pass allEffects which includes both spell and weapon effects)
+	const cardHtml = buildDamageCardHtml(actor, cardTargets, totalDamage, damageType, allEffects, spellDamageConfig, settings, message, weaponBonusDamage);
 	
 	console.log("shadowdark-extras | Card HTML built, length:", cardHtml?.length);
 	console.log("shadowdark-extras | Injecting damage card HTML");
@@ -862,7 +915,8 @@ export async function injectDamageCard(message, html, data) {
 	// Auto-apply damage if setting is enabled
 	// Only auto-apply if there's an attack roll that hit
 	// IMPORTANT: Only the message author should auto-apply to prevent duplicates
-	if (settings.damageCard.autoApplyDamage && targets.length > 0 && message.user.id === game.user.id) {
+	const messageAuthorId = message.author?.id ?? message.user?.id;
+	if (settings.damageCard.autoApplyDamage && targets.length > 0 && messageAuthorId === game.user.id) {
 		// Check if this was an attack that hit
 		const shadowdarkRolls = message.flags?.shadowdark?.rolls;
 		const mainRoll = shadowdarkRolls?.main;
@@ -892,21 +946,164 @@ export async function injectDamageCard(message, html, data) {
 		} else {
 			console.log("shadowdark-extras | Not auto-applying damage (attack failed, success:", mainRoll?.success, ")");
 		}
-	} else if (settings.damageCard.autoApplyDamage && message.user.id !== game.user.id) {
+	} else if (settings.damageCard.autoApplyDamage && messageAuthorId !== game.user.id) {
 		console.log("shadowdark-extras | Skipping auto-apply (not message author)");
 	}
+	
+	// Mark this message as having had its damage card injected
+	_damageCardInjected.add(messageKey);
 	
 	console.log("shadowdark-extras | Damage card injected successfully");
 }
 
 /**
+ * Build roll breakdown information from message
+ * Returns an object with formula, total, diceHtml, and bonusHtml
+ */
+function buildRollBreakdown(message, weaponBonusDamage = null) {
+	// Try to get the damage roll from Shadowdark's rolls
+	const shadowdarkRolls = message.flags?.shadowdark?.rolls;
+	const damageRollData = shadowdarkRolls?.damage?.roll;
+	
+	// Also check standard message rolls
+	const messageRoll = message.rolls?.[0];
+	
+	// Use whichever roll we can find
+	const roll = damageRollData || messageRoll;
+	
+	if (!roll) {
+		// Check for spell roll breakdown stored in window
+		if (window._lastSpellRollBreakdown && !window._perTargetDamage) {
+			return {
+				formula: window._lastSpellRollBreakdown.split(' = ')[0] || '',
+				total: window._lastSpellRollBreakdown.split(' = ')[1] || '',
+				diceHtml: '',
+				bonusHtml: ''
+			};
+		}
+		return null;
+	}
+	
+	// Extract dice information
+	let diceHtml = '';
+	let totalDiceSum = 0;
+	
+	// Handle Foundry Roll object
+	const dice = roll.dice || roll.terms?.filter(t => t.faces) || [];
+	
+	if (dice.length > 0) {
+		const diceGroups = [];
+		
+		for (const die of dice) {
+			const faces = die.faces;
+			const results = die.results || [];
+			const diceStr = results.map(r => {
+				const val = r.result;
+				const isCrit = val === faces;
+				const isFumble = val === 1;
+				const cssClass = isCrit ? 'sdx-die-max' : (isFumble ? 'sdx-die-min' : '');
+				return `<span class="sdx-die ${cssClass}">${val}</span>`;
+			}).join('');
+			
+			const sum = results.reduce((acc, r) => acc + r.result, 0);
+			totalDiceSum += sum;
+			
+			diceGroups.push(`
+				<div class="sdx-dice-group">
+					<span class="sdx-dice-label">${results.length}d${faces}</span>
+					<span class="sdx-dice-results">${diceStr}</span>
+					<span class="sdx-dice-sum">= ${sum}</span>
+				</div>
+			`);
+		}
+		
+		diceHtml = diceGroups.join('');
+	}
+	
+	// Extract numeric modifiers/bonuses
+	let bonusHtml = '';
+	const bonuses = [];
+	
+	// Check for numeric terms in the roll
+	const terms = roll.terms || [];
+	let operator = '+';
+	
+	for (let i = 0; i < terms.length; i++) {
+		const term = terms[i];
+		
+		// Track operators
+		if (term.operator) {
+			operator = term.operator;
+			continue;
+		}
+		
+		// Get numeric values that aren't dice
+		if (term.number !== undefined && !term.faces) {
+			const value = term.number;
+			if (value !== 0) {
+				bonuses.push({
+					label: 'Modifier',
+					value: operator === '-' ? -value : value
+				});
+			}
+		}
+	}
+	
+	// Add weapon bonus if applicable
+	if (weaponBonusDamage && weaponBonusDamage.requirementsMet) {
+		if (weaponBonusDamage.totalBonus !== 0) {
+			bonuses.push({
+				label: `Bonus (${weaponBonusDamage.bonusFormula})`,
+				value: weaponBonusDamage.totalBonus
+			});
+		}
+		if (weaponBonusDamage.criticalBonus !== 0) {
+			bonuses.push({
+				label: `Crit (${weaponBonusDamage.criticalFormula})`,
+				value: weaponBonusDamage.criticalBonus
+			});
+		}
+	}
+	
+	if (bonuses.length > 0) {
+		bonusHtml = bonuses.map(b => {
+			const sign = b.value >= 0 ? '+' : '';
+			return `<div class="sdx-bonus-item"><span class="sdx-bonus-label">${b.label}</span><span class="sdx-bonus-val">${sign}${b.value}</span></div>`;
+		}).join('');
+	}
+	
+	return {
+		formula: roll.formula || '',
+		total: roll.total || 0,
+		diceHtml,
+		bonusHtml
+	};
+}
+
+/**
  * Build the damage card HTML
  */
-function buildDamageCardHtml(actor, targets, totalDamage, damageType, spellEffects, spellDamageConfig, settings, message) {
-	console.log("shadowdark-extras | buildDamageCardHtml started", { actor, targets, totalDamage, damageType, spellEffects, settings });
+function buildDamageCardHtml(actor, targets, totalDamage, damageType, allEffects, spellDamageConfig, settings, message, weaponBonusDamage = null) {
+	console.log("shadowdark-extras | buildDamageCardHtml started", { actor, targets, totalDamage, damageType, allEffects, settings, weaponBonusDamage });
 	
 	const cardSettings = settings.damageCard;
 	const isHealing = damageType?.toLowerCase() === "healing";
+	
+	// Build roll breakdown HTML
+	let rollBreakdownHtml = '';
+	const rollBreakdown = buildRollBreakdown(message, weaponBonusDamage);
+	if (rollBreakdown) {
+		rollBreakdownHtml = `
+			<div class="sdx-roll-breakdown">
+				<div class="sdx-roll-formula">${rollBreakdown.formula}</div>
+				<div class="sdx-roll-result">
+					<span class="sdx-roll-total">${rollBreakdown.total}</span>
+				</div>
+				${rollBreakdown.diceHtml ? `<div class="sdx-roll-dice">${rollBreakdown.diceHtml}</div>` : ''}
+				${rollBreakdown.bonusHtml ? `<div class="sdx-roll-bonuses">${rollBreakdown.bonusHtml}</div>` : ''}
+			</div>
+		`;
+	}
 	
 	// Build targets HTML
 	let targetsHtml = '';
@@ -991,9 +1188,9 @@ function buildDamageCardHtml(actor, targets, totalDamage, damageType, spellEffec
 		`;
 	}
 	
-	// Condition button (separate from damage - can appear even for effect-only spells)
-	if (spellEffects && spellEffects.length > 0 && targets.length > 0) {
-		const effectsJson = JSON.stringify(spellEffects);
+	// Condition button (separate from damage - can appear even for effect-only spells/weapons)
+	if (allEffects && allEffects.length > 0 && targets.length > 0) {
+		const effectsJson = JSON.stringify(allEffects);
 		const effectsApplyToTarget = spellDamageConfig?.effectsApplyToTarget === true;
 		const effectsRequirement = spellDamageConfig?.effectsRequirement || '';
 		
@@ -1024,7 +1221,7 @@ function buildDamageCardHtml(actor, targets, totalDamage, damageType, spellEffec
 	if (totalDamage > 0) {
 		headerText = isHealing ? "APPLY HEALING" : "APPLY DAMAGE";
 		headerIcon = isHealing ? "fa-heart-pulse" : "fa-heart";
-	} else if (spellEffects && spellEffects.length > 0) {
+	} else if (allEffects && allEffects.length > 0) {
 		headerText = "APPLY EFFECTS";
 		headerIcon = "fa-wand-sparkles";
 	} else {
@@ -1037,6 +1234,7 @@ function buildDamageCardHtml(actor, targets, totalDamage, damageType, spellEffec
 			<div class="sdx-damage-card-header">
 				<i class="fas ${headerIcon}"></i> ${headerText} <i class="fas fa-chevron-down"></i>
 			</div>
+			${rollBreakdownHtml}
 			<div class="sdx-damage-card-tabs">
 				<div class="sdx-tab active">
 					<i class="fas fa-bullseye"></i> TARGETED

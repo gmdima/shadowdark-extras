@@ -26,7 +26,7 @@ export function generateSpellDamageConfigHTML(MODULE_ID, flags, effectsListHtml,
 					<input type="checkbox" name="flags.${MODULE_ID}.spellDamage.enabled" 
 					       ${flags.enabled ? 'checked' : ''} 
 					       class="sdx-spell-damage-toggle" />
-					Enable
+					Damage/Healing
 				</label>
 				<span></span>
 			</div>
@@ -92,7 +92,7 @@ export function generateSpellDamageConfigHTML(MODULE_ID, flags, effectsListHtml,
 							
 							<h3>Scaling</h3>
 							<select name="flags.${MODULE_ID}.spellDamage.scaling">
-								<option value="none" ${flags.scaling === 'none' ? 'selected' : ''}>No Scaling</option>
+								<option value="none" ${!flags.scaling || flags.scaling === 'none' ? 'selected' : ''}>No Scaling</option>
 								<option value="every-level" ${flags.scaling === 'every-level' ? 'selected' : ''}>Every Level</option>
 								<option value="every-other-level" ${flags.scaling === 'every-other-level' ? 'selected' : ''}>Every Other Level</option>
 							</select>
@@ -137,33 +137,33 @@ export function generateSpellDamageConfigHTML(MODULE_ID, flags, effectsListHtml,
 			</div>
 			
 			<!-- Effects section - always visible -->
-			<h3 style="grid-column: 1 / -1; margin-top: 12px; margin-bottom: 4px;">Effects/Conditions</h3>
-			<div class="sdx-spell-effects-drop-area" style="grid-column: 1 / -1;">
+			<h3 class="sdx-section-title">Effects/Conditions</h3>
+			<div class="sdx-spell-effects-drop-area">
 				<div class="sdx-spell-effects-list">
-					${effectsListHtml || '<div class="sdx-no-effects">Drag and drop conditions or effects here</div>'}
+					${effectsListHtml || '<div class="sdx-no-effects"><i class="fas fa-magic"></i> Drag and drop conditions or effects here</div>'}
 				</div>
 			</div>
 			<input type="hidden" name="flags.${MODULE_ID}.spellDamage.effects" class="sdx-effects-data" value="${JSON.stringify(effectsArray).replace(/"/g, '&quot;')}" />
 			
 			<!-- Requirement for effects -->
-			<h3 style="grid-column: 1 / -1; margin-top: 8px; margin-bottom: 4px;">Effects Requirement <i class="fas fa-question-circle" style="font-size: 0.9em; opacity: 0.6; cursor: help;" title="Formula that must be true for effects to apply. Leave blank to always apply.&#10;Examples: ${effectsRequirementExamples}"></i></h3>
+			<h3 class="sdx-section-title sdx-section-title-small">Effects Requirement <i class="fas fa-question-circle sdx-help-icon" title="Formula that must be true for effects to apply. Leave blank to always apply.&#10;Examples: ${effectsRequirementExamples}"></i></h3>
 			<input type="text" name="flags.${MODULE_ID}.spellDamage.effectsRequirement" 
 			       value="${flags.effectsRequirement || ''}" 
 			       placeholder="e.g., @target.level < 5" 
-			       style="grid-column: 1 / -1; width: 100%;" />
+			       class="sdx-full-width-input" />
 			
 			<!-- Apply To setting for effects -->
-			<h3 style="grid-column: 1 / -1; margin-top: 8px;">Apply Effects To</h3>
-			<div style="grid-column: 1 / -1; display: flex; align-items: center; gap: 8px;">
-				<label style="display: flex; align-items: center; gap: 4px; margin: 0; cursor: pointer;">
+			<h3 class="sdx-section-title sdx-section-title-small">Apply Effects To</h3>
+			<div class="sdx-radio-group">
+				<label class="sdx-radio-label">
 					<input type="radio" name="flags.${MODULE_ID}.spellDamage.effectsApplyToTarget" 
 					       value="true" ${effectsApplyToTarget === true ? 'checked' : ''} />
-					Target
+					<span>Target</span>
 				</label>
-				<label style="display: flex; align-items: center; gap: 4px; margin: 0; cursor: pointer;">
+				<label class="sdx-radio-label">
 					<input type="radio" name="flags.${MODULE_ID}.spellDamage.effectsApplyToTarget" 
 					       value="false" ${effectsApplyToTarget === false ? 'checked' : ''} />
-					Self
+					<span>Self</span>
 				</label>
 			</div>
 		</div>

@@ -27,6 +27,7 @@ export default class PartySheetSD extends ActorSheet {
 			],
 			dragDrop: [
 				{ dragSelector: ".member[data-uuid]", dropSelector: null },
+				{ dragSelector: ".member-portrait img", dropSelector: null },
 				{ dragSelector: ".item[data-uuid]", dropSelector: null }
 			],
 		});
@@ -362,6 +363,29 @@ export default class PartySheetSD extends ActorSheet {
 	}
 
 	/** @inheritdoc */
+	_onDragStart(event) {
+		const target = event.currentTarget;
+		
+		// Check if this is a member being dragged (for dropping on canvas to create token)
+		if (target.classList.contains("member") || target.closest(".member")) {
+			const memberEl = target.classList.contains("member") ? target : target.closest(".member");
+			const uuid = memberEl?.dataset?.uuid;
+			if (uuid) {
+				// Set drag data as Actor type so Foundry creates a token on canvas drop
+				const dragData = {
+					type: "Actor",
+					uuid: uuid
+				};
+				event.dataTransfer.setData("text/plain", JSON.stringify(dragData));
+				return;
+			}
+		}
+		
+		// Fall back to default behavior for items
+		return super._onDragStart(event);
+	}
+
+	/** @inheritdoc */
 	async _onDrop(event) {
 		const getDragEventData = foundry?.applications?.ux?.TextEditor?.implementation?.getDragEventData ?? TextEditor.getDragEventData;
 		const data = getDragEventData(event);
@@ -529,6 +553,7 @@ export default class PartySheetSD extends ActorSheet {
 		html.find("[data-action='remove-member']").click(this._onRemoveMember.bind(this));
 		html.find("[data-action='place-members']").click(this._onPlaceMembers.bind(this));
 		html.find("[data-action='reward-xp']").click(this._onRewardXp.bind(this));
+		html.find("[data-action='reward-coins']").click(this._onRewardCoins.bind(this));
 		
 		// XP controls
 		html.find("[data-action='xp-increment']").click(this._onXpIncrement.bind(this));
@@ -1329,6 +1354,96 @@ export default class PartySheetSD extends ActorSheet {
 		ui.notifications.info(
 			game.i18n.format("SHADOWDARK_EXTRAS.party.xp_rewarded", { 
 				xp: xpAmount, 
+				count: members.length 
+			})
+		);
+	}
+
+	/**
+	 * Reward coins to all player members
+	 * @param {Event} event
+	 */
+	async _onRewardCoins(event) {
+		event.preventDefault();
+		
+		const members = this.members.filter(m => m.type === "Player" && m.isOwner);
+		if (members.length === 0) {
+			ui.notifications.warn(game.i18n.localize("SHADOWDARK_EXTRAS.party.warn.no_members"));
+			return;
+		}
+		
+		// Get localized labels
+		const gpLabel = game.i18n.localize("SHADOWDARK_EXTRAS.party.coin_gp");
+		const spLabel = game.i18n.localize("SHADOWDARK_EXTRAS.party.coin_sp");
+		const cpLabel = game.i18n.localize("SHADOWDARK_EXTRAS.party.coin_cp");
+		
+		// Dialog content with clear warning that coins go to EACH member
+		const content = `
+			<form class="reward-coins-form">
+				<p style="color: #1f1f1fff; font-weight: bold; text-align: center; margin-bottom: 10px; padding: 8px; background: rgba(201, 169, 97, 0.1); border-radius: 4px;">
+					<i class="fas fa-info-circle"></i>
+					${game.i18n.localize("SHADOWDARK_EXTRAS.party.reward_coins_warning")}
+				</p>
+				<div class="form-group">
+					<label>${gpLabel}</label>
+					<input type="number" name="gp" value="0" min="0" />
+				</div>
+				<div class="form-group">
+					<label>${spLabel}</label>
+					<input type="number" name="sp" value="0" min="0" />
+				</div>
+				<div class="form-group">
+					<label>${cpLabel}</label>
+					<input type="number" name="cp" value="0" min="0" />
+				</div>
+				<p style="font-size: 0.85em; color: #272727ff; text-align: center; margin-top: 10px;">
+					${game.i18n.format("SHADOWDARK_EXTRAS.party.reward_coins_members", { count: members.length })}
+				</p>
+			</form>
+		`;
+		
+		const result = await Dialog.prompt({
+			title: game.i18n.localize("SHADOWDARK_EXTRAS.party.reward_coins_title"),
+			content: content,
+			callback: (html) => {
+				const form = html[0].querySelector("form");
+				return {
+					gp: parseInt(form.gp.value) || 0,
+					sp: parseInt(form.sp.value) || 0,
+					cp: parseInt(form.cp.value) || 0
+				};
+			},
+			rejectClose: false
+		});
+		
+		if (!result) return;
+		const { gp, sp, cp } = result;
+		
+		// Check if any coins to award
+		if (gp <= 0 && sp <= 0 && cp <= 0) return;
+		
+		// Award coins to each member
+		for (const member of members) {
+			const currentGp = member.system.coins?.gp ?? 0;
+			const currentSp = member.system.coins?.sp ?? 0;
+			const currentCp = member.system.coins?.cp ?? 0;
+			
+			await member.update({
+				"system.coins.gp": currentGp + gp,
+				"system.coins.sp": currentSp + sp,
+				"system.coins.cp": currentCp + cp
+			});
+		}
+		
+		// Build notification message
+		const coinParts = [];
+		if (gp > 0) coinParts.push(`${gp} ${gpLabel}`);
+		if (sp > 0) coinParts.push(`${sp} ${spLabel}`);
+		if (cp > 0) coinParts.push(`${cp} ${cpLabel}`);
+		
+		ui.notifications.info(
+			game.i18n.format("SHADOWDARK_EXTRAS.party.coins_rewarded", { 
+				coins: coinParts.join(", "), 
 				count: members.length 
 			})
 		);

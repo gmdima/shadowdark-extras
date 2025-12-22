@@ -7,6 +7,14 @@ import PartySheetSD from "./PartySheetSD.mjs";
 import TradeWindowSD, { initializeTradeSocket, showTradeDialog, ensureTradeJournal } from "./TradeWindowSD.mjs";
 import { CombatSettingsApp, registerCombatSettings, injectDamageCard, setupCombatSocket } from "./CombatSettingsSD.mjs";
 import { generateSpellConfig, generatePotionConfig, generateScrollConfig, generateWandConfig } from "./templates/ItemTypeConfigs.mjs";
+import { 
+	injectWeaponBonusTab, 
+	getWeaponBonuses, 
+	getWeaponEffectsToApply, 
+	evaluateRequirements,
+	calculateWeaponBonusDamage,
+	injectWeaponBonusDisplay
+} from "./WeaponBonusConfig.mjs";
 
 const MODULE_ID = "shadowdark-extras";
 const TRADE_JOURNAL_NAME = "__sdx_trade_sync__"; // Must match TradeWindowSD.mjs
@@ -4761,14 +4769,34 @@ async function injectEnhancedHeader(app, html, actor) {
 	const $enhancedContent = $header.find('.sdx-enhanced-content');
 
 	// Portrait click to launch tokenizer (if vtta-tokenizer module is active)
+	// Hold Shift to open the default Foundry file picker instead
 	$enhancedContent.find('.sdx-portrait').on('click', async (e) => {
 		if (!actor.isOwner) return;
 		e.stopPropagation();
 		
+		// If shift is held, open the default file picker
+		if (e.shiftKey) {
+			const fp = new FilePicker({
+				type: "image",
+				current: actor.img,
+				callback: async (path) => {
+					await actor.update({ img: path });
+				}
+			});
+			return fp.browse();
+		}
+		
 		// Check if vtta-tokenizer module is active and available
 		if (!window.Tokenizer && !game.modules.get("vtta-tokenizer")?.active) {
-			ui.notifications.warn("VTTA Tokenizer module is not active or available.");
-			return;
+			// No tokenizer available, fall back to file picker
+			const fp = new FilePicker({
+				type: "image",
+				current: actor.img,
+				callback: async (path) => {
+					await actor.update({ img: path });
+				}
+			});
+			return fp.browse();
 		}
 		
 		try {
@@ -4787,7 +4815,15 @@ async function injectEnhancedHeader(app, html, actor) {
 					ui.notifications.success(`Tokenizer completed for ${actor.name}!`);
 				});
 			} else {
-				ui.notifications.warn("Tokenizer API not found.");
+				// Fallback to file picker if Tokenizer API not found
+				const fp = new FilePicker({
+					type: "image",
+					current: actor.img,
+					callback: async (path) => {
+						await actor.update({ img: path });
+					}
+				});
+				return fp.browse();
 			}
 		} catch (error) {
 			console.error("shadowdark-extras | Error launching tokenizer:", error);
@@ -5089,7 +5125,7 @@ function applyHeaderBackground(html, actor) {
 		
 		// Calculate from the top of header to the bottom of nav, relative to form
 		// Add extra padding to ensure it covers the full nav including border-bottom
-		const totalHeight = (navRect.bottom - formRect.top) + 35;
+		const totalHeight = (navRect.bottom - formRect.top) + 50;
 		$form.find('.sdx-header-bg-extension').css('height', totalHeight + 'px');
 	};
 	
@@ -5098,6 +5134,252 @@ function applyHeaderBackground(html, actor) {
 	
 	// Create the background extension element
 	const $bgExtension = $('<div class="sdx-header-bg-extension"></div>');
+	
+	if (isVideo) {
+		const videoType = headerBg.split('.').pop().toLowerCase();
+		const $video = $(`
+			<video autoplay loop muted playsinline>
+				<source src="${headerBg}" type="video/${videoType}">
+			</video>
+		`);
+		$bgExtension.append($video);
+	} else {
+		$bgExtension.css('background-image', `url("${headerBg}")`);
+	}
+	
+	// Insert at the beginning of the form
+	$form.prepend($bgExtension);
+	
+	// Update height now and after a short delay (for rendering)
+	updateBgHeight();
+	setTimeout(updateBgHeight, 100);
+	setTimeout(updateBgHeight, 300);
+}
+
+/**
+ * Inject header background customization for party sheets
+ * Similar to player sheet customization but adapted for party layout
+ */
+function injectPartyHeaderCustomization(app, html, actor) {
+	const $header = html.find('.party-header.SD-header').first();
+	if (!$header.length) return;
+	
+	// Clean up any existing elements first (in case of re-render)
+	$header.find('.sdx-header-settings-btn').remove();
+	$header.find('.sdx-header-settings-menu').remove();
+	
+	// Apply any existing custom backgrounds
+	applyPartyHeaderBackground(html, actor);
+	
+	// Check if user can edit this actor (GM or owner)
+	const canEdit = game.user.isGM || actor.isOwner;
+	if (!canEdit) {
+		return;
+	}
+	
+	// Make header position relative for absolute positioned children
+	$header.css('position', 'relative');
+	
+	// Create the settings button
+	const $settingsBtn = $(`
+		<button type="button" class="sdx-header-settings-btn" data-tooltip="${game.i18n.localize("SHADOWDARK_EXTRAS.header.customize_tooltip") || "Customize Header"}">
+			<i class="fas fa-cog"></i>
+		</button>
+	`);
+	
+	// Create the settings menu with header background option
+	const $settingsMenu = $(`
+		<div class="sdx-header-settings-menu">
+			<div class="sdx-settings-section">
+				<div class="sdx-settings-label">Header Background</div>
+				<button type="button" class="sdx-header-select-image">
+					<i class="fas fa-image"></i>
+					<span>${game.i18n.localize("SHADOWDARK_EXTRAS.header.select_image") || "Select Image"}</span>
+				</button>
+				<button type="button" class="sdx-header-remove-image danger">
+					<i class="fas fa-trash"></i>
+					<span>${game.i18n.localize("SHADOWDARK_EXTRAS.header.remove_image") || "Remove"}</span>
+				</button>
+			</div>
+		</div>
+	`);
+	
+	$header.append($settingsBtn);
+	$header.append($settingsMenu);
+	
+	// Use a unique namespace for this app instance to avoid conflicts
+	const eventNS = `.sdxPartyHeaderMenu${app.appId}`;
+	
+	// Clean up any existing handlers first (in case of re-render)
+	$(document).off(eventNS);
+	
+	// Toggle menu visibility
+	$settingsBtn.on('click', (event) => {
+		event.preventDefault();
+		event.stopPropagation();
+		$settingsBtn.toggleClass('active');
+		$settingsMenu.toggleClass('visible');
+	});
+	
+	// Close menu when clicking outside
+	$(document).on(`click${eventNS}`, (event) => {
+		if (!$(event.target).closest('.sdx-header-settings-btn, .sdx-header-settings-menu').length) {
+			$settingsBtn.removeClass('active');
+			$settingsMenu.removeClass('visible');
+		}
+	});
+	
+	// Handle select image button
+	$settingsMenu.find('.sdx-header-select-image').on('click', async (event) => {
+		event.preventDefault();
+		event.stopPropagation();
+		
+		// Close the menu
+		$settingsBtn.removeClass('active');
+		$settingsMenu.removeClass('visible');
+		
+		// Open file picker - use imagevideo to allow webm files
+		const currentImage = actor.getFlag(MODULE_ID, "partyHeaderBackground") || "";
+		const fp = new FilePicker({
+			type: "imagevideo",
+			current: currentImage,
+			callback: async (path) => {
+				await actor.setFlag(MODULE_ID, "partyHeaderBackground", path);
+				// Force sheet re-render to apply the background properly
+				app.render(false);
+			}
+		});
+		fp.render(true);
+	});
+	
+	// Handle remove image button
+	$settingsMenu.find('.sdx-header-remove-image').on('click', async (event) => {
+		event.preventDefault();
+		event.stopPropagation();
+		
+		// Close the menu
+		$settingsBtn.removeClass('active');
+		$settingsMenu.removeClass('visible');
+		
+		// Remove the custom background
+		await actor.unsetFlag(MODULE_ID, "partyHeaderBackground");
+		
+		// Force sheet re-render
+		app.render(false);
+	});
+	
+	// Portrait click to launch tokenizer (if vtta-tokenizer module is active)
+	// Hold Shift to open the default Foundry file picker instead
+	const $portrait = $header.find('.party-portrait');
+	$portrait.off('click.sdxPartyPortrait').on('click.sdxPartyPortrait', async (e) => {
+		if (!actor.isOwner && !game.user.isGM) return;
+		e.preventDefault();
+		e.stopPropagation();
+		
+		// If shift is held, open the default file picker
+		if (e.shiftKey) {
+			const fp = new FilePicker({
+				type: "image",
+				current: actor.img,
+				callback: async (path) => {
+					await actor.update({ img: path });
+				}
+			});
+			return fp.browse();
+		}
+		
+		// Check if vtta-tokenizer module is active and available
+		if (!window.Tokenizer && !game.modules.get("vtta-tokenizer")?.active) {
+			// No tokenizer available, fall back to file picker
+			const fp = new FilePicker({
+				type: "image",
+				current: actor.img,
+				callback: async (path) => {
+					await actor.update({ img: path });
+				}
+			});
+			return fp.browse();
+		}
+		
+		try {
+			// Use tokenizeActor for direct tokenization, or launch for UI
+			if (window.Tokenizer?.tokenizeActor) {
+				await window.Tokenizer.tokenizeActor(actor);
+			} else if (window.Tokenizer?.launch) {
+				// Launch with options
+				const options = {
+					name: actor.name,
+					type: "npc", // Party actors are NPC type
+					avatarFilename: actor.img
+				};
+				window.Tokenizer.launch(options, (response) => {
+					console.log("shadowdark-extras | Tokenizer response:", response);
+					ui.notifications.success(`Tokenizer completed for ${actor.name}!`);
+				});
+			} else {
+				// Fallback to file picker if Tokenizer API not found
+				const fp = new FilePicker({
+					type: "image",
+					current: actor.img,
+					callback: async (path) => {
+						await actor.update({ img: path });
+					}
+				});
+				return fp.browse();
+			}
+		} catch (error) {
+			console.error("shadowdark-extras | Error launching tokenizer:", error);
+			ui.notifications.error(`Failed to launch tokenizer: ${error.message}`);
+		}
+	});
+}
+
+/**
+ * Apply the custom header background for party sheets
+ * Supports both images and videos (mp4, webm)
+ */
+function applyPartyHeaderBackground(html, actor) {
+	const headerBg = actor.getFlag(MODULE_ID, "partyHeaderBackground");
+	
+	// Find the form - html might BE the form or contain it
+	let $form = html.is('form') ? html : html.find('form').first();
+	if (!$form.length) $form = html.closest('form');
+	if (!$form.length) return;
+	
+	const $header = $form.find('.party-header.SD-header').first();
+	const $nav = $form.find('.SD-nav').first();
+	
+	if (!$header.length) return;
+	
+	// Remove any existing background extension
+	$form.find('.sdx-party-header-bg-extension').remove();
+	
+	if (!headerBg) {
+		$header.removeClass('sdx-custom-party-header');
+		return;
+	}
+	
+	$header.addClass('sdx-custom-party-header');
+	
+	// Calculate the height needed to cover header + nav
+	const updateBgHeight = () => {
+		const headerRect = $header[0]?.getBoundingClientRect();
+		const navRect = $nav[0]?.getBoundingClientRect();
+		const formRect = $form[0]?.getBoundingClientRect();
+		
+		if (!headerRect || !navRect || !formRect) return;
+		
+		// Calculate from the top of header to the bottom of nav, relative to form
+		// Add extra padding to ensure background covers full tab area
+		const totalHeight = (navRect.bottom - formRect.top) + 30;
+		$form.find('.sdx-party-header-bg-extension').css('height', totalHeight + 'px');
+	};
+	
+	// Check if it's a video file
+	const isVideo = /\.(mp4|webm|ogg)$/i.test(headerBg);
+	
+	// Create the background extension element
+	const $bgExtension = $('<div class="sdx-party-header-bg-extension"></div>');
 	
 	if (isVideo) {
 		const videoType = headerBg.split('.').pop().toLowerCase();
@@ -6249,6 +6531,43 @@ Hooks.once("ready", async () => {
 	setupItemPilesUnidentifiedHooks();
 	wrapBuildWeaponDisplayForUnidentified();
 	
+	// Patch NPC sheets to add _toggleLightSource method
+	// The Shadowdark system's ActorSheetSD._deleteItem tries to call this method,
+	// but it only exists on PlayerSheetSD, causing errors when deleting torch items from NPCs
+	if (globalThis.shadowdark?.sheets?.NpcSheetSD) {
+		const NpcSheetSD = globalThis.shadowdark.sheets.NpcSheetSD;
+		if (!NpcSheetSD.prototype._toggleLightSource) {
+			NpcSheetSD.prototype._toggleLightSource = async function(item, options = {}) {
+				// For NPCs, just toggle the light active state without the player-specific features
+				const active = !item.system.light?.active;
+				
+				if (active) {
+					// Turn off any currently active lights
+					const activeLightSources = await this.actor.getActiveLightSources?.() || [];
+					for (const lightSource of activeLightSources) {
+						await this.actor.updateEmbeddedDocuments("Item", [{
+							"_id": lightSource.id,
+							"system.light.active": false,
+						}]);
+					}
+				}
+				
+				const dataUpdate = {
+					"_id": item.id,
+					"system.light.active": active,
+				};
+				
+				if (!item.system.light?.hasBeenUsed) {
+					dataUpdate["system.light.hasBeenUsed"] = true;
+				}
+				
+				await this.actor.updateEmbeddedDocuments("Item", [dataUpdate]);
+				await this.actor.toggleLight?.(active, item.id);
+			};
+			console.log(`${MODULE_ID} | Patched NpcSheetSD with _toggleLightSource method`);
+		}
+	}
+	
 	// Wrap ActorSD._learnSpell to preserve spell damage flags from scrolls
 	if (globalThis.shadowdark?.documents?.ActorSD) {
 		const ActorSD = globalThis.shadowdark.documents.ActorSD;
@@ -6399,7 +6718,85 @@ Hooks.on("renderActorSheet", (app, html, data) => {
 	if (!isPartyActor(app.actor)) return;
 	
 	applyInventoryStylesToSheet(html, app.actor);
+	injectPartyHeaderCustomization(app, html, app.actor);
 });
+
+/**
+ * Setup activity toggles to act like radio buttons - only one can be active at a time
+ * @param {jQuery} html - The HTML element
+ * @param {Item} item - The item being edited
+ */
+function setupActivityRadioToggles(html, item) {
+	// Spell Damage toggle
+	html.find('.sdx-spell-damage-toggle').off('change').on('change', function() {
+		const isEnabled = $(this).is(':checked');
+		const $content = $(this).closest('.sdx-spell-damage-box').find('.sdx-spell-damage-content');
+		
+		if (isEnabled) {
+			$content.slideDown(200);
+			// Disable other activities visually
+			html.find('.sdx-summoning-toggle').prop('checked', false);
+			html.find('.sdx-item-give-toggle').prop('checked', false);
+			// Save all states at once
+			const updateData = {};
+			updateData[`flags.${MODULE_ID}.spellDamage.enabled`] = true;
+			updateData[`flags.${MODULE_ID}.summoning.enabled`] = false;
+			updateData[`flags.${MODULE_ID}.itemGive.enabled`] = false;
+			item.update(updateData, { render: false });
+		} else {
+			$content.slideUp(200);
+			const updateData = {};
+			updateData[`flags.${MODULE_ID}.spellDamage.enabled`] = false;
+			item.update(updateData, { render: false });
+		}
+	});
+	
+	// Summoning toggle
+	html.find('.sdx-summoning-toggle').off('change').on('change', function(e) {
+		e.stopPropagation();
+		const isEnabled = $(this).is(':checked');
+		
+		if (isEnabled) {
+			// Disable other activities visually
+			html.find('.sdx-spell-damage-toggle').prop('checked', false);
+			html.find('.sdx-spell-damage-content').slideUp(200);
+			html.find('.sdx-item-give-toggle').prop('checked', false);
+			// Save all states at once
+			const updateData = {};
+			updateData[`flags.${MODULE_ID}.spellDamage.enabled`] = false;
+			updateData[`flags.${MODULE_ID}.summoning.enabled`] = true;
+			updateData[`flags.${MODULE_ID}.itemGive.enabled`] = false;
+			item.update(updateData, { render: false });
+		} else {
+			const updateData = {};
+			updateData[`flags.${MODULE_ID}.summoning.enabled`] = false;
+			item.update(updateData, { render: false });
+		}
+	});
+	
+	// Item Give toggle
+	html.find('.sdx-item-give-toggle').off('change').on('change', function(e) {
+		e.stopPropagation();
+		const isEnabled = $(this).is(':checked');
+		
+		if (isEnabled) {
+			// Disable other activities visually
+			html.find('.sdx-spell-damage-toggle').prop('checked', false);
+			html.find('.sdx-spell-damage-content').slideUp(200);
+			html.find('.sdx-summoning-toggle').prop('checked', false);
+			// Save all states at once
+			const updateData = {};
+			updateData[`flags.${MODULE_ID}.spellDamage.enabled`] = false;
+			updateData[`flags.${MODULE_ID}.summoning.enabled`] = false;
+			updateData[`flags.${MODULE_ID}.itemGive.enabled`] = true;
+			item.update(updateData, { render: false });
+		} else {
+			const updateData = {};
+			updateData[`flags.${MODULE_ID}.itemGive.enabled`] = false;
+			item.update(updateData, { render: false });
+		}
+	});
+}
 
 /**
  * Enhance spell item sheets with damage/heal configuration
@@ -6920,19 +7317,30 @@ async function enhanceSpellSheet(app, html) {
 
 	// ===== SUMMONING HANDLERS =====
 	
-	// Toggle summoning section
+	// Toggle summoning section - acts like radio button (only one activity can be enabled)
 	html.on('change', '.sdx-summoning-toggle', function(e) {
 		e.stopPropagation();
 		const enabled = $(this).prop('checked');
 		
 		console.log(`${MODULE_ID} | Summoning toggle changed to:`, enabled);
 		
-		// Save the enabled state
-		const updateData = {};
-		updateData[`flags.${MODULE_ID}.summoning.enabled`] = enabled;
-		item.update(updateData, { render: false }).then(() => {
-			console.log(`${MODULE_ID} | Summoning enabled state saved:`, enabled);
-		});
+		if (enabled) {
+			// Disable other activities
+			html.find('.sdx-spell-damage-toggle').prop('checked', false);
+			html.find('.sdx-spell-damage-content').slideUp(200);
+			html.find('.sdx-item-give-toggle').prop('checked', false);
+			// Save all states at once
+			const updateData = {};
+			updateData[`flags.${MODULE_ID}.spellDamage.enabled`] = false;
+			updateData[`flags.${MODULE_ID}.summoning.enabled`] = true;
+			updateData[`flags.${MODULE_ID}.itemGive.enabled`] = false;
+			item.update(updateData, { render: false });
+		} else {
+			// Just disable this one
+			const updateData = {};
+			updateData[`flags.${MODULE_ID}.summoning.enabled`] = false;
+			item.update(updateData, { render: false });
+		}
 	});
 	
 	// Add summon profile button
@@ -7208,6 +7616,9 @@ async function enhanceSpellSheet(app, html) {
 			console.error(`${MODULE_ID} | Failed to save item give profiles:`, err);
 		});
 	}
+
+	// Setup activity toggles as radio buttons (only one can be active at a time)
+	setupActivityRadioToggles(html, item);
 
 	console.log(`${MODULE_ID} | Spell sheet enhanced for`, item.name);
 }
@@ -7956,6 +8367,9 @@ async function enhancePotionSheet(app, html) {
 		});
 	}
 
+	// Setup activity toggles as radio buttons (only one can be active at a time)
+	setupActivityRadioToggles(html, item);
+
 	console.log(`${MODULE_ID} | Potion sheet enhanced for`, item.name);
 }
 
@@ -8684,6 +9098,9 @@ async function enhanceScrollSheet(app, html) {
 		});
 	}
 
+	// Setup activity toggles as radio buttons (only one can be active at a time)
+	setupActivityRadioToggles(html, item);
+
 	console.log(`${MODULE_ID} | Scroll sheet enhanced for`, item.name);
 }
 
@@ -9394,6 +9811,9 @@ async function enhanceWandSheet(app, html) {
 		});
 	}
 
+	// Setup activity toggles as radio buttons (only one can be active at a time)
+	setupActivityRadioToggles(html, item);
+
 	console.log(`${MODULE_ID} | Wand sheet enhanced for`, item.name);
 }
 
@@ -9439,6 +9859,16 @@ Hooks.on("renderItemSheet", (app, html, data) => {
 		enhanceWandSheet(app, html);
 	} catch (err) {
 		console.error(`${MODULE_ID} | Failed to enhance wand sheet`, err);
+	}
+
+	// Inject weapon bonus tab
+	try {
+		const item = app.item || app.document;
+		if (item?.type === "Weapon") {
+			injectWeaponBonusTab(app, html, item);
+		}
+	} catch (err) {
+		console.error(`${MODULE_ID} | Failed to inject weapon bonus tab`, err);
 	}
 
 	// Hide already-rendered Effects tab elements for non-GM players viewing unidentified items
@@ -9623,7 +10053,49 @@ Hooks.on("renderChatMessage", (message, html, data) => {
 	} catch (err) {
 		console.error(`${MODULE_ID} | Failed to inject damage card`, err);
 	}
+	
+	// Also process weapon bonuses for weapon attack messages
+	try {
+		processWeaponBonuses(message, html);
+	} catch (err) {
+		console.error(`${MODULE_ID} | Failed to process weapon bonuses`, err);
+	}
 });
+
+/**
+ * Process weapon bonuses for a chat message
+ */
+async function processWeaponBonuses(message, html) {
+	// Check if this is a weapon attack roll
+	const flags = message.flags?.shadowdark;
+	if (!flags?.itemId) return;
+	
+	// Get the actor and item
+	const actor = game.actors.get(message.speaker?.actor) || canvas.tokens.get(message.speaker?.token)?.actor;
+	if (!actor) return;
+	
+	const item = actor.items.get(flags.itemId);
+	if (!item || item.type !== "Weapon") return;
+	
+	// Check if weapon has bonuses configured
+	const bonusFlags = item.flags?.[MODULE_ID]?.weaponBonus;
+	if (!bonusFlags?.enabled) return;
+	
+	// Check if this was a critical hit
+	const isCritical = message.rolls?.some(r => {
+		const d20Roll = r.terms?.find(t => t.faces === 20);
+		return d20Roll?.total === 20;
+	});
+	
+	// Try to get the target
+	const targetToken = message.flags?.shadowdark?.targetToken
+		? canvas.tokens.get(message.flags.shadowdark.targetToken)
+		: game.user.targets.first();
+	const target = targetToken?.actor;
+	
+	// Inject the weapon bonus display
+	await injectWeaponBonusDisplay(message, html, item, actor, target, isCritical);
+}
 
 // Wrap ItemSheet getData to modify context before rendering
 Hooks.once("ready", () => {

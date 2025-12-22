@@ -1,7 +1,9 @@
 <form class="{{cssClass}} flexcol" autocomplete="off" data-tokenizer-skip="true">
-	<header class="party-header">
+	{{!-- Background extension element for custom header backgrounds --}}
+	
+	<header class="party-header SD-header">
 		<img
-			class="party-portrait"
+			class="party-portrait portrait"
 			src="{{ actor.img }}"
 			data-edit="img"
 			data-tooltip="{{ actor.name }}"
@@ -68,6 +70,10 @@
 				<button type="button" data-action="reward-xp" data-tooltip="{{localize 'SHADOWDARK_EXTRAS.party.reward_xp_tooltip'}}">
 					<i class="fas fa-star"></i>
 					{{localize "SHADOWDARK_EXTRAS.party.reward_xp"}}
+				</button>
+				<button type="button" data-action="reward-coins" data-tooltip="{{localize 'SHADOWDARK_EXTRAS.party.reward_coins_tooltip'}}">
+					<i class="fas fa-coins"></i>
+					{{localize "SHADOWDARK_EXTRAS.party.reward_coins"}}
 				</button>
 				{{/if}}
 			</div>

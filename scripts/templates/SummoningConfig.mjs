@@ -10,24 +10,24 @@ export function generateSummoningConfigHTML(MODULE_ID, flags, summonsList, summo
 	return `
 		<div class="SD-box sdx-summoning-box grid-colspan-3">
 			<div class="header light">
-				<label style="display: flex; align-items: center; gap: 0.5rem;">
+				<label class="sdx-section-checkbox">
 					<input type="checkbox" name="flags.${MODULE_ID}.summoning.enabled" 
 					       ${flags.enabled ? 'checked' : ''} 
 					       class="sdx-summoning-toggle" />
-					<span style="font-weight: bold;">Summonings</span>
+					<span>Summonings</span>
 				</label>
 				<span></span>
 			</div>
 			<div class="content sdx-summoning-content">
 				<div class="SD-grid">
 					<!-- Summons Profiles List -->
-					<h3 style="grid-column: 1 / -1; margin-bottom: 8px;">Summon Profiles</h3>
-					<div class="sdx-summons-list" style="grid-column: 1 / -1; display: flex; flex-direction: column; gap: 8px;">
-						${summonsList || '<div class="sdx-no-summons">Click "Add Summon Profile" to add creatures</div>'}
+					<h3 class="sdx-section-title">Summon Profiles</h3>
+					<div class="sdx-summons-list">
+						${summonsList || '<div class="sdx-no-summons"><i class="fas fa-dragon"></i> Click "Add Summon Profile" to add creatures</div>'}
 					</div>
 					
 					<!-- Add Profile Button -->
-					<button type="button" class="sdx-add-summon-btn" style="grid-column: 1 / -1; margin-top: 8px;">
+					<button type="button" class="sdx-add-summon-btn">
 						<i class="fas fa-plus"></i> Add Summon Profile
 					</button>
 					
@@ -46,18 +46,21 @@ export function generateSummoningConfigHTML(MODULE_ID, flags, summonsList, summo
  * @returns {string} HTML string
  */
 export function generateSummonProfileHTML(profile, index) {
+	const truncatedName = (profile.creatureName || 'Unknown').length > 8 
+		? (profile.creatureName || 'Unknown').substring(0, 8) + '…' 
+		: (profile.creatureName || 'Unknown');
 	return `
 		<div class="sdx-summon-profile" data-index="${index}">
-			<div class="SD-grid" style="align-items: center; gap: 4px;">
+			<div class="sdx-profile-grid">
 				<!-- Creature Drop Zone -->
-				<div class="sdx-summon-creature-drop" style="grid-column: 1 / 2; min-height: 48px; border: 1px dashed #999; border-radius: 4px; padding: 4px; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.1);">
+				<div class="sdx-summon-creature-drop">
 					${profile.creatureUuid ? `
-						<div class="sdx-summon-creature-display" data-uuid="${profile.creatureUuid}">
-							<img src="${profile.creatureImg || 'icons/svg/mystery-man.svg'}" alt="${profile.creatureName || 'Creature'}" style="width: 40px; height: 40px; border-radius: 4px;" />
-							<span style="margin-left: 4px; font-size: 0.9em;">${profile.creatureName || 'Unknown'}</span>
+						<div class="sdx-summon-creature-display" data-uuid="${profile.creatureUuid}" title="${profile.creatureName || 'Unknown'}">
+							<img src="${profile.creatureImg || 'icons/svg/mystery-man.svg'}" alt="${profile.creatureName || 'Creature'}" />
+							<span>${truncatedName}</span>
 						</div>
 					` : `
-						<span style="color: #999; font-size: 0.85em;">Drop creature here</span>
+						<span><i class="fas fa-crosshairs"></i> Drop creature here</span>
 					`}
 				</div>
 				<input type="hidden" class="sdx-creature-uuid" value="${profile.creatureUuid || ''}" />
@@ -65,25 +68,22 @@ export function generateSummonProfileHTML(profile, index) {
 				<input type="hidden" class="sdx-creature-img" value="${profile.creatureImg || ''}" />
 				
 				<!-- Count Formula -->
-				<div style="grid-column: 2 / 3; display: flex; flex-direction: column;">
-					<label style="font-size: 0.85em; margin-bottom: 2px; font-weight: bold;">Count</label>
+				<div class="sdx-profile-field">
+					<label>Count</label>
 					<input type="text" class="sdx-summon-count" value="${profile.count || '1'}" 
 					       placeholder="1, 1d4, etc." 
-					       title="Number of creatures to summon. Can be a number or dice formula (e.g., 1d4, 2d6)." 
-					       style="width: 100%;" />
+					       title="Number of creatures to summon. Can be a number or dice formula (e.g., 1d4, 2d6)." />
 				</div>
 				
 				<!-- Display Name -->
-				<div style="grid-column: 3 / 4; display: flex; flex-direction: column;">
-					<label style="font-size: 0.85em; margin-bottom: 2px; font-weight: bold;">Display Name</label>
+				<div class="sdx-profile-field">
+					<label>Display Name</label>
 					<input type="text" class="sdx-summon-display-name" value="${profile.displayName || ''}" 
-					       placeholder="Optional custom name" 
-					       style="width: 100%;" />
+					       placeholder="Optional custom name" />
 				</div>
 				
 				<!-- Remove Button -->
 				<button type="button" class="sdx-remove-summon-btn" data-index="${index}" 
-				        style="grid-column: 4 / 5; width: 32px; height: 32px; padding: 0; align-self: end;"
 				        title="Remove this summon profile">
 					<i class="fas fa-times"></i>
 				</button>
