@@ -4694,6 +4694,11 @@ color: rgba(255, 255, 255, 0.95) !important;
     border: 2px solid rgba(255, 255, 255, 0.2);
 }
 
+/* HP wave overlay for player sheet portrait */
+.sdx-enhanced-content .sdx-portrait-container .hp-wave-container {
+    border-radius: 0;
+}
+
 .sdx-enhanced-content .sdx-portrait {
     width: 100%;
     height: 100%;
@@ -4716,6 +4721,7 @@ color: rgba(255, 255, 255, 0.95) !important;
     height: 20px;
     background: rgba(0, 0, 0, 0.7);
     cursor: pointer;
+    z-index: 2;
 }
 
 .sdx-enhanced-content .sdx-hp-bar {
@@ -6246,13 +6252,188 @@ section[data-tab="tab-notes"].sdx-journal-active > div:not(.sdx-journal-notes) {
     padding: 8px 12px;
 }
 
+.sdx-roll-formula-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 4px;
+}
+
 .sdx-roll-formula {
     text-align: center;
     font-size: 12px;
     font-weight: bold;
     color: rgba(60, 50, 40, 0.7);
-    margin-bottom: 4px;
     font-family: 'Courier New', monospace;
+}
+
+.sdx-reroll-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    background: rgba(100, 90, 80, 0.15);
+    border: 1px solid rgba(100, 90, 80, 0.3);
+    border-radius: 4px;
+    color: rgba(60, 50, 40, 0.7);
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.sdx-reroll-btn:hover {
+    background: rgba(100, 90, 80, 0.25);
+    color: rgba(60, 50, 40, 0.9);
+    transform: scale(1.1);
+}
+
+.sdx-reroll-btn:active {
+    transform: scale(0.95);
+}
+
+.sdx-reroll-btn i {
+    font-size: 12px;
+}
+
+/* New breakdown line: Total = d1 + d2 + bonus */
+.sdx-roll-breakdown-line {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    flex-wrap: wrap;
+    padding: 6px;
+    background: rgba(0, 0, 0, 0.05);
+    border-radius: 4px;
+}
+
+.sdx-roll-breakdown-line .sdx-roll-total {
+    display: inline-block;
+    font-size: 21px;
+    font-weight: bold;
+    color: #ffffff;
+    background: rgb(0 0 0 / 89%);
+    border: 2px solid rgba(201, 170, 88, 0.5);
+    border-radius: 4px;
+    padding: 2px 8px;
+    min-width: 40px;
+    text-align: center;
+}
+
+.sdx-roll-breakdown-line .sdx-equals {
+    font-size: 16px;
+    font-weight: bold;
+    color: rgba(60, 50, 40, 0.7);
+}
+
+.sdx-roll-breakdown-line .sdx-plus {
+    font-size: 14px;
+    font-weight: bold;
+    color: rgba(60, 50, 40, 0.5);
+}
+
+.sdx-roll-breakdown-line .sdx-die {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 26px;
+    height: 26px;
+    padding: 0 4px;
+    background: rgba(255, 255, 255, 0.9);
+    border: 1px solid rgba(100, 90, 80, 0.3);
+    border-radius: 3px;
+    font-size: 14px;
+    font-weight: bold;
+    color: #2a2218;
+}
+
+.sdx-roll-breakdown-line .sdx-die.sdx-die-max {
+    background: rgba(76, 175, 80, 0.3);
+    border-color: rgba(76, 175, 80, 0.6);
+    color: #2e7d32;
+}
+
+.sdx-roll-breakdown-line .sdx-die.sdx-die-min {
+    background: rgba(244, 67, 54, 0.2);
+    border-color: rgba(244, 67, 54, 0.5);
+    color: #c62828;
+}
+
+/* Clickable dice for individual reroll */
+.sdx-roll-breakdown-line .sdx-die.sdx-die-clickable {
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+}
+
+.sdx-roll-breakdown-line .sdx-die.sdx-die-clickable:hover {
+    transform: scale(1.15);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    background: rgba(201, 170, 88, 0.4);
+    border-color: rgba(201, 170, 88, 0.8);
+}
+
+.sdx-roll-breakdown-line .sdx-die.sdx-die-clickable:active {
+    transform: scale(0.95);
+}
+
+/* Weapon bonus dice (blue tint) */
+.sdx-roll-breakdown-line .sdx-die.sdx-weapon-bonus {
+    background: rgba(33, 150, 243, 0.25);
+    border-color: rgba(33, 150, 243, 0.6);
+    color: #1565c0;
+}
+
+.sdx-roll-breakdown-line .sdx-die.sdx-weapon-bonus.sdx-die-max {
+    background: rgba(33, 150, 243, 0.4);
+    border-color: rgba(33, 150, 243, 0.8);
+    color: #0d47a1;
+}
+
+.sdx-roll-breakdown-line .sdx-die.sdx-weapon-bonus.sdx-die-min {
+    background: rgba(244, 67, 54, 0.2);
+    border-color: rgba(244, 67, 54, 0.5);
+    color: #c62828;
+}
+
+/* Critical bonus dice (purple/magenta tint) */
+.sdx-roll-breakdown-line .sdx-die.sdx-crit-bonus {
+    background: rgba(156, 39, 176, 0.25);
+    border-color: rgba(156, 39, 176, 0.6);
+    color: #7b1fa2;
+}
+
+.sdx-roll-breakdown-line .sdx-die.sdx-crit-bonus.sdx-die-max {
+    background: rgba(156, 39, 176, 0.4);
+    border-color: rgba(156, 39, 176, 0.8);
+    color: #4a148c;
+}
+
+.sdx-roll-breakdown-line .sdx-die.sdx-crit-bonus.sdx-die-min {
+    background: rgba(244, 67, 54, 0.2);
+    border-color: rgba(244, 67, 54, 0.5);
+    color: #c62828;
+}
+
+/* Hover states for bonus dice */
+.sdx-roll-breakdown-line .sdx-die.sdx-weapon-bonus.sdx-die-clickable:hover {
+    background: rgba(33, 150, 243, 0.5);
+    border-color: rgba(33, 150, 243, 0.9);
+}
+
+.sdx-roll-breakdown-line .sdx-die.sdx-crit-bonus.sdx-die-clickable:hover {
+    background: rgba(156, 39, 176, 0.5);
+    border-color: rgba(156, 39, 176, 0.9);
+}
+
+.sdx-roll-breakdown-line .sdx-bonus-val {
+    font-size: 14px;
+    font-weight: bold;
+    color: #1565c0;
+    padding: 2px 6px;
+    background: rgba(21, 101, 192, 0.1);
+    border-radius: 3px;
 }
 
 .sdx-roll-result {
@@ -7881,4 +8062,226 @@ margin: 8px 0;
     color: #888;
     font-family: 'Courier New', monospace;
     font-size: 9px;
+}
+
+/* ============================================
+   HP WAVE ANIMATION OVERLAY
+   ============================================ */
+
+.hp-wave-container {
+  --hp-wave-color: #dc2626;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: -20px;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 1;
+  border-radius: 6px;
+}
+
+.hp-wave-container .hp-waves {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 200%;
+  height: 120%;
+  transform: translateY(var(--hp-translate, 100%));
+  transition: transform 0.5s ease-out;
+}
+
+.hp-wave-container .hp-waves .wave-path {
+  animation: hp-wave-move 8s linear infinite;
+}
+
+.hp-wave-container .hp-waves .wave-path:nth-child(1) {
+  animation-delay: 0s;
+  animation-duration: 7s;
+  fill: color-mix(in srgb, var(--hp-wave-color) 35%, transparent);
+}
+
+.hp-wave-container .hp-waves .wave-path:nth-child(2) {
+  animation-delay: -2s;
+  animation-duration: 10s;
+  fill: color-mix(in srgb, var(--hp-wave-color) 45%, transparent);
+}
+
+.hp-wave-container .hp-waves .wave-path:nth-child(3) {
+  animation-delay: -4s;
+  animation-duration: 13s;
+  fill: color-mix(in srgb, var(--hp-wave-color) 55%, transparent);
+}
+
+.hp-wave-container .hp-waves .wave-path:nth-child(4) {
+  animation-delay: -6s;
+  animation-duration: 18s;
+  fill: color-mix(in srgb, var(--hp-wave-color) 75%, black 15%);
+}
+
+@keyframes hp-wave-move {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+/* Death state - full overlay using wave color */
+.hp-wave-container.hp-dead {
+  background: color-mix(in srgb, var(--hp-wave-color) 85%, black);
+}
+
+.hp-wave-container.hp-dead .hp-waves {
+  display: none;
+}
+
+/* Full HP - hide waves completely */
+.hp-wave-container.hp-full {
+  display: none;
+}
+
+/* ============================================
+   HP WAVES SETTINGS APP
+   ============================================ */
+
+.hp-waves-settings-app .sdx-settings-section {
+  margin-bottom: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.hp-waves-settings-app .sdx-settings-section:last-of-type {
+  border-bottom: none;
+}
+
+.hp-waves-settings-app h2 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.2rem;
+}
+
+.hp-waves-settings-app h3 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1rem;
+}
+
+.hp-waves-settings-app .notes {
+  font-size: 0.85rem;
+  color: #666;
+  margin: 0.25rem 0;
+}
+
+.hp-waves-settings-app .form-group {
+  margin-bottom: 0.75rem;
+}
+
+.hp-waves-settings-app .form-group label {
+  font-weight: bold;
+  margin-right: 0.5rem;
+}
+
+.hp-waves-settings-app .sdx-color-picker-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.hp-waves-settings-app .sdx-color-picker-row input[type="color"] {
+  width: 50px;
+  height: 30px;
+  padding: 0;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.hp-waves-settings-app .sdx-color-value {
+  font-family: monospace;
+  font-size: 0.9rem;
+}
+
+.hp-waves-settings-app .sdx-ancestry-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin: 0.75rem 0;
+}
+
+.hp-waves-settings-app .sdx-ancestry-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 4px;
+}
+
+.hp-waves-settings-app .sdx-ancestry-name {
+  flex: 1;
+  padding: 0.25rem 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.hp-waves-settings-app .sdx-ancestry-color {
+  width: 50px;
+  height: 30px;
+  padding: 0;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.hp-waves-settings-app .sdx-remove-ancestry {
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: none;
+  background: rgba(200, 0, 0, 0.1);
+  border-radius: 4px;
+  cursor: pointer;
+  color: #c00;
+  transition: background 0.2s;
+}
+
+.hp-waves-settings-app .sdx-remove-ancestry:hover {
+  background: rgba(200, 0, 0, 0.2);
+}
+
+.hp-waves-settings-app .sdx-add-ancestry {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px dashed #999;
+  background: transparent;
+  border-radius: 4px;
+  cursor: pointer;
+  color: #666;
+  transition: all 0.2s;
+}
+
+.hp-waves-settings-app .sdx-add-ancestry:hover {
+  border-color: #666;
+  color: #333;
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.hp-waves-settings-app .sheet-footer {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(0, 0, 0, 0.2);
+  gap: 0.5rem;
+}
+
+.hp-waves-settings-app .sheet-footer button {
+  flex: 1;
+}
+
+.hp-waves-settings-app .sdx-reset-defaults {
+  background: rgba(200, 0, 0, 0.1);
+  border-color: rgba(200, 0, 0, 0.3);
+}
+
+.hp-waves-settings-app .sdx-reset-defaults:hover {
+  background: rgba(200, 0, 0, 0.2);
 }

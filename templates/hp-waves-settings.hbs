@@ -1,0 +1,57 @@
+<form class="sdx-hp-waves-settings" autocomplete="off">
+	<div class="sdx-settings-section">
+		<h2>{{localize "SHADOWDARK_EXTRAS.hp_waves.title"}}</h2>
+		<p class="notes">{{localize "SHADOWDARK_EXTRAS.hp_waves.description"}}</p>
+	</div>
+
+	<div class="sdx-settings-section">
+		<div class="form-group">
+			<label>{{localize "SHADOWDARK_EXTRAS.hp_waves.enable"}}</label>
+			<input type="checkbox" name="enabled" {{checked enabled}}/>
+			<p class="notes">{{localize "SHADOWDARK_EXTRAS.hp_waves.enable_hint"}}</p>
+		</div>
+	</div>
+
+	<div class="sdx-settings-section">
+		<div class="form-group">
+			<label>{{localize "SHADOWDARK_EXTRAS.hp_waves.default_color"}}</label>
+			<div class="sdx-color-picker-row">
+				<input type="color" name="defaultColor" value="{{defaultColor}}" class="sdx-default-color"/>
+				<span class="sdx-color-value">{{defaultColor}}</span>
+			</div>
+			<p class="notes">{{localize "SHADOWDARK_EXTRAS.hp_waves.default_color_hint"}}</p>
+		</div>
+	</div>
+
+	<div class="sdx-settings-section">
+		<h3>{{localize "SHADOWDARK_EXTRAS.hp_waves.ancestry_colors"}}</h3>
+		<p class="notes">{{localize "SHADOWDARK_EXTRAS.hp_waves.ancestry_colors_hint"}}</p>
+		
+		<div class="sdx-ancestry-list">
+			{{#each ancestryColors}}
+			<div class="sdx-ancestry-row" data-index="{{@index}}">
+				<input type="text" name="ancestryColors.{{@index}}.ancestry" 
+					placeholder="{{localize 'SHADOWDARK_EXTRAS.hp_waves.ancestry_placeholder'}}" 
+					value="{{this.ancestry}}" class="sdx-ancestry-name"/>
+				<input type="color" name="ancestryColors.{{@index}}.color" value="{{this.color}}" class="sdx-ancestry-color"/>
+				<button type="button" class="sdx-remove-ancestry" data-tooltip="{{localize 'SHADOWDARK_EXTRAS.hp_waves.remove'}}">
+					<i class="fas fa-trash"></i>
+				</button>
+			</div>
+			{{/each}}
+		</div>
+		
+		<button type="button" class="sdx-add-ancestry">
+			<i class="fas fa-plus"></i> {{localize "SHADOWDARK_EXTRAS.hp_waves.add_ancestry"}}
+		</button>
+	</div>
+
+	<footer class="sheet-footer flexrow">
+		<button type="button" class="sdx-reset-defaults">
+			<i class="fas fa-undo"></i> {{localize "SHADOWDARK_EXTRAS.hp_waves.reset_defaults"}}
+		</button>
+		<button type="submit" name="submit">
+			<i class="fas fa-save"></i> {{localize "SHADOWDARK_EXTRAS.hp_waves.save"}}
+		</button>
+	</footer>
+</form>

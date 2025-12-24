@@ -23,6 +23,16 @@
 			<p class="sdx-setting-hint">If enabled, players will see the damage card. If disabled, only GMs will see it.</p>
 		</div>
 
+		<div class="sdx-setting-item">
+			<div class="sdx-setting-header">
+				<label for="scrollingCombatText">
+					<input type="checkbox" name="scrollingCombatText" id="scrollingCombatText" {{checked settings.scrollingCombatText}} />
+					<strong>{{localize "SHADOWDARK_EXTRAS.combat.scrolling_text.name"}}</strong>
+				</label>
+			</div>
+			<p class="sdx-setting-hint">{{localize "SHADOWDARK_EXTRAS.combat.scrolling_text.hint"}}</p>
+		</div>
+
 		<div class="sdx-subsettings" data-parent="showDamageCard">
 			<div class="sdx-setting-item">
 				<div class="sdx-setting-header">

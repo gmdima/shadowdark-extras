@@ -9,6 +9,118 @@ const MODULE_ID = "shadowdark-extras";
 let socketlibSocket = null;
 
 /**
+ * Evaluate a formula that may contain expressions like (1 + floor(@level / 2))d6
+ * Returns the simplified dice formula, e.g. "2d6" for level 3
+ * @param {string} formula - The formula string to evaluate
+ * @param {object} rollData - The roll data object with variables like @level
+ * @returns {string} - The evaluated formula with expressions resolved
+ */
+function evaluateFormulaExpressions(formula, rollData) {
+	if (!formula) return formula;
+	
+	let evaluated = formula;
+	
+	// First, replace any @variable references with their values
+	evaluated = evaluated.replace(/@(\w+(?:\.\w+)*)/g, (match, path) => {
+		const parts = path.split('.');
+		let value = rollData;
+		for (const part of parts) {
+			if (value && typeof value === 'object' && part in value) {
+				value = value[part];
+			} else {
+				return match; // Keep original if not found
+			}
+		}
+		return typeof value === 'number' ? value : match;
+	});
+	
+	// Now evaluate any parenthetical expressions containing math before 'd'
+	// Pattern: (expression)d followed by a number
+	evaluated = evaluated.replace(/\(([^)]+)\)\s*d\s*(\d+)/gi, (match, expr, dieSize) => {
+		try {
+			// Replace math functions and evaluate
+			const safeExpr = expr
+				.replace(/floor/gi, 'Math.floor')
+				.replace(/ceil/gi, 'Math.ceil')
+				.replace(/round/gi, 'Math.round')
+				.replace(/min/gi, 'Math.min')
+				.replace(/max/gi, 'Math.max');
+			const numDice = Math.max(1, Math.floor(eval(safeExpr))); // At least 1 die
+			console.log(`shadowdark-extras | Evaluated formula expression: (${expr})d${dieSize} → ${numDice}d${dieSize}`);
+			return `${numDice}d${dieSize}`;
+		} catch (e) {
+			console.warn("shadowdark-extras | Could not evaluate expression:", expr, e);
+			return match;
+		}
+	});
+	
+	// Clean up any remaining standalone floor/ceil expressions not attached to dice
+	evaluated = evaluated.replace(/(\d+)\s*\+\s*floor\s*\(\s*([^)]+)\s*\)/gi, (match, base, expr) => {
+		try {
+			const result = parseInt(base) + Math.floor(eval(expr));
+			return result.toString();
+		} catch (e) {
+			return match;
+		}
+	});
+	
+	// Clean up whitespace around 'd'
+	evaluated = evaluated.replace(/\s+d\s+/gi, 'd');
+	
+	console.log(`shadowdark-extras | Formula evaluation: "${formula}" → "${evaluated}"`);
+	return evaluated;
+}
+
+/**
+ * Double the dice in a formula for critical hits
+ * E.g., "2d6+3" becomes "4d6+3", "1d8+1d4" becomes "2d8+2d4"
+ * Also handles "(1)d6" format
+ * @param {string} formula - The dice formula
+ * @returns {string} - The formula with doubled dice
+ */
+function doubleDiceInFormula(formula) {
+	if (!formula) return formula;
+	
+	// Match dice patterns like Xd6, 2d8, (1)d6, etc.
+	// Handle optional parentheses around the number of dice
+	const doubled = formula.replace(/\(?(\d+)\)?\s*d\s*(\d+)/gi, (match, numDice, dieSize) => {
+		const doubledNum = parseInt(numDice) * 2;
+		return `${doubledNum}d${dieSize}`;
+	});
+	
+	console.log(`shadowdark-extras | Dice doubling: "${formula}" → "${doubled}"`);
+	return doubled;
+}
+
+/**
+ * Show scrolling combat text on a token (floating damage/healing numbers)
+ * @param {Token} token - The token to show text on
+ * @param {number} amount - The amount of damage (positive) or healing (negative for display, but we pass actual change)
+ * @param {boolean} isHealing - Whether this is healing (green) or damage (red)
+ */
+function showScrollingText(token, amount, isHealing) {
+	if (!token || !canvas.interface) return;
+	
+	// Get the text to display
+	const displayAmount = Math.abs(amount);
+	const text = isHealing ? `+${displayAmount}` : `-${displayAmount}`;
+	
+	// Configure the scrolling text style
+	const style = {
+		anchor: CONST.TEXT_ANCHOR_POINTS.TOP,
+		direction: isHealing ? CONST.TEXT_ANCHOR_POINTS.TOP : CONST.TEXT_ANCHOR_POINTS.BOTTOM,
+		fontSize: 48,
+		fill: isHealing ? "#00ff00" : "#ff0000",
+		stroke: "#000000",
+		strokeThickness: 4,
+		jitter: 0.25
+	};
+	
+	// Create the scrolling text
+	canvas.interface.createScrollingText(token.center, text, style);
+}
+
+/**
  * Parse a tiered formula string and return the appropriate formula for the given level
  * Format: "1-3:1d6, 4-6:2d8, 7-9:3d10, 10+:4d12"
  * @param {string} tieredFormula - The tiered formula string
@@ -135,11 +247,22 @@ export function setupCombatSocket() {
                 "system.attributes.hp.value": newHp
             });
             
+            // Scrolling combat text is now handled by the updateActor/updateToken hooks
+            // so we don't need to call it here anymore
+            
             return true;
         } catch (error) {
             console.error("shadowdark-extras | Error in socket damage handler:", error);
             return false;
         }
+    });
+    
+    // Register socket handler for showing scrolling text on all clients
+    socketlibSocket.register("showScrollingText", (data) => {
+        const token = canvas.tokens?.get(data.tokenId);
+        if (!token) return;
+        
+        showScrollingText(token, data.amount, data.isHealing);
     });
     
     // Register socket handler for applying conditions/effects
@@ -251,6 +374,7 @@ export class CombatSettingsApp extends FormApplication {
 export const DEFAULT_COMBAT_SETTINGS = {
 	showDamageCard: true, // Default to enabled for testing
 	showForPlayers: true, // Show damage card for players
+	scrollingCombatText: true, // Show floating damage/healing numbers on tokens
 	damageCard: {
 		showTargets: true,
 		showMultipliers: true,
@@ -290,6 +414,95 @@ export function registerCombatSettings() {
 		type: CombatSettingsApp,
 		restricted: true
 	});
+}
+
+// Track HP values before updates for scrolling text
+const _preUpdateHp = new Map();
+
+/**
+ * Setup scrolling combat text hooks
+ * This catches HP changes from any source (not just our damage cards)
+ */
+export function setupScrollingCombatText() {
+	// Store HP before update
+	Hooks.on("preUpdateActor", (actor, changes, options, userId) => {
+		// Only process if HP is being changed
+		const newHp = foundry.utils.getProperty(changes, "system.attributes.hp.value");
+		if (newHp === undefined) return;
+		
+		// Store the current HP for comparison after update
+		// Use a unique key: for synthetic actors use token id, for real actors use actor id
+		const key = actor.isToken ? `token-${actor.token?.id}` : `actor-${actor.id}`;
+		const currentHp = actor.system?.attributes?.hp?.value;
+		
+		if (currentHp !== undefined) {
+			_preUpdateHp.set(key, {
+				oldHp: currentHp,
+				maxHp: actor.system?.attributes?.hp?.max ?? currentHp,
+				isToken: actor.isToken,
+				tokenId: actor.token?.id,
+				actorId: actor.id
+			});
+		}
+	});
+	
+	// Show scrolling text after update
+	Hooks.on("updateActor", (actor, changes, options, userId) => {
+		// Check if scrolling combat text is enabled
+		let settings;
+		try {
+			settings = game.settings.get(MODULE_ID, "combatSettings");
+		} catch (e) {
+			return; // Settings not registered yet
+		}
+		
+		if (settings.scrollingCombatText === false) return;
+		
+		// Only process if HP was changed
+		const newHp = foundry.utils.getProperty(changes, "system.attributes.hp.value");
+		if (newHp === undefined) return;
+		
+		// Get the stored pre-update HP using the same key logic
+		const key = actor.isToken ? `token-${actor.token?.id}` : `actor-${actor.id}`;
+		const preData = _preUpdateHp.get(key);
+		if (!preData) return;
+		_preUpdateHp.delete(key);
+		
+		const hpChange = preData.oldHp - newHp;
+		if (hpChange === 0) return;
+		
+		const isHealing = hpChange < 0;
+		
+		// Find the appropriate token(s) to show scrolling text on
+		let tokens = [];
+		
+		if (actor.isToken) {
+			// Synthetic actor (unlinked token) - get the specific token
+			const token = canvas.tokens?.get(actor.token?.id);
+			if (token) tokens.push(token);
+		} else {
+			// Real actor - find all LINKED tokens for this actor
+			tokens = canvas.tokens?.placeables?.filter(t => 
+				t.actor?.id === actor.id && t.document.actorLink
+			) || [];
+		}
+		
+		for (const token of tokens) {
+			// Use socket to broadcast to all clients if available
+			if (socketlibSocket) {
+				socketlibSocket.executeForEveryone("showScrollingText", {
+					tokenId: token.id,
+					amount: Math.abs(hpChange),
+					isHealing: isHealing
+				});
+			} else {
+				// Fallback to local-only
+				showScrollingText(token, Math.abs(hpChange), isHealing);
+			}
+		}
+	});
+	
+	console.log("shadowdark-extras | Scrolling combat text initialized");
 }
 
 // Track which messages have already spawned creatures (in-memory cache)
@@ -577,6 +790,17 @@ export async function injectDamageCard(message, html, data) {
 		// Determine which formula type to use (default to 'basic' if not specified)
 		const formulaType = spellDamageConfig.formulaType || 'basic';
 		
+		// Check if the spell was a critical success (for dice doubling)
+		const shadowdarkRolls2 = message.flags?.shadowdark?.rolls;
+		const mainRoll2 = shadowdarkRolls2?.main;
+		const isSpellCritical = mainRoll2?.critical === "success";
+		
+		console.log("shadowdark-extras | Spell critical check:", {
+			critical: mainRoll2?.critical,
+			isSpellCritical,
+			formulaType
+		});
+		
 		// Build damage formula based on selected formula type
 		let formula = '';
 		let tieredFormula = '';
@@ -591,6 +815,7 @@ export async function injectDamageCard(message, html, data) {
 			hasTieredFormula = tieredFormula.trim() !== '';
 		} else {
 			// Use basic formula (numDice + dieType + bonus)
+			// NOTE: Critical doubling is handled later by doubleDiceInFormula for all formula types
 			const numDice = spellDamageConfig.numDice || 1;
 			const dieType = spellDamageConfig.dieType || "d6";
 			const bonus = spellDamageConfig.bonus || 0;
@@ -687,6 +912,15 @@ export async function injectDamageCard(message, html, data) {
 							}
 						}
 						
+						// Evaluate any expressions in the formula (e.g., (1 + floor(@level / 2))d6 -> 2d6)
+						targetFormula = evaluateFormulaExpressions(targetFormula, rollData);
+						
+						// Double dice on critical hit
+						if (isSpellCritical) {
+							targetFormula = doubleDiceInFormula(targetFormula);
+							console.log(`%c║ Critical hit! Doubled dice: ${targetFormula}`, 'color: #FF5722; font-weight: bold;');
+						}
+						
 						// Roll for this specific target
 						const roll = new Roll(targetFormula, rollData);
 						await roll.evaluate();
@@ -739,6 +973,16 @@ export async function injectDamageCard(message, html, data) {
 							finalFormula = tieredResult;
 							console.log(`%c║ Using tiered formula for caster level ${rollData.level}: ${finalFormula}`, 'color: #00BCD4; font-weight: bold;');
 						}
+					}
+					
+					// Evaluate any expressions in the formula (e.g., (1 + floor(@level / 2))d6 -> 2d6)
+					finalFormula = evaluateFormulaExpressions(finalFormula, rollData);
+					
+					// Double dice on critical hit
+					if (isSpellCritical) {
+						const originalFormula = finalFormula;
+						finalFormula = doubleDiceInFormula(finalFormula);
+						console.log(`%c║ Critical hit! Doubled dice: ${originalFormula} → ${finalFormula}`, 'color: #FF5722; font-weight: bold;');
 					}
 					
 					const roll = new Roll(finalFormula, rollData);
@@ -797,6 +1041,8 @@ export async function injectDamageCard(message, html, data) {
 					
 					// Store roll breakdown for use in damage card
 					window._lastSpellRollBreakdown = rollBreakdown;
+					// Store the actual Roll object so buildRollBreakdown can extract individual dice
+					window._lastSpellRoll = roll;
 				}
 			} catch (error) {
 				console.error("shadowdark-extras | Error rolling spell damage:", error);
@@ -842,6 +1088,12 @@ export async function injectDamageCard(message, html, data) {
 		console.log("shadowdark-extras | Spell has effects to apply:", spellEffects);
 	}
 	
+	// Check if this was a critical hit (for doubling bonus dice)
+	const shadowdarkRolls = message.flags?.shadowdark?.rolls;
+	const mainRoll = shadowdarkRolls?.main;
+	const isCritical = mainRoll?.critical === "success";
+	console.log("shadowdark-extras | Critical detection:", { mainRollCritical: mainRoll?.critical, isCritical });
+	
 	// Check if weapon has effects to apply (from weapon bonus config)
 	let weaponEffects = [];
 	let weaponBonusDamage = null;
@@ -851,11 +1103,6 @@ export async function injectDamageCard(message, html, data) {
 			// Get target for requirement evaluation
 			const targetToken = targets[0];
 			const targetActor = targetToken?.actor;
-			
-			// Check if this was a critical hit
-			const shadowdarkRolls = message.flags?.shadowdark?.rolls;
-			const mainRoll = shadowdarkRolls?.main;
-			const isCritical = mainRoll?.critical === "success";
 			
 			// Get weapon effects to apply
 			weaponEffects = getWeaponEffectsToApply(item, actor, targetActor);
@@ -890,7 +1137,7 @@ export async function injectDamageCard(message, html, data) {
 	console.log("shadowdark-extras | Building damage card HTML...");
 
 	// Build the damage card HTML (pass allEffects which includes both spell and weapon effects)
-	const cardHtml = buildDamageCardHtml(actor, cardTargets, totalDamage, damageType, allEffects, spellDamageConfig, settings, message, weaponBonusDamage);
+	const cardHtml = await buildDamageCardHtml(actor, cardTargets, totalDamage, damageType, allEffects, spellDamageConfig, settings, message, weaponBonusDamage, isCritical);
 	
 	console.log("shadowdark-extras | Card HTML built, length:", cardHtml?.length);
 	console.log("shadowdark-extras | Injecting damage card HTML");
@@ -960,7 +1207,7 @@ export async function injectDamageCard(message, html, data) {
  * Build roll breakdown information from message
  * Returns an object with formula, total, diceHtml, and bonusHtml
  */
-function buildRollBreakdown(message, weaponBonusDamage = null) {
+async function buildRollBreakdown(message, weaponBonusDamage = null, isCritical = false) {
 	// Try to get the damage roll from Shadowdark's rolls
 	const shadowdarkRolls = message.flags?.shadowdark?.rolls;
 	const damageRollData = shadowdarkRolls?.damage?.roll;
@@ -968,60 +1215,64 @@ function buildRollBreakdown(message, weaponBonusDamage = null) {
 	// Also check standard message rolls
 	const messageRoll = message.rolls?.[0];
 	
-	// Use whichever roll we can find
-	const roll = damageRollData || messageRoll;
+	// Also check for stored spell roll
+	const spellRoll = window._lastSpellRoll;
+	
+	// Use whichever roll we can find (prioritize message rolls, then spell roll)
+	const roll = damageRollData || messageRoll || spellRoll;
 	
 	if (!roll) {
-		// Check for spell roll breakdown stored in window
+		// Check for spell roll breakdown stored in window (fallback for per-target)
 		if (window._lastSpellRollBreakdown && !window._perTargetDamage) {
 			return {
 				formula: window._lastSpellRollBreakdown.split(' = ')[0] || '',
 				total: window._lastSpellRollBreakdown.split(' = ')[1] || '',
-				diceHtml: '',
-				bonusHtml: ''
+				breakdownHtml: ''
 			};
 		}
 		return null;
 	}
 	
+	// Clear the stored spell roll after using it
+	if (spellRoll && roll === spellRoll) {
+		window._lastSpellRoll = null;
+	}
+	
 	// Extract dice information
-	let diceHtml = '';
+	let diceResults = []; // Array of individual dice results
 	let totalDiceSum = 0;
 	
 	// Handle Foundry Roll object
-	const dice = roll.dice || roll.terms?.filter(t => t.faces) || [];
+	// Check roll.dice first (if it has items), otherwise check roll.terms for Die objects
+	let dice = [];
+	if (roll.dice && roll.dice.length > 0) {
+		dice = roll.dice;
+	} else if (roll.terms) {
+		// Filter terms to find dice (objects with faces property)
+		dice = roll.terms.filter(t => t.faces !== undefined);
+	}
 	
 	if (dice.length > 0) {
-		const diceGroups = [];
-		
 		for (const die of dice) {
 			const faces = die.faces;
 			const results = die.results || [];
-			const diceStr = results.map(r => {
+			
+			for (const r of results) {
 				const val = r.result;
 				const isCrit = val === faces;
 				const isFumble = val === 1;
 				const cssClass = isCrit ? 'sdx-die-max' : (isFumble ? 'sdx-die-min' : '');
-				return `<span class="sdx-die ${cssClass}">${val}</span>`;
-			}).join('');
-			
-			const sum = results.reduce((acc, r) => acc + r.result, 0);
-			totalDiceSum += sum;
-			
-			diceGroups.push(`
-				<div class="sdx-dice-group">
-					<span class="sdx-dice-label">${results.length}d${faces}</span>
-					<span class="sdx-dice-results">${diceStr}</span>
-					<span class="sdx-dice-sum">= ${sum}</span>
-				</div>
-			`);
+				diceResults.push({
+					value: val,
+					cssClass: cssClass,
+					faces: faces
+				});
+				totalDiceSum += val;
+			}
 		}
-		
-		diceHtml = diceGroups.join('');
 	}
 	
 	// Extract numeric modifiers/bonuses
-	let bonusHtml = '';
 	const bonuses = [];
 	
 	// Check for numeric terms in the roll
@@ -1049,58 +1300,214 @@ function buildRollBreakdown(message, weaponBonusDamage = null) {
 		}
 	}
 	
-	// Add weapon bonus if applicable
+	// Add weapon bonus if applicable - extract individual dice for rerolling
+	const weaponBonusDiceResults = [];
 	if (weaponBonusDamage && weaponBonusDamage.requirementsMet) {
-		if (weaponBonusDamage.totalBonus !== 0) {
-			bonuses.push({
-				label: `Bonus (${weaponBonusDamage.bonusFormula})`,
-				value: weaponBonusDamage.totalBonus
-			});
+		console.log("shadowdark-extras | Processing weapon bonus for breakdown:", {
+			bonusFormula: weaponBonusDamage.bonusFormula,
+			criticalFormula: weaponBonusDamage.criticalFormula,
+			isCritical: isCritical,
+			totalBonus: weaponBonusDamage.totalBonus
+		});
+		
+		// Roll bonus formula to get individual dice
+		if (weaponBonusDamage.bonusFormula) {
+			try {
+				// Double dice on critical hit (e.g., 1d6 becomes 2d6)
+				let bonusFormulaToRoll = weaponBonusDamage.bonusFormula;
+				if (isCritical) {
+					const originalFormula = bonusFormulaToRoll;
+					bonusFormulaToRoll = bonusFormulaToRoll.replace(/(\d+)d(\d+)/gi, (match, count, faces) => {
+						return `${parseInt(count) * 2}d${faces}`;
+					});
+					console.log("shadowdark-extras | Critical hit - bonus formula:", originalFormula, "→", bonusFormulaToRoll);
+				}
+				
+				const bonusRoll = new Roll(bonusFormulaToRoll);
+				await bonusRoll.evaluate();
+				
+				// Extract dice results
+				let bonusOperator = '+';
+				for (const term of bonusRoll.terms) {
+					if (term.operator) {
+						bonusOperator = term.operator;
+						continue;
+					}
+					if (term.faces !== undefined && term.results) {
+						for (const r of term.results) {
+							const val = r.result;
+							const isCrit = val === term.faces;
+							const isFumble = val === 1;
+							const cssClass = isCrit ? 'sdx-die-max' : (isFumble ? 'sdx-die-min' : '');
+							weaponBonusDiceResults.push({ value: val, cssClass, faces: term.faces, isBonus: true });
+						}
+					} else if (term.number !== undefined && !term.faces) {
+						// Static bonus from formula
+						if (term.number !== 0) {
+							bonuses.push({
+								label: `Bonus`,
+								value: bonusOperator === '-' ? -term.number : term.number
+							});
+						}
+					}
+				}
+			} catch (err) {
+				// Fallback to showing total if roll fails
+				if (weaponBonusDamage.totalBonus !== 0) {
+					bonuses.push({
+						label: `Bonus (${weaponBonusDamage.bonusFormula})`,
+						value: weaponBonusDamage.totalBonus
+					});
+				}
+			}
 		}
-		if (weaponBonusDamage.criticalBonus !== 0) {
-			bonuses.push({
-				label: `Crit (${weaponBonusDamage.criticalFormula})`,
-				value: weaponBonusDamage.criticalBonus
-			});
+		
+		// Roll critical formula to get individual dice
+		if (weaponBonusDamage.criticalFormula) {
+			try {
+				const critRoll = new Roll(weaponBonusDamage.criticalFormula);
+				await critRoll.evaluate();
+				
+				// Extract dice results
+				let critOperator = '+';
+				for (const term of critRoll.terms) {
+					if (term.operator) {
+						critOperator = term.operator;
+						continue;
+					}
+					if (term.faces !== undefined && term.results) {
+						for (const r of term.results) {
+							const val = r.result;
+							const isCrit = val === term.faces;
+							const isFumble = val === 1;
+							const cssClass = isCrit ? 'sdx-die-max' : (isFumble ? 'sdx-die-min' : '');
+							weaponBonusDiceResults.push({ value: val, cssClass, faces: term.faces, isCritBonus: true });
+						}
+					} else if (term.number !== undefined && !term.faces) {
+						// Static bonus from formula
+						if (term.number !== 0) {
+							bonuses.push({
+								label: `Crit Bonus`,
+								value: critOperator === '-' ? -term.number : term.number
+							});
+						}
+					}
+				}
+			} catch (err) {
+				// Fallback to showing total if roll fails
+				if (weaponBonusDamage.criticalBonus !== 0) {
+					bonuses.push({
+						label: `Crit (${weaponBonusDamage.criticalFormula})`,
+						value: weaponBonusDamage.criticalBonus
+					});
+				}
+			}
 		}
 	}
 	
-	if (bonuses.length > 0) {
-		bonusHtml = bonuses.map(b => {
-			const sign = b.value >= 0 ? '+' : '';
-			return `<div class="sdx-bonus-item"><span class="sdx-bonus-label">${b.label}</span><span class="sdx-bonus-val">${sign}${b.value}</span></div>`;
+	// Build the breakdown string: "Total = d1 + d2 + ... + bonus"
+	let breakdownParts = [];
+	
+	// Add dice results with data attributes for individual rerolling
+	let dieIndex = 0;
+	for (const die of diceResults) {
+		breakdownParts.push({
+			html: `<span class="sdx-die sdx-die-clickable ${die.cssClass}" data-die-index="${dieIndex}" data-faces="${die.faces}" title="Click to reroll this d${die.faces}">${die.value}</span>`,
+			value: die.value,
+			faces: die.faces
+		});
+		dieIndex++;
+	}
+	
+	// Add weapon bonus dice (styled differently, also clickable)
+	for (const die of weaponBonusDiceResults) {
+		const extraClass = die.isCritBonus ? 'sdx-crit-bonus' : 'sdx-weapon-bonus';
+		breakdownParts.push({
+			html: `<span class="sdx-die sdx-die-clickable ${die.cssClass} ${extraClass}" data-die-index="${dieIndex}" data-faces="${die.faces}" title="Click to reroll this d${die.faces}">${die.value}</span>`,
+			value: die.value,
+			faces: die.faces
+		});
+		dieIndex++;
+	}
+	
+	// Add static bonuses (just the number, sign handled by join logic)
+	for (const bonus of bonuses) {
+		const absValue = Math.abs(bonus.value);
+		breakdownParts.push({
+			html: `<span class="sdx-bonus-val" title="${bonus.label}">${absValue}</span>`,
+			value: bonus.value
+		});
+	}
+	
+	// Calculate actual total from parts (sum all dice and bonuses)
+	let actualTotal = 0;
+	for (const part of breakdownParts) {
+		actualTotal += part.value;
+	}
+	
+	// Build the breakdown HTML: "Total = d1 + d2 + bonus"
+	let breakdownHtml = '';
+	if (breakdownParts.length > 0) {
+		const partsHtml = breakdownParts.map((part, index) => {
+			if (index === 0) return part.html;
+			// For subsequent parts, show + or - based on the value
+			if (part.value < 0) return `<span class="sdx-plus"> - </span>${part.html}`;
+			return `<span class="sdx-plus"> + </span>${part.html}`;
 		}).join('');
+		
+		breakdownHtml = `
+			<div class="sdx-roll-breakdown-line">
+				<span class="sdx-roll-total">${actualTotal}</span>
+				<span class="sdx-equals"> = </span>
+				${partsHtml}
+			</div>
+		`;
 	}
 	
 	return {
 		formula: roll.formula || '',
 		total: roll.total || 0,
-		diceHtml,
-		bonusHtml
+		breakdownHtml
 	};
 }
 
 /**
  * Build the damage card HTML
  */
-function buildDamageCardHtml(actor, targets, totalDamage, damageType, allEffects, spellDamageConfig, settings, message, weaponBonusDamage = null) {
-	console.log("shadowdark-extras | buildDamageCardHtml started", { actor, targets, totalDamage, damageType, allEffects, settings, weaponBonusDamage });
+async function buildDamageCardHtml(actor, targets, totalDamage, damageType, allEffects, spellDamageConfig, settings, message, weaponBonusDamage = null, isCritical = false) {
+	console.log("shadowdark-extras | buildDamageCardHtml started", { actor, targets, totalDamage, damageType, allEffects, settings, weaponBonusDamage, isCritical });
 	
 	const cardSettings = settings.damageCard;
 	const isHealing = damageType?.toLowerCase() === "healing";
 	
 	// Build roll breakdown HTML
 	let rollBreakdownHtml = '';
-	const rollBreakdown = buildRollBreakdown(message, weaponBonusDamage);
+	const rollBreakdown = await buildRollBreakdown(message, weaponBonusDamage, isCritical);
 	if (rollBreakdown) {
+		// Store formula for reroll - escape quotes for data attribute
+		const rerollFormula = (rollBreakdown.formula || '').replace(/"/g, '&quot;');
+		
+		// Store weapon bonus info for reroll
+		let weaponBonusData = '';
+		if (weaponBonusDamage && weaponBonusDamage.requirementsMet) {
+			const bonusInfo = {
+				bonusFormula: weaponBonusDamage.bonusFormula || '',
+				totalBonus: weaponBonusDamage.totalBonus || 0,
+				criticalFormula: weaponBonusDamage.criticalFormula || '',
+				criticalBonus: weaponBonusDamage.criticalBonus || 0
+			};
+			weaponBonusData = JSON.stringify(bonusInfo).replace(/"/g, '&quot;');
+		}
+		
 		rollBreakdownHtml = `
 			<div class="sdx-roll-breakdown">
-				<div class="sdx-roll-formula">${rollBreakdown.formula}</div>
-				<div class="sdx-roll-result">
-					<span class="sdx-roll-total">${rollBreakdown.total}</span>
+				<div class="sdx-roll-formula-row">
+					<div class="sdx-roll-formula">${rollBreakdown.formula}</div>
+					<button type="button" class="sdx-reroll-btn" data-formula="${rerollFormula}" data-weapon-bonus="${weaponBonusData}" title="Reroll damage (e.g., for Luck token)">
+						<i class="fas fa-dice"></i>
+					</button>
 				</div>
-				${rollBreakdown.diceHtml ? `<div class="sdx-roll-dice">${rollBreakdown.diceHtml}</div>` : ''}
-				${rollBreakdown.bonusHtml ? `<div class="sdx-roll-bonuses">${rollBreakdown.bonusHtml}</div>` : ''}
+				${rollBreakdown.breakdownHtml || ''}
 			</div>
 		`;
 	}
@@ -1633,6 +2040,303 @@ function attachDamageCardListeners(html, messageId) {
 	
 	// Initial multiplier listeners
 	attachMultiplierListeners($card);
+	
+	// Individual die click to reroll single die
+	$card.on('click', '.sdx-die-clickable', async function(e) {
+		e.preventDefault();
+		e.stopPropagation();
+		
+		const $die = $(this);
+		const dieIndex = parseInt($die.data('die-index'));
+		const faces = parseInt($die.data('faces'));
+		
+		if (isNaN(dieIndex) || isNaN(faces)) {
+			console.warn("shadowdark-extras | Invalid die data for reroll");
+			return;
+		}
+		
+		console.log("shadowdark-extras | Rerolling single die:", { dieIndex, faces });
+		
+		// Roll a single die
+		const roll = new Roll(`1d${faces}`);
+		await roll.evaluate();
+		const newValue = roll.total;
+		
+		// Determine CSS class for the new value
+		const isCrit = newValue === faces;
+		const isFumble = newValue === 1;
+		const newCssClass = isCrit ? 'sdx-die-max' : (isFumble ? 'sdx-die-min' : '');
+		
+		// Update the die's display
+		$die.text(newValue);
+		$die.removeClass('sdx-die-max sdx-die-min').addClass(newCssClass);
+		
+		// Recalculate total by summing all dice and bonuses in the breakdown
+		let newTotal = 0;
+		const $breakdownLine = $card.find('.sdx-roll-breakdown-line');
+		
+		// Sum all dice values
+		$breakdownLine.find('.sdx-die').each(function() {
+			newTotal += parseInt($(this).text()) || 0;
+		});
+		
+		// Sum all bonus values (considering the sign from adjacent plus/minus)
+		$breakdownLine.find('.sdx-bonus-val').each(function() {
+			const $bonus = $(this);
+			const bonusValue = parseInt($bonus.text()) || 0;
+			// Check if the previous sibling is a minus sign
+			const $prev = $bonus.prev('.sdx-plus');
+			if ($prev.length && $prev.text().includes('-')) {
+				newTotal -= bonusValue;
+			} else {
+				newTotal += bonusValue;
+			}
+		});
+		
+		// Update the total display
+		$breakdownLine.find('.sdx-roll-total').text(newTotal);
+		
+		// Update card data
+		$card.attr('data-base-damage', newTotal);
+		$card.data('base-damage', newTotal);
+		
+		// Update all target damage displays
+		const damageType = $card.data('damage-type');
+		const isHealing = damageType?.toLowerCase() === 'healing';
+		
+		$card.find('.sdx-target-item').each(function() {
+			const $targetItem = $(this);
+			const $targetDamage = $targetItem.find('.sdx-damage-value');
+			const $activeMultiplier = $targetItem.find('.sdx-multiplier-btn.active');
+			const multiplier = parseFloat($activeMultiplier.data('multiplier')) || 1;
+			const newDamage = Math.floor(newTotal * multiplier);
+			
+			$targetDamage.text(newDamage);
+			$targetDamage.attr('data-base-damage', newDamage);
+		});
+		
+		// Show notification
+		ui.notifications.info(`Rerolled d${faces}: ${newValue} (new total: ${newTotal})`);
+	});
+	
+	// Reroll damage button click
+	$card.on('click', '.sdx-reroll-btn', async function(e) {
+		e.preventDefault();
+		e.stopPropagation();
+		
+		const $btn = $(this);
+		const formula = $btn.data('formula');
+		const weaponBonusDataStr = $btn.attr('data-weapon-bonus');
+		
+		if (!formula) {
+			ui.notifications.warn("No damage formula to reroll");
+			return;
+		}
+		
+		// Disable button temporarily
+		$btn.prop('disabled', true);
+		$btn.find('i').removeClass('fa-dice').addClass('fa-spinner fa-spin');
+		
+		try {
+			// Roll the base formula
+			const roll = new Roll(formula);
+			await roll.evaluate();
+			
+			// Parse weapon bonus data if present
+			let weaponBonus = null;
+			if (weaponBonusDataStr) {
+				try {
+					weaponBonus = JSON.parse(weaponBonusDataStr);
+					console.log("shadowdark-extras | Parsed weapon bonus:", weaponBonus);
+				} catch (e) {
+					console.warn("shadowdark-extras | Could not parse weapon bonus data:", e);
+				}
+			}
+			
+			// Roll weapon bonus formulas if they exist
+			let newBonusTotal = 0;
+			let newCriticalTotal = 0;
+			const bonusDiceResults = [];
+			
+			if (weaponBonus?.bonusFormula) {
+				const bonusRoll = new Roll(weaponBonus.bonusFormula);
+				await bonusRoll.evaluate();
+				newBonusTotal = bonusRoll.total;
+				console.log("shadowdark-extras | Rolled bonus formula:", weaponBonus.bonusFormula, "=", newBonusTotal);
+				
+				// Extract dice results from bonus roll
+				for (const term of bonusRoll.terms) {
+					if (term.faces !== undefined && term.results) {
+						for (const r of term.results) {
+							const val = r.result;
+							const isCrit = val === term.faces;
+							const isFumble = val === 1;
+							const cssClass = isCrit ? 'sdx-die-max' : (isFumble ? 'sdx-die-min' : '');
+							bonusDiceResults.push({ value: val, cssClass, faces: term.faces, isBonus: true });
+						}
+					}
+				}
+			}
+			
+			if (weaponBonus?.criticalFormula) {
+				const critRoll = new Roll(weaponBonus.criticalFormula);
+				await critRoll.evaluate();
+				newCriticalTotal = critRoll.total;
+				console.log("shadowdark-extras | Rolled critical formula:", weaponBonus.criticalFormula, "=", newCriticalTotal);
+				
+				// Extract dice results from critical roll
+				for (const term of critRoll.terms) {
+					if (term.faces !== undefined && term.results) {
+						for (const r of term.results) {
+							const val = r.result;
+							const isCrit = val === term.faces;
+							const isFumble = val === 1;
+							const cssClass = isCrit ? 'sdx-die-max' : (isFumble ? 'sdx-die-min' : '');
+							bonusDiceResults.push({ value: val, cssClass, faces: term.faces, isCritBonus: true });
+						}
+					}
+				}
+			}
+			
+			// Build new breakdown HTML
+			const dice = roll.terms.filter(t => t.faces !== undefined);
+			const diceResults = [];
+			
+			for (const die of dice) {
+				const faces = die.faces;
+				const results = die.results || [];
+				for (const r of results) {
+					const val = r.result;
+					const isCrit = val === faces;
+					const isFumble = val === 1;
+					const cssClass = isCrit ? 'sdx-die-max' : (isFumble ? 'sdx-die-min' : '');
+					diceResults.push({ value: val, cssClass, faces });
+				}
+			}
+			
+			// Get static bonuses from roll terms (like STR modifier)
+			const bonuses = [];
+			let operator = '+';
+			for (const term of roll.terms) {
+				if (term.operator) {
+					operator = term.operator;
+					continue;
+				}
+				if (term.number !== undefined && !term.faces) {
+					const value = term.number;
+					if (value !== 0) {
+						bonuses.push({
+							label: 'Modifier',
+							value: operator === '-' ? -value : value
+						});
+					}
+				}
+			}
+			
+			// Calculate total including weapon bonuses
+			let totalDamage = roll.total + newBonusTotal + newCriticalTotal;
+			
+			console.log("shadowdark-extras | Reroll totals:", { 
+				rollTotal: roll.total, 
+				newBonusTotal, 
+				newCriticalTotal, 
+				totalDamage 
+			});
+			
+			// Build breakdown parts
+			const breakdownParts = [];
+			
+			// Add base dice results with data attributes for individual rerolling
+			let dieIndex = 0;
+			for (const die of diceResults) {
+				breakdownParts.push({
+					html: `<span class="sdx-die sdx-die-clickable ${die.cssClass}" data-die-index="${dieIndex}" data-faces="${die.faces}" title="Click to reroll this d${die.faces}">${die.value}</span>`,
+					value: die.value,
+					faces: die.faces
+				});
+				dieIndex++;
+			}
+			
+			// Add static bonuses (like STR modifier)
+			for (const bonus of bonuses) {
+				const absValue = Math.abs(bonus.value);
+				breakdownParts.push({
+					html: `<span class="sdx-bonus-val" title="${bonus.label || ''}">${absValue}</span>`,
+					value: bonus.value
+				});
+			}
+			
+			// Add weapon bonus dice results (styled differently, also clickable)
+			for (const die of bonusDiceResults) {
+				const extraClass = die.isCritBonus ? 'sdx-crit-bonus' : 'sdx-weapon-bonus';
+				breakdownParts.push({
+					html: `<span class="sdx-die sdx-die-clickable ${die.cssClass} ${extraClass}" data-die-index="${dieIndex}" data-faces="${die.faces}" title="Click to reroll this d${die.faces}">${die.value}</span>`,
+					value: die.value,
+					faces: die.faces
+				});
+				dieIndex++;
+			}
+			
+			// Build HTML string
+			const partsHtml = breakdownParts.map((part, index) => {
+				if (index === 0) return part.html;
+				if (part.value < 0) return `<span class="sdx-plus"> - </span>${part.html}`;
+				return `<span class="sdx-plus"> + </span>${part.html}`;
+			}).join('');
+			
+			const newBreakdownHtml = `
+				<div class="sdx-roll-breakdown-line">
+					<span class="sdx-roll-total">${totalDamage}</span>
+					<span class="sdx-equals"> = </span>
+					${partsHtml}
+				</div>
+			`;
+			
+			// Update the card
+			$card.find('.sdx-roll-breakdown-line').replaceWith(newBreakdownHtml);
+			$card.attr('data-base-damage', totalDamage);
+			$card.data('base-damage', totalDamage);
+			
+			// Update all target damage displays
+			const damageType = $card.data('damage-type');
+			const isHealing = damageType?.toLowerCase() === 'healing';
+			const sign = isHealing ? '+' : '-';
+			
+			console.log("shadowdark-extras | About to update targets, finding .sdx-target-item...");
+			const $targetItems = $card.find('.sdx-target-item');
+			console.log("shadowdark-extras | Found target items:", $targetItems.length);
+			
+			$targetItems.each(function() {
+				const $targetItem = $(this);
+				const $targetDamage = $targetItem.find('.sdx-damage-value');
+				const $activeMultiplier = $targetItem.find('.sdx-multiplier-btn.active');
+				const multiplier = parseFloat($activeMultiplier.data('multiplier')) || 1;
+				const newDamage = Math.floor(totalDamage * multiplier);
+				
+				console.log("shadowdark-extras | Updating target damage:", { 
+					found: $targetDamage.length,
+					multiplier, 
+					newDamage, 
+					totalDamage,
+					currentText: $targetDamage.text()
+				});
+				
+				$targetDamage.text(newDamage);
+				$targetDamage.attr('data-base-damage', newDamage);
+			});
+			
+			// Show notification
+			ui.notifications.info(`Rerolled damage: ${totalDamage}`);
+			
+		} catch (err) {
+			console.error("shadowdark-extras | Error rerolling damage:", err);
+			ui.notifications.error("Failed to reroll damage");
+		} finally {
+			// Re-enable button
+			$btn.prop('disabled', false);
+			$btn.find('i').removeClass('fa-spinner fa-spin').addClass('fa-dice');
+		}
+	});
 	
 	// Apply damage button click (use delegation since button may be rebuilt)
 		// Apply damage button click (use delegation since button may be rebuilt)

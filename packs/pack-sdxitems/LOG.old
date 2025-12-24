@@ -1,3 +1,5 @@
-2025/12/22-16:42:47.707 cf20 Recovering log #9
-2025/12/22-16:42:47.716 cf20 Delete type=0 #9
-2025/12/22-16:42:47.716 cf20 Delete type=3 #8
+2025/12/24-02:20:36.714 dfe4 Recovering log #30
+2025/12/24-02:20:36.714 dfe4 Recovering log #33
+2025/12/24-02:20:36.723 dfe4 Delete type=0 #30
+2025/12/24-02:20:36.724 dfe4 Delete type=0 #33
+2025/12/24-02:20:36.724 dfe4 Delete type=3 #28

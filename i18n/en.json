@@ -17,6 +17,8 @@
   "SHADOWDARK_EXTRAS.settings.enable_unidentified.hint": "Allow items to be marked as unidentified, hiding their real name and description from players",
   "SHADOWDARK_EXTRAS.settings.enable_multiselect.name": "Enable Multi-Select & Bulk Delete",
   "SHADOWDARK_EXTRAS.settings.enable_multiselect.hint": "Allow Shift+Click and Ctrl+Click to select multiple items for bulk deletion",
+  "SHADOWDARK_EXTRAS.settings.enable_torch_animations.name": "Enable Torch Animations",
+  "SHADOWDARK_EXTRAS.settings.enable_torch_animations.hint": "Show animated flames on tokens when light sources are active (requires Sequencer and JB2A modules)",
   "SHADOWDARK_EXTRAS.settings.enable_add_coins_button.name": "Enable Add Coins Button",
   "SHADOWDARK_EXTRAS.settings.enable_add_coins_button.hint": "Add a + button to the Coins section for quickly adding or removing coins",
   "SHADOWDARK_EXTRAS.settings.enable_journal_notes.name": "Enable Journal Notes",
@@ -260,5 +262,36 @@
   "SHADOWDARK_EXTRAS.journal.delete_page_confirm": "Are you sure you want to delete the page \"{name}\"? This cannot be undone.",
   "SHADOWDARK_EXTRAS.journal.edit_page_title": "Edit: {name}",
   "SHADOWDARK_EXTRAS.journal.save": "Save",
-  "SHADOWDARK_EXTRAS.journal.cancel": "Cancel"
+  "SHADOWDARK_EXTRAS.journal.cancel": "Cancel",
+
+  "SDX.Settings.AAIntegration.Name": "Automated Animations Integration",
+  "SDX.Settings.AAIntegration.Hint": "Enable custom integration with Automated Animations module to play animations only on successful attacks/spells (requires reload)",
+  "SDX.Settings.AAAnimateOnSuccess.Name": "Animate Only On Success",
+  "SDX.Settings.AAAnimateOnSuccess.Hint": "Only play animations when attacks hit or spells succeed. Critical failures will never animate.",
+  "SDX.Settings.AAAnimateSpellsWithoutTarget.Name": "Animate Spells Without Target",
+  "SDX.Settings.AAAnimateSpellsWithoutTarget.Hint": "Play animations for spells that don't have a target DC (e.g., utility spells)",
+
+  "SHADOWDARK_EXTRAS.combat.scrolling_text.name": "Scrolling Combat Text",
+  "SHADOWDARK_EXTRAS.combat.scrolling_text.hint": "Show floating damage (red) and healing (green) numbers above tokens when HP changes",
+
+  "SHADOWDARK_EXTRAS.settings.hp_waves.name": "HP Wave Animation",
+  "SHADOWDARK_EXTRAS.settings.hp_waves.label": "Configure HP Waves",
+  "SHADOWDARK_EXTRAS.settings.hp_waves.hint": "Configure the animated HP wave overlay on character portraits",
+
+  "SHADOWDARK_EXTRAS.hp_waves.title": "HP Wave Settings",
+  "SHADOWDARK_EXTRAS.hp_waves.description": "Configure the animated wave overlay that rises on character portraits as HP decreases.",
+  "SHADOWDARK_EXTRAS.hp_waves.enable": "Enable HP Waves",
+  "SHADOWDARK_EXTRAS.hp_waves.enable_hint": "Show animated waves on character portraits that rise as HP decreases",
+  "SHADOWDARK_EXTRAS.hp_waves.default_color": "Default Wave Color",
+  "SHADOWDARK_EXTRAS.hp_waves.default_color_hint": "The default color for HP waves when no ancestry match is found",
+  "SHADOWDARK_EXTRAS.hp_waves.ancestry_colors": "Ancestry Colors",
+  "SHADOWDARK_EXTRAS.hp_waves.ancestry_colors_hint": "Set custom wave colors for specific ancestries. The ancestry name must match exactly (case-insensitive).",
+  "SHADOWDARK_EXTRAS.hp_waves.ancestry_placeholder": "Ancestry name (e.g., Human, Elf, Orc)",
+  "SHADOWDARK_EXTRAS.hp_waves.add_ancestry": "Add Ancestry Color",
+  "SHADOWDARK_EXTRAS.hp_waves.remove": "Remove",
+  "SHADOWDARK_EXTRAS.hp_waves.reset_defaults": "Reset to Defaults",
+  "SHADOWDARK_EXTRAS.hp_waves.reset_confirm_title": "Reset HP Wave Settings?",
+  "SHADOWDARK_EXTRAS.hp_waves.reset_confirm_content": "Are you sure you want to reset all HP wave settings to their default values?",
+  "SHADOWDARK_EXTRAS.hp_waves.reset_complete": "HP wave settings reset to defaults",
+  "SHADOWDARK_EXTRAS.hp_waves.save": "Save Changes"
 }

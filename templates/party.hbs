@@ -84,6 +84,17 @@
 				<div class="member" data-uuid="{{member.uuid}}" data-member-id="{{member.memberKey}}">
 					<div class="member-portrait">
 						<img src="{{member.img}}" alt="{{member.name}}" data-action="open-member"/>
+						{{!-- HP Wave Animation Overlay --}}
+						{{#if member.hpWavesEnabled}}
+						<div class="hp-wave-container {{member.hpWaveClass}}" style="--hp-translate: {{member.hpWaveTranslate}}%; --hp-wave-color: {{member.hpWaveColor}};">
+							<svg class="hp-waves" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 100" preserveAspectRatio="none">
+								<path class="wave-path" d="M0 5 C 100 0, 200 10, 300 5 C 400 0, 500 10, 600 5 V 100 H 0 Z"/>
+								<path class="wave-path" d="M0 10 C 100 15, 200 5, 300 10 C 400 15, 500 5, 600 10 V 100 H 0 Z"/>
+								<path class="wave-path" d="M0 15 C 100 10, 200 20, 300 15 C 400 10, 500 20, 600 15 V 100 H 0 Z"/>
+								<path class="wave-path" d="M0 20 C 100 25, 200 15, 300 20 C 400 25, 500 15, 600 20 V 100 H 0 Z"/>
+							</svg>
+						</div>
+						{{/if}}
 						{{#if member.isNPC}}
 							{{#if ../owner}}
 							<div class="npc-count" data-tooltip="Spawn count">

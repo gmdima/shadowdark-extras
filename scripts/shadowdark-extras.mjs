@@ -5,7 +5,8 @@
 
 import PartySheetSD from "./PartySheetSD.mjs";
 import TradeWindowSD, { initializeTradeSocket, showTradeDialog, ensureTradeJournal } from "./TradeWindowSD.mjs";
-import { CombatSettingsApp, registerCombatSettings, injectDamageCard, setupCombatSocket } from "./CombatSettingsSD.mjs";
+import { CombatSettingsApp, registerCombatSettings, injectDamageCard, setupCombatSocket, setupScrollingCombatText } from "./CombatSettingsSD.mjs";
+import { HpWavesSettingsApp, registerHpWavesSettings, getHpWaveColor, isHpWavesEnabled } from "./HpWavesSettingsSD.mjs";
 import { generateSpellConfig, generatePotionConfig, generateScrollConfig, generateWandConfig } from "./templates/ItemTypeConfigs.mjs";
 import { 
 	injectWeaponBonusTab, 
@@ -15,6 +16,8 @@ import {
 	calculateWeaponBonusDamage,
 	injectWeaponBonusDisplay
 } from "./WeaponBonusConfig.mjs";
+import { initAutoAnimationsIntegration } from "./AutoAnimationsSD.mjs";
+import { initTorchAnimations } from "./TorchAnimationSD.mjs";
 
 const MODULE_ID = "shadowdark-extras";
 const TRADE_JOURNAL_NAME = "__sdx_trade_sync__"; // Must match TradeWindowSD.mjs
@@ -394,6 +397,11 @@ class InventoryStylesApp extends FormApplication {
 				applyInventoryStyles();
 				this.render();
 			}
+		});
+
+		// ---- Save Button - close after submit ----
+		html.find('button[name="submit"]').on("click", () => {
+			setTimeout(() => this.close(), 100);
 		});
 
 		// Initialize live previews
@@ -3094,10 +3102,17 @@ const npcActiveTabTracker = new Map();
 
 /**
  * Enable chat icon on item images to show item in chat
+ * NOTE: This only handles items that Shadowdark doesn't natively handle.
+ * Shadowdark's PlayerSheetSD already has _onItemChatClick which calls displayCard()
+ * for all items via .item-image click. We only need to handle NPC items.
  */
 function enableItemChatIcon(app, html) {
 	const actor = app?.actor;
 	if (!actor) return;
+	
+	// Skip for player sheets - Shadowdark handles these natively via _onItemChatClick
+	// This prevents duplicate chat messages when clicking item images
+	if (actor.type === "Player") return;
 
 	// Handle click on item image (when it has the chat icon)
 	html.find('.item-image').off('click.sdxChat').on('click.sdxChat', async function(ev) {
@@ -3120,8 +3135,8 @@ function enableItemChatIcon(app, html) {
 			return;
 		}
 
-		// Show item in chat
-		await item.sendToChat();
+		// Show item in chat - Shadowdark uses displayCard()
+		await item.displayCard();
 	});
 }
 
@@ -3209,6 +3224,17 @@ function registerSettings() {
 	game.settings.register(MODULE_ID, "enableMultiselect", {
 		name: game.i18n.localize("SHADOWDARK_EXTRAS.settings.enable_multiselect.name"),
 		hint: game.i18n.localize("SHADOWDARK_EXTRAS.settings.enable_multiselect.hint"),
+		scope: "world",
+		config: true,
+		default: true,
+		type: Boolean,
+		requiresReload: true,
+	});
+
+	// === TORCH ANIMATIONS ===
+	game.settings.register(MODULE_ID, "enableTorchAnimations", {
+		name: game.i18n.localize("SHADOWDARK_EXTRAS.settings.enable_torch_animations.name"),
+		hint: game.i18n.localize("SHADOWDARK_EXTRAS.settings.enable_torch_animations.hint"),
 		scope: "world",
 		config: true,
 		default: true,
@@ -3307,6 +3333,9 @@ function registerSettings() {
 
 	// === COMBAT SETTINGS ===
 	registerCombatSettings();
+
+	// === HP WAVES SETTINGS ===
+	registerHpWavesSettings();
 }
 
 // ============================================
@@ -4644,6 +4673,12 @@ async function injectEnhancedHeader(app, html, actor) {
 	// Calculate HP percentage for bar
 	const hpPercent = hp.max > 0 ? Math.min(100, Math.max(0, (hp.value / hp.max) * 100)) : 0;
 	const hpColor = hpPercent > 50 ? '#4ade80' : hpPercent > 25 ? '#fbbf24' : '#ef4444';
+	// Wave translate: at 100% HP waves are hidden (translateY 85%), at 0% HP fully visible (translateY 0%)
+	const hpWaveTranslate = Math.max(0, Math.round(hpPercent) - 15);
+	const hpWaveClass = hpPercent >= 100 ? 'hp-full' : (hpPercent <= 0 ? 'hp-dead' : '');
+	// Get wave color based on ancestry settings (pass resolved ancestryName)
+	const hpWaveColor = getHpWaveColor(actor, ancestryName);
+	const hpWavesEnabled = isHpWavesEnabled();
 
 	// Build abilities HTML
 	let abilitiesHtml = '';
@@ -4685,11 +4720,23 @@ async function injectEnhancedHeader(app, html, actor) {
 		`;
 	}
 
+	// Build HP waves HTML if enabled
+	const hpWavesHtml = hpWavesEnabled ? `
+				<div class="hp-wave-container ${hpWaveClass}" style="--hp-translate: ${hpWaveTranslate}%; --hp-wave-color: ${hpWaveColor}; border-radius: 0;">
+					<svg class="hp-waves" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 100" preserveAspectRatio="none">
+						<path class="wave-path" d="M0 5 C 100 0, 200 10, 300 5 C 400 0, 500 10, 600 5 V 100 H 0 Z"/>
+						<path class="wave-path" d="M0 10 C 100 15, 200 5, 300 10 C 400 15, 500 5, 600 10 V 100 H 0 Z"/>
+						<path class="wave-path" d="M0 15 C 100 10, 200 20, 300 15 C 400 10, 500 20, 600 15 V 100 H 0 Z"/>
+						<path class="wave-path" d="M0 20 C 100 25, 200 15, 300 20 C 400 25, 500 15, 600 20 V 100 H 0 Z"/>
+					</svg>
+				</div>` : '';
+
 	// Build the enhanced header content
 	const enhancedContent = `
 		<div class="sdx-enhanced-content">
 			<div class="sdx-portrait-container">
 				<img class="sdx-portrait" src="${actor.img}" data-edit="img" data-tooltip="${actor.name}" />
+				${hpWavesHtml}
 				<div class="sdx-hp-bar-container" data-tooltip="HP: ${hp.value} / ${hp.max}">
 					<div class="sdx-hp-bar" style="width: ${hpPercent}%; background-color: ${hpColor};"></div>
 					<div class="sdx-hp-text">
@@ -6448,6 +6495,9 @@ function patchPlayerSheetForTransfers() {
 Hooks.once("init", () => {
 	console.log(`${MODULE_ID} | Initializing Shadowdark Extras`);
 	
+	// Initialize Automated Animations integration
+	initAutoAnimationsIntegration();
+	
 	// Register Handlebars helpers
 	Handlebars.registerHelper("numberSigned", (value) => {
 		const num = parseInt(value) || 0;
@@ -6524,6 +6574,12 @@ Hooks.once("ready", async () => {
 	} else {
 		console.warn(`${MODULE_ID} | socketlib not found, damage application may not work for non-GMs`);
 	}
+	
+	// Setup scrolling combat text (floating damage/healing numbers)
+	setupScrollingCombatText();
+	
+	// Setup torch animations (requires Sequencer and JB2A)
+	initTorchAnimations();
 	
 	patchLightSourceTrackerForParty();
 	patchToggleItemDetailsForUnidentified();

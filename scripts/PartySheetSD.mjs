@@ -3,6 +3,8 @@
  * A group/party management sheet similar to D&D 5e's Group actor
  */
 
+import { getHpWaveColor, isHpWavesEnabled } from "./HpWavesSettingsSD.mjs";
+
 const MODULE_ID = "shadowdark-extras";
 
 /**
@@ -276,9 +278,25 @@ export default class PartySheetSD extends ActorSheet {
 					next: (member.system?.level?.value ?? 1) * 10  // Shadowdark: 10 XP per level
 				},
 				className: await this._getMemberClassName(member),
+				ancestryName: await this._getMemberAncestryName(member),
 				isOwner: member.isOwner,
 				// Calculate HP percentage for visual bar
 				hpPercent: Math.round(((member.system?.attributes?.hp?.value ?? 0) / (member.system?.attributes?.hp?.max ?? 1)) * 100) || 0,
+				// Wave translate: HP% - 15 = translateY% (100% HP = 85% hidden, 0% HP = visible)
+				hpWaveTranslate: Math.max(0, Math.round(((member.system?.attributes?.hp?.value ?? 0) / (member.system?.attributes?.hp?.max ?? 1)) * 100) - 15) || 0,
+				// HP wave color based on ancestry (resolved name)
+				hpWaveColor: getHpWaveColor(member, await this._getMemberAncestryName(member)),
+				// HP waves enabled
+				hpWavesEnabled: isHpWavesEnabled(),
+				// HP wave CSS class
+				hpWaveClass: (() => {
+					const hpVal = member.system?.attributes?.hp?.value ?? 0;
+					const hpMax = member.system?.attributes?.hp?.max ?? 1;
+					const pct = Math.round((hpVal / hpMax) * 100) || 0;
+					if (pct >= 100) return "hp-full";
+					if (pct <= 0) return "hp-dead";
+					return "";
+				})(),
 				// Active effects
 				effects: member.effects.filter(e => !e.disabled).map(e => ({
 					id: e.id,
@@ -334,6 +352,17 @@ export default class PartySheetSD extends ActorSheet {
 		if (!member.system.class) return "";
 		const classItem = await fromUuid(member.system.class);
 		return classItem?.name ?? "";
+	}
+
+	/**
+	 * Get the ancestry name for a party member
+	 * @param {Actor} member
+	 * @returns {Promise<string>}
+	 */
+	async _getMemberAncestryName(member) {
+		if (!member.system.ancestry) return "";
+		const ancestryItem = await fromUuid(member.system.ancestry);
+		return ancestryItem?.name ?? "";
 	}
 
 	/**
