@@ -18,6 +18,7 @@ import {
 } from "./WeaponBonusConfig.mjs";
 import { initAutoAnimationsIntegration } from "./AutoAnimationsSD.mjs";
 import { initTorchAnimations } from "./TorchAnimationSD.mjs";
+import { initSDXROLLS, setupSDXROLLSSockets, injectSdxRollButton } from "./sdx-rolls/SdxRollsSD.mjs";
 
 const MODULE_ID = "shadowdark-extras";
 const TRADE_JOURNAL_NAME = "__sdx_trade_sync__"; // Must match TradeWindowSD.mjs
@@ -6498,6 +6499,9 @@ Hooks.once("init", () => {
 	// Initialize Automated Animations integration
 	initAutoAnimationsIntegration();
 	
+	// Initialize SDX Rolls
+	initSDXROLLS();
+	
 	// Register Handlebars helpers
 	Handlebars.registerHelper("numberSigned", (value) => {
 		const num = parseInt(value) || 0;
@@ -6566,6 +6570,9 @@ Hooks.once("ready", async () => {
 	patchCtrlMoveOnActorSheetDrops();
 	patchPlayerSheetForTransfers();
 	initializeTradeSocket();
+	
+	// Setup SDX Rolls sockets
+	setupSDXROLLSSockets();
 	
 	// Setup combat socket for damage application (requires socketlib)
 	if (typeof socketlib !== "undefined") {
@@ -6689,6 +6696,11 @@ Hooks.on("preCreateItem", (item, data, options, userId) => {
 			}
 		}
 	}
+});
+
+// Inject SDX Rolls button into chat controls
+Hooks.on("renderChatLog", (app, html) => {
+	injectSdxRollButton();
 });
 
 // Before party actor is created, ensure proper prototype token settings

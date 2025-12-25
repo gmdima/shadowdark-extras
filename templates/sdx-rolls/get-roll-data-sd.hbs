@@ -1,0 +1,155 @@
+﻿<form action="submit" class="sdx-form">
+    <div class="grid-container">
+        <div class="roll-actor-list roll-section">
+            <div class="section-box">
+                <h3>
+                    <i class="fa-duotone fa-square-check"></i>
+                    <span class="section-title">{{localize "SHADOWDARK_EXTRAS.SDXROLLS.getRollData.selected"}}</span>
+                </h3>
+                <ul class="selected-actors">
+                    {{#each actors.selected as |actor|}}
+                    <li class="actor {{#if actor.SDXContestant}}contestant{{/if}}" data-name="{{actor.name}}"
+                        data-uuid={{actor.uuid}}>
+                        <img class="actor-img" src="{{actor.img}}" alt="">
+                        <div class="actor-info">
+                            <span class="title">{{actor.name}}</span>
+                            <span class="subtitle">{{#if actor.SDXIsPlayer}}{{localize "SHADOWDARK_EXTRAS.SDXROLLS.getRollData.player"}}{{else}}{{localize "SHADOWDARK_EXTRAS.SDXROLLS.getRollData.npc"}}{{/if}}</span>
+                        </div>
+                        <i class="add-remove fa-solid fa-minus"></i>
+                    </li>
+                    {{/each}}
+                </ul>
+            </div>
+            <div class="section-box">
+                <h3>
+                    <i class="fa-duotone fa-users"></i>
+                    <span class="section-title">{{localize "SHADOWDARK_EXTRAS.SDXROLLS.getRollData.available"}}</span>
+                    <input type="search" name="" id="" placeholder="{{localize "SIDEBAR.Search"}}">
+                </h3>
+                <ul class="unselected-actors">
+                    {{#each actors.notSelected as |actor|}}
+                    <li class="actor" data-name="{{actor.name}}" data-uuid={{actor.uuid}}>
+                        <img class="actor-img" src="{{actor.img}}" alt="">
+                        <div class="actor-info">
+                            <span class="title">{{actor.name}}</span>
+                            <span class="subtitle">{{#if actor.SDXIsPlayer}}{{localize "SHADOWDARK_EXTRAS.SDXROLLS.getRollData.player"}}{{else}}{{localize "SHADOWDARK_EXTRAS.SDXROLLS.getRollData.npc"}}{{/if}}</span>
+                        </div>
+                        <i class="add-remove fa-solid fa-plus"></i>
+                    </li>
+                    {{/each}}
+                </ul>
+            </div>
+        </div>
+        
+        <div class="roll-types roll-section">
+            <div class="section-box">
+                <div class="rolls-wrapper">
+                    <input type="search" name="" id="" placeholder="{{localize "SIDEBAR.Search"}}">
+                    {{#each rolls as |rollType|}}
+                    <h3>
+                        <i class="{{rollType.icon}}"></i>
+                        <span class="section-title">{{rollType.label}}</span>
+                    </h3>
+                    <ul>
+                        {{#each rollType.list as |roll|}}
+                        <li class="roll {{#if roll.selected}}selected{{/if}} {{#if roll.contest}}contestant{{/if}}"
+                            data-name="{{roll.label}}" data-type="{{roll.type}}" data-key="{{roll.key}}">
+                            <span class="title">{{roll.label}}</span>
+                        </li>
+                        {{/each}}
+                    </ul>
+                    {{/each}}
+                    
+                    <h3>
+                        <i class="fa-duotone fa-dice-d20"></i>
+                        <span class="section-title">{{localize "SHADOWDARK_EXTRAS.SDXROLLS.getRollData.customFormula"}}</span>
+                    </h3>
+                    <ul>
+                        <li class="roll custom-roll {{#if rollData.options.formula}}selected{{/if}}" data-type="custom" data-key="formula">
+                            <div class="form-group" data-name="formula">
+                                <label for="">{{localize "SHADOWDARK_EXTRAS.SDXROLLS.getRollData.formula"}}</label>
+                                <input type="text" name="customFormula" id="" placeholder="1d20" value="{{rollData.options.formula}}">
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="roll-options roll-section">
+            <div class="section-box">
+                <div class="roll-options-wrapper">
+                    <h3>
+                        <i class="fa-solid fa-dice-d20"></i>
+                        <span class="section-title">{{localize "SHADOWDARK_EXTRAS.SDXROLLS.getRollData.rollOptions"}}</span>
+                        <i data-tooltip-direction="UP" data-tooltip="{{localize "SHADOWDARK_EXTRAS.SDXROLLS.getRollData.saveDefaultOptions"}}" class="fa-duotone fa-floppy-disk save-default"></i>
+                    </h3>
+                    
+                    <div class="form-group" data-name="DC">
+                        <label for="">{{localize "SHADOWDARK_EXTRAS.SDXROLLS.getRollData.vsDC"}}</label>
+                        <input type="number" placeholder="DC" value="{{rollData.options.DC}}">
+                        <p class="notes">{{localize "SHADOWDARK_EXTRAS.SDXROLLS.getRollData.vsDCNotes"}}</p>
+                    </div>
+                    
+                    <div class="form-group" data-name="showDC">
+                        <label for="">{{localize "SHADOWDARK_EXTRAS.SDXROLLS.getRollData.showDC"}}</label>
+                        <i class="toggle fad {{#if rollData.options.showDC}}fa-toggle-on{{else}}fa-toggle-off{{/if}}"></i>
+                        <p class="notes">{{localize "SHADOWDARK_EXTRAS.SDXROLLS.getRollData.showDCNotes"}}</p>
+                    </div>
+                    
+                    <div class="form-group" data-name="useAverage">
+                        <label for="">{{localize "SHADOWDARK_EXTRAS.SDXROLLS.getRollData.useAverage"}}</label>
+                        <i class="toggle fad {{#if rollData.options.useAverage}}fa-toggle-on{{else}}fa-toggle-off{{/if}}"></i>
+                        <p class="notes">{{localize "SHADOWDARK_EXTRAS.SDXROLLS.getRollData.useAverageNotes"}}</p>
+                    </div>
+
+                    <div class="form-group" data-name="allowReroll">
+                        <label for="">{{localize "SHADOWDARK_EXTRAS.SDXROLLS.getRollData.allowReroll"}}</label>
+                        <i class="toggle fad {{#if rollData.options.allowReroll}}fa-toggle-on{{else}}fa-toggle-off{{/if}}"></i>
+                        <p class="notes">{{localize "SHADOWDARK_EXTRAS.SDXROLLS.getRollData.allowRerollNotes"}}</p>
+                    </div>
+
+                    <div class="form-group" data-name="showRollResults">
+                        <label for="">{{localize "SHADOWDARK_EXTRAS.SDXROLLS.getRollData.showRollResults"}}</label>
+                        <i class="toggle fad {{#if rollData.options.showRollResults}}fa-toggle-on{{else}}fa-toggle-off{{/if}}"></i>
+                        <p class="notes">{{localize "SHADOWDARK_EXTRAS.SDXROLLS.getRollData.showRollResultsNotes"}}</p>
+                    </div>
+
+                    <div class="form-group" data-name="blindRoll">
+                        <label for="">{{localize "SHADOWDARK_EXTRAS.SDXROLLS.getRollData.blindRoll"}}</label>
+                        <i class="toggle fad {{#if rollData.options.blindRoll}}fa-toggle-on{{else}}fa-toggle-off{{/if}}"></i>
+                        <p class="notes">{{localize "SHADOWDARK_EXTRAS.SDXROLLS.getRollData.blindRollNotes"}}</p>
+                    </div>
+
+                    <div class="form-group" data-name="hideNames">
+                        <label for="">{{localize "SHADOWDARK_EXTRAS.SDXROLLS.getRollData.hideNames"}}</label>
+                        <i class="toggle fad {{#if rollData.options.hideNames}}fa-toggle-on{{else}}fa-toggle-off{{/if}}"></i>
+                        <p class="notes">{{localize "SHADOWDARK_EXTRAS.SDXROLLS.getRollData.hideNamesNotes"}}</p>
+                    </div>
+
+                    <div class="form-group" data-name="color" style="border: none">
+                        <label for="">{{localize "SHADOWDARK_EXTRAS.SDXROLLS.getRollData.color"}}</label>
+                        <input type="color" id="color" value="{{#if rollData.options.color}}{{rollData.options.color}}{{else}}#8b0000{{/if}}">
+                        <p class="notes">{{localize "SHADOWDARK_EXTRAS.SDXROLLS.getRollData.colorNotes"}}</p>
+                        <p class="notes color-preview" style="background: {{#if rollData.options.color}}{{rollData.options.color}}{{else}}#8b0000{{/if}}; width: 100%; height: 1rem; border-radius: 3px;"></p>
+                    </div>
+
+                    <div class="form-group" data-name="customLabel">
+                        <label for="">{{localize "SHADOWDARK_EXTRAS.SDXROLLS.getRollData.customLabel"}}</label>
+                        <input type="text" name="customLabel" id="" value="{{rollData.options.customLabel}}">
+                        <p class="notes">{{localize "SHADOWDARK_EXTRAS.SDXROLLS.getRollData.customLabelNotes"}}</p>
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
+
+    <footer class="flexrow">
+        <button id="start-sdx-roll"><i class="fa-duotone fa-dice-d20"></i> {{localize "SHADOWDARK_EXTRAS.SDXROLLS.getRollData.startRoll"}}</button>
+        <button id="macro"><i class="fa-duotone fa-terminal"></i> {{localize "SHADOWDARK_EXTRAS.SDXROLLS.getRollData.macro"}}</button>
+    </footer>
+</form>

@@ -1,0 +1,50 @@
+﻿<div class="chat-card sdx-rolls-sd-chat-recap">
+    <span class="flavor-text">{{label}}</span>
+    {{#each actors as |actorEntry|}}
+    <section class="card-header description">
+        <header class="summary">
+            <img class="actor-img" src="{{actorEntry.actor.img}}" alt="{{actorEntry.actor.name}}">
+            <div class="name-stacked border">
+                <span class="title">{{actorEntry.actor.name}}</span>
+                <span class="subtitle"></span>
+            </div>
+            <i class="roll-result">{{actorEntry.result}}</i>
+            {{#unless ../noDC}}
+            {{#if actorEntry.success}}
+            <i class="fas fa-check" style="color: #2ecc71"></i>
+            {{else}}
+            <i class="fas fa-times" style="color: #e74c3c"></i>
+            {{/if}}
+            {{/unless}}
+        </header>
+    </section>
+    {{/each}}
+
+    {{#if contestants.length}}
+    <h1 style="text-align: center; margin: 0; font-family: var(--font-primary);">VS</h1>
+    {{/if}}
+
+    {{#each contestants as |actorEntry|}}
+    <section class="card-header description">
+        <header class="summary">
+            <img class="actor-img" src="{{actorEntry.actor.img}}" alt="{{actorEntry.actor.name}}">
+            <div class="name-stacked border">
+                <span class="title">{{actorEntry.actor.name}}</span>
+                <span class="subtitle"></span>
+            </div>
+            <i class="roll-result">{{actorEntry.result}}</i>
+            {{#if actorEntry.success}}
+            <i class="fas fa-check" style="color: #2ecc71"></i>
+            {{else}}
+            <i class="fas fa-times" style="color: #e74c3c"></i>
+            {{/if}}
+        </header>
+    </section>
+    {{/each}}
+    
+    {{#unless noDC}}
+    <div class="sdx-rolls-dice-result {{#if success}}success{{else}}failure{{/if}}">
+        <h4 class="dice-total">{{successLabel}}</h4>
+    </div>
+    {{/unless}}
+</div>
