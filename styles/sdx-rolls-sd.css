@@ -601,9 +601,9 @@
   color: var(--sdx-text-light);
   font-size: 8vw;
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
-  font-family: var(--font-primary);
+  font-family: "Old Newspaper Font";
   font-weight: bold;
-  letter-spacing: 2px;
+  letter-spacing: 3px;
   border: none;
   width: 100%;
   text-align: center;

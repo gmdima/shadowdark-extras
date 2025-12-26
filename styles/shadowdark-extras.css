@@ -505,8 +505,8 @@
 }
 
 /* Force compact layout - kill all flex grow on header/nav */
-.shadowdark-extras-party form.flexcol > header,
-.shadowdark-extras-party form.flexcol > nav {
+.shadowdark-extras-party form.flexcol>header,
+.shadowdark-extras-party form.flexcol>nav {
     flex: 0 0 auto !important;
 }
 
@@ -561,7 +561,7 @@
 }
 
 .shadowdark-extras-party .party-title input {
-font-size: 28px;
+    font-size: 28px;
     font-weight: bold;
     color: var(--party-text);
     background: transparent;
@@ -637,7 +637,7 @@ font-size: 28px;
 .shadowdark-extras-party .SD-nav .navigation-tab.active {
     color: #fff;
     border-bottom: 3px solid transparent;
-    text-shadow: 
+    text-shadow:
         0 0 10px rgba(255, 255, 255, 0.5),
         0 0 20px rgba(255, 255, 255, 0.3),
         0 0 30px rgba(255, 255, 255, 0.2);
@@ -688,7 +688,7 @@ font-size: 28px;
     position: relative;
 }
 
-.shadowdark-extras-party .party-header.sdx-custom-party-header > *:not(.sdx-header-settings-btn):not(.sdx-header-settings-menu) {
+.shadowdark-extras-party .party-header.sdx-custom-party-header>*:not(.sdx-header-settings-btn):not(.sdx-header-settings-menu) {
     position: relative;
     z-index: 1;
 }
@@ -1185,7 +1185,7 @@ font-size: 28px;
 }
 
 .shadowdark-extras-party .SD-box .header,
-.shadowdark-extras-party .SD-box > .header {
+.shadowdark-extras-party .SD-box>.header {
     background: var(--party-bg-light) !important;
     background-image: none !important;
     padding: 8px 12px;
@@ -1232,7 +1232,7 @@ font-size: 28px;
     min-width: 0;
 }
 
-.shadowdark-extras-party .SD-box .header > span {
+.shadowdark-extras-party .SD-box .header>span {
     display: flex;
     align-items: center;
     justify-content: flex-end;
@@ -1246,25 +1246,25 @@ font-size: 28px;
     white-space: nowrap;
 }
 
-.shadowdark-extras-party .SD-box .header > span a {
+.shadowdark-extras-party .SD-box .header>span a {
     color: var(--party-text-muted);
     text-decoration: none;
 }
 
-.shadowdark-extras-party .SD-box .header > span a:hover {
+.shadowdark-extras-party .SD-box .header>span a:hover {
     color: var(--party-text);
 }
 
 /* Party inventory slots overload indicator */
-.shadowdark-extras-party .SD-box .header > span.sdx-party-capacity.over .sdx-party-capacity-used {
+.shadowdark-extras-party .SD-box .header>span.sdx-party-capacity.over .sdx-party-capacity-used {
     color: var(--party-danger);
     font-weight: 800;
 }
 
 /* Defensive: keep "SLOTS: used / max" strictly inline and ordered */
-.shadowdark-extras-party .SD-box .header > span.sdx-party-capacity .sdx-party-capacity-text,
-.shadowdark-extras-party .SD-box .header > span.sdx-party-capacity .sdx-party-capacity-used,
-.shadowdark-extras-party .SD-box .header > span.sdx-party-capacity .sdx-party-capacity-max {
+.shadowdark-extras-party .SD-box .header>span.sdx-party-capacity .sdx-party-capacity-text,
+.shadowdark-extras-party .SD-box .header>span.sdx-party-capacity .sdx-party-capacity-used,
+.shadowdark-extras-party .SD-box .header>span.sdx-party-capacity .sdx-party-capacity-max {
     display: inline !important;
     float: none !important;
     position: static !important;
@@ -2153,11 +2153,55 @@ input[data-sdx-free-carry]:disabled {
     margin: 0;
 }
 
+/* ============================================
+   SIDEBAR & COMPENDIUM UNIDENTIFIED INDICATORS
+   ============================================ */
+
+/* Make list item position relative for icon positioning */
+li.directory-item.sdx-sidebar-unidentified,
+li.entry.sdx-sidebar-unidentified {
+    position: relative;
+}
+
+/* Red border around unidentified item thumbnails in sidebar/compendium */
+.sdx-sidebar-unidentified img.thumbnail,
+li.directory-item.sdx-sidebar-unidentified img.thumbnail,
+li.entry.sdx-sidebar-unidentified img.thumbnail {
+    border: 2px solid #dc3545 !important;
+    border-radius: 4px;
+    box-shadow: 0 0 6px rgba(220, 53, 69, 0.5);
+}
+
+/* Question mark icon badge on unidentified items - positioned at top-left of item */
+.sdx-sidebar-unidentified-icon {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    font-size: 11px;
+    color: #fff;
+    background: #dc3545;
+    border-radius: 50%;
+    width: 16px;
+    height: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+    z-index: 100;
+    pointer-events: none;
+}
+
+/* Subtle highlight on the list item row */
+li.directory-item.sdx-sidebar-unidentified,
+li.entry.sdx-sidebar-unidentified {
+    background: linear-gradient(to right, rgba(220, 53, 69, 0.15) 0%, transparent 40%) !important;
+}
+
 /* Add coins button in player sheet */
 .sdx-add-coins-btn {
     cursor: pointer;
     color: #000;
-    text-shadow: 
+    text-shadow:
         -1px -1px 0 #fff,
         1px -1px 0 #fff,
         -1px 1px 0 #fff,
@@ -2254,14 +2298,14 @@ input[data-sdx-free-carry]:disabled {
     background: white;
     transition: 0.3s ease;
     border-radius: 50%;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
-.sdx-switch input:checked + .sdx-slider {
+.sdx-switch input:checked+.sdx-slider {
     background: linear-gradient(135deg, #6366f1, #8b5cf6);
 }
 
-.sdx-switch input:checked + .sdx-slider:before {
+.sdx-switch input:checked+.sdx-slider:before {
     transform: translateX(20px);
 }
 
@@ -2275,7 +2319,7 @@ input[data-sdx-free-carry]:disabled {
     width: 14px;
 }
 
-.sdx-switch-sm input:checked + .sdx-slider:before {
+.sdx-switch-sm input:checked+.sdx-slider:before {
     transform: translateX(16px);
 }
 
@@ -2379,12 +2423,35 @@ input[data-sdx-free-carry]:disabled {
     overflow: hidden;
 }
 
-.sdx-preset-default { background: linear-gradient(to right, #4a1a7a, transparent); border-left: 3px solid #9b59b6; }
-.sdx-preset-dark { background: linear-gradient(to right, #1a1a2e, #0d0d0d); border-left: 3px solid #4a4a6a; }
-.sdx-preset-vibrant { background: linear-gradient(to right, #ff6b6b, transparent); border-left: 3px solid #ff4757; }
-.sdx-preset-parchment { background: linear-gradient(to right, #d4a574, transparent); border-left: 3px solid #c68642; }
-.sdx-preset-neon { background: linear-gradient(to right, rgba(0, 255, 136, 0.3), transparent); border-left: 3px solid #00ff88; }
-.sdx-preset-minimal { background: transparent; border-left: 3px solid #666; }
+.sdx-preset-default {
+    background: linear-gradient(to right, #4a1a7a, transparent);
+    border-left: 3px solid #9b59b6;
+}
+
+.sdx-preset-dark {
+    background: linear-gradient(to right, #1a1a2e, #0d0d0d);
+    border-left: 3px solid #4a4a6a;
+}
+
+.sdx-preset-vibrant {
+    background: linear-gradient(to right, #ff6b6b, transparent);
+    border-left: 3px solid #ff4757;
+}
+
+.sdx-preset-parchment {
+    background: linear-gradient(to right, #d4a574, transparent);
+    border-left: 3px solid #c68642;
+}
+
+.sdx-preset-neon {
+    background: linear-gradient(to right, rgba(0, 255, 136, 0.3), transparent);
+    border-left: 3px solid #00ff88;
+}
+
+.sdx-preset-minimal {
+    background: transparent;
+    border-left: 3px solid #666;
+}
 
 /* ---- Main Editor Area ---- */
 .sdx-editor-main {
@@ -2548,7 +2615,8 @@ input[data-sdx-free-carry]:disabled {
     font-size: 1.1em;
 }
 
-.sdx-preview-qty, .sdx-preview-slots {
+.sdx-preview-qty,
+.sdx-preview-slots {
     width: 40px;
     text-align: center;
     font-size: 0.9em;
@@ -2624,7 +2692,7 @@ input[data-sdx-free-carry]:disabled {
     gap: 6px;
 }
 
-.sdx-control-item > label {
+.sdx-control-item>label {
     font-size: 0.85em;
     color: #888;
 }
@@ -2873,8 +2941,15 @@ input[data-sdx-free-carry]:disabled {
 
 /* ---- Animations ---- */
 @keyframes sdx-pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.6; }
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.6;
+    }
 }
 
 .sdx-saving {
@@ -2882,22 +2957,22 @@ input[data-sdx-free-carry]:disabled {
 }
 
 /* Inventory item row styling - ensure item-image hover effect still works */
-.shadowdark .SD-list > li .item-image {
+.shadowdark .SD-list>li .item-image {
     position: relative;
     color: transparent;
 }
 
-.shadowdark .SD-list > li .item-image:hover {
+.shadowdark .SD-list>li .item-image:hover {
     color: white;
 }
 
 /* Make item-image with comment icon clickable */
-.shadowdark .SD-list > li .item-image:has(.fa-comment) {
+.shadowdark .SD-list>li .item-image:has(.fa-comment) {
     cursor: pointer;
 }
 
 /* Show the comment icon on item images on hover */
-.shadowdark .SD-list > li .item-image .fas.fa-comment {
+.shadowdark .SD-list>li .item-image .fas.fa-comment {
     position: absolute;
     top: 50%;
     left: 50%;
@@ -2911,12 +2986,12 @@ input[data-sdx-free-carry]:disabled {
     font-size: 16px;
 }
 
-.shadowdark .SD-list > li .item-image:hover .fas.fa-comment {
+.shadowdark .SD-list>li .item-image:hover .fas.fa-comment {
     opacity: 1;
 }
 
 /* Hide chat icon for unidentified items (non-GM) */
-.shadowdark .SD-list > li .item-image.sdx-unidentified .fas.fa-comment {
+.shadowdark .SD-list>li .item-image.sdx-unidentified .fas.fa-comment {
     display: none !important;
 }
 
@@ -2926,7 +3001,7 @@ input[data-sdx-free-carry]:disabled {
    ============================================ */
 
 /* Remove margins from content body when enhanced details is active */
-.shadowdark.sheet .tab-details.sdx-enhanced-details ~ .SD-content-body,
+.shadowdark.sheet .tab-details.sdx-enhanced-details~.SD-content-body,
 .shadowdark.sheet:has(.tab-details.sdx-enhanced-details) .SD-content-body {
     margin: 0px !important;
     /* When the player sheet details enhancement is enabled we remove
@@ -2935,6 +3010,7 @@ input[data-sdx-free-carry]:disabled {
     padding: 0px 0px 0px 0px !important;
     overflow: auto;
 }
+
 .shadowdark.sheet .SD-content-body {
     padding: 10px 10px 0px 10px !important;
     overflow: auto;
@@ -2960,8 +3036,8 @@ input[data-sdx-free-carry]:disabled {
     background-position: center bottom;
     background-repeat: no-repeat;
     overflow: hidden;
-    -webkit-mask-image: linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0.8) 30%, rgba(0,0,0,0.4) 60%, rgba(0,0,0,0) 100%);
-    mask-image: linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0.8) 30%, rgba(0,0,0,0.4) 60%, rgba(0,0,0,0) 100%);
+    -webkit-mask-image: linear-gradient(to top, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 0.8) 30%, rgba(0, 0, 0, 0.4) 60%, rgba(0, 0, 0, 0) 100%);
+    mask-image: linear-gradient(to top, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 0.8) 30%, rgba(0, 0, 0, 0.4) 60%, rgba(0, 0, 0, 0) 100%);
 }
 
 .shadowdark.sheet .tab-details.sdx-enhanced-details .sdx-details-bg-extension video {
@@ -2975,7 +3051,7 @@ input[data-sdx-free-carry]:disabled {
 }
 
 /* Ensure content is above the background extension */
-.shadowdark.sheet .tab-details.sdx-enhanced-details > *:not(.sdx-details-bg-extension) {
+.shadowdark.sheet .tab-details.sdx-enhanced-details>*:not(.sdx-details-bg-extension) {
     position: relative;
     z-index: 1;
 }
@@ -2988,7 +3064,7 @@ input[data-sdx-free-carry]:disabled {
 
 .shadowdark.sheet .tab-details.sdx-enhanced-details .SD-box {
     background: rgba(0, 0, 0, 0.4) !important;
-border: 2px solid rgba(255, 255, 255, 0.4);
+    border: 2px solid rgba(255, 255, 255, 0.4);
     border-radius: 0px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
@@ -3042,7 +3118,7 @@ border: 2px solid rgba(255, 255, 255, 0.4);
     line-height: 1.4;
     padding: 0;
     margin: 0;
-    margin-left: 9px!important;
+    margin-left: 9px !important;
 }
 
 .shadowdark.sheet .tab-details.sdx-enhanced-details .SD-box .content {
@@ -3156,7 +3232,7 @@ border: 2px solid rgba(255, 255, 255, 0.4);
 }
 
 /* Style the boons wrapper as a box */
-.shadowdark.sheet .tab-details.sdx-enhanced-details > div > div:has(.SD-banner) {
+.shadowdark.sheet .tab-details.sdx-enhanced-details>div>div:has(.SD-banner) {
     background: linear-gradient(135deg, rgba(40, 40, 38, 0.9) 0%, rgba(30, 30, 28, 0.9) 100%);
     border: 2px solid rgba(80, 80, 75, 0.6);
     border-radius: 0px;
@@ -3166,13 +3242,12 @@ border: 2px solid rgba(255, 255, 255, 0.4);
 
 /* BOONS banner as header */
 .shadowdark.sheet .tab-details.sdx-enhanced-details .SD-banner {
-color: rgba(255, 255, 255, 0.95) !important;
+    color: rgba(255, 255, 255, 0.95) !important;
     text-transform: uppercase;
     font-size: 18px;
     letter-spacing: 0.5px;
     /* border-radius: 0px; */
-    display: flex
-;
+    display: flex;
     align-items: center;
     justify-content: center;
     font-family: "Old Newspaper Font";
@@ -3257,7 +3332,7 @@ color: rgba(255, 255, 255, 0.95) !important;
    ============================================ */
 
 /* Remove margins from content body when enhanced abilities is active */
-.shadowdark.sheet .tab-abilities.sdx-enhanced-abilities ~ .SD-content-body,
+.shadowdark.sheet .tab-abilities.sdx-enhanced-abilities~.SD-content-body,
 .shadowdark.sheet:has(.tab-abilities.sdx-enhanced-abilities) .SD-content-body {
     margin: 0px !important;
 }
@@ -3282,8 +3357,8 @@ color: rgba(255, 255, 255, 0.95) !important;
     background-position: center bottom;
     background-repeat: no-repeat;
     overflow: hidden;
-    -webkit-mask-image: linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0.8) 30%, rgba(0,0,0,0.4) 60%, rgba(0,0,0,0) 100%);
-    mask-image: linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0.8) 30%, rgba(0,0,0,0.4) 60%, rgba(0,0,0,0) 100%);
+    -webkit-mask-image: linear-gradient(to top, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 0.8) 30%, rgba(0, 0, 0, 0.4) 60%, rgba(0, 0, 0, 0) 100%);
+    mask-image: linear-gradient(to top, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 0.8) 30%, rgba(0, 0, 0, 0.4) 60%, rgba(0, 0, 0, 0) 100%);
 }
 
 .shadowdark.sheet .tab-abilities.sdx-enhanced-abilities .sdx-abilities-bg-extension video {
@@ -3297,7 +3372,7 @@ color: rgba(255, 255, 255, 0.95) !important;
 }
 
 /* Ensure content is above the background extension */
-.shadowdark.sheet .tab-abilities.sdx-enhanced-abilities > *:not(.sdx-abilities-bg-extension) {
+.shadowdark.sheet .tab-abilities.sdx-enhanced-abilities>*:not(.sdx-abilities-bg-extension) {
     position: relative;
     z-index: 1;
 }
@@ -3305,7 +3380,7 @@ color: rgba(255, 255, 255, 0.95) !important;
 /* Boxes styling */
 .shadowdark.sheet .tab-abilities.sdx-enhanced-abilities .SD-box {
     background: rgba(0, 0, 0, 0.4) !important;
-border: 2px solid rgba(255, 255, 255, 0.4);
+    border: 2px solid rgba(255, 255, 255, 0.4);
     border-radius: 0px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
@@ -3418,7 +3493,7 @@ border: 2px solid rgba(255, 255, 255, 0.4);
    ============================================ */
 
 /* Remove margins from content body when enhanced talents is active */
-.shadowdark.sheet .tab-talents.sdx-enhanced-talents ~ .SD-content-body,
+.shadowdark.sheet .tab-talents.sdx-enhanced-talents~.SD-content-body,
 .shadowdark.sheet:has(.tab-talents.sdx-enhanced-talents) .SD-content-body {
     margin: 0px !important;
 }
@@ -3443,8 +3518,8 @@ border: 2px solid rgba(255, 255, 255, 0.4);
     background-position: center bottom;
     background-repeat: no-repeat;
     overflow: hidden;
-    -webkit-mask-image: linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0.8) 30%, rgba(0,0,0,0.4) 60%, rgba(0,0,0,0) 100%);
-    mask-image: linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0.8) 30%, rgba(0,0,0,0.4) 60%, rgba(0,0,0,0) 100%);
+    -webkit-mask-image: linear-gradient(to top, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 0.8) 30%, rgba(0, 0, 0, 0.4) 60%, rgba(0, 0, 0, 0) 100%);
+    mask-image: linear-gradient(to top, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 0.8) 30%, rgba(0, 0, 0, 0.4) 60%, rgba(0, 0, 0, 0) 100%);
 }
 
 .shadowdark.sheet .tab-talents.sdx-enhanced-talents .sdx-talents-bg-extension video {
@@ -3458,7 +3533,7 @@ border: 2px solid rgba(255, 255, 255, 0.4);
 }
 
 /* Ensure content is above the background extension */
-.shadowdark.sheet .tab-talents.sdx-enhanced-talents > *:not(.sdx-talents-bg-extension) {
+.shadowdark.sheet .tab-talents.sdx-enhanced-talents>*:not(.sdx-talents-bg-extension) {
     position: relative;
     z-index: 1;
 }
@@ -3466,7 +3541,7 @@ border: 2px solid rgba(255, 255, 255, 0.4);
 /* Boxes styling */
 .shadowdark.sheet .tab-talents.sdx-enhanced-talents .SD-box {
     background: rgba(0, 0, 0, 0.4) !important;
-border: 2px solid rgba(255, 255, 255, 0.4);
+    border: 2px solid rgba(255, 255, 255, 0.4);
     border-radius: 0px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
@@ -3478,13 +3553,12 @@ border: 2px solid rgba(255, 255, 255, 0.4);
 /* Box headers - full black with white text */
 .shadowdark.sheet .tab-talents.sdx-enhanced-talents .SD-box .header,
 .shadowdark.sheet .tab-talents.sdx-enhanced-talents .SD-banner {
-color: rgba(255, 255, 255, 0.95) !important;
+    color: rgba(255, 255, 255, 0.95) !important;
     text-transform: uppercase;
     font-size: 18px;
     letter-spacing: 0.5px;
     /* border-radius: 0px; */
-    display: flex
-;
+    display: flex;
     align-items: center;
     justify-content: center;
     font-family: "Old Newspaper Font";
@@ -3646,7 +3720,7 @@ color: rgba(255, 255, 255, 0.95) !important;
    ============================================ */
 
 /* Remove margins from content body when enhanced spells is active */
-.shadowdark.sheet .tab-spells.sdx-enhanced-spells ~ .SD-content-body,
+.shadowdark.sheet .tab-spells.sdx-enhanced-spells~.SD-content-body,
 .shadowdark.sheet:has(.tab-spells.sdx-enhanced-spells) .SD-content-body {
     margin: 0px !important;
 }
@@ -3671,8 +3745,8 @@ color: rgba(255, 255, 255, 0.95) !important;
     background-position: center bottom;
     background-repeat: no-repeat;
     overflow: hidden;
-    -webkit-mask-image: linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0.8) 30%, rgba(0,0,0,0.4) 60%, rgba(0,0,0,0) 100%);
-    mask-image: linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0.8) 30%, rgba(0,0,0,0.4) 60%, rgba(0,0,0,0) 100%);
+    -webkit-mask-image: linear-gradient(to top, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 0.8) 30%, rgba(0, 0, 0, 0.4) 60%, rgba(0, 0, 0, 0) 100%);
+    mask-image: linear-gradient(to top, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 0.8) 30%, rgba(0, 0, 0, 0.4) 60%, rgba(0, 0, 0, 0) 100%);
 }
 
 .shadowdark.sheet .tab-spells.sdx-enhanced-spells .sdx-spells-bg-extension video {
@@ -3686,7 +3760,7 @@ color: rgba(255, 255, 255, 0.95) !important;
 }
 
 /* Ensure content is above the background extension */
-.shadowdark.sheet .tab-spells.sdx-enhanced-spells > *:not(.sdx-spells-bg-extension):not(#context-menu) {
+.shadowdark.sheet .tab-spells.sdx-enhanced-spells>*:not(.sdx-spells-bg-extension):not(#context-menu) {
     position: relative;
     z-index: 1;
 }
@@ -3804,6 +3878,11 @@ color: rgba(255, 255, 255, 0.95) !important;
     color: #fff !important;
 }
 
+.sdx-create-macro:hover {
+    background: rgba(180, 130, 50, 0.7) !important;
+    color: #fff !important;
+}
+
 /* Ensure nav doesn't clip context menu */
 .shadowdark.sheet .tab-spells.sdx-enhanced-spells nav {
     overflow: visible !important;
@@ -3840,7 +3919,7 @@ color: rgba(255, 255, 255, 0.95) !important;
    ============================================ */
 
 /* Remove margins from content body when enhanced inventory is active */
-.shadowdark.sheet .tab-inventory.sdx-enhanced-inventory ~ .SD-content-body,
+.shadowdark.sheet .tab-inventory.sdx-enhanced-inventory~.SD-content-body,
 .shadowdark.sheet:has(.tab-inventory.sdx-enhanced-inventory) .SD-content-body {
     margin: 0px !important;
 }
@@ -3865,8 +3944,8 @@ color: rgba(255, 255, 255, 0.95) !important;
     background-position: center bottom;
     background-repeat: no-repeat;
     overflow: hidden;
-    -webkit-mask-image: linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0.8) 30%, rgba(0,0,0,0.4) 60%, rgba(0,0,0,0) 100%);
-    mask-image: linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0.8) 30%, rgba(0,0,0,0.4) 60%, rgba(0,0,0,0) 100%);
+    -webkit-mask-image: linear-gradient(to top, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 0.8) 30%, rgba(0, 0, 0, 0.4) 60%, rgba(0, 0, 0, 0) 100%);
+    mask-image: linear-gradient(to top, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 0.8) 30%, rgba(0, 0, 0, 0.4) 60%, rgba(0, 0, 0, 0) 100%);
 }
 
 .shadowdark.sheet .tab-inventory.sdx-enhanced-inventory .sdx-inventory-bg-extension video {
@@ -3880,7 +3959,7 @@ color: rgba(255, 255, 255, 0.95) !important;
 }
 
 /* Ensure content is above the background extension */
-.shadowdark.sheet .tab-inventory.sdx-enhanced-inventory > *:not(.sdx-inventory-bg-extension) {
+.shadowdark.sheet .tab-inventory.sdx-enhanced-inventory>*:not(.sdx-inventory-bg-extension) {
     position: relative;
     z-index: 1;
 }
@@ -4018,7 +4097,7 @@ color: rgba(255, 255, 255, 0.95) !important;
    ============================================ */
 
 /* Remove margins from content body when enhanced effects is active */
-.shadowdark.sheet .tab-effects.sdx-enhanced-effects ~ .SD-content-body,
+.shadowdark.sheet .tab-effects.sdx-enhanced-effects~.SD-content-body,
 .shadowdark.sheet:has(.tab-effects.sdx-enhanced-effects) .SD-content-body {
     margin: 0px !important;
 }
@@ -4043,8 +4122,8 @@ color: rgba(255, 255, 255, 0.95) !important;
     background-position: center bottom;
     background-repeat: no-repeat;
     overflow: hidden;
-    -webkit-mask-image: linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0.8) 30%, rgba(0,0,0,0.4) 60%, rgba(0,0,0,0) 100%);
-    mask-image: linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0.8) 30%, rgba(0,0,0,0.4) 60%, rgba(0,0,0,0) 100%);
+    -webkit-mask-image: linear-gradient(to top, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 0.8) 30%, rgba(0, 0, 0, 0.4) 60%, rgba(0, 0, 0, 0) 100%);
+    mask-image: linear-gradient(to top, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 0.8) 30%, rgba(0, 0, 0, 0.4) 60%, rgba(0, 0, 0, 0) 100%);
 }
 
 .shadowdark.sheet .tab-effects.sdx-enhanced-effects .sdx-effects-bg-extension video {
@@ -4058,7 +4137,7 @@ color: rgba(255, 255, 255, 0.95) !important;
 }
 
 /* Ensure content is above the background extension */
-.shadowdark.sheet .tab-effects.sdx-enhanced-effects > *:not(.sdx-effects-bg-extension) {
+.shadowdark.sheet .tab-effects.sdx-enhanced-effects>*:not(.sdx-effects-bg-extension) {
     position: relative;
     z-index: 1;
 }
@@ -4066,7 +4145,7 @@ color: rgba(255, 255, 255, 0.95) !important;
 /* Boxes styling */
 .shadowdark.sheet .tab-effects.sdx-enhanced-effects .SD-box {
     background: rgba(0, 0, 0, 0.4) !important;
-border: 2px solid rgba(255, 255, 255, 0.4);
+    border: 2px solid rgba(255, 255, 255, 0.4);
     border-radius: 0px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
@@ -4078,7 +4157,7 @@ border: 2px solid rgba(255, 255, 255, 0.4);
 /* Box headers - full black with white text */
 .shadowdark.sheet .tab-effects.sdx-enhanced-effects .SD-box .header,
 .shadowdark.sheet .tab-effects.sdx-enhanced-effects .SD-banner {
-color: rgba(255, 255, 255, 0.95) !important;
+    color: rgba(255, 255, 255, 0.95) !important;
     text-transform: uppercase;
     font-size: 18px;
     letter-spacing: 0.5px;
@@ -4275,7 +4354,7 @@ color: rgba(255, 255, 255, 0.95) !important;
 }
 
 /* Ensure content stays above the background */
-.shadowdark.sheet .SD-header.sdx-custom-header > *:not(.sdx-header-settings-btn):not(.sdx-header-settings-menu) {
+.shadowdark.sheet .SD-header.sdx-custom-header>*:not(.sdx-header-settings-btn):not(.sdx-header-settings-menu) {
     position: relative;
     z-index: 1;
 }
@@ -4318,7 +4397,7 @@ color: rgba(255, 255, 255, 0.95) !important;
     position: relative;
     z-index: 10;
     color: #fff;
-    text-shadow: 1px 1px 3px rgba(0,0,0,0.8);
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.8);
 }
 
 /* Nav styling when custom header is active */
@@ -4349,7 +4428,7 @@ color: rgba(255, 255, 255, 0.95) !important;
 .shadowdark.sheet form:has(.sdx-header-bg-extension) .SD-nav a,
 .shadowdark.sheet form:has(.SD-header.sdx-enhanced-header) .SD-nav a {
     color: #fff;
-    text-shadow: 
+    text-shadow:
         0 0 8px rgba(255, 255, 255, 0.3),
         0 0 4px rgba(255, 255, 255, 0.2),
         1px 1px 2px rgba(0, 0, 0, 0.3);
@@ -4358,7 +4437,7 @@ color: rgba(255, 255, 255, 0.95) !important;
 .shadowdark.sheet form:has(.sdx-header-bg-extension) .SD-nav a:hover,
 .shadowdark.sheet form:has(.SD-header.sdx-enhanced-header) .SD-nav a:hover {
     color: #fff;
-    text-shadow: 
+    text-shadow:
         0 0 12px rgba(255, 255, 255, 0.5),
         0 0 6px rgba(255, 255, 255, 0.3),
         1px 1px 2px rgba(0, 0, 0, 0.3);
@@ -4367,7 +4446,7 @@ color: rgba(255, 255, 255, 0.95) !important;
 .shadowdark.sheet form:has(.sdx-header-bg-extension) .SD-nav a.active,
 .shadowdark.sheet form:has(.SD-header.sdx-enhanced-header) .SD-nav a.active {
     color: #fff;
-    text-shadow: 
+    text-shadow:
         0 0 12px rgba(255, 255, 255, 0.4),
         0 0 8px rgba(255, 255, 255, 0.3),
         1px 1px 2px rgba(0, 0, 0, 0.3);
@@ -4650,19 +4729,23 @@ color: rgba(255, 255, 255, 0.95) !important;
    ENHANCED INTERACTIVE HEADER - Tidy5e Style
    ============================================================ */
 .shadowdark.sheet.player .SD-header {
-    margin: 0px!important;
+    margin: 0px !important;
 }
+
 .shadowdark.sheet.player .SD-nav {
     margin: 0px 0px 0px 0px !important;
 }
+
 .shadowdark.sheet.player .SD-nav a {
-    margin: 0!important;
-    padding: 0!important;
-    color: #ffffff!important;
+    margin: 0 !important;
+    padding: 0 !important;
+    color: #ffffff !important;
 }
+
 .shadowdark.sheet.player .SD-nav a.active {
-    color: #ffffff!important;
+    color: #ffffff !important;
 }
+
 /* When SD-header has enhanced header class, set up layout */
 .shadowdark.sheet.player .SD-header.sdx-enhanced-header {
     position: relative;
@@ -4788,7 +4871,7 @@ color: rgba(255, 255, 255, 0.95) !important;
     border-bottom: 1px solid transparent;
     color: #fff;
     font-size: 28px;
-        font-family: "Old Newspaper Font";
+    font-family: "Old Newspaper Font";
     font-weight: bold;
     text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.8);
     padding: 2px 4px;
@@ -4916,7 +4999,7 @@ color: rgba(255, 255, 255, 0.95) !important;
     line-height: 1;
     font-family: 'Modesto Condensed', 'Palatino Linotype', serif;
     text-shadow: 0 0 8px rgba(200, 180, 140, 0.8),
-                 1px 1px 3px rgba(0, 0, 0, 0.9);
+        1px 1px 3px rgba(0, 0, 0, 0.9);
 }
 
 /* Abilities Container */
@@ -5392,6 +5475,7 @@ color: rgba(255, 255, 255, 0.95) !important;
     margin: 0 0 12px 0;
     color: #ffffff;
 }
+
 .sdx-journal-page-content hr {
     border: none;
     border-top: solid 1px #000000;
@@ -5399,12 +5483,13 @@ color: rgba(255, 255, 255, 0.95) !important;
     color: #ffffff !important;
     background-image: linear-gradient(90deg, transparent 0%, #ffffff 50%, transparent 100%) !important;
 }
+
 .sdx-journal-page-content h1,
 .sdx-journal-page-content h2,
 .sdx-journal-page-content h3,
 .sdx-journal-page-content h4,
 .sdx-journal-page-content h5 {
-    color: #ffffff!important;
+    color: #ffffff !important;
     margin: 16px 0 8px 0;
 }
 
@@ -5412,15 +5497,15 @@ color: rgba(255, 255, 255, 0.95) !important;
 .sdx-journal-page-content ol {
     margin: 0 0 12px 0;
     padding-left: 24px;
-    color: #ffffff!important;
+    color: #ffffff !important;
 }
 
 .sdx-journal-page-content li {
-    color: #ffffff!important;
+    color: #ffffff !important;
 }
 
 .sdx-journal-page-content a {
-    color: #aaaaaa!important;
+    color: #aaaaaa !important;
 }
 
 .sdx-journal-page-content a:hover {
@@ -5553,17 +5638,17 @@ section[data-tab="tab-notes"] .sdx-journal-notes {
 }
 
 /* Hide original notes editor when journal is active */
-section.tab-notes.sdx-journal-active > .SD-hideable-section,
-section.tab-notes.sdx-journal-active > div:not(.sdx-journal-notes),
-section[data-tab="tab-notes"].sdx-journal-active > .SD-hideable-section,
-section[data-tab="tab-notes"].sdx-journal-active > div:not(.sdx-journal-notes) {
+section.tab-notes.sdx-journal-active>.SD-hideable-section,
+section.tab-notes.sdx-journal-active>div:not(.sdx-journal-notes),
+section[data-tab="tab-notes"].sdx-journal-active>.SD-hideable-section,
+section[data-tab="tab-notes"].sdx-journal-active>div:not(.sdx-journal-notes) {
     display: none !important;
 }
 
 /* Apply compact content-body only when Notes tab is active */
-.shadowdark.sheet .tab-notes.active ~ .SD-content-body,
+.shadowdark.sheet .tab-notes.active~.SD-content-body,
 .shadowdark.sheet:has(.tab-notes.active) .SD-content-body,
-.shadowdark.sheet .tab-notes[data-tab="tab-notes"].active ~ .SD-content-body,
+.shadowdark.sheet .tab-notes[data-tab="tab-notes"].active~.SD-content-body,
 .shadowdark.sheet:has(section[data-tab="tab-notes"].active) .SD-content-body {
     padding: 0px 0px 0px 0px !important;
     overflow: auto;
@@ -5992,6 +6077,7 @@ section[data-tab="tab-notes"].sdx-journal-active > div:not(.sdx-journal-notes) {
         opacity: 0;
         transform: scale(0.95);
     }
+
     to {
         opacity: 1;
         transform: scale(1);
@@ -6442,7 +6528,7 @@ section[data-tab="tab-notes"].sdx-journal-active > div:not(.sdx-journal-notes) {
 }
 
 .sdx-roll-total {
-display: inline-block;
+    display: inline-block;
     font-size: 21px;
     font-weight: bold;
     color: #ffffff;
@@ -6615,7 +6701,7 @@ display: inline-block;
     flex: 1;
     font-size: 14px;
     font-weight: 600;
-    color: rgba(40, 30, 20, 0.9);
+    color: rgb(129 90 51 / 90%);
 }
 
 .sdx-damage-preview {
@@ -6984,6 +7070,45 @@ display: inline-block;
 }
 
 /* Effects/Conditions drop area - match weapon bonus style */
+.sdx-effects-container {
+    display: flex;
+    gap: 12px;
+    margin: 8px 0;
+    align-items: flex-start;
+}
+
+.sdx-effects-column {
+    flex: 1;
+    min-width: 0;
+}
+
+.sdx-critical-effects-column {
+    flex: 0 0 140px;
+    display: flex;
+    flex-direction: column;
+    margin-right: 10px;
+}
+
+.sdx-critical-label {
+    font-size: 11px;
+    font-weight: bold;
+    color: #5a2727;
+    text-align: center;
+    margin-bottom: 6px;
+    padding: 4px 8px;
+    background: rgba(201, 170, 88, 0.15);
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    margin-left: 10px;
+}
+
+.sdx-critical-label i {
+    color: #4a4030;
+}
+
 .sdx-spell-effects-drop-area {
     min-height: 80px;
     padding: 12px;
@@ -6991,20 +7116,71 @@ display: inline-block;
     border: 2px dashed rgba(100, 80, 40, 0.4);
     border-radius: 6px;
     transition: all 0.25s ease;
-    margin: 8px 0;
     position: relative;
+    margin-left: 10px;
+}
+
+.sdx-critical-effects-drop-area {
+    min-height: 80px;
+    padding: 8px;
+    background: rgba(201, 170, 88, 0.08);
+    border: 2px dashed rgba(201, 170, 88, 0.5);
+    border-radius: 6px;
+}
+
+.sdx-critical-effects-drop-area:hover {
+    border-color: rgba(201, 170, 88, 0.7);
+    background: rgba(201, 170, 88, 0.12);
+}
+
+.sdx-critical-effects-drop-area.sdx-drag-over {
+    background: rgba(201, 170, 88, 0.2);
+    border-color: #c9aa58;
+}
+
+.sdx-spell-critical-effects-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.sdx-spell-critical-effects-list .sdx-no-effects {
+    padding: 16px 8px;
+    font-size: 11px;
+    text-align: center;
+    color: #8a7a58;
+}
+
+.sdx-critical-effect-item {
+    background: rgba(201, 170, 88, 0.15);
+    border-left: 3px solid #c9aa58;
+    border-radius: 4px;
+}
+
+.sdx-critical-effect-item .sdx-effect-header {
+    padding: 6px 8px;
+}
+
+.sdx-critical-effect-item .sdx-effect-header img {
+    width: 24px;
+    height: 24px;
+}
+
+.sdx-critical-effect-item .sdx-effect-name {
+    font-size: 11px;
+    font-weight: 500;
 }
 
 .sdx-spell-effects-drop-area::before {
     display: none;
 }
 
-.sdx-spell-effects-drop-area:hover {
+.sdx-spell-effects-drop-area:not(.sdx-critical-effects-drop-area):hover {
     border-color: rgba(100, 80, 40, 0.6);
     background: rgba(255, 255, 255, 0.5);
 }
 
-.sdx-spell-effects-drop-area.sdx-drag-over {
+.sdx-spell-effects-drop-area:not(.sdx-critical-effects-drop-area).sdx-drag-over {
     background: rgba(122, 90, 48, 0.1);
     border-color: #7a5a30;
     border-style: dashed;
@@ -7018,9 +7194,7 @@ display: inline-block;
 }
 
 /* Empty state placeholder */
-.sdx-no-effects,
-.sdx-no-summons,
-.sdx-no-items {
+.sdx-no-effects {
     color: #5a5040;
     font-style: italic;
     text-align: center;
@@ -7326,7 +7500,7 @@ display: inline-block;
     color: #5a4a2a !important;
     text-transform: uppercase !important;
     letter-spacing: 0.5px !important;
-        min-width: 565px;
+    min-width: 565px;
 }
 
 /* Summons/Items list containers */
@@ -7382,6 +7556,7 @@ display: inline-block;
     align-items: center;
     gap: 10px;
     flex-wrap: wrap;
+    margin-left: 10px;
 }
 
 .sdx-radio-label {
@@ -7415,9 +7590,7 @@ display: inline-block;
 }
 
 /* Empty state with icon */
-.sdx-no-effects i,
-.sdx-no-summons i,
-.sdx-no-items i {
+.sdx-no-effects i {
     margin-right: 6px;
     opacity: 0.6;
 }
@@ -7836,6 +8009,81 @@ display: inline-block;
     background: rgba(180, 60, 60, 0.8);
 }
 
+/* Effect apply to (target/attacker) selection */
+.sdx-effect-apply-to {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 6px 10px;
+    background: rgba(100, 80, 40, 0.08);
+    border-top: 1px solid rgba(100, 80, 40, 0.2);
+    font-size: 11px;
+}
+
+.sdx-apply-to-label {
+    color: #5a5040;
+    font-weight: 500;
+}
+
+.sdx-effect-apply-to .sdx-radio-label {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+    padding: 3px 8px;
+    border-radius: 4px;
+    transition: background-color 0.15s;
+    color: #4a4030;
+}
+
+.sdx-effect-apply-to .sdx-radio-label:hover {
+    background: rgba(100, 80, 40, 0.15);
+}
+
+.sdx-effect-apply-to .sdx-radio-label input[type="radio"] {
+    margin: 0;
+    cursor: pointer;
+}
+
+.sdx-effect-apply-to .sdx-radio-label i {
+    font-size: 10px;
+    color: #6a5a40;
+}
+
+/* Effect separator (vertical line between radio and checkbox groups) */
+.sdx-effect-separator {
+    color: rgba(100, 80, 40, 0.4);
+    font-weight: 300;
+    margin: 0 4px;
+}
+
+/* Effect cumulative checkbox styling */
+.sdx-effect-apply-to .sdx-checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+    padding: 3px 8px;
+    border-radius: 4px;
+    transition: background-color 0.15s;
+    color: #4a4030;
+    font-size: 11px;
+}
+
+.sdx-effect-apply-to .sdx-checkbox-label:hover {
+    background: rgba(100, 80, 40, 0.15);
+}
+
+.sdx-effect-apply-to .sdx-checkbox-label input[type="checkbox"] {
+    margin: 0;
+    cursor: pointer;
+}
+
+.sdx-effect-apply-to .sdx-checkbox-label i {
+    font-size: 10px;
+    color: #6a5a40;
+}
+
 /* Effect requirements */
 .sdx-effect-requirements {
     padding: 8px 10px;
@@ -8023,7 +8271,7 @@ display: inline-block;
 
 /* Weapon bonus breakdown in damage card */
 .sdx-damage-card .sdx-weapon-bonus-breakdown {
-margin: 8px 0;
+    margin: 8px 0;
     padding: 8px;
     background: linear-gradient(135deg, rgb(0 0 0 / 40%) 0%, rgb(0 0 0) 100%);
     border: 1px solid rgba(201, 170, 88, 0.4);
@@ -8069,77 +8317,79 @@ margin: 8px 0;
    ============================================ */
 
 .hp-wave-container {
-  --hp-wave-color: #dc2626;
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: -20px;
-  overflow: hidden;
-  pointer-events: none;
-  z-index: 1;
-  border-radius: 6px;
+    --hp-wave-color: #dc2626;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: -20px;
+    overflow: hidden;
+    pointer-events: none;
+    z-index: 1;
+    border-radius: 6px;
+    opacity: 0.8;
 }
 
 .hp-wave-container .hp-waves {
-  position: absolute;
-  left: 0;
-  bottom: 0;
-  width: 200%;
-  height: 120%;
-  transform: translateY(var(--hp-translate, 100%));
-  transition: transform 0.5s ease-out;
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 200%;
+    height: 120%;
+    transform: translateY(var(--hp-translate, 100%));
+    transition: transform 0.5s ease-out;
 }
 
 .hp-wave-container .hp-waves .wave-path {
-  animation: hp-wave-move 8s linear infinite;
+    animation: hp-wave-move 8s linear infinite;
 }
 
 .hp-wave-container .hp-waves .wave-path:nth-child(1) {
-  animation-delay: 0s;
-  animation-duration: 7s;
-  fill: color-mix(in srgb, var(--hp-wave-color) 35%, transparent);
+    animation-delay: 0s;
+    animation-duration: 7s;
+    fill: color-mix(in srgb, var(--hp-wave-color) 35%, transparent);
 }
 
 .hp-wave-container .hp-waves .wave-path:nth-child(2) {
-  animation-delay: -2s;
-  animation-duration: 10s;
-  fill: color-mix(in srgb, var(--hp-wave-color) 45%, transparent);
+    animation-delay: -2s;
+    animation-duration: 10s;
+    fill: color-mix(in srgb, var(--hp-wave-color) 45%, transparent);
 }
 
 .hp-wave-container .hp-waves .wave-path:nth-child(3) {
-  animation-delay: -4s;
-  animation-duration: 13s;
-  fill: color-mix(in srgb, var(--hp-wave-color) 55%, transparent);
+    animation-delay: -4s;
+    animation-duration: 13s;
+    fill: color-mix(in srgb, var(--hp-wave-color) 55%, transparent);
 }
 
 .hp-wave-container .hp-waves .wave-path:nth-child(4) {
-  animation-delay: -6s;
-  animation-duration: 18s;
-  fill: color-mix(in srgb, var(--hp-wave-color) 75%, black 15%);
+    animation-delay: -6s;
+    animation-duration: 18s;
+    fill: color-mix(in srgb, var(--hp-wave-color) 75%, black 15%);
 }
 
 @keyframes hp-wave-move {
-  0% {
-    transform: translateX(0);
-  }
-  100% {
-    transform: translateX(-50%);
-  }
+    0% {
+        transform: translateX(0);
+    }
+
+    100% {
+        transform: translateX(-50%);
+    }
 }
 
 /* Death state - full overlay using wave color */
 .hp-wave-container.hp-dead {
-  background: color-mix(in srgb, var(--hp-wave-color) 85%, black);
+    background: color-mix(in srgb, var(--hp-wave-color) 85%, black);
 }
 
 .hp-wave-container.hp-dead .hp-waves {
-  display: none;
+    display: none;
 }
 
 /* Full HP - hide waves completely */
 .hp-wave-container.hp-full {
-  display: none;
+    display: none;
 }
 
 /* ============================================
@@ -8147,141 +8397,1206 @@ margin: 8px 0;
    ============================================ */
 
 .hp-waves-settings-app .sdx-settings-section {
-  margin-bottom: 1rem;
-  padding-bottom: 1rem;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    margin-bottom: 1rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
 }
 
 .hp-waves-settings-app .sdx-settings-section:last-of-type {
-  border-bottom: none;
+    border-bottom: none;
 }
 
 .hp-waves-settings-app h2 {
-  margin: 0 0 0.5rem 0;
-  font-size: 1.2rem;
+    margin: 0 0 0.5rem 0;
+    font-size: 1.2rem;
 }
 
 .hp-waves-settings-app h3 {
-  margin: 0 0 0.5rem 0;
-  font-size: 1rem;
+    margin: 0 0 0.5rem 0;
+    font-size: 1rem;
 }
 
 .hp-waves-settings-app .notes {
-  font-size: 0.85rem;
-  color: #666;
-  margin: 0.25rem 0;
+    font-size: 0.85rem;
+    color: #666;
+    margin: 0.25rem 0;
 }
 
 .hp-waves-settings-app .form-group {
-  margin-bottom: 0.75rem;
+    margin-bottom: 0.75rem;
 }
 
 .hp-waves-settings-app .form-group label {
-  font-weight: bold;
-  margin-right: 0.5rem;
+    font-weight: bold;
+    margin-right: 0.5rem;
 }
 
 .hp-waves-settings-app .sdx-color-picker-row {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
 }
 
 .hp-waves-settings-app .sdx-color-picker-row input[type="color"] {
-  width: 50px;
-  height: 30px;
-  padding: 0;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  cursor: pointer;
+    width: 50px;
+    height: 30px;
+    padding: 0;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    cursor: pointer;
 }
 
 .hp-waves-settings-app .sdx-color-value {
-  font-family: monospace;
-  font-size: 0.9rem;
+    font-family: monospace;
+    font-size: 0.9rem;
 }
 
 .hp-waves-settings-app .sdx-ancestry-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  margin: 0.75rem 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin: 0.75rem 0;
 }
 
 .hp-waves-settings-app .sdx-ancestry-row {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem;
-  background: rgba(0, 0, 0, 0.05);
-  border-radius: 4px;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem;
+    background: rgba(0, 0, 0, 0.05);
+    border-radius: 4px;
 }
 
 .hp-waves-settings-app .sdx-ancestry-name {
-  flex: 1;
-  padding: 0.25rem 0.5rem;
-  border: 1px solid #ccc;
-  border-radius: 4px;
+    flex: 1;
+    padding: 0.25rem 0.5rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
 }
 
 .hp-waves-settings-app .sdx-ancestry-color {
-  width: 50px;
-  height: 30px;
-  padding: 0;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  cursor: pointer;
+    width: 50px;
+    height: 30px;
+    padding: 0;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    cursor: pointer;
 }
 
 .hp-waves-settings-app .sdx-remove-ancestry {
-  width: 30px;
-  height: 30px;
-  padding: 0;
-  border: none;
-  background: rgba(200, 0, 0, 0.1);
-  border-radius: 4px;
-  cursor: pointer;
-  color: #c00;
-  transition: background 0.2s;
+    width: 30px;
+    height: 30px;
+    padding: 0;
+    border: none;
+    background: rgba(200, 0, 0, 0.1);
+    border-radius: 4px;
+    cursor: pointer;
+    color: #c00;
+    transition: background 0.2s;
 }
 
 .hp-waves-settings-app .sdx-remove-ancestry:hover {
-  background: rgba(200, 0, 0, 0.2);
+    background: rgba(200, 0, 0, 0.2);
 }
 
 .hp-waves-settings-app .sdx-add-ancestry {
-  width: 100%;
-  padding: 0.5rem;
-  border: 1px dashed #999;
-  background: transparent;
-  border-radius: 4px;
-  cursor: pointer;
-  color: #666;
-  transition: all 0.2s;
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px dashed #999;
+    background: transparent;
+    border-radius: 4px;
+    cursor: pointer;
+    color: #666;
+    transition: all 0.2s;
 }
 
 .hp-waves-settings-app .sdx-add-ancestry:hover {
-  border-color: #666;
-  color: #333;
-  background: rgba(0, 0, 0, 0.05);
+    border-color: #666;
+    color: #333;
+    background: rgba(0, 0, 0, 0.05);
 }
 
 .hp-waves-settings-app .sheet-footer {
-  margin-top: 1rem;
-  padding-top: 1rem;
-  border-top: 1px solid rgba(0, 0, 0, 0.2);
-  gap: 0.5rem;
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(0, 0, 0, 0.2);
+    gap: 0.5rem;
 }
 
 .hp-waves-settings-app .sheet-footer button {
-  flex: 1;
+    flex: 1;
 }
 
 .hp-waves-settings-app .sdx-reset-defaults {
-  background: rgba(200, 0, 0, 0.1);
-  border-color: rgba(200, 0, 0, 0.3);
+    background: rgba(200, 0, 0, 0.1);
+    border-color: rgba(200, 0, 0, 0.3);
 }
 
 .hp-waves-settings-app .sdx-reset-defaults:hover {
-  background: rgba(200, 0, 0, 0.2);
+    background: rgba(200, 0, 0, 0.2);
+}
+
+/* ============================================
+   FOCUS SPELL TRACKER STYLES
+   ============================================ */
+
+/* Focus Spells Section in Player Sheet */
+.sdx-focus-spells-section {
+    margin-bottom: 1rem;
+    border: 2px solid #9b59b6;
+    border-radius: 8px;
+    background: linear-gradient(135deg, rgba(155, 89, 182, 0.15) 0%, rgba(0, 0, 0, 0.2) 100%);
+}
+
+.sdx-focus-spells-section .header {
+    background: linear-gradient(90deg, rgba(155, 89, 182, 0.3) 0%, transparent 100%);
+    padding: 6px 10px;
+    border-bottom: 1px solid rgba(155, 89, 182, 0.5);
+}
+
+.sdx-focus-spells-section .header label {
+    font-weight: bold;
+    font-size: 1.1em;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: unset;
+}
+
+.sdx-focus-spells-section .header label i {
+    color: #c9aa58;
+    animation: pulse-glow 2s ease-in-out infinite;
+}
+
+@keyframes pulse-glow {
+
+    0%,
+    100% {
+        opacity: 0.6;
+        text-shadow: 0 0 4px rgba(201, 170, 88, 0.5);
+    }
+
+    50% {
+        opacity: 1;
+        text-shadow: 0 0 12px rgba(201, 170, 88, 0.8);
+    }
+}
+
+.sdx-focus-spells-list {
+    padding: 0;
+    margin: 0;
+}
+
+.sdx-focus-spells-list li.header {
+    background: rgba(0, 0, 0, 0.3);
+    font-weight: bold;
+    font-size: 0.85em;
+    color: #aaa;
+}
+
+.sdx-focus-spells-list li {
+    display: grid;
+    grid-template-columns: 32px 1fr 80px 50px 60px;
+    align-items: center;
+    padding: 4px 8px;
+    gap: 8px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.sdx-focus-spells-list li:last-child {
+    border-bottom: none;
+}
+
+.sdx-focus-spells-list li.sdx-focus-spell {
+    background: rgba(0, 0, 0, 0.2);
+    transition: background 0.2s;
+}
+
+.sdx-focus-spells-list li.sdx-focus-spell:hover {
+    background: rgba(155, 89, 182, 0.2);
+}
+
+.sdx-focus-spells-list .item-image {
+    width: 28px;
+    height: 28px;
+    border-radius: 4px;
+    background-size: cover;
+    background-position: center;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.sdx-focus-spells-list .item-image i {
+    position: absolute;
+    bottom: -2px;
+    right: -2px;
+    font-size: 12px;
+    color: #c9aa58;
+    text-shadow: 0 0 4px rgba(0, 0, 0, 0.8);
+}
+
+.sdx-focus-info {
+    flex: 1;
+    overflow: hidden;
+}
+
+.sdx-focus-spell-name {
+    color: #e0e0e0;
+    font-weight: 500;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.sdx-focus-time {
+    color: #c9aa58;
+    font-size: 0.85em;
+    text-align: center;
+}
+
+.sdx-focus-targets {
+    color: #8ab4f8;
+    font-size: 0.85em;
+    text-align: center;
+    cursor: help;
+}
+
+.sdx-focus-targets i {
+    margin-right: 4px;
+}
+
+.sdx-focus-spells-list .actions {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+}
+
+.sdx-focus-spells-list .actions a {
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    background: rgba(0, 0, 0, 0.3);
+    transition: all 0.2s;
+    cursor: pointer;
+}
+
+.sdx-focus-spells-list .actions a:hover {
+    background: rgba(0, 0, 0, 0.5);
+    transform: scale(1.1);
+}
+
+.sdx-focus-spells-list .actions a[data-action="focus-roll"] {
+    color: #c9aa58;
+}
+
+.sdx-focus-spells-list .actions a[data-action="focus-roll"]:hover {
+    color: #ffdd88;
+    background: rgba(201, 170, 88, 0.2);
+}
+
+.sdx-focus-spells-list .actions a[data-action="end-focus"]:hover {
+    background: rgba(255, 100, 100, 0.2);
+}
+
+/* Disabled state for focus-spell action when spell is already focused */
+.tab-spells a[data-action="focus-spell"].sdx-disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+/* Focus Ended Chat Card */
+.shadowdark.chat-card.focus-ended {
+    border-left: 3px solid #9b59b6;
+}
+
+.shadowdark.chat-card.focus-ended .card-header {
+    background: linear-gradient(90deg, rgba(155, 89, 182, 0.3) 0%, transparent 100%);
+}
+
+.shadowdark.chat-card.focus-ended .card-content {
+    padding: 8px;
+}
+
+.shadowdark.chat-card.focus-ended .card-content ul {
+    margin: 4px 0 0 16px;
+    padding: 0;
+}
+
+.shadowdark.chat-card.focus-ended .card-content li {
+    color: #aaa;
+}
+
+/* Focus Reminder Chat Message */
+.sdx-focus-reminder {
+    background: linear-gradient(135deg, #1a1a1a 0%, #0d0d0d 100%);
+    border: 1px solid #333;
+    border-left: 3px solid #c9aa58;
+    border-radius: 4px;
+    padding: 8px 10px;
+    font-size: 12px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
+}
+
+.sdx-focus-reminder-header {
+    font-weight: bold;
+    color: #c9aa58;
+    margin-bottom: 6px;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 1px solid #333;
+    padding-bottom: 4px;
+}
+
+.sdx-focus-reminder-header i {
+    color: #c9aa58;
+    margin-right: 4px;
+}
+
+.sdx-focus-reminder-list {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.sdx-focus-reminder-spell {
+    color: #ccc;
+    font-size: 11px;
+}
+
+.sdx-focus-reminder-spell i {
+    color: #c9aa58;
+    font-size: 10px;
+    margin-right: 3px;
+}
+
+.sdx-focus-reminder-spell strong {
+    color: #fff;
+}
+
+/* ============================================
+   WEAPON DAMAGE BONUS ROWS
+   ============================================ */
+
+/* Damage bonuses list container */
+.sdx-damage-bonuses-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+/* Individual damage bonus row */
+.sdx-damage-bonus-row,
+.sdx-hit-bonus-row {
+    background: rgba(255, 255, 255, 0.5);
+    border: 1px solid rgba(100, 80, 40, 0.4);
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+/* Hit bonus row - slightly different accent */
+.sdx-hit-bonus-row {
+    border-color: rgba(60, 100, 140, 0.4);
+}
+
+.sdx-damage-bonus-header,
+.sdx-hit-bonus-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px;
+    background: rgba(100, 80, 40, 0.15);
+}
+
+.sdx-hit-bonus-header {
+    background: rgba(60, 100, 140, 0.15);
+}
+
+.sdx-damage-bonus-inputs,
+.sdx-hit-bonus-inputs {
+    display: flex;
+    flex: 1;
+    gap: 8px;
+    align-items: center;
+}
+
+.sdx-damage-bonus-formula,
+.sdx-hit-bonus-formula {
+    flex: 0 0 120px;
+    padding: 6px 8px;
+    border: 1px solid rgba(100, 80, 40, 0.4);
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.8);
+    color: #2a2218;
+    font-size: 12px;
+    font-family: 'Courier New', monospace;
+}
+
+.sdx-hit-bonus-formula {
+    border-color: rgba(60, 100, 140, 0.4);
+}
+
+.sdx-damage-bonus-label,
+.sdx-hit-bonus-label {
+    flex: 1;
+    padding: 6px 8px;
+    border: 1px solid rgba(100, 80, 40, 0.4);
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.8);
+    color: #2a2218;
+    font-size: 12px;
+}
+
+.sdx-hit-bonus-label {
+    border-color: rgba(60, 100, 140, 0.4);
+}
+
+.sdx-remove-damage-bonus,
+.sdx-remove-hit-bonus {
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border: none;
+    border-radius: 4px;
+    background: rgba(180, 60, 60, 0.6);
+    color: #fff;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.sdx-remove-damage-bonus:hover,
+.sdx-remove-hit-bonus:hover {
+    background: rgba(180, 60, 60, 0.8);
+}
+
+/* Damage/Hit bonus requirements section */
+.sdx-damage-bonus-requirements,
+.sdx-hit-bonus-requirements {
+    padding: 8px 10px;
+    border-top: 1px solid rgba(100, 80, 40, 0.3);
+    background: rgba(0, 0, 0, 0.02);
+}
+
+.sdx-hit-bonus-requirements {
+    border-color: rgba(60, 100, 140, 0.3);
+}
+
+.sdx-damage-bonus-reqs-header,
+.sdx-hit-bonus-reqs-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 6px;
+    font-size: 11px;
+    color: #5a5040;
+}
+
+.sdx-add-damage-bonus-requirement,
+.sdx-add-hit-bonus-requirement {
+    width: 22px;
+    height: 22px;
+    padding: 0;
+    border: 1px dashed rgba(100, 80, 40, 0.5);
+    border-radius: 3px;
+    background: transparent;
+    color: #5a4a2a;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+}
+
+.sdx-add-damage-bonus-requirement:hover,
+.sdx-add-hit-bonus-requirement:hover {
+    background: rgba(100, 80, 40, 0.1);
+    border-style: solid;
+}
+
+.sdx-damage-bonus-reqs-list,
+.sdx-hit-bonus-reqs-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.sdx-damage-bonus-req-row,
+.sdx-hit-bonus-req-row {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+    padding: 4px;
+    background: rgba(255, 255, 255, 0.4);
+    border-radius: 3px;
+}
+
+.sdx-damage-bonus-req-row select,
+.sdx-hit-bonus-req-row select {
+    padding: 4px 6px;
+    border: 1px solid rgba(100, 80, 40, 0.4);
+    border-radius: 3px;
+    background: rgba(255, 255, 255, 0.7);
+    color: #2a2218;
+    font-size: 11px;
+}
+
+.sdx-damage-bonus-req-type,
+.sdx-hit-bonus-req-type {
+    flex: 0 0 130px;
+}
+
+.sdx-damage-bonus-req-operator,
+.sdx-hit-bonus-req-operator {
+    flex: 0 0 110px;
+}
+
+.sdx-damage-bonus-req-value,
+.sdx-hit-bonus-req-value {
+    flex: 1;
+    padding: 4px 6px;
+    border: 1px solid rgba(100, 80, 40, 0.4);
+    border-radius: 3px;
+    background: rgba(255, 255, 255, 0.7);
+    color: #2a2218;
+    font-size: 11px;
+    min-width: 80px;
+}
+
+.sdx-remove-damage-bonus-requirement,
+.sdx-remove-hit-bonus-requirement {
+    width: 22px;
+    height: 22px;
+    padding: 0;
+    border: none;
+    border-radius: 3px;
+    background: rgba(180, 60, 60, 0.6);
+    color: #fff;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    flex-shrink: 0;
+}
+
+.sdx-remove-damage-bonus-requirement:hover,
+.sdx-remove-hit-bonus-requirement:hover {
+    background: rgba(180, 60, 60, 0.8);
+}
+
+/* Add damage/hit bonus button */
+.sdx-add-damage-bonus,
+.sdx-add-hit-bonus {
+    margin-top: 6px;
+    padding: 8px 12px;
+    border: 1px dashed rgba(100, 80, 40, 0.5);
+    border-radius: 4px;
+    background: transparent;
+    color: #5a4a2a;
+    cursor: pointer;
+    font-size: 12px;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+
+.sdx-add-hit-bonus {
+    border-color: rgba(60, 100, 140, 0.5);
+    color: #3a5a7a;
+}
+
+.sdx-add-damage-bonus:hover,
+.sdx-add-hit-bonus:hover {
+    background: rgba(100, 80, 40, 0.1);
+    border-style: solid;
+}
+
+.sdx-add-hit-bonus:hover {
+    background: rgba(60, 100, 140, 0.1);
+}
+
+/* Hit bonuses fieldset accent */
+.sdx-hit-bonuses-fieldset legend {
+    color: #3a5a7a;
+}
+
+/* Damage bonuses fieldset accent */
+.sdx-damage-bonuses-fieldset legend {
+    color: #8a5a2a;
+}
+
+/* Exclusive checkbox styling */
+.sdx-exclusive-label {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 10px;
+    color: #5a4a2a;
+    cursor: pointer;
+    padding: 2px 6px;
+    border-radius: 3px;
+    background: rgba(180, 100, 40, 0.1);
+    border: 1px solid rgba(180, 100, 40, 0.3);
+    margin-left: auto;
+    margin-right: 8px;
+}
+
+.sdx-exclusive-label:hover {
+    background: rgba(180, 100, 40, 0.2);
+}
+
+.sdx-exclusive-label input {
+    margin: 0;
+    cursor: pointer;
+}
+
+.sdx-exclusive-label span {
+    font-weight: 500;
+}
+
+/* ============================================
+   DURATION TRACKING STYLES
+   ============================================ */
+
+/* Duration options in spell config */
+.sdx-duration-tracking-options {
+    margin: 8px 19px;
+    display: flex;
+    align-items: center;
+}
+
+/* Checkbox label styling for proper alignment */
+.sdx-checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+
+}
+
+.sdx-checkbox-label input[type="checkbox"] {
+    margin: 0;
+    cursor: pointer;
+}
+
+.sdx-checkbox-label span {
+    line-height: 1.2;
+}
+
+.sdx-duration-options-grid {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 8px;
+    align-items: center;
+    padding: 10px;
+    background: rgba(180, 120, 40, 0.1);
+    border: 1px solid rgba(180, 120, 40, 0.3);
+    border-radius: 4px;
+    margin-top: 8px;
+}
+
+.sdx-duration-options-grid label {
+    font-size: 12px;
+    color: #5a4a2a;
+}
+
+.sdx-duration-options-grid select,
+.sdx-duration-options-grid input[type="text"] {
+    padding: 4px 8px;
+    border: 1px solid rgba(100, 80, 40, 0.4);
+    border-radius: 4px;
+    background: white;
+    font-size: 12px;
+}
+
+/* Duration spell in tracker (orange/amber theme) */
+.sdx-duration-spell {
+    border-left: 3px solid #d97706 !important;
+}
+
+.sdx-duration-spells-section {
+    margin-bottom: 1rem;
+    border: 2px solid #d97706;
+    border-radius: 8px;
+    background: linear-gradient(135deg, rgba(217, 119, 6, 0.15) 0%, rgba(0, 0, 0, 0.2) 100%);
+}
+
+.sdx-duration-spells-section .header {
+    background: linear-gradient(90deg, rgba(217, 119, 6, 0.3) 0%, transparent 100%);
+    padding: 6px 10px;
+    border-bottom: 1px solid rgba(217, 119, 6, 0.5);
+}
+
+.sdx-duration-spells-section .header label {
+    font-weight: bold;
+    font-size: 1.1em;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: unset;
+}
+
+.sdx-duration-spells-section .header label i {
+    color: #d97706;
+}
+
+.sdx-duration-spell-name {
+    color: #e0e0e0;
+    font-weight: 500;
+}
+
+.sdx-duration-time {
+    color: #d97706;
+    font-size: 0.85em;
+    text-align: center;
+}
+
+/* Duration Spell Per-Turn Damage Chat Card */
+.sdx-duration-damage {
+    border-left: 3px solid #d97706;
+}
+
+.sdx-duration-damage .card-header {
+    background: linear-gradient(90deg, rgba(217, 119, 6, 0.3) 0%, transparent 100%);
+}
+
+.sdx-duration-damage .card-content {
+    padding: 8px;
+}
+
+.sdx-duration-damage .sdx-roll-breakdown {
+    font-family: 'Courier New', monospace;
+    font-size: 0.85em;
+    color: #888;
+    margin-top: 4px;
+}
+
+/* Duration Spells List */
+.sdx-duration-spells-list {
+    padding: 0;
+    margin: 0;
+}
+
+.sdx-duration-spells-list li {
+    border-bottom: 1px solid rgba(217, 119, 6, 0.2);
+}
+
+.sdx-duration-spells-list li:last-child {
+    border-bottom: none;
+}
+
+/* Duration Spell Header Row */
+.sdx-duration-spell-header {
+    display: grid;
+    grid-template-columns: 32px 1fr 70px 50px auto;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 8px;
+}
+
+.sdx-duration-spell-header:hover {
+    background: rgba(217, 119, 6, 0.1);
+}
+
+.sdx-duration-spell-header .item-image {
+    width: 28px;
+    height: 28px;
+    border-radius: 4px;
+    background-size: cover;
+    background-position: center;
+    position: relative;
+}
+
+.sdx-duration-spell-header .item-image i {
+    position: absolute;
+    bottom: -2px;
+    right: -2px;
+    font-size: 10px;
+    color: #d97706;
+    background: rgba(0, 0, 0, 0.8);
+    padding: 2px;
+    border-radius: 3px;
+}
+
+.sdx-duration-spell-header .actions {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+}
+
+.sdx-duration-spell-header .actions a {
+    cursor: pointer;
+    opacity: 0.7;
+    transition: opacity 0.2s, transform 0.2s;
+}
+
+.sdx-duration-spell-header .actions a:hover {
+    opacity: 1;
+    transform: scale(1.1);
+}
+
+/* Duration Spell Targets List */
+.sdx-duration-targets-list {
+    background: rgba(0, 0, 0, 0.2);
+    border-top: 1px solid rgba(217, 119, 6, 0.3);
+    padding: 8px 12px;
+    margin: 0 8px 8px 8px;
+    border-radius: 0 0 6px 6px;
+}
+
+.sdx-duration-target {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 4px 8px;
+    margin: 2px 0;
+    background: rgba(217, 119, 6, 0.1);
+    border-radius: 4px;
+    border-left: 2px solid #d97706;
+}
+
+.sdx-duration-target:hover {
+    background: rgba(217, 119, 6, 0.2);
+}
+
+.sdx-target-name {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.9em;
+}
+
+.sdx-target-name i.fa-user {
+    color: #d97706;
+}
+
+.sdx-remove-target {
+    cursor: pointer;
+    opacity: 0.6;
+    padding: 4px;
+    transition: opacity 0.2s;
+}
+
+.sdx-remove-target:hover {
+    opacity: 1;
+}
+
+.sdx-no-targets {
+    color: #888;
+    font-style: italic;
+    font-size: 0.85em;
+    padding: 4px 8px;
+}
+
+/* ============================================
+   SUMMONING CONFIG STYLES
+   ============================================ */
+
+/* Summons list container */
+.sdx-summons-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 10px;
+}
+
+/* Individual summon profile */
+.sdx-summon-profile {
+    background: rgba(255, 255, 255, 0.5);
+    border: 1px solid rgba(100, 80, 40, 0.4);
+    border-radius: 6px;
+    padding: 8px;
+}
+
+/* Profile grid layout - dropbox left, fields center, button right */
+.sdx-profile-grid {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* Creature drop zone */
+.sdx-summon-creature-drop {
+    flex: 0 0 120px;
+    min-height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px;
+    background: rgba(0, 0, 0, 0.05);
+    border: 1px dashed rgba(100, 80, 40, 0.4);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.sdx-summon-creature-drop:hover {
+    border-color: rgba(100, 80, 40, 0.6);
+    background: rgba(100, 80, 40, 0.1);
+}
+
+.sdx-summon-creature-drop span {
+    font-size: 11px;
+    color: #5a4a2a;
+    text-align: center;
+}
+
+.sdx-summon-creature-drop i {
+    margin-right: 4px;
+}
+
+/* Creature display when set */
+.sdx-summon-creature-display {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.sdx-summon-creature-display img {
+    width: 32px;
+    height: 32px;
+    border-radius: 4px;
+    object-fit: cover;
+    border: 1px solid rgba(100, 80, 40, 0.4);
+}
+
+.sdx-summon-creature-display span {
+    font-size: 11px;
+    font-weight: 500;
+    color: #2a2218;
+}
+
+/* Profile fields */
+.sdx-profile-field {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    flex: 1;
+}
+
+.sdx-profile-field label {
+    font-size: 10px;
+    color: #5a4a2a;
+    font-weight: 500;
+}
+
+.sdx-profile-field input {
+    padding: 4px 8px;
+    border: 1px solid rgba(100, 80, 40, 0.4);
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.8);
+    color: #2a2218;
+    font-size: 12px;
+}
+
+/* Remove summon button */
+.sdx-remove-summon-btn {
+    flex: 0 0 28px;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border: none;
+    border-radius: 4px;
+    background: rgba(180, 60, 60, 0.6);
+    color: #fff;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.sdx-remove-summon-btn:hover {
+    background: rgba(180, 60, 60, 0.8);
+}
+
+/* Add summon profile button - aligned right */
+.sdx-add-summon-btn,
+.sdx-add-item-give-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    width: 167px;
+    padding: 6px 16px;
+    background: rgba(255, 255, 255, 0.5);
+    border: 1px solid rgba(100, 80, 40, 0.5);
+    border-radius: 4px;
+    color: #4a3c28;
+    font-size: 12px;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin-left: auto;
+}
+
+.sdx-add-summon-btn:hover,
+.sdx-add-item-give-btn:hover {
+    background: rgba(100, 80, 40, 0.15);
+    border-color: rgba(100, 80, 40, 0.7);
+}
+
+.sdx-add-summon-btn i,
+.sdx-add-item-give-btn i {
+    font-size: 10px;
+}
+
+/* Summoning option (delete at expiry) */
+.sdx-summoning-option {
+    margin-left: 10px;
+}
+
+/* ============================================
+   ITEM GIVE CONFIG STYLES
+   ============================================ */
+
+/* Item give list container */
+.sdx-item-give-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 10px;
+}
+
+/* Individual item give profile */
+.sdx-item-give-profile {
+    background: rgba(255, 255, 255, 0.5);
+    border: 1px solid rgba(100, 80, 40, 0.4);
+    border-radius: 6px;
+    padding: 8px;
+}
+
+/* Item drop zone */
+.sdx-item-give-drop {
+    flex: 0 0 120px;
+    min-height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px;
+    background: rgba(0, 0, 0, 0.05);
+    border: 1px dashed rgba(100, 80, 40, 0.4);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.sdx-item-give-drop:hover {
+    border-color: rgba(100, 80, 40, 0.6);
+    background: rgba(100, 80, 40, 0.1);
+}
+
+.sdx-item-give-drop span {
+    font-size: 11px;
+    color: #5a4a2a;
+    text-align: center;
+}
+
+.sdx-item-give-drop i {
+    margin-right: 4px;
+}
+
+/* Item display when set */
+.sdx-item-give-display {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.sdx-item-give-display img {
+    width: 32px;
+    height: 32px;
+    border-radius: 4px;
+    object-fit: cover;
+    border: 1px solid rgba(100, 80, 40, 0.4);
+}
+
+.sdx-item-give-display span {
+    font-size: 11px;
+    font-weight: 500;
+    color: #2a2218;
+}
+
+/* Remove item button */
+.sdx-remove-item-give-btn {
+    flex: 0 0 28px;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border: none;
+    border-radius: 4px;
+    background: rgba(180, 60, 60, 0.6);
+    color: #fff;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.sdx-remove-item-give-btn:hover {
+    background: rgba(180, 60, 60, 0.8);
+}
+
+/* ============================================
+   NPC CREATURE TYPE DROPDOWN
+   ============================================ */
+
+/* Creature type box - matches SD-box styling */
+.sdx-creature-type-box {
+    margin-bottom: 8px;
+}
+
+.sdx-creature-type-box .header {
+background: linear-gradient(to right, #2a2a2a, #1a1a1a00);
+    padding: 4px 8px;
+
+}
+
+.sdx-creature-type-box .header label {
+color: #fbfbfb;
+    font-weight: bold;
+    font-size: 17px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    background: transparent !important;
+}
+
+.sdx-creature-type-box .content {
+    padding: 6px 8px;
+    background: rgba(0, 0, 0, 0.15);
+    border-radius: 0 0 3px 3px;
+}
+
+.sdx-creature-type-select {
+    width: 100%;
+    padding: 4px 8px;
+    font-size: 13px;
+    border: 1px solid rgba(100, 80, 40, 0.5);
+    border-radius: 3px;
+    background: rgba(255, 255, 255, 0.9);
+    color: #2a2218;
+    cursor: pointer;
+}
+
+.sdx-creature-type-select:hover {
+    border-color: #c9aa58;
+}
+
+.sdx-creature-type-select:focus {
+    outline: none;
+    border-color: #c9aa58;
+    box-shadow: 0 0 3px rgba(201, 170, 88, 0.4);
 }

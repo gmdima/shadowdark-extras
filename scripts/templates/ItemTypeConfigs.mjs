@@ -8,20 +8,20 @@ import { generateItemGiveConfigHTML } from './ItemGiveConfig.mjs';
 /**
  * Generate Spell damage config (with target variables)
  */
-export function generateSpellConfig(MODULE_ID, flags, effectsListHtml, effectsArray, effectsApplyToTarget, summonsList, summonProfilesArray, itemGiveList, itemGiveProfilesArray) {
+export function generateSpellConfig(MODULE_ID, flags, effectsListHtml, effectsArray, effectsApplyToTarget, summonsList, summonProfilesArray, itemGiveList, itemGiveProfilesArray, criticalEffectsListHtml = '', criticalEffectsArray = []) {
 	const damageConfig = generateSpellDamageConfigHTML(MODULE_ID, flags, effectsListHtml, effectsArray, effectsApplyToTarget, {
 		targetLabel: 'TARGET',
 		showTargetOption: true,
 		requirementExamples: '@target.level < 3, @target.hp > 10, @level >= 5',
 		effectsRequirementExamples: '@target.level < 5, @target.hp < 20, @level >= 3'
-	});
-	
+	}, criticalEffectsListHtml, criticalEffectsArray);
+
 	const summoningFlags = flags.summoning || { enabled: false };
 	const summoningConfig = generateSummoningConfigHTML(MODULE_ID, summoningFlags, summonsList, summonProfilesArray);
 
 	const itemGiveFlags = flags.itemGive || { enabled: false };
 	const itemGiveConfig = generateItemGiveConfigHTML(MODULE_ID, itemGiveFlags, itemGiveList, itemGiveProfilesArray);
-	
+
 	return damageConfig + summoningConfig + itemGiveConfig;
 }
 
@@ -44,7 +44,7 @@ export function generatePotionConfig(MODULE_ID, flags, effectsListHtml, effectsA
 
 	const itemGiveFlags = flags.itemGive || { enabled: false };
 	const itemGiveConfig = generateItemGiveConfigHTML(MODULE_ID, itemGiveFlags, itemGiveList, itemGiveProfilesArray);
-	
+
 	return damageConfig + summoningConfig + itemGiveConfig;
 }
 
@@ -64,7 +64,7 @@ export function generateScrollConfig(MODULE_ID, flags, effectsListHtml, effectsA
 
 	const itemGiveFlags = flags.itemGive || { enabled: false };
 	const itemGiveConfig = generateItemGiveConfigHTML(MODULE_ID, itemGiveFlags, itemGiveList, itemGiveProfilesArray);
-	
+
 	return damageConfig + summoningConfig + itemGiveConfig;
 }
 
@@ -84,6 +84,6 @@ export function generateWandConfig(MODULE_ID, flags, effectsListHtml, effectsArr
 
 	const itemGiveFlags = flags.itemGive || { enabled: false };
 	const itemGiveConfig = generateItemGiveConfigHTML(MODULE_ID, itemGiveFlags, itemGiveList, itemGiveProfilesArray);
-	
+
 	return damageConfig + summoningConfig + itemGiveConfig;
 }

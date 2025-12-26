@@ -17,7 +17,7 @@ export function generateItemGiveConfigHTML(MODULE_ID, flags, itemsList, itemProf
 				<div class="SD-grid">
 					<h3 class="sdx-section-title">Items to Give</h3>
 					<div class="sdx-item-give-list">
-						${itemsList || '<div class="sdx-no-items"><i class="fas fa-gift"></i> Drop an item here to grant it to the caster on success</div>'}
+						${itemsList || ''}
 					</div>
 					<button type="button" class="sdx-add-item-give-btn">
 						<i class="fas fa-plus"></i> Add Item to Give

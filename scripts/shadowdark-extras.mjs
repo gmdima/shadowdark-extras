@@ -5,13 +5,14 @@
 
 import PartySheetSD from "./PartySheetSD.mjs";
 import TradeWindowSD, { initializeTradeSocket, showTradeDialog, ensureTradeJournal } from "./TradeWindowSD.mjs";
-import { CombatSettingsApp, registerCombatSettings, injectDamageCard, setupCombatSocket, setupScrollingCombatText } from "./CombatSettingsSD.mjs";
+import { CombatSettingsApp, registerCombatSettings, injectDamageCard, setupCombatSocket, setupScrollingCombatText, setupSummonExpiryHook, trackSummonedTokensForExpiry } from "./CombatSettingsSD.mjs";
 import { HpWavesSettingsApp, registerHpWavesSettings, getHpWaveColor, isHpWavesEnabled } from "./HpWavesSettingsSD.mjs";
 import { generateSpellConfig, generatePotionConfig, generateScrollConfig, generateWandConfig } from "./templates/ItemTypeConfigs.mjs";
-import { 
-	injectWeaponBonusTab, 
-	getWeaponBonuses, 
-	getWeaponEffectsToApply, 
+import {
+	injectWeaponBonusTab,
+	getWeaponBonuses,
+	getWeaponHitBonuses,
+	getWeaponEffectsToApply,
 	evaluateRequirements,
 	calculateWeaponBonusDamage,
 	injectWeaponBonusDisplay
@@ -19,6 +20,7 @@ import {
 import { initAutoAnimationsIntegration } from "./AutoAnimationsSD.mjs";
 import { initTorchAnimations } from "./TorchAnimationSD.mjs";
 import { initSDXROLLS, setupSDXROLLSSockets, injectSdxRollButton } from "./sdx-rolls/SdxRollsSD.mjs";
+import { initFocusSpellTracker, endFocusSpell, linkEffectToFocusSpell, getActiveFocusSpells, isFocusingOnSpell } from "./FocusSpellTrackerSD.mjs";
 
 const MODULE_ID = "shadowdark-extras";
 const TRADE_JOURNAL_NAME = "__sdx_trade_sync__"; // Must match TradeWindowSD.mjs
@@ -185,11 +187,11 @@ class InventoryStylesApp extends FormApplication {
 		// Get saved settings and merge with defaults to ensure all properties exist
 		const savedStyles = game.settings.get(MODULE_ID, "inventoryStyles");
 		const styles = foundry.utils.mergeObject(
-			foundry.utils.deepClone(DEFAULT_INVENTORY_STYLES), 
+			foundry.utils.deepClone(DEFAULT_INVENTORY_STYLES),
 			savedStyles || {},
-			{inplace: false, recursive: true}
+			{ inplace: false, recursive: true }
 		);
-		
+
 		const containersEnabled = game.settings.get(MODULE_ID, "enableContainers");
 		const unidentifiedEnabled = game.settings.get(MODULE_ID, "enableUnidentified");
 
@@ -201,8 +203,8 @@ class InventoryStylesApp extends FormApplication {
 			if (key === "unidentified" && !unidentifiedEnabled) return null;
 
 			// Convert "transparent" to a usable color picker value
-			const gradientEndColorPicker = (!config.gradientEndColor || config.gradientEndColor === "transparent") 
-				? "#ffffff" 
+			const gradientEndColorPicker = (!config.gradientEndColor || config.gradientEndColor === "transparent")
+				? "#ffffff"
 				: config.gradientEndColor;
 
 			return {
@@ -233,11 +235,11 @@ class InventoryStylesApp extends FormApplication {
 		html.find(".sdx-tab").on("click", (ev) => {
 			const $tab = $(ev.currentTarget);
 			const categoryKey = $tab.data("category");
-			
+
 			// Update tab states
 			html.find(".sdx-tab").removeClass("active");
 			$tab.addClass("active");
-			
+
 			// Update panel states
 			html.find(".sdx-panel").removeClass("active");
 			html.find(`.sdx-panel[data-category="${categoryKey}"]`).addClass("active");
@@ -272,7 +274,7 @@ class InventoryStylesApp extends FormApplication {
 			const $input = $(ev.currentTarget);
 			const $valueDisplay = $input.siblings(".sdx-range-value");
 			const value = $input.val();
-			
+
 			// Update display value
 			if ($input.hasClass("sdx-border-width")) {
 				$valueDisplay.text(`${value}px`);
@@ -283,7 +285,7 @@ class InventoryStylesApp extends FormApplication {
 			} else if ($input.attr("name")?.includes("priority")) {
 				$valueDisplay.text(value);
 			}
-			
+
 			this._updateLivePreview(html);
 		});
 
@@ -291,7 +293,7 @@ class InventoryStylesApp extends FormApplication {
 		html.find('input[type="checkbox"]').on("change", (ev) => {
 			const $checkbox = $(ev.currentTarget);
 			const $panel = $checkbox.closest(".sdx-panel");
-			
+
 			// Update tab indicator when enabled state changes
 			if ($checkbox.attr("name")?.includes(".enabled")) {
 				const categoryKey = $panel.data("category");
@@ -299,7 +301,7 @@ class InventoryStylesApp extends FormApplication {
 				const isEnabled = $checkbox.is(":checked");
 				$tab.find(".sdx-tab-enabled").toggle(isEnabled);
 			}
-			
+
 			this._updateLivePreview(html);
 		});
 
@@ -310,12 +312,12 @@ class InventoryStylesApp extends FormApplication {
 			const shadowType = $btn.data("target");
 			const $section = $btn.closest(".sdx-control-section");
 			const $popup = $section.find(`.sdx-shadow-popup[data-shadow-type="${shadowType}"]`);
-			
+
 			// Parse existing shadow value and populate controls
 			const $valueInput = $section.find(`.sdx-shadow-value[data-shadow-type="${shadowType}"]`);
 			const shadowValue = $valueInput.val() || "";
 			this._parseShadowToControls($popup, shadowValue);
-			
+
 			$popup.slideToggle(200);
 		});
 
@@ -333,16 +335,16 @@ class InventoryStylesApp extends FormApplication {
 			const $popup = $(ev.currentTarget).closest(".sdx-shadow-popup");
 			const shadowType = $popup.data("shadow-type");
 			const $section = $popup.closest(".sdx-control-section");
-			
+
 			// Set shadow value to empty string (no shadow)
 			$section.find(`.sdx-shadow-value[data-shadow-type="${shadowType}"]`).val("").trigger("change");
-			
+
 			// Reset preview
 			$popup.find(".sdx-shadow-preview-text").css("text-shadow", "none");
-			
+
 			// Close the popup
 			$popup.slideUp(200);
-			
+
 			// Update live preview
 			this._updateLivePreview(html);
 		});
@@ -445,7 +447,7 @@ class InventoryStylesApp extends FormApplication {
 		const color = $popup.find(".sdx-shadow-color").val();
 		const shadowType = $popup.data("shadow-type");
 		const shadowValue = `${x}px ${y}px ${blur}px ${color}`;
-		
+
 		const $section = $popup.closest(".sdx-control-section");
 		$section.find(`.sdx-shadow-value[data-shadow-type="${shadowType}"]`).val(shadowValue).trigger("change");
 	}
@@ -605,7 +607,7 @@ class InventoryStylesApp extends FormApplication {
 
 		// Get current settings and merge preset
 		const currentStyles = game.settings.get(MODULE_ID, "inventoryStyles") || foundry.utils.deepClone(DEFAULT_INVENTORY_STYLES);
-		
+
 		currentStyles.enabled = preset.enabled;
 		for (const [key, config] of Object.entries(preset.categories)) {
 			if (currentStyles.categories[key]) {
@@ -616,7 +618,7 @@ class InventoryStylesApp extends FormApplication {
 		await game.settings.set(MODULE_ID, "inventoryStyles", currentStyles);
 		applyInventoryStyles();
 		this.render();
-		
+
 		ui.notifications.info(`Applied "${presetName}" theme preset`);
 	}
 
@@ -625,13 +627,13 @@ class InventoryStylesApp extends FormApplication {
 		const data = JSON.stringify(styles, null, 2);
 		const blob = new Blob([data], { type: "application/json" });
 		const url = URL.createObjectURL(blob);
-		
+
 		const a = document.createElement("a");
 		a.href = url;
 		a.download = "shadowdark-inventory-theme.json";
 		a.click();
 		URL.revokeObjectURL(url);
-		
+
 		ui.notifications.info("Theme exported successfully!");
 	}
 
@@ -642,27 +644,27 @@ class InventoryStylesApp extends FormApplication {
 		input.onchange = async (e) => {
 			const file = e.target.files[0];
 			if (!file) return;
-			
+
 			try {
 				const text = await file.text();
 				const theme = JSON.parse(text);
-				
+
 				// Validate basic structure
 				if (!theme.categories) {
 					throw new Error("Invalid theme file");
 				}
-				
+
 				// Merge with defaults to ensure all fields exist
 				const mergedTheme = foundry.utils.mergeObject(
 					foundry.utils.deepClone(DEFAULT_INVENTORY_STYLES),
 					theme,
 					{ inplace: false, recursive: true }
 				);
-				
+
 				await game.settings.set(MODULE_ID, "inventoryStyles", mergedTheme);
 				applyInventoryStyles();
 				this.render();
-				
+
 				ui.notifications.info("Theme imported successfully!");
 			} catch (err) {
 				ui.notifications.error("Failed to import theme: " + err.message);
@@ -678,10 +680,10 @@ class InventoryStylesApp extends FormApplication {
 
 	async _updateObject(event, formData) {
 		const expandedData = foundry.utils.expandObject(formData);
-		
+
 		// Get current settings and merge
 		const currentStyles = game.settings.get(MODULE_ID, "inventoryStyles") || foundry.utils.deepClone(DEFAULT_INVENTORY_STYLES);
-		
+
 		// Update enabled state (checkbox: absent means false)
 		currentStyles.enabled = expandedData.enabled === true;
 
@@ -692,7 +694,7 @@ class InventoryStylesApp extends FormApplication {
 					// Handle checkbox fields - absent means false
 					updates.enabled = updates.enabled === true;
 					updates.useGradient = updates.useGradient === true;
-					
+
 					Object.assign(currentStyles.categories[key], updates);
 				}
 			}
@@ -732,7 +734,7 @@ function applyInventoryStyles() {
  */
 function applyInventoryStylesToSheet(html, actor) {
 	const styles = game.settings.get(MODULE_ID, "inventoryStyles");
-	
+
 	// Find all item rows
 	const itemRows = html.find(".item-list .item[data-item-id], .item-list .item[data-uuid]");
 
@@ -961,33 +963,33 @@ function setupUnidentifiedItemNameWrapper() {
 	} catch {
 		return; // Setting not registered yet
 	}
-	
+
 	console.log(`${MODULE_ID} | Setting up unidentified item name wrapper`);
-	
+
 	// Get the Item class
 	const ItemClass = CONFIG.Item.documentClass;
-	
+
 	// Store the original name descriptor
-	const originalDescriptor = Object.getOwnPropertyDescriptor(ItemClass.prototype, "name") 
+	const originalDescriptor = Object.getOwnPropertyDescriptor(ItemClass.prototype, "name")
 		|| Object.getOwnPropertyDescriptor(Object.getPrototypeOf(ItemClass.prototype), "name");
-	
+
 	if (!originalDescriptor || !originalDescriptor.get) {
 		console.warn(`${MODULE_ID} | Could not find Item.name getter to wrap`);
 		return;
 	}
-	
+
 	const originalGetter = originalDescriptor.get;
-	
+
 	// Define new getter that checks unidentified status
 	Object.defineProperty(ItemClass.prototype, "name", {
-		get: function() {
+		get: function () {
 			const realName = originalGetter.call(this);
-			
+
 			// If this item is unidentified and user is not GM, return the custom or default unidentified name
 			if (isUnidentified(this) && !game.user?.isGM) {
 				return getUnidentifiedName(this);
 			}
-			
+
 			return realName;
 		},
 		set: originalDescriptor.set,
@@ -1006,21 +1008,21 @@ function wrapBuildWeaponDisplayForUnidentified() {
 	} catch {
 		return; // Setting not registered yet
 	}
-	
+
 	console.log(`${MODULE_ID} | Wrapping ActorSD.buildWeaponDisplay for unidentified items`);
-	
+
 	if (!globalThis.shadowdark?.documents?.ActorSD) {
 		console.warn(`${MODULE_ID} | ActorSD not found, cannot wrap buildWeaponDisplay`);
 		return;
 	}
-	
+
 	const ActorSD = globalThis.shadowdark.documents.ActorSD;
 	const original = ActorSD.prototype.buildWeaponDisplay;
-	
-	ActorSD.prototype.buildWeaponDisplay = async function(options) {
+
+	ActorSD.prototype.buildWeaponDisplay = async function (options) {
 		// Call the original function
 		const result = await original.call(this, options);
-		
+
 		// Check if the weapon is unidentified by looking up the item
 		// The weaponName might be a custom unidentified name or the default
 		if (options.item && isUnidentified(options.item) && !game.user?.isGM) {
@@ -1036,7 +1038,7 @@ function wrapBuildWeaponDisplayForUnidentified() {
 				);
 			}
 		}
-		
+
 		return result;
 	};
 }
@@ -1052,17 +1054,17 @@ function setupItemPilesUnidentifiedHooks() {
 	} catch {
 		return; // Setting not registered yet
 	}
-	
+
 	// Check if item-piles is active
 	if (!game.modules.get("item-piles")?.active) {
 		return;
 	}
-	
+
 	console.log(`${MODULE_ID} | Setting up item-piles unidentified item hooks`);
-	
+
 	// Default masked name fallback
 	const getDefaultMaskedName = () => game.i18n.localize("SHADOWDARK_EXTRAS.item.unidentified.label");
-	
+
 	/**
 	 * Mask the item name in an HTML element if the item is unidentified
 	 * @param {HTMLElement} element - The item element
@@ -1071,11 +1073,11 @@ function setupItemPilesUnidentifiedHooks() {
 	function maskItemNameIfUnidentified(element, item) {
 		if (game.user?.isGM) return; // GM sees real names
 		if (!item || !isUnidentified(item)) return;
-		
+
 		// Get the item-specific masked name
 		const maskedName = getUnidentifiedName(item);
 		const $el = $(element);
-		
+
 		// Replace tooltip/title attributes that might show the real name
 		const realName = item._source?.name || item.name;
 		if ($el.attr("data-tooltip")?.includes(realName)) {
@@ -1094,14 +1096,14 @@ function setupItemPilesUnidentifiedHooks() {
 				$tooltip.attr("title", $tooltip.attr("title").replace(realName, maskedName));
 			}
 		});
-		
+
 		// Find name elements and replace text - item-piles uses various structures
 		// For pile items and merchant items
 		$el.find(".item-piles-name, .item-piles-item-name, [class*='item-name'], [class*='name']").each((i, nameEl) => {
 			const $name = $(nameEl);
 			// Don't replace if it's a container element with child elements that have the name
 			if ($name.children().length > 0 && $name.find("[class*='name']").length > 0) return;
-			
+
 			const currentText = $name.text().trim();
 			// Check if it contains quantity suffix like "(x1)"
 			const qtyMatch = currentText.match(/\s*\(x?\d+\)$/i);
@@ -1111,11 +1113,11 @@ function setupItemPilesUnidentifiedHooks() {
 				$name.text(maskedName);
 			}
 		});
-		
+
 		// Also check direct text content for simple elements
 		if ($el.hasClass("item-piles-item-row") || $el.hasClass("item-piles-item")) {
-			const textNodes = $el.contents().filter(function() { 
-				return this.nodeType === 3 && this.textContent.trim(); 
+			const textNodes = $el.contents().filter(function () {
+				return this.nodeType === 3 && this.textContent.trim();
 			});
 			textNodes.each((i, node) => {
 				const text = node.textContent.trim();
@@ -1126,34 +1128,34 @@ function setupItemPilesUnidentifiedHooks() {
 			});
 		}
 	}
-	
+
 	// Hook into item-piles render hooks for each interface type
 	Hooks.on("item-piles-renderPileItem", (element, item) => {
 		maskItemNameIfUnidentified(element, item);
 	});
-	
+
 	Hooks.on("item-piles-renderMerchantItem", (element, item) => {
 		maskItemNameIfUnidentified(element, item);
 	});
-	
+
 	Hooks.on("item-piles-renderVaultGridItem", (element, item) => {
 		maskItemNameIfUnidentified(element, item);
 	});
-	
+
 	// Hook into vault mouse hover to mask tooltip
 	Hooks.on("item-piles-mouseHoverVaultGridItem", (element, item) => {
 		if (game.user?.isGM) return;
 		if (!item || !isUnidentified(item)) return;
-		
+
 		const maskedName = getUnidentifiedName(item);
 		const realName = item._source?.name || item.name;
 		const $el = $(element);
-		
+
 		// The tooltip might be set dynamically, check and replace
 		if ($el.attr("data-tooltip")?.includes(realName)) {
 			$el.attr("data-tooltip", $el.attr("data-tooltip").replace(realName, maskedName));
 		}
-		
+
 		// Also try to intercept the tooltip element if it exists
 		setTimeout(() => {
 			const tooltip = document.querySelector(".tooltip, #tooltip, .item-piles-tooltip");
@@ -1162,7 +1164,7 @@ function setupItemPilesUnidentifiedHooks() {
 			}
 		}, 10);
 	});
-	
+
 	// Hook into item transfers to preserve unidentified flags
 	// This ensures the unidentified flag is not lost when items are moved between actors
 	Hooks.on("item-piles-preTransferItems", (source, sourceUpdates, target, targetUpdates, interactionId) => {
@@ -1190,7 +1192,7 @@ function setupItemPilesUnidentifiedHooks() {
 			}
 		}
 	});
-	
+
 	// Also hook into preAddItems to ensure flags are preserved when items are added
 	Hooks.on("item-piles-preAddItems", (target, itemsToCreate, itemQuantitiesToUpdate, interactionId) => {
 		// itemsToCreate contains {item, quantity} objects
@@ -1198,13 +1200,13 @@ function setupItemPilesUnidentifiedHooks() {
 		for (const entry of itemsToCreate) {
 			const itemData = entry.item;
 			if (!itemData) continue;
-			
+
 			// Check if the original item data has our unidentified flag
 			if (itemData.flags?.[MODULE_ID]?.unidentified) {
 				// Flag is already there, good
 				continue;
 			}
-			
+
 			// If the item is being created from an existing item with the flag, preserve it
 			if (itemData._id) {
 				// Try to find the source item
@@ -1225,7 +1227,7 @@ function setupItemPilesUnidentifiedHooks() {
 			}
 		}
 	});
-	
+
 	// Use ITEM_SIMILARITIES to include our flags in item comparison
 	// This ensures item-piles treats items with different unidentified states as different
 	Hooks.once("item-piles-ready", () => {
@@ -1243,20 +1245,20 @@ function setupItemPilesUnidentifiedHooks() {
 			console.warn(`${MODULE_ID} | Could not add unidentified flag to item-piles similarities`, err);
 		}
 	});
-	
+
 	// Hook into item-piles item drops to preserve flags
 	Hooks.on("item-piles-preDropItem", (source, target, itemData, position, quantity) => {
 		// itemData should have our flags if they exist on the source item
 		// This hook runs before the item is created
 		const sourceActor = source?.actor || source;
 		if (!sourceActor?.items) return;
-		
+
 		// Find the original item being dropped
-		const originalItem = sourceActor.items.find(i => 
-			i.id === itemData._id || 
+		const originalItem = sourceActor.items.find(i =>
+			i.id === itemData._id ||
 			(i.name === itemData.name && i.type === itemData.type)
 		);
-		
+
 		if (originalItem && isUnidentified(originalItem)) {
 			// Ensure the flags are on itemData
 			itemData.flags = itemData.flags || {};
@@ -1268,50 +1270,50 @@ function setupItemPilesUnidentifiedHooks() {
 			}
 		}
 	});
-	
+
 	// Hook into Dialog rendering to mask item names in drop dialogs
 	Hooks.on("renderDialog", (app, html, data) => {
 		if (game.user?.isGM) return;
 		maskUnidentifiedNamesInElement(html, getDefaultMaskedName);
 	});
-	
+
 	// Hook into Application rendering to catch item-piles Svelte apps
 	Hooks.on("renderApplication", (app, html, data) => {
 		if (game.user?.isGM) return;
-		
+
 		// Check if this might be an item-piles application
 		const isItemPiles = app.constructor?.name?.includes("ItemPile") ||
-		                    app.constructor?.name?.includes("Trading") ||
-		                    app.constructor?.name?.includes("Merchant") ||
-		                    app.options?.classes?.some(c => c.includes("item-piles")) ||
-		                    html.find(".item-piles").length > 0 ||
-		                    html.find("[class*='item-piles']").length > 0;
-		
+			app.constructor?.name?.includes("Trading") ||
+			app.constructor?.name?.includes("Merchant") ||
+			app.options?.classes?.some(c => c.includes("item-piles")) ||
+			html.find(".item-piles").length > 0 ||
+			html.find("[class*='item-piles']").length > 0;
+
 		if (isItemPiles) {
 			maskUnidentifiedNamesInElement(html, getDefaultMaskedName);
 		}
 	});
-	
+
 	// Also use MutationObserver to catch dynamically rendered content
 	Hooks.once("ready", () => {
 		if (game.user?.isGM) return;
-		
+
 		const observer = new MutationObserver((mutations) => {
 			for (const mutation of mutations) {
 				for (const node of mutation.addedNodes) {
 					if (node.nodeType !== 1) continue; // Element nodes only
-					
+
 					const $node = $(node);
 					// Check if this is an item-piles element
-					if ($node.hasClass("item-piles") || 
-					    $node.find(".item-piles").length > 0 ||
-					    $node.closest(".item-piles").length > 0 ||
-					    $node.hasClass("item-piles-flexrow") ||
-					    $node.find("[class*='item-piles']").length > 0 ||
-					    node.className?.includes?.("item-piles")) {
+					if ($node.hasClass("item-piles") ||
+						$node.find(".item-piles").length > 0 ||
+						$node.closest(".item-piles").length > 0 ||
+						$node.hasClass("item-piles-flexrow") ||
+						$node.find("[class*='item-piles']").length > 0 ||
+						node.className?.includes?.("item-piles")) {
 						maskUnidentifiedNamesInElement($node, getDefaultMaskedName);
 					}
-					
+
 					// Also check window titles
 					if ($node.hasClass("window-title") || $node.find(".window-title").length > 0) {
 						maskUnidentifiedNamesInElement($node, getDefaultMaskedName);
@@ -1319,24 +1321,24 @@ function setupItemPilesUnidentifiedHooks() {
 				}
 			}
 		});
-		
+
 		observer.observe(document.body, {
 			childList: true,
 			subtree: true
 		});
 	});
-	
+
 	// Hook into chat message rendering to mask item names from item-piles
 	Hooks.on("renderChatMessage", (message, html, data) => {
 		if (game.user?.isGM) return;
-		
+
 		// Check if this is an item-piles message
-		const isItemPilesMessage = message.flags?.["item-piles"] || 
-		                           html.find(".item-piles").length > 0 ||
-		                           html.find("[class*='item-piles']").length > 0;
-		
+		const isItemPilesMessage = message.flags?.["item-piles"] ||
+			html.find(".item-piles").length > 0 ||
+			html.find("[class*='item-piles']").length > 0;
+
 		if (!isItemPilesMessage) return;
-		
+
 		maskUnidentifiedNamesInElement(html, getDefaultMaskedName);
 	});
 }
@@ -1348,7 +1350,7 @@ function setupItemPilesUnidentifiedHooks() {
  */
 function maskUnidentifiedNamesInElement(html, getDefaultMaskedName) {
 	const defaultMaskedName = getDefaultMaskedName();
-	
+
 	// Build map of unidentified item real names to their masked names
 	const unidentifiedNameMap = new Map();
 	for (const actor of game.actors) {
@@ -1363,11 +1365,11 @@ function maskUnidentifiedNamesInElement(html, getDefaultMaskedName) {
 			}
 		}
 	}
-	
+
 	if (unidentifiedNameMap.size === 0) return;
-	
+
 	// Replace item names in text nodes
-	html.find("*").addBack().contents().filter(function() {
+	html.find("*").addBack().contents().filter(function () {
 		return this.nodeType === 3; // Text nodes only
 	}).each((i, node) => {
 		let text = node.textContent;
@@ -1382,7 +1384,7 @@ function maskUnidentifiedNamesInElement(html, getDefaultMaskedName) {
 			node.textContent = text;
 		}
 	});
-	
+
 	// Also check and replace in title attributes and data-tooltip
 	html.find("[title], [data-tooltip]").each((i, el) => {
 		const $el = $(el);
@@ -1531,7 +1533,7 @@ function calculateSlotsCostForItemData(itemData, { recursive = false } = {}) {
 	const qty = Math.max(0, Number(system.quantity ?? 1) || 0);
 	const perSlot = Math.max(1, Number(system.slots?.per_slot ?? 1) || 1);
 	const freeCarry = Math.max(0, Number(system.slots?.free_carry ?? 0) || 0);
-	
+
 	// For containers, use base slots when recursive to avoid double-counting
 	const isContainer = Boolean(itemData?.flags?.[MODULE_ID]?.isContainer);
 	let slotsUsed;
@@ -1542,7 +1544,7 @@ function calculateSlotsCostForItemData(itemData, { recursive = false } = {}) {
 	} else {
 		slotsUsed = Math.max(0, Number(system.slots?.slots_used ?? 1) || 0);
 	}
-	
+
 	// Calculate base slot cost for this item
 	let baseSlotCost = Math.ceil(qty / perSlot) * slotsUsed;
 	// Apply free carry to the item itself (but not contents)
@@ -1551,7 +1553,7 @@ function calculateSlotsCostForItemData(itemData, { recursive = false } = {}) {
 		baseSlotCost = 0;
 	}
 	let slots = baseSlotCost;
-	
+
 	// If recursive and this is a container, add its nested contents
 	if (recursive && isContainer) {
 		const packedItems = itemData?.flags?.[MODULE_ID]?.containerPackedItems;
@@ -1560,7 +1562,7 @@ function calculateSlotsCostForItemData(itemData, { recursive = false } = {}) {
 				slots += calculateSlotsCostForItemData(nestedData, { recursive: true });
 			}
 		}
-		
+
 		// Add coin weight from nested container
 		const coins = itemData?.flags?.[MODULE_ID]?.containerCoins || {};
 		const gp = Number(coins.gp ?? 0);
@@ -1570,7 +1572,7 @@ function calculateSlotsCostForItemData(itemData, { recursive = false } = {}) {
 		const coinSlots = Math.floor(totalGPValue / 100);
 		slots += coinSlots;
 	}
-	
+
 	return slots;
 }
 
@@ -1579,7 +1581,7 @@ function calculateContainedItemSlots(item) {
 	// treat them as physical only if they originally were.
 	const originallyPhysical = item?.getFlag?.(MODULE_ID, "containerOrigIsPhysical");
 	if (originallyPhysical === false) return 0;
-	
+
 	// For containers, use base slots to avoid double-counting
 	let slots;
 	if (isContainerItem(item)) {
@@ -1603,12 +1605,12 @@ function calculateContainedItemSlots(item) {
 	} else {
 		slots = calculateSlotsCostForItem(item, { ignoreIsPhysical: true });
 	}
-	
+
 	// If this item is itself a container, recursively add its contained items' slots
 	if (isContainerItem(item)) {
 		const actor = item.parent;
 		const packedOnly = !actor || isItemPilesEnabledActor(actor);
-		
+
 		if (packedOnly) {
 			// Use packed data for actorless or Item Piles containers
 			for (const data of getPackedContainedItemData(item)) {
@@ -1621,7 +1623,7 @@ function calculateContainedItemSlots(item) {
 				slots += calculateContainedItemSlots(nestedItem);
 			}
 		}
-		
+
 		// Add coin weight from nested container
 		const coins = item.getFlag(MODULE_ID, "containerCoins") || {};
 		const gp = Number(coins.gp ?? 0);
@@ -1631,7 +1633,7 @@ function calculateContainedItemSlots(item) {
 		const coinSlots = Math.floor(totalGPValue / 100);
 		slots += coinSlots;
 	}
-	
+
 	return slots;
 }
 
@@ -1660,12 +1662,12 @@ async function restoreContainerBaseSlots(containerItem) {
 
 async function recomputeContainerSlots(containerItem, { skipSync = false } = {}) {
 	if (!containerItem || !isContainerItem(containerItem)) return;
-	
+
 	// Prevent recursive recomputation
 	const recomputeKey = containerItem.uuid;
 	if (_containersBeingRecomputed.has(recomputeKey)) return;
 	_containersBeingRecomputed.add(recomputeKey);
-	
+
 	try {
 		await ensureContainerBaseSlots(containerItem);
 		const base = containerItem.getFlag(MODULE_ID, "containerBaseSlots") || {};
@@ -1704,7 +1706,7 @@ async function recomputeContainerSlots(containerItem, { skipSync = false } = {})
 		// For packed-only containers we preserve the existing snapshot.
 		// Skip syncing when unpacking to prevent doubling items.
 		if (!packedOnly && !skipSync) await syncContainerPackedItems(containerItem);
-		
+
 		// If this container is itself inside another container, update the parent container too
 		const parentContainer = getParentContainer(containerItem);
 		if (parentContainer && !_containersBeingRecomputed.has(parentContainer.uuid)) {
@@ -1875,7 +1877,7 @@ function injectUnidentifiedCheckbox(app, html) {
 					</div>
 				</div>
 			`;
-			
+
 			// Find the grid container and append the new box
 			const gridContainer = detailsTab.find('.grid-3-columns, .grid-2-columns').first();
 			if (gridContainer.length) {
@@ -1924,7 +1926,7 @@ function injectUnidentifiedDescriptionEditor(app, html, item, isEditable) {
 
 	// Get current unidentified description
 	const unidentifiedDesc = item.getFlag(MODULE_ID, "unidentifiedDescription") ?? "";
-	
+
 	const sectionLabel = game.i18n.localize("SHADOWDARK_EXTRAS.item.unidentified.description_label");
 	const sectionHint = game.i18n.localize("SHADOWDARK_EXTRAS.item.unidentified.description_hint");
 	const editLabel = game.i18n.localize("SHADOWDARK_EXTRAS.party.edit_description");
@@ -2020,7 +2022,7 @@ function injectBasicContainerUI(app, html) {
 	let slotsBox = null;
 
 	// Try to find the SLOTS box to add the toggle under it
-	detailsTab.find(".SD-box").each(function() {
+	detailsTab.find(".SD-box").each(function () {
 		const label = $(this).find('.header label').first().text().trim().toLowerCase();
 		if (label && (label === labelSlots || label.includes(labelSlots))) {
 			slotsBox = $(this);
@@ -2049,6 +2051,18 @@ function injectBasicContainerUI(app, html) {
 	toggle.on("change", async (ev) => {
 		if (!isEditable) return;
 		const enabled = Boolean(ev.currentTarget.checked);
+
+		// Check if trying to make this a container while it's inside another container
+		if (enabled) {
+			const allowNestedContainers = game.settings.get(MODULE_ID, "enableNestedContainers");
+			const containerId = item.getFlag(MODULE_ID, "containerId");
+			if (!allowNestedContainers && containerId) {
+				ui.notifications.warn(game.i18n.localize("SHADOWDARK_EXTRAS.item.container.nested_not_allowed"));
+				ev.currentTarget.checked = false;
+				return;
+			}
+		}
+
 		await item.setFlag(MODULE_ID, "isContainer", enabled);
 
 		// If disabling, release contained items and restore base slots
@@ -2078,10 +2092,10 @@ function injectBasicContainerUI(app, html) {
 		if (freeCarryInput.length) {
 			const currentValue = Number(item.system?.slots?.free_carry ?? 0);
 			const isChecked = currentValue > 0;
-			const freeCarryLabel = freeCarryInput.closest('.SD-grid').find('h3').filter(function() {
+			const freeCarryLabel = freeCarryInput.closest('.SD-grid').find('h3').filter(function () {
 				return $(this).text().trim().toLowerCase().includes('free');
 			});
-			
+
 			const checkboxHtml = `
 				<input type="checkbox" 
 					data-sdx-free-carry 
@@ -2090,15 +2104,15 @@ function injectBasicContainerUI(app, html) {
 					style="width: auto; height: auto;"
 				/>
 			`;
-			
+
 			freeCarryInput.replaceWith(checkboxHtml);
-			
+
 			// Bind checkbox change event
 			html.find('[data-sdx-free-carry]').on('change', async (ev) => {
 				if (!isEditable) return;
 				const checked = ev.currentTarget.checked;
 				// Set to 1 if checked, 0 if unchecked
-				await item.update({"system.slots.free_carry": checked ? 1 : 0});
+				await item.update({ "system.slots.free_carry": checked ? 1 : 0 });
 			});
 		}
 	}
@@ -2115,16 +2129,16 @@ function injectBasicContainerUI(app, html) {
 	const packedOnly = !isOwned || onItemPilesActor;
 	const contained = packedOnly ? [] : getContainedItems(item);
 	const packed = packedOnly ? getPackedContainedItemData(item) : [];
-	
+
 	// Track totals for GP, CP, SP
 	let totalGP = 0;
 	let totalCP = 0;
 	let totalSP = 0;
-	
+
 	const rows = (packedOnly ? packed : contained).map((entry, index) => {
 		const isData = !(entry instanceof Item);
 		// Check if this individual item is unidentified and mask accordingly
-		const isItemUnidentified = isData 
+		const isItemUnidentified = isData
 			? (entry.flags?.[MODULE_ID]?.unidentified === true)
 			: isUnidentified(entry);
 		const name = isItemUnidentified && !game.user?.isGM
@@ -2135,17 +2149,17 @@ function injectBasicContainerUI(app, html) {
 		// Use recursive calculation to show total slots including nested container contents
 		const slots = isData ? calculateSlotsCostForItemData(entry, { recursive: true }) : calculateContainedItemSlots(entry);
 		const packedKey = isData ? (getPackedKeyFromItemData(entry) ?? String(index)) : null;
-		
+
 		// Extract cost values
 		const costGP = Number(entry.system?.cost?.gp ?? 0);
 		const costCP = Number(entry.system?.cost?.cp ?? 0);
 		const costSP = Number(entry.system?.cost?.sp ?? 0);
-		
+
 		// Add to totals (multiplied by quantity)
 		totalGP += costGP * qty;
 		totalCP += costCP * qty;
 		totalSP += costSP * qty;
-		
+
 		const liAttrs = isData
 			? `data-packed-key="${foundry.utils.escapeHTML(String(packedKey))}"`
 			: `data-item-id="${entry.id}"`;
@@ -2178,7 +2192,7 @@ function injectBasicContainerUI(app, html) {
 			<div class="actions"></div>
 		</li>
 	` : "";
-	
+
 	// Get container coins
 	const containerCoins = item.getFlag(MODULE_ID, "containerCoins") || {};
 	const coinGP = Number(containerCoins.gp ?? 0);
@@ -2368,6 +2382,13 @@ function injectBasicContainerUI(app, html) {
 			if (!dropped || !(dropped instanceof Item)) return;
 			if (dropped.id === item.id && dropped.parent === item.parent) return;
 
+			// Check if nested containers are allowed
+			const allowNestedContainers = game.settings.get(MODULE_ID, "enableNestedContainers");
+			if (!allowNestedContainers && isContainerItem(dropped)) {
+				ui.notifications.warn(game.i18n.localize("SHADOWDARK_EXTRAS.item.container.nested_not_allowed"));
+				return;
+			}
+
 			// Actor-owned container: ensure the dropped item becomes owned by the same actor, then contain it.
 			if (item.parent) {
 				if (dropped.parent && dropped.parent === item.parent) {
@@ -2449,7 +2470,7 @@ function buildContainerTooltip(containerItem) {
 			return `• ${name}${qtySuffix}`;
 		})
 		.join('\n');
-	
+
 	const more = entries.length > 50 ? `\n• ... and ${entries.length - 50} more` : "";
 	return `${label}\n${items}${more}`;
 }
@@ -2631,7 +2652,7 @@ function maskUnidentifiedItemSheet(app, html) {
 	// Hide the Effects tab link and content (try multiple selectors)
 	html.find('a[data-tab="effects"], nav a[data-tab="effects"], .tabs a[data-tab="effects"], .sheet-tabs a[data-tab="effects"]').hide();
 	html.find('.tab[data-tab="effects"], div[data-tab="effects"]').hide();
-	
+
 	// Also hide by looking for text content
 	html.find('a.item, nav .item, .tabs .item').each((_, el) => {
 		const $el = $(el);
@@ -2643,7 +2664,7 @@ function maskUnidentifiedItemSheet(app, html) {
 	// Replace description with unidentified description
 	const unidentifiedDesc = item.getFlag?.(MODULE_ID, "unidentifiedDescription") ?? "";
 	const noDescText = game.i18n.localize("SHADOWDARK_EXTRAS.item.unidentified.no_description");
-	
+
 	// Create the "not identified" notice HTML
 	const notIdentifiedHtml = `
 		<div class="sdx-unidentified-notice">
@@ -2651,14 +2672,14 @@ function maskUnidentifiedItemSheet(app, html) {
 			<p>${noDescText}</p>
 		</div>
 	`;
-	
+
 	// Find the description tab and replace its content entirely (after the banner)
 	const descTab = html.find('.tab[data-tab="tab-description"], .tab[data-tab="description"]').first();
 	if (descTab.length) {
 		// Save the banner if it exists
 		const banner = descTab.find('.SD-banner').first();
 		const bannerHtml = banner.length ? banner[0].outerHTML : '';
-		
+
 		// Build new content
 		let newContent = bannerHtml;
 		if (unidentifiedDesc) {
@@ -2706,7 +2727,7 @@ function maskUnidentifiedItemInDialog(app, html, data) {
 			}
 		}
 	}
-	
+
 	if (unidentifiedNameMap.size === 0) return;
 
 	// Mask the window title
@@ -2821,7 +2842,7 @@ function enhanceInventoryWithDeleteAndMultiSelect(app, html) {
 
 	// Find all item rows in the inventory
 	const itemRows = html.find('.item[data-item-id]');
-	
+
 	itemRows.each((_, el) => {
 		const $row = $(el);
 		const itemId = $row.data('itemId');
@@ -2914,7 +2935,7 @@ function enhanceInventoryWithDeleteAndMultiSelect(app, html) {
  */
 async function deleteItemWithContents(actor, item) {
 	const isContainer = item.type === "Basic" && Boolean(item.getFlag?.(MODULE_ID, "isContainer"));
-	
+
 	if (isContainer) {
 		// Delete contained items first
 		const containedItems = actor.items.filter(i => i.getFlag(MODULE_ID, "containerId") === item.id);
@@ -2922,7 +2943,7 @@ async function deleteItemWithContents(actor, item) {
 			await contained.delete({ sdxInternal: true });
 		}
 	}
-	
+
 	await item.delete({ sdxInternal: true });
 }
 
@@ -2939,12 +2960,12 @@ function patchContextMenuForMultiDelete(app, html) {
 
 	html.find('.item[data-item-id]').off('contextmenu.sdxMulti').on('contextmenu.sdxMulti', async (ev) => {
 		const selected = getSelectedItems(app);
-		
+
 		// If multiple items selected and right-clicking on a selected item, show multi-delete menu
 		if (selected.size > 1) {
 			const $row = $(ev.currentTarget);
 			const itemId = $row.data('itemId');
-			
+
 			if (selected.has(itemId)) {
 				ev.preventDefault();
 				ev.stopPropagation();
@@ -3015,7 +3036,7 @@ function patchCtrlMoveOnActorSheetDrops() {
 	proto._sdxCtrlMovePatched = true;
 
 	const original = proto._onDropItem;
-	proto._onDropItem = async function(event, data) {
+	proto._onDropItem = async function (event, data) {
 		const targetActor = this.actor;
 		const ctrlCopy = Boolean(event?.ctrlKey); // Ctrl = copy, normal = move
 		const sourceUuid = data?.uuid;
@@ -3090,7 +3111,7 @@ const EXTRA_LIGHT_SOURCES = {
 // Item types that count as physical inventory for NPCs
 const NPC_INVENTORY_TYPES = [
 	"Armor",
-	"Basic", 
+	"Basic",
 	"Gem",
 	"Potion",
 	"Scroll",
@@ -3110,16 +3131,16 @@ const npcActiveTabTracker = new Map();
 function enableItemChatIcon(app, html) {
 	const actor = app?.actor;
 	if (!actor) return;
-	
+
 	// Skip for player sheets - Shadowdark handles these natively via _onItemChatClick
 	// This prevents duplicate chat messages when clicking item images
 	if (actor.type === "Player") return;
 
 	// Handle click on item image (when it has the chat icon)
-	html.find('.item-image').off('click.sdxChat').on('click.sdxChat', async function(ev) {
+	html.find('.item-image').off('click.sdxChat').on('click.sdxChat', async function (ev) {
 		// Only handle if this item-image has a comment icon
 		if (!$(this).find('.fa-comment').length) return;
-		
+
 		ev.preventDefault();
 		ev.stopPropagation();
 
@@ -3146,7 +3167,17 @@ function enableItemChatIcon(app, html) {
  */
 function registerSettings() {
 	// === FEATURE TOGGLES ===
-	
+
+	game.settings.register(MODULE_ID, "enableFocusTracker", {
+		name: game.i18n.localize("SHADOWDARK_EXTRAS.settings.enable_focus_tracker.name"),
+		hint: game.i18n.localize("SHADOWDARK_EXTRAS.settings.enable_focus_tracker.hint"),
+		scope: "world",
+		config: true,
+		default: true,
+		type: Boolean,
+		requiresReload: true,
+	});
+
 	game.settings.register(MODULE_ID, "enableEnhancedHeader", {
 		name: game.i18n.localize("SHADOWDARK_EXTRAS.settings.enable_enhanced_header.name"),
 		hint: game.i18n.localize("SHADOWDARK_EXTRAS.settings.enable_enhanced_header.hint"),
@@ -3155,6 +3186,25 @@ function registerSettings() {
 		default: true,
 		type: Boolean,
 		requiresReload: true,
+	});
+
+	game.settings.register(MODULE_ID, "enableDefaultHeaderBg", {
+		name: game.i18n.localize("SHADOWDARK_EXTRAS.settings.enable_default_header_bg.name"),
+		hint: game.i18n.localize("SHADOWDARK_EXTRAS.settings.enable_default_header_bg.hint"),
+		scope: "world",
+		config: true,
+		default: false,
+		type: Boolean,
+	});
+
+	game.settings.register(MODULE_ID, "defaultHeaderBgPath", {
+		name: game.i18n.localize("SHADOWDARK_EXTRAS.settings.default_header_bg_path.name"),
+		hint: game.i18n.localize("SHADOWDARK_EXTRAS.settings.default_header_bg_path.hint"),
+		scope: "world",
+		config: true,
+		default: "",
+		type: String,
+		filePicker: "imagevideo",
 	});
 
 	// Internal setting - always enabled, not shown in UI
@@ -3212,6 +3262,15 @@ function registerSettings() {
 		requiresReload: true,
 	});
 
+	game.settings.register(MODULE_ID, "enableNestedContainers", {
+		name: game.i18n.localize("SHADOWDARK_EXTRAS.settings.enable_nested_containers.name"),
+		hint: game.i18n.localize("SHADOWDARK_EXTRAS.settings.enable_nested_containers.hint"),
+		scope: "world",
+		config: true,
+		default: true,
+		type: Boolean,
+	});
+
 	game.settings.register(MODULE_ID, "enableUnidentified", {
 		name: game.i18n.localize("SHADOWDARK_EXTRAS.settings.enable_unidentified.name"),
 		hint: game.i18n.localize("SHADOWDARK_EXTRAS.settings.enable_unidentified.hint"),
@@ -3263,8 +3322,18 @@ function registerSettings() {
 		requiresReload: true,
 	});
 
+	game.settings.register(MODULE_ID, "enableNpcCreatureType", {
+		name: game.i18n.localize("SHADOWDARK_EXTRAS.settings.enable_npc_creature_type.name"),
+		hint: game.i18n.localize("SHADOWDARK_EXTRAS.settings.enable_npc_creature_type.hint"),
+		scope: "world",
+		config: true,
+		default: true,
+		type: Boolean,
+		requiresReload: false,
+	});
+
 	// === INVENTORY STYLES ===
-	
+
 	// Register the inventory styles data setting (not shown in config)
 	game.settings.register(MODULE_ID, "inventoryStyles", {
 		name: "Inventory Styles Configuration",
@@ -3408,7 +3477,7 @@ async function updateJournalPage(actor, pageId, updates) {
 	const pages = getJournalPages(actor);
 	const pageIndex = pages.findIndex(p => p.id === pageId);
 	if (pageIndex === -1) return null;
-	
+
 	pages[pageIndex] = foundry.utils.mergeObject(pages[pageIndex], updates);
 	await actor.setFlag(MODULE_ID, "journalPages", pages);
 	return pages[pageIndex];
@@ -3421,7 +3490,7 @@ async function deleteJournalPage(actor, pageId) {
 	let pages = getJournalPages(actor);
 	pages = pages.filter(p => p.id !== pageId);
 	await actor.setFlag(MODULE_ID, "journalPages", pages);
-	
+
 	// If we deleted the active page, switch to first page
 	const activeId = getActiveJournalPageId(actor);
 	if (activeId === pageId || !activeId) {
@@ -3447,24 +3516,24 @@ async function injectJournalNotes(app, html, actor) {
 		console.log("SDX Journal: Sheet element not found");
 		return;
 	}
-	
+
 	// Find the notes tab - it's a section with class "tab-notes" and data-tab="tab-notes"
 	const notesTab = sheetElement.find('section.tab-notes[data-tab="tab-notes"]');
 	if (notesTab.length === 0) {
 		console.log("SDX Journal: Notes tab section not found");
 		return;
 	}
-	
+
 	// Prevent duplicate injection - check inside the notes tab specifically
 	if (notesTab.find('.sdx-journal-notes').length > 0) {
 		return;
 	}
-	
+
 	const targetTab = notesTab.first();
 
 	// Get journal pages data
 	let pages = getJournalPages(actor);
-	
+
 	// If no pages exist yet and there's existing notes content, migrate it
 	if (pages.length === 0) {
 		const existingNotes = actor.system?.notes || "";
@@ -3515,17 +3584,17 @@ async function injectJournalNotes(app, html, actor) {
 
 	// Remove any existing journal notes first
 	targetTab.find('.sdx-journal-notes').remove();
-	
+
 	// Hide ALL original content in the notes tab (the SD-hideable-section with the editor)
-	targetTab.children().each(function() {
+	targetTab.children().each(function () {
 		if (!$(this).hasClass('sdx-journal-notes')) {
 			$(this).hide();
 		}
 	});
-	
+
 	// Mark tab as having journal active
 	targetTab.addClass("sdx-journal-active");
-	
+
 	// Append the journal inside the target tab only
 	targetTab.append(journalHtml);
 
@@ -3546,7 +3615,7 @@ function activateJournalListeners(app, html, actor) {
 	journalSection.find('.sdx-journal-page-item').on('click', async (ev) => {
 		// Don't trigger if clicking delete button
 		if ($(ev.target).closest('.sdx-page-delete').length) return;
-		
+
 		const pageId = $(ev.currentTarget).data('page-id');
 		await setActiveJournalPage(actor, pageId);
 		app.render(false);
@@ -3563,11 +3632,11 @@ function activateJournalListeners(app, html, actor) {
 	journalSection.find('[data-action="delete-page"]').on('click', async (ev) => {
 		ev.preventDefault();
 		ev.stopPropagation();
-		
+
 		const pageId = $(ev.currentTarget).data('page-id');
 		const pages = getJournalPages(actor);
 		const page = pages.find(p => p.id === pageId);
-		
+
 		// Confirm deletion
 		const confirmed = await Dialog.confirm({
 			title: game.i18n.localize("SHADOWDARK_EXTRAS.journal.delete_page_title"),
@@ -3575,7 +3644,7 @@ function activateJournalListeners(app, html, actor) {
 			yes: () => true,
 			no: () => false
 		});
-		
+
 		if (confirmed) {
 			await deleteJournalPage(actor, pageId);
 			app.render(false);
@@ -3667,17 +3736,17 @@ function extendLightSources() {
 function patchLightSourceMappings() {
 	// Store the original turnLightOn method
 	const originalTurnLightOn = CONFIG.Actor.documentClass.prototype.turnLightOn;
-	
-	CONFIG.Actor.documentClass.prototype.turnLightOn = async function(itemId) {
+
+	CONFIG.Actor.documentClass.prototype.turnLightOn = async function (itemId) {
 		const item = this.items.get(itemId);
-		
+
 		// Check if this is one of our custom light sources
 		if (item?.system?.light?.template && EXTRA_LIGHT_SOURCES[item.system.light.template]) {
 			const lightData = EXTRA_LIGHT_SOURCES[item.system.light.template].light;
 			await this.changeLightSettings(lightData);
 			return;
 		}
-		
+
 		// Otherwise use the original method
 		return originalTurnLightOn.call(this, itemId);
 	};
@@ -3692,20 +3761,20 @@ function injectRenownSection(html, actor) {
 
 	// Find the luck section to insert after it
 	const luckSection = html.find('.SD-box:has(.header label:contains("Luck"))');
-	
+
 	if (luckSection.length === 0) {
 		// Alternative: find by checking the content structure
 		const boxes = html.find('.grid-2-columns .SD-box');
 		let targetBox = null;
-		
-		boxes.each(function() {
+
+		boxes.each(function () {
 			const label = $(this).find('.header label').text();
 			if (label.toLowerCase().includes('luck')) {
 				targetBox = $(this);
 				return false;
 			}
 		});
-		
+
 		if (targetBox) {
 			insertRenownAfter(targetBox, actor);
 		}
@@ -3720,7 +3789,7 @@ function injectRenownSection(html, actor) {
 function insertRenownAfter(targetElement, actor) {
 	const renownMax = game.settings.get(MODULE_ID, "renownMaximum");
 	const renownValue = actor.getFlag(MODULE_ID, "renown") ?? 0;
-	
+
 	const renownHtml = `
 		<div class="SD-box grid-colspan-2 shadowdark-extras-renown">
 			<div class="header">
@@ -3742,15 +3811,15 @@ function insertRenownAfter(targetElement, actor) {
 			</div>
 		</div>
 	`;
-	
+
 	targetElement.after(renownHtml);
-	
+
 	// Add event listener to enforce maximum only (allow negative values)
 	const renownInput = targetElement.parent().find(`input[name="flags.${MODULE_ID}.renown"]`);
-	renownInput.on('input change blur', function() {
+	renownInput.on('input change blur', function () {
 		let val = parseFloat(this.value);
 		const maxRenown = game.settings.get(MODULE_ID, "renownMaximum") ?? 20;
-		
+
 		// If invalid, set to 0
 		if (isNaN(val)) {
 			val = 0;
@@ -3759,7 +3828,7 @@ function insertRenownAfter(targetElement, actor) {
 		if (val > maxRenown) {
 			val = maxRenown;
 		}
-		
+
 		// Update the input if changed
 		if (parseFloat(this.value) !== val) {
 			this.value = val;
@@ -3790,18 +3859,18 @@ function handleRenownUpdate(actor, formData) {
  */
 function addInlineEffectControls($effectsTab, actor) {
 	const $items = $effectsTab.find('.item.effect');
-	
-	$items.each(function() {
+
+	$items.each(function () {
 		const $item = $(this);
-		
+
 		// Skip if already has controls
 		if ($item.find('.sdx-effect-controls').length) return;
-		
+
 		const itemId = $item.data('item-id');
 		const itemUuid = $item.data('uuid');
-		
+
 		if (!itemId) return;
-		
+
 		// Create control buttons
 		const $controls = $(`
 			<div class="sdx-effect-controls">
@@ -3816,10 +3885,10 @@ function addInlineEffectControls($effectsTab, actor) {
 				</button>
 			</div>
 		`);
-		
+
 		// Add controls to the item
 		$item.append($controls);
-		
+
 		// Edit button
 		$controls.find('.sdx-effect-edit').on('click', async (e) => {
 			e.preventDefault();
@@ -3827,7 +3896,7 @@ function addInlineEffectControls($effectsTab, actor) {
 			const item = actor.items.get(itemId);
 			if (item) item.sheet.render(true);
 		});
-		
+
 		// Transfer button
 		$controls.find('.sdx-effect-transfer').on('click', async (e) => {
 			e.preventDefault();
@@ -3840,7 +3909,7 @@ function addInlineEffectControls($effectsTab, actor) {
 				}
 			}
 		});
-		
+
 		// Delete button
 		$controls.find('.sdx-effect-delete').on('click', async (e) => {
 			e.preventDefault();
@@ -3853,7 +3922,7 @@ function addInlineEffectControls($effectsTab, actor) {
 					yes: () => true,
 					no: () => false
 				});
-				
+
 				if (confirm) {
 					await item.delete();
 					ui.notifications.info(`Deleted ${item.name}`);
@@ -3875,7 +3944,7 @@ async function injectConditionsToggles(app, html, actor) {
 
 	// Check if we've already injected (avoid duplicates on re-render)
 	if ($effectsTab.find('.sdx-conditions-toggles').length) return;
-	
+
 	// Add inline control buttons to existing effects/conditions
 	addInlineEffectControls($effectsTab, actor);
 
@@ -3891,7 +3960,7 @@ async function injectConditionsToggles(app, html, actor) {
 
 	// Group conditions by base name (store minimal data, not document references)
 	const groupedConditions = groupConditionsByBaseName(conditions);
-	
+
 	// Convert grouped conditions to plain data objects to avoid holding document references
 	const conditionDataMap = {};
 	for (const [baseName, conditionGroup] of Object.entries(groupedConditions)) {
@@ -3917,18 +3986,18 @@ async function injectConditionsToggles(app, html, actor) {
 	for (const [baseName, conditionGroup] of Object.entries(conditionDataMap)) {
 		const hasVariants = conditionGroup.length > 1;
 		const firstCondition = conditionGroup[0];
-		
+
 		// Check if any variant is active
-		const isActive = conditionGroup.some(condition => 
-		    activeEffects.some(effect => 
-			    effect.name === condition.name || 
-			    (effect._stats?.compendiumSource === condition.uuid) ||
-			    (effect.flags?.core?.sourceId === condition.uuid)
-		    )
+		const isActive = conditionGroup.some(condition =>
+			activeEffects.some(effect =>
+				effect.name === condition.name ||
+				(effect._stats?.compendiumSource === condition.uuid) ||
+				(effect.flags?.core?.sourceId === condition.uuid)
+			)
 		);
 
 		const displayName = baseName.replace('Condition: ', '');
-		
+
 		// Get description
 		const rawDescription = firstCondition.description || '';
 		// Keep HTML formatting but escape quotes for data attribute
@@ -3972,14 +4041,14 @@ async function injectConditionsToggles(app, html, actor) {
 
 	// Attach event handlers
 	const $toggles = $effectsTab.find('.sdx-condition-toggle');
-	$toggles.on('click', async function(e) {
+	$toggles.on('click', async function (e) {
 		e.preventDefault();
 		e.stopPropagation();
-		
+
 		if (!actor.isOwner) return;
 
 		const $toggle = $(this);
-		
+
 		if ($toggle.hasClass('has-variants')) {
 			// Show submenu for variants
 			const baseName = $toggle.data('condition-base');
@@ -3991,14 +4060,14 @@ async function injectConditionsToggles(app, html, actor) {
 			const conditionName = $toggle.data('condition-name');
 			const isActive = $toggle.hasClass('active');
 
-					if (isActive) {
-						await removeConditionFromActor(actor, conditionName, conditionUuid);
-					} else {
-						await addConditionToActor(actor, conditionUuid);
-					}
+			if (isActive) {
+				await removeConditionFromActor(actor, conditionName, conditionUuid);
+			} else {
+				await addConditionToActor(actor, conditionUuid);
+			}
 		}
 	});
-	
+
 	// Tooltips removed per user request
 }
 
@@ -4018,24 +4087,24 @@ function convertUUIDLinksToClickable(text) {
  */
 function groupConditionsByBaseName(conditions) {
 	const groups = {};
-	
+
 	for (const condition of conditions) {
 		const name = condition.name;
 		// Extract base name by removing variants like (1), (Cha), etc.
 		const baseName = name.replace(/\s*\([^)]+\)\s*$/, '').trim();
-		
+
 		if (!groups[baseName]) {
 			groups[baseName] = [];
 		}
 		groups[baseName].push(condition);
 	}
-	
+
 	// Sort groups alphabetically and sort variants within each group
 	const sortedGroups = {};
 	Object.keys(groups).sort().forEach(key => {
 		sortedGroups[key] = groups[key].sort((a, b) => a.name.localeCompare(b.name));
 	});
-	
+
 	return sortedGroups;
 }
 
@@ -4045,21 +4114,21 @@ function groupConditionsByBaseName(conditions) {
 function showConditionSubmenu($toggle, variants, actor, activeEffects) {
 	// Remove any existing submenu
 	$('.sdx-condition-submenu').remove();
-	
+
 	// Build submenu HTML
 	let submenuHtml = '<div class="sdx-condition-submenu">';
-	
+
 	for (const variant of variants) {
-		const isActive = activeEffects.some(effect => 
-			effect.name === variant.name || 
+		const isActive = activeEffects.some(effect =>
+			effect.name === variant.name ||
 			(effect._stats?.compendiumSource === variant.uuid) ||
 			(effect.flags?.core?.sourceId === variant.uuid)
 		);
-		
+
 		// Extract the variant part (e.g., "1", "Cha", etc.)
 		const match = variant.name.match(/\(([^)]+)\)\s*$/);
 		const variantLabel = match ? match[1] : variant.name.replace('Condition: ', '');
-		
+
 		submenuHtml += `
 			<div class="sdx-submenu-item ${isActive ? 'active' : ''}"
 				 data-condition-uuid="${variant.uuid}"
@@ -4069,41 +4138,41 @@ function showConditionSubmenu($toggle, variants, actor, activeEffects) {
 			</div>
 		`;
 	}
-	
+
 	submenuHtml += '</div>';
-	
+
 	// Append submenu
 	const $submenu = $(submenuHtml);
 	$toggle.append($submenu);
-	
+
 	// Position submenu
 	const rect = $toggle[0].getBoundingClientRect();
 	const submenuHeight = $submenu.outerHeight();
 	const spaceBelow = window.innerHeight - rect.bottom;
-	
+
 	if (spaceBelow < submenuHeight) {
 		$submenu.css('bottom', '100%').css('top', 'auto');
 	}
-	
+
 	// Handle submenu item clicks
-	$submenu.find('.sdx-submenu-item').on('click', async function(e) {
+	$submenu.find('.sdx-submenu-item').on('click', async function (e) {
 		e.preventDefault();
 		e.stopPropagation();
-		
+
 		const $item = $(this);
 		const conditionUuid = $item.data('condition-uuid');
 		const conditionName = $item.data('condition-name');
 		const isActive = $item.hasClass('active');
-		
+
 		if (isActive) {
 			await removeConditionFromActor(actor, conditionName, conditionUuid);
 		} else {
 			await addConditionToActor(actor, conditionUuid);
 		}
-		
+
 		$submenu.remove();
 	});
-	
+
 	// Close submenu when clicking outside
 	setTimeout(() => {
 		$(document).one('click', () => {
@@ -4127,20 +4196,20 @@ async function addConditionToActor(actor, conditionUuid) {
 		const existing = actor.effects.find(e => {
 			// Direct name match
 			if (e.name === condition.name) return true;
-			
+
 			// Source ID match (support new _stats.compendiumSource with fallback)
 			if (e._stats?.compendiumSource === conditionUuid) return true;
 			if (e.flags?.core?.sourceId === conditionUuid) return true;
-			
+
 			// Case-insensitive name match
 			if (e.name?.toLowerCase() === condition.name?.toLowerCase()) return true;
-			
+
 			// Check if the effect name contains the condition name
 			if (e.name?.toLowerCase().includes(condition.name?.toLowerCase())) return true;
-			
+
 			return false;
 		});
-		
+
 		if (existing) {
 			console.log(`${MODULE_ID} | Condition ${condition.name} already active`);
 			return;
@@ -4148,12 +4217,12 @@ async function addConditionToActor(actor, conditionUuid) {
 
 		// Get the effects from the condition item
 		const conditionEffects = condition.effects?.contents || [];
-		
+
 		if (conditionEffects.length > 0) {
 			// Copy the first effect from the condition
 			const sourceEffect = conditionEffects[0];
 			const effectData = sourceEffect.toObject();
-			
+
 			// Set flags to track origin
 			// Prefer the new _stats.compendiumSource property. Do not write the deprecated core.sourceId flag.
 			effectData._stats = effectData._stats || {};
@@ -4188,8 +4257,8 @@ async function addConditionToActor(actor, conditionUuid) {
 async function removeConditionFromActor(actor, conditionName, conditionUuid) {
 	try {
 		// Find the effect(s) matching this condition
-		const effectsToRemove = actor.effects.filter(e => 
-			e.name === conditionName || 
+		const effectsToRemove = actor.effects.filter(e =>
+			e.name === conditionName ||
 			(e._stats?.compendiumSource === conditionUuid) ||
 			(e.flags?.core?.sourceId === conditionUuid) ||
 			(e.getFlag(MODULE_ID, "conditionToggle") && e.name === conditionName)
@@ -4215,7 +4284,7 @@ function updateConditionToggles(actor, html) {
 
 	const activeEffects = actor.effects.contents || [];
 
-	$toggles.each(function() {
+	$toggles.each(function () {
 		const $toggle = $(this);
 		const conditionUuid = $toggle.data('condition-uuid');
 		const conditionName = $toggle.data('condition-name');
@@ -4224,17 +4293,17 @@ function updateConditionToggles(actor, html) {
 		const isActive = activeEffects.some(effect => {
 			// Direct name match
 			if (effect.name === conditionName) return true;
-			
+
 			// Source ID match (prefer new _stats.compendiumSource)
 			if (effect._stats?.compendiumSource === conditionUuid) return true;
 			if (effect.flags?.core?.sourceId === conditionUuid) return true;
-			
+
 			// Case-insensitive name match (sometimes names don't match exactly)
 			if (effect.name?.toLowerCase() === conditionName?.toLowerCase()) return true;
-			
+
 			// Check if the effect name contains the condition name (e.g., "Condition: Blind" contains "Blind")
 			if (effect.name?.toLowerCase().includes(conditionName?.toLowerCase())) return true;
-			
+
 			return false;
 		});
 
@@ -4277,7 +4346,7 @@ function enhanceAbilitiesTab(app, html, actor) {
 
 	// Add enhanced class to the abilities tab
 	$abilitiesTab.addClass('sdx-enhanced-abilities');
-	
+
 	// Fix bold formatting for unidentified weapons in abilities section
 	fixUnidentifiedWeaponBoldInAbilities($abilitiesTab);
 }
@@ -4292,12 +4361,12 @@ function fixUnidentifiedWeaponBoldInAbilities($abilitiesTab) {
 	} catch {
 		return;
 	}
-	
+
 	// Find all attack displays that contain "Unidentified Item" text
-	$abilitiesTab.find('.attack .rollable').each(function() {
+	$abilitiesTab.find('.attack .rollable').each(function () {
 		const $rollable = $(this);
 		const html = $rollable.html();
-		
+
 		// Check if it contains "Unidentified Item" without proper bold formatting
 		if (html && html.includes('Unidentified Item')) {
 			// Replace plain text with bold version
@@ -4320,12 +4389,12 @@ function fixUnidentifiedWeaponBoldForAllUsers(html) {
 	} catch {
 		return;
 	}
-	
+
 	// Find all attack rollables that contain "Unidentified Item" text
-	html.find('.attack .rollable').each(function() {
+	html.find('.attack .rollable').each(function () {
 		const $rollable = $(this);
 		const currentHtml = $rollable.html();
-		
+
 		// Check if it contains "Unidentified Item" without proper bold formatting
 		if (currentHtml && currentHtml.includes('Unidentified Item') && !currentHtml.includes('<b')) {
 			// Replace plain text with bold version
@@ -4347,17 +4416,17 @@ function fixUnidentifiedWeaponBoldForAllUsers(html) {
  */
 function addInlineTalentControls($talentsTab, actor) {
 	const $items = $talentsTab.find('.item');
-	
-	$items.each(function() {
+
+	$items.each(function () {
 		const $item = $(this);
-		
+
 		// Skip if already has controls
 		if ($item.find('.sdx-talent-controls').length) return;
-		
+
 		const itemId = $item.data('item-id');
-		
+
 		if (!itemId) return;
-		
+
 		// Create control buttons
 		const $controls = $(`
 			<div class="sdx-talent-controls">
@@ -4372,10 +4441,10 @@ function addInlineTalentControls($talentsTab, actor) {
 				</button>
 			</div>
 		`);
-		
+
 		// Add controls to the item
 		$item.append($controls);
-		
+
 		// Edit button
 		$controls.find('.sdx-talent-edit').on('click', async (e) => {
 			e.preventDefault();
@@ -4383,7 +4452,7 @@ function addInlineTalentControls($talentsTab, actor) {
 			const item = actor.items.get(itemId);
 			if (item) item.sheet.render(true);
 		});
-		
+
 		// Transfer button
 		$controls.find('.sdx-talent-transfer').on('click', async (e) => {
 			e.preventDefault();
@@ -4396,7 +4465,7 @@ function addInlineTalentControls($talentsTab, actor) {
 				}
 			}
 		});
-		
+
 		// Delete button
 		$controls.find('.sdx-talent-delete').on('click', async (e) => {
 			e.preventDefault();
@@ -4409,7 +4478,7 @@ function addInlineTalentControls($talentsTab, actor) {
 					yes: () => true,
 					no: () => false
 				});
-				
+
 				if (confirm) {
 					await item.delete();
 					ui.notifications.info(`Deleted ${item.name}`);
@@ -4430,7 +4499,7 @@ function enhanceTalentsTab(app, html, actor) {
 
 	// Add enhanced class to the talents tab
 	$talentsTab.addClass('sdx-enhanced-talents');
-	
+
 	// Add inline control buttons to talent items
 	addInlineTalentControls($talentsTab, actor);
 }
@@ -4459,19 +4528,22 @@ function enhanceSpellsTab(app, html, actor) {
 	$spellsTab.find('.item[data-item-id]').each((i, item) => {
 		const $item = $(item);
 		const itemId = $item.data('item-id');
-		
+
 		// Skip if buttons already added
 		if ($item.find('.sdx-spell-actions').length) return;
-		
+
 		// Find the item-name element
 		const $itemName = $item.find('.item-name');
 		if (!$itemName.length) return;
-		
+
 		// Create action buttons container
 		const $actions = $(`
 			<div class="sdx-spell-actions">
 				<a class="sdx-spell-btn sdx-edit-spell" data-tooltip="Edit" title="Edit">
 					<i class="fas fa-edit"></i>
+				</a>
+				<a class="sdx-spell-btn sdx-create-macro" data-tooltip="${game.i18n.localize("SHADOWDARK_EXTRAS.macro.create_tooltip")}" title="${game.i18n.localize("SHADOWDARK_EXTRAS.macro.create_tooltip")}">
+					<i class="fas fa-scroll"></i>
 				</a>
 				<a class="sdx-spell-btn sdx-transfer-spell" data-tooltip="Transfer to Player" title="Transfer to Player">
 					<i class="fas fa-share"></i>
@@ -4481,10 +4553,10 @@ function enhanceSpellsTab(app, html, actor) {
 				</a>
 			</div>
 		`);
-		
+
 		// Insert actions after the item-name
 		$itemName.after($actions);
-		
+
 		// Edit button handler
 		$actions.find('.sdx-edit-spell').on('click', (e) => {
 			e.preventDefault();
@@ -4492,7 +4564,16 @@ function enhanceSpellsTab(app, html, actor) {
 			const item = actor.items.get(itemId);
 			if (item) item.sheet.render(true);
 		});
-		
+
+		// Create Macro button handler
+		$actions.find('.sdx-create-macro').on('click', async (e) => {
+			e.preventDefault();
+			e.stopPropagation();
+			const item = actor.items.get(itemId);
+			if (!item) return;
+			await createItemMacro(actor, item);
+		});
+
 		// Transfer button handler
 		$actions.find('.sdx-transfer-spell').on('click', async (e) => {
 			e.preventDefault();
@@ -4505,7 +4586,7 @@ function enhanceSpellsTab(app, html, actor) {
 					ui.notifications.warn(game.i18n.localize("SHADOWDARK_EXTRAS.notifications.no_active_players"));
 					return;
 				}
-				
+
 				const playerOptions = players.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
 				const content = `
 					<form>
@@ -4515,7 +4596,7 @@ function enhanceSpellsTab(app, html, actor) {
 						</div>
 					</form>
 				`;
-				
+
 				new Dialog({
 					title: game.i18n.localize("SHADOWDARK_EXTRAS.dialog.transfer_spell_title"),
 					content: content,
@@ -4527,12 +4608,12 @@ function enhanceSpellsTab(app, html, actor) {
 								const playerId = html.find('[name="playerId"]').val();
 								const player = game.users.get(playerId);
 								const targetActor = player?.character;
-								
+
 								if (!targetActor) {
 									ui.notifications.error(game.i18n.localize("SHADOWDARK_EXTRAS.notifications.no_character_assigned"));
 									return;
 								}
-								
+
 								const itemData = item.toObject();
 								await targetActor.createEmbeddedDocuments("Item", [itemData]);
 								await item.delete();
@@ -4551,24 +4632,171 @@ function enhanceSpellsTab(app, html, actor) {
 				}).render(true);
 			}
 		});
-		
+
 		// Delete button handler
 		$actions.find('.sdx-delete-spell').on('click', async (e) => {
 			e.preventDefault();
 			e.stopPropagation();
 			const item = actor.items.get(itemId);
 			if (!item) return;
-			
+
 			const confirmed = await Dialog.confirm({
 				title: game.i18n.localize("SHADOWDARK_EXTRAS.inventory.delete_spell_title"),
-				content: `<p>${game.i18n.format("SHADOWDARK_EXTRAS.inventory.delete_spell_text", {name: item.name})}</p>`
+				content: `<p>${game.i18n.format("SHADOWDARK_EXTRAS.inventory.delete_spell_text", { name: item.name })}</p>`
 			});
-			
+
 			if (confirmed) {
 				await item.delete();
 			}
 		});
 	});
+}
+
+/**
+ * Create a macro for a spell, wand, or scroll item
+ * For focus spells, asks the user if they want a Cast or Focus macro
+ * @param {Actor} actor - The actor that owns the item
+ * @param {Item} item - The spell/wand/scroll item
+ */
+async function createItemMacro(actor, item) {
+	const itemType = item.type;
+	const isFocusSpell = item.system?.duration?.type === "focus";
+	const actorId = actor.id;
+	const itemId = item.id;
+	const itemName = item.name;
+	const itemImg = item.img;
+
+	// Determine the action type based on item type
+	let actionType = "cast"; // default for Spell
+	if (itemType === "Wand") {
+		actionType = "wand";
+	} else if (itemType === "Scroll") {
+		actionType = "scroll";
+	}
+
+	// For focus spells, ask if they want Cast or Focus macro
+	if (isFocusSpell && itemType === "Spell") {
+		const choice = await new Promise((resolve) => {
+			new Dialog({
+				title: game.i18n.localize("SHADOWDARK_EXTRAS.macro.focus_choice_title"),
+				content: `<p>${game.i18n.format("SHADOWDARK_EXTRAS.macro.focus_choice_content", { name: itemName })}</p>`,
+				buttons: {
+					cast: {
+						icon: '<i class="fas fa-magic"></i>',
+						label: game.i18n.localize("SHADOWDARK_EXTRAS.macro.cast_spell"),
+						callback: () => resolve("cast")
+					},
+					focus: {
+						icon: '<i class="fas fa-brain"></i>',
+						label: game.i18n.localize("SHADOWDARK_EXTRAS.macro.focus_roll"),
+						callback: () => resolve("focus")
+					},
+					cancel: {
+						icon: '<i class="fas fa-times"></i>',
+						label: game.i18n.localize("SHADOWDARK_EXTRAS.dialog.cancel"),
+						callback: () => resolve(null)
+					}
+				},
+				default: "cast"
+			}).render(true);
+		});
+
+		if (!choice) return; // User cancelled
+		actionType = choice;
+	}
+
+	// Build the macro command based on action type
+	let command;
+	let macroName;
+
+	switch (actionType) {
+		case "cast":
+			command = `// Cast ${itemName}
+const actor = game.actors.get("${actorId}");
+if (!actor) {
+	ui.notifications.error("Actor not found!");
+	return;
+}
+const item = actor.items.get("${itemId}");
+if (!item) {
+	ui.notifications.error("Spell not found on actor!");
+	return;
+}
+actor.castSpell("${itemId}");`;
+			macroName = `${game.i18n.localize("SHADOWDARK_EXTRAS.macro.cast_prefix")} ${itemName}`;
+			break;
+
+		case "focus":
+			command = `// Focus Roll for ${itemName}
+const actor = game.actors.get("${actorId}");
+if (!actor) {
+	ui.notifications.error("Actor not found!");
+	return;
+}
+const item = actor.items.get("${itemId}");
+if (!item) {
+	ui.notifications.error("Spell not found on actor!");
+	return;
+}
+actor.castSpell("${itemId}", { isFocusRoll: true });`;
+			macroName = `${game.i18n.localize("SHADOWDARK_EXTRAS.macro.focus_prefix")} ${itemName}`;
+			break;
+
+		case "wand":
+			command = `// Use Wand: ${itemName}
+const actor = game.actors.get("${actorId}");
+if (!actor) {
+	ui.notifications.error("Actor not found!");
+	return;
+}
+const item = actor.items.get("${itemId}");
+if (!item) {
+	ui.notifications.error("Wand not found on actor!");
+	return;
+}
+actor.useWand("${itemId}");`;
+			macroName = `${game.i18n.localize("SHADOWDARK_EXTRAS.macro.wand_prefix")} ${itemName}`;
+			break;
+
+		case "scroll":
+			command = `// Use Scroll: ${itemName}
+const actor = game.actors.get("${actorId}");
+if (!actor) {
+	ui.notifications.error("Actor not found!");
+	return;
+}
+const item = actor.items.get("${itemId}");
+if (!item) {
+	ui.notifications.error("Scroll not found on actor!");
+	return;
+}
+actor.useScroll("${itemId}");`;
+			macroName = `${game.i18n.localize("SHADOWDARK_EXTRAS.macro.scroll_prefix")} ${itemName}`;
+			break;
+
+		default:
+			return;
+	}
+
+	// Create the macro
+	const macro = await Macro.create({
+		name: macroName,
+		type: "script",
+		scope: "global",
+		img: itemImg,
+		command: command,
+		flags: {
+			"shadowdark-extras": {
+				itemMacro: true,
+				actorId: actorId,
+				itemId: itemId,
+				itemType: itemType,
+				actionType: actionType
+			}
+		}
+	});
+
+	ui.notifications.info(game.i18n.format("SHADOWDARK_EXTRAS.macro.created", { name: macroName }));
 }
 
 // ============================================
@@ -4628,7 +4856,7 @@ async function injectEnhancedHeader(app, html, actor) {
 
 	// Clean up any existing enhanced content first (in case of re-render)
 	$header.find('.sdx-enhanced-content').remove();
-	
+
 	// Mark as enhanced
 	$header.addClass('sdx-enhanced-header');
 
@@ -4641,7 +4869,7 @@ async function injectEnhancedHeader(app, html, actor) {
 	const xpForNextLevel = getXpForNextLevel(level);
 	const xpPercent = xpForNextLevel > 0 ? Math.min(100, (xp / xpForNextLevel) * 100) : 0;
 	const levelUp = xp >= xpForNextLevel;
-	
+
 	// Check if pulp mode is enabled
 	const usePulpMode = game.settings.get("shadowdark", "usePulpMode");
 	const luck = usePulpMode ? (sys.luck?.remaining ?? 0) : (sys.luck?.available ?? false);
@@ -4650,7 +4878,7 @@ async function injectEnhancedHeader(app, html, actor) {
 	let ancestryName = '';
 	let className = '';
 	let backgroundName = '';
-	
+
 	try {
 		if (sys.ancestry) {
 			const ancestryItem = await fromUuid(sys.ancestry);
@@ -4690,7 +4918,7 @@ async function injectEnhancedHeader(app, html, actor) {
 		const total = base + bonus;
 		const mod = ab.mod ?? Math.floor((total - 10) / 2);
 		const modSign = mod >= 0 ? '+' : '';
-		
+
 		abilitiesHtml += `
 			<div class="sdx-ability" data-ability="${key}" data-tooltip="${key.toUpperCase()}">
 				<div class="sdx-ability-label">${key.toUpperCase()}</div>
@@ -4791,10 +5019,10 @@ async function injectEnhancedHeader(app, html, actor) {
 			<div class="sdx-header-right">
 				${luckHtml}
 				<div class="sdx-level-container ${levelUp ? 'can-level-up' : ''}" data-tooltip="${levelUp ? 'Ready to Level Up!' : 'Level'}">
-					${levelUp 
-						? '<i class="fas fa-arrow-up fa-beat"></i>' 
-						: `<div class="sdx-level-value">${level}</div><div class="sdx-level-label">LVL</div>`
-					}
+					${levelUp
+			? '<i class="fas fa-arrow-up fa-beat"></i>'
+			: `<div class="sdx-level-value">${level}</div><div class="sdx-level-label">LVL</div>`
+		}
 				</div>
 			</div>
 		</div>
@@ -4804,7 +5032,7 @@ async function injectEnhancedHeader(app, html, actor) {
 	const $portrait = $header.find('.portrait');
 	const $logo = $header.find('.shadowdark-logo');
 	const $title = $header.find('.SD-title');
-	
+
 	// Hide original elements
 	$portrait.hide();
 	$logo.hide();
@@ -4821,7 +5049,7 @@ async function injectEnhancedHeader(app, html, actor) {
 	$enhancedContent.find('.sdx-portrait').on('click', async (e) => {
 		if (!actor.isOwner) return;
 		e.stopPropagation();
-		
+
 		// If shift is held, open the default file picker
 		if (e.shiftKey) {
 			const fp = new FilePicker({
@@ -4833,7 +5061,7 @@ async function injectEnhancedHeader(app, html, actor) {
 			});
 			return fp.browse();
 		}
-		
+
 		// Check if vtta-tokenizer module is active and available
 		if (!window.Tokenizer && !game.modules.get("vtta-tokenizer")?.active) {
 			// No tokenizer available, fall back to file picker
@@ -4846,7 +5074,7 @@ async function injectEnhancedHeader(app, html, actor) {
 			});
 			return fp.browse();
 		}
-		
+
 		try {
 			// Use tokenizeActor for direct tokenization, or launch for UI
 			if (window.Tokenizer?.tokenizeActor) {
@@ -4883,20 +5111,20 @@ async function injectEnhancedHeader(app, html, actor) {
 	$enhancedContent.find('.sdx-hp-bar-container').on('click', async (e) => {
 		if (!actor.isOwner) return;
 		e.stopPropagation();
-		
+
 		const $hpValue = $enhancedContent.find('.sdx-hp-value');
 		const currentHp = hp.value;
-		
+
 		// Create inline input
 		const $input = $(`<input type="number" class="sdx-hp-input" value="${currentHp}" min="0" max="${hp.max}" />`);
 		$hpValue.replaceWith($input);
 		$input.focus().select();
-		
+
 		const saveHp = async () => {
 			const newHp = Math.max(0, Math.min(hp.max, parseInt($input.val()) || 0));
 			await actor.update({ "system.attributes.hp.value": newHp });
 		};
-		
+
 		$input.on('blur', saveHp);
 		$input.on('keydown', (e) => {
 			if (e.key === 'Enter') {
@@ -4911,26 +5139,26 @@ async function injectEnhancedHeader(app, html, actor) {
 
 	// Luck interaction - toggle or edit based on mode
 	const $luckContainer = $enhancedContent.find('.sdx-luck-container');
-	
+
 	if (usePulpMode) {
 		// Pulp mode: click to edit the number
 		$luckContainer.on('click', async (e) => {
 			if (!actor.isOwner) return;
 			e.stopPropagation();
-			
+
 			const $luckValue = $luckContainer.find('.sdx-luck-value');
 			const currentLuck = sys.luck?.remaining ?? 0;
-			
+
 			// Create inline input
 			const $input = $(`<input type="number" class="sdx-luck-input" value="${currentLuck}" min="0" />`);
 			$luckValue.replaceWith($input);
 			$input.focus().select();
-			
+
 			const saveLuck = async () => {
 				const newLuck = Math.max(0, parseInt($input.val()) || 0);
 				await actor.update({ "system.luck.remaining": newLuck });
 			};
-			
+
 			$input.on('blur', saveLuck);
 			$input.on('keydown', (e) => {
 				if (e.key === 'Enter') {
@@ -4951,7 +5179,7 @@ async function injectEnhancedHeader(app, html, actor) {
 	}
 
 	// Actor name change
-	$enhancedContent.find('.sdx-actor-name').on('change', async function() {
+	$enhancedContent.find('.sdx-actor-name').on('change', async function () {
 		if (!actor.isOwner) return;
 		const newName = $(this).val().trim();
 		if (newName && newName !== actor.name) {
@@ -4964,7 +5192,7 @@ async function injectEnhancedHeader(app, html, actor) {
 		if (!actor.isOwner) return;
 		e.stopPropagation();
 		e.preventDefault();
-		
+
 		// Check if this is level 0 advancing
 		let actorClass = null;
 		try {
@@ -4974,7 +5202,7 @@ async function injectEnhancedHeader(app, html, actor) {
 		} catch (err) {
 			console.warn("shadowdark-extras | Could not fetch actor class:", err);
 		}
-		
+
 		// Level 0 -> Level 1 uses Character Generator
 		if (level === 0 && actorClass?.name?.includes("Level 0")) {
 			new shadowdark.apps.CharacterGeneratorSD(actor._id).render(true);
@@ -4985,7 +5213,7 @@ async function injectEnhancedHeader(app, html, actor) {
 	});
 
 	// Ability rolls on click
-	$enhancedContent.find('.sdx-ability').on('click', async function() {
+	$enhancedContent.find('.sdx-ability').on('click', async function () {
 		const ability = $(this).data('ability');
 		if (actor.rollAbility) {
 			actor.rollAbility(ability);
@@ -4999,7 +5227,7 @@ async function injectEnhancedHeader(app, html, actor) {
 			const combatant = game.combat.combatants.find(c => c.actorId === actor.id);
 			if (combatant) {
 				// Roll initiative for combat
-				await game.combat.rollInitiative(combatant.id, {updateTurn: false});
+				await game.combat.rollInitiative(combatant.id, { updateTurn: false });
 				return;
 			}
 		}
@@ -5028,30 +5256,30 @@ function getXpForNextLevel(currentLevel) {
 function injectHeaderCustomization(app, html, actor) {
 	const $header = html.find('.SD-header').first();
 	if (!$header.length) return;
-	
+
 	// Clean up any existing elements first (in case of re-render)
 	$header.find('.sdx-header-settings-btn').remove();
 	$header.find('.sdx-header-settings-menu').remove();
-	
+
 	// Apply any existing custom backgrounds
 	applyHeaderBackground(html, actor);
-	
+
 	// Check if user can edit this actor (GM or owner)
 	const canEdit = game.user.isGM || actor.isOwner;
 	if (!canEdit) {
 		return;
 	}
-	
+
 	// Make header position relative for absolute positioned children
 	$header.css('position', 'relative');
-	
+
 	// Create the settings button
 	const $settingsBtn = $(`
 		<button type="button" class="sdx-header-settings-btn" data-tooltip="${game.i18n.localize("SHADOWDARK_EXTRAS.header.customize_tooltip") || "Customize Header"}">
 			<i class="fas fa-cog"></i>
 		</button>
 	`);
-	
+
 	// Create the settings menu with header background option
 	const $settingsMenu = $(`
 		<div class="sdx-header-settings-menu">
@@ -5068,16 +5296,16 @@ function injectHeaderCustomization(app, html, actor) {
 			</div>
 		</div>
 	`);
-	
+
 	$header.append($settingsBtn);
 	$header.append($settingsMenu);
-	
+
 	// Use a unique namespace for this app instance to avoid conflicts
 	const eventNS = `.sdxHeaderMenu${app.appId}`;
-	
+
 	// Clean up any existing handlers first (in case of re-render)
 	$(document).off(eventNS);
-	
+
 	// Toggle menu visibility
 	$settingsBtn.on('click', (event) => {
 		event.preventDefault();
@@ -5085,7 +5313,7 @@ function injectHeaderCustomization(app, html, actor) {
 		$settingsBtn.toggleClass('active');
 		$settingsMenu.toggleClass('visible');
 	});
-	
+
 	// Close menu when clicking outside
 	$(document).on(`click${eventNS}`, (event) => {
 		if (!$(event.target).closest('.sdx-header-settings-btn, .sdx-header-settings-menu').length) {
@@ -5093,16 +5321,16 @@ function injectHeaderCustomization(app, html, actor) {
 			$settingsMenu.removeClass('visible');
 		}
 	});
-	
+
 	// Handle select image button
 	$settingsMenu.find('.sdx-header-select-image').on('click', async (event) => {
 		event.preventDefault();
 		event.stopPropagation();
-		
+
 		// Close the menu
 		$settingsBtn.removeClass('active');
 		$settingsMenu.removeClass('visible');
-		
+
 		// Open file picker - use imagevideo to allow webm files
 		const currentImage = actor.getFlag(MODULE_ID, "headerBackground") || "";
 		const fp = new FilePicker({
@@ -5116,19 +5344,19 @@ function injectHeaderCustomization(app, html, actor) {
 		});
 		fp.render(true);
 	});
-	
+
 	// Handle remove image button
 	$settingsMenu.find('.sdx-header-remove-image').on('click', async (event) => {
 		event.preventDefault();
 		event.stopPropagation();
-		
+
 		// Close the menu
 		$settingsBtn.removeClass('active');
 		$settingsMenu.removeClass('visible');
-		
+
 		// Remove the custom background
 		await actor.unsetFlag(MODULE_ID, "headerBackground");
-		
+
 		// Force sheet re-render
 		app.render(false);
 	});
@@ -5140,49 +5368,60 @@ function injectHeaderCustomization(app, html, actor) {
  * Extends background to cover header and navigation tabs only
  */
 function applyHeaderBackground(html, actor) {
-	const headerBg = actor.getFlag(MODULE_ID, "headerBackground");
-	
+	// Get actor-specific background first
+	let headerBg = actor.getFlag(MODULE_ID, "headerBackground");
+	let isDefaultBg = false;
+
+	// If no actor-specific background, check for default background
+	if (!headerBg) {
+		const enableDefaultBg = game.settings.get(MODULE_ID, "enableDefaultHeaderBg");
+		const defaultBgPath = game.settings.get(MODULE_ID, "defaultHeaderBgPath");
+		if (enableDefaultBg && defaultBgPath) {
+			headerBg = defaultBgPath;
+			isDefaultBg = true;
+		}
+	}
 	// Find the form - html might BE the form or contain it
 	let $form = html.is('form') ? html : html.find('form').first();
 	if (!$form.length) $form = html.closest('form');
 	if (!$form.length) return;
-	
+
 	const $header = $form.find('.SD-header').first();
 	const $nav = $form.find('.SD-nav').first();
-	
+
 	if (!$header.length) return;
-	
+
 	// Remove any existing background extension
 	$form.find('.sdx-header-bg-extension').remove();
-	
+
 	if (!headerBg) {
 		$header.removeClass('sdx-custom-header');
 		$header.css('background-image', '');
 		return;
 	}
-	
+
 	$header.addClass('sdx-custom-header');
-	
+
 	// Calculate the height needed to cover header + nav (including margins, padding, borders)
 	const updateBgHeight = () => {
 		const headerRect = $header[0]?.getBoundingClientRect();
 		const navRect = $nav[0]?.getBoundingClientRect();
 		const formRect = $form[0]?.getBoundingClientRect();
-		
+
 		if (!headerRect || !navRect || !formRect) return;
-		
+
 		// Calculate from the top of header to the bottom of nav, relative to form
 		// Add extra padding to ensure it covers the full nav including border-bottom
 		const totalHeight = (navRect.bottom - formRect.top) + 50;
 		$form.find('.sdx-header-bg-extension').css('height', totalHeight + 'px');
 	};
-	
+
 	// Check if it's a video file
 	const isVideo = /\.(mp4|webm|ogg)$/i.test(headerBg);
-	
+
 	// Create the background extension element
 	const $bgExtension = $('<div class="sdx-header-bg-extension"></div>');
-	
+
 	if (isVideo) {
 		const videoType = headerBg.split('.').pop().toLowerCase();
 		const $video = $(`
@@ -5194,10 +5433,10 @@ function applyHeaderBackground(html, actor) {
 	} else {
 		$bgExtension.css('background-image', `url("${headerBg}")`);
 	}
-	
+
 	// Insert at the beginning of the form
 	$form.prepend($bgExtension);
-	
+
 	// Update height now and after a short delay (for rendering)
 	updateBgHeight();
 	setTimeout(updateBgHeight, 100);
@@ -5211,30 +5450,30 @@ function applyHeaderBackground(html, actor) {
 function injectPartyHeaderCustomization(app, html, actor) {
 	const $header = html.find('.party-header.SD-header').first();
 	if (!$header.length) return;
-	
+
 	// Clean up any existing elements first (in case of re-render)
 	$header.find('.sdx-header-settings-btn').remove();
 	$header.find('.sdx-header-settings-menu').remove();
-	
+
 	// Apply any existing custom backgrounds
 	applyPartyHeaderBackground(html, actor);
-	
+
 	// Check if user can edit this actor (GM or owner)
 	const canEdit = game.user.isGM || actor.isOwner;
 	if (!canEdit) {
 		return;
 	}
-	
+
 	// Make header position relative for absolute positioned children
 	$header.css('position', 'relative');
-	
+
 	// Create the settings button
 	const $settingsBtn = $(`
 		<button type="button" class="sdx-header-settings-btn" data-tooltip="${game.i18n.localize("SHADOWDARK_EXTRAS.header.customize_tooltip") || "Customize Header"}">
 			<i class="fas fa-cog"></i>
 		</button>
 	`);
-	
+
 	// Create the settings menu with header background option
 	const $settingsMenu = $(`
 		<div class="sdx-header-settings-menu">
@@ -5251,16 +5490,16 @@ function injectPartyHeaderCustomization(app, html, actor) {
 			</div>
 		</div>
 	`);
-	
+
 	$header.append($settingsBtn);
 	$header.append($settingsMenu);
-	
+
 	// Use a unique namespace for this app instance to avoid conflicts
 	const eventNS = `.sdxPartyHeaderMenu${app.appId}`;
-	
+
 	// Clean up any existing handlers first (in case of re-render)
 	$(document).off(eventNS);
-	
+
 	// Toggle menu visibility
 	$settingsBtn.on('click', (event) => {
 		event.preventDefault();
@@ -5268,7 +5507,7 @@ function injectPartyHeaderCustomization(app, html, actor) {
 		$settingsBtn.toggleClass('active');
 		$settingsMenu.toggleClass('visible');
 	});
-	
+
 	// Close menu when clicking outside
 	$(document).on(`click${eventNS}`, (event) => {
 		if (!$(event.target).closest('.sdx-header-settings-btn, .sdx-header-settings-menu').length) {
@@ -5276,16 +5515,16 @@ function injectPartyHeaderCustomization(app, html, actor) {
 			$settingsMenu.removeClass('visible');
 		}
 	});
-	
+
 	// Handle select image button
 	$settingsMenu.find('.sdx-header-select-image').on('click', async (event) => {
 		event.preventDefault();
 		event.stopPropagation();
-		
+
 		// Close the menu
 		$settingsBtn.removeClass('active');
 		$settingsMenu.removeClass('visible');
-		
+
 		// Open file picker - use imagevideo to allow webm files
 		const currentImage = actor.getFlag(MODULE_ID, "partyHeaderBackground") || "";
 		const fp = new FilePicker({
@@ -5299,23 +5538,23 @@ function injectPartyHeaderCustomization(app, html, actor) {
 		});
 		fp.render(true);
 	});
-	
+
 	// Handle remove image button
 	$settingsMenu.find('.sdx-header-remove-image').on('click', async (event) => {
 		event.preventDefault();
 		event.stopPropagation();
-		
+
 		// Close the menu
 		$settingsBtn.removeClass('active');
 		$settingsMenu.removeClass('visible');
-		
+
 		// Remove the custom background
 		await actor.unsetFlag(MODULE_ID, "partyHeaderBackground");
-		
+
 		// Force sheet re-render
 		app.render(false);
 	});
-	
+
 	// Portrait click to launch tokenizer (if vtta-tokenizer module is active)
 	// Hold Shift to open the default Foundry file picker instead
 	const $portrait = $header.find('.party-portrait');
@@ -5323,7 +5562,7 @@ function injectPartyHeaderCustomization(app, html, actor) {
 		if (!actor.isOwner && !game.user.isGM) return;
 		e.preventDefault();
 		e.stopPropagation();
-		
+
 		// If shift is held, open the default file picker
 		if (e.shiftKey) {
 			const fp = new FilePicker({
@@ -5335,7 +5574,7 @@ function injectPartyHeaderCustomization(app, html, actor) {
 			});
 			return fp.browse();
 		}
-		
+
 		// Check if vtta-tokenizer module is active and available
 		if (!window.Tokenizer && !game.modules.get("vtta-tokenizer")?.active) {
 			// No tokenizer available, fall back to file picker
@@ -5348,7 +5587,7 @@ function injectPartyHeaderCustomization(app, html, actor) {
 			});
 			return fp.browse();
 		}
-		
+
 		try {
 			// Use tokenizeActor for direct tokenization, or launch for UI
 			if (window.Tokenizer?.tokenizeActor) {
@@ -5387,48 +5626,60 @@ function injectPartyHeaderCustomization(app, html, actor) {
  * Supports both images and videos (mp4, webm)
  */
 function applyPartyHeaderBackground(html, actor) {
-	const headerBg = actor.getFlag(MODULE_ID, "partyHeaderBackground");
-	
+	// Get party-specific background first
+	let headerBg = actor.getFlag(MODULE_ID, "partyHeaderBackground");
+	let isDefaultBg = false;
+
+	// If no party-specific background, check for default background
+	if (!headerBg) {
+		const enableDefaultBg = game.settings.get(MODULE_ID, "enableDefaultHeaderBg");
+		const defaultBgPath = game.settings.get(MODULE_ID, "defaultHeaderBgPath");
+		if (enableDefaultBg && defaultBgPath) {
+			headerBg = defaultBgPath;
+			isDefaultBg = true;
+		}
+	}
+
 	// Find the form - html might BE the form or contain it
 	let $form = html.is('form') ? html : html.find('form').first();
 	if (!$form.length) $form = html.closest('form');
 	if (!$form.length) return;
-	
+
 	const $header = $form.find('.party-header.SD-header').first();
 	const $nav = $form.find('.SD-nav').first();
-	
+
 	if (!$header.length) return;
-	
+
 	// Remove any existing background extension
 	$form.find('.sdx-party-header-bg-extension').remove();
-	
+
 	if (!headerBg) {
 		$header.removeClass('sdx-custom-party-header');
 		return;
 	}
-	
+
 	$header.addClass('sdx-custom-party-header');
-	
+
 	// Calculate the height needed to cover header + nav
 	const updateBgHeight = () => {
 		const headerRect = $header[0]?.getBoundingClientRect();
 		const navRect = $nav[0]?.getBoundingClientRect();
 		const formRect = $form[0]?.getBoundingClientRect();
-		
+
 		if (!headerRect || !navRect || !formRect) return;
-		
+
 		// Calculate from the top of header to the bottom of nav, relative to form
 		// Add extra padding to ensure background covers full tab area
 		const totalHeight = (navRect.bottom - formRect.top) + 30;
 		$form.find('.sdx-party-header-bg-extension').css('height', totalHeight + 'px');
 	};
-	
+
 	// Check if it's a video file
 	const isVideo = /\.(mp4|webm|ogg)$/i.test(headerBg);
-	
+
 	// Create the background extension element
 	const $bgExtension = $('<div class="sdx-party-header-bg-extension"></div>');
-	
+
 	if (isVideo) {
 		const videoType = headerBg.split('.').pop().toLowerCase();
 		const $video = $(`
@@ -5440,10 +5691,10 @@ function applyPartyHeaderBackground(html, actor) {
 	} else {
 		$bgExtension.css('background-image', `url("${headerBg}")`);
 	}
-	
+
 	// Insert at the beginning of the form
 	$form.prepend($bgExtension);
-	
+
 	// Update height now and after a short delay (for rendering)
 	updateBgHeight();
 	setTimeout(updateBgHeight, 100);
@@ -5464,24 +5715,24 @@ function injectAddCoinsButton(html, actor) {
 
 	// Only show if user owns the actor or is GM
 	if (!actor.isOwner && !game.user?.isGM) return;
-	
+
 	// Find the coins box in the inventory sidebar
 	// The coins box has a header with label "COINS" and an empty span
 	const coinsBox = html.find('.tab-inventory .SD-box').filter((_, el) => {
 		const label = $(el).find('.header label').text().trim().toLowerCase();
 		return label.includes('coin');
 	});
-	
+
 	if (coinsBox.length === 0) return;
-	
+
 	// Find the empty span in the header and add the + button
 	const headerSpan = coinsBox.find('.header span').first();
 	if (headerSpan.length === 0) return;
-	
+
 	// Add the + button
 	const addBtnHtml = `<a class="sdx-add-coins-btn" data-action="add-coins" data-tooltip="${game.i18n.localize("SHADOWDARK_EXTRAS.party.add_coins_title")}"><i class="fas fa-plus"></i></a>`;
 	headerSpan.html(addBtnHtml);
-	
+
 	// Attach click handler
 	coinsBox.find('[data-action="add-coins"]').on("click", async (event) => {
 		event.preventDefault();
@@ -5497,7 +5748,7 @@ async function showAddCoinsDialog(actor) {
 	const gpLabel = game.i18n.localize("SHADOWDARK_EXTRAS.party.coin_gp");
 	const spLabel = game.i18n.localize("SHADOWDARK_EXTRAS.party.coin_sp");
 	const cpLabel = game.i18n.localize("SHADOWDARK_EXTRAS.party.coin_cp");
-	
+
 	const content = `
 		<form class="add-coins-form">
 			<p>${game.i18n.localize("SHADOWDARK_EXTRAS.party.add_coins_prompt")}</p>
@@ -5515,7 +5766,7 @@ async function showAddCoinsDialog(actor) {
 			</div>
 		</form>
 	`;
-	
+
 	const result = await Dialog.prompt({
 		title: game.i18n.localize("SHADOWDARK_EXTRAS.party.add_coins_title"),
 		content: content,
@@ -5529,30 +5780,30 @@ async function showAddCoinsDialog(actor) {
 		},
 		rejectClose: false
 	});
-	
+
 	if (!result) return;
-	
+
 	const { gp, sp, cp } = result;
 	if (gp === 0 && sp === 0 && cp === 0) return;
-	
+
 	// Get current coins and add the new amounts
 	const currentCoins = actor.system.coins || { gp: 0, sp: 0, cp: 0 };
 	const newGp = Math.max(0, (parseInt(currentCoins.gp) || 0) + gp);
 	const newSp = Math.max(0, (parseInt(currentCoins.sp) || 0) + sp);
 	const newCp = Math.max(0, (parseInt(currentCoins.cp) || 0) + cp);
-	
+
 	await actor.update({
 		"system.coins.gp": newGp,
 		"system.coins.sp": newSp,
 		"system.coins.cp": newCp
 	});
-	
+
 	// Build notification message
 	const parts = [];
 	if (gp !== 0) parts.push(`${gp > 0 ? '+' : ''}${gp} ${gpLabel}`);
 	if (sp !== 0) parts.push(`${sp > 0 ? '+' : ''}${sp} ${spLabel}`);
 	if (cp !== 0) parts.push(`${cp > 0 ? '+' : ''}${cp} ${cpLabel}`);
-	
+
 	ui.notifications.info(
 		game.i18n.format("SHADOWDARK_EXTRAS.coins_updated", { coins: parts.join(", ") })
 	);
@@ -5564,21 +5815,21 @@ function injectTradeButton(html, actor) {
 
 	// Only show if user owns the actor
 	if (!actor.isOwner) return;
-	
+
 	// Check if there are other player characters available with DIFFERENT online owners
 	const otherPlayers = game.actors.filter(a => {
 		if (a.type !== "Player" || a.id === actor.id) return false;
 		return game.users.some(u => a.testUserPermission(u, "OWNER") && u.id !== game.user.id && u.active);
 	});
-	
+
 	// Don't show button if no one to trade with
 	if (otherPlayers.length === 0) return;
-	
+
 	// Find the Gems section in the inventory sidebar
 	const gemsSection = html.find('.tab-inventory .SD-box:has([data-action="open-gem-bag"])');
-	
+
 	if (gemsSection.length === 0) return;
-	
+
 	// Create trade button HTML
 	const tradeButtonHtml = `
 		<div class="SD-box shadowdark-extras-trade-button">
@@ -5588,10 +5839,10 @@ function injectTradeButton(html, actor) {
 			</button>
 		</div>
 	`;
-	
+
 	// Insert after Gems section
 	gemsSection.after(tradeButtonHtml);
-	
+
 	// Attach click handler
 	html.find('.trade-btn[data-action="open-trade"]').on("click", async (event) => {
 		event.preventDefault();
@@ -5610,23 +5861,23 @@ function prepareNpcInventory(actor) {
 	const inventory = [];
 	const treasure = [];
 	let slotsUsed = 0;
-	
+
 	for (const item of actor.items) {
 		if (!NPC_INVENTORY_TYPES.includes(item.type)) continue;
 		if (!item.system.isPhysical) continue;
-		
+
 		const itemData = item.toObject();
 		itemData.uuid = `Actor.${actor._id}.Item.${item._id}`;
 		const itemSlots = calculateSlotsCostForItemData(itemData);
 		if (Number.isFinite(itemSlots)) {
 			slotsUsed += Math.max(0, itemSlots);
 		}
-		
+
 		// Check if item should show quantity
-		itemData.showQuantity = item.system.isAmmunition || 
-			(item.system.slots?.per_slot > 1) || 
+		itemData.showQuantity = item.system.isAmmunition ||
+			(item.system.slots?.per_slot > 1) ||
 			item.system.quantity > 1;
-		
+
 		// Sort treasure items separately
 		if (item.system.treasure) {
 			treasure.push(itemData);
@@ -5634,11 +5885,11 @@ function prepareNpcInventory(actor) {
 			inventory.push(itemData);
 		}
 	}
-	
+
 	// Sort alphabetically
 	inventory.sort((a, b) => a.name.localeCompare(b.name));
 	treasure.sort((a, b) => a.name.localeCompare(b.name));
-	
+
 	return { inventory, treasure, slotsUsed };
 }
 
@@ -5661,26 +5912,133 @@ function calculateNpcCoinSlots(coins) {
 	return Math.max(0, Math.floor(totalGpValue / 100));
 }
 
+// ============================================
+// NPC CREATURE TYPE DROPDOWN
+// ============================================
+
+/**
+ * Standard D&D creature types that can be assigned to NPCs
+ */
+const CREATURE_TYPES = [
+	"",            // None/Unset
+	"Aberration",
+	"Beast",
+	"Celestial",
+	"Construct",
+	"Dragon",
+	"Elemental",
+	"Fey",
+	"Fiend",
+	"Giant",
+	"Humanoid",
+	"Monstrosity",
+	"Ooze",
+	"Plant",
+	"Undead"
+];
+
+/**
+ * Inject the creature type dropdown into NPC sheets
+ * @param {Application} app - The NPC sheet application
+ * @param {jQuery|HTMLElement} html - The rendered HTML
+ * @param {Actor} actor - The NPC actor
+ */
+function injectNpcCreatureType(app, html, actor) {
+	console.log(`${MODULE_ID} | injectNpcCreatureType called for ${actor.name}`);
+
+	// Check if feature is enabled
+	try {
+		const enabled = game.settings.get(MODULE_ID, "enableNpcCreatureType");
+		console.log(`${MODULE_ID} | enableNpcCreatureType setting: ${enabled}`);
+		if (!enabled) return;
+	} catch (e) {
+		console.warn(`${MODULE_ID} | Setting enableNpcCreatureType not registered or failed`, e);
+		return;
+	}
+
+	// Only for GM
+	if (!game.user?.isGM) return;
+
+	// Handle both plain DOM element and jQuery object (for V13 compatibility)
+	const $html = html instanceof HTMLElement ? $(html) : html;
+	const currentType = actor.getFlag(MODULE_ID, "creatureType") || "";
+
+	console.log(`${MODULE_ID} | Current creature type: "${currentType}"`);
+
+	// Build the options HTML
+	const optionsHtml = CREATURE_TYPES.map(type => {
+		const selected = type === currentType ? "selected" : "";
+		const label = type || game.i18n.localize("SHADOWDARK_EXTRAS.npc.creature_type.none");
+		return `<option value="${type}" ${selected}>${label}</option>`;
+	}).join("");
+
+	// Create the creature type box HTML
+	const creatureTypeHtml = `
+		<div class="SD-box sdx-creature-type-box">
+			<div class="header">
+				<label>${game.i18n.localize("SHADOWDARK_EXTRAS.npc.creature_type.label")}</label>
+			</div>
+			<div class="content">
+				<select class="sdx-creature-type-select" name="flags.${MODULE_ID}.creatureType">
+					${optionsHtml}
+				</select>
+			</div>
+		</div>
+	`;
+
+	// Find the attacks box (first SD-box in grid-1-columns on the right side)
+	const $gridRight = $html.find('.grid-1-columns');
+	console.log(`${MODULE_ID} | Found ${$gridRight.length} elements with .grid-1-columns`);
+
+	const $attacksBox = $gridRight.find('.SD-box').first();
+	console.log(`${MODULE_ID} | Found ${$attacksBox.length} potential attack boxes`);
+
+	if ($attacksBox.length) {
+		// Insert before the attacks box
+		$attacksBox.before(creatureTypeHtml);
+		console.log(`${MODULE_ID} | Injected creature type box`);
+
+		// Attach change handler
+		$html.find('.sdx-creature-type-select').on('change', async function (e) {
+			const newType = $(this).val();
+			console.log(`${MODULE_ID} | Changing creature type to: ${newType}`);
+			await actor.setFlag(MODULE_ID, "creatureType", newType);
+			ui.notifications.info(game.i18n.format("SHADOWDARK_EXTRAS.npc.creature_type.updated", {
+				name: actor.name,
+				type: newType || game.i18n.localize("SHADOWDARK_EXTRAS.npc.creature_type.none")
+			}));
+		});
+	} else {
+		console.warn(`${MODULE_ID} | Could not find attacks box to insert creature type box`);
+		// Fallback: try to find any SD-box in the main content
+		const $anyBox = $html.find('.SD-box').first();
+		if ($anyBox.length) {
+			$anyBox.before(creatureTypeHtml);
+			console.log(`${MODULE_ID} | Injected creature type box using fallback`);
+		}
+	}
+}
+
 /**
  * Inject the inventory tab into NPC sheets
  */
 async function injectNpcInventoryTab(app, html, data) {
 	const actor = app.actor;
-	
+
 	// Add the inventory tab to navigation (after Abilities)
 	const nav = html.find('.SD-nav');
 	const abilitiesTab = nav.find('a[data-tab="tab-abilities"]');
-	
+
 	const inventoryTabHtml = `<a class="navigation-tab" data-tab="tab-inventory">${game.i18n.localize("SHADOWDARK_EXTRAS.sheet.npc.tab.inventory")}</a>`;
 	abilitiesTab.after(inventoryTabHtml);
-	
+
 	// Prepare inventory data
 	const { inventory, treasure, slotsUsed } = prepareNpcInventory(actor);
 	const coins = getNpcCoins(actor);
 	const coinSlots = calculateNpcCoinSlots(coins);
 	const safeItemSlots = Math.max(0, Number.isFinite(slotsUsed) ? slotsUsed : 0);
 	const totalSlotsUsed = safeItemSlots + coinSlots;
-	
+
 	// Load and render the template
 	const templatePath = `modules/${MODULE_ID}/templates/npc-inventory.hbs`;
 	const templateData = {
@@ -5692,46 +6050,46 @@ async function injectNpcInventoryTab(app, html, data) {
 		npcCoinSlots: coinSlots,
 		owner: actor.isOwner
 	};
-	
+
 	const inventoryHtml = await renderTemplate(templatePath, templateData);
-	
+
 	// Insert after the abilities tab content
 	const contentBody = html.find('.SD-content-body');
 	const abilitiesSection = contentBody.find('.tab[data-tab="tab-abilities"]');
 	abilitiesSection.after(inventoryHtml);
-	
+
 	// Get the newly added inventory tab button
 	const inventoryTabBtn = nav.find('.navigation-tab[data-tab="tab-inventory"]');
 	const inventoryContent = contentBody.find('.tab[data-tab="tab-inventory"]');
-	
+
 	// Handle inventory tab click manually since it's not part of the system's tab handler
 	inventoryTabBtn.click((event) => {
 		event.preventDefault();
 		event.stopPropagation();
-		
+
 		// Remove active from all tabs and content
 		nav.find('.navigation-tab').removeClass('active');
 		contentBody.find('.tab').removeClass('active');
-		
+
 		// Activate inventory tab
 		inventoryTabBtn.addClass('active');
 		inventoryContent.addClass('active');
-		
+
 		// Update the system's tab controller to know we're on a custom tab
 		// This prevents it from thinking abilities is still active
 		if (app._tabs?.[0]) {
 			app._tabs[0].active = "tab-inventory";
 		}
-		
+
 		// Track that inventory is active
 		npcActiveTabTracker.set(actor.id, "tab-inventory");
 	});
-	
+
 	// Track when OTHER tabs are clicked (to clear our inventory tracking)
 	nav.find('.navigation-tab:not([data-tab="tab-inventory"])').click(() => {
 		npcActiveTabTracker.set(actor.id, null);
 	});
-	
+
 	// Restore the inventory tab if it was previously active
 	const lastActiveTab = npcActiveTabTracker.get(actor.id);
 	if (lastActiveTab === "tab-inventory") {
@@ -5740,13 +6098,13 @@ async function injectNpcInventoryTab(app, html, data) {
 		inventoryTabBtn.addClass('active');
 		contentBody.find('.tab').removeClass('active');
 		inventoryContent.addClass('active');
-		
+
 		// Update the system's tab controller
 		if (app._tabs?.[0]) {
 			app._tabs[0].active = "tab-inventory";
 		}
 	}
-	
+
 	// Activate inventory tab listeners
 	activateNpcInventoryListeners(html, actor);
 }
@@ -5765,7 +6123,7 @@ function activateNpcInventoryListeners(html, actor) {
 		};
 		await actor.createEmbeddedDocuments("Item", [itemData]);
 	});
-	
+
 	// Increment item quantity
 	html.find('[data-action="npc-item-increment"]').click(async (event) => {
 		event.preventDefault();
@@ -5773,10 +6131,10 @@ function activateNpcInventoryListeners(html, actor) {
 		const item = actor.items.get(itemId);
 		if (item) {
 			const newQty = (item.system.quantity || 1) + 1;
-			await item.update({"system.quantity": newQty});
+			await item.update({ "system.quantity": newQty });
 		}
 	});
-	
+
 	// Decrement item quantity
 	html.find('[data-action="npc-item-decrement"]').click(async (event) => {
 		event.preventDefault();
@@ -5784,21 +6142,21 @@ function activateNpcInventoryListeners(html, actor) {
 		const item = actor.items.get(itemId);
 		if (item && item.system.quantity > 1) {
 			const newQty = item.system.quantity - 1;
-			await item.update({"system.quantity": newQty});
+			await item.update({ "system.quantity": newQty });
 		}
 	});
-	
+
 	// Make items draggable
 	html.find('.npc-item-list .item[draggable="true"]').each((i, li) => {
 		li.addEventListener('dragstart', (event) => {
 			const uuid = li.dataset.uuid;
 			if (!uuid) return;
-			
+
 			const dragData = {
 				type: "Item",
 				uuid: uuid
 			};
-			
+
 			event.dataTransfer.setData("text/plain", JSON.stringify(dragData));
 		});
 	});
@@ -5823,7 +6181,7 @@ function patchToggleItemDetailsForUnidentified() {
 
 	const originalToggleItemDetails = shadowdark.utils.toggleItemDetails.bind(shadowdark.utils);
 
-	shadowdark.utils.toggleItemDetails = async function(target) {
+	shadowdark.utils.toggleItemDetails = async function (target) {
 		const listObj = $(target).parent();
 
 		// If collapsing, just use original behavior
@@ -5843,7 +6201,7 @@ function patchToggleItemDetailsForUnidentified() {
 		// For unidentified items viewed by non-GM, show masked content
 		const unidentifiedDesc = item.getFlag?.(MODULE_ID, "unidentifiedDescription") ?? "";
 		const maskedName = getUnidentifiedName(item);
-		
+
 		// Build minimal details content
 		let details = "";
 		if (unidentifiedDesc) {
@@ -5876,41 +6234,41 @@ function patchLightSourceTrackerForParty() {
 		console.warn(`${MODULE_ID} | Light Source Tracker not found, skipping patch`);
 		return;
 	}
-	
+
 	// Store the original _gatherLightSources method
 	const originalGatherLightSources = tracker._gatherLightSources.bind(tracker);
-	
+
 	// Override _gatherLightSources to also include Party actors
-	tracker._gatherLightSources = async function() {
+	tracker._gatherLightSources = async function () {
 		// Call the original method first
 		await originalGatherLightSources();
-		
+
 		// Now add Party actors with active light sources
 		const partyActors = game.actors.filter(actor => isPartyActor(actor));
-		
+
 		for (const actor of partyActors) {
 			// Get active light sources for this party
 			const activeLightSources = actor.items.filter(
-				item => ["Basic", "Effect"].includes(item.type) && 
-				        item.system.light?.isSource && 
-				        item.system.light?.active
+				item => ["Basic", "Effect"].includes(item.type) &&
+					item.system.light?.isSource &&
+					item.system.light?.active
 			);
-			
+
 			if (activeLightSources.length === 0) continue;
-			
+
 			const actorData = actor.toObject(false);
 			actorData.lightSources = [];
-			
+
 			for (const item of activeLightSources) {
 				actorData.lightSources.push(item.toObject(false));
 			}
-			
+
 			// Only add if not already in the list
 			if (!this.monitoredLightSources.some(a => a._id === actorData._id)) {
 				this.monitoredLightSources.push(actorData);
 			}
 		}
-		
+
 		// Re-sort the list
 		this.monitoredLightSources.sort((a, b) => {
 			if (a.name < b.name) return -1;
@@ -5918,7 +6276,7 @@ function patchLightSourceTrackerForParty() {
 			return 0;
 		});
 	};
-	
+
 	console.log(`${MODULE_ID} | Patched Light Source Tracker to include Party actors`);
 }
 
@@ -5941,17 +6299,17 @@ function registerPartySheet() {
 		makeDefault: false,
 		label: game.i18n.localize("SHADOWDARK_EXTRAS.party.name")
 	});
-	
+
 	// Override the _getSheetClass method to force Party sheet for party actors
 	const originalGetSheetClass = CONFIG.Actor.documentClass.prototype._getSheetClass;
-	CONFIG.Actor.documentClass.prototype._getSheetClass = function() {
+	CONFIG.Actor.documentClass.prototype._getSheetClass = function () {
 		// Check if this is a party actor
 		if (isPartyActor(this)) {
 			return PartySheetSD;
 		}
 		return originalGetSheetClass.call(this);
 	};
-	
+
 	console.log(`${MODULE_ID} | Party sheet registered`);
 }
 
@@ -5960,28 +6318,28 @@ function registerPartySheet() {
  */
 function extendActorCreationDialog() {
 	// Hook into various dialog rendering events to catch the Create Actor dialog
-	
+
 	// For Foundry v13+ with ApplicationV2
 	Hooks.on("renderDocumentSheetConfig", (app, html, data) => {
 		addPartyOptionToSelect(html);
 	});
-	
+
 	// For standard Dialog
 	Hooks.on("renderDialog", (app, html, data) => {
 		addPartyOptionToSelect(html);
 		maskUnidentifiedItemInDialog(app, html, data);
 	});
-	
+
 	// For Application render
 	Hooks.on("renderApplication", (app, html, data) => {
 		addPartyOptionToSelect(html);
 	});
-	
+
 	// For Foundry v13 - hook into the folder context or creation
 	Hooks.on("renderActorDirectory", (app, html, data) => {
 		// The create button opens a dialog - we need to intercept when it renders
 	});
-	
+
 	// Use MutationObserver to catch dynamically created dialogs
 	const observer = new MutationObserver((mutations) => {
 		for (const mutation of mutations) {
@@ -5995,7 +6353,7 @@ function extendActorCreationDialog() {
 			}
 		}
 	});
-	
+
 	// Start observing the document body for dialog additions
 	observer.observe(document.body, { childList: true, subtree: true });
 }
@@ -6006,19 +6364,19 @@ function extendActorCreationDialog() {
 function addPartyOptionToSelect(html) {
 	// Convert to jQuery if needed
 	const $html = html instanceof jQuery ? html : $(html);
-	
+
 	// Look for actor type select
 	const typeSelect = $html.find('select[name="type"]');
 	if (typeSelect.length === 0) return;
-	
+
 	// Check if this select has actor types (Light, NPC, Player)
-	const hasActorTypes = typeSelect.find('option[value="NPC"]').length > 0 || 
-	                      typeSelect.find('option[value="Player"]').length > 0;
+	const hasActorTypes = typeSelect.find('option[value="NPC"]').length > 0 ||
+		typeSelect.find('option[value="Player"]').length > 0;
 	if (!hasActorTypes) return;
-	
+
 	// Check if Party option already exists
 	if (typeSelect.find('option[value="Party"]').length > 0) return;
-	
+
 	// Add Party option
 	const npcOption = typeSelect.find('option[value="NPC"]');
 	if (npcOption.length > 0) {
@@ -6029,12 +6387,12 @@ function addPartyOptionToSelect(html) {
 		typeSelect.append(`<option value="Party">${game.i18n.localize("SHADOWDARK_EXTRAS.party.name")}</option>`);
 		console.log(`${MODULE_ID} | Added Party option to actor type select (appended)`);
 	}
-	
+
 	// Also intercept form submission to convert Party to NPC before it's sent
 	const form = typeSelect.closest('form');
 	if (form.length > 0 && !form.data('party-intercepted')) {
 		form.data('party-intercepted', true);
-		form.on('submit', function(e) {
+		form.on('submit', function (e) {
 			const select = $(this).find('select[name="type"]');
 			if (select.val() === 'Party') {
 				select.val('NPC');
@@ -6053,18 +6411,18 @@ function addPartyOptionToSelect(html) {
  */
 function wrapActorCreate() {
 	const originalCreate = CONFIG.Actor.documentClass.create;
-	
-	CONFIG.Actor.documentClass.create = async function(data, options = {}) {
+
+	CONFIG.Actor.documentClass.create = async function (data, options = {}) {
 		// Handle single or array of data
 		const createData = Array.isArray(data) ? data : [data];
-		
+
 		for (const d of createData) {
 			if (d.type === "Party") {
 				d.type = "NPC";
 				d.img = d.img || "icons/environment/people/group.webp";
 				foundry.utils.setProperty(d, "flags.shadowdark-extras.isParty", true);
 				foundry.utils.setProperty(d, "prototypeToken.actorLink", true);
-				
+
 				// Set default prototype token settings (no vision/light like standard Shadowdark actors)
 				foundry.utils.setProperty(d, "prototypeToken.sight", {
 					enabled: true,
@@ -6104,10 +6462,10 @@ function wrapActorCreate() {
 				});
 			}
 		}
-		
+
 		return originalCreate.call(this, Array.isArray(data) ? createData : createData[0], options);
 	};
-	
+
 	console.log(`${MODULE_ID} | Wrapped Actor.create to handle Party type`);
 }
 
@@ -6127,12 +6485,12 @@ function patchNpcSheetForItemDrops(app) {
 	// Only patch once per sheet instance
 	if (app._sdxDropPatched) return;
 	app._sdxDropPatched = true;
-	
+
 	// Store the original _onDrop if it exists
 	const originalOnDrop = app._onDrop?.bind(app);
-	
+
 	// Override the _onDrop method to intercept drops on the inventory tab
-	app._onDrop = async function(event) {
+	app._onDrop = async function (event) {
 		// Check if we're on the inventory tab
 		const inventoryTab = event.target.closest('.shadowdark-extras-npc-inventory');
 		if (!inventoryTab) {
@@ -6140,7 +6498,7 @@ function patchNpcSheetForItemDrops(app) {
 			if (originalOnDrop) return originalOnDrop(event);
 			return;
 		}
-		
+
 		// Get the drag data
 		let data;
 		try {
@@ -6148,28 +6506,28 @@ function patchNpcSheetForItemDrops(app) {
 		} catch (err) {
 			return;
 		}
-		
+
 		if (data.type !== "Item") return;
-		
+
 		// Get the source item
 		const sourceItem = await fromUuid(data.uuid);
 		if (!sourceItem) return;
-		
+
 		const targetActor = this.actor;
 		const sourceActor = sourceItem.parent;
-		
+
 		// Check if we're moving or copying (Ctrl = copy, default = move)
 		const isCopy = event.ctrlKey;
-		
+
 		// Don't do anything if dropping on same actor
 		if (sourceActor === targetActor && !isCopy) return;
-		
+
 		// Create the item on target actor
 		const itemData = sourceItem.toObject();
 		delete itemData._id; // Remove the ID so a new one is created
-		
+
 		await targetActor.createEmbeddedDocuments("Item", [itemData]);
-		
+
 		// If moving (not copying), delete from source
 		if (!isCopy && sourceActor && sourceActor !== targetActor) {
 			await sourceItem.delete();
@@ -6199,14 +6557,14 @@ function patchNpcSheetForItemDrops(app) {
  */
 async function transferItemToPlayer(sourceActor, item, targetActorId) {
 	if (!sourceActor || !item) return;
-	
+
 	// Check if Item Piles is available
 	if (!game.modules.get("item-piles")?.active || !game.itempiles?.API) {
 		ui.notifications.error("Item Piles module is required for player-to-player transfers.");
 		console.error(`${MODULE_ID} | Item Piles API not available`);
 		return;
 	}
-	
+
 	const targetActor = game.actors.get(targetActorId);
 	if (!targetActor) {
 		ui.notifications.error(
@@ -6214,15 +6572,15 @@ async function transferItemToPlayer(sourceActor, item, targetActorId) {
 		);
 		return;
 	}
-	
+
 	// Get the display name - mask if unidentified and user is not GM
-	const itemName = (isUnidentified(item) && !game.user.isGM) 
+	const itemName = (isUnidentified(item) && !game.user.isGM)
 		? getUnidentifiedName(item)
 		: item.name;
-	
+
 	try {
 		console.log(`${MODULE_ID} | Transferring ${item.name} from ${sourceActor.name} to ${targetActor.name}`);
-		
+
 		// Use Item Piles API to transfer the item
 		const result = await game.itempiles.API.transferItems(
 			sourceActor,
@@ -6230,7 +6588,7 @@ async function transferItemToPlayer(sourceActor, item, targetActorId) {
 			[{ _id: item.id, quantity: item.system.quantity || 1 }],
 			{ interactionId: false }
 		);
-		
+
 		if (result && result.length > 0) {
 			ui.notifications.info(
 				game.i18n.format("SHADOWDARK_EXTRAS.notifications.item_transferred", {
@@ -6267,14 +6625,14 @@ async function showTransferDialog(sourceActor, item) {
 		}
 		return true; // Party actors are always available
 	});
-	
+
 	if (allPlayers.length === 0) {
 		ui.notifications.warn(
 			game.i18n.localize("SHADOWDARK_EXTRAS.notifications.no_players_available")
 		);
 		return;
 	}
-	
+
 	// Categorize actors and build searchable data
 	const partyActors = allPlayers.filter(a => a.type === "NPC" && a.getFlag(MODULE_ID, "isParty"));
 	const connectedAssigned = allPlayers.filter(a => {
@@ -6287,10 +6645,10 @@ async function showTransferDialog(sourceActor, item) {
 		// Not connected/assigned
 		return !game.users.some(u => u.active && u.character?.id === a.id);
 	});
-	
+
 	// Build options HTML with optgroups and data attributes for searching
 	let optionsHtml = '';
-	
+
 	// Party actors first
 	if (partyActors.length > 0) {
 		optionsHtml += `<optgroup label="📦 Party Storage" data-group="party">`;
@@ -6299,7 +6657,7 @@ async function showTransferDialog(sourceActor, item) {
 		}
 		optionsHtml += `</optgroup>`;
 	}
-	
+
 	// Connected & Assigned characters
 	if (connectedAssigned.length > 0) {
 		optionsHtml += `<optgroup label="🟢 Connected Players" data-group="connected">`;
@@ -6312,7 +6670,7 @@ async function showTransferDialog(sourceActor, item) {
 		}
 		optionsHtml += `</optgroup>`;
 	}
-	
+
 	// Other player characters
 	if (otherPlayers.length > 0) {
 		optionsHtml += `<optgroup label="⚪ Other Characters" data-group="other">`;
@@ -6325,7 +6683,7 @@ async function showTransferDialog(sourceActor, item) {
 		}
 		optionsHtml += `</optgroup>`;
 	}
-	
+
 	const content = `
 		<form>
 			<div class="form-group" style="margin-bottom: 8px;">
@@ -6345,10 +6703,10 @@ async function showTransferDialog(sourceActor, item) {
 					${optionsHtml}
 				</select>
 			</div>
-			<p>${game.i18n.format("SHADOWDARK_EXTRAS.dialog.transfer_item_warning", {item: item.name})}</p>
+			<p>${game.i18n.format("SHADOWDARK_EXTRAS.dialog.transfer_item_warning", { item: item.name })}</p>
 		</form>
 	`;
-	
+
 	return new Promise((resolve) => {
 		const dialog = new Dialog({
 			title: game.i18n.localize("SHADOWDARK_EXTRAS.dialog.transfer_item_title"),
@@ -6373,28 +6731,28 @@ async function showTransferDialog(sourceActor, item) {
 				const $select = html.find('#sdx-transfer-target');
 				const $filterCheckbox = html.find('#sdx-filter-connected');
 				const $searchInput = html.find('#sdx-transfer-search');
-				
+
 				// Combined filter function for both checkbox and search
 				const updateFilter = () => {
 					const showOnlyConnected = $filterCheckbox.is(':checked');
 					const searchText = $searchInput.val().toLowerCase().trim();
-					
-					$select.find('optgroup').each(function() {
+
+					$select.find('optgroup').each(function () {
 						const $group = $(this);
 						const groupType = $group.data('group');
-						
+
 						// First, apply connected filter to groups
 						if (groupType === 'other' && showOnlyConnected) {
 							$group.hide();
 							return;
 						}
-						
+
 						// Then apply search filter to options within visible groups
 						let visibleCount = 0;
-						$group.find('option').each(function() {
+						$group.find('option').each(function () {
 							const $option = $(this);
 							const optionSearch = $option.data('search') || '';
-							
+
 							if (searchText === '' || optionSearch.includes(searchText)) {
 								$option.show();
 								visibleCount++;
@@ -6402,22 +6760,22 @@ async function showTransferDialog(sourceActor, item) {
 								$option.hide();
 							}
 						});
-						
+
 						// Hide group if no visible options
 						$group.toggle(visibleCount > 0);
 					});
-					
+
 					// If current selection is now hidden, select first visible option
 					const $selectedOption = $select.find('option:selected');
 					if (!$selectedOption.is(':visible') || $selectedOption.parent('optgroup').is(':hidden')) {
 						$select.find('option:visible').first().prop('selected', true);
 					}
 				};
-				
+
 				updateFilter();
 				$filterCheckbox.on('change', updateFilter);
 				$searchInput.on('input', updateFilter);
-				
+
 				// Focus search input for immediate typing
 				setTimeout(() => $searchInput.focus(), 100);
 			}
@@ -6434,17 +6792,17 @@ function patchPlayerSheetForTransfers() {
 		console.warn(`${MODULE_ID} | Could not find PlayerSheetSD class to patch for transfers`);
 		return;
 	}
-	
+
 	// Store the original method
 	const originalGetItemContextOptions = PlayerSheetSD.prototype._getItemContextOptions;
-	
+
 	// Replace with enhanced version
-	PlayerSheetSD.prototype._getItemContextOptions = function() {
+	PlayerSheetSD.prototype._getItemContextOptions = function () {
 		const options = originalGetItemContextOptions.call(this);
-		
+
 		// Only add transfer option for Player actors
 		if (this.actor?.type !== "Player") return options;
-		
+
 		// Add transfer option before delete
 		options.splice(options.length - 1, 0, {
 			name: game.i18n.localize("SHADOWDARK_EXTRAS.context_menu.transfer_to_player"),
@@ -6476,14 +6834,14 @@ function patchPlayerSheetForTransfers() {
 				const itemId = element.dataset.itemId;
 				const item = this.actor.items.get(itemId);
 				if (!item) return;
-				
+
 				const targetActorId = await showTransferDialog(this.actor, item);
 				if (targetActorId) {
 					await transferItemToPlayer(this.actor, item, targetActorId);
 				}
 			}
 		});
-		
+
 		return options;
 	};
 }
@@ -6495,13 +6853,13 @@ function patchPlayerSheetForTransfers() {
 // Initialize when Foundry is ready
 Hooks.once("init", () => {
 	console.log(`${MODULE_ID} | Initializing Shadowdark Extras`);
-	
+
 	// Initialize Automated Animations integration
 	initAutoAnimationsIntegration();
-	
+
 	// Initialize SDX Rolls
 	initSDXROLLS();
-	
+
 	// Register Handlebars helpers
 	Handlebars.registerHelper("numberSigned", (value) => {
 		const num = parseInt(value) || 0;
@@ -6512,7 +6870,7 @@ Hooks.once("init", () => {
 	Handlebars.registerHelper("add", (a, b) => {
 		return (parseInt(a) || 0) + (parseInt(b) || 0);
 	});
-	
+
 	// Preload templates
 	loadTemplates([
 		`modules/${MODULE_ID}/templates/npc-inventory.hbs`,
@@ -6521,10 +6879,10 @@ Hooks.once("init", () => {
 		`modules/${MODULE_ID}/templates/journal-notes.hbs`,
 		`modules/${MODULE_ID}/templates/journal-editor.hbs`
 	]);
-	
+
 	// Register the Party sheet early
 	registerPartySheet();
-	
+
 	// Wrap Actor.create to handle Party type conversion
 	wrapActorCreate();
 });
@@ -6533,7 +6891,7 @@ Hooks.once("init", () => {
 Hooks.on("renderJournalDirectory", (app, html, data) => {
 	// In v13, html might be an HTMLElement or jQuery - handle both
 	const element = html instanceof jQuery ? html[0] : html;
-	
+
 	// Find all journal entries in the directory list
 	const entries = element.querySelectorAll("[data-entry-id], [data-document-id], .directory-item");
 	entries.forEach(entry => {
@@ -6560,9 +6918,9 @@ Hooks.once("ready", async () => {
 		console.warn(`${MODULE_ID} | This module requires the Shadowdark RPG system`);
 		return;
 	}
-	
+
 	console.log(`${MODULE_ID} | Setting up Shadowdark Extras`);
-	
+
 	registerSettings();
 	extendLightSources();
 	patchLightSourceMappings();
@@ -6570,10 +6928,10 @@ Hooks.once("ready", async () => {
 	patchCtrlMoveOnActorSheetDrops();
 	patchPlayerSheetForTransfers();
 	initializeTradeSocket();
-	
+
 	// Setup SDX Rolls sockets
 	setupSDXROLLSSockets();
-	
+
 	// Setup combat socket for damage application (requires socketlib)
 	if (typeof socketlib !== "undefined") {
 		setupCombatSocket();
@@ -6581,29 +6939,35 @@ Hooks.once("ready", async () => {
 	} else {
 		console.warn(`${MODULE_ID} | socketlib not found, damage application may not work for non-GMs`);
 	}
-	
+
+	// Initialize Focus Spell Tracker if enabled
+	if (game.settings.get(MODULE_ID, "enableFocusTracker")) {
+		initFocusSpellTracker();
+		console.log(`${MODULE_ID} | Focus Spell Tracker initialized`);
+	}
+
 	// Setup scrolling combat text (floating damage/healing numbers)
 	setupScrollingCombatText();
-	
+
 	// Setup torch animations (requires Sequencer and JB2A)
 	initTorchAnimations();
-	
+
 	patchLightSourceTrackerForParty();
 	patchToggleItemDetailsForUnidentified();
 	setupUnidentifiedItemNameWrapper();
 	setupItemPilesUnidentifiedHooks();
 	wrapBuildWeaponDisplayForUnidentified();
-	
+
 	// Patch NPC sheets to add _toggleLightSource method
 	// The Shadowdark system's ActorSheetSD._deleteItem tries to call this method,
 	// but it only exists on PlayerSheetSD, causing errors when deleting torch items from NPCs
 	if (globalThis.shadowdark?.sheets?.NpcSheetSD) {
 		const NpcSheetSD = globalThis.shadowdark.sheets.NpcSheetSD;
 		if (!NpcSheetSD.prototype._toggleLightSource) {
-			NpcSheetSD.prototype._toggleLightSource = async function(item, options = {}) {
+			NpcSheetSD.prototype._toggleLightSource = async function (item, options = {}) {
 				// For NPCs, just toggle the light active state without the player-specific features
 				const active = !item.system.light?.active;
-				
+
 				if (active) {
 					// Turn off any currently active lights
 					const activeLightSources = await this.actor.getActiveLightSources?.() || [];
@@ -6614,46 +6978,106 @@ Hooks.once("ready", async () => {
 						}]);
 					}
 				}
-				
+
 				const dataUpdate = {
 					"_id": item.id,
 					"system.light.active": active,
 				};
-				
+
 				if (!item.system.light?.hasBeenUsed) {
 					dataUpdate["system.light.hasBeenUsed"] = true;
 				}
-				
+
 				await this.actor.updateEmbeddedDocuments("Item", [dataUpdate]);
 				await this.actor.toggleLight?.(active, item.id);
 			};
 			console.log(`${MODULE_ID} | Patched NpcSheetSD with _toggleLightSource method`);
 		}
 	}
-	
+
 	// Wrap ActorSD._learnSpell to preserve spell damage flags from scrolls
 	if (globalThis.shadowdark?.documents?.ActorSD) {
 		const ActorSD = globalThis.shadowdark.documents.ActorSD;
 		const original_learnSpell = ActorSD.prototype._learnSpell;
-		
-		ActorSD.prototype._learnSpell = async function(item) {
+
+		ActorSD.prototype._learnSpell = async function (item) {
 			// Store the scroll ID temporarily so preCreateItem can access it
 			if (item && item.flags?.[MODULE_ID]?.spellDamage) {
 				await this.setFlag(MODULE_ID, "_learningFromScroll", item._id);
 			}
-			
+
 			// Call original method
 			const result = await original_learnSpell.call(this, item);
-			
+
 			// Clean up the temporary flag
 			await this.unsetFlag(MODULE_ID, "_learningFromScroll");
-			
+
 			return result;
 		};
-		
+
 		console.log(`${MODULE_ID} | Wrapped ActorSD._learnSpell to preserve spell damage flags`);
 	}
-	
+
+	// Wrap ItemSD.rollItem to inject weapon hit bonuses
+	if (globalThis.shadowdark?.documents?.ItemSD) {
+		const ItemSD = globalThis.shadowdark.documents.ItemSD;
+		const original_rollItem = ItemSD.prototype.rollItem;
+
+		ItemSD.prototype.rollItem = async function (parts, data, options = {}) {
+			// Only process weapon attacks
+			if (this.type === "Weapon" && data?.actor && data?.item) {
+				try {
+					// Get the target (if any)
+					const targetToken = options.targetToken || game.user.targets.first();
+					const targetActor = targetToken?.actor || null;
+
+					// Get weapon hit bonuses
+					const hitBonusResult = getWeaponHitBonuses(this, data.actor, targetActor);
+
+					if (hitBonusResult.hitBonus) {
+						// The hitBonus could be a formula like "2", "+2", "1d4", etc.
+						// We need to evaluate it to get a numeric value for the roll system
+						let bonusFormula = hitBonusResult.hitBonus.trim();
+						
+						// Remove leading + if present
+						if (bonusFormula.startsWith("+")) {
+							bonusFormula = bonusFormula.substring(1).trim();
+						}
+						
+						// Try to evaluate the formula if it contains dice
+						// The Shadowdark roll system expects @variable references with numeric values
+						// For dice formulas, we'll pre-roll them and add the result
+						try {
+							const roll = new Roll(bonusFormula);
+							await roll.evaluate();
+							data.sdxHitBonus = roll.total;
+							parts.push("@sdxHitBonus");
+							
+							console.log(`${MODULE_ID} | Applied weapon hit bonus: ${bonusFormula} = ${roll.total}`, hitBonusResult.hitBonusParts);
+						} catch (evalErr) {
+							// If evaluation fails, try to parse as a simple number
+							const numValue = parseInt(bonusFormula, 10);
+							if (!isNaN(numValue) && numValue !== 0) {
+								data.sdxHitBonus = numValue;
+								parts.push("@sdxHitBonus");
+								console.log(`${MODULE_ID} | Applied weapon hit bonus: ${numValue}`, hitBonusResult.hitBonusParts);
+							} else {
+								console.warn(`${MODULE_ID} | Could not parse hit bonus formula: ${bonusFormula}`);
+							}
+						}
+					}
+				} catch (err) {
+					console.error(`${MODULE_ID} | Error applying weapon hit bonus:`, err);
+				}
+			}
+
+			// Call original method
+			return original_rollItem.call(this, parts, data, options);
+		};
+
+		console.log(`${MODULE_ID} | Wrapped ItemSD.rollItem to inject weapon hit bonuses`);
+	}
+
 	// Ensure trade journal exists (GM only creates it)
 	await ensureTradeJournal();
 });
@@ -6662,14 +7086,14 @@ Hooks.once("ready", async () => {
 Hooks.on("preCreateItem", (item, data, options, userId) => {
 	// Note: This hook handles unidentified flags for items created directly,
 	// but for spells converted via dialog, we wrap shadowdark.utils.createItemFromSpell instead
-	
+
 	// Check if unidentified feature is enabled
 	try {
 		if (!game.settings.get(MODULE_ID, "enableUnidentified")) return;
 	} catch {
 		return;
 	}
-	
+
 	// If the item data already has our unidentified flag, ensure it's preserved
 	if (data.flags?.[MODULE_ID]?.unidentified) {
 		// Flag is present, make sure it's set on the item
@@ -6679,7 +7103,7 @@ Hooks.on("preCreateItem", (item, data, options, userId) => {
 			[`flags.${MODULE_ID}.unidentifiedDescription`]: data.flags[MODULE_ID].unidentifiedDescription || ""
 		});
 	}
-	
+
 	// Preserve spell damage flags when learning a spell from a scroll
 	// This handles the "Learn Spell" button functionality
 	if (item.type === "Spell" && item.parent) {
@@ -6706,9 +7130,9 @@ Hooks.on("renderChatLog", (app, html) => {
 // Before party actor is created, ensure proper prototype token settings
 Hooks.on("preCreateActor", (actor, data, options, userId) => {
 	// Check if this is a party actor being created
-	const isParty = data.flags?.[MODULE_ID]?.isParty === true || 
-	                actor.getFlag(MODULE_ID, "isParty") === true;
-	
+	const isParty = data.flags?.[MODULE_ID]?.isParty === true ||
+		actor.getFlag(MODULE_ID, "isParty") === true;
+
 	if (isParty) {
 		// Force the correct prototype token settings for party actors
 		actor.updateSource({
@@ -6726,7 +7150,7 @@ Hooks.on("preCreateActor", (actor, data, options, userId) => {
 // After party actor is created, set the sheet
 Hooks.on("createActor", async (actor, options, userId) => {
 	if (game.user.id !== userId) return;
-	
+
 	// If this is a newly created party, set the party sheet as default
 	if (isPartyActor(actor)) {
 		// Set the Party sheet as the default for this actor
@@ -6737,7 +7161,7 @@ Hooks.on("createActor", async (actor, options, userId) => {
 // Inject Renown into player sheets
 Hooks.on("renderPlayerSheetSD", async (app, html, data) => {
 	if (app.actor?.type !== "Player") return;
-	
+
 	await injectEnhancedHeader(app, html, app.actor);
 	enhanceDetailsTab(app, html, app.actor);
 	enhanceAbilitiesTab(app, html, app.actor);
@@ -6763,13 +7187,13 @@ Hooks.on("renderPlayerSheetSD", async (app, html, data) => {
 // Inject Inventory tab into NPC sheets (but not Party sheets)
 Hooks.on("renderNpcSheetSD", async (app, html, data) => {
 	if (app.actor?.type !== "NPC") return;
-	
+
 	// Don't inject into Party actors (they have their own inventory)
 	if (isPartyActor(app.actor)) return;
-	
+
 	// Check if NPC inventory is enabled
 	if (!game.settings.get(MODULE_ID, "enableNpcInventory")) return;
-	
+
 	await injectNpcInventoryTab(app, html, data);
 	patchNpcSheetForItemDrops(app);
 	attachContainerContentsToActorSheet(app, html);
@@ -6779,12 +7203,23 @@ Hooks.on("renderNpcSheetSD", async (app, html, data) => {
 	enableItemChatIcon(app, html);
 });
 
+// Inject Creature Type dropdown into NPC sheets
+Hooks.on("renderNpcSheetSD", (app, html, data) => {
+	if (app.actor?.type !== "NPC") return;
+
+	// Don't inject into Party actors
+	if (isPartyActor(app.actor)) return;
+
+	// Inject the creature type dropdown (before ATTACKS section)
+	injectNpcCreatureType(app, html, app.actor);
+});
+
 // Apply inventory styles to Party sheets
 Hooks.on("renderActorSheet", (app, html, data) => {
 	// Only handle Party sheets
 	if (!(app instanceof PartySheetSD)) return;
 	if (!isPartyActor(app.actor)) return;
-	
+
 	applyInventoryStylesToSheet(html, app.actor);
 	injectPartyHeaderCustomization(app, html, app.actor);
 });
@@ -6796,10 +7231,12 @@ Hooks.on("renderActorSheet", (app, html, data) => {
  */
 function setupActivityRadioToggles(html, item) {
 	// Spell Damage toggle
-	html.find('.sdx-spell-damage-toggle').off('change').on('change', function() {
+	html.find('.sdx-spell-damage-toggle').off('change').on('change', function (e) {
+		e.stopPropagation();
+		e.preventDefault();
 		const isEnabled = $(this).is(':checked');
 		const $content = $(this).closest('.sdx-spell-damage-box').find('.sdx-spell-damage-content');
-		
+
 		if (isEnabled) {
 			$content.slideDown(200);
 			// Disable other activities visually
@@ -6818,12 +7255,30 @@ function setupActivityRadioToggles(html, item) {
 			item.update(updateData, { render: false });
 		}
 	});
-	
-	// Summoning toggle
-	html.find('.sdx-summoning-toggle').off('change').on('change', function(e) {
+
+	// Track Duration toggle
+	html.find('.sdx-track-duration-toggle').off('change').on('change', function (e) {
 		e.stopPropagation();
 		const isEnabled = $(this).is(':checked');
-		
+		const $content = $(this).closest('.sdx-spell-damage-content').find('.sdx-duration-content');
+
+		if (isEnabled) {
+			$content.slideDown(200);
+		} else {
+			$content.slideUp(200);
+		}
+
+		const updateData = {};
+		updateData[`flags.${MODULE_ID}.spellDamage.trackDuration`] = isEnabled;
+		item.update(updateData, { render: false });
+	});
+
+	// Summoning toggle
+	html.find('.sdx-summoning-toggle').off('change').on('change', function (e) {
+		e.stopPropagation();
+		e.preventDefault();
+		const isEnabled = $(this).is(':checked');
+
 		if (isEnabled) {
 			// Disable other activities visually
 			html.find('.sdx-spell-damage-toggle').prop('checked', false);
@@ -6841,12 +7296,13 @@ function setupActivityRadioToggles(html, item) {
 			item.update(updateData, { render: false });
 		}
 	});
-	
+
 	// Item Give toggle
-	html.find('.sdx-item-give-toggle').off('change').on('change', function(e) {
+	html.find('.sdx-item-give-toggle').off('change').on('change', function (e) {
 		e.stopPropagation();
+		e.preventDefault();
 		const isEnabled = $(this).is(':checked');
-		
+
 		if (isEnabled) {
 			// Disable other activities visually
 			html.find('.sdx-spell-damage-toggle').prop('checked', false);
@@ -6904,26 +7360,26 @@ async function enhanceSpellSheet(app, html) {
 		applyToTarget: true, // true = apply damage/heal to target, false = apply to self
 		effectsApplyToTarget: true // true = apply effects to target, false = apply to self
 	};
-	
+
 	// Initialize summoning flags
 	const summoningFlags = item.flags?.[MODULE_ID]?.summoning || {
 		enabled: false,
 		profiles: []
 	};
-	
+
 	// Initialize item give flags
 	const itemGiveFlags = item.flags?.[MODULE_ID]?.itemGive || {
 		enabled: false,
 		profiles: []
 	};
-	
+
 	// Combine all flags for template
 	const flags = {
 		...spellDamageFlags,
 		summoning: summoningFlags,
 		itemGive: itemGiveFlags
 	};
-	
+
 	// Convert applyToTarget to boolean (in case it was stored as string)
 	const applyToTarget = spellDamageFlags.applyToTarget === "false" ? false : (spellDamageFlags.applyToTarget === false ? false : true);
 	const effectsApplyToTarget = spellDamageFlags.effectsApplyToTarget === "false" ? false : (spellDamageFlags.effectsApplyToTarget === false ? false : true);
@@ -6932,7 +7388,7 @@ async function enhanceSpellSheet(app, html) {
 	if (!app._shadowdarkExtrasActiveTab) {
 		app._shadowdarkExtrasActiveTab = 'tab-details'; // Default to details
 	}
-	
+
 	// Check which tab is currently active
 	const $currentActiveTab = html.find('nav.SD-nav a.navigation-tab.active');
 	if ($currentActiveTab.length) {
@@ -6944,7 +7400,7 @@ async function enhanceSpellSheet(app, html) {
 
 	// Create a new "Activity" tab after Details tab
 	const $tabs = html.find('nav.SD-nav');
-	
+
 	// Check if Activity tab already exists
 	if (!html.find('section[data-tab="tab-activity"]').length) {
 		// Add Activity tab to navigation (after Details)
@@ -6956,7 +7412,7 @@ async function enhanceSpellSheet(app, html) {
 		} else {
 			console.warn(`${MODULE_ID} | Could not find Details tab link`);
 		}
-		
+
 		// Create Activity tab content container with correct structure
 		const activityTabContent = `<section class="tab tab-activity" data-group="primary" data-tab="tab-activity"></section>`;
 		const $detailsTab = html.find('section.tab-details[data-tab="tab-details"]');
@@ -6966,32 +7422,32 @@ async function enhanceSpellSheet(app, html) {
 		} else {
 			console.warn(`${MODULE_ID} | Could not find Details tab content`);
 		}
-		
+
 		// Add click handler to track tab changes
-		$tabs.find('a.navigation-tab').on('click', function() {
+		$tabs.find('a.navigation-tab').on('click', function () {
 			const tabName = $(this).data('tab');
 			if (tabName) {
 				app._shadowdarkExtrasActiveTab = tabName;
 			}
 		});
 	}
-	
+
 	// Restore the previously active tab
 	setTimeout(() => {
 		const $targetTab = $tabs.find(`a.navigation-tab[data-tab="${app._shadowdarkExtrasActiveTab}"]`);
 		const $targetSection = html.find(`section[data-tab="${app._shadowdarkExtrasActiveTab}"]`);
-		
+
 		if ($targetTab.length && $targetSection.length) {
 			// Remove active class from all tabs
 			$tabs.find('a.navigation-tab').removeClass('active');
 			html.find('section[data-group="primary"]').removeClass('active');
-			
+
 			// Add active class to target tab
 			$targetTab.addClass('active');
 			$targetSection.addClass('active');
 		}
 	}, 0);
-	
+
 	// Find the Activity tab content
 	const $activityTab = html.find('section.tab-activity[data-tab="tab-activity"]');
 	if (!$activityTab.length) {
@@ -7003,7 +7459,7 @@ async function enhanceSpellSheet(app, html) {
 
 	// Build list of current effects from stored UUIDs
 	let effectsListHtml = '';
-	
+
 	// Handle case where effects might be a string instead of an array (from form submission)
 	let effectsArray = flags.effects || [];
 	if (typeof effectsArray === 'string') {
@@ -7014,7 +7470,7 @@ async function enhanceSpellSheet(app, html) {
 			effectsArray = [];
 		}
 	}
-	
+
 	// Normalize effects array - convert old UUID strings to new object format
 	effectsArray = effectsArray.map(effect => {
 		if (typeof effect === 'string') {
@@ -7022,20 +7478,20 @@ async function enhanceSpellSheet(app, html) {
 		}
 		return effect;
 	});
-	
+
 	if (effectsArray && effectsArray.length > 0) {
 		console.log(`${MODULE_ID} | Loading ${effectsArray.length} effects from UUIDs:`, effectsArray);
-		
+
 		// Load all effects in parallel and wait for them all
 		const effectPromises = effectsArray.map(effect => fromUuid(effect.uuid || effect));
 		const effectDocs = await Promise.all(effectPromises);
-		
+
 		for (let i = 0; i < effectDocs.length; i++) {
 			const doc = effectDocs[i];
 			const effectData = effectsArray[i];
 			const uuid = effectData.uuid || effectData;
 			const duration = effectData.duration || {};
-			
+
 			if (doc) {
 				effectsListHtml += `
 					<div class="sdx-spell-effect-item" data-uuid="${uuid}" data-effect-index="${i}">
@@ -7082,14 +7538,14 @@ async function enhanceSpellSheet(app, html) {
 				console.warn(`${MODULE_ID} | Could not load effect from UUID:`, uuid);
 			}
 		}
-		
+
 		console.log(`${MODULE_ID} | Loaded effects HTML, length:`, effectsListHtml.length);
 	}
 
 	// Build summons list HTML
 	let summonsList = '';
 	let summonProfilesArray = summoningFlags.profiles || [];
-	
+
 	// Handle case where profiles might be a string
 	if (typeof summonProfilesArray === 'string') {
 		try {
@@ -7099,7 +7555,7 @@ async function enhanceSpellSheet(app, html) {
 			summonProfilesArray = [];
 		}
 	}
-	
+
 	if (summonProfilesArray && summonProfilesArray.length > 0) {
 		const { generateSummonProfileHTML } = await import(`./templates/SummoningConfig.mjs`);
 		for (let i = 0; i < summonProfilesArray.length; i++) {
@@ -7128,22 +7584,75 @@ async function enhanceSpellSheet(app, html) {
 		}
 	}
 
+	// Build list of current critical effects from stored UUIDs
+	let criticalEffectsListHtml = '';
+
+	// Handle case where critical effects might be a string instead of an array
+	let criticalEffectsArray = flags.criticalEffects || [];
+	if (typeof criticalEffectsArray === 'string') {
+		try {
+			criticalEffectsArray = JSON.parse(criticalEffectsArray);
+		} catch (err) {
+			console.warn(`${MODULE_ID} | Could not parse critical effects string:`, criticalEffectsArray, err);
+			criticalEffectsArray = [];
+		}
+	}
+
+	// Normalize critical effects array
+	criticalEffectsArray = criticalEffectsArray.map(effect => {
+		if (typeof effect === 'string') {
+			return { uuid: effect, duration: {} };
+		}
+		return effect;
+	});
+
+	if (criticalEffectsArray && criticalEffectsArray.length > 0) {
+		console.log(`${MODULE_ID} | Loading ${criticalEffectsArray.length} critical effects from UUIDs:`, criticalEffectsArray);
+
+		const critEffectPromises = criticalEffectsArray.map(effect => fromUuid(effect.uuid || effect));
+		const critEffectDocs = await Promise.all(critEffectPromises);
+
+		for (let i = 0; i < critEffectDocs.length; i++) {
+			const doc = critEffectDocs[i];
+			const effectData = criticalEffectsArray[i];
+			const uuid = effectData.uuid || effectData;
+			const duration = effectData.duration || {};
+
+			if (doc) {
+				criticalEffectsListHtml += `
+					<div class="sdx-spell-effect-item sdx-critical-effect-item" data-uuid="${uuid}" data-effect-index="${i}">
+						<div class="sdx-effect-header">
+							<img src="${doc.img || 'icons/svg/mystery-man.svg'}" alt="${doc.name}" />
+							<span class="sdx-effect-name">${doc.name}</span>
+							<a class="sdx-remove-critical-effect" data-tooltip="Remove"><i class="fas fa-times"></i></a>
+						</div>
+					</div>
+				`;
+			} else {
+				console.warn(`${MODULE_ID} | Could not load critical effect from UUID:`, uuid);
+			}
+		}
+
+		console.log(`${MODULE_ID} | Loaded critical effects HTML, length:`, criticalEffectsListHtml.length);
+	}
+
 	// Build the damage/heal UI HTML using template (now includes summoning)
-	const damageHealHtml = generateSpellConfig(MODULE_ID, flags, effectsListHtml, effectsArray, effectsApplyToTarget, summonsList, summonProfilesArray, itemGiveList, itemGiveProfilesArray);
+	const damageHealHtml = generateSpellConfig(MODULE_ID, flags, effectsListHtml, effectsArray, effectsApplyToTarget, summonsList, summonProfilesArray, itemGiveList, itemGiveProfilesArray, criticalEffectsListHtml, criticalEffectsArray);
 
 	// Insert into Activity tab
 	$activityTab.append(damageHealHtml);
 	console.log(`${MODULE_ID} | Damage/Heal box inserted into Activity tab`);
 
 	// Prevent auto-submission of form inputs in Activity tab to avoid unwanted re-renders
-	$activityTab.find('input, select, textarea').on('change', function(e) {
+	$activityTab.find('input, select, textarea').on('change', function (e) {
 		e.stopPropagation(); // Prevent event from bubbling up to form auto-submit
-		
+		e.preventDefault(); // Prevent default form submission
+
 		// Manually update the item without re-rendering
 		const fieldName = $(this).attr('name');
 		if (fieldName) {
 			let value = $(this).val();
-			
+
 			// Handle checkboxes
 			if ($(this).attr('type') === 'checkbox') {
 				value = $(this).is(':checked');
@@ -7156,10 +7665,10 @@ async function enhanceSpellSheet(app, html) {
 			else if ($(this).attr('type') === 'number') {
 				value = parseFloat(value) || 0;
 			}
-			
+
 			const updateData = {};
 			updateData[fieldName] = value;
-			
+
 			// Update without re-rendering
 			item.update(updateData, { render: false }).then(() => {
 				console.log(`${MODULE_ID} | Updated ${fieldName}:`, value);
@@ -7170,7 +7679,7 @@ async function enhanceSpellSheet(app, html) {
 	});
 
 	// Attach toggle listener
-	html.find('.sdx-spell-damage-toggle').on('change', function() {
+	html.find('.sdx-spell-damage-toggle').on('change', function () {
 		const $content = $(this).closest('.sdx-spell-damage-box').find('.sdx-spell-damage-content');
 		if ($(this).is(':checked')) {
 			$content.slideDown(200);
@@ -7180,13 +7689,13 @@ async function enhanceSpellSheet(app, html) {
 	});
 
 	// Handle formula type radio buttons
-	html.find('.sdx-formula-type-radio').on('change', function() {
+	html.find('.sdx-formula-type-radio').on('change', function () {
 		const selectedType = $(this).val();
 		const $box = $(this).closest('.sdx-spell-damage-box');
-		
+
 		// Hide all formula sections
 		$box.find('.sdx-formula-section').hide();
-		
+
 		// Show the selected formula section
 		if (selectedType === 'basic') {
 			$box.find('.sdx-basic-formula').show();
@@ -7195,7 +7704,7 @@ async function enhanceSpellSheet(app, html) {
 		} else if (selectedType === 'tiered') {
 			$box.find('.sdx-tiered-formula').show();
 		}
-		
+
 		// Save the formula type preference
 		const updateData = {};
 		updateData[`flags.${MODULE_ID}.spellDamage.formulaType`] = selectedType;
@@ -7203,31 +7712,31 @@ async function enhanceSpellSheet(app, html) {
 	});
 
 	// Attach drag and drop listeners for effects
-	const $dropArea = html.find('.sdx-spell-effects-drop-area');
+	const $dropArea = html.find('.sdx-spell-effects-drop-area:not(.sdx-critical-effects-drop-area)');
 	const $effectsList = html.find('.sdx-spell-effects-list');
 	const $effectsData = html.find('.sdx-effects-data');
 
 	// Update the hidden input when effects change
 	function updateEffectsData() {
 		const effects = [];
-		$effectsList.find('.sdx-spell-effect-item').each(function() {
+		$effectsList.find('.sdx-spell-effect-item').each(function () {
 			const $item = $(this);
 			const uuid = $item.data('uuid');
-			
+
 			// Collect duration overrides
 			const duration = {};
-			$item.find('.sdx-duration-input').each(function() {
+			$item.find('.sdx-duration-input').each(function () {
 				const field = $(this).data('field');
 				const value = $(this).val();
 				if (value !== '') {
 					duration[field] = parseFloat(value);
 				}
 			});
-			
+
 			effects.push({ uuid, duration });
 		});
 		$effectsData.val(JSON.stringify(effects));
-		
+
 		// Save immediately to the item without re-rendering
 		const updateData = {};
 		updateData[`flags.${MODULE_ID}.spellDamage.effects`] = effects;
@@ -7236,7 +7745,7 @@ async function enhanceSpellSheet(app, html) {
 		}).catch(err => {
 			console.error(`${MODULE_ID} | Failed to save spell effects:`, err);
 		});
-		
+
 		// Remove "no effects" placeholder if we have effects
 		if (effects.length > 0) {
 			$effectsList.find('.sdx-no-effects').remove();
@@ -7246,28 +7755,28 @@ async function enhanceSpellSheet(app, html) {
 	}
 
 	// Handle drag over
-	$dropArea.on('dragover', function(event) {
+	$dropArea.on('dragover', function (event) {
 		event.preventDefault();
 		event.stopPropagation();
 		$(this).addClass('sdx-drag-over');
 	});
 
 	// Handle drag leave
-	$dropArea.on('dragleave', function(event) {
+	$dropArea.on('dragleave', function (event) {
 		event.preventDefault();
 		event.stopPropagation();
 		$(this).removeClass('sdx-drag-over');
 	});
 
 	// Handle drop
-	$dropArea.on('drop', async function(event) {
+	$dropArea.on('drop', async function (event) {
 		event.preventDefault();
 		event.stopPropagation();
 		$(this).removeClass('sdx-drag-over');
 
 		try {
 			const data = JSON.parse(event.originalEvent.dataTransfer.getData('text/plain'));
-			
+
 			// Get the document from the dropped data
 			let doc = null;
 			if (data.uuid) {
@@ -7344,7 +7853,7 @@ async function enhanceSpellSheet(app, html) {
 					</div>
 				</div>
 			`;
-			
+
 			$effectsList.find('.sdx-no-effects').remove();
 			$effectsList.append(effectHtml);
 			updateEffectsData();
@@ -7357,25 +7866,155 @@ async function enhanceSpellSheet(app, html) {
 	});
 
 	// Handle remove effect button
-	html.on('click', '.sdx-remove-effect', function(event) {
+	html.on('click', '.sdx-remove-effect', function (event) {
 		event.preventDefault();
 		event.stopPropagation();
-		
+
 		$(this).closest('.sdx-spell-effect-item').remove();
 		updateEffectsData();
 	});
 
 	// Handle duration input changes
-	html.on('change', '.sdx-duration-input', function() {
+	html.on('change', '.sdx-duration-input', function () {
 		updateEffectsData();
 	});
 
+	// ===== CRITICAL EFFECTS HANDLERS =====
+	const $critDropArea = html.find('.sdx-critical-effects-drop-area');
+	const $critEffectsList = html.find('.sdx-spell-critical-effects-list');
+	const $critEffectsData = html.find('.sdx-critical-effects-data');
+
+	// Update the hidden input when critical effects change
+	function updateCriticalEffectsData() {
+		const effects = [];
+		$critEffectsList.find('.sdx-critical-effect-item').each(function () {
+			const $item = $(this);
+			const uuid = $item.data('uuid');
+
+			// Collect duration overrides
+			const duration = {};
+			$item.find('.sdx-duration-input').each(function () {
+				const field = $(this).data('field');
+				const value = $(this).val();
+				if (value !== '') {
+					duration[field] = parseFloat(value);
+				}
+			});
+
+			effects.push({ uuid, duration });
+		});
+		$critEffectsData.val(JSON.stringify(effects));
+
+		// Save immediately to the item without re-rendering
+		const updateData = {};
+		updateData[`flags.${MODULE_ID}.spellDamage.criticalEffects`] = effects;
+		item.update(updateData, { render: false }).then(() => {
+			console.log(`${MODULE_ID} | Saved spell critical effects:`, effects);
+		}).catch(err => {
+			console.error(`${MODULE_ID} | Failed to save spell critical effects:`, err);
+		});
+
+		// Remove "no effects" placeholder if we have effects
+		if (effects.length > 0) {
+			$critEffectsList.find('.sdx-no-effects').remove();
+		} else if ($critEffectsList.find('.sdx-critical-effect-item').length === 0) {
+			$critEffectsList.html('<div class="sdx-no-effects"><i class="fas fa-star-exclamation"></i> Optional</div>');
+		}
+	}
+
+	// Handle drag over for critical effects
+	$critDropArea.on('dragover', function (event) {
+		event.preventDefault();
+		event.stopPropagation();
+		$(this).addClass('sdx-drag-over');
+	});
+
+	// Handle drag leave for critical effects
+	$critDropArea.on('dragleave', function (event) {
+		event.preventDefault();
+		event.stopPropagation();
+		$(this).removeClass('sdx-drag-over');
+	});
+
+	// Handle drop for critical effects
+	$critDropArea.on('drop', async function (event) {
+		event.preventDefault();
+		event.stopPropagation();
+		$(this).removeClass('sdx-drag-over');
+
+		try {
+			const data = JSON.parse(event.originalEvent.dataTransfer.getData('text/plain'));
+
+			// Get the document from the dropped data
+			let doc = null;
+			if (data.uuid) {
+				doc = await fromUuid(data.uuid);
+			} else if (data.type === 'Item' && data.id) {
+				if (data.pack) {
+					const pack = game.packs.get(data.pack);
+					doc = await pack.getDocument(data.id);
+				} else {
+					doc = game.items.get(data.id);
+				}
+			}
+
+			if (!doc) {
+				ui.notifications.warn('Could not load dropped item');
+				return;
+			}
+
+			// Check if it's an effect or condition type
+			const validTypes = ['Effect', 'Condition', 'NPC Feature'];
+			if (!validTypes.includes(doc.type)) {
+				ui.notifications.warn(`Only Effect, Condition, or NPC Feature items can be dropped here`);
+				return;
+			}
+
+			// Check if already added
+			const uuid = doc.uuid;
+			if ($critEffectsList.find(`[data-uuid="${uuid}"]`).length > 0) {
+				ui.notifications.info(`${doc.name} is already in the critical effects list`);
+				return;
+			}
+
+			// Add the effect to the list (simplified without duration override)
+			const effectIndex = $critEffectsList.find('.sdx-critical-effect-item').length;
+			const effectHtml = `
+				<div class="sdx-spell-effect-item sdx-critical-effect-item" data-uuid="${uuid}" data-effect-index="${effectIndex}">
+					<div class="sdx-effect-header">
+						<img src="${doc.img || 'icons/svg/mystery-man.svg'}" alt="${doc.name}" />
+						<span class="sdx-effect-name">${doc.name}</span>
+						<a class="sdx-remove-critical-effect" data-tooltip="Remove"><i class="fas fa-times"></i></a>
+					</div>
+				</div>
+			`;
+
+			$critEffectsList.find('.sdx-no-effects').remove();
+			$critEffectsList.append(effectHtml);
+			updateCriticalEffectsData();
+
+			ui.notifications.info(`Added ${doc.name} to critical effects`);
+		} catch (err) {
+			console.error(`${MODULE_ID} | Error handling critical effect drop:`, err);
+			ui.notifications.error('Failed to add critical effect');
+		}
+	});
+
+	// Handle remove critical effect button
+	html.on('click', '.sdx-remove-critical-effect', function (event) {
+		event.preventDefault();
+		event.stopPropagation();
+
+		$(this).closest('.sdx-critical-effect-item').remove();
+		updateCriticalEffectsData();
+	});
+
 	// Also save applyToTarget when radio buttons change
-	html.on('change', 'input[name="flags.shadowdark-extras.spellDamage.applyToTarget"]', function() {
+	html.on('change', 'input[name="flags.shadowdark-extras.spellDamage.applyToTarget"]', function () {
 		const applyToTargetValue = $(this).val() === 'true';
 		const updateData = {};
 		updateData[`flags.${MODULE_ID}.spellDamage.applyToTarget`] = applyToTargetValue;
-		
+
 		item.update(updateData).then(() => {
 			console.log(`${MODULE_ID} | Saved applyToTarget:`, applyToTargetValue);
 		}).catch(err => {
@@ -7384,14 +8023,14 @@ async function enhanceSpellSheet(app, html) {
 	});
 
 	// ===== SUMMONING HANDLERS =====
-	
+
 	// Toggle summoning section - acts like radio button (only one activity can be enabled)
-	html.on('change', '.sdx-summoning-toggle', function(e) {
+	html.on('change', '.sdx-summoning-toggle', function (e) {
 		e.stopPropagation();
 		const enabled = $(this).prop('checked');
-		
+
 		console.log(`${MODULE_ID} | Summoning toggle changed to:`, enabled);
-		
+
 		if (enabled) {
 			// Disable other activities
 			html.find('.sdx-spell-damage-toggle').prop('checked', false);
@@ -7410,16 +8049,16 @@ async function enhanceSpellSheet(app, html) {
 			item.update(updateData, { render: false });
 		}
 	});
-	
+
 	// Add summon profile button
-	html.on('click', '.sdx-add-summon-btn', async function(e) {
+	html.on('click', '.sdx-add-summon-btn', async function (e) {
 		e.preventDefault();
 		e.stopPropagation();
-		
+
 		const { generateSummonProfileHTML } = await import(`./templates/SummoningConfig.mjs`);
 		const $summonsList = $(this).closest('.sdx-summoning-content').find('.sdx-summons-list');
 		const index = $summonsList.find('.sdx-summon-profile').length;
-		
+
 		const newProfile = {
 			creatureUuid: '',
 			creatureName: '',
@@ -7427,58 +8066,57 @@ async function enhanceSpellSheet(app, html) {
 			count: '1',
 			displayName: ''
 		};
-		
+
 		const profileHtml = generateSummonProfileHTML(newProfile, index);
-		$summonsList.find('.sdx-no-summons').remove();
 		$summonsList.append(profileHtml);
-		
+
 		updateSummonsData();
 	});
-	
+
 	// Remove summon profile
-	html.on('click', '.sdx-remove-summon-btn', function(e) {
+	html.on('click', '.sdx-remove-summon-btn', function (e) {
 		e.preventDefault();
 		e.stopPropagation();
-		
+
 		$(this).closest('.sdx-summon-profile').remove();
-		
+
 		// Re-index remaining profiles
 		const $summonsList = $(this).closest('.sdx-summons-list');
-		$summonsList.find('.sdx-summon-profile').each(function(idx) {
+		$summonsList.find('.sdx-summon-profile').each(function (idx) {
 			$(this).attr('data-index', idx);
 			$(this).find('.sdx-remove-summon-btn').attr('data-index', idx);
 		});
-		
+
 		updateSummonsData();
 	});
-	
+
 	// Handle summon profile input changes
-	html.on('change input', '.sdx-summon-count, .sdx-summon-display-name', function(e) {
+	html.on('change input', '.sdx-summon-count, .sdx-summon-display-name', function (e) {
 		e.stopPropagation(); // Prevent form auto-submit
 		updateSummonsData();
 	});
-	
+
 	// Handle drop on creature drop zone
-	html.on('dragover', '.sdx-summon-creature-drop', function(event) {
+	html.on('dragover', '.sdx-summon-creature-drop', function (event) {
 		event.preventDefault();
 		event.stopPropagation();
 		$(this).addClass('sdx-drag-over');
 	});
-	
-	html.on('dragleave', '.sdx-summon-creature-drop', function(event) {
+
+	html.on('dragleave', '.sdx-summon-creature-drop', function (event) {
 		event.preventDefault();
 		event.stopPropagation();
 		$(this).removeClass('sdx-drag-over');
 	});
-	
-	html.on('drop', '.sdx-summon-creature-drop', async function(event) {
+
+	html.on('drop', '.sdx-summon-creature-drop', async function (event) {
 		event.preventDefault();
 		event.stopPropagation();
 		$(this).removeClass('sdx-drag-over');
-		
+
 		try {
 			const data = JSON.parse(event.originalEvent.dataTransfer.getData('text/plain'));
-			
+
 			// Get the document from the dropped data
 			let doc = null;
 			if (data.uuid) {
@@ -7492,29 +8130,29 @@ async function enhanceSpellSheet(app, html) {
 					doc = game.actors.get(data.id);
 				}
 			}
-			
+
 			if (!doc) {
 				ui.notifications.warn('Could not load dropped actor');
 				return;
 			}
-			
+
 			// Must be an Actor
 			if (!(doc instanceof Actor)) {
 				ui.notifications.warn('Only actors can be dropped here');
 				return;
 			}
-			
+
 			// Update the profile display
 			const $profile = $(this).closest('.sdx-summon-profile');
 			const creatureName = doc.name;
 			const creatureImg = doc.img || doc.prototypeToken?.texture?.src || 'icons/svg/mystery-man.svg';
 			const creatureUuid = doc.uuid;
-			
+
 			// Update hidden inputs
 			$profile.find('.sdx-creature-uuid').val(creatureUuid);
 			$profile.find('.sdx-creature-name').val(creatureName);
 			$profile.find('.sdx-creature-img').val(creatureImg);
-			
+
 			// Update display
 			$(this).html(`
 				<div class="sdx-summon-creature-display" data-uuid="${creatureUuid}">
@@ -7522,7 +8160,7 @@ async function enhanceSpellSheet(app, html) {
 					<span style="margin-left: 4px; font-size: 0.9em;">${creatureName}</span>
 				</div>
 			`);
-			
+
 			updateSummonsData();
 			ui.notifications.info(`Added ${creatureName} to summon profile`);
 		} catch (err) {
@@ -7530,11 +8168,11 @@ async function enhanceSpellSheet(app, html) {
 			ui.notifications.error('Failed to add creature');
 		}
 	});
-	
+
 	// Function to collect and save summons data
 	function updateSummonsData() {
 		const profiles = [];
-		html.find('.sdx-summon-profile').each(function() {
+		html.find('.sdx-summon-profile').each(function () {
 			const $profile = $(this);
 			profiles.push({
 				creatureUuid: $profile.find('.sdx-creature-uuid').val(),
@@ -7544,10 +8182,10 @@ async function enhanceSpellSheet(app, html) {
 				displayName: $profile.find('.sdx-summon-display-name').val() || ''
 			});
 		});
-		
+
 		// Update hidden input
 		html.find('.sdx-summons-data').val(JSON.stringify(profiles));
-		
+
 		// Save to item
 		const updateData = {};
 		updateData[`flags.${MODULE_ID}.summoning.profiles`] = profiles;
@@ -7559,7 +8197,7 @@ async function enhanceSpellSheet(app, html) {
 	}
 
 	// ---- Item give handlers ----
-	html.on('change', '.sdx-item-give-toggle', function(e) {
+	html.on('change', '.sdx-item-give-toggle', function (e) {
 		e.stopPropagation();
 		const enabled = $(this).is(':checked');
 		const updateData = {};
@@ -7569,7 +8207,7 @@ async function enhanceSpellSheet(app, html) {
 		});
 	});
 
-	html.on('click', '.sdx-add-item-give-btn', async function(e) {
+	html.on('click', '.sdx-add-item-give-btn', async function (e) {
 		e.preventDefault();
 		e.stopPropagation();
 		const { generateItemGiveProfileHTML } = await import(`./templates/ItemGiveConfig.mjs`);
@@ -7581,36 +8219,35 @@ async function enhanceSpellSheet(app, html) {
 			itemImg: '',
 			quantity: '1'
 		};
-		$list.find('.sdx-no-items').remove();
 		$list.append(generateItemGiveProfileHTML(newProfile, index));
 		updateItemGiveData();
 	});
 
-	html.on('click', '.sdx-remove-item-give-btn', function(e) {
+	html.on('click', '.sdx-remove-item-give-btn', function (e) {
 		e.preventDefault();
 		e.stopPropagation();
 		$(this).closest('.sdx-item-give-profile').remove();
 		updateItemGiveData();
 	});
 
-	html.on('change input', '.sdx-item-give-quantity', function(e) {
+	html.on('change input', '.sdx-item-give-quantity', function (e) {
 		e.stopPropagation();
 		updateItemGiveData();
 	});
 
-	html.on('dragover', '.sdx-item-give-drop', function(event) {
+	html.on('dragover', '.sdx-item-give-drop', function (event) {
 		event.preventDefault();
 		event.stopPropagation();
 		$(this).addClass('sdx-drag-over');
 	});
 
-	html.on('dragleave', '.sdx-item-give-drop', function(event) {
+	html.on('dragleave', '.sdx-item-give-drop', function (event) {
 		event.preventDefault();
 		event.stopPropagation();
 		$(this).removeClass('sdx-drag-over');
 	});
 
-	html.on('drop', '.sdx-item-give-drop', async function(event) {
+	html.on('drop', '.sdx-item-give-drop', async function (event) {
 		event.preventDefault();
 		event.stopPropagation();
 		$(this).removeClass('sdx-drag-over');
@@ -7658,7 +8295,7 @@ async function enhanceSpellSheet(app, html) {
 
 	function updateItemGiveData() {
 		const profiles = [];
-		html.find('.sdx-item-give-profile').each(function(idx) {
+		html.find('.sdx-item-give-profile').each(function (idx) {
 			const $profile = $(this);
 			$profile.attr('data-index', idx);
 			$profile.find('.sdx-remove-item-give-btn').attr('data-index', idx);
@@ -7669,12 +8306,6 @@ async function enhanceSpellSheet(app, html) {
 				quantity: $profile.find('.sdx-item-give-quantity').val() || '1'
 			});
 		});
-		const $list = html.find('.sdx-item-give-list');
-		if (profiles.length === 0) {
-			$list.html('<div class="sdx-no-items">Drop an item here to grant it to the caster on success</div>');
-		} else {
-			$list.find('.sdx-no-items').remove();
-		}
 		html.find('.sdx-item-give-data').val(JSON.stringify(profiles));
 		const updateData = {};
 		updateData[`flags.${MODULE_ID}.itemGive.profiles`] = profiles;
@@ -7729,26 +8360,26 @@ async function enhancePotionSheet(app, html) {
 		applyToTarget: false, // potions apply to self (drinker) by default
 		effectsApplyToTarget: false // potions apply effects to self by default
 	};
-	
+
 	// Initialize summoning flags
 	const summoningFlags = item.flags?.[MODULE_ID]?.summoning || {
 		enabled: false,
 		profiles: []
 	};
-	
+
 	// Initialize item give flags
 	const itemGiveFlags = item.flags?.[MODULE_ID]?.itemGive || {
 		enabled: false,
 		profiles: []
 	};
-	
+
 	// Combine all flags for template
 	const flags = {
 		...spellDamageFlags,
 		summoning: summoningFlags,
 		itemGive: itemGiveFlags
 	};
-	
+
 	// Convert applyToTarget to boolean (in case it was stored as string)
 	const applyToTarget = flags.applyToTarget === "true" ? true : (flags.applyToTarget === true ? true : false);
 	const effectsApplyToTarget = flags.effectsApplyToTarget === "true" ? true : (flags.effectsApplyToTarget === true ? true : false);
@@ -7757,7 +8388,7 @@ async function enhancePotionSheet(app, html) {
 	if (!app._shadowdarkExtrasActiveTab) {
 		app._shadowdarkExtrasActiveTab = 'tab-details'; // Default to details
 	}
-	
+
 	// Check which tab is currently active
 	const $currentActiveTab = html.find('nav.SD-nav a.navigation-tab.active');
 	if ($currentActiveTab.length) {
@@ -7769,7 +8400,7 @@ async function enhancePotionSheet(app, html) {
 
 	// Create a new "Activity" tab after Details tab
 	const $tabs = html.find('nav.SD-nav');
-	
+
 	// Check if Activity tab already exists
 	if (!html.find('section[data-tab="tab-activity"]').length) {
 		// Add Activity tab to navigation (after Details)
@@ -7781,7 +8412,7 @@ async function enhancePotionSheet(app, html) {
 		} else {
 			console.warn(`${MODULE_ID} | Could not find Details tab link`);
 		}
-		
+
 		// Create Activity tab content container with correct structure
 		const activityTabContent = `<section class="tab tab-activity" data-group="primary" data-tab="tab-activity"></section>`;
 		const $detailsTab = html.find('section.tab-details[data-tab="tab-details"]');
@@ -7791,32 +8422,32 @@ async function enhancePotionSheet(app, html) {
 		} else {
 			console.warn(`${MODULE_ID} | Could not find Details tab content`);
 		}
-		
+
 		// Add click handler to track tab changes
-		$tabs.find('a.navigation-tab').on('click', function() {
+		$tabs.find('a.navigation-tab').on('click', function () {
 			const tabName = $(this).data('tab');
 			if (tabName) {
 				app._shadowdarkExtrasActiveTab = tabName;
 			}
 		});
 	}
-	
+
 	// Restore the previously active tab
 	setTimeout(() => {
 		const $targetTab = $tabs.find(`a.navigation-tab[data-tab="${app._shadowdarkExtrasActiveTab}"]`);
 		const $targetSection = html.find(`section[data-tab="${app._shadowdarkExtrasActiveTab}"]`);
-		
+
 		if ($targetTab.length && $targetSection.length) {
 			// Remove active class from all tabs
 			$tabs.find('a.navigation-tab').removeClass('active');
 			html.find('section[data-group="primary"]').removeClass('active');
-			
+
 			// Add active class to target tab
 			$targetTab.addClass('active');
 			$targetSection.addClass('active');
 		}
 	}, 0);
-	
+
 	// Find the Activity tab content
 	const $activityTab = html.find('section.tab-activity[data-tab="tab-activity"]');
 	if (!$activityTab.length) {
@@ -7828,7 +8459,7 @@ async function enhancePotionSheet(app, html) {
 
 	// Build list of current effects from stored UUIDs
 	let effectsListHtml = '';
-	
+
 	// Handle case where effects might be a string instead of an array (from form submission)
 	let effectsArray = flags.effects || [];
 	if (typeof effectsArray === 'string') {
@@ -7839,7 +8470,7 @@ async function enhancePotionSheet(app, html) {
 			effectsArray = [];
 		}
 	}
-	
+
 	// Normalize effects array - convert old UUID strings to new object format
 	effectsArray = effectsArray.map(effect => {
 		if (typeof effect === 'string') {
@@ -7847,20 +8478,20 @@ async function enhancePotionSheet(app, html) {
 		}
 		return effect;
 	});
-	
+
 	if (effectsArray && effectsArray.length > 0) {
 		console.log(`${MODULE_ID} | Loading ${effectsArray.length} effects from UUIDs:`, effectsArray);
-		
+
 		// Load all effects in parallel and wait for them all
 		const effectPromises = effectsArray.map(effect => fromUuid(effect.uuid || effect));
 		const effectDocs = await Promise.all(effectPromises);
-		
+
 		for (let i = 0; i < effectDocs.length; i++) {
 			const doc = effectDocs[i];
 			const effectData = effectsArray[i];
 			const uuid = effectData.uuid || effectData;
 			const duration = effectData.duration || {};
-			
+
 			if (doc) {
 				effectsListHtml += `
 					<div class="sdx-spell-effect-item" data-uuid="${uuid}" data-effect-index="${i}">
@@ -7907,14 +8538,14 @@ async function enhancePotionSheet(app, html) {
 				console.warn(`${MODULE_ID} | Could not load effect from UUID:`, uuid);
 			}
 		}
-		
+
 		console.log(`${MODULE_ID} | Loaded effects HTML, length:`, effectsListHtml.length);
 	}
 
 	// Build summons list HTML
 	let summonsList = '';
 	let summonProfilesArray = summoningFlags.profiles || [];
-	
+
 	// Handle case where profiles might be a string
 	if (typeof summonProfilesArray === 'string') {
 		try {
@@ -7924,7 +8555,7 @@ async function enhancePotionSheet(app, html) {
 			summonProfilesArray = [];
 		}
 	}
-	
+
 	if (summonProfilesArray && summonProfilesArray.length > 0) {
 		const { generateSummonProfileHTML } = await import(`./templates/SummoningConfig.mjs`);
 		for (let i = 0; i < summonProfilesArray.length; i++) {
@@ -7961,14 +8592,14 @@ async function enhancePotionSheet(app, html) {
 	console.log(`${MODULE_ID} | Damage/Heal box inserted into Activity tab`);
 
 	// Prevent auto-submission of form inputs in Activity tab to avoid unwanted re-renders
-	$activityTab.find('input, select, textarea').on('change', function(e) {
+	$activityTab.find('input, select, textarea').on('change', function (e) {
 		e.stopPropagation(); // Prevent event from bubbling up to form auto-submit
-		
+
 		// Manually update the item without re-rendering
 		const fieldName = $(this).attr('name');
 		if (fieldName) {
 			let value = $(this).val();
-			
+
 			// Handle checkboxes
 			if ($(this).attr('type') === 'checkbox') {
 				value = $(this).is(':checked');
@@ -7981,10 +8612,10 @@ async function enhancePotionSheet(app, html) {
 			else if ($(this).attr('type') === 'number') {
 				value = parseFloat(value) || 0;
 			}
-			
+
 			const updateData = {};
 			updateData[fieldName] = value;
-			
+
 			// Update without re-rendering
 			item.update(updateData, { render: false }).then(() => {
 				console.log(`${MODULE_ID} | Updated ${fieldName}:`, value);
@@ -7995,7 +8626,7 @@ async function enhancePotionSheet(app, html) {
 	});
 
 	// Attach toggle listener
-	html.find('.sdx-spell-damage-toggle').on('change', function() {
+	html.find('.sdx-spell-damage-toggle').on('change', function () {
 		const $content = $(this).closest('.sdx-spell-damage-box').find('.sdx-spell-damage-content');
 		if ($(this).is(':checked')) {
 			$content.slideDown(200);
@@ -8005,13 +8636,13 @@ async function enhancePotionSheet(app, html) {
 	});
 
 	// Handle formula type radio buttons
-	html.find('.sdx-formula-type-radio').on('change', function() {
+	html.find('.sdx-formula-type-radio').on('change', function () {
 		const selectedType = $(this).val();
 		const $box = $(this).closest('.sdx-spell-damage-box');
-		
+
 		// Hide all formula sections
 		$box.find('.sdx-formula-section').hide();
-		
+
 		// Show the selected formula section
 		if (selectedType === 'basic') {
 			$box.find('.sdx-basic-formula').show();
@@ -8020,7 +8651,7 @@ async function enhancePotionSheet(app, html) {
 		} else if (selectedType === 'tiered') {
 			$box.find('.sdx-tiered-formula').show();
 		}
-		
+
 		// Save the formula type preference
 		const updateData = {};
 		updateData[`flags.${MODULE_ID}.spellDamage.formulaType`] = selectedType;
@@ -8028,31 +8659,31 @@ async function enhancePotionSheet(app, html) {
 	});
 
 	// Attach drag and drop listeners for effects
-	const $dropArea = html.find('.sdx-spell-effects-drop-area');
+	const $dropArea = html.find('.sdx-spell-effects-drop-area:not(.sdx-critical-effects-drop-area)');
 	const $effectsList = html.find('.sdx-spell-effects-list');
 	const $effectsData = html.find('.sdx-effects-data');
 
 	// Update the hidden input when effects change
 	function updateEffectsData() {
 		const effects = [];
-		$effectsList.find('.sdx-spell-effect-item').each(function() {
+		$effectsList.find('.sdx-spell-effect-item').each(function () {
 			const $item = $(this);
 			const uuid = $item.data('uuid');
-			
+
 			// Collect duration overrides
 			const duration = {};
-			$item.find('.sdx-duration-input').each(function() {
+			$item.find('.sdx-duration-input').each(function () {
 				const field = $(this).data('field');
 				const value = $(this).val();
 				if (value && value.trim() !== '') {
 					duration[field] = parseFloat(value);
 				}
 			});
-			
+
 			effects.push({ uuid, duration });
 		});
 		$effectsData.val(JSON.stringify(effects));
-		
+
 		// Save immediately to the item
 		const updateData = {};
 		updateData[`flags.${MODULE_ID}.spellDamage.effects`] = effects;
@@ -8061,7 +8692,7 @@ async function enhancePotionSheet(app, html) {
 		}).catch(err => {
 			console.error(`${MODULE_ID} | Failed to save potion effects:`, err);
 		});
-		
+
 		// Remove "no effects" placeholder if we have effects
 		if (effects.length > 0) {
 			$effectsList.find('.sdx-no-effects').remove();
@@ -8071,28 +8702,28 @@ async function enhancePotionSheet(app, html) {
 	}
 
 	// Handle drag over
-	$dropArea.on('dragover', function(event) {
+	$dropArea.on('dragover', function (event) {
 		event.preventDefault();
 		event.stopPropagation();
 		$(this).addClass('sdx-drag-over');
 	});
 
 	// Handle drag leave
-	$dropArea.on('dragleave', function(event) {
+	$dropArea.on('dragleave', function (event) {
 		event.preventDefault();
 		event.stopPropagation();
 		$(this).removeClass('sdx-drag-over');
 	});
 
 	// Handle drop
-	$dropArea.on('drop', async function(event) {
+	$dropArea.on('drop', async function (event) {
 		event.preventDefault();
 		event.stopPropagation();
 		$(this).removeClass('sdx-drag-over');
 
 		try {
 			const data = JSON.parse(event.originalEvent.dataTransfer.getData('text/plain'));
-			
+
 			// Get the document from the dropped data
 			let doc = null;
 			if (data.uuid) {
@@ -8134,7 +8765,7 @@ async function enhancePotionSheet(app, html) {
 					<a class="sdx-remove-effect" data-tooltip="Remove"><i class="fas fa-times"></i></a>
 				</div>
 			`;
-			
+
 			$effectsList.find('.sdx-no-effects').remove();
 			$effectsList.append(effectHtml);
 			updateEffectsData();
@@ -8147,20 +8778,20 @@ async function enhancePotionSheet(app, html) {
 	});
 
 	// Handle remove effect button
-	html.on('click', '.sdx-remove-effect', function(event) {
+	html.on('click', '.sdx-remove-effect', function (event) {
 		event.preventDefault();
 		event.stopPropagation();
-		
+
 		$(this).closest('.sdx-spell-effect-item').remove();
 		updateEffectsData();
 	});
 
 	// Also save effectsApplyToTarget when radio buttons change
-	html.on('change', 'input[name="flags.shadowdark-extras.spellDamage.effectsApplyToTarget"]', function() {
+	html.on('change', 'input[name="flags.shadowdark-extras.spellDamage.effectsApplyToTarget"]', function () {
 		const effectsApplyToTargetValue = $(this).val() === 'true';
 		const updateData = {};
 		updateData[`flags.${MODULE_ID}.spellDamage.effectsApplyToTarget`] = effectsApplyToTargetValue;
-		
+
 		item.update(updateData).then(() => {
 			console.log(`${MODULE_ID} | Saved effectsApplyToTarget:`, effectsApplyToTargetValue);
 		}).catch(err => {
@@ -8169,7 +8800,7 @@ async function enhancePotionSheet(app, html) {
 	});
 
 	// ---- Summoning handlers ----
-	html.on('change', '.sdx-summoning-toggle', function(e) {
+	html.on('change', '.sdx-summoning-toggle', function (e) {
 		e.stopPropagation();
 		const enabled = $(this).is(':checked');
 		const updateData = {};
@@ -8179,7 +8810,7 @@ async function enhancePotionSheet(app, html) {
 		});
 	});
 
-	html.on('click', '.sdx-add-summon-btn', async function(e) {
+	html.on('click', '.sdx-add-summon-btn', async function (e) {
 		e.preventDefault();
 		e.stopPropagation();
 		const { generateSummonProfileHTML } = await import(`./templates/SummoningConfig.mjs`);
@@ -8192,43 +8823,42 @@ async function enhancePotionSheet(app, html) {
 			count: '1',
 			displayName: ''
 		};
-		$list.find('.sdx-no-summons').remove();
 		$list.append(generateSummonProfileHTML(newProfile, index));
 		updateSummonsData();
 	});
 
-	html.on('click', '.sdx-remove-summon-btn', function(e) {
+	html.on('click', '.sdx-remove-summon-btn', function (e) {
 		e.preventDefault();
 		e.stopPropagation();
 		$(this).closest('.sdx-summon-profile').remove();
 		updateSummonsData();
 	});
 
-	html.on('change input', '.sdx-summon-count, .sdx-summon-display-name', function(e) {
+	html.on('change input', '.sdx-summon-count, .sdx-summon-display-name', function (e) {
 		e.stopPropagation();
 		updateSummonsData();
 	});
 
-	html.on('dragover', '.sdx-summon-creature-drop', function(event) {
+	html.on('dragover', '.sdx-summon-creature-drop', function (event) {
 		event.preventDefault();
 		event.stopPropagation();
 		$(this).addClass('sdx-drag-over');
 	});
-	
-	html.on('dragleave', '.sdx-summon-creature-drop', function(event) {
+
+	html.on('dragleave', '.sdx-summon-creature-drop', function (event) {
 		event.preventDefault();
 		event.stopPropagation();
 		$(this).removeClass('sdx-drag-over');
 	});
-	
-	html.on('drop', '.sdx-summon-creature-drop', async function(event) {
+
+	html.on('drop', '.sdx-summon-creature-drop', async function (event) {
 		event.preventDefault();
 		event.stopPropagation();
 		$(this).removeClass('sdx-drag-over');
-		
+
 		try {
 			const data = JSON.parse(event.originalEvent.dataTransfer.getData('text/plain'));
-			
+
 			// Get the document from the dropped data
 			let doc = null;
 			if (data.uuid) {
@@ -8242,29 +8872,29 @@ async function enhancePotionSheet(app, html) {
 					doc = game.actors.get(data.id);
 				}
 			}
-			
+
 			if (!doc) {
 				ui.notifications.warn('Could not load dropped actor');
 				return;
 			}
-			
+
 			// Must be an Actor
 			if (!(doc instanceof Actor)) {
 				ui.notifications.warn('Only actors can be dropped here');
 				return;
 			}
-			
+
 			// Update the profile display
 			const $profile = $(this).closest('.sdx-summon-profile');
 			const creatureName = doc.name;
 			const creatureImg = doc.img || doc.prototypeToken?.texture?.src || 'icons/svg/mystery-man.svg';
 			const creatureUuid = doc.uuid;
-			
+
 			// Update hidden inputs
 			$profile.find('.sdx-creature-uuid').val(creatureUuid);
 			$profile.find('.sdx-creature-name').val(creatureName);
 			$profile.find('.sdx-creature-img').val(creatureImg);
-			
+
 			// Update display
 			$(this).html(`
 				<div class="sdx-summon-creature-display" data-uuid="${creatureUuid}">
@@ -8272,7 +8902,7 @@ async function enhancePotionSheet(app, html) {
 					<span style="margin-left: 4px; font-size: 0.9em;">${creatureName}</span>
 				</div>
 			`);
-			
+
 			updateSummonsData();
 			ui.notifications.info(`Added ${creatureName} to summon profile`);
 		} catch (err) {
@@ -8280,11 +8910,11 @@ async function enhancePotionSheet(app, html) {
 			ui.notifications.error('Failed to add creature');
 		}
 	});
-	
+
 	// Function to collect and save summons data
 	function updateSummonsData() {
 		const profiles = [];
-		html.find('.sdx-summon-profile').each(function() {
+		html.find('.sdx-summon-profile').each(function () {
 			const $profile = $(this);
 			profiles.push({
 				creatureUuid: $profile.find('.sdx-creature-uuid').val(),
@@ -8294,10 +8924,10 @@ async function enhancePotionSheet(app, html) {
 				displayName: $profile.find('.sdx-summon-display-name').val() || ''
 			});
 		});
-		
+
 		// Update hidden input
 		html.find('.sdx-summons-data').val(JSON.stringify(profiles));
-		
+
 		// Save to item
 		const updateData = {};
 		updateData[`flags.${MODULE_ID}.summoning.profiles`] = profiles;
@@ -8309,7 +8939,7 @@ async function enhancePotionSheet(app, html) {
 	}
 
 	// ---- Item give handlers ----
-	html.on('change', '.sdx-item-give-toggle', function(e) {
+	html.on('change', '.sdx-item-give-toggle', function (e) {
 		e.stopPropagation();
 		const enabled = $(this).is(':checked');
 		const updateData = {};
@@ -8319,7 +8949,7 @@ async function enhancePotionSheet(app, html) {
 		});
 	});
 
-	html.on('click', '.sdx-add-item-give-btn', async function(e) {
+	html.on('click', '.sdx-add-item-give-btn', async function (e) {
 		e.preventDefault();
 		e.stopPropagation();
 		const { generateItemGiveProfileHTML } = await import(`./templates/ItemGiveConfig.mjs`);
@@ -8331,36 +8961,35 @@ async function enhancePotionSheet(app, html) {
 			itemImg: '',
 			quantity: '1'
 		};
-		$list.find('.sdx-no-items').remove();
 		$list.append(generateItemGiveProfileHTML(newProfile, index));
 		updateItemGiveData();
 	});
 
-	html.on('click', '.sdx-remove-item-give-btn', function(e) {
+	html.on('click', '.sdx-remove-item-give-btn', function (e) {
 		e.preventDefault();
 		e.stopPropagation();
 		$(this).closest('.sdx-item-give-profile').remove();
 		updateItemGiveData();
 	});
 
-	html.on('change input', '.sdx-item-give-quantity', function(e) {
+	html.on('change input', '.sdx-item-give-quantity', function (e) {
 		e.stopPropagation();
 		updateItemGiveData();
 	});
 
-	html.on('dragover', '.sdx-item-give-drop', function(event) {
+	html.on('dragover', '.sdx-item-give-drop', function (event) {
 		event.preventDefault();
 		event.stopPropagation();
 		$(this).addClass('sdx-drag-over');
 	});
 
-	html.on('dragleave', '.sdx-item-give-drop', function(event) {
+	html.on('dragleave', '.sdx-item-give-drop', function (event) {
 		event.preventDefault();
 		event.stopPropagation();
 		$(this).removeClass('sdx-drag-over');
 	});
 
-	html.on('drop', '.sdx-item-give-drop', async function(event) {
+	html.on('drop', '.sdx-item-give-drop', async function (event) {
 		event.preventDefault();
 		event.stopPropagation();
 		$(this).removeClass('sdx-drag-over');
@@ -8408,7 +9037,7 @@ async function enhancePotionSheet(app, html) {
 
 	function updateItemGiveData() {
 		const profiles = [];
-		html.find('.sdx-item-give-profile').each(function(idx) {
+		html.find('.sdx-item-give-profile').each(function (idx) {
 			const $profile = $(this);
 			$profile.attr('data-index', idx);
 			$profile.find('.sdx-remove-item-give-btn').attr('data-index', idx);
@@ -8419,12 +9048,6 @@ async function enhancePotionSheet(app, html) {
 				quantity: $profile.find('.sdx-item-give-quantity').val() || '1'
 			});
 		});
-		const $list = html.find('.sdx-item-give-list');
-		if (profiles.length === 0) {
-			$list.html('<div class="sdx-no-items">Drop an item here to grant it to the caster on success</div>');
-		} else {
-			$list.find('.sdx-no-items').remove();
-		}
 		html.find('.sdx-item-give-data').val(JSON.stringify(profiles));
 		const updateData = {};
 		updateData[`flags.${MODULE_ID}.itemGive.profiles`] = profiles;
@@ -8482,26 +9105,26 @@ async function enhanceScrollSheet(app, html) {
 		applyToTarget: true, // scrolls apply to target by default
 		effectsApplyToTarget: true // scrolls apply effects to target by default
 	};
-	
+
 	// Initialize summoning flags
 	const summoningFlags = item.flags?.[MODULE_ID]?.summoning || {
 		enabled: false,
 		profiles: []
 	};
-	
+
 	// Initialize item give flags
 	const itemGiveFlags = item.flags?.[MODULE_ID]?.itemGive || {
 		enabled: false,
 		profiles: []
 	};
-	
+
 	// Combine all flags for template
 	const flags = {
 		...spellDamageFlags,
 		summoning: summoningFlags,
 		itemGive: itemGiveFlags
 	};
-	
+
 	// Convert applyToTarget to boolean (in case it was stored as string)
 	const applyToTarget = flags.applyToTarget === "false" ? false : (flags.applyToTarget === false ? false : true);
 	const effectsApplyToTarget = flags.effectsApplyToTarget === "false" ? false : (flags.effectsApplyToTarget === false ? false : true);
@@ -8510,7 +9133,7 @@ async function enhanceScrollSheet(app, html) {
 	if (!app._shadowdarkExtrasActiveTab) {
 		app._shadowdarkExtrasActiveTab = 'tab-details'; // Default to details
 	}
-	
+
 	// Check which tab is currently active
 	const $currentActiveTab = html.find('nav.SD-nav a.navigation-tab.active');
 	if ($currentActiveTab.length) {
@@ -8522,7 +9145,7 @@ async function enhanceScrollSheet(app, html) {
 
 	// Create a new "Activity" tab after Details tab
 	const $tabs = html.find('nav.SD-nav');
-	
+
 	// Check if Activity tab already exists
 	if (!html.find('section[data-tab="tab-activity"]').length) {
 		// Add Activity tab to navigation (after Details)
@@ -8534,7 +9157,7 @@ async function enhanceScrollSheet(app, html) {
 		} else {
 			console.warn(`${MODULE_ID} | Could not find Details tab link`);
 		}
-		
+
 		// Create Activity tab content container with correct structure
 		const activityTabContent = `<section class="tab tab-activity" data-group="primary" data-tab="tab-activity"></section>`;
 		const $detailsTab = html.find('section.tab-details[data-tab="tab-details"]');
@@ -8544,32 +9167,32 @@ async function enhanceScrollSheet(app, html) {
 		} else {
 			console.warn(`${MODULE_ID} | Could not find Details tab content`);
 		}
-		
+
 		// Add click handler to track tab changes
-		$tabs.find('a.navigation-tab').on('click', function() {
+		$tabs.find('a.navigation-tab').on('click', function () {
 			const tabName = $(this).data('tab');
 			if (tabName) {
 				app._shadowdarkExtrasActiveTab = tabName;
 			}
 		});
 	}
-	
+
 	// Restore the previously active tab
 	setTimeout(() => {
 		const $targetTab = $tabs.find(`a.navigation-tab[data-tab="${app._shadowdarkExtrasActiveTab}"]`);
 		const $targetSection = html.find(`section[data-tab="${app._shadowdarkExtrasActiveTab}"]`);
-		
+
 		if ($targetTab.length && $targetSection.length) {
 			// Remove active class from all tabs
 			$tabs.find('a.navigation-tab').removeClass('active');
 			html.find('section[data-group="primary"]').removeClass('active');
-			
+
 			// Add active class to target tab
 			$targetTab.addClass('active');
 			$targetSection.addClass('active');
 		}
 	}, 0);
-	
+
 	// Find the Activity tab content
 	const $activityTab = html.find('section.tab-activity[data-tab="tab-activity"]');
 	if (!$activityTab.length) {
@@ -8581,7 +9204,7 @@ async function enhanceScrollSheet(app, html) {
 
 	// Build list of current effects from stored UUIDs
 	let effectsListHtml = '';
-	
+
 	// Handle case where effects might be a string instead of an array (from form submission)
 	let effectsArray = flags.effects || [];
 	if (typeof effectsArray === 'string') {
@@ -8592,7 +9215,7 @@ async function enhanceScrollSheet(app, html) {
 			effectsArray = [];
 		}
 	}
-	
+
 	// Normalize effects array - convert old UUID strings to new object format
 	effectsArray = effectsArray.map(effect => {
 		if (typeof effect === 'string') {
@@ -8600,20 +9223,20 @@ async function enhanceScrollSheet(app, html) {
 		}
 		return effect;
 	});
-	
+
 	if (effectsArray && effectsArray.length > 0) {
 		console.log(`${MODULE_ID} | Loading ${effectsArray.length} effects from UUIDs:`, effectsArray);
-		
+
 		// Load all effects in parallel and wait for them all
 		const effectPromises = effectsArray.map(effect => fromUuid(effect.uuid || effect));
 		const effectDocs = await Promise.all(effectPromises);
-		
+
 		for (let i = 0; i < effectDocs.length; i++) {
 			const doc = effectDocs[i];
 			const effectData = effectsArray[i];
 			const uuid = effectData.uuid || effectData;
 			const duration = effectData.duration || {};
-			
+
 			if (doc) {
 				effectsListHtml += `
 					<div class="sdx-spell-effect-item" data-uuid="${uuid}" data-effect-index="${i}">
@@ -8660,14 +9283,14 @@ async function enhanceScrollSheet(app, html) {
 				console.warn(`${MODULE_ID} | Could not load effect from UUID:`, uuid);
 			}
 		}
-		
+
 		console.log(`${MODULE_ID} | Loaded effects HTML, length:`, effectsListHtml.length);
 	}
 
 	// Build summons list HTML
 	let summonsList = '';
 	let summonProfilesArray = summoningFlags.profiles || [];
-	
+
 	// Handle case where profiles might be a string
 	if (typeof summonProfilesArray === 'string') {
 		try {
@@ -8677,7 +9300,7 @@ async function enhanceScrollSheet(app, html) {
 			summonProfilesArray = [];
 		}
 	}
-	
+
 	if (summonProfilesArray && summonProfilesArray.length > 0) {
 		const { generateSummonProfileHTML } = await import(`./templates/SummoningConfig.mjs`);
 		for (let i = 0; i < summonProfilesArray.length; i++) {
@@ -8714,14 +9337,14 @@ async function enhanceScrollSheet(app, html) {
 	console.log(`${MODULE_ID} | Damage/Heal box inserted into Activity tab`);
 
 	// Prevent auto-submission of form inputs in Activity tab to avoid unwanted re-renders
-	$activityTab.find('input, select, textarea').on('change', function(e) {
+	$activityTab.find('input, select, textarea').on('change', function (e) {
 		e.stopPropagation(); // Prevent event from bubbling up to form auto-submit
-		
+
 		// Manually update the item without re-rendering
 		const fieldName = $(this).attr('name');
 		if (fieldName) {
 			let value = $(this).val();
-			
+
 			// Handle checkboxes
 			if ($(this).attr('type') === 'checkbox') {
 				value = $(this).is(':checked');
@@ -8734,10 +9357,10 @@ async function enhanceScrollSheet(app, html) {
 			else if ($(this).attr('type') === 'number') {
 				value = parseFloat(value) || 0;
 			}
-			
+
 			const updateData = {};
 			updateData[fieldName] = value;
-			
+
 			// Update without re-rendering
 			item.update(updateData, { render: false }).then(() => {
 				console.log(`${MODULE_ID} | Updated ${fieldName}:`, value);
@@ -8748,7 +9371,7 @@ async function enhanceScrollSheet(app, html) {
 	});
 
 	// Attach toggle listener
-	html.find('.sdx-spell-damage-toggle').on('change', function() {
+	html.find('.sdx-spell-damage-toggle').on('change', function () {
 		const $content = $(this).closest('.sdx-spell-damage-box').find('.sdx-spell-damage-content');
 		if ($(this).is(':checked')) {
 			$content.slideDown(200);
@@ -8758,13 +9381,13 @@ async function enhanceScrollSheet(app, html) {
 	});
 
 	// Handle formula type radio buttons
-	html.find('.sdx-formula-type-radio').on('change', function() {
+	html.find('.sdx-formula-type-radio').on('change', function () {
 		const selectedType = $(this).val();
 		const $box = $(this).closest('.sdx-spell-damage-box');
-		
+
 		// Hide all formula sections
 		$box.find('.sdx-formula-section').hide();
-		
+
 		// Show the selected formula section
 		if (selectedType === 'basic') {
 			$box.find('.sdx-basic-formula').show();
@@ -8773,7 +9396,7 @@ async function enhanceScrollSheet(app, html) {
 		} else if (selectedType === 'tiered') {
 			$box.find('.sdx-tiered-formula').show();
 		}
-		
+
 		// Save the formula type preference
 		const updateData = {};
 		updateData[`flags.${MODULE_ID}.spellDamage.formulaType`] = selectedType;
@@ -8781,34 +9404,34 @@ async function enhanceScrollSheet(app, html) {
 	});
 
 	// Attach drag and drop listeners for effects
-	const $dropArea = html.find('.sdx-spell-effects-drop-area');
+	const $dropArea = html.find('.sdx-spell-effects-drop-area:not(.sdx-critical-effects-drop-area)');
 	const $effectsList = html.find('.sdx-spell-effects-list');
 	const $effectsData = html.find('.sdx-effects-data');
 
 	function updateEffectsData() {
 		const effects = [];
-		$effectsList.find('.sdx-spell-effect-item').each(function() {
+		$effectsList.find('.sdx-spell-effect-item').each(function () {
 			const $item = $(this);
 			const uuid = $item.data('uuid');
-			
+
 			// Collect duration overrides
 			const duration = {};
-			$item.find('.sdx-duration-input').each(function() {
+			$item.find('.sdx-duration-input').each(function () {
 				const field = $(this).data('field');
 				const value = $(this).val();
 				if (value && value.trim() !== '') {
 					duration[field] = parseFloat(value);
 				}
 			});
-			
+
 			effects.push({ uuid, duration });
 		});
 		$effectsData.val(JSON.stringify(effects));
-		
+
 		const updateData = {};
 		updateData[`flags.${MODULE_ID}.spellDamage.effects`] = effects;
 		item.update(updateData);
-		
+
 		if (effects.length > 0) {
 			$effectsList.find('.sdx-no-effects').remove();
 		} else if ($effectsList.find('.sdx-spell-effect-item').length === 0) {
@@ -8816,26 +9439,26 @@ async function enhanceScrollSheet(app, html) {
 		}
 	}
 
-	$dropArea.on('dragover', function(event) {
+	$dropArea.on('dragover', function (event) {
 		event.preventDefault();
 		event.stopPropagation();
 		$(this).addClass('sdx-drag-over');
 	});
 
-	$dropArea.on('dragleave', function(event) {
+	$dropArea.on('dragleave', function (event) {
 		event.preventDefault();
 		event.stopPropagation();
 		$(this).removeClass('sdx-drag-over');
 	});
 
-	$dropArea.on('drop', async function(event) {
+	$dropArea.on('drop', async function (event) {
 		event.preventDefault();
 		event.stopPropagation();
 		$(this).removeClass('sdx-drag-over');
 
 		try {
 			const data = JSON.parse(event.originalEvent.dataTransfer.getData('text/plain'));
-			
+
 			let doc = null;
 			if (data.uuid) {
 				doc = await fromUuid(data.uuid);
@@ -8872,7 +9495,7 @@ async function enhanceScrollSheet(app, html) {
 					<a class="sdx-remove-effect" data-tooltip="Remove"><i class="fas fa-times"></i></a>
 				</div>
 			`;
-			
+
 			$effectsList.find('.sdx-no-effects').remove();
 			$effectsList.append(effectHtml);
 			updateEffectsData();
@@ -8884,15 +9507,15 @@ async function enhanceScrollSheet(app, html) {
 		}
 	});
 
-	html.on('click', '.sdx-remove-effect', function(event) {
+	html.on('click', '.sdx-remove-effect', function (event) {
 		event.preventDefault();
 		event.stopPropagation();
-		
+
 		$(this).closest('.sdx-spell-effect-item').remove();
 		updateEffectsData();
 	});
 
-	html.on('change', 'input[name="flags.shadowdark-extras.spellDamage.effectsApplyToTarget"]', function() {
+	html.on('change', 'input[name="flags.shadowdark-extras.spellDamage.effectsApplyToTarget"]', function () {
 		const effectsApplyToTargetValue = $(this).val() === 'true';
 		const updateData = {};
 		updateData[`flags.${MODULE_ID}.spellDamage.effectsApplyToTarget`] = effectsApplyToTargetValue;
@@ -8900,7 +9523,7 @@ async function enhanceScrollSheet(app, html) {
 	});
 
 	// ---- Summoning handlers ----
-	html.on('change', '.sdx-summoning-toggle', function(e) {
+	html.on('change', '.sdx-summoning-toggle', function (e) {
 		e.stopPropagation();
 		const enabled = $(this).is(':checked');
 		const updateData = {};
@@ -8910,7 +9533,7 @@ async function enhanceScrollSheet(app, html) {
 		});
 	});
 
-	html.on('click', '.sdx-add-summon-btn', async function(e) {
+	html.on('click', '.sdx-add-summon-btn', async function (e) {
 		e.preventDefault();
 		e.stopPropagation();
 		const { generateSummonProfileHTML } = await import(`./templates/SummoningConfig.mjs`);
@@ -8923,43 +9546,42 @@ async function enhanceScrollSheet(app, html) {
 			count: '1',
 			displayName: ''
 		};
-		$list.find('.sdx-no-summons').remove();
 		$list.append(generateSummonProfileHTML(newProfile, index));
 		updateSummonsData();
 	});
 
-	html.on('click', '.sdx-remove-summon-btn', function(e) {
+	html.on('click', '.sdx-remove-summon-btn', function (e) {
 		e.preventDefault();
 		e.stopPropagation();
 		$(this).closest('.sdx-summon-profile').remove();
 		updateSummonsData();
 	});
 
-	html.on('change input', '.sdx-summon-count, .sdx-summon-display-name', function(e) {
+	html.on('change input', '.sdx-summon-count, .sdx-summon-display-name', function (e) {
 		e.stopPropagation();
 		updateSummonsData();
 	});
 
-	html.on('dragover', '.sdx-summon-creature-drop', function(event) {
+	html.on('dragover', '.sdx-summon-creature-drop', function (event) {
 		event.preventDefault();
 		event.stopPropagation();
 		$(this).addClass('sdx-drag-over');
 	});
-	
-	html.on('dragleave', '.sdx-summon-creature-drop', function(event) {
+
+	html.on('dragleave', '.sdx-summon-creature-drop', function (event) {
 		event.preventDefault();
 		event.stopPropagation();
 		$(this).removeClass('sdx-drag-over');
 	});
-	
-	html.on('drop', '.sdx-summon-creature-drop', async function(event) {
+
+	html.on('drop', '.sdx-summon-creature-drop', async function (event) {
 		event.preventDefault();
 		event.stopPropagation();
 		$(this).removeClass('sdx-drag-over');
-		
+
 		try {
 			const data = JSON.parse(event.originalEvent.dataTransfer.getData('text/plain'));
-			
+
 			// Get the document from the dropped data
 			let doc = null;
 			if (data.uuid) {
@@ -8973,29 +9595,29 @@ async function enhanceScrollSheet(app, html) {
 					doc = game.actors.get(data.id);
 				}
 			}
-			
+
 			if (!doc) {
 				ui.notifications.warn('Could not load dropped actor');
 				return;
 			}
-			
+
 			// Must be an Actor
 			if (!(doc instanceof Actor)) {
 				ui.notifications.warn('Only actors can be dropped here');
 				return;
 			}
-			
+
 			// Update the profile display
 			const $profile = $(this).closest('.sdx-summon-profile');
 			const creatureName = doc.name;
 			const creatureImg = doc.img || doc.prototypeToken?.texture?.src || 'icons/svg/mystery-man.svg';
 			const creatureUuid = doc.uuid;
-			
+
 			// Update hidden inputs
 			$profile.find('.sdx-creature-uuid').val(creatureUuid);
 			$profile.find('.sdx-creature-name').val(creatureName);
 			$profile.find('.sdx-creature-img').val(creatureImg);
-			
+
 			// Update display
 			$(this).html(`
 				<div class="sdx-summon-creature-display" data-uuid="${creatureUuid}">
@@ -9003,7 +9625,7 @@ async function enhanceScrollSheet(app, html) {
 					<span style="margin-left: 4px; font-size: 0.9em;">${creatureName}</span>
 				</div>
 			`);
-			
+
 			updateSummonsData();
 			ui.notifications.info(`Added ${creatureName} to summon profile`);
 		} catch (err) {
@@ -9011,11 +9633,11 @@ async function enhanceScrollSheet(app, html) {
 			ui.notifications.error('Failed to add creature');
 		}
 	});
-	
+
 	// Function to collect and save summons data
 	function updateSummonsData() {
 		const profiles = [];
-		html.find('.sdx-summon-profile').each(function() {
+		html.find('.sdx-summon-profile').each(function () {
 			const $profile = $(this);
 			profiles.push({
 				creatureUuid: $profile.find('.sdx-creature-uuid').val(),
@@ -9025,10 +9647,10 @@ async function enhanceScrollSheet(app, html) {
 				displayName: $profile.find('.sdx-summon-display-name').val() || ''
 			});
 		});
-		
+
 		// Update hidden input
 		html.find('.sdx-summons-data').val(JSON.stringify(profiles));
-		
+
 		// Save to item
 		const updateData = {};
 		updateData[`flags.${MODULE_ID}.summoning.profiles`] = profiles;
@@ -9040,7 +9662,7 @@ async function enhanceScrollSheet(app, html) {
 	}
 
 	// ---- Item give handlers ----
-	html.on('change', '.sdx-item-give-toggle', function(e) {
+	html.on('change', '.sdx-item-give-toggle', function (e) {
 		e.stopPropagation();
 		const enabled = $(this).is(':checked');
 		const updateData = {};
@@ -9050,7 +9672,7 @@ async function enhanceScrollSheet(app, html) {
 		});
 	});
 
-	html.on('click', '.sdx-add-item-give-btn', async function(e) {
+	html.on('click', '.sdx-add-item-give-btn', async function (e) {
 		e.preventDefault();
 		e.stopPropagation();
 		const { generateItemGiveProfileHTML } = await import(`./templates/ItemGiveConfig.mjs`);
@@ -9062,36 +9684,35 @@ async function enhanceScrollSheet(app, html) {
 			itemImg: '',
 			quantity: '1'
 		};
-		$list.find('.sdx-no-items').remove();
 		$list.append(generateItemGiveProfileHTML(newProfile, index));
 		updateItemGiveData();
 	});
 
-	html.on('click', '.sdx-remove-item-give-btn', function(e) {
+	html.on('click', '.sdx-remove-item-give-btn', function (e) {
 		e.preventDefault();
 		e.stopPropagation();
 		$(this).closest('.sdx-item-give-profile').remove();
 		updateItemGiveData();
 	});
 
-	html.on('change input', '.sdx-item-give-quantity', function(e) {
+	html.on('change input', '.sdx-item-give-quantity', function (e) {
 		e.stopPropagation();
 		updateItemGiveData();
 	});
 
-	html.on('dragover', '.sdx-item-give-drop', function(event) {
+	html.on('dragover', '.sdx-item-give-drop', function (event) {
 		event.preventDefault();
 		event.stopPropagation();
 		$(this).addClass('sdx-drag-over');
 	});
 
-	html.on('dragleave', '.sdx-item-give-drop', function(event) {
+	html.on('dragleave', '.sdx-item-give-drop', function (event) {
 		event.preventDefault();
 		event.stopPropagation();
 		$(this).removeClass('sdx-drag-over');
 	});
 
-	html.on('drop', '.sdx-item-give-drop', async function(event) {
+	html.on('drop', '.sdx-item-give-drop', async function (event) {
 		event.preventDefault();
 		event.stopPropagation();
 		$(this).removeClass('sdx-drag-over');
@@ -9139,7 +9760,7 @@ async function enhanceScrollSheet(app, html) {
 
 	function updateItemGiveData() {
 		const profiles = [];
-		html.find('.sdx-item-give-profile').each(function(idx) {
+		html.find('.sdx-item-give-profile').each(function (idx) {
 			const $profile = $(this);
 			$profile.attr('data-index', idx);
 			$profile.find('.sdx-remove-item-give-btn').attr('data-index', idx);
@@ -9150,12 +9771,6 @@ async function enhanceScrollSheet(app, html) {
 				quantity: $profile.find('.sdx-item-give-quantity').val() || '1'
 			});
 		});
-		const $list = html.find('.sdx-item-give-list');
-		if (profiles.length === 0) {
-			$list.html('<div class="sdx-no-items">Drop an item here to grant it to the caster on success</div>');
-		} else {
-			$list.find('.sdx-no-items').remove();
-		}
 		html.find('.sdx-item-give-data').val(JSON.stringify(profiles));
 		const updateData = {};
 		updateData[`flags.${MODULE_ID}.itemGive.profiles`] = profiles;
@@ -9210,26 +9825,26 @@ async function enhanceWandSheet(app, html) {
 		applyToTarget: true,
 		effectsApplyToTarget: true
 	};
-	
+
 	// Initialize summoning flags
 	const summoningFlags = item.flags?.[MODULE_ID]?.summoning || {
 		enabled: false,
 		profiles: []
 	};
-	
+
 	// Initialize item give flags
 	const itemGiveFlags = item.flags?.[MODULE_ID]?.itemGive || {
 		enabled: false,
 		profiles: []
 	};
-	
+
 	// Combine all flags for template
 	const flags = {
 		...spellDamageFlags,
 		summoning: summoningFlags,
 		itemGive: itemGiveFlags
 	};
-	
+
 	const applyToTarget = flags.applyToTarget === "false" ? false : (flags.applyToTarget === false ? false : true);
 	const effectsApplyToTarget = flags.effectsApplyToTarget === "false" ? false : (flags.effectsApplyToTarget === false ? false : true);
 
@@ -9237,7 +9852,7 @@ async function enhanceWandSheet(app, html) {
 	if (!app._shadowdarkExtrasActiveTab) {
 		app._shadowdarkExtrasActiveTab = 'tab-details'; // Default to details
 	}
-	
+
 	// Check which tab is currently active
 	const $currentActiveTab = html.find('nav.SD-nav a.navigation-tab.active');
 	if ($currentActiveTab.length) {
@@ -9249,7 +9864,7 @@ async function enhanceWandSheet(app, html) {
 
 	// Create a new "Activity" tab after Details tab
 	const $tabs = html.find('nav.SD-nav');
-	
+
 	// Check if Activity tab already exists
 	if (!html.find('section[data-tab="tab-activity"]').length) {
 		// Add Activity tab to navigation (after Details)
@@ -9261,7 +9876,7 @@ async function enhanceWandSheet(app, html) {
 		} else {
 			console.warn(`${MODULE_ID} | Could not find Details tab link`);
 		}
-		
+
 		// Create Activity tab content container with correct structure
 		const activityTabContent = `<section class="tab tab-activity" data-group="primary" data-tab="tab-activity"></section>`;
 		const $detailsTab = html.find('section.tab-details[data-tab="tab-details"]');
@@ -9271,32 +9886,32 @@ async function enhanceWandSheet(app, html) {
 		} else {
 			console.warn(`${MODULE_ID} | Could not find Details tab content`);
 		}
-		
+
 		// Add click handler to track tab changes
-		$tabs.find('a.navigation-tab').on('click', function() {
+		$tabs.find('a.navigation-tab').on('click', function () {
 			const tabName = $(this).data('tab');
 			if (tabName) {
 				app._shadowdarkExtrasActiveTab = tabName;
 			}
 		});
 	}
-	
+
 	// Restore the previously active tab
 	setTimeout(() => {
 		const $targetTab = $tabs.find(`a.navigation-tab[data-tab="${app._shadowdarkExtrasActiveTab}"]`);
 		const $targetSection = html.find(`section[data-tab="${app._shadowdarkExtrasActiveTab}"]`);
-		
+
 		if ($targetTab.length && $targetSection.length) {
 			// Remove active class from all tabs
 			$tabs.find('a.navigation-tab').removeClass('active');
 			html.find('section[data-group="primary"]').removeClass('active');
-			
+
 			// Add active class to target tab
 			$targetTab.addClass('active');
 			$targetSection.addClass('active');
 		}
 	}, 0);
-	
+
 	// Find the Activity tab content
 	const $activityTab = html.find('section.tab-activity[data-tab="tab-activity"]');
 	if (!$activityTab.length) {
@@ -9315,7 +9930,7 @@ async function enhanceWandSheet(app, html) {
 			effectsArray = [];
 		}
 	}
-	
+
 	// Normalize effects array - convert old UUID strings to new object format
 	effectsArray = effectsArray.map(effect => {
 		if (typeof effect === 'string') {
@@ -9323,17 +9938,17 @@ async function enhanceWandSheet(app, html) {
 		}
 		return effect;
 	});
-	
+
 	if (effectsArray && effectsArray.length > 0) {
 		const effectPromises = effectsArray.map(effect => fromUuid(effect.uuid || effect));
 		const effectDocs = await Promise.all(effectPromises);
-		
+
 		for (let i = 0; i < effectDocs.length; i++) {
 			const doc = effectDocs[i];
 			const effectData = effectsArray[i];
 			const uuid = effectData.uuid || effectData;
 			const duration = effectData.duration || {};
-			
+
 			if (doc) {
 				effectsListHtml += `
 					<div class="sdx-spell-effect-item" data-uuid="${uuid}" data-effect-index="${i}">
@@ -9383,7 +9998,7 @@ async function enhanceWandSheet(app, html) {
 	// Build summons list HTML
 	let summonsList = '';
 	let summonProfilesArray = summoningFlags.profiles || [];
-	
+
 	// Handle case where profiles might be a string
 	if (typeof summonProfilesArray === 'string') {
 		try {
@@ -9393,7 +10008,7 @@ async function enhanceWandSheet(app, html) {
 			summonProfilesArray = [];
 		}
 	}
-	
+
 	if (summonProfilesArray && summonProfilesArray.length > 0) {
 		const { generateSummonProfileHTML } = await import(`./templates/SummoningConfig.mjs`);
 		for (let i = 0; i < summonProfilesArray.length; i++) {
@@ -9429,14 +10044,14 @@ async function enhanceWandSheet(app, html) {
 	console.log(`${MODULE_ID} | Damage/Heal box inserted into Activity tab`);
 
 	// Prevent auto-submission of form inputs in Activity tab to avoid unwanted re-renders
-	$activityTab.find('input, select, textarea').on('change', function(e) {
+	$activityTab.find('input, select, textarea').on('change', function (e) {
 		e.stopPropagation(); // Prevent event from bubbling up to form auto-submit
-		
+
 		// Manually update the item without re-rendering
 		const fieldName = $(this).attr('name');
 		if (fieldName) {
 			let value = $(this).val();
-			
+
 			// Handle checkboxes
 			if ($(this).attr('type') === 'checkbox') {
 				value = $(this).is(':checked');
@@ -9449,10 +10064,10 @@ async function enhanceWandSheet(app, html) {
 			else if ($(this).attr('type') === 'number') {
 				value = parseFloat(value) || 0;
 			}
-			
+
 			const updateData = {};
 			updateData[fieldName] = value;
-			
+
 			// Update without re-rendering
 			item.update(updateData, { render: false }).then(() => {
 				console.log(`${MODULE_ID} | Updated ${fieldName}:`, value);
@@ -9462,7 +10077,7 @@ async function enhanceWandSheet(app, html) {
 		}
 	});
 
-	html.find('.sdx-spell-damage-toggle').on('change', function() {
+	html.find('.sdx-spell-damage-toggle').on('change', function () {
 		const $content = $(this).closest('.sdx-spell-damage-box').find('.sdx-spell-damage-content');
 		if ($(this).is(':checked')) {
 			$content.slideDown(200);
@@ -9472,13 +10087,13 @@ async function enhanceWandSheet(app, html) {
 	});
 
 	// Handle formula type radio buttons
-	html.find('.sdx-formula-type-radio').on('change', function() {
+	html.find('.sdx-formula-type-radio').on('change', function () {
 		const selectedType = $(this).val();
 		const $box = $(this).closest('.sdx-spell-damage-box');
-		
+
 		// Hide all formula sections
 		$box.find('.sdx-formula-section').hide();
-		
+
 		// Show the selected formula section
 		if (selectedType === 'basic') {
 			$box.find('.sdx-basic-formula').show();
@@ -9487,41 +10102,41 @@ async function enhanceWandSheet(app, html) {
 		} else if (selectedType === 'tiered') {
 			$box.find('.sdx-tiered-formula').show();
 		}
-		
+
 		// Save the formula type preference
 		const updateData = {};
 		updateData[`flags.${MODULE_ID}.spellDamage.formulaType`] = selectedType;
 		item.update(updateData, { render: false });
 	});
 
-	const $dropArea = html.find('.sdx-spell-effects-drop-area');
+	const $dropArea = html.find('.sdx-spell-effects-drop-area:not(.sdx-critical-effects-drop-area)');
 	const $effectsList = html.find('.sdx-spell-effects-list');
 	const $effectsData = html.find('.sdx-effects-data');
 
 	function updateEffectsData() {
 		const effects = [];
-		$effectsList.find('.sdx-spell-effect-item').each(function() {
+		$effectsList.find('.sdx-spell-effect-item').each(function () {
 			const $item = $(this);
 			const uuid = $item.data('uuid');
-			
+
 			// Collect duration overrides
 			const duration = {};
-			$item.find('.sdx-duration-input').each(function() {
+			$item.find('.sdx-duration-input').each(function () {
 				const field = $(this).data('field');
 				const value = $(this).val();
 				if (value && value.trim() !== '') {
 					duration[field] = parseFloat(value);
 				}
 			});
-			
+
 			effects.push({ uuid, duration });
 		});
 		$effectsData.val(JSON.stringify(effects));
-		
+
 		const updateData = {};
 		updateData[`flags.${MODULE_ID}.spellDamage.effects`] = effects;
 		item.update(updateData);
-		
+
 		if (effects.length > 0) {
 			$effectsList.find('.sdx-no-effects').remove();
 		} else if ($effectsList.find('.sdx-spell-effect-item').length === 0) {
@@ -9529,26 +10144,26 @@ async function enhanceWandSheet(app, html) {
 		}
 	}
 
-	$dropArea.on('dragover', function(event) {
+	$dropArea.on('dragover', function (event) {
 		event.preventDefault();
 		event.stopPropagation();
 		$(this).addClass('sdx-drag-over');
 	});
 
-	$dropArea.on('dragleave', function(event) {
+	$dropArea.on('dragleave', function (event) {
 		event.preventDefault();
 		event.stopPropagation();
 		$(this).removeClass('sdx-drag-over');
 	});
 
-	$dropArea.on('drop', async function(event) {
+	$dropArea.on('drop', async function (event) {
 		event.preventDefault();
 		event.stopPropagation();
 		$(this).removeClass('sdx-drag-over');
 
 		try {
 			const data = JSON.parse(event.originalEvent.dataTransfer.getData('text/plain'));
-			
+
 			let doc = null;
 			if (data.uuid) {
 				doc = await fromUuid(data.uuid);
@@ -9585,7 +10200,7 @@ async function enhanceWandSheet(app, html) {
 					<a class="sdx-remove-effect" data-tooltip="Remove"><i class="fas fa-times"></i></a>
 				</div>
 			`;
-			
+
 			$effectsList.find('.sdx-no-effects').remove();
 			$effectsList.append(effectHtml);
 			updateEffectsData();
@@ -9597,15 +10212,15 @@ async function enhanceWandSheet(app, html) {
 		}
 	});
 
-	html.on('click', '.sdx-remove-effect', function(event) {
+	html.on('click', '.sdx-remove-effect', function (event) {
 		event.preventDefault();
 		event.stopPropagation();
-		
+
 		$(this).closest('.sdx-spell-effect-item').remove();
 		updateEffectsData();
 	});
 
-	html.on('change', 'input[name="flags.shadowdark-extras.spellDamage.effectsApplyToTarget"]', function() {
+	html.on('change', 'input[name="flags.shadowdark-extras.spellDamage.effectsApplyToTarget"]', function () {
 		const effectsApplyToTargetValue = $(this).val() === 'true';
 		const updateData = {};
 		updateData[`flags.${MODULE_ID}.spellDamage.effectsApplyToTarget`] = effectsApplyToTargetValue;
@@ -9613,7 +10228,7 @@ async function enhanceWandSheet(app, html) {
 	});
 
 	// ---- Summoning handlers ----
-	html.on('change', '.sdx-summoning-toggle', function(e) {
+	html.on('change', '.sdx-summoning-toggle', function (e) {
 		e.stopPropagation();
 		const enabled = $(this).is(':checked');
 		const updateData = {};
@@ -9623,7 +10238,7 @@ async function enhanceWandSheet(app, html) {
 		});
 	});
 
-	html.on('click', '.sdx-add-summon-btn', async function(e) {
+	html.on('click', '.sdx-add-summon-btn', async function (e) {
 		e.preventDefault();
 		e.stopPropagation();
 		const { generateSummonProfileHTML } = await import(`./templates/SummoningConfig.mjs`);
@@ -9636,43 +10251,42 @@ async function enhanceWandSheet(app, html) {
 			count: '1',
 			displayName: ''
 		};
-		$list.find('.sdx-no-summons').remove();
 		$list.append(generateSummonProfileHTML(newProfile, index));
 		updateSummonsData();
 	});
 
-	html.on('click', '.sdx-remove-summon-btn', function(e) {
+	html.on('click', '.sdx-remove-summon-btn', function (e) {
 		e.preventDefault();
 		e.stopPropagation();
 		$(this).closest('.sdx-summon-profile').remove();
 		updateSummonsData();
 	});
 
-	html.on('change input', '.sdx-summon-count, .sdx-summon-display-name', function(e) {
+	html.on('change input', '.sdx-summon-count, .sdx-summon-display-name', function (e) {
 		e.stopPropagation();
 		updateSummonsData();
 	});
 
-	html.on('dragover', '.sdx-summon-creature-drop', function(event) {
+	html.on('dragover', '.sdx-summon-creature-drop', function (event) {
 		event.preventDefault();
 		event.stopPropagation();
 		$(this).addClass('sdx-drag-over');
 	});
-	
-	html.on('dragleave', '.sdx-summon-creature-drop', function(event) {
+
+	html.on('dragleave', '.sdx-summon-creature-drop', function (event) {
 		event.preventDefault();
 		event.stopPropagation();
 		$(this).removeClass('sdx-drag-over');
 	});
-	
-	html.on('drop', '.sdx-summon-creature-drop', async function(event) {
+
+	html.on('drop', '.sdx-summon-creature-drop', async function (event) {
 		event.preventDefault();
 		event.stopPropagation();
 		$(this).removeClass('sdx-drag-over');
-		
+
 		try {
 			const data = JSON.parse(event.originalEvent.dataTransfer.getData('text/plain'));
-			
+
 			// Get the document from the dropped data
 			let doc = null;
 			if (data.uuid) {
@@ -9686,29 +10300,29 @@ async function enhanceWandSheet(app, html) {
 					doc = game.actors.get(data.id);
 				}
 			}
-			
+
 			if (!doc) {
 				ui.notifications.warn('Could not load dropped actor');
 				return;
 			}
-			
+
 			// Must be an Actor
 			if (!(doc instanceof Actor)) {
 				ui.notifications.warn('Only actors can be dropped here');
 				return;
 			}
-			
+
 			// Update the profile display
 			const $profile = $(this).closest('.sdx-summon-profile');
 			const creatureName = doc.name;
 			const creatureImg = doc.img || doc.prototypeToken?.texture?.src || 'icons/svg/mystery-man.svg';
 			const creatureUuid = doc.uuid;
-			
+
 			// Update hidden inputs
 			$profile.find('.sdx-creature-uuid').val(creatureUuid);
 			$profile.find('.sdx-creature-name').val(creatureName);
 			$profile.find('.sdx-creature-img').val(creatureImg);
-			
+
 			// Update display
 			$(this).html(`
 				<div class="sdx-summon-creature-display" data-uuid="${creatureUuid}">
@@ -9716,7 +10330,7 @@ async function enhanceWandSheet(app, html) {
 					<span style="margin-left: 4px; font-size: 0.9em;">${creatureName}</span>
 				</div>
 			`);
-			
+
 			updateSummonsData();
 			ui.notifications.info(`Added ${creatureName} to summon profile`);
 		} catch (err) {
@@ -9724,11 +10338,11 @@ async function enhanceWandSheet(app, html) {
 			ui.notifications.error('Failed to add creature');
 		}
 	});
-	
+
 	// Function to collect and save summons data
 	function updateSummonsData() {
 		const profiles = [];
-		html.find('.sdx-summon-profile').each(function() {
+		html.find('.sdx-summon-profile').each(function () {
 			const $profile = $(this);
 			profiles.push({
 				creatureUuid: $profile.find('.sdx-creature-uuid').val(),
@@ -9738,10 +10352,10 @@ async function enhanceWandSheet(app, html) {
 				displayName: $profile.find('.sdx-summon-display-name').val() || ''
 			});
 		});
-		
+
 		// Update hidden input
 		html.find('.sdx-summons-data').val(JSON.stringify(profiles));
-		
+
 		// Save to item
 		const updateData = {};
 		updateData[`flags.${MODULE_ID}.summoning.profiles`] = profiles;
@@ -9753,7 +10367,7 @@ async function enhanceWandSheet(app, html) {
 	}
 
 	// ---- Item give handlers ----
-	html.on('change', '.sdx-item-give-toggle', function(e) {
+	html.on('change', '.sdx-item-give-toggle', function (e) {
 		e.stopPropagation();
 		const enabled = $(this).is(':checked');
 		const updateData = {};
@@ -9763,7 +10377,7 @@ async function enhanceWandSheet(app, html) {
 		});
 	});
 
-	html.on('click', '.sdx-add-item-give-btn', async function(e) {
+	html.on('click', '.sdx-add-item-give-btn', async function (e) {
 		e.preventDefault();
 		e.stopPropagation();
 		const { generateItemGiveProfileHTML } = await import(`./templates/ItemGiveConfig.mjs`);
@@ -9775,36 +10389,35 @@ async function enhanceWandSheet(app, html) {
 			itemImg: '',
 			quantity: '1'
 		};
-		$list.find('.sdx-no-items').remove();
 		$list.append(generateItemGiveProfileHTML(newProfile, index));
 		updateItemGiveData();
 	});
 
-	html.on('click', '.sdx-remove-item-give-btn', function(e) {
+	html.on('click', '.sdx-remove-item-give-btn', function (e) {
 		e.preventDefault();
 		e.stopPropagation();
 		$(this).closest('.sdx-item-give-profile').remove();
 		updateItemGiveData();
 	});
 
-	html.on('change input', '.sdx-item-give-quantity', function(e) {
+	html.on('change input', '.sdx-item-give-quantity', function (e) {
 		e.stopPropagation();
 		updateItemGiveData();
 	});
 
-	html.on('dragover', '.sdx-item-give-drop', function(event) {
+	html.on('dragover', '.sdx-item-give-drop', function (event) {
 		event.preventDefault();
 		event.stopPropagation();
 		$(this).addClass('sdx-drag-over');
 	});
 
-	html.on('dragleave', '.sdx-item-give-drop', function(event) {
+	html.on('dragleave', '.sdx-item-give-drop', function (event) {
 		event.preventDefault();
 		event.stopPropagation();
 		$(this).removeClass('sdx-drag-over');
 	});
 
-	html.on('drop', '.sdx-item-give-drop', async function(event) {
+	html.on('drop', '.sdx-item-give-drop', async function (event) {
 		event.preventDefault();
 		event.stopPropagation();
 		$(this).removeClass('sdx-drag-over');
@@ -9852,7 +10465,7 @@ async function enhanceWandSheet(app, html) {
 
 	function updateItemGiveData() {
 		const profiles = [];
-		html.find('.sdx-item-give-profile').each(function(idx) {
+		html.find('.sdx-item-give-profile').each(function (idx) {
 			const $profile = $(this);
 			$profile.attr('data-index', idx);
 			$profile.find('.sdx-remove-item-give-btn').attr('data-index', idx);
@@ -9863,12 +10476,6 @@ async function enhanceWandSheet(app, html) {
 				quantity: $profile.find('.sdx-item-give-quantity').val() || '1'
 			});
 		});
-		const $list = html.find('.sdx-item-give-list');
-		if (profiles.length === 0) {
-			$list.html('<div class="sdx-no-items">Drop an item here to grant it to the caster on success</div>');
-		} else {
-			$list.find('.sdx-no-items').remove();
-		}
 		html.find('.sdx-item-give-data').val(JSON.stringify(profiles));
 		const updateData = {};
 		updateData[`flags.${MODULE_ID}.itemGive.profiles`] = profiles;
@@ -9964,7 +10571,7 @@ Hooks.on("preUpdateItem", (item, updateData, options, userId) => {
 			foundry.utils.setProperty(updateData, applyToTargetPath, false);
 		}
 	}
-	
+
 	// Check if we're updating spell effectsApplyToTarget
 	const effectsApplyToTargetPath = `flags.${MODULE_ID}.spellDamage.effectsApplyToTarget`;
 	if (foundry.utils.hasProperty(updateData, effectsApplyToTargetPath)) {
@@ -9996,7 +10603,7 @@ Hooks.on("renderChatMessage", (message, html, data) => {
 	// Get the item from the message flags or data attributes
 	const actorId = $card.data('actorId') ?? message.speaker?.actor;
 	const itemId = $card.data('itemId');
-	
+
 	if (!actorId || !itemId) return;
 
 	const actor = game.actors.get(actorId);
@@ -10019,7 +10626,7 @@ Hooks.on("renderChatMessage", (message, html, data) => {
 
 	// Mask the item name in the header
 	$card.find('.card-header h3.item-name, .card-header .item-name').text(maskedName);
-	
+
 	// Mask the item name in header tooltip
 	$card.find('.card-header img[data-tooltip]').attr('data-tooltip', maskedName);
 
@@ -10043,7 +10650,7 @@ Hooks.on("renderChatMessage", (message, html, data) => {
 		if (text.includes(realName)) {
 			// Check if this element has child elements - if so only modify text nodes
 			if ($el.children().length > 0) {
-				$el.contents().each(function() {
+				$el.contents().each(function () {
 					if (this.nodeType === Node.TEXT_NODE && this.textContent.includes(realName)) {
 						this.textContent = this.textContent.replaceAll(realName, maskedName);
 					}
@@ -10071,41 +10678,41 @@ Hooks.on("preCreateChatMessage", (message, data, options, userId) => {
 			});
 			console.log(`${MODULE_ID} | Stored ${targetIds.length} targets in message flags:`, targetIds);
 		}
-		
+
 		// Store item configuration for consumables (scrolls, potions, wands)
 		// This is needed because these items are consumed and removed from the actor
 		// before the chat message is processed
 		const content = message.content || '';
 		const actorIdMatch = content.match(/data-actor-id="([^"]+)"/);
 		const itemIdMatch = content.match(/data-item-id="([^"]+)"/);
-		
+
 		if (actorIdMatch && itemIdMatch) {
 			const actorId = actorIdMatch[1];
 			const itemId = itemIdMatch[1];
 			const actor = game.actors.get(actorId);
 			const item = actor?.items.get(itemId);
-			
+
 			if (item && ["Scroll", "Potion", "Wand"].includes(item.type)) {
 				// Store the item type and relevant configurations
 				const itemConfig = {
 					type: item.type,
 					name: item.name
 				};
-				
+
 				// Store summoning config if it exists
 				if (item.flags?.[MODULE_ID]?.summoning) {
 					itemConfig.summoning = foundry.utils.duplicate(item.flags[MODULE_ID].summoning);
 				}
-				
+
 				// Store itemGive config if it exists
 				if (item.flags?.[MODULE_ID]?.itemGive) {
 					itemConfig.itemGive = foundry.utils.duplicate(item.flags[MODULE_ID].itemGive);
 				}
-				
+
 				message.updateSource({
 					"flags.shadowdark-extras.itemConfig": itemConfig
 				});
-				
+
 				console.log(`${MODULE_ID} | Stored item config for ${item.name}:`, itemConfig);
 			}
 		}
@@ -10121,7 +10728,7 @@ Hooks.on("renderChatMessage", (message, html, data) => {
 	} catch (err) {
 		console.error(`${MODULE_ID} | Failed to inject damage card`, err);
 	}
-	
+
 	// Also process weapon bonuses for weapon attack messages
 	try {
 		processWeaponBonuses(message, html);
@@ -10137,30 +10744,30 @@ async function processWeaponBonuses(message, html) {
 	// Check if this is a weapon attack roll
 	const flags = message.flags?.shadowdark;
 	if (!flags?.itemId) return;
-	
+
 	// Get the actor and item
 	const actor = game.actors.get(message.speaker?.actor) || canvas.tokens.get(message.speaker?.token)?.actor;
 	if (!actor) return;
-	
+
 	const item = actor.items.get(flags.itemId);
 	if (!item || item.type !== "Weapon") return;
-	
+
 	// Check if weapon has bonuses configured
 	const bonusFlags = item.flags?.[MODULE_ID]?.weaponBonus;
 	if (!bonusFlags?.enabled) return;
-	
+
 	// Check if this was a critical hit
 	const isCritical = message.rolls?.some(r => {
 		const d20Roll = r.terms?.find(t => t.faces === 20);
 		return d20Roll?.total === 20;
 	});
-	
+
 	// Try to get the target
 	const targetToken = message.flags?.shadowdark?.targetToken
 		? canvas.tokens.get(message.flags.shadowdark.targetToken)
 		: game.user.targets.first();
 	const target = targetToken?.actor;
-	
+
 	// Inject the weapon bonus display
 	await injectWeaponBonusDisplay(message, html, item, actor, target, isCritical);
 }
@@ -10168,11 +10775,11 @@ async function processWeaponBonuses(message, html) {
 // Wrap ItemSheet getData to modify context before rendering
 Hooks.once("ready", () => {
 	if (!globalThis.ItemSheet?.prototype?.getData) return;
-	
+
 	const originalGetData = globalThis.ItemSheet.prototype.getData;
-	globalThis.ItemSheet.prototype.getData = async function(options = {}) {
+	globalThis.ItemSheet.prototype.getData = async function (options = {}) {
 		const data = await originalGetData.call(this, options);
-		
+
 		// Hide magicItem property for unidentified items for non-GM players
 		const item = this?.item;
 		if (item && isUnidentified(item) && !game.user?.isGM && data?.system) {
@@ -10180,50 +10787,50 @@ Hooks.once("ready", () => {
 			data.system = foundry.utils.duplicate(data.system);
 			data.system.magicItem = false;
 		}
-		
+
 		return data;
 	};
-	
+
 	// CRITICAL FIX: Wrap Shadowdark's createItemFromSpell to preserve our spell damage flags
 	// The system's function only copies type/name/system/img, stripping all flags
 	if (globalThis.shadowdark?.utils?.createItemFromSpell) {
 		const originalCreateItemFromSpell = globalThis.shadowdark.utils.createItemFromSpell;
-		
-		globalThis.shadowdark.utils.createItemFromSpell = async function(type, spell) {
+
+		globalThis.shadowdark.utils.createItemFromSpell = async function (type, spell) {
 			// Call the original function to get the base item data
 			const itemData = await originalCreateItemFromSpell.call(this, type, spell);
-			
+
 			// Initialize flags object if needed
 			itemData.flags = itemData.flags || {};
 			itemData.flags[MODULE_ID] = itemData.flags[MODULE_ID] || {};
-			
+
 			// Preserve spell damage configuration flags
 			if (spell.flags?.[MODULE_ID]?.spellDamage) {
 				itemData.flags[MODULE_ID].spellDamage = foundry.utils.duplicate(spell.flags[MODULE_ID].spellDamage);
 				console.log(`${MODULE_ID} | Preserved spell damage flags for ${spell.name} -> ${itemData.name}`, itemData.flags[MODULE_ID].spellDamage);
 			}
-			
+
 			// Preserve summoning configuration flags
 			if (spell.flags?.[MODULE_ID]?.summoning) {
 				itemData.flags[MODULE_ID].summoning = foundry.utils.duplicate(spell.flags[MODULE_ID].summoning);
 				console.log(`${MODULE_ID} | Preserved summoning flags for ${spell.name} -> ${itemData.name}`, itemData.flags[MODULE_ID].summoning);
 			}
-			
+
 			// Preserve item give configuration flags
 			if (spell.flags?.[MODULE_ID]?.itemGive) {
 				itemData.flags[MODULE_ID].itemGive = foundry.utils.duplicate(spell.flags[MODULE_ID].itemGive);
 				console.log(`${MODULE_ID} | Preserved item give flags for ${spell.name} -> ${itemData.name}`, itemData.flags[MODULE_ID].itemGive);
 			}
-			
+
 			// Preserve unidentified flags
 			if (spell.flags?.[MODULE_ID]?.unidentified) {
 				itemData.flags[MODULE_ID].unidentified = spell.flags[MODULE_ID].unidentified;
 				itemData.flags[MODULE_ID].unidentifiedDescription = spell.flags[MODULE_ID].unidentifiedDescription || "";
 			}
-			
+
 			return itemData;
 		};
-		
+
 		console.log(`${MODULE_ID} | Wrapped shadowdark.utils.createItemFromSpell to preserve spell flags`);
 	}
 });
@@ -10231,10 +10838,10 @@ Hooks.once("ready", () => {
 // Keep container slot values in sync when contained items change
 Hooks.on("updateItem", async (item, changes, options, userId) => {
 	if (options?.sdxInternal) return;
-	
+
 	// Only the user who made the update should process it
 	if (userId !== game.user.id) return;
-	
+
 	const actor = item?.parent;
 
 	// If the unidentified flag changed, re-render the actor sheet
@@ -10271,11 +10878,11 @@ Hooks.on("updateItem", async (item, changes, options, userId) => {
 // Unpack container contents when a container item is created on an actor (e.g., drag/drop transfer)
 Hooks.on("createItem", async (item, options, userId) => {
 	if (options?.sdxInternal) return;
-	
+
 	// CRITICAL: Only the user who created the item should unpack it.
 	// This prevents multi-client duplication where all connected clients try to unpack.
 	if (userId !== game.user.id) return;
-	
+
 	const actor = item?.parent;
 	if (!actor) return;
 	if (!isContainerItem(item)) return;
@@ -10328,11 +10935,11 @@ Hooks.on("createItem", async (item, options, userId) => {
 		});
 
 		await actor.createEmbeddedDocuments("Item", toCreate, { sdxInternal: true });
-		
+
 		// Mark this container as unpacked on this actor (persisted to database)
 		// This prevents any other client from trying to unpack it again
 		await item.setFlag(MODULE_ID, "containerUnpackedOnActor", actor.id);
-		
+
 		// Update the slot count directly
 		const base = item.getFlag(MODULE_ID, "containerBaseSlots") || {};
 		const baseSlotsUsed = Number(base.slots_used ?? 1) || 1;
@@ -10342,7 +10949,7 @@ Hooks.on("createItem", async (item, options, userId) => {
 		const totalGPValue = (Number(coins.gp ?? 0)) + (Number(coins.sp ?? 0) / 10) + (Number(coins.cp ?? 0) / 100);
 		containedSlots += Math.floor(totalGPValue / 100);
 		const nextSlotsUsed = Math.max(baseSlotsUsed, containedSlots);
-		
+
 		await item.update({
 			"system.slots.slots_used": nextSlotsUsed,
 		}, { sdxInternal: true });
@@ -10367,10 +10974,10 @@ Hooks.on("createItem", async (item, options, userId) => {
 // Release contained items BEFORE a container is deleted
 Hooks.on("preDeleteItem", async (item, options, userId) => {
 	if (options?.sdxInternal) return;
-	
+
 	// Only the user who deleted the item should release contained items
 	if (userId !== game.user.id) return;
-	
+
 	const actor = item?.parent;
 	if (!actor) return;
 
@@ -10383,7 +10990,7 @@ Hooks.on("preDeleteItem", async (item, options, userId) => {
 				containedIds.push(i.id);
 			}
 		}
-		
+
 		if (containedIds.length > 0) {
 			// Batch update all contained items to release them
 			const updates = containedIds.map(id => {
@@ -10397,7 +11004,7 @@ Hooks.on("preDeleteItem", async (item, options, userId) => {
 					[`flags.${MODULE_ID}.containerOrigIsPhysical`]: null,
 				};
 			}).filter(u => u !== null);
-			
+
 			if (updates.length > 0) {
 				try {
 					await actor.updateEmbeddedDocuments("Item", updates, { sdxInternal: true });
@@ -10411,10 +11018,10 @@ Hooks.on("preDeleteItem", async (item, options, userId) => {
 
 Hooks.on("deleteItem", async (item, options, userId) => {
 	if (options?.sdxInternal) return;
-	
+
 	// Only the user who deleted the item should update container slots
 	if (userId !== game.user.id) return;
-	
+
 	const actor = item?.parent;
 	if (!actor) return;
 
@@ -10436,7 +11043,7 @@ Hooks.on("preUpdateActor", (actor, changes, options, userId) => {
 		value = Math.min(value, renownMax);
 		changes.flags[MODULE_ID].renown = value;
 	}
-	
+
 	// Validate NPC coins
 	if (changes.flags?.[MODULE_ID]?.coins) {
 		const coins = changes.flags[MODULE_ID].coins;
@@ -10450,7 +11057,7 @@ Hooks.on("preUpdateActor", (actor, changes, options, userId) => {
 Hooks.on("updateActor", (actor, changes, options, userId) => {
 	// If a Player actor was updated, check if they're in any parties and re-render those sheets
 	if (actor.type !== "Player") return;
-	
+
 	// Find all open party sheets that contain this actor as a member
 	for (const app of Object.values(ui.windows)) {
 		if (app instanceof PartySheetSD) {
@@ -10466,7 +11073,7 @@ Hooks.on("updateActor", (actor, changes, options, userId) => {
 Hooks.on("updateItem", (item, changes, options, userId) => {
 	const actor = item.parent;
 	if (!actor || actor.type !== "Player") return;
-	
+
 	// Find all open party sheets that contain this actor as a member
 	for (const app of Object.values(ui.windows)) {
 		if (app instanceof PartySheetSD) {
@@ -10482,7 +11089,7 @@ Hooks.on("updateItem", (item, changes, options, userId) => {
 Hooks.on("createItem", (item, options, userId) => {
 	const actor = item.parent;
 	if (!actor || actor.type !== "Player") return;
-	
+
 	// Find all open party sheets that contain this actor as a member
 	for (const app of Object.values(ui.windows)) {
 		if (app instanceof PartySheetSD) {
@@ -10498,7 +11105,7 @@ Hooks.on("createItem", (item, options, userId) => {
 Hooks.on("deleteItem", (item, options, userId) => {
 	const actor = item.parent;
 	if (!actor || actor.type !== "Player") return;
-	
+
 	// Find all open party sheets that contain this actor as a member
 	for (const app of Object.values(ui.windows)) {
 		if (app instanceof PartySheetSD) {
@@ -10513,7 +11120,7 @@ Hooks.on("deleteItem", (item, options, userId) => {
 // Clean up deleted actors from parties
 Hooks.on("deleteActor", (actor, options, userId) => {
 	if (actor.type !== "Player") return;
-	
+
 	// Remove this actor from all parties
 	game.actors.filter(a => isPartyActor(a)).forEach(async party => {
 		const memberIds = party.getFlag(MODULE_ID, "members") ?? [];
@@ -10528,7 +11135,7 @@ Hooks.on("deleteActor", (actor, options, userId) => {
 Hooks.on("createActiveEffect", (effect, options, userId) => {
 	const actor = effect.parent;
 	if (!actor || actor.type !== "Player") return;
-	
+
 	// Update the sheet if it's rendered
 	if (actor.sheet?.rendered) {
 		const html = actor.sheet.element;
@@ -10540,7 +11147,7 @@ Hooks.on("createActiveEffect", (effect, options, userId) => {
 Hooks.on("deleteActiveEffect", (effect, options, userId) => {
 	const actor = effect.parent;
 	if (!actor || actor.type !== "Player") return;
-	
+
 	// Update the sheet if it's rendered
 	if (actor.sheet?.rendered) {
 		const html = actor.sheet.element;
@@ -10552,11 +11159,214 @@ Hooks.on("deleteActiveEffect", (effect, options, userId) => {
 Hooks.on("updateActiveEffect", (effect, changes, options, userId) => {
 	const actor = effect.parent;
 	if (!actor || actor.type !== "Player") return;
-	
+
 	// Update the sheet if it's rendered
 	if (actor.sheet?.rendered) {
 		const html = actor.sheet.element;
 		updateConditionToggles(actor, html);
+	}
+});
+
+// ============================================
+// SIDEBAR & COMPENDIUM UNIDENTIFIED INDICATORS
+// ============================================
+
+/**
+ * Mark unidentified items in the sidebar or compendium directory with a visual indicator (GM only)
+ * Adds a red border around the thumbnail and a small question mark icon
+ * @param {HTMLElement} html - The rendered HTML of the directory (plain DOM element in V13)
+ * @param {Collection|Map|Array} items - The items to check for unidentified status
+ */
+function markUnidentifiedItemsInDirectory(html, items) {
+	console.log(`${MODULE_ID} | markUnidentifiedItemsInDirectory START`, {
+		isGM: game.user?.isGM,
+		html,
+		items,
+		itemsType: items?.constructor?.name
+	});
+
+	// Only show for GM
+	if (!game.user?.isGM) {
+		console.log(`${MODULE_ID} | Skipping - not GM`);
+		return;
+	}
+
+	// Check if unidentified items feature is enabled
+	// Note: The setting may not be registered yet if this hook fires early
+	try {
+		const settingKey = `${MODULE_ID}.enableUnidentified`;
+		// Check if the setting exists first
+		if (game.settings.settings.has(settingKey)) {
+			const unidentifiedEnabled = game.settings.get(MODULE_ID, "enableUnidentified");
+			console.log(`${MODULE_ID} | enableUnidentified setting:`, unidentifiedEnabled);
+			if (!unidentifiedEnabled) {
+				console.log(`${MODULE_ID} | Skipping - unidentified items not enabled`);
+				return;
+			}
+		} else {
+			// Setting not registered yet - we'll allow it since we know it will be enabled
+			// (if not enabled, it will be fixed on next re-render after settings load)
+			console.log(`${MODULE_ID} | Setting not registered yet, proceeding anyway`);
+		}
+	} catch (e) {
+		// If any error, log but proceed anyway
+		console.log(`${MODULE_ID} | Error checking setting, proceeding anyway`, e);
+	}
+
+	// Handle both plain DOM element and jQuery object (for compatibility)
+	const element = html instanceof HTMLElement ? html : html[0] || html;
+
+	console.log(`${MODULE_ID} | markUnidentifiedItemsInDirectory called`, {
+		htmlType: typeof html,
+		isHTMLElement: html instanceof HTMLElement,
+		element,
+		elementTag: element?.tagName,
+		itemsType: items?.constructor?.name,
+		itemsSize: items?.size || items?.length || items?.contents?.length || "unknown"
+	});
+
+	if (!element?.querySelectorAll) {
+		console.warn(`${MODULE_ID} | markUnidentifiedItemsInDirectory: html is not a valid element`, html);
+		return;
+	}
+
+	// Iterate through all directory-item entries
+	// V13 uses various selectors for directory items - try multiple patterns
+	let directoryItems = element.querySelectorAll("li.directory-item");
+	if (!directoryItems.length) {
+		directoryItems = element.querySelectorAll("li.entry");
+	}
+	if (!directoryItems.length) {
+		directoryItems = element.querySelectorAll(".directory-item.entry");
+	}
+	if (!directoryItems.length) {
+		directoryItems = element.querySelectorAll("[data-entry-id]");
+	}
+
+	console.log(`${MODULE_ID} | Found ${directoryItems.length} directory items`);
+
+	let unidentifiedCount = 0;
+	directoryItems.forEach(li => {
+		// Get the entry ID from data attributes (V13 uses data-entry-id)
+		const entryId = li.dataset?.entryId || li.dataset?.documentId || li.getAttribute("data-entry-id") || li.getAttribute("data-document-id");
+		if (!entryId) {
+			console.log(`${MODULE_ID} | li has no entry ID:`, li.outerHTML?.substring(0, 200));
+			return;
+		}
+
+		// Find the item in the collection
+		let item;
+		if (items instanceof Map) {
+			item = items.get(entryId);
+		} else if (items instanceof foundry.utils.Collection || Array.isArray(items)) {
+			item = items.find?.(i => i.id === entryId || i._id === entryId) ?? items.get?.(entryId);
+		} else if (items?.contents) {
+			item = items.contents.find(i => i.id === entryId || i._id === entryId);
+		} else if (typeof items?.get === "function") {
+			// Try game.items style collection
+			item = items.get(entryId);
+		}
+
+		if (!item) {
+			console.log(`${MODULE_ID} | Item not found for ID: ${entryId}`);
+			return;
+		}
+
+		// Check if this item is unidentified
+		const itemIsUnidentified = item?.flags?.[MODULE_ID]?.unidentified === true ||
+			(typeof item?.getFlag === "function" && item.getFlag(MODULE_ID, "unidentified") === true);
+
+		if (!itemIsUnidentified) return;
+
+		console.log(`${MODULE_ID} | Found unidentified item: ${item.name || item._id}`);
+		unidentifiedCount++;
+
+		// Add the unidentified class to the list item
+		li.classList.add("sdx-sidebar-unidentified");
+
+		// Add indicator icon to the list item if it doesn't already exist
+		if (!li.querySelector(".sdx-sidebar-unidentified-icon")) {
+			const tooltipText = game.i18n.localize("SHADOWDARK_EXTRAS.item.unidentified.sidebar_indicator");
+			const icon = document.createElement("i");
+			icon.className = "fas fa-question-circle sdx-sidebar-unidentified-icon";
+			icon.title = tooltipText;
+			// Insert the icon at the beginning of the list item
+			li.insertBefore(icon, li.firstChild);
+		}
+	});
+
+	console.log(`${MODULE_ID} | Marked ${unidentifiedCount} unidentified items`);
+}
+
+// Hook into the Items sidebar directory rendering - try multiple hook names for V13 compatibility
+Hooks.on("renderItemDirectory", (app, html, data) => {
+	try {
+		console.log(`${MODULE_ID} | renderItemDirectory hook fired`, { app, html });
+		// Get items from the directory - in v13, app.collection contains the documents
+		const items = app.collection || app.documents || game.items;
+		markUnidentifiedItemsInDirectory(html, items);
+	} catch (err) {
+		console.error(`${MODULE_ID} | Failed to mark unidentified items in sidebar (renderItemDirectory)`, err);
+	}
+});
+
+// V13 might use renderDocumentDirectory for sidebar tabs
+Hooks.on("renderDocumentDirectory", (app, html, data) => {
+	try {
+		// Only process if this is an Item directory
+		if (app.constructor?.documentName !== "Item" && app.collection?.documentName !== "Item") return;
+		console.log(`${MODULE_ID} | renderDocumentDirectory hook fired for Items`, { app, html });
+		const items = app.collection || app.documents || game.items;
+		markUnidentifiedItemsInDirectory(html, items);
+	} catch (err) {
+		console.error(`${MODULE_ID} | Failed to mark unidentified items in sidebar (renderDocumentDirectory)`, err);
+	}
+});
+
+// V13 ApplicationV2 might use a different hook pattern
+Hooks.on("renderSidebarTab", (app, html, data) => {
+	try {
+		// Only process if this is the items tab
+		const tabName = app.tabName || app.options?.id || app.id;
+		if (tabName !== "items" && app.constructor?.name !== "ItemDirectory") return;
+		console.log(`${MODULE_ID} | renderSidebarTab hook fired for items`, { app, html, tabName });
+		const items = app.collection || app.documents || game.items;
+		markUnidentifiedItemsInDirectory(html, items);
+	} catch (err) {
+		console.error(`${MODULE_ID} | Failed to mark unidentified items in sidebar (renderSidebarTab)`, err);
+	}
+});
+
+// Hook into compendium rendering for Item compendiums
+Hooks.on("renderCompendium", async (app, html, data) => {
+	try {
+		console.log(`${MODULE_ID} | renderCompendium hook fired for`, app.collection?.documentName);
+		// Only process Item compendiums
+		if (app.collection?.documentName !== "Item") return;
+
+		// Get the items from the compendium index with the unidentified flag field
+		const index = await app.collection.getIndex({ fields: [`flags.${MODULE_ID}.unidentified`] });
+		if (!index) return;
+
+		markUnidentifiedItemsInDirectory(html, index);
+	} catch (err) {
+		console.error(`${MODULE_ID} | Failed to mark unidentified items in compendium`, err);
+	}
+});
+
+// Also re-mark when an item is updated (in case unidentified status changed)
+Hooks.on("updateItem", (item, changes, options, userId) => {
+	// Only care about unidentified flag changes
+	if (!changes?.flags?.[MODULE_ID]?.hasOwnProperty("unidentified")) return;
+
+	// Re-render the Items sidebar if it's open - V13 structure
+	try {
+		const itemsTab = ui.sidebar?.tabs?.items || ui.items;
+		if (itemsTab?.rendered) {
+			itemsTab.render();
+		}
+	} catch (err) {
+		console.warn(`${MODULE_ID} | Could not re-render items sidebar`, err);
 	}
 });
 

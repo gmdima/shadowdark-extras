@@ -1,7 +1,7 @@
 {
   "id": "shadowdark-extras",
   "title": "Shadowdark Extras",
-  "version": "3.0",
+  "version": "3.1",
   "compatibility": {
     "minimum": "13",
     "verified": "13"
@@ -43,11 +43,21 @@
         "id": "lib-wrapper",
         "type": "module",
         "compatibility": {}
+      },
+      {
+        "id": "sequencer",
+        "type": "module",
+        "compatibility": {}
       }
     ],
     "recommends": [
       {
         "id": "portal-lib",
+        "type": "module",
+        "compatibility": {}
+      },
+      {
+        "id": "JB2A_DnD5e",
         "type": "module",
         "compatibility": {}
       }
@@ -74,7 +84,7 @@
     }
   ],
   "manifest": "https://github.com/gmdima/shadowdark-extras/releases/latest/download/module.json",
-  "download": "https://github.com/gmdima/shadowdark-extras/releases/download/3.0/module.zip",
+  "download": "https://github.com/gmdima/shadowdark-extras/releases/download/3.1/module.zip",
   "packs": [
     {
       "name": "pack-sdxitems",

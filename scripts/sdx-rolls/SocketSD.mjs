@@ -19,6 +19,9 @@ export class SocketSD {
     static async __$onMessage(data) {
         const options = data.__$socketOptions;
 
+        // Guard: If no socket options, this message isn't for SocketSD (likely socketlib)
+        if (!options) return;
+
         if (options.__$storeName) {
             if (options.__$request) {
                 const store = this.__$stores[options.__$storeName];

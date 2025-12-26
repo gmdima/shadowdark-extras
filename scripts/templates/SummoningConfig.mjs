@@ -23,7 +23,7 @@ export function generateSummoningConfigHTML(MODULE_ID, flags, summonsList, summo
 					<!-- Summons Profiles List -->
 					<h3 class="sdx-section-title">Summon Profiles</h3>
 					<div class="sdx-summons-list">
-						${summonsList || '<div class="sdx-no-summons"><i class="fas fa-dragon"></i> Click "Add Summon Profile" to add creatures</div>'}
+						${summonsList || ''}
 					</div>
 					
 					<!-- Add Profile Button -->
@@ -33,6 +33,15 @@ export function generateSummoningConfigHTML(MODULE_ID, flags, summonsList, summo
 					
 					<!-- Hidden input to store JSON data -->
 					<input type="hidden" name="flags.${MODULE_ID}.summoning.profiles" class="sdx-summons-data" value="${JSON.stringify(summonProfilesArray).replace(/"/g, '&quot;')}" />
+					
+					<!-- Delete at expiry option -->
+					<div class="sdx-summoning-option" style="margin-top: 8px;">
+						<label class="sdx-checkbox-label" style="display: flex; align-items: center; gap: 6px;">
+							<input type="checkbox" name="flags.${MODULE_ID}.summoning.deleteAtExpiry" 
+							       ${flags.deleteAtExpiry ? 'checked' : ''} />
+							<span>Delete at expiry <i class="fas fa-question-circle sdx-help-icon" style="opacity: 0.6; font-size: 0.9em;" title="Automatically delete summoned tokens when the spell duration expires.&#10;Only works during combat with round/turn-based durations."></i></span>
+						</label>
+					</div>
 				</div>
 			</div>
 		</div>
@@ -46,8 +55,8 @@ export function generateSummoningConfigHTML(MODULE_ID, flags, summonsList, summo
  * @returns {string} HTML string
  */
 export function generateSummonProfileHTML(profile, index) {
-	const truncatedName = (profile.creatureName || 'Unknown').length > 8 
-		? (profile.creatureName || 'Unknown').substring(0, 8) + '…' 
+	const truncatedName = (profile.creatureName || 'Unknown').length > 8
+		? (profile.creatureName || 'Unknown').substring(0, 8) + '…'
 		: (profile.creatureName || 'Unknown');
 	return `
 		<div class="sdx-summon-profile" data-index="${index}">
