@@ -15,7 +15,8 @@ import {
 	getWeaponEffectsToApply,
 	evaluateRequirements,
 	calculateWeaponBonusDamage,
-	injectWeaponBonusDisplay
+	injectWeaponBonusDisplay,
+	getWeaponItemMacroConfig
 } from "./WeaponBonusConfig.mjs";
 import { initAutoAnimationsIntegration } from "./AutoAnimationsSD.mjs";
 import { initTorchAnimations } from "./TorchAnimationSD.mjs";
@@ -1434,6 +1435,10 @@ const _containersBeingUnpacked = new Set();
 
 // Track containers currently being recomputed to prevent recursion
 const _containersBeingRecomputed = new Set();
+
+// Track pending hit bonus info for display in chat messages
+// Maps "actorId-itemId" to { formula, result, parts, timestamp }
+const _pendingHitBonusInfo = new Map();
 
 function isBasicItem(item) {
 	return item?.type === "Basic";
@@ -6998,6 +7003,8 @@ Hooks.once("ready", async () => {
 	// Wrap ActorSD._learnSpell to preserve spell damage flags from scrolls
 	if (globalThis.shadowdark?.documents?.ActorSD) {
 		const ActorSD = globalThis.shadowdark.documents.ActorSD;
+		const RollSD = CONFIG.DiceSD;
+		console.log(`${MODULE_ID} | Monkey-patching ActorSD methods and DiceSD`);
 		const original_learnSpell = ActorSD.prototype._learnSpell;
 
 		ActorSD.prototype._learnSpell = async function (item) {
@@ -7038,12 +7045,12 @@ Hooks.once("ready", async () => {
 						// The hitBonus could be a formula like "2", "+2", "1d4", etc.
 						// We need to evaluate it to get a numeric value for the roll system
 						let bonusFormula = hitBonusResult.hitBonus.trim();
-						
+
 						// Remove leading + if present
 						if (bonusFormula.startsWith("+")) {
 							bonusFormula = bonusFormula.substring(1).trim();
 						}
-						
+
 						// Try to evaluate the formula if it contains dice
 						// The Shadowdark roll system expects @variable references with numeric values
 						// For dice formulas, we'll pre-roll them and add the result
@@ -7052,14 +7059,37 @@ Hooks.once("ready", async () => {
 							await roll.evaluate();
 							data.sdxHitBonus = roll.total;
 							parts.push("@sdxHitBonus");
-							
-							console.log(`${MODULE_ID} | Applied weapon hit bonus: ${bonusFormula} = ${roll.total}`, hitBonusResult.hitBonusParts);
+
+							// Store hit bonus info for chat message display
+							// This will be picked up by preCreateChatMessage hook
+							const actorId = data.actor._id || data.actor.id;
+							const itemId = this.id;
+							const hitBonusKey = `${actorId}-${itemId}`;
+							_pendingHitBonusInfo.set(hitBonusKey, {
+								formula: bonusFormula,
+								result: roll.total,
+								parts: hitBonusResult.hitBonusParts,
+								timestamp: Date.now()
+							});
+
+							console.log(`${MODULE_ID} | Applied weapon hit bonus: ${bonusFormula} = ${roll.total}, key: ${hitBonusKey}`, hitBonusResult.hitBonusParts);
 						} catch (evalErr) {
 							// If evaluation fails, try to parse as a simple number
 							const numValue = parseInt(bonusFormula, 10);
 							if (!isNaN(numValue) && numValue !== 0) {
 								data.sdxHitBonus = numValue;
 								parts.push("@sdxHitBonus");
+
+								// Store hit bonus info for chat message display
+								const actorId = data.actor._id || data.actor.id;
+								const itemId = this.id;
+								_pendingHitBonusInfo.set(`${actorId}-${itemId}`, {
+									formula: String(numValue),
+									result: numValue,
+									parts: hitBonusResult.hitBonusParts,
+									timestamp: Date.now()
+								});
+
 								console.log(`${MODULE_ID} | Applied weapon hit bonus: ${numValue}`, hitBonusResult.hitBonusParts);
 							} else {
 								console.warn(`${MODULE_ID} | Could not parse hit bonus formula: ${bonusFormula}`);
@@ -7119,6 +7149,30 @@ Hooks.on("preCreateItem", (item, data, options, userId) => {
 				console.log(`${MODULE_ID} | Preserved spell damage flags when learning from scroll:`, sourceScroll.name);
 			}
 		}
+	}
+
+	// Preserve Item Macro trigger configuration flags
+	if (data.flags?.[MODULE_ID]?.itemMacro) {
+		item.updateSource({
+			[`flags.${MODULE_ID}.itemMacro`]: foundry.utils.duplicate(data.flags[MODULE_ID].itemMacro)
+		});
+		console.log(`${MODULE_ID} | Preserved itemMacro flags on item creation:`, item.name);
+	}
+
+	// Preserve Targeting configuration flags
+	if (data.flags?.[MODULE_ID]?.targeting) {
+		item.updateSource({
+			[`flags.${MODULE_ID}.targeting`]: foundry.utils.duplicate(data.flags[MODULE_ID].targeting)
+		});
+		console.log(`${MODULE_ID} | Preserved targeting flags on item creation:`, item.name);
+	}
+
+	// Preserve Item Macro module's macro data (itemacro module)
+	if (data.flags?.itemacro?.macro) {
+		item.updateSource({
+			"flags.itemacro.macro": foundry.utils.duplicate(data.flags.itemacro.macro)
+		});
+		console.log(`${MODULE_ID} | Preserved itemacro macro on item creation:`, item.name);
 	}
 });
 
@@ -7373,11 +7427,33 @@ async function enhanceSpellSheet(app, html) {
 		profiles: []
 	};
 
+	// Initialize item macro flags
+	const itemMacroFlags = item.flags?.[MODULE_ID]?.itemMacro || {
+		runAsGm: false,
+		triggers: []
+	};
+
+	// Initialize targeting flags
+	const targetingFlags = item.flags?.[MODULE_ID]?.targeting || {
+		mode: 'targeted',
+		template: {
+			type: 'circle',
+			size: 30,
+			placement: 'choose',
+			fillColor: '#4e9a06',
+			deleteMode: 'none',
+			deleteDuration: 3,
+			hideOutline: false
+		}
+	};
+
 	// Combine all flags for template
 	const flags = {
 		...spellDamageFlags,
 		summoning: summoningFlags,
-		itemGive: itemGiveFlags
+		itemGive: itemGiveFlags,
+		itemMacro: itemMacroFlags,
+		targeting: targetingFlags
 	};
 
 	// Convert applyToTarget to boolean (in case it was stored as string)
@@ -7645,6 +7721,12 @@ async function enhanceSpellSheet(app, html) {
 
 	// Prevent auto-submission of form inputs in Activity tab to avoid unwanted re-renders
 	$activityTab.find('input, select, textarea').on('change', function (e) {
+		// Skip Item Macro inputs - they have their own handlers
+		if ($(this).hasClass('sdx-spell-macro-run-as-gm') ||
+			$(this).hasClass('sdx-spell-macro-trigger-checkbox')) {
+			return; // Let the event propagate to the Item Macro handlers
+		}
+
 		e.stopPropagation(); // Prevent event from bubbling up to form auto-submit
 		e.preventDefault(); // Prevent default form submission
 
@@ -7685,6 +7767,72 @@ async function enhanceSpellSheet(app, html) {
 			$content.slideDown(200);
 		} else {
 			$content.slideUp(200);
+		}
+	});
+
+	// Targeting mode toggle listener - show/hide template settings
+	html.find('.sdx-targeting-mode-radio').on('change', function () {
+		const $templateSettings = $(this).closest('.sdx-targeting-content').find('.sdx-template-settings');
+		if ($(this).val() === 'template') {
+			$templateSettings.slideDown(200);
+		} else {
+			$templateSettings.slideUp(200);
+		}
+	});
+
+	// Delete mode toggle listener - enable/disable duration input
+	html.find('.sdx-delete-mode-radio').on('change', function () {
+		const $container = $(this).closest('.sdx-delete-options');
+		$container.find('.sdx-duration-input').prop('disabled', true);
+		$(this).siblings('.sdx-duration-input').prop('disabled', false);
+	});
+
+	// Color picker sync with text input
+	html.find('.sdx-targeting-box .sdx-color-picker').on('input', function () {
+		$(this).siblings('.sdx-color-text').val($(this).val());
+	});
+	html.find('.sdx-targeting-box .sdx-color-text').on('input', function () {
+		const colorVal = $(this).val();
+		if (/^#[0-9A-Fa-f]{6}$/.test(colorVal)) {
+			$(this).siblings('.sdx-color-picker').val(colorVal);
+		}
+	});
+
+	// TokenMagic texture file picker
+	html.find('.sdx-tm-texture-picker').on('click', async function (e) {
+		e.preventDefault();
+		const $input = $(this).siblings('.sdx-tm-texture-input');
+		const fp = new FilePicker({
+			type: 'image',
+			current: $input.val(),
+			callback: path => {
+				$input.val(path).trigger('change');
+			}
+		});
+		fp.browse();
+	});
+
+	// TokenMagic opacity slider value display
+	html.find('.sdx-tm-opacity-slider').on('input', function () {
+		$(this).siblings('.sdx-tm-opacity-value').text($(this).val());
+	});
+
+	// TokenMagic preset dropdown - enable/disable tint inputs
+	html.find('.sdx-tm-preset-select').on('change', function () {
+		const preset = $(this).val();
+		const $tintGroup = $(this).closest('.sdx-tokenmagic-section').find('.sdx-tint-input-group');
+		const isNoFx = preset === 'NOFX';
+		$tintGroup.find('input').prop('disabled', isNoFx);
+	});
+
+	// TokenMagic tint color picker sync
+	html.find('.sdx-tm-tint-picker').on('input', function () {
+		$(this).siblings('.sdx-tm-tint-text').val($(this).val());
+	});
+	html.find('.sdx-tm-tint-text').on('input', function () {
+		const colorVal = $(this).val();
+		if (/^#[0-9A-Fa-f]{6}$/.test(colorVal)) {
+			$(this).siblings('.sdx-tm-tint-picker').val(colorVal);
 		}
 	});
 
@@ -8316,6 +8464,38 @@ async function enhanceSpellSheet(app, html) {
 		});
 	}
 
+	// ===== ITEM MACRO HANDLERS =====
+
+	// Handle spell macro GM toggle
+	html.on('change', '.sdx-spell-macro-run-as-gm', function (e) {
+		e.stopPropagation();
+		const runAsGm = $(this).prop('checked');
+		const updateData = {};
+		updateData[`flags.${MODULE_ID}.itemMacro.runAsGm`] = runAsGm;
+		item.update(updateData, { render: false }).then(() => {
+			console.log(`${MODULE_ID} | Saved itemMacro.runAsGm:`, runAsGm);
+		}).catch(err => {
+			console.error(`${MODULE_ID} | Failed to save itemMacro.runAsGm:`, err);
+		});
+	});
+
+	// Handle spell macro trigger checkboxes
+	html.on('change', '.sdx-spell-macro-trigger-checkbox', function (e) {
+		e.stopPropagation();
+		// Collect all checked triggers
+		const triggers = [];
+		html.find('.sdx-spell-macro-trigger-checkbox:checked').each(function () {
+			triggers.push($(this).data('trigger'));
+		});
+		const updateData = {};
+		updateData[`flags.${MODULE_ID}.itemMacro.triggers`] = triggers;
+		item.update(updateData, { render: false }).then(() => {
+			console.log(`${MODULE_ID} | Saved itemMacro.triggers:`, triggers);
+		}).catch(err => {
+			console.error(`${MODULE_ID} | Failed to save itemMacro.triggers:`, err);
+		});
+	});
+
 	// Setup activity toggles as radio buttons (only one can be active at a time)
 	setupActivityRadioToggles(html, item);
 
@@ -8373,11 +8553,18 @@ async function enhancePotionSheet(app, html) {
 		profiles: []
 	};
 
+	// Initialize item macro flags
+	const itemMacroFlags = item.flags?.[MODULE_ID]?.itemMacro || {
+		runAsGm: false,
+		triggers: []
+	};
+
 	// Combine all flags for template
 	const flags = {
 		...spellDamageFlags,
 		summoning: summoningFlags,
-		itemGive: itemGiveFlags
+		itemGive: itemGiveFlags,
+		itemMacro: itemMacroFlags
 	};
 
 	// Convert applyToTarget to boolean (in case it was stored as string)
@@ -8593,6 +8780,12 @@ async function enhancePotionSheet(app, html) {
 
 	// Prevent auto-submission of form inputs in Activity tab to avoid unwanted re-renders
 	$activityTab.find('input, select, textarea').on('change', function (e) {
+		// Skip Item Macro inputs - they have their own handlers
+		if ($(this).hasClass('sdx-spell-macro-run-as-gm') ||
+			$(this).hasClass('sdx-spell-macro-trigger-checkbox')) {
+			return; // Let the event propagate to the Item Macro handlers
+		}
+
 		e.stopPropagation(); // Prevent event from bubbling up to form auto-submit
 
 		// Manually update the item without re-rendering
@@ -9058,6 +9251,37 @@ async function enhancePotionSheet(app, html) {
 		});
 	}
 
+	// ===== ITEM MACRO HANDLERS =====
+
+	// Handle spell macro GM toggle
+	html.on('change', '.sdx-spell-macro-run-as-gm', function (e) {
+		e.stopPropagation();
+		const runAsGm = $(this).prop('checked');
+		const updateData = {};
+		updateData[`flags.${MODULE_ID}.itemMacro.runAsGm`] = runAsGm;
+		item.update(updateData, { render: false }).then(() => {
+			console.log(`${MODULE_ID} | Saved itemMacro.runAsGm:`, runAsGm);
+		}).catch(err => {
+			console.error(`${MODULE_ID} | Failed to save itemMacro.runAsGm:`, err);
+		});
+	});
+
+	// Handle spell macro trigger checkboxes
+	html.on('change', '.sdx-spell-macro-trigger-checkbox', function (e) {
+		e.stopPropagation();
+		const triggers = [];
+		html.find('.sdx-spell-macro-trigger-checkbox:checked').each(function () {
+			triggers.push($(this).data('trigger'));
+		});
+		const updateData = {};
+		updateData[`flags.${MODULE_ID}.itemMacro.triggers`] = triggers;
+		item.update(updateData, { render: false }).then(() => {
+			console.log(`${MODULE_ID} | Saved itemMacro.triggers:`, triggers);
+		}).catch(err => {
+			console.error(`${MODULE_ID} | Failed to save itemMacro.triggers:`, err);
+		});
+	});
+
 	// Setup activity toggles as radio buttons (only one can be active at a time)
 	setupActivityRadioToggles(html, item);
 
@@ -9118,11 +9342,33 @@ async function enhanceScrollSheet(app, html) {
 		profiles: []
 	};
 
+	// Initialize item macro flags
+	const itemMacroFlags = item.flags?.[MODULE_ID]?.itemMacro || {
+		runAsGm: false,
+		triggers: []
+	};
+
+	// Initialize targeting flags
+	const targetingFlags = item.flags?.[MODULE_ID]?.targeting || {
+		mode: 'targeted',
+		template: {
+			type: 'circle',
+			size: 30,
+			placement: 'choose',
+			fillColor: '#4e9a06',
+			deleteMode: 'none',
+			deleteDuration: 3,
+			hideOutline: false
+		}
+	};
+
 	// Combine all flags for template
 	const flags = {
 		...spellDamageFlags,
 		summoning: summoningFlags,
-		itemGive: itemGiveFlags
+		itemGive: itemGiveFlags,
+		itemMacro: itemMacroFlags,
+		targeting: targetingFlags
 	};
 
 	// Convert applyToTarget to boolean (in case it was stored as string)
@@ -9338,6 +9584,12 @@ async function enhanceScrollSheet(app, html) {
 
 	// Prevent auto-submission of form inputs in Activity tab to avoid unwanted re-renders
 	$activityTab.find('input, select, textarea').on('change', function (e) {
+		// Skip Item Macro inputs - they have their own handlers
+		if ($(this).hasClass('sdx-spell-macro-run-as-gm') ||
+			$(this).hasClass('sdx-spell-macro-trigger-checkbox')) {
+			return; // Let the event propagate to the Item Macro handlers
+		}
+
 		e.stopPropagation(); // Prevent event from bubbling up to form auto-submit
 
 		// Manually update the item without re-rendering
@@ -9377,6 +9629,72 @@ async function enhanceScrollSheet(app, html) {
 			$content.slideDown(200);
 		} else {
 			$content.slideUp(200);
+		}
+	});
+
+	// Targeting mode toggle listener - show/hide template settings
+	html.find('.sdx-targeting-mode-radio').on('change', function () {
+		const $templateSettings = $(this).closest('.sdx-targeting-content').find('.sdx-template-settings');
+		if ($(this).val() === 'template') {
+			$templateSettings.slideDown(200);
+		} else {
+			$templateSettings.slideUp(200);
+		}
+	});
+
+	// Delete mode toggle listener - enable/disable duration input
+	html.find('.sdx-delete-mode-radio').on('change', function () {
+		const $container = $(this).closest('.sdx-delete-options');
+		$container.find('.sdx-duration-input').prop('disabled', true);
+		$(this).siblings('.sdx-duration-input').prop('disabled', false);
+	});
+
+	// Color picker sync with text input
+	html.find('.sdx-targeting-box .sdx-color-picker').on('input', function () {
+		$(this).siblings('.sdx-color-text').val($(this).val());
+	});
+	html.find('.sdx-targeting-box .sdx-color-text').on('input', function () {
+		const colorVal = $(this).val();
+		if (/^#[0-9A-Fa-f]{6}$/.test(colorVal)) {
+			$(this).siblings('.sdx-color-picker').val(colorVal);
+		}
+	});
+
+	// TokenMagic texture file picker
+	html.find('.sdx-tm-texture-picker').on('click', async function (e) {
+		e.preventDefault();
+		const $input = $(this).siblings('.sdx-tm-texture-input');
+		const fp = new FilePicker({
+			type: 'image',
+			current: $input.val(),
+			callback: path => {
+				$input.val(path).trigger('change');
+			}
+		});
+		fp.browse();
+	});
+
+	// TokenMagic opacity slider value display
+	html.find('.sdx-tm-opacity-slider').on('input', function () {
+		$(this).siblings('.sdx-tm-opacity-value').text($(this).val());
+	});
+
+	// TokenMagic preset dropdown - enable/disable tint inputs
+	html.find('.sdx-tm-preset-select').on('change', function () {
+		const preset = $(this).val();
+		const $tintGroup = $(this).closest('.sdx-tokenmagic-section').find('.sdx-tint-input-group');
+		const isNoFx = preset === 'NOFX';
+		$tintGroup.find('input').prop('disabled', isNoFx);
+	});
+
+	// TokenMagic tint color picker sync
+	html.find('.sdx-tm-tint-picker').on('input', function () {
+		$(this).siblings('.sdx-tm-tint-text').val($(this).val());
+	});
+	html.find('.sdx-tm-tint-text').on('input', function () {
+		const colorVal = $(this).val();
+		if (/^#[0-9A-Fa-f]{6}$/.test(colorVal)) {
+			$(this).siblings('.sdx-tm-tint-picker').val(colorVal);
 		}
 	});
 
@@ -9781,6 +10099,37 @@ async function enhanceScrollSheet(app, html) {
 		});
 	}
 
+	// ===== ITEM MACRO HANDLERS =====
+
+	// Handle spell macro GM toggle
+	html.on('change', '.sdx-spell-macro-run-as-gm', function (e) {
+		e.stopPropagation();
+		const runAsGm = $(this).prop('checked');
+		const updateData = {};
+		updateData[`flags.${MODULE_ID}.itemMacro.runAsGm`] = runAsGm;
+		item.update(updateData, { render: false }).then(() => {
+			console.log(`${MODULE_ID} | Saved itemMacro.runAsGm:`, runAsGm);
+		}).catch(err => {
+			console.error(`${MODULE_ID} | Failed to save itemMacro.runAsGm:`, err);
+		});
+	});
+
+	// Handle spell macro trigger checkboxes
+	html.on('change', '.sdx-spell-macro-trigger-checkbox', function (e) {
+		e.stopPropagation();
+		const triggers = [];
+		html.find('.sdx-spell-macro-trigger-checkbox:checked').each(function () {
+			triggers.push($(this).data('trigger'));
+		});
+		const updateData = {};
+		updateData[`flags.${MODULE_ID}.itemMacro.triggers`] = triggers;
+		item.update(updateData, { render: false }).then(() => {
+			console.log(`${MODULE_ID} | Saved itemMacro.triggers:`, triggers);
+		}).catch(err => {
+			console.error(`${MODULE_ID} | Failed to save itemMacro.triggers:`, err);
+		});
+	});
+
 	// Setup activity toggles as radio buttons (only one can be active at a time)
 	setupActivityRadioToggles(html, item);
 
@@ -9838,11 +10187,33 @@ async function enhanceWandSheet(app, html) {
 		profiles: []
 	};
 
+	// Initialize item macro flags
+	const itemMacroFlags = item.flags?.[MODULE_ID]?.itemMacro || {
+		runAsGm: false,
+		triggers: []
+	};
+
+	// Initialize targeting flags
+	const targetingFlags = item.flags?.[MODULE_ID]?.targeting || {
+		mode: 'targeted',
+		template: {
+			type: 'circle',
+			size: 30,
+			placement: 'choose',
+			fillColor: '#4e9a06',
+			deleteMode: 'none',
+			deleteDuration: 3,
+			hideOutline: false
+		}
+	};
+
 	// Combine all flags for template
 	const flags = {
 		...spellDamageFlags,
 		summoning: summoningFlags,
-		itemGive: itemGiveFlags
+		itemGive: itemGiveFlags,
+		itemMacro: itemMacroFlags,
+		targeting: targetingFlags
 	};
 
 	const applyToTarget = flags.applyToTarget === "false" ? false : (flags.applyToTarget === false ? false : true);
@@ -10045,6 +10416,12 @@ async function enhanceWandSheet(app, html) {
 
 	// Prevent auto-submission of form inputs in Activity tab to avoid unwanted re-renders
 	$activityTab.find('input, select, textarea').on('change', function (e) {
+		// Skip Item Macro inputs - they have their own handlers
+		if ($(this).hasClass('sdx-spell-macro-run-as-gm') ||
+			$(this).hasClass('sdx-spell-macro-trigger-checkbox')) {
+			return; // Let the event propagate to the Item Macro handlers
+		}
+
 		e.stopPropagation(); // Prevent event from bubbling up to form auto-submit
 
 		// Manually update the item without re-rendering
@@ -10083,6 +10460,72 @@ async function enhanceWandSheet(app, html) {
 			$content.slideDown(200);
 		} else {
 			$content.slideUp(200);
+		}
+	});
+
+	// Targeting mode toggle listener - show/hide template settings
+	html.find('.sdx-targeting-mode-radio').on('change', function () {
+		const $templateSettings = $(this).closest('.sdx-targeting-content').find('.sdx-template-settings');
+		if ($(this).val() === 'template') {
+			$templateSettings.slideDown(200);
+		} else {
+			$templateSettings.slideUp(200);
+		}
+	});
+
+	// Delete mode toggle listener - enable/disable duration input
+	html.find('.sdx-delete-mode-radio').on('change', function () {
+		const $container = $(this).closest('.sdx-delete-options');
+		$container.find('.sdx-duration-input').prop('disabled', true);
+		$(this).siblings('.sdx-duration-input').prop('disabled', false);
+	});
+
+	// Color picker sync with text input
+	html.find('.sdx-targeting-box .sdx-color-picker').on('input', function () {
+		$(this).siblings('.sdx-color-text').val($(this).val());
+	});
+	html.find('.sdx-targeting-box .sdx-color-text').on('input', function () {
+		const colorVal = $(this).val();
+		if (/^#[0-9A-Fa-f]{6}$/.test(colorVal)) {
+			$(this).siblings('.sdx-color-picker').val(colorVal);
+		}
+	});
+
+	// TokenMagic texture file picker
+	html.find('.sdx-tm-texture-picker').on('click', async function (e) {
+		e.preventDefault();
+		const $input = $(this).siblings('.sdx-tm-texture-input');
+		const fp = new FilePicker({
+			type: 'image',
+			current: $input.val(),
+			callback: path => {
+				$input.val(path).trigger('change');
+			}
+		});
+		fp.browse();
+	});
+
+	// TokenMagic opacity slider value display
+	html.find('.sdx-tm-opacity-slider').on('input', function () {
+		$(this).siblings('.sdx-tm-opacity-value').text($(this).val());
+	});
+
+	// TokenMagic preset dropdown - enable/disable tint inputs
+	html.find('.sdx-tm-preset-select').on('change', function () {
+		const preset = $(this).val();
+		const $tintGroup = $(this).closest('.sdx-tokenmagic-section').find('.sdx-tint-input-group');
+		const isNoFx = preset === 'NOFX';
+		$tintGroup.find('input').prop('disabled', isNoFx);
+	});
+
+	// TokenMagic tint color picker sync
+	html.find('.sdx-tm-tint-picker').on('input', function () {
+		$(this).siblings('.sdx-tm-tint-text').val($(this).val());
+	});
+	html.find('.sdx-tm-tint-text').on('input', function () {
+		const colorVal = $(this).val();
+		if (/^#[0-9A-Fa-f]{6}$/.test(colorVal)) {
+			$(this).siblings('.sdx-tm-tint-picker').val(colorVal);
 		}
 	});
 
@@ -10486,6 +10929,37 @@ async function enhanceWandSheet(app, html) {
 		});
 	}
 
+	// ===== ITEM MACRO HANDLERS =====
+
+	// Handle spell macro GM toggle
+	html.on('change', '.sdx-spell-macro-run-as-gm', function (e) {
+		e.stopPropagation();
+		const runAsGm = $(this).prop('checked');
+		const updateData = {};
+		updateData[`flags.${MODULE_ID}.itemMacro.runAsGm`] = runAsGm;
+		item.update(updateData, { render: false }).then(() => {
+			console.log(`${MODULE_ID} | Saved itemMacro.runAsGm:`, runAsGm);
+		}).catch(err => {
+			console.error(`${MODULE_ID} | Failed to save itemMacro.runAsGm:`, err);
+		});
+	});
+
+	// Handle spell macro trigger checkboxes
+	html.on('change', '.sdx-spell-macro-trigger-checkbox', function (e) {
+		e.stopPropagation();
+		const triggers = [];
+		html.find('.sdx-spell-macro-trigger-checkbox:checked').each(function () {
+			triggers.push($(this).data('trigger'));
+		});
+		const updateData = {};
+		updateData[`flags.${MODULE_ID}.itemMacro.triggers`] = triggers;
+		item.update(updateData, { render: false }).then(() => {
+			console.log(`${MODULE_ID} | Saved itemMacro.triggers:`, triggers);
+		}).catch(err => {
+			console.error(`${MODULE_ID} | Failed to save itemMacro.triggers:`, err);
+		});
+	});
+
 	// Setup activity toggles as radio buttons (only one can be active at a time)
 	setupActivityRadioToggles(html, item);
 
@@ -10716,6 +11190,81 @@ Hooks.on("preCreateChatMessage", (message, data, options, userId) => {
 				console.log(`${MODULE_ID} | Stored item config for ${item.name}:`, itemConfig);
 			}
 		}
+
+		// Check for pending hit bonus info and store it in the message flags
+		// This allows us to display the hit bonus formula and result in the chat card
+		// Try multiple sources for actor/item IDs since they may not all be available at this point
+		const sdFlags = message.flags?.shadowdark;
+		const speakerActorId = message.speaker?.actor;
+
+		// Debug: log the regex matches
+		console.log(`${MODULE_ID} | preCreateChatMessage regex matches:`, {
+			actorIdMatch: actorIdMatch ? actorIdMatch[1] : null,
+			itemIdMatch: itemIdMatch ? itemIdMatch[1] : null
+		});
+
+		// Try to get itemId from multiple sources:
+		// 1. message.flags.shadowdark.itemId (may not be set yet)
+		// 2. HTML data attributes - use itemIdMatch from earlier
+		let sdItemId = sdFlags?.itemId;
+		if (!sdItemId && itemIdMatch) {
+			sdItemId = itemIdMatch[1];
+		}
+
+		// Debug: log the content to see what attributes are used
+		console.log(`${MODULE_ID} | preCreateChatMessage content snippet:`, content.substring(0, 500));
+
+		// Debug: log what we have
+		console.log(`${MODULE_ID} | preCreateChatMessage - checking for hit bonus:`, {
+			speakerActorId,
+			sdItemId,
+			pendingKeys: Array.from(_pendingHitBonusInfo.keys())
+		});
+
+		if (speakerActorId && sdItemId) {
+			const hitBonusKey = `${speakerActorId}-${sdItemId}`;
+			console.log(`${MODULE_ID} | Looking for hit bonus key: ${hitBonusKey}`);
+			const hitBonusInfo = _pendingHitBonusInfo.get(hitBonusKey);
+
+			if (hitBonusInfo) {
+				// Store the hit bonus info in the message flags
+				// No timestamp check needed - we clean up after use anyway
+				// The hit bonus is stored before the roll dialog opens, so it can be
+				// quite old by the time the user clicks roll
+				message.updateSource({
+					"flags.shadowdark-extras.hitBonus": {
+						formula: hitBonusInfo.formula,
+						result: hitBonusInfo.result,
+						parts: hitBonusInfo.parts
+					}
+				});
+				console.log(`${MODULE_ID} | Stored hit bonus info in message:`, hitBonusInfo);
+
+				// Clean up the pending info
+				_pendingHitBonusInfo.delete(hitBonusKey);
+			}
+		} else if (actorIdMatch && itemIdMatch) {
+			// Fallback: try HTML data attributes (for item cards)
+			const actorId = actorIdMatch[1];
+			const itemId = itemIdMatch[1];
+			const hitBonusKey = `${actorId}-${itemId}`;
+			const hitBonusInfo = _pendingHitBonusInfo.get(hitBonusKey);
+
+			if (hitBonusInfo) {
+				const isRecent = (Date.now() - hitBonusInfo.timestamp) < 5000;
+				if (isRecent) {
+					message.updateSource({
+						"flags.shadowdark-extras.hitBonus": {
+							formula: hitBonusInfo.formula,
+							result: hitBonusInfo.result,
+							parts: hitBonusInfo.parts
+						}
+					});
+					console.log(`${MODULE_ID} | Stored hit bonus info in message (from HTML):`, hitBonusInfo);
+				}
+				_pendingHitBonusInfo.delete(hitBonusKey);
+			}
+		}
 	} catch (err) {
 		console.error(`${MODULE_ID} | Failed to store data in message`, err);
 	}
@@ -10741,7 +11290,15 @@ Hooks.on("renderChatMessage", (message, html, data) => {
  * Process weapon bonuses for a chat message
  */
 async function processWeaponBonuses(message, html) {
-	// Check if this is a weapon attack roll
+	// First, check if we have hit bonus info to display - this should happen
+	// regardless of other conditions since it was pre-calculated
+	const hitBonusInfo = message.flags?.[MODULE_ID]?.hitBonus;
+	console.log(`${MODULE_ID} | processWeaponBonuses - hitBonusInfo:`, hitBonusInfo);
+	if (hitBonusInfo) {
+		await injectHitBonusDisplay(html, hitBonusInfo);
+	}
+
+	// Check if this is a weapon attack roll (for damage bonus display)
 	const flags = message.flags?.shadowdark;
 	if (!flags?.itemId) return;
 
@@ -10752,7 +11309,7 @@ async function processWeaponBonuses(message, html) {
 	const item = actor.items.get(flags.itemId);
 	if (!item || item.type !== "Weapon") return;
 
-	// Check if weapon has bonuses configured
+	// Check if weapon has damage bonuses configured
 	const bonusFlags = item.flags?.[MODULE_ID]?.weaponBonus;
 	if (!bonusFlags?.enabled) return;
 
@@ -10768,8 +11325,52 @@ async function processWeaponBonuses(message, html) {
 		: game.user.targets.first();
 	const target = targetToken?.actor;
 
-	// Inject the weapon bonus display
+	// Inject the weapon damage bonus display
 	await injectWeaponBonusDisplay(message, html, item, actor, target, isCritical);
+}
+
+/**
+ * Inject hit bonus information into the chat card
+ * @param {jQuery} html - The message HTML
+ * @param {Object} hitBonusInfo - { formula, result, parts }
+ */
+async function injectHitBonusDisplay(html, hitBonusInfo) {
+	if (!hitBonusInfo || hitBonusInfo.result === 0) return;
+
+	// Build tooltip from labels
+	let tooltip = "";
+	if (hitBonusInfo.parts && hitBonusInfo.parts.length > 0) {
+		const labels = hitBonusInfo.parts
+			.filter(p => p.label)
+			.map(p => p.label);
+		if (labels.length > 0) {
+			tooltip = labels.join(", ");
+		}
+	}
+
+	const sign = hitBonusInfo.result > 0 ? "+" : "";
+	const tooltipAttr = tooltip ? `data-tooltip="${tooltip}"` : "";
+
+	// Always show formula = result format
+	let bonusHtml = `<div class="sdx-hit-bonus-display" ${tooltipAttr}>`;
+	bonusHtml += `<span class="sdx-hit-bonus-label">Hit Bonus:</span>`;
+	bonusHtml += `<span class="sdx-hit-bonus-formula">${hitBonusInfo.formula}</span>`;
+	bonusHtml += `<span class="sdx-hit-bonus-equals">=</span>`;
+	bonusHtml += `<span class="sdx-hit-bonus-result">${sign}${hitBonusInfo.result}</span>`;
+	bonusHtml += `</div>`;
+
+	// Find where to inject (after the roll result but before damage sections)
+	const $attackRoll = html.find('.card-attack-roll');
+	if ($attackRoll.length) {
+		// Insert after the attack roll section
+		$attackRoll.after(bonusHtml);
+	} else {
+		// Fallback: insert after the dice roll
+		const $diceRoll = html.find('.dice-roll').first();
+		if ($diceRoll.length) {
+			$diceRoll.after(bonusHtml);
+		}
+	}
 }
 
 // Wrap ItemSheet getData to modify context before rendering
@@ -10810,6 +11411,12 @@ Hooks.once("ready", () => {
 				console.log(`${MODULE_ID} | Preserved spell damage flags for ${spell.name} -> ${itemData.name}`, itemData.flags[MODULE_ID].spellDamage);
 			}
 
+			// Preserve Targeting configuration flags
+			if (spell.flags?.[MODULE_ID]?.targeting) {
+				itemData.flags[MODULE_ID].targeting = foundry.utils.duplicate(spell.flags[MODULE_ID].targeting);
+				console.log(`${MODULE_ID} | Preserved targeting flags for ${spell.name} -> ${itemData.name}`, itemData.flags[MODULE_ID].targeting);
+			}
+
 			// Preserve summoning configuration flags
 			if (spell.flags?.[MODULE_ID]?.summoning) {
 				itemData.flags[MODULE_ID].summoning = foundry.utils.duplicate(spell.flags[MODULE_ID].summoning);
@@ -10826,6 +11433,19 @@ Hooks.once("ready", () => {
 			if (spell.flags?.[MODULE_ID]?.unidentified) {
 				itemData.flags[MODULE_ID].unidentified = spell.flags[MODULE_ID].unidentified;
 				itemData.flags[MODULE_ID].unidentifiedDescription = spell.flags[MODULE_ID].unidentifiedDescription || "";
+			}
+
+			// Preserve Item Macro trigger configuration flags
+			if (spell.flags?.[MODULE_ID]?.itemMacro) {
+				itemData.flags[MODULE_ID].itemMacro = foundry.utils.duplicate(spell.flags[MODULE_ID].itemMacro);
+				console.log(`${MODULE_ID} | Preserved itemMacro flags for ${spell.name} -> ${itemData.name}`, itemData.flags[MODULE_ID].itemMacro);
+			}
+
+			// Preserve Item Macro module's macro data (itemacro module)
+			if (spell.flags?.itemacro?.macro) {
+				itemData.flags.itemacro = itemData.flags.itemacro || {};
+				itemData.flags.itemacro.macro = foundry.utils.duplicate(spell.flags.itemacro.macro);
+				console.log(`${MODULE_ID} | Preserved itemacro macro for ${spell.name} -> ${itemData.name}`);
 			}
 
 			return itemData;
@@ -11117,6 +11737,131 @@ Hooks.on("deleteItem", (item, options, userId) => {
 	}
 });
 
+// Inject Freya's Omen reroll button
+Hooks.on("renderChatMessage", (message, html, data) => {
+	const flags = message.flags?.shadowdark;
+	console.log(`${MODULE_ID} | Checking Freya's Omen for message ${message.id}`, flags);
+	if (!flags?.isRoll) return;
+
+	// Check if it's a critical failure on a spell
+	const isCriticalFailure = flags.critical === "failure";
+	console.log(`${MODULE_ID} | isCriticalFailure: ${isCriticalFailure}`);
+
+	if (isCriticalFailure) {
+		// Check if it looks like a spell
+		// We can check item type in flags.rolls.main.item (if available) or infer from roll data
+		// But relying on "system.lost" logic implies it's a spell.
+		// However, chat card doesn't show "system.lost".
+		// Use message content or title?
+		const flavor = message.flavor || "";
+		// But safest is to check actor flag first.
+
+		let actor = message.author?.character; // Default to user character
+		if (message.speaker.actor) actor = game.actors.get(message.speaker.actor);
+		if (message.speaker.token) {
+			const token = canvas.tokens.get(message.speaker.token);
+			if (token) actor = token.actor;
+		}
+
+		// Shadowdark system helper?
+		// Let's use standard Foundry method if available, or manual lookup
+		if (!actor && message.actor) actor = message.actor;
+
+		if (!actor) {
+			console.log(`${MODULE_ID} | No actor found for Freya's Omen check`);
+			return;
+		}
+
+		const hasFreyasOmen = actor.getFlag(MODULE_ID, "freyasOmen");
+		console.log(`${MODULE_ID} | Actor ${actor.name} has Freya's Omen: ${hasFreyasOmen}`);
+
+		if (hasFreyasOmen) {
+			// Check if item was a spell. 
+			// We can try to get the item from data-item-id
+			const itemId = html.find(".item-card").data("item-id");
+			console.log(`${MODULE_ID} | Item ID from card: ${itemId}`);
+
+			if (!itemId) return;
+			const item = actor.items.get(itemId);
+			if (!item || !item.isSpell()) return;
+
+			const $diceRoll = html.find(".dice-roll");
+			const btn = $(`<button class="sdx-freyas-omen-reroll" style="margin-top: 5px;">
+				<i class="fas fa-redo"></i> ${game.i18n.localize("SHADOWDARK.chat_card.button.freyas_omen_reroll")}
+			</button>`);
+
+			btn.click(async (ev) => {
+				ev.preventDefault();
+				ev.stopPropagation();
+				// Reroll the item
+				if (item) {
+					console.log(`${MODULE_ID} | Rerrolling spell: ${item.name}`);
+
+					// Reconstruct roll data for a spell roll
+					// Based on system logic (which isn't exposed directly for us to reuse easily)
+					let abilityId = item.system.ability;
+
+					// Fallback: Try to find ability from Class if not on item
+					if (!abilityId) {
+						// Check if item has spellAttribute
+						if (item.system.spellAttribute) {
+							abilityId = item.system.spellAttribute;
+						} else {
+							// Find spellcasting class
+							const classes = actor.items.filter(i => i.type === "Class");
+							for (const cls of classes) {
+								// shadowdark system structure for class spellcasting
+								if (cls.system.spellcasting?.ability) {
+									abilityId = cls.system.spellcasting.ability;
+									break;
+								}
+							}
+						}
+					}
+
+					// Final fallback
+					if (!abilityId) {
+						console.warn(`${MODULE_ID} | Could not determine spellcasting ability for ${item.name}. Defaulting to INT.`);
+						abilityId = "int";
+					}
+
+					if (!abilityId) {
+						console.error(`${MODULE_ID} | Cannot reroll spell without associated ability.`);
+						return;
+					}
+
+					const parts = ["1d20", "@abilityBonus"];
+
+					// Calculate bonuses
+					const abilityBonus = actor.abilityModifier(abilityId);
+					// Use system config if available, otherwise fallback map or Title Case
+					const abilityName = CONFIG.SHADOWDARK?.ABILITIES_LONG?.[abilityId] || abilityId.charAt(0).toUpperCase() + abilityId.slice(1);
+
+					const data = {
+						rollType: "ability",
+						abilityBonus,
+						ability: abilityName,
+						actor: actor,
+						item: item,
+						baseDifficulty: 10 // Spell DC is 10 + Tier
+					};
+
+					const options = {
+						title: game.i18n.format("SHADOWDARK.dialog.ability_check.header", { ability: abilityName }),
+						flavor: game.i18n.format("SHADOWDARK.chat_card.button.freyas_omen_reroll") + ": " + item.name,
+						speaker: ChatMessage.getSpeaker({ actor: actor }),
+						// Trigger Freya's Omen specific behavior if we wanted, but standard roll is fine
+					};
+
+					item.rollSpell(parts, data, options);
+				}
+			});
+
+			$diceRoll.after(btn);
+		}
+	}
+});
+
 // Clean up deleted actors from parties
 Hooks.on("deleteActor", (actor, options, userId) => {
 	if (actor.type !== "Player") return;
@@ -11370,4 +12115,1456 @@ Hooks.on("updateItem", (item, changes, options, userId) => {
 	}
 });
 
-console.log(`${MODULE_ID} | Module loaded`);
+// ============================================
+// ABILITY ADVANTAGE PREDEFINED EFFECTS
+// ============================================
+// Extend the Shadowdark system's predefined effects to include
+// ability check advantages (e.g., advantage on STR checks)
+
+Hooks.once("init", () => {
+	// Only extend if CONFIG.SHADOWDARK exists (system is loaded)
+	if (!CONFIG.SHADOWDARK?.PREDEFINED_EFFECTS) {
+		console.warn(`${MODULE_ID} | CONFIG.SHADOWDARK.PREDEFINED_EFFECTS not found, skipping ability advantage effects`);
+		return;
+	}
+
+	console.log(`${MODULE_ID} | Adding ability advantage predefined effects`);
+
+	// Define ability advantage effects for each ability score
+	const abilityAdvantageEffects = {
+		abilityAdvantageStr: {
+			defaultValue: "str",
+			effectKey: "system.bonuses.advantage",
+			img: "icons/skills/melee/hand-grip-staff-yellow-brown.webp",
+			name: "SHADOWDARK.item.effect.predefined_effect.abilityAdvantageStr",
+			mode: "CONST.ACTIVE_EFFECT_MODES.ADD",
+		},
+		abilityAdvantageDex: {
+			defaultValue: "dex",
+			effectKey: "system.bonuses.advantage",
+			img: "icons/skills/movement/feet-winged-boots-glowing-yellow.webp",
+			name: "SHADOWDARK.item.effect.predefined_effect.abilityAdvantageDex",
+			mode: "CONST.ACTIVE_EFFECT_MODES.ADD",
+		},
+		abilityAdvantageCon: {
+			defaultValue: "con",
+			effectKey: "system.bonuses.advantage",
+			img: "icons/magic/life/heart-area-circle-red-green.webp",
+			name: "SHADOWDARK.item.effect.predefined_effect.abilityAdvantageCon",
+			mode: "CONST.ACTIVE_EFFECT_MODES.ADD",
+		},
+		abilityAdvantageInt: {
+			defaultValue: "int",
+			effectKey: "system.bonuses.advantage",
+			img: "icons/commodities/gems/gem-faceted-navette-blue.webp",
+			name: "SHADOWDARK.item.effect.predefined_effect.abilityAdvantageInt",
+			mode: "CONST.ACTIVE_EFFECT_MODES.ADD",
+		},
+		abilityAdvantageWis: {
+			defaultValue: "wis",
+			effectKey: "system.bonuses.advantage",
+			img: "icons/magic/perception/eye-ringed-glow-angry-large-teal.webp",
+			name: "SHADOWDARK.item.effect.predefined_effect.abilityAdvantageWis",
+			mode: "CONST.ACTIVE_EFFECT_MODES.ADD",
+		},
+		abilityAdvantageCha: {
+			defaultValue: "cha",
+			effectKey: "system.bonuses.advantage",
+			img: "icons/magic/light/orbs-hand-sparkle-yellow.webp",
+			name: "SHADOWDARK.item.effect.predefined_effect.abilityAdvantageCha",
+			mode: "CONST.ACTIVE_EFFECT_MODES.ADD",
+		},
+		meleeAdvantage: {
+			defaultValue: "melee",
+			effectKey: "system.bonuses.advantage",
+			img: "icons/skills/melee/weapons-crossed-swords-yellow.webp",
+			name: "SHADOWDARK.item.effect.predefined_effect.meleeAdvantage",
+			mode: "CONST.ACTIVE_EFFECT_MODES.ADD",
+		},
+		rangedAdvantage: {
+			defaultValue: "ranged",
+			effectKey: "system.bonuses.advantage",
+			img: "icons/skills/ranged/bow-arrow-shooting-gray.webp",
+			name: "SHADOWDARK.item.effect.predefined_effect.rangedAdvantage",
+			mode: "CONST.ACTIVE_EFFECT_MODES.ADD",
+		},
+		meleeDamageDice: {
+			defaultValue: "d=1d4",
+			effectKey: `flags.${MODULE_ID}.meleeDamageDice`,
+			img: "icons/skills/melee/blade-tip-chipped-blood-red.webp",
+			name: "SHADOWDARK.item.effect.predefined_effect.meleeDamageDice",
+			mode: "CONST.ACTIVE_EFFECT_MODES.OVERRIDE",
+		},
+		rangedDamageDice: {
+			defaultValue: "d=1d4",
+			effectKey: `flags.${MODULE_ID}.rangedDamageDice`,
+			img: "icons/skills/ranged/arrow-flying-spiral-blue.webp",
+			name: "SHADOWDARK.item.effect.predefined_effect.rangedDamageDice",
+			mode: "CONST.ACTIVE_EFFECT_MODES.OVERRIDE",
+		},
+		freyasOmen: {
+			defaultValue: true,
+			effectKey: `flags.${MODULE_ID}.freyasOmen`,
+			img: "icons/magic/light/hand-sparks-smoke-teal.webp",
+			name: "SHADOWDARK.item.effect.predefined_effect.freyasOmen",
+			mode: "CONST.ACTIVE_EFFECT_MODES.OVERRIDE",
+		},
+		macroExecute: {
+			defaultValue: "",
+			effectKey: `flags.${MODULE_ID}.macroExecute`,
+			img: "icons/sundries/scrolls/scroll-worn-tan-red.webp",
+			name: "SHADOWDARK.item.effect.predefined_effect.macroExecute",
+			mode: "CONST.ACTIVE_EFFECT_MODES.OVERRIDE",
+		},
+	};
+
+	// Merge ability advantage effects into the system's predefined effects
+	Object.assign(CONFIG.SHADOWDARK.PREDEFINED_EFFECTS, abilityAdvantageEffects);
+
+	console.log(`${MODULE_ID} | Added ${Object.keys(abilityAdvantageEffects).length} extra advantage effects`);
+
+	// Monkey-patch ActorSD functions to support ability-specific advantage and extra damage dice
+	// and CONFIG.DiceSD.Roll for Freya's Omen spell loss prevention
+	if (globalThis.shadowdark?.documents?.ActorSD) {
+		const ActorSD = globalThis.shadowdark.documents.ActorSD;
+		const RollSD = CONFIG.DiceSD; // CONFIG.DiceSD is the class reference
+
+		console.log(`${MODULE_ID} | Monkey-patching ActorSD methods and DiceSD`);
+
+		// Store original methods
+		const originalRollAbility = ActorSD.prototype.rollAbility;
+		const originalHasAdvantage = ActorSD.prototype.hasAdvantage;
+		const originalGetExtraDamageDiceForWeapon = ActorSD.prototype.getExtraDamageDiceForWeapon;
+		const originalRoll = RollSD.Roll;
+
+		// Override getExtraDamageDiceForWeapon to add damage dice from flags
+		ActorSD.prototype.getExtraDamageDiceForWeapon = async function (item, data) {
+			await originalGetExtraDamageDiceForWeapon.call(this, item, data);
+
+			// Add custom damage dice from flags
+			if (this.type === "Player") {
+				if (item.system.type === "melee") {
+					let bonus = this.getFlag(MODULE_ID, "meleeDamageDice");
+					if (bonus) {
+						if (typeof bonus === "string" && bonus.startsWith("d=")) bonus = bonus.substring(2);
+						data.sdxMeleeDamageDice = bonus;
+						if (data.damageParts) data.damageParts.push("@sdxMeleeDamageDice");
+					}
+				} else if (item.system.type === "ranged") {
+					let bonus = this.getFlag(MODULE_ID, "rangedDamageDice");
+					if (bonus) {
+						if (typeof bonus === "string" && bonus.startsWith("d=")) bonus = bonus.substring(2);
+						data.sdxRangedDamageDice = bonus;
+						if (data.damageParts) data.damageParts.push("@sdxRangedDamageDice");
+					}
+				}
+			}
+		};
+
+		// Override rollAbility to include abilityId in data
+		ActorSD.prototype.rollAbility = async function (abilityId, options = {}) {
+			// If we can't easily wrap the internal logic of rollAbility (it constructs data internally),
+			// we have to re-implement it or intercept the call to RollDialog.
+			// Re-implementing is safer for ensuring data is passed, but riskier for system updates.
+			// Let's try to wrap it by hooking into Config if possible? No, system calls CONFIG.DiceSD.RollDialog directly.
+			// So we MUST re-implement the function to add the extra data property.
+			// Copy of system logic with one addition:
+
+			const parts = ["1d20", "@abilityBonus"];
+			const abilityBonus = this.abilityModifier(abilityId);
+			const ability = CONFIG.SHADOWDARK.ABILITIES_LONG[abilityId];
+
+			const data = {
+				rollType: "ability",
+				abilityId: abilityId, // <--- ADDED THIS
+				abilityBonus,
+				ability,
+				actor: this,
+			};
+
+			options.title = game.i18n.localize(`SHADOWDARK.dialog.ability_check.${abilityId}`);
+			options.flavor = options.title;
+			options.speaker = ChatMessage.getSpeaker({ actor: this });
+			options.dialogTemplate = "systems/shadowdark/templates/dialog/roll-ability-check-dialog.hbs";
+			options.chatCardTemplate = "systems/shadowdark/templates/chat/ability-card.hbs";
+
+			return await CONFIG.DiceSD.RollDialog(parts, data, options);
+		};
+
+		// Override hasAdvantage to check for abilityId and attackType
+		ActorSD.prototype.hasAdvantage = function (data) {
+
+			// Check standard system advantage first
+			if (originalHasAdvantage.call(this, data)) return true;
+
+			// Check for ability-specific advantage
+			if (this.type === "Player" && data.rollType === "ability" && data.abilityId) {
+				return this.system.bonuses.advantage.includes(data.abilityId);
+			}
+
+			// Check for attack type (melee/ranged) advantage
+			if (this.type === "Player" && data.attackType) {
+				return this.system.bonuses.advantage.includes(data.attackType);
+			}
+
+			return false;
+		};
+
+		// Monkey-patch RollSD.Roll to prevent spell loss if Freya's Omen is active
+		if (RollSD) {
+			const originalRoll = RollSD.Roll;
+			RollSD.Roll = async function (parts, data, $form, adv = 0, options = {}) {
+				// If it's a spell and we have the flag, we might need to protect it
+				// Use getFlag safely
+				const hasFreyasOmen = data.actor?.getFlag && data.actor.getFlag(MODULE_ID, "freyasOmen");
+
+				if (data.item?.isSpell() && hasFreyasOmen) {
+					// We need to wrap data.item.update to intercept "system.lost"
+					const originalUpdate = data.item.update;
+					data.item.update = async function (updates, options = {}) {
+						if (updates["system.lost"]) {
+							console.log(`${MODULE_ID} | Freya's Omen prevented spell loss for ${data.item.name}`);
+							// Remove the lost update
+							delete updates["system.lost"];
+							// If no other updates, return early
+							if (foundry.utils.isEmpty(updates)) return;
+						}
+						return originalUpdate.call(this, updates, options);
+					};
+				}
+
+				return originalRoll.call(this, parts, data, $form, adv, options);
+			};
+		}
+	} else {
+		console.warn(`${MODULE_ID} | ActorSD not found, could not apply ability advantage patches`);
+	}
+});
+
+// ============================================
+// MACRO EXECUTE EFFECT HANDLERS
+// ============================================
+
+// Socket for executing macros as GM
+let macroExecuteSocket;
+
+// Register socketlib handler on ready hook
+Hooks.once("ready", () => {
+	// Register socketlib socket if available
+	if (game.modules.get("socketlib")?.active) {
+		macroExecuteSocket = socketlib.registerModule(MODULE_ID);
+
+		// Register the GM execution handler
+		macroExecuteSocket.register("executeMacroAsGM", async (macroId, contextData) => {
+			// This runs on the GM's client
+			const macro = game.macros.get(macroId);
+			if (!macro) {
+				console.warn(`${MODULE_ID} | Macro with ID "${macroId}" not found`);
+				return;
+			}
+
+			// Reconstruct the context from the serialized data
+			const context = {
+				actor: game.actors.get(contextData.actorId),
+				token: contextData.tokenId ? canvas.tokens?.get(contextData.tokenId) : undefined,
+				trigger: contextData.trigger,
+				item: contextData.itemId ? game.items.get(contextData.itemId) || game.actors.get(contextData.actorId)?.items.get(contextData.itemId) : undefined,
+				effect: contextData.effectId ? game.actors.get(contextData.actorId)?.effects.get(contextData.effectId) : undefined,
+			};
+
+			// Execute the macro as GM
+			await macro.execute(context);
+		});
+
+		console.log(`${MODULE_ID} | Socketlib integration enabled for macro execution`);
+	}
+});
+
+/**
+ * Parse macro value and execute the macro
+ * @param {Actor} actor - The actor on which to execute the macro
+ * @param {string} macroValue - The value in format "macroName|trigger" or just "macroName"
+ * @param {string} currentTrigger - The trigger that is currently executing
+ * @param {Object} options - Additional context options
+ * @param {Item} options.item - The item that has the effect (if applicable)
+ * @param {ActiveEffect} options.effect - The effect that triggered the macro (if applicable)
+ */
+async function executeMacroFromEffect(actor, macroValue, currentTrigger, options = {}) {
+	if (!macroValue || macroValue === "REPLACEME") return;
+
+	// Parse the value format: "macroName|trigger"
+	let macroName, trigger;
+	if (macroValue.includes("|")) {
+		[macroName, trigger] = macroValue.split("|").map(s => s.trim());
+	} else {
+		// No trigger specified, default to effectCreated
+		macroName = macroValue.trim();
+		trigger = "effectCreated";
+	}
+
+	// Check if this trigger matches the current trigger
+	if (trigger !== currentTrigger) return;
+
+	// Find the macro by name
+	const macro = game.macros.find(m => m.name === macroName);
+	if (!macro) {
+		console.warn(`${MODULE_ID} | Macro "${macroName}" not found for macro.execute effect`);
+		return;
+	}
+
+	// Check permissions - only execute if user owns the actor or is GM
+	if (!actor.isOwner && !game.user.isGM) {
+		console.log(`${MODULE_ID} | User does not have permission to execute macro for actor ${actor.name}`);
+		return;
+	}
+
+	try {
+		console.log(`${MODULE_ID} | Executing macro "${macroName}" for actor ${actor.name} on trigger "${currentTrigger}"`);
+
+		// Get the actor's token (if available on canvas)
+		const token = actor.token || canvas.tokens?.placeables.find(t => t.actor?.id === actor.id);
+
+		// Build the context object to pass to the macro
+		const context = {
+			actor,           // The actor that has the effect
+			token,           // The token representing the actor (if on canvas)
+			trigger: currentTrigger,  // The trigger type (roundStart, itemEquipped, etc.)
+			item: options.item,       // The item that has the effect (if applicable)
+			effect: options.effect,   // The active effect (if applicable)
+		};
+
+		// Use socketlib for GM execution if available, otherwise execute locally
+		if (macroExecuteSocket && !game.user.isGM) {
+			// Serialize context data for socket transmission
+			const contextData = {
+				actorId: actor.id,
+				tokenId: token?.id,
+				trigger: currentTrigger,
+				itemId: options.item?.id,
+				effectId: options.effect?.id,
+			};
+
+			// Execute macro as GM via socketlib
+			console.log(`${MODULE_ID} | Executing macro via GM (socketlib)`);
+			await macroExecuteSocket.executeAsGM("executeMacroAsGM", macro.id, contextData);
+		} else {
+			// Execute locally (either user is GM or socketlib not available)
+			await macro.execute(context);
+		}
+	} catch (error) {
+		console.error(`${MODULE_ID} | Error executing macro "${macroName}":`, error);
+		ui.notifications.error(`Failed to execute macro "${macroName}": ${error.message}`);
+	}
+}
+
+/**
+ * Check actor for macro execute effects and run them for the given trigger
+ * @param {Actor} actor - The actor to check for macro execute effects
+ * @param {string} trigger - The trigger type (roundStart, roundEnd, etc.)
+ */
+async function checkAndExecuteMacros(actor, trigger) {
+	if (!actor) return;
+
+	// Get the macro execute flag value
+	const macroValue = actor.getFlag?.(MODULE_ID, "macroExecute");
+	if (macroValue) {
+		await executeMacroFromEffect(actor, macroValue, trigger);
+	}
+
+	// Also check all active effects for macro execute
+	for (const effect of actor.effects || []) {
+		const effectMacroValue = effect.flags?.[MODULE_ID]?.macroExecute;
+		if (effectMacroValue) {
+			await executeMacroFromEffect(actor, effectMacroValue, trigger, { effect });
+		}
+	}
+
+	// Also check all items for macro execute effects
+	for (const item of actor.items || []) {
+		const itemMacroValue = item.getFlag?.(MODULE_ID, "macroExecute");
+		if (itemMacroValue) {
+			await executeMacroFromEffect(actor, itemMacroValue, trigger, { item });
+		}
+
+		// Check item's active effects
+		for (const effect of item.effects || []) {
+			const effectMacroValue = effect.flags?.[MODULE_ID]?.macroExecute;
+			if (effectMacroValue) {
+				await executeMacroFromEffect(actor, effectMacroValue, trigger, { item, effect });
+			}
+		}
+	}
+}
+
+// Hook: Combat turn start (roundStart)
+Hooks.on("combatTurn", async (combat, updateData, updateOptions) => {
+	// Only execute for the active combatant at the start of their turn
+	const combatant = combat.combatant;
+	if (!combatant?.actor) return;
+
+	// Only execute on the user who owns the combatant
+	if (combatant.actor.isOwner) {
+		await checkAndExecuteMacros(combatant.actor, "roundStart");
+	}
+});
+
+// Hook: Combat turn end (roundEnd) - this fires before the next turn
+Hooks.on("combatTurn", async (combat, updateData, updateOptions) => {
+	// Get the previous combatant (whose turn just ended)
+	const prevTurn = updateData.turn - 1;
+	if (prevTurn >= 0 && prevTurn < combat.turns.length) {
+		const prevCombatant = combat.turns[prevTurn];
+		if (prevCombatant?.actor && prevCombatant.actor.isOwner) {
+			await checkAndExecuteMacros(prevCombatant.actor, "roundEnd");
+		}
+	}
+});
+
+// Hook: Effect created (effectCreated)
+Hooks.on("createActiveEffect", async (effect, options, userId) => {
+	// Only execute for the user who created the effect
+	if (userId !== game.user.id) return;
+
+	const actor = effect.parent;
+	if (!actor) return;
+
+	// Check if this specific effect has macro execute
+	const macroValue = effect.flags?.[MODULE_ID]?.macroExecute;
+	if (macroValue) {
+		await executeMacroFromEffect(actor, macroValue, "effectCreated", { effect });
+	}
+});
+
+// Hook: Effect deleted (effectDeleted)
+Hooks.on("deleteActiveEffect", async (effect, options, userId) => {
+	// Only execute for the user who deleted the effect
+	if (userId !== game.user.id) return;
+
+	const actor = effect.parent;
+	if (!actor) return;
+
+	// Check if this specific effect has macro execute
+	const macroValue = effect.flags?.[MODULE_ID]?.macroExecute;
+	if (macroValue) {
+		await executeMacroFromEffect(actor, macroValue, "effectDeleted", { effect });
+	}
+});
+
+// Hook: Item equipped/unequipped (itemEquipped, itemUnequipped)
+Hooks.on("updateItem", async (item, changes, options, userId) => {
+	// Only execute for the user who made the change
+	if (userId !== game.user.id) return;
+
+	const actor = item.parent;
+	if (!actor) return;
+
+	// Check if equipped status changed
+	if (changes.system?.equipped !== undefined) {
+		const nowEquipped = changes.system.equipped;
+		const trigger = nowEquipped ? "itemEquipped" : "itemUnequipped";
+
+		// Check if this item has macro execute
+		const macroValue = item.getFlag?.(MODULE_ID, "macroExecute");
+		if (macroValue) {
+			await executeMacroFromEffect(actor, macroValue, trigger, { item });
+		}
+
+		// Also check item's effects
+		for (const effect of item.effects || []) {
+			const effectMacroValue = effect.flags?.[MODULE_ID]?.macroExecute;
+			if (effectMacroValue) {
+				await executeMacroFromEffect(actor, effectMacroValue, trigger, { item, effect });
+			}
+		}
+
+		// Check for weapon item macro triggers (onEquip/onUnequip)
+		if (item.type === "Weapon") {
+			const macroConfig = getWeaponItemMacroConfig(item);
+			if (macroConfig.enabled) {
+				const weaponTrigger = nowEquipped ? "onEquip" : "onUnequip";
+				if (macroConfig.triggers.includes(weaponTrigger)) {
+					await executeWeaponItemMacro(item, actor, weaponTrigger, {});
+				}
+			}
+		}
+	}
+});
+
+// ============================================
+// WEAPON ITEM MACRO EXECUTION SYSTEM
+// ============================================
+
+/**
+ * Execute a weapon's Item Macro
+ * @param {Item} weapon - The weapon item
+ * @param {Actor} actor - The actor using the weapon
+ * @param {string} trigger - The trigger type (beforeAttack, onHit, onCritical, onMiss, onCriticalMiss, onEquip, onUnequip)
+ * @param {Object} context - Additional context for the macro
+ */
+async function executeWeaponItemMacro(weapon, actor, trigger, context = {}) {
+	// Check if Item Macro module is available
+	if (!game.modules.get("itemacro")?.active) {
+		console.log(`${MODULE_ID} | Item Macro module not active, skipping weapon macro execution`);
+		return;
+	}
+
+	// Check if the weapon has a macro using Item Macro's API
+	if (typeof weapon.hasMacro !== "function" || !weapon.hasMacro()) {
+		console.log(`${MODULE_ID} | No Item Macro attached to weapon ${weapon.name}`);
+		return;
+	}
+
+	// Get the weapon item macro config
+	const macroConfig = getWeaponItemMacroConfig(weapon);
+	if (!macroConfig.enabled) return;
+
+	// Verify the trigger is enabled
+	if (!macroConfig.triggers.includes(trigger)) {
+		console.log(`${MODULE_ID} | Trigger ${trigger} not enabled for weapon ${weapon.name}`);
+		return;
+	}
+
+	// Get the actor's token
+	const token = actor.token || canvas.tokens?.placeables.find(t => t.actor?.id === actor.id);
+
+	// Get targets
+	const targets = Array.from(game.user.targets);
+	const target = targets[0] || null;
+	const targetActor = target?.actor || null;
+
+	// Build the comprehensive scope object
+	// Note: Item Macro expects certain properties to be available
+	const scope = {
+		actor,
+		token,
+		item: weapon,
+		targets,
+		target,
+		targetActor,
+		trigger,
+		isHit: context.isHit ?? false,
+		isMiss: context.isMiss ?? false,
+		isCritical: context.isCritical ?? false,
+		isCriticalMiss: context.isCriticalMiss ?? false,
+		rollResult: context.rollResult ?? null,
+		rollData: context.rollData ?? null,
+		damageRoll: context.damageRoll ?? null,
+		speaker: ChatMessage.getSpeaker({ actor }),
+		flags: weapon.flags?.[MODULE_ID]?.weaponBonus || {},
+		// Add SDX-specific properties that macros can use
+		sdx: {
+			trigger,
+			isHit: context.isHit ?? false,
+			isMiss: context.isMiss ?? false,
+			isCritical: context.isCritical ?? false,
+			isCriticalMiss: context.isCriticalMiss ?? false,
+			rollResult: context.rollResult ?? null
+		}
+	};
+
+	try {
+		console.log(`${MODULE_ID} | Executing weapon Item Macro for ${weapon.name} on trigger "${trigger}"`, scope);
+
+		// Check if we need to run as GM
+		if (macroConfig.runAsGm && !game.user.isGM && macroExecuteSocket) {
+			// Serialize context for socket transmission
+			const serializedContext = {
+				actorId: actor.id,
+				tokenId: token?.id,
+				itemId: weapon.id,
+				targetIds: targets.map(t => t.id),
+				trigger,
+				isHit: scope.isHit,
+				isMiss: scope.isMiss,
+				isCritical: scope.isCritical,
+				isCriticalMiss: scope.isCriticalMiss,
+				rollResult: scope.rollResult,
+				rollDataJson: scope.rollData ? JSON.stringify(scope.rollData) : null
+			};
+
+			console.log(`${MODULE_ID} | Executing weapon Item Macro via GM (socketlib)`);
+			await macroExecuteSocket.executeAsGM("executeWeaponItemMacroAsGM", serializedContext);
+		} else {
+			// Execute the macro locally using Item Macro's API
+			// The executeMacro method is added to Item.prototype by the itemacro module
+			console.log(`${MODULE_ID} | Executing weapon Item Macro locally using weapon.executeMacro()`);
+			await weapon.executeMacro(scope);
+		}
+	} catch (error) {
+		console.error(`${MODULE_ID} | Error executing weapon Item Macro for ${weapon.name}:`, error);
+		ui.notifications.error(`Failed to execute macro for ${weapon.name}: ${error.message}`);
+	}
+}
+
+// Register additional socketlib handler for weapon item macro GM execution
+Hooks.once("ready", () => {
+	if (macroExecuteSocket) {
+		macroExecuteSocket.register("executeWeaponItemMacroAsGM", async (serializedContext) => {
+			// This runs on the GM's client
+			const actor = game.actors.get(serializedContext.actorId);
+			if (!actor) return;
+
+			const weapon = actor.items.get(serializedContext.itemId);
+			if (!weapon) return;
+
+			const token = serializedContext.tokenId ? canvas.tokens?.get(serializedContext.tokenId) : null;
+			const targets = serializedContext.targetIds?.map(id => canvas.tokens?.get(id)).filter(Boolean) || [];
+
+			const scope = {
+				actor,
+				token,
+				item: weapon,
+				targets,
+				target: targets[0] || null,
+				targetActor: targets[0]?.actor || null,
+				trigger: serializedContext.trigger,
+				isHit: serializedContext.isHit,
+				isMiss: serializedContext.isMiss,
+				isCritical: serializedContext.isCritical,
+				isCriticalMiss: serializedContext.isCriticalMiss,
+				rollResult: serializedContext.rollResult,
+				rollData: serializedContext.rollDataJson ? JSON.parse(serializedContext.rollDataJson) : null,
+				damageRoll: null,
+				speaker: ChatMessage.getSpeaker({ actor }),
+				flags: weapon.flags?.[MODULE_ID]?.weaponBonus || {}
+			};
+
+			try {
+				// Use Item Macro's API
+				if (typeof weapon.executeMacro === "function") {
+					console.log(`${MODULE_ID} | GM executing weapon Item Macro using weapon.executeMacro()`);
+					await weapon.executeMacro(scope);
+				} else {
+					console.error(`${MODULE_ID} | weapon.executeMacro is not available on GM client`);
+				}
+			} catch (error) {
+				console.error(`${MODULE_ID} | GM execution of weapon Item Macro failed:`, error);
+			}
+		});
+
+		console.log(`${MODULE_ID} | Registered weapon Item Macro GM execution handler`);
+	}
+});
+
+// ============================================
+// SPELL ITEM MACRO EXECUTION SYSTEM
+// ============================================
+
+/**
+ * Get the Item Macro configuration for a spell/wand/scroll/potion
+ * @param {Item} item - The spell-type item
+ * @returns {Object} - The macro configuration
+ */
+function getSpellItemMacroConfig(item) {
+	const flags = item.flags?.[MODULE_ID]?.itemMacro || {};
+	return {
+		enabled: flags.triggers?.length > 0,
+		runAsGm: flags.runAsGm || false,
+		triggers: flags.triggers || []
+	};
+}
+
+/**
+ * Execute a spell's Item Macro
+ * @param {Item} spellItem - The spell/wand/scroll/potion item
+ * @param {Actor} actor - The actor casting the spell
+ * @param {string} trigger - The trigger type (onCast, onSuccess, onFailure, onCritical, onCriticalFail)
+ * @param {Object} context - Additional context for the macro
+ */
+async function executeSpellItemMacro(spellItem, actor, trigger, context = {}) {
+	// Check if Item Macro module is active
+	if (!game.modules.get("itemacro")?.active) {
+		console.warn(`${MODULE_ID} | Item Macro module not active, cannot execute spell macro`);
+		return;
+	}
+
+	// Check if the item has a macro attached
+	if (typeof spellItem.hasMacro !== "function" || !spellItem.hasMacro()) {
+		console.log(`${MODULE_ID} | Spell ${spellItem.name} has triggers configured but no Item Macro attached`);
+		return;
+	}
+
+	console.log(`${MODULE_ID} | Executing spell Item Macro for ${spellItem.name}, trigger: ${trigger}`);
+
+	// Get the caster's token
+	const token = canvas.tokens?.placeables?.find(t => t.actor?.id === actor.id) || null;
+
+	// Get current targets
+	const targets = context.targets || Array.from(game.user.targets || []);
+
+	// Build the scope object to pass to the macro
+	const scope = {
+		actor,
+		token,
+		item: spellItem,
+		targets,
+		target: targets[0] || null,
+		targetActor: targets[0]?.actor || null,
+		trigger,
+		isSuccess: context.isSuccess ?? false,
+		isFailure: context.isFailure ?? false,
+		isCritical: context.isCritical ?? false,
+		isCriticalFail: context.isCriticalFail ?? false,
+		rollResult: context.rollResult ?? null,
+		rollData: context.rollData ?? null,
+		speaker: ChatMessage.getSpeaker({ actor }),
+		flags: spellItem.flags?.[MODULE_ID] || {}
+	};
+
+	const macroConfig = getSpellItemMacroConfig(spellItem);
+
+	// If running as GM and we're not the GM, send via socket
+	if (macroConfig.runAsGm && !game.user.isGM) {
+		// Serialize context for socket transmission
+		const serializedContext = {
+			actorId: actor.id,
+			itemId: spellItem.id,
+			tokenId: token?.id,
+			targetIds: targets.map(t => t.id),
+			trigger,
+			isSuccess: context.isSuccess,
+			isFailure: context.isFailure,
+			isCritical: context.isCritical,
+			isCriticalFail: context.isCriticalFail,
+			rollResult: context.rollResult,
+			rollDataJson: context.rollData ? JSON.stringify(context.rollData) : null
+		};
+
+		console.log(`${MODULE_ID} | Sending spell Item Macro to GM for execution`);
+		if (macroExecuteSocket) {
+			await macroExecuteSocket.executeAsGM("executeSpellItemMacroAsGM", serializedContext);
+		}
+		return;
+	}
+
+	// Execute locally using Item Macro's API
+	try {
+		if (typeof spellItem.executeMacro === "function") {
+			await spellItem.executeMacro(scope);
+			console.log(`${MODULE_ID} | Spell Item Macro executed successfully`);
+		} else {
+			console.warn(`${MODULE_ID} | spellItem.executeMacro is not available`);
+		}
+	} catch (error) {
+		console.error(`${MODULE_ID} | Error executing spell Item Macro:`, error);
+		ui.notifications.error("There was an error in your macro syntax. See the console (F12) for details");
+	}
+}
+
+// Register socket handler for GM execution of spell Item Macros
+Hooks.once("socketlib.ready", () => {
+	if (macroExecuteSocket) {
+		macroExecuteSocket.register("executeSpellItemMacroAsGM", async (serializedContext) => {
+			const actor = game.actors.get(serializedContext.actorId);
+			if (!actor) return;
+
+			const spellItem = actor.items.get(serializedContext.itemId);
+			if (!spellItem) return;
+
+			const token = serializedContext.tokenId ? canvas.tokens?.get(serializedContext.tokenId) : null;
+			const targets = serializedContext.targetIds?.map(id => canvas.tokens?.get(id)).filter(Boolean) || [];
+
+			const scope = {
+				actor,
+				token,
+				item: spellItem,
+				targets,
+				target: targets[0] || null,
+				targetActor: targets[0]?.actor || null,
+				trigger: serializedContext.trigger,
+				isSuccess: serializedContext.isSuccess,
+				isFailure: serializedContext.isFailure,
+				isCritical: serializedContext.isCritical,
+				isCriticalFail: serializedContext.isCriticalFail,
+				rollResult: serializedContext.rollResult,
+				rollData: serializedContext.rollDataJson ? JSON.parse(serializedContext.rollDataJson) : null,
+				speaker: ChatMessage.getSpeaker({ actor }),
+				flags: spellItem.flags?.[MODULE_ID] || {}
+			};
+
+			try {
+				if (typeof spellItem.executeMacro === "function") {
+					console.log(`${MODULE_ID} | GM executing spell Item Macro using spellItem.executeMacro()`);
+					await spellItem.executeMacro(scope);
+				} else {
+					console.error(`${MODULE_ID} | spellItem.executeMacro is not available on GM client`);
+				}
+			} catch (error) {
+				console.error(`${MODULE_ID} | GM execution of spell Item Macro failed:`, error);
+			}
+		});
+
+		console.log(`${MODULE_ID} | Registered spell Item Macro GM execution handler`);
+	}
+});
+
+/**
+ * Hook into spell cast messages to trigger Item Macros
+ */
+Hooks.on("renderChatMessage", async (message, html, data) => {
+	// Only process once per message
+	if (message._sdxSpellMacroProcessed) return;
+	message._sdxSpellMacroProcessed = true;
+
+	// Only process for the user who created the message
+	if (message.author?.id !== game.user.id) return;
+
+	// Check if this is a spell-type item
+	const cardData = html.find('.chat-card').data();
+	if (!cardData?.itemId || !cardData?.actorId) return;
+
+	const actor = game.actors.get(cardData.actorId);
+	if (!actor) return;
+
+	const item = actor.items.get(cardData.itemId);
+	if (!item) return;
+
+	// Only process spell-type items
+	const spellTypes = ["Spell", "Scroll", "Wand", "Potion", "NPC Spell"];
+	if (!spellTypes.includes(item.type)) return;
+
+	// Get the macro config
+	const macroConfig = getSpellItemMacroConfig(item);
+	if (!macroConfig.enabled || macroConfig.triggers.length === 0) return;
+
+	// Get roll result from Shadowdark's flags
+	const shadowdarkRolls = message.flags?.shadowdark?.rolls;
+	const mainRoll = shadowdarkRolls?.main;
+
+	// Determine success/failure from roll data
+	// Potions, Scrolls, Wands don't require a roll - they always succeed
+	const noRollNeeded = ["Potion", "Scroll", "Wand"].includes(item.type);
+	const isSuccess = noRollNeeded || (mainRoll?.success === true);
+	const isFailure = !noRollNeeded && (mainRoll?.success === false);
+	const isCritical = mainRoll?.critical === "success";
+	const isCriticalFail = mainRoll?.critical === "failure";
+
+	// Get stored targets
+	const storedTargetIds = message.flags?.[MODULE_ID]?.targetIds || [];
+	const targets = storedTargetIds.map(id => canvas.tokens.get(id)).filter(Boolean);
+
+	const context = {
+		isSuccess,
+		isFailure,
+		isCritical,
+		isCriticalFail,
+		rollResult: mainRoll?.roll?.total ?? null,
+		rollData: mainRoll?.roll ?? null,
+		targets
+	};
+
+	// Trigger macros based on which triggers are enabled
+	const triggersToFire = [];
+
+	// onCast always fires when the spell is used
+	if (macroConfig.triggers.includes("onCast")) {
+		triggersToFire.push("onCast");
+	}
+
+	// Success-based triggers
+	if (macroConfig.triggers.includes("onCritical") && isCritical) {
+		triggersToFire.push("onCritical");
+	} else if (macroConfig.triggers.includes("onSuccess") && isSuccess) {
+		triggersToFire.push("onSuccess");
+	}
+
+	// Failure-based triggers
+	if (macroConfig.triggers.includes("onCriticalFail") && isCriticalFail) {
+		triggersToFire.push("onCriticalFail");
+	} else if (macroConfig.triggers.includes("onFailure") && isFailure && !isCriticalFail) {
+		triggersToFire.push("onFailure");
+	}
+
+	// Execute all applicable triggers
+	for (const trigger of triggersToFire) {
+		await executeSpellItemMacro(item, actor, trigger, context);
+	}
+});
+
+/**
+ * Hook into weapon attack rolls to trigger Item Macros
+ * Use renderChatMessage instead of createChatMessage because rolls are populated later
+ */
+Hooks.on("renderChatMessage", async (message, html, data) => {
+	// Only process once per message - use a flag to track
+	if (message._sdxItemMacroProcessed) return;
+	message._sdxItemMacroProcessed = true;
+
+	// Only process for the user who created the message
+	if (message.author?.id !== game.user.id) return;
+
+	// Check for rolls using HTML elements (like CombatSettingsSD does)
+	const hasDiceTotal = html.find('.dice-total').length > 0;
+	const hasD20Roll = html.find('.d20-roll').length > 0;
+	const flags = message.flags;
+
+	// Debug logging for troubleshooting
+	console.log(`${MODULE_ID} | [DEBUG] Item Macro hook - checking message:`, {
+		hasDiceTotal,
+		hasD20Roll,
+		shadowdarkRolls: flags?.shadowdark?.rolls,
+		flavor: message.flavor?.substring(0, 50)
+	});
+
+	// Get actor from speaker
+	const actorId = message.speaker?.actor;
+	if (!actorId) return;
+
+	const actor = game.actors.get(actorId);
+	if (!actor) return;
+
+	// Get item from chat card data (like CombatSettingsSD does)
+	const cardData = html.find('.chat-card').data();
+	let item = null;
+
+	if (cardData?.itemId) {
+		item = actor.items.get(cardData.itemId);
+	} else {
+		// Fallback: Try to detect weapon from message content
+		const content = message.content || "";
+		for (const actorItem of actor.items) {
+			if (actorItem.type === "Weapon" && content.includes(actorItem.name)) {
+				const config = getWeaponItemMacroConfig(actorItem);
+				if (config.enabled && config.triggers.length > 0) {
+					item = actorItem;
+					console.log(`${MODULE_ID} | [DEBUG] Found weapon from content: ${item.name}`);
+					break;
+				}
+			}
+		}
+	}
+
+	if (!item || item.type !== "Weapon") return;
+
+	// Get the macro config
+	const macroConfig = getWeaponItemMacroConfig(item);
+	if (!macroConfig.enabled || macroConfig.triggers.length === 0) {
+		console.log(`${MODULE_ID} | [DEBUG] Weapon ${item.name} has no enabled triggers`);
+		return;
+	}
+
+	// Check if this is an attack roll using flavor
+	const flavor = message.flavor?.toLowerCase() || "";
+	const isAttackMessage = flavor.includes("attack roll");
+
+	console.log(`${MODULE_ID} | [DEBUG] Attack detection for ${item.name}:`, {
+		isAttackMessage,
+		hasDiceTotal,
+		hasD20Roll,
+		macroConfig
+	});
+
+	// Skip if this doesn't look like an attack with dice
+	if (!isAttackMessage && !hasDiceTotal && !hasD20Roll) {
+		console.log(`${MODULE_ID} | [DEBUG] Skipping - not an attack message with dice`);
+		return;
+	}
+
+	// Get roll result from Shadowdark's flags (this is the reliable source)
+	const shadowdarkRolls = flags?.shadowdark?.rolls;
+	const mainRoll = shadowdarkRolls?.main;
+
+	console.log(`${MODULE_ID} | [DEBUG] Shadowdark roll data:`, {
+		mainRoll,
+		success: mainRoll?.success,
+		critical: mainRoll?.critical
+	});
+
+	if (!mainRoll) {
+		console.log(`${MODULE_ID} | [DEBUG] No main roll in shadowdark flags`);
+		return;
+	}
+
+	// Determine hit/miss/critical from Shadowdark's roll data
+	const isCritical = mainRoll.critical === "success";
+	const isCriticalMiss = mainRoll.critical === "failure";
+	const isHit = mainRoll.success === true && !isCriticalMiss;
+	const isMiss = mainRoll.success === false || isCriticalMiss;
+
+	console.log(`${MODULE_ID} | [DEBUG] Roll analysis:`, {
+		isCritical,
+		isCriticalMiss,
+		isHit,
+		isMiss
+	});
+
+	// Get roll result from the mainRoll data
+	const rollResult = mainRoll.roll?.total ?? null;
+
+	const context = {
+		isHit: isHit && !isCriticalMiss,
+		isMiss: isMiss || isCriticalMiss,
+		isCritical,
+		isCriticalMiss,
+		rollResult: rollResult,
+		rollData: mainRoll.roll
+	};
+
+	// Trigger macros based on which triggers are enabled
+	const triggersToFire = [];
+
+	if (macroConfig.triggers.includes("onCritical") && isCritical) {
+		triggersToFire.push("onCritical");
+	} else if (macroConfig.triggers.includes("onHit") && context.isHit) {
+		triggersToFire.push("onHit");
+	}
+
+	if (macroConfig.triggers.includes("onCriticalMiss") && isCriticalMiss) {
+		triggersToFire.push("onCriticalMiss");
+	} else if (macroConfig.triggers.includes("onMiss") && context.isMiss && !isCriticalMiss) {
+		triggersToFire.push("onMiss");
+	}
+
+	console.log(`${MODULE_ID} | [DEBUG] Triggers to fire:`, triggersToFire);
+
+	// Execute all applicable triggers
+	for (const trigger of triggersToFire) {
+		console.log(`${MODULE_ID} | [DEBUG] Firing trigger: ${trigger}`);
+		await executeWeaponItemMacro(item, actor, trigger, context);
+	}
+});
+
+// DEBUG: Ultra simple test hook - remove after debugging
+Hooks.on("createChatMessage", (message) => {
+	console.log(`${MODULE_ID} | [SIMPLE DEBUG] Any chat message created:`, message?.content?.substring(0, 50));
+});
+
+console.log(`${MODULE_ID} | Module loaded - weapon item macro hooks registered`);
+
+// ============================================
+// SDX TEMPLATES API
+// ============================================
+
+/**
+ * Fix for square template rotation
+ * Override MeasuredTemplate.getRectShape to properly handle rotation
+ * Based on df-templates by flamewave000
+ */
+const _originalGetRectShape = foundry.canvas.placeables.MeasuredTemplate.getRectShape;
+foundry.canvas.placeables.MeasuredTemplate.getRectShape = function (distance, direction, adjustForRoundingError = false) {
+	// Generate a rotation matrix to apply the rect against. The base rotation must be rotated
+	// CCW by 45° before applying the real direction rotation.
+	const matrix = PIXI.Matrix.IDENTITY.rotate(Math.toRadians(-45 + direction));
+	// If the shape will be used for collision, shrink the rectangle by a fixed EPSILON amount to account for rounding errors
+	const EPSILON = adjustForRoundingError ? 0.0001 : 0;
+	// Use simple Pythagoras to calculate the square's size from the diagonal "distance".
+	const size = (Math.sqrt((distance * distance) / 2) * canvas.dimensions.distancePixels) - EPSILON;
+	// Create the square's 4 corners with origin being the Top-Left corner and apply the
+	// rotation matrix against each.
+	const topLeft = matrix.apply(new PIXI.Point(EPSILON, EPSILON));
+	const topRight = matrix.apply(new PIXI.Point(size, EPSILON));
+	const botLeft = matrix.apply(new PIXI.Point(EPSILON, size));
+	const botRight = matrix.apply(new PIXI.Point(size, size));
+	// Inject the vector data into a Polygon object to create a closed shape.
+	const shape = new PIXI.Polygon([topLeft.x, topLeft.y, topRight.x, topRight.y, botRight.x, botRight.y, botLeft.x, botLeft.y, topLeft.x, topLeft.y]);
+	// Add these fields so that the Sequencer mod doesn't have a stroke
+	shape.x = topLeft.x;
+	shape.y = topLeft.y;
+	shape.width = size;
+	shape.height = size;
+	return shape;
+};
+console.log(`${MODULE_ID} | Square template rotation fix applied`);
+
+/**
+ * SDX.templates - Template placement and targeting API
+ * 
+ * Usage:
+ *   const template = await SDX.templates.place({ type: "rect", size: 30 });
+ *   const tokens = SDX.templates.getTokensInTemplate(template);
+ *   const { template, tokens } = await SDX.templates.placeAndTarget({ type: "rect", size: 30, autoDelete: 3000 });
+ */
+globalThis.SDX = globalThis.SDX || {};
+
+SDX.templates = {
+	/**
+	 * Interactive template placement
+	 * @param {Object} options - Template options
+	 * @param {string} options.type - Template type: "rect", "circle", "cone", "ray"
+	 * @param {number} options.size - Size in feet
+	 * @param {number} [options.width] - Width for cones/rays (defaults to size)
+	 * @param {number} [options.angle] - Angle for cones (defaults to 53.13)
+	 * @param {string} [options.fillColor] - Fill color (defaults to "#4e9a06")
+	 * @param {string} [options.borderColor] - Border color (defaults to "#000000")
+	 * @param {number} [options.autoDelete] - Auto-delete template after X milliseconds (e.g., 3000 for 3 seconds)
+	 * @param {Object} [options.originFromCaster] - Lock origin to caster position (for cones/rays)
+	 * @param {number} options.originFromCaster.x - X coordinate of caster
+	 * @param {number} options.originFromCaster.y - Y coordinate of caster
+	 * @returns {Promise<MeasuredTemplateDocument|null>} - The placed template or null if cancelled
+	 */
+	async place(options = {}) {
+		const {
+			type = "rect",
+			size = 30,
+			width = null,
+			angle = 53.13,
+			fillColor = "#4e9a06",
+			borderColor = "#000000",
+			autoDelete = null,
+			originFromCaster = null,
+			texture = null,
+			textureOpacity = 0.5,
+			tmfxPreset = null,
+			tmfxTint = null
+		} = options;
+
+		// Build template data based on type
+		let templateData = {
+			t: type,
+			user: game.user.id,
+			fillColor,
+			borderColor,
+			angle: 0,
+			direction: 0
+		};
+
+		// Add texture if provided
+		if (texture) {
+			templateData.texture = texture;
+		}
+
+		// Add TokenMagic flags for effects (uses their template auto-apply system)
+		// See: https://github.com/Feu-Secret/Tokenmagic
+		if (texture || tmfxPreset) {
+			templateData.flags = templateData.flags || {};
+			templateData.flags.tokenmagic = templateData.flags.tokenmagic || {};
+			templateData.flags.tokenmagic.options = {
+				tmfxTextureAlpha: textureOpacity
+			};
+
+			// Add preset if specified
+			if (tmfxPreset && tmfxPreset !== 'NOFX') {
+				templateData.flags.tokenmagic.options.tmfxPreset = tmfxPreset;
+
+				// Add tint if specified (must be a number, not hex string)
+				if (tmfxTint) {
+					const tintNum = typeof tmfxTint === 'string'
+						? parseInt(tmfxTint.replace('#', ''), 16)
+						: tmfxTint;
+					templateData.flags.tokenmagic.options.tmfxTint = tintNum;
+				}
+			}
+		}
+
+		// Track current direction for rotation
+		let currentDirection = 0;
+
+		// Configure based on template type
+		switch (type) {
+			case "rect":
+				// For axis-aligned squares, use diagonal distance at 45 degrees
+				templateData.distance = size * Math.SQRT2;
+				templateData.direction = 45;
+				currentDirection = 45;
+				templateData.width = 0;
+				break;
+			case "circle":
+				templateData.distance = size;
+				templateData.direction = 0;
+				break;
+			case "cone":
+				templateData.distance = size;
+				templateData.direction = 0;
+				templateData.angle = angle;
+				break;
+			case "ray":
+				templateData.distance = size;
+				templateData.direction = 0;
+				templateData.width = width || 5;
+				break;
+			default:
+				templateData.distance = size;
+				templateData.direction = 0;
+		}
+
+		return new Promise((resolve) => {
+			let resolved = false;
+			let highlightedTokens = new Set(); // Track highlighted tokens
+
+			// Create the template document
+			const doc = new MeasuredTemplateDocument(templateData, { parent: canvas.scene });
+
+			// Create the template object for preview
+			const template = new CONFIG.MeasuredTemplate.objectClass(doc);
+
+			// Add to preview layer and draw
+			canvas.templates.preview.addChild(template);
+			template.draw();
+
+			// Initial position - use caster position if originFromCaster, otherwise mouse position
+			let initialPos;
+			if (originFromCaster) {
+				initialPos = { x: originFromCaster.x, y: originFromCaster.y };
+			} else {
+				initialPos = canvas.app.renderer.events.pointer.getLocalPosition(canvas.stage);
+			}
+			template.document.updateSource({
+				x: initialPos.x,
+				y: initialPos.y
+			});
+			template.renderFlags.set({ refresh: true });
+
+			// Throttle token highlighting to 15fps for performance
+			let lastHighlightTime = 0;
+			const HIGHLIGHT_THROTTLE = 1000 / 15; // 15fps
+
+			// Function to highlight tokens inside the template preview
+			const updateTokenHighlighting = () => {
+				if (!template.shape) return;
+
+				const tokensInTemplate = new Set();
+
+				// Find all tokens inside the template
+				for (const token of canvas.tokens.placeables) {
+					// Test if token center is inside the template shape
+					const localX = token.center.x - template.document.x;
+					const localY = token.center.y - template.document.y;
+
+					if (template.shape.contains(localX, localY)) {
+						tokensInTemplate.add(token.id);
+
+						// Highlight the token if not already highlighted
+						if (!highlightedTokens.has(token.id)) {
+							token.setTarget(true, { user: game.user, releaseOthers: false, groupSelection: true });
+							highlightedTokens.add(token.id);
+						}
+					}
+				}
+
+				// Remove highlighting from tokens no longer in template
+				for (const tokenId of highlightedTokens) {
+					if (!tokensInTemplate.has(tokenId)) {
+						const token = canvas.tokens.get(tokenId);
+						if (token) {
+							token.setTarget(false, { user: game.user, releaseOthers: false, groupSelection: true });
+						}
+						highlightedTokens.delete(tokenId);
+					}
+				}
+			};
+
+			// Clear all token highlighting
+			const clearTokenHighlighting = () => {
+				for (const tokenId of highlightedTokens) {
+					const token = canvas.tokens.get(tokenId);
+					if (token) {
+						token.setTarget(false, { user: game.user, releaseOthers: false, groupSelection: true });
+					}
+				}
+				highlightedTokens.clear();
+			};
+
+			// Cleanup function
+			const cleanup = () => {
+				if (resolved) return;
+				resolved = true;
+				canvas.stage.off("pointermove", onMouseMove);
+				canvas.stage.off("pointerdown", onLeftClick);
+				canvas.stage.off("rightdown", onRightClick);
+				canvas.app.view.removeEventListener("wheel", onWheel);
+				document.removeEventListener("keydown", onKeyDown);
+				if (template.parent) {
+					canvas.templates.preview.removeChild(template);
+				}
+				template.destroy();
+			};
+
+			// Mouse move handler - update template position (or direction if originFromCaster)
+			const onMouseMove = (event) => {
+				if (resolved) return;
+				const pos = event.getLocalPosition(canvas.stage);
+
+				if (originFromCaster) {
+					// Origin is locked - calculate direction from origin to mouse
+					const dx = pos.x - originFromCaster.x;
+					const dy = pos.y - originFromCaster.y;
+					const angle = Math.atan2(dy, dx);
+					const degrees = Math.toDegrees(angle);
+					currentDirection = degrees;
+					template.document.updateSource({ direction: currentDirection });
+				} else {
+					// Normal mode - follow mouse
+					const snapped = canvas.templates.getSnappedPoint(pos);
+					template.document.updateSource({ x: snapped.x, y: snapped.y });
+				}
+				template.renderFlags.set({ refresh: true });
+
+				// Throttled token highlighting
+				const now = Date.now();
+				if (now - lastHighlightTime >= HIGHLIGHT_THROTTLE) {
+					lastHighlightTime = now;
+					updateTokenHighlighting();
+				}
+			};
+
+			// Mouse wheel handler - rotate template when holding Shift
+			// Ctrl = angle snap to 45° increments
+			const onWheel = (event) => {
+				if (resolved) return;
+				if (!event.shiftKey) return;
+
+				event.preventDefault();
+				event.stopPropagation();
+
+				// Angle snap mode (Ctrl held) - snap to 45° increments
+				// Normal mode - rotate by 5° (or 15° with both Shift+Ctrl)
+				let snap;
+				if (event.ctrlKey) {
+					// Snap to 45° increments (8 positions around the circle)
+					snap = 45;
+				} else {
+					// Fine rotation: 5° per tick
+					snap = 5;
+				}
+
+				const sign = Math.sign(event.deltaY);
+
+				if (event.ctrlKey) {
+					// Angle snap mode - snap to nearest increment
+					let direction = currentDirection;
+					if (direction < 0) direction += 360;
+					direction = direction - (direction % snap);
+					if (currentDirection % snap !== 0 && sign < 0)
+						direction += snap;
+					currentDirection = (direction + (snap * sign)) % 360;
+				} else {
+					// Normal fine rotation
+					currentDirection = (currentDirection + (snap * sign)) % 360;
+				}
+
+				if (currentDirection < 0) currentDirection += 360;
+
+				template.document.updateSource({ direction: currentDirection });
+				template.renderFlags.set({ refresh: true });
+
+				// Update token highlighting after rotation
+				updateTokenHighlighting();
+			};
+
+			// Left click handler - place the template
+			const onLeftClick = async (event) => {
+				if (resolved) return;
+
+				// Only respond to left mouse button (button 0)
+				if (event.button !== 0) return;
+
+				// Get final position - use originFromCaster if set, otherwise click position
+				let finalX, finalY;
+				if (originFromCaster) {
+					finalX = originFromCaster.x;
+					finalY = originFromCaster.y;
+				} else {
+					const pos = event.getLocalPosition(canvas.stage);
+					const snapped = canvas.templates.getSnappedPoint(pos);
+					finalX = snapped.x;
+					finalY = snapped.y;
+				}
+
+				// Get current direction from the preview template
+				const finalDirection = template.document.direction;
+
+				cleanup();
+
+				// Create the actual template document in the scene
+				const created = await canvas.scene.createEmbeddedDocuments("MeasuredTemplate", [{
+					...templateData,
+					x: finalX,
+					y: finalY,
+					direction: finalDirection
+				}]);
+
+				const placedTemplate = created[0];
+
+				// Auto-delete if specified
+				if (autoDelete && autoDelete > 0) {
+					setTimeout(async () => {
+						try {
+							if (placedTemplate && canvas.scene.templates.get(placedTemplate.id)) {
+								await placedTemplate.delete();
+							}
+						} catch (e) {
+							console.warn(`${MODULE_ID} | Failed to auto-delete template:`, e);
+						}
+					}, autoDelete);
+				}
+
+				resolve(placedTemplate);
+			};
+
+			// Right click handler - cancel placement
+			const onRightClick = (event) => {
+				if (resolved) return;
+				event.preventDefault();
+				event.stopPropagation();
+				clearTokenHighlighting(); // Clear targeting when cancelled
+				cleanup();
+				ui.notifications.info("Template placement cancelled.");
+				resolve(null);
+			};
+
+			// Escape key handler - cancel placement
+			const onKeyDown = (event) => {
+				if (resolved) return;
+				if (event.key === "Escape") {
+					clearTokenHighlighting(); // Clear targeting when cancelled
+					cleanup();
+					ui.notifications.info("Template placement cancelled.");
+					resolve(null);
+				}
+			};
+
+			// Attach event listeners
+			canvas.stage.on("pointermove", onMouseMove);
+			canvas.stage.on("pointerdown", onLeftClick);
+			canvas.stage.on("rightdown", onRightClick);
+			canvas.app.view.addEventListener("wheel", onWheel, { passive: false });
+			document.addEventListener("keydown", onKeyDown);
+
+			ui.notifications.info("Left-click to place | Right-click/Escape to cancel | Shift+Wheel to rotate | +Ctrl to snap 45°");
+		});
+	},
+
+	/**
+	 * Get all tokens inside a template
+	 * @param {MeasuredTemplateDocument} templateDoc - The template document
+	 * @returns {Token[]} - Array of Token objects inside the template
+	 */
+	getTokensInTemplate(templateDoc) {
+		if (!templateDoc?.object) {
+			console.warn(`${MODULE_ID} | getTokensInTemplate: Template object not found`);
+			return [];
+		}
+
+		const templateObject = templateDoc.object;
+		return canvas.tokens.placeables.filter(t => templateObject.testPoint(t.center));
+	},
+
+	/**
+	 * Place a template and return both the template and tokens inside it
+	 * Also targets the tokens automatically
+	 * @param {Object} options - Same options as place(), plus:
+	 * @param {number} [options.autoDelete] - Auto-delete template after X ms (e.g., 3000)
+	 * @returns {Promise<{template: MeasuredTemplateDocument|null, tokens: Token[]}>}
+	 */
+	async placeAndTarget(options = {}) {
+		const template = await this.place(options);
+
+		if (!template) {
+			return { template: null, tokens: [] };
+		}
+
+		// Wait a tick for the template object to be ready
+		await new Promise(r => setTimeout(r, 100));
+
+		const tokens = this.getTokensInTemplate(template);
+
+		// Target the tokens
+		for (const token of tokens) {
+			token.setTarget(true, { user: game.user, releaseOthers: false });
+		}
+
+		return { template, tokens };
+	}
+};
+
+console.log(`${MODULE_ID} | SDX.templates API loaded`);

@@ -1,5 +1,8 @@
-2025/12/26-19:42:16.701 8fc8 Recovering log #88
-2025/12/26-19:42:16.711 8fc8 Delete type=0 #74
-2025/12/26-19:42:16.711 8fc8 Delete type=0 #88
-2025/12/26-19:42:16.711 8fc8 Delete type=3 #73
-2025/12/26-19:42:16.711 8fc8 Delete type=3 #87
+2025/12/28-02:22:22.143 564 Recovering log #111
+2025/12/28-02:22:22.152 564 Delete type=0 #111
+2025/12/28-02:22:22.152 564 Delete type=3 #109
+2025/12/28-14:22:55.557 5f64 Level-0 table #116: started
+2025/12/28-14:22:55.557 5f64 Level-0 table #116: 0 bytes OK
+2025/12/28-14:22:55.561 5f64 Delete type=0 #114
+2025/12/28-14:22:55.569 5f64 Manual compaction at level-0 from '!actors!X2leBdJeqwKWrTlE' @ 72057594037927935 : 1 .. '!actors!X2leBdJeqwKWrTlE' @ 0 : 0; will stop at (end)
+2025/12/28-14:22:55.589 5f64 Manual compaction at level-1 from '!actors!X2leBdJeqwKWrTlE' @ 72057594037927935 : 1 .. '!actors!X2leBdJeqwKWrTlE' @ 0 : 0; will stop at (end)

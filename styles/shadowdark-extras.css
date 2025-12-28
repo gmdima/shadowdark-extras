@@ -8312,6 +8312,43 @@ section[data-tab="tab-notes"].sdx-journal-active>div:not(.sdx-journal-notes) {
     font-size: 9px;
 }
 
+/* Hit bonus display in attack chat cards - Shadowdark black & white style */
+.sdx-hit-bonus-display {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    margin: 6px 0;
+    padding: 4px 8px;
+    background: #f5f5f5;
+    border: 1px solid #333;
+    border-radius: 3px;
+    font-family: var(--font-primary);
+    font-size: 12px;
+    color: #222;
+}
+
+.sdx-hit-bonus-display .sdx-hit-bonus-label {
+    font-weight: bold;
+    color: #000;
+}
+
+.sdx-hit-bonus-display .sdx-hit-bonus-formula {
+    font-family: var(--font-mono, 'Courier New', monospace);
+    font-weight: bold;
+    color: #333;
+}
+
+.sdx-hit-bonus-display .sdx-hit-bonus-equals {
+    color: #666;
+}
+
+.sdx-hit-bonus-display .sdx-hit-bonus-result {
+    font-weight: bold;
+    font-size: 14px;
+    color: #000;
+}
+
 /* ============================================
    HP WAVE ANIMATION OVERLAY
    ============================================ */
@@ -9560,13 +9597,13 @@ section[data-tab="tab-notes"].sdx-journal-active>div:not(.sdx-journal-notes) {
 }
 
 .sdx-creature-type-box .header {
-background: linear-gradient(to right, #2a2a2a, #1a1a1a00);
+    background: linear-gradient(to right, #2a2a2a, #1a1a1a00);
     padding: 4px 8px;
 
 }
 
 .sdx-creature-type-box .header label {
-color: #fbfbfb;
+    color: #fbfbfb;
     font-weight: bold;
     font-size: 17px;
     text-transform: uppercase;
@@ -9599,4 +9636,355 @@ color: #fbfbfb;
     outline: none;
     border-color: #c9aa58;
     box-shadow: 0 0 3px rgba(201, 170, 88, 0.4);
+}
+
+/* ============================================
+   WEAPON BONUS - ITEM MACRO SECTION
+   ============================================ */
+
+/* Item Macro fieldset */
+.sdx-item-macro-fieldset {
+    margin-top: 12px;
+}
+
+/* When module is not available */
+.sdx-item-macro-unavailable {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    background: rgba(139, 69, 19, 0.1);
+    border: 1px dashed rgba(139, 69, 19, 0.4);
+    border-radius: 4px;
+    color: #8b4513;
+    text-align: center;
+}
+
+.sdx-item-macro-unavailable i {
+    font-size: 24px;
+    margin-bottom: 8px;
+    color: #cd853f;
+}
+
+.sdx-item-macro-unavailable span {
+    font-size: 14px;
+}
+
+.sdx-item-macro-unavailable .hint {
+    margin-top: 6px;
+    font-size: 12px;
+    color: #a0522d;
+}
+
+/* GM Toggle section */
+.sdx-macro-gm-toggle {
+    margin-bottom: 12px;
+    padding: 8px 12px;
+    background: rgba(218, 165, 32, 0.1);
+    border: 1px solid rgba(218, 165, 32, 0.3);
+    border-radius: 4px;
+}
+
+.sdx-macro-gm-toggle .sdx-toggle-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.sdx-macro-gm-toggle .sdx-toggle-label i {
+    color: #daa520;
+}
+
+.sdx-macro-gm-toggle .hint {
+    margin-top: 4px;
+    margin-left: 24px;
+    font-size: 11px;
+    color: #666;
+}
+
+/* Triggers section */
+.sdx-macro-triggers-section {
+    margin-bottom: 12px;
+}
+
+.sdx-triggers-label {
+    display: block;
+    font-weight: 500;
+    margin-bottom: 8px;
+    color: #333;
+}
+
+/* Trigger grid - 2 columns */
+.sdx-macro-trigger-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px 12px;
+}
+
+/* Individual trigger option */
+.sdx-macro-trigger-option {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+    background: rgba(0, 0, 0, 0.03);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.sdx-macro-trigger-option:hover {
+    background: rgba(0, 0, 0, 0.06);
+    border-color: rgba(0, 0, 0, 0.2);
+}
+
+.sdx-macro-trigger-option:has(input:checked) {
+    background: rgba(70, 130, 180, 0.1);
+    border-color: rgba(70, 130, 180, 0.4);
+}
+
+.sdx-macro-trigger-option input[type="checkbox"] {
+    margin: 0;
+}
+
+.sdx-macro-trigger-option i {
+    width: 16px;
+    text-align: center;
+    color: #666;
+}
+
+.sdx-macro-trigger-option:has(input:checked) i {
+    color: #4682b4;
+}
+
+.sdx-macro-trigger-option span {
+    font-size: 12px;
+    flex: 1;
+}
+
+/* Collapsible guide section */
+.sdx-macro-guide {
+    margin-top: 12px;
+    border: 1px solid rgba(0, 0, 0, 0.15);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.sdx-macro-guide summary {
+    padding: 10px 14px;
+    background: linear-gradient(to right, rgba(0, 0, 0, 0.05), transparent);
+    cursor: pointer;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    user-select: none;
+}
+
+.sdx-macro-guide summary:hover {
+    background: linear-gradient(to right, rgba(0, 0, 0, 0.08), transparent);
+}
+
+.sdx-macro-guide summary::marker,
+.sdx-macro-guide summary::-webkit-details-marker {
+    display: none;
+}
+
+.sdx-macro-guide summary::before {
+    content: '▶';
+    font-size: 10px;
+    transition: transform 0.2s;
+}
+
+.sdx-macro-guide[open] summary::before {
+    transform: rotate(90deg);
+}
+
+.sdx-macro-guide summary i {
+    color: #4682b4;
+}
+
+/* Guide content */
+.sdx-macro-guide-content {
+    padding: 12px 14px;
+    background: rgba(245, 245, 250, 0.8);
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+.sdx-macro-guide-content h4 {
+    margin: 0 0 8px 0;
+    font-size: 13px;
+    color: #333;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    padding-bottom: 4px;
+}
+
+.sdx-macro-guide-content h4:not(:first-child) {
+    margin-top: 16px;
+}
+
+.sdx-macro-guide-content p {
+    margin: 0 0 8px 0;
+}
+
+.sdx-macro-guide-content code {
+    background: rgba(0, 0, 0, 0.06);
+    padding: 1px 4px;
+    border-radius: 2px;
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+}
+
+.sdx-macro-guide-content pre {
+    margin: 8px 0;
+    padding: 10px;
+    background: #1e1e1e;
+    border-radius: 4px;
+    overflow-x: auto;
+}
+
+.sdx-macro-guide-content pre code {
+    display: block;
+    background: transparent;
+    padding: 0;
+    color: #d4d4d4;
+    font-size: 11px;
+    line-height: 1.4;
+    white-space: pre;
+}
+
+/* ============================================
+   TEMPLATE TARGETING CONFIGURATION
+   ============================================ */
+
+/* Targeting box styling */
+.sdx-targeting-box {
+    margin-bottom: 12px;
+}
+
+.sdx-targeting-box .header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.sdx-targeting-box .header i {
+    color: #c9aa58;
+}
+
+.sdx-targeting-content {
+    padding: 10px;
+}
+
+/* Targeting mode radio buttons */
+.sdx-targeting-mode-options {
+    display: flex;
+    gap: 20px;
+    padding: 8px 0;
+}
+
+.sdx-radio-option {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+}
+
+.sdx-radio-option input[type="radio"] {
+    margin: 0;
+}
+
+.sdx-radio-label {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.sdx-radio-label i {
+    opacity: 0.7;
+}
+
+/* Template settings section */
+.sdx-template-settings {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid rgba(0, 0, 0, 0.15);
+}
+
+.sdx-template-grid {
+    display: grid;
+    grid-template-columns: auto 1fr auto 1fr;
+    gap: 8px;
+    align-items: center;
+}
+
+.sdx-template-grid h3 {
+    margin: 0;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+/* Color input group */
+.sdx-color-input-group {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+}
+
+.sdx-color-input-group .sdx-color-picker {
+    width: 32px;
+    height: 26px;
+    padding: 0;
+    border: 1px solid rgba(0, 0, 0, 0.2);
+    cursor: pointer;
+}
+
+.sdx-color-input-group .sdx-color-text {
+    width: 80px;
+    font-family: monospace;
+    font-size: 11px;
+}
+
+/* Delete mode options */
+.sdx-delete-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: center;
+}
+
+.sdx-delete-options .sdx-radio-option {
+    gap: 4px;
+}
+
+.sdx-duration-input {
+    width: 50px !important;
+    text-align: center;
+}
+
+.sdx-duration-input:disabled {
+    opacity: 0.5;
+}
+
+/* Checkbox options */
+.sdx-checkbox-option {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+}
+
+.sdx-checkbox-option input[type="checkbox"] {
+    margin: 0;
+}
+
+/* Placement select full width */
+.sdx-placement-select {
+    width: 100%;
 }

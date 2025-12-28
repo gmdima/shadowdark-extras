@@ -1,0 +1,160 @@
+{
+  "effects": [],
+  "folder": "FaZLTBFNFxypEPoT",
+  "img": "icons/weapons/crossbows/crossbow-purple.webp",
+  "name": "Crossbow of Purity",
+  "system": {
+    "description": "<p>This weapon adds 1d4 damage. <br>If the target is an undead creature, instead the damage extra is 1d6 instead.</p>",
+    "source": {
+      "title": "",
+      "page": 0
+    },
+    "broken": false,
+    "canBeEquipped": true,
+    "cost": {
+      "cp": 0,
+      "gp": 8,
+      "sp": 0
+    },
+    "equipped": true,
+    "isAmmunition": false,
+    "isPhysical": true,
+    "magicItem": true,
+    "quantity": 1,
+    "slots": {
+      "free_carry": 0,
+      "per_slot": 1,
+      "slots_used": 1
+    },
+    "stashed": false,
+    "ammoClass": "crossbow-bolts",
+    "baseWeapon": "",
+    "bonuses": {
+      "attackBonus": 0,
+      "critical": {
+        "failureThreshold": 1,
+        "multiplier": 2,
+        "successThreshold": 20
+      },
+      "damageBonus": 0,
+      "damageMultiplier": 1
+    },
+    "damage": {
+      "numDice": 1,
+      "oneHanded": "",
+      "twoHanded": "d6",
+      "bonus": 0,
+      "critMultiplier": 2
+    },
+    "properties": [
+      "Compendium.shadowdark.properties.Item.HyqHR9AhIDkm4La9",
+      "Compendium.shadowdark.properties.Item.b6Gm2ULKj2qyy2xJ"
+    ],
+    "range": "far",
+    "type": "ranged",
+    "weaponMastery": false,
+    "attackBonus": 0,
+    "predefinedEffects": ""
+  },
+  "type": "Weapon",
+  "_stats": {
+    "coreVersion": "13.348",
+    "systemId": "shadowdark",
+    "systemVersion": "3.6.1",
+    "createdTime": 1766879180861,
+    "modifiedTime": 1766879180861,
+    "lastModifiedBy": "lDQovrTY32fJwPBR",
+    "exportSource": {
+      "worldId": "bbb",
+      "uuid": "Item.p7AL1tyvFaVprA3B",
+      "coreVersion": "13.348",
+      "systemId": "shadowdark",
+      "systemVersion": "3.6.1"
+    }
+  },
+  "flags": {
+    "shadowdark-extras": {
+      "weaponBonus": {
+        "enabled": true,
+        "damageBonus": "",
+        "criticalExtraDice": "",
+        "criticalExtraDamage": "",
+        "requirements": [],
+        "effects": [
+          {
+            "uuid": "Item.fx8JiDp2txEHRx3s",
+            "name": "Condition: Afraid",
+            "img": "icons/magic/control/fear-fright-white.webp",
+            "chance": 100,
+            "applyToTarget": true,
+            "requirements": [],
+            "cumulative": false
+          }
+        ],
+        "damageBonuses": [
+          {
+            "formula": "1d6",
+            "label": "vs Skeletons",
+            "exclusive": true,
+            "requirements": [
+              {
+                "type": "targetName",
+                "operator": "contains",
+                "value": "Skeleton, lich, ghoul, ghast, zombie, wraith, ghost, shadow, wight, vampire "
+              }
+            ]
+          },
+          {
+            "formula": "1d4",
+            "label": "Crossbow of purity",
+            "exclusive": false,
+            "requirements": []
+          }
+        ],
+        "hitBonuses": [
+          {
+            "formula": "1d4",
+            "label": "Purify the evil!",
+            "exclusive": false,
+            "requirements": []
+          },
+          {
+            "formula": "2",
+            "label": "Megatron",
+            "exclusive": false,
+            "requirements": []
+          }
+        ]
+      }
+    },
+    "itemacro": {
+      "macro": {
+        "name": "Crossbow of Purity",
+        "type": "script",
+        "scope": "global",
+        "command": "console.log(\"hello\")",
+        "author": "lDQovrTY32fJwPBR",
+        "_id": null,
+        "img": "icons/svg/dice-target.svg",
+        "folder": null,
+        "sort": 0,
+        "ownership": {
+          "default": 0
+        },
+        "flags": {},
+        "_stats": {
+          "coreVersion": "13.348",
+          "systemId": "shadowdark",
+          "systemVersion": "3.6.1",
+          "lastModifiedBy": null,
+          "compendiumSource": null,
+          "duplicateSource": null,
+          "exportSource": null
+        }
+      }
+    }
+  },
+  "ownership": {
+    "default": 0
+  }
+}

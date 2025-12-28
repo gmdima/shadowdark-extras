@@ -896,6 +896,9 @@ export function setupSummonExpiryHook() {
 // Track messages that have already had damage cards injected to prevent duplicates
 const _damageCardInjected = new Set();
 
+// Track messages that have already had template placement to prevent re-triggering
+const _templatePlacedMessages = new Set();
+
 /**
  * Show a dialog allowing the user to select which effects to apply
  * @param {Array} effectOptions - Array of {uuid, name, img, data} objects
@@ -975,13 +978,12 @@ export async function injectDamageCard(message, html, data) {
 
 	// Prevent duplicate injection for the same message
 	const messageKey = message.id;
+
+	// Skip if damage card was already fully injected for this message
 	if (_damageCardInjected.has(messageKey)) {
 		console.log("shadowdark-extras | Damage card already injected for this message, skipping");
 		return;
 	}
-
-	// Mark this message as being processed immediately to prevent race conditions
-	_damageCardInjected.add(messageKey);
 
 	// Check if damage card feature is enabled
 	let settings;
@@ -1227,7 +1229,154 @@ export async function injectDamageCard(message, html, data) {
 	let targets = [];
 	const storedTargetIds = message.flags?.["shadowdark-extras"]?.targetIds;
 
-	if (storedTargetIds && storedTargetIds.length > 0) {
+	// Check if item has template targeting mode enabled
+	const targetingConfig = item?.flags?.[MODULE_ID]?.targeting;
+	let useTemplateTargeting = targetingConfig?.mode === 'template' &&
+		message.author.id === game.user.id && // Only for the caster
+		!_templatePlacedMessages.has(messageKey); // Use in-memory check instead of flags
+
+	// For spells that require success rolls, only show template if spell succeeded
+	if (useTemplateTargeting && !["Potion", "Scroll", "Wand"].includes(itemType)) {
+		const shadowdarkRolls = message.flags?.shadowdark?.rolls;
+		const mainRoll = shadowdarkRolls?.main;
+		if (!mainRoll || mainRoll.success !== true) {
+			console.log("shadowdark-extras | Spell cast failed, not showing template placement");
+			useTemplateTargeting = false;
+		}
+	}
+
+	if (useTemplateTargeting) {
+		console.log("shadowdark-extras | Template targeting enabled, showing template placement");
+
+		// Get template settings
+		const templateSettings = targetingConfig.template || {};
+		const templateType = templateSettings.type || 'circle';
+		const templateSize = templateSettings.size || 30;
+		const placement = templateSettings.placement || 'choose';
+		const fillColor = templateSettings.fillColor || '#4e9a06';
+		const deleteMode = templateSettings.deleteMode || 'none';
+		const deleteDuration = templateSettings.deleteDuration || 3;
+		const deleteSeconds = templateSettings.deleteSeconds || 1;
+		const hideOutline = templateSettings.hideOutline || false;
+		const excludeCaster = templateSettings.excludeCaster || false;
+
+		// TokenMagic settings
+		const tmSettings = templateSettings.tokenMagic || {};
+		const tmTexture = tmSettings.texture || '';
+		const tmOpacity = tmSettings.opacity ?? 0.5;
+		const tmPreset = tmSettings.preset || 'NOFX';
+		const tmTint = tmSettings.tint || '';
+
+		// Calculate auto-delete timing
+		let autoDelete = null;
+		if (deleteMode === 'endOfTurn') {
+			// Delete after 6 seconds (roughly end of turn)
+			autoDelete = 6000;
+		} else if (deleteMode === 'duration') {
+			// Delete after rounds * 6 seconds (roughly 1 round = 6 seconds)
+			autoDelete = deleteDuration * 6000;
+		} else if (deleteMode === 'seconds') {
+			// Delete after X seconds
+			autoDelete = deleteSeconds * 1000;
+		}
+
+		try {
+			// Use SDX.templates API if available
+			if (typeof SDX !== 'undefined' && SDX.templates) {
+				// Determine placement mode
+				let result;
+				if (placement === 'centered') {
+					// Auto-center on caster's token
+					const casterTokenId = speaker?.token;
+					const casterToken = canvas.tokens.get(casterTokenId);
+					if (casterToken) {
+						// Place template centered on caster
+						result = await SDX.templates.placeAndTarget({
+							type: templateType,
+							size: templateSize,
+							fillColor: fillColor,
+							autoDelete: autoDelete,
+							x: casterToken.center.x,
+							y: casterToken.center.y,
+							texture: tmTexture || null,
+							textureOpacity: tmOpacity,
+							tmfxPreset: tmPreset,
+							tmfxTint: tmTint
+						});
+					}
+				} else if (placement === 'caster') {
+					// Originate from caster - origin locked to caster, user controls direction
+					const casterTokenId = speaker?.token;
+					const casterToken = canvas.tokens.get(casterTokenId);
+					if (casterToken) {
+						result = await SDX.templates.placeAndTarget({
+							type: templateType,
+							size: templateSize,
+							fillColor: fillColor,
+							autoDelete: autoDelete,
+							originFromCaster: {
+								x: casterToken.center.x,
+								y: casterToken.center.y
+							},
+							texture: tmTexture || null,
+							textureOpacity: tmOpacity,
+							tmfxPreset: tmPreset,
+							tmfxTint: tmTint
+						});
+					} else {
+						// No caster token found, fall back to choose location
+						console.warn("shadowdark-extras | Caster token not found for originate from caster, falling back to choose location");
+						result = await SDX.templates.placeAndTarget({
+							type: templateType,
+							size: templateSize,
+							fillColor: fillColor,
+							autoDelete: autoDelete,
+							texture: tmTexture || null,
+							textureOpacity: tmOpacity,
+							tmfxPreset: tmPreset,
+							tmfxTint: tmTint
+						});
+					}
+				} else {
+					// Choose location - user clicks to place
+					result = await SDX.templates.placeAndTarget({
+						type: templateType,
+						size: templateSize,
+						fillColor: fillColor,
+						autoDelete: autoDelete,
+						texture: tmTexture || null,
+						textureOpacity: tmOpacity,
+						tmfxPreset: tmPreset,
+						tmfxTint: tmTint
+					});
+				}
+
+				if (result && result.tokens) {
+					targets = result.tokens.map(t => canvas.tokens.get(t.id)).filter(t => t);
+					console.log("shadowdark-extras | Template targeting got tokens:", targets.length);
+
+					// Filter out caster if excludeCaster is enabled
+					if (excludeCaster && speaker?.token) {
+						targets = targets.filter(t => t.id !== speaker.token);
+						console.log("shadowdark-extras | After excluding caster, tokens:", targets.length);
+					}
+
+					// Mark this message as having template placed using in-memory tracking
+					// We avoid message.update() because it triggers re-renders that remove our injected damage card
+					_templatePlacedMessages.add(messageKey);
+				} else {
+					console.log("shadowdark-extras | Template placement cancelled");
+					return; // User cancelled
+				}
+			} else {
+				console.warn("shadowdark-extras | SDX.templates not available, falling back to user targets");
+				targets = Array.from(game.user.targets || []);
+			}
+		} catch (err) {
+			console.error("shadowdark-extras | Error during template placement:", err);
+			targets = Array.from(game.user.targets || []);
+		}
+	} else if (storedTargetIds && storedTargetIds.length > 0) {
 		// Use the stored targets from when the message was created
 		targets = storedTargetIds
 			.map(id => canvas.tokens.get(id))
@@ -1662,6 +1811,9 @@ export async function injectDamageCard(message, html, data) {
 
 	// Attach event listeners
 	attachDamageCardListeners(html, message.id);
+
+	// Mark message as fully processed now that damage card is injected
+	_damageCardInjected.add(messageKey);
 
 	// Check if this is a Focus Check (spell focus maintenance roll)
 	// Focus Checks should roll damage but NOT auto-apply effects (effects are already applied)
@@ -3142,7 +3294,7 @@ function attachDamageCardListeners(html, messageId) {
 			// Get card targets (enemies shown in the card)
 			const $cardTargets = $card.find('.sdx-target-item');
 			const cardTargets = $cardTargets.map((i, el) => canvas.tokens.get($(el).data('token-id'))).get().filter(t => t);
-			
+
 			// Get caster token using the stored token ID (the actual token that attacked/cast)
 			const casterTokenId = $card.data('caster-token-id');
 			let casterToken = null;
@@ -3165,8 +3317,8 @@ function attachDamageCardListeners(html, messageId) {
 				const effectUuid = typeof effectData === 'string' ? effectData : effectData.uuid;
 				const duration = typeof effectData === 'object' && effectData.duration ? effectData.duration : {};
 				// Check individual effect's applyToTarget setting, fall back to global setting
-				const effectApplyToTarget = typeof effectData === 'object' && effectData.applyToTarget !== undefined 
-					? effectData.applyToTarget 
+				const effectApplyToTarget = typeof effectData === 'object' && effectData.applyToTarget !== undefined
+					? effectData.applyToTarget
 					: applyToTarget;
 				// Check individual effect's cumulative setting (default true for backward compatibility)
 				const effectCumulative = typeof effectData === 'object' && effectData.cumulative !== undefined

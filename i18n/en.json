@@ -391,5 +391,18 @@
   "SHADOWDARK_EXTRAS.focus_tracker.seconds": "{count} sec",
   "SHADOWDARK_EXTRAS.focus_tracker.minutes": "{count} min",
   "SHADOWDARK_EXTRAS.focus_tracker.hours": "{count} hr",
-  "SHADOWDARK_EXTRAS.focus_tracker.focus_reminder": "Focus Spells Active"
+  "SHADOWDARK_EXTRAS.focus_tracker.focus_reminder": "Focus Spells Active",
+  "SHADOWDARK.item.effect.predefined_effect.abilityAdvantageStr": "Advantage on Strength Checks",
+  "SHADOWDARK.item.effect.predefined_effect.abilityAdvantageDex": "Advantage on Dexterity Checks",
+  "SHADOWDARK.item.effect.predefined_effect.abilityAdvantageCon": "Advantage on Constitution Checks",
+  "SHADOWDARK.item.effect.predefined_effect.abilityAdvantageInt": "Advantage on Intelligence Checks",
+  "SHADOWDARK.item.effect.predefined_effect.abilityAdvantageWis": "Advantage on Wisdom Checks",
+  "SHADOWDARK.item.effect.predefined_effect.abilityAdvantageCha": "Advantage on Charisma Checks",
+  "SHADOWDARK.item.effect.predefined_effect.meleeAdvantage": "Advantage on Melee Attacks",
+  "SHADOWDARK.item.effect.predefined_effect.rangedAdvantage": "Advantage on Ranged Attacks",
+  "SHADOWDARK.item.effect.predefined_effect.meleeDamageDice": "Melee Damage Die",
+  "SHADOWDARK.item.effect.predefined_effect.rangedDamageDice": "Ranged Damage Die",
+  "SHADOWDARK.item.effect.predefined_effect.freyasOmen": "Freya's Omen",
+  "SHADOWDARK.chat_card.button.freyas_omen_reroll": "Reroll (Freya's Omen)",
+  "SHADOWDARK.item.effect.predefined_effect.macroExecute": "Macro to Execute"
 }

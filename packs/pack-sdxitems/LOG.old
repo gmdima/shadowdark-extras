@@ -1,7 +1,15 @@
-2025/12/26-19:42:16.676 55c0 Recovering log #94
-2025/12/26-19:42:16.685 55c0 Delete type=2 #7
-2025/12/26-19:42:16.686 55c0 Delete type=2 #74
-2025/12/26-19:42:16.686 55c0 Delete type=0 #75
-2025/12/26-19:42:16.686 55c0 Delete type=0 #94
-2025/12/26-19:42:16.686 55c0 Delete type=3 #73
-2025/12/26-19:42:16.686 55c0 Delete type=3 #93
+2025/12/28-02:22:22.131 7148 Recovering log #120
+2025/12/28-02:22:22.140 7148 Delete type=0 #120
+2025/12/28-02:22:22.140 7148 Delete type=3 #118
+2025/12/28-14:22:55.439 5f64 Level-0 table #125: started
+2025/12/28-14:22:55.444 5f64 Level-0 table #125: 12845 bytes OK
+2025/12/28-14:22:55.448 5f64 Delete type=0 #123
+2025/12/28-14:22:55.468 5f64 Manual compaction at level-0 from '!folders!6KjewN1ZTQZ5923n' @ 72057594037927935 : 1 .. '!items.effects!Woqn9fSsYqcViO13.rsd2QlI9tlvHqh9e' @ 0 : 0; will stop at (end)
+2025/12/28-14:22:55.479 5f64 Manual compaction at level-1 from '!folders!6KjewN1ZTQZ5923n' @ 72057594037927935 : 1 .. '!items.effects!Woqn9fSsYqcViO13.rsd2QlI9tlvHqh9e' @ 0 : 0; will stop at '!items!WWLslxTi3NxYvQu1' @ 171 : 1
+2025/12/28-14:22:55.479 5f64 Compacting 1@1 + 1@2 files
+2025/12/28-14:22:55.483 5f64 Generated table #126@1: 40 keys, 28816 bytes
+2025/12/28-14:22:55.483 5f64 Compacted 1@1 + 1@2 files => 28816 bytes
+2025/12/28-14:22:55.487 5f64 compacted to: files[ 0 0 1 0 0 0 0 ]
+2025/12/28-14:22:55.487 5f64 Delete type=2 #109
+2025/12/28-14:22:55.487 5f64 Delete type=2 #125
+2025/12/28-14:22:55.492 5f64 Manual compaction at level-1 from '!items!WWLslxTi3NxYvQu1' @ 171 : 1 .. '!items.effects!Woqn9fSsYqcViO13.rsd2QlI9tlvHqh9e' @ 0 : 0; will stop at (end)

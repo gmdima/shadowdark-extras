@@ -28,7 +28,13 @@ export function getDefaultWeaponBonusConfig() {
 		// Legacy requirements (for migration)
 		requirements: [],
 		// Effects to apply on hit
-		effects: []
+		effects: [],
+		// Item Macro configuration
+		itemMacro: {
+			enabled: false,
+			runAsGm: false,
+			triggers: [] // beforeAttack, onHit, onCritical, onMiss, onCriticalMiss, onEquip, onUnequip
+		}
 	};
 }
 
@@ -110,6 +116,10 @@ function buildWeaponBonusTabHtml(flags, item) {
 	const criticalExtraDamage = flags.criticalExtraDamage || "";
 	const effects = flags.effects || [];
 
+	// Item Macro configuration
+	const itemMacro = flags.itemMacro || { enabled: false, runAsGm: false, triggers: [] };
+	const itemMacroModuleActive = game.modules.get("itemacro")?.active;
+
 	// Handle hit bonuses
 	let hitBonuses = flags.hitBonuses || [];
 
@@ -141,6 +151,9 @@ function buildWeaponBonusTabHtml(flags, item) {
 	effects.forEach((effect, index) => {
 		effectsHtml += buildEffectRowHtml(effect, index);
 	});
+
+	// Build Item Macro section HTML
+	const itemMacroHtml = buildItemMacroSectionHtml(itemMacro, itemMacroModuleActive);
 
 	return `
 		<div class="tab" data-group="primary" data-tab="tab-bonuses">
@@ -216,6 +229,9 @@ function buildWeaponBonusTabHtml(flags, item) {
 							</div>
 						</div>
 					</fieldset>
+					
+					<!-- Item Macro Section -->
+					${itemMacroHtml}
 					
 					<!-- Formula Reference -->
 					<fieldset class="sdx-bonus-fieldset sdx-formula-reference">
@@ -597,6 +613,136 @@ function buildEffectRequirementRowHtml(req, effectIndex, reqIndex) {
 				<i class="fas fa-times"></i>
 			</button>
 		</div>
+	`;
+}
+
+/**
+ * Build HTML for the Item Macro section
+ * @param {Object} itemMacro - The item macro configuration
+ * @param {boolean} moduleActive - Whether the Item Macro module is active
+ * @returns {string} - HTML string
+ */
+function buildItemMacroSectionHtml(itemMacro, moduleActive) {
+	const enabled = itemMacro.enabled || false;
+	const runAsGm = itemMacro.runAsGm || false;
+	const triggers = itemMacro.triggers || [];
+
+	// Define available triggers
+	const triggerOptions = [
+		{ value: "beforeAttack", label: "Run macro before attack roll", icon: "fa-hourglass-start" },
+		{ value: "onHit", label: "Run macro if hit", icon: "fa-bullseye" },
+		{ value: "onCritical", label: "Run macro if critical hit", icon: "fa-burst" },
+		{ value: "onMiss", label: "Run macro if miss", icon: "fa-times-circle" },
+		{ value: "onCriticalMiss", label: "Run macro if critical miss", icon: "fa-skull" },
+		{ value: "onEquip", label: "Run macro on equip", icon: "fa-hand-holding" },
+		{ value: "onUnequip", label: "Run macro on unequip", icon: "fa-hand" }
+	];
+
+	// If module is not active, show notice
+	if (!moduleActive) {
+		return `
+			<fieldset class="sdx-bonus-fieldset sdx-item-macro-fieldset">
+				<legend><i class="fas fa-scroll"></i> Item Macro</legend>
+				<div class="sdx-item-macro-unavailable">
+					<i class="fas fa-exclamation-triangle"></i>
+					<span>The <strong>Item Macro</strong> module is not installed or not enabled.</span>
+					<p class="hint">Install and enable the Item Macro module to attach macros to this weapon.</p>
+				</div>
+			</fieldset>
+		`;
+	}
+
+	// Build trigger checkboxes
+	const triggerCheckboxesHtml = triggerOptions.map(opt => `
+		<label class="sdx-macro-trigger-option">
+			<input type="checkbox" class="sdx-macro-trigger-checkbox" value="${opt.value}" 
+				${triggers.includes(opt.value) ? 'checked' : ''} />
+			<i class="fas ${opt.icon}"></i>
+			<span>${opt.label}</span>
+		</label>
+	`).join('');
+
+	return `
+		<fieldset class="sdx-bonus-fieldset sdx-item-macro-fieldset">
+			<legend><i class="fas fa-scroll"></i> Item Macro</legend>
+			<p class="sdx-section-hint">Configure when to execute this weapon's Item Macro during combat.</p>
+			
+			<div class="sdx-macro-gm-toggle">
+				<label class="sdx-toggle-label">
+					<input type="checkbox" class="sdx-macro-run-as-gm" ${runAsGm ? 'checked' : ''} />
+					<i class="fas fa-crown"></i>
+					<span>Run macro as GM</span>
+				</label>
+				<p class="hint">Execute the macro with GM permissions using socketlib.</p>
+			</div>
+			
+			<div class="sdx-macro-triggers-section">
+				<label class="sdx-triggers-label">Execute macro on:</label>
+				<div class="sdx-macro-trigger-grid">
+					${triggerCheckboxesHtml}
+				</div>
+			</div>
+			
+			<details class="sdx-macro-guide">
+				<summary><i class="fas fa-book-open"></i> Macro Development Guide</summary>
+				<div class="sdx-macro-guide-content">
+					<h4>Available Arguments</h4>
+					<p>Item Macro provides these variables to your macro:</p>
+					<pre><code>// Standard Item Macro variables:
+item          // The weapon item
+actor         // The attacking actor
+token         // The attacker's token
+speaker       // ChatMessage speaker data
+character     // The user's assigned character
+
+// SDX-specific data in args:
+args.isHit        // Boolean - did the attack hit?
+args.isMiss       // Boolean - did the attack miss?
+args.isCritical   // Boolean - was it a critical hit?
+args.isCriticalMiss // Boolean - was it a critical miss?
+args.rollResult   // Attack roll result (total)
+args.rollData     // Full roll data object
+args.trigger      // String - which trigger fired
+args.targets      // Array of targeted tokens
+args.target       // First target token
+args.targetActor  // First target's actor</code></pre>
+					
+					<h4>Example: Play Effect on Critical Hit</h4>
+					<pre><code>if (args.isCritical && token) {
+  new Sequence()
+    .effect()
+    .file("jb2a.divine_smite.caster.yellowwhite")
+    .atLocation(token)
+    .play();
+}</code></pre>
+					
+					<h4>Example: Extra Damage vs Undead</h4>
+					<pre><code>if (args.isHit) {
+  const ancestry = args.targetActor?.system?.ancestry?.name;
+  if (ancestry?.toLowerCase().includes("undead")) {
+    ChatMessage.create({
+      content: \`\${item.name} burns the undead!\`,
+      speaker: speaker
+    });
+  }
+}</code></pre>
+					
+					<h4>Example: Heal on Kill (requires GM execution)</h4>
+					<pre><code>if (args.isHit && args.targetActor) {
+  const hp = args.targetActor.system.attributes.hp;
+  if (hp.value <= 0) {
+    const healing = 5;
+    const current = actor.system.attributes.hp.value;
+    const max = actor.system.attributes.hp.max;
+    await actor.update({
+      "system.attributes.hp.value": Math.min(max, current + healing)
+    });
+    ui.notifications.info(\`Healed \${healing} HP!\`);
+  }
+}</code></pre>
+				</div>
+			</details>
+		</fieldset>
 	`;
 }
 
@@ -987,6 +1133,34 @@ function activateWeaponBonusListeners(html, app, item) {
 	// Effect requirement changes
 	$tab.on('change', '.sdx-effect-req-type, .sdx-effect-req-operator, .sdx-effect-req-value', async function () {
 		await saveEffectRequirementsFromDom($tab, item);
+	});
+
+	// ========== ITEM MACRO LISTENERS ==========
+
+	// Item Macro: Run as GM toggle
+	$tab.on('change', '.sdx-macro-run-as-gm', async function () {
+		const runAsGm = $(this).is(':checked');
+		const currentFlags = item.flags?.[MODULE_ID]?.weaponBonus || getDefaultWeaponBonusConfig();
+		const itemMacro = currentFlags.itemMacro || { enabled: false, runAsGm: false, triggers: [] };
+		itemMacro.runAsGm = runAsGm;
+		await saveWeaponBonusConfig(item, { itemMacro });
+	});
+
+	// Item Macro: Trigger checkboxes
+	$tab.on('change', '.sdx-macro-trigger-checkbox', async function () {
+		const currentFlags = item.flags?.[MODULE_ID]?.weaponBonus || getDefaultWeaponBonusConfig();
+		const itemMacro = currentFlags.itemMacro || { enabled: false, runAsGm: false, triggers: [] };
+
+		// Collect all checked triggers
+		const triggers = [];
+		$tab.find('.sdx-macro-trigger-checkbox:checked').each(function () {
+			triggers.push($(this).val());
+		});
+
+		itemMacro.triggers = triggers;
+		// Enable item macro if any triggers are selected
+		itemMacro.enabled = triggers.length > 0;
+		await saveWeaponBonusConfig(item, { itemMacro });
 	});
 }
 
@@ -1678,3 +1852,20 @@ export async function injectWeaponBonusDisplay(message, html, weapon, attacker, 
 	}
 }
 
+/**
+ * Get the Item Macro configuration for a weapon
+ * @param {Item} weapon - The weapon item
+ * @returns {Object} - { enabled, runAsGm, triggers }
+ */
+export function getWeaponItemMacroConfig(weapon) {
+	const flags = weapon?.flags?.[MODULE_ID]?.weaponBonus;
+	if (!flags?.itemMacro) {
+		return { enabled: false, runAsGm: false, triggers: [] };
+	}
+
+	return {
+		enabled: flags.itemMacro.enabled || false,
+		runAsGm: flags.itemMacro.runAsGm || false,
+		triggers: flags.itemMacro.triggers || []
+	};
+}
