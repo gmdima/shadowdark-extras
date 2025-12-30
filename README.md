@@ -97,3 +97,7 @@ Adds a full Inventory tab to NPC sheets:
 - Manage NPC treasure and loot
 - Track coins (GP/SP/CP) for easy player looting
 - Quick delete and multi-select support
+
+Current settings:
+
+<img width="335" height="2517" alt="image" src="https://github.com/user-attachments/assets/3bb9aaeb-ff6c-4654-94d1-0d022eee55ca" />
