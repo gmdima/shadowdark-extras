@@ -154,8 +154,12 @@
     <div class="carousing-tables-list-view">
         <div class="carousing-tables-header flexrow">
             <h2>{{localize "SHADOWDARK_EXTRAS.carousing.custom_tables"}} (Expanded)</h2>
-            <button type="button" data-action="new-table" class="primary"><i class="fas fa-plus"></i> {{localize
-                "SHADOWDARK_EXTRAS.carousing.new_table"}}</button>
+            <div class="header-actions">
+                <button type="button" data-action="import-table"><i class="fas fa-file-import"></i> {{localize
+                    "SHADOWDARK_EXTRAS.carousing.import"}}</button>
+                <button type="button" data-action="new-table" class="primary"><i class="fas fa-plus"></i> {{localize
+                    "SHADOWDARK_EXTRAS.carousing.new_table"}}</button>
+            </div>
         </div>
 
         {{#if tables.length}}
@@ -167,6 +171,8 @@
                 <div class="table-actions">
                     <a data-action="edit-table" data-table-id="{{this.id}}"
                         title="{{localize 'SHADOWDARK_EXTRAS.carousing.edit_table'}}"><i class="fas fa-edit"></i></a>
+                    <a data-action="export-table" data-table-id="{{this.id}}"
+                        title="{{localize 'SHADOWDARK_EXTRAS.carousing.export'}}"><i class="fas fa-file-export"></i></a>
                     <a data-action="delete-table" data-table-id="{{this.id}}"
                         title="{{localize 'SHADOWDARK_EXTRAS.carousing.delete_table'}}"><i class="fas fa-trash"></i></a>
                 </div>

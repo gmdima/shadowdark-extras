@@ -89,6 +89,17 @@ export class CarousingTablesApp extends FormApplication {
             }
         });
 
+        // Export table button
+        html.find('[data-action="export-table"]').click((event) => {
+            const tableId = $(event.currentTarget).data("table-id");
+            this._exportTable(tableId);
+        });
+
+        // Import table button
+        html.find('[data-action="import-table"]').click(() => {
+            this._importTable();
+        });
+
         // Cancel edit
         html.find('[data-action="cancel-edit"]').click(() => {
             this.editingTable = null;
@@ -377,6 +388,81 @@ export class CarousingTablesApp extends FormApplication {
 
             ui.notifications.info(game.i18n.format("SHADOWDARK_EXTRAS.carousing.imported_count", { count: entries.length }));
         }
+    }
+
+    /**
+     * Export a table as JSON file
+     */
+    _exportTable(tableId) {
+        const tables = getCustomCarousingTables();
+        const table = tables.find(t => t.id === tableId);
+        if (!table) {
+            ui.notifications.error(game.i18n.localize("SHADOWDARK_EXTRAS.carousing.table_not_found"));
+            return;
+        }
+
+        // Create export data (include type for import validation)
+        const exportData = {
+            type: "shadowdark-carousing-table",
+            version: 1,
+            table: foundry.utils.deepClone(table)
+        };
+
+        // Create and download the file using Foundry's utility (works in both browser and Electron)
+        const filename = `${table.name.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_carousing.json`;
+        const data = JSON.stringify(exportData, null, 2);
+        saveDataToFile(data, "application/json", filename);
+
+        ui.notifications.info(game.i18n.format("SHADOWDARK_EXTRAS.carousing.table_exported", { name: table.name }));
+    }
+
+    /**
+     * Import a table from JSON file
+     */
+    async _importTable() {
+        // Create file input
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = '.json';
+
+        input.onchange = async (event) => {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            try {
+                const text = await file.text();
+                const importData = JSON.parse(text);
+
+                // Validate import data
+                if (importData.type !== "shadowdark-carousing-table" || !importData.table) {
+                    ui.notifications.error(game.i18n.localize("SHADOWDARK_EXTRAS.carousing.invalid_import_file"));
+                    return;
+                }
+
+                const tableData = importData.table;
+
+                // Generate new ID for imported table
+                tableData.id = foundry.utils.randomID();
+
+                // Ensure required fields exist
+                if (!tableData.name) tableData.name = "Imported Table";
+                if (!Array.isArray(tableData.tiers)) tableData.tiers = [];
+                if (!Array.isArray(tableData.outcomes)) tableData.outcomes = [];
+
+                // Add to existing tables
+                const tables = getCustomCarousingTables();
+                tables.push(tableData);
+                await saveCustomCarousingTables(tables);
+
+                ui.notifications.info(game.i18n.format("SHADOWDARK_EXTRAS.carousing.table_imported", { name: tableData.name }));
+                this.render();
+            } catch (err) {
+                console.error("Failed to import carousing table:", err);
+                ui.notifications.error(game.i18n.localize("SHADOWDARK_EXTRAS.carousing.import_error"));
+            }
+        };
+
+        input.click();
     }
 }
 
