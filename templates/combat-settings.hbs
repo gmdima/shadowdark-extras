@@ -2,31 +2,36 @@
 	<div class="sdx-settings-section">
 		<h3><i class="fas fa-heart-broken"></i> Damage Card Settings</h3>
 		<p class="sdx-settings-hint">Configure the enhanced damage card that appears after rolling damage</p>
-		
+
 		<div class="sdx-setting-item">
 			<div class="sdx-setting-header">
 				<label for="showDamageCard">
-					<input type="checkbox" name="showDamageCard" id="showDamageCard" {{checked settings.showDamageCard}} />
+					<input type="checkbox" name="showDamageCard" id="showDamageCard" {{checked
+						settings.showDamageCard}} />
 					<strong>Show Damage Card</strong>
 				</label>
 			</div>
-			<p class="sdx-setting-hint">Display an enhanced damage card with target selection and damage application options</p>
+			<p class="sdx-setting-hint">Display an enhanced damage card with target selection and damage application
+				options</p>
 		</div>
 
 		<div class="sdx-setting-item">
 			<div class="sdx-setting-header">
 				<label for="showForPlayers">
-					<input type="checkbox" name="showForPlayers" id="showForPlayers" {{checked settings.showForPlayers}} />
+					<input type="checkbox" name="showForPlayers" id="showForPlayers" {{checked
+						settings.showForPlayers}} />
 					<strong>Show Damage Card for Players</strong>
 				</label>
 			</div>
-			<p class="sdx-setting-hint">If enabled, players will see the damage card. If disabled, only GMs will see it.</p>
+			<p class="sdx-setting-hint">If enabled, players will see the damage card. If disabled, only GMs will see it.
+			</p>
 		</div>
 
 		<div class="sdx-setting-item">
 			<div class="sdx-setting-header">
 				<label for="scrollingCombatText">
-					<input type="checkbox" name="scrollingCombatText" id="scrollingCombatText" {{checked settings.scrollingCombatText}} />
+					<input type="checkbox" name="scrollingCombatText" id="scrollingCombatText" {{checked
+						settings.scrollingCombatText}} />
 					<strong>{{localize "SHADOWDARK_EXTRAS.combat.scrolling_text.name"}}</strong>
 				</label>
 			</div>
@@ -37,7 +42,8 @@
 			<div class="sdx-setting-item">
 				<div class="sdx-setting-header">
 					<label for="showTargets">
-						<input type="checkbox" name="damageCard.showTargets" id="showTargets" {{checked settings.damageCard.showTargets}} />
+						<input type="checkbox" name="damageCard.showTargets" id="showTargets" {{checked
+							settings.damageCard.showTargets}} />
 						<strong>Show Targets</strong>
 					</label>
 				</div>
@@ -47,17 +53,20 @@
 			<div class="sdx-setting-item">
 				<div class="sdx-setting-header">
 					<label for="showMultipliers">
-						<input type="checkbox" name="damageCard.showMultipliers" id="showMultipliers" {{checked settings.damageCard.showMultipliers}} />
+						<input type="checkbox" name="damageCard.showMultipliers" id="showMultipliers" {{checked
+							settings.damageCard.showMultipliers}} />
 						<strong>Show Damage Multipliers</strong>
 					</label>
 				</div>
-				<p class="sdx-setting-hint">Display buttons to apply damage multipliers (resistance, vulnerability, etc.)</p>
+				<p class="sdx-setting-hint">Display buttons to apply damage multipliers (resistance, vulnerability,
+					etc.)</p>
 			</div>
 
 			<div class="sdx-setting-item">
 				<div class="sdx-setting-header">
 					<label for="showApplyButton">
-						<input type="checkbox" name="damageCard.showApplyButton" id="showApplyButton" {{checked settings.damageCard.showApplyButton}} />
+						<input type="checkbox" name="damageCard.showApplyButton" id="showApplyButton" {{checked
+							settings.damageCard.showApplyButton}} />
 						<strong>Show Apply Button</strong>
 					</label>
 				</div>
@@ -67,11 +76,24 @@
 			<div class="sdx-setting-item">
 				<div class="sdx-setting-header">
 					<label for="autoApplyDamage">
-						<input type="checkbox" name="damageCard.autoApplyDamage" id="autoApplyDamage" {{checked settings.damageCard.autoApplyDamage}} />
+						<input type="checkbox" name="damageCard.autoApplyDamage" id="autoApplyDamage" {{checked
+							settings.damageCard.autoApplyDamage}} />
 						<strong>Auto-Apply Damage</strong>
 					</label>
 				</div>
-				<p class="sdx-setting-hint">Automatically apply damage when Apply button is clicked (GM only)</p>
+				<p class="sdx-setting-hint">Automatically apply damage to targets when a successful attack is rolled</p>
+			</div>
+
+			<div class="sdx-setting-item">
+				<div class="sdx-setting-header">
+					<label for="autoApplyConditions">
+						<input type="checkbox" name="damageCard.autoApplyConditions" id="autoApplyConditions" {{checked
+							settings.damageCard.autoApplyConditions}} />
+						<strong>Auto-Apply Conditions</strong>
+					</label>
+				</div>
+				<p class="sdx-setting-hint">Automatically apply conditions/effects to targets when a successful spell is
+					cast</p>
 			</div>
 
 			<div class="sdx-setting-item">
@@ -80,16 +102,16 @@
 				<div class="sdx-multiplier-config">
 					{{#each settings.damageCard.damageMultipliers}}
 					<div class="sdx-multiplier-item">
-						<input type="checkbox" 
-						       name="damageCard.damageMultipliers.{{@index}}.enabled" 
-						       id="mult-{{@index}}" 
-						       {{checked this.enabled}} />
+						<input type="checkbox" name="damageCard.damageMultipliers.{{@index}}.enabled"
+							id="mult-{{@index}}" {{checked this.enabled}} />
 						<label for="mult-{{@index}}">
 							<span class="sdx-mult-label">{{this.label}}</span>
 							<span class="sdx-mult-value">({{this.value}}×)</span>
 						</label>
-						<input type="hidden" name="damageCard.damageMultipliers.{{@index}}.value" value="{{this.value}}" />
-						<input type="hidden" name="damageCard.damageMultipliers.{{@index}}.label" value="{{this.label}}" />
+						<input type="hidden" name="damageCard.damageMultipliers.{{@index}}.value"
+							value="{{this.value}}" />
+						<input type="hidden" name="damageCard.damageMultipliers.{{@index}}.label"
+							value="{{this.label}}" />
 					</div>
 					{{/each}}
 				</div>
@@ -111,14 +133,14 @@
 	// Toggle subsettings visibility based on parent checkbox
 	const parentCheckbox = document.getElementById('showDamageCard');
 	const subsettings = document.querySelector('[data-parent="showDamageCard"]');
-	
+
 	function toggleSubsettings() {
 		if (subsettings) {
 			subsettings.style.opacity = parentCheckbox.checked ? '1' : '0.5';
 			subsettings.style.pointerEvents = parentCheckbox.checked ? 'auto' : 'none';
 		}
 	}
-	
+
 	if (parentCheckbox && subsettings) {
 		parentCheckbox.addEventListener('change', toggleSubsettings);
 		toggleSubsettings();

@@ -12,7 +12,7 @@ const MODULE_ID = "shadowdark-extras";
  * Extends the base ActorSheet to provide party management functionality
  */
 export default class PartySheetSD extends ActorSheet {
-	
+
 	/** @inheritdoc */
 	static get defaultOptions() {
 		return foundry.utils.mergeObject(super.defaultOptions, {
@@ -195,20 +195,20 @@ export default class PartySheetSD extends ActorSheet {
 	/** @inheritdoc */
 	async getData(options) {
 		const context = await super.getData(options);
-		
+
 		context.config = CONFIG.SHADOWDARK;
 		context.cssClass = this.actor.isOwner ? "editable" : "locked";
 		context.editable = this.isEditable;
 		context.owner = this.actor.isOwner;
 		context.isGM = game.user.isGM;
-		
+
 		// Get party members data
 		context.members = await this._prepareMembers();
 		context.memberCount = context.members.length;
-		
+
 		// Get party stats (aggregated)
 		context.partyStats = this._calculatePartyStats(context.members);
-		
+
 		// Get shared inventory
 		context.inventory = this._prepareInventory();
 		context.coins = this._getPartyCoins();
@@ -222,7 +222,7 @@ export default class PartySheetSD extends ActorSheet {
 			max: Number.isFinite(maxSlots) ? maxSlots : (Number.isFinite(maxSlotsDefault) ? maxSlotsDefault : 10),
 		};
 		context.inventorySlots.over = context.inventorySlots.used > context.inventorySlots.max;
-		
+
 		// Get party description (use namespaced TextEditor when available)
 		const enrichHTML = foundry?.applications?.ux?.TextEditor?.implementation?.enrichHTML ?? TextEditor.enrichHTML;
 		context.descriptionHTML = await enrichHTML(
@@ -233,7 +233,7 @@ export default class PartySheetSD extends ActorSheet {
 				relativeTo: this.actor,
 			}
 		);
-		
+
 		return context;
 	}
 
@@ -244,7 +244,7 @@ export default class PartySheetSD extends ActorSheet {
 	async _prepareMembers() {
 		const members = await this.getMembers();
 		const memberData = [];
-		
+
 		for (const member of members) {
 			if (!member) continue;
 			const isNPC = member.type === "NPC";
@@ -253,11 +253,11 @@ export default class PartySheetSD extends ActorSheet {
 			// based on STR, talents (like Hauler), and effects
 			const slotsMax = isNPC ? 0 : (typeof member.numGearSlots === 'function' ? member.numGearSlots() : 10);
 			const slotsFree = Math.max(0, slotsMax - slotsUsed);
-			
+
 			// Use UUID for compendium actors, ID for world actors (consistent with storage)
 			const isCompendiumActor = member.uuid?.startsWith("Compendium.");
 			const memberKey = isCompendiumActor ? member.uuid : member.id;
-			
+
 			const data = {
 				id: member.id,
 				uuid: member.uuid,
@@ -318,10 +318,10 @@ export default class PartySheetSD extends ActorSheet {
 					cha: member.system.abilities?.cha?.mod ?? this._calculateMod(member.system.abilities?.cha?.base ?? 10),
 				}
 			};
-			
+
 			memberData.push(data);
 		}
-		
+
 		return memberData;
 	}
 
@@ -379,7 +379,7 @@ export default class PartySheetSD extends ActorSheet {
 				avgLevel: 0
 			};
 		}
-		
+
 		const totalHp = members.reduce((sum, m) => sum + m.hp.value, 0);
 		const maxHp = members.reduce((sum, m) => sum + m.hp.max, 0);
 		const avgAc = Math.round(members.reduce((sum, m) => sum + m.ac, 0) / members.length);
@@ -387,14 +387,14 @@ export default class PartySheetSD extends ActorSheet {
 		const avgLevel = levelMembers.length
 			? Math.round(levelMembers.reduce((sum, m) => sum + Number(m.level), 0) / levelMembers.length)
 			: 0;
-		
+
 		return { totalHp, maxHp, avgAc, avgLevel };
 	}
 
 	/** @inheritdoc */
 	_onDragStart(event) {
 		const target = event.currentTarget;
-		
+
 		// Check if this is a member being dragged (for dropping on canvas to create token)
 		if (target.classList.contains("member") || target.closest(".member")) {
 			const memberEl = target.classList.contains("member") ? target : target.closest(".member");
@@ -409,7 +409,7 @@ export default class PartySheetSD extends ActorSheet {
 				return;
 			}
 		}
-		
+
 		// Fall back to default behavior for items
 		return super._onDragStart(event);
 	}
@@ -429,7 +429,7 @@ export default class PartySheetSD extends ActorSheet {
 			// Compendium UUIDs contain "Compendium." prefix
 			const isCompendiumActor = dropped.uuid?.startsWith("Compendium.");
 			const memberKey = isCompendiumActor ? dropped.uuid : dropped.id;
-			
+
 			const next = Array.from(new Set([...this.memberIds, memberKey]));
 			await this.actor.setFlag(MODULE_ID, "members", next);
 			if (dropped.type === "NPC") {
@@ -451,31 +451,31 @@ export default class PartySheetSD extends ActorSheet {
 		const inventory = [];
 		const treasure = [];
 		const freeCarrySeen = {};
-		
+
 		for (const item of this.actor.items) {
 			if (!item.system.isPhysical) continue;
-			
+
 			const itemData = item.toObject();
 			itemData.uuid = item.uuid;
-			itemData.showQuantity = item.system.quantity > 1 || 
-				item.system.isAmmunition || 
+			itemData.showQuantity = item.system.quantity > 1 ||
+				item.system.isAmmunition ||
 				(item.system.slots?.per_slot > 1);
 			itemData.slotsCost = this._calculateItemSlotsCost(item, freeCarrySeen);
-			
+
 			// Light source handling
 			itemData.isLightSource = ["Basic", "Effect"].includes(item.type) && item.system.light?.isSource;
 			itemData.lightActive = itemData.isLightSource && item.system.light?.active;
-			
+
 			if (item.system.treasure) {
 				treasure.push(itemData);
 			} else {
 				inventory.push(itemData);
 			}
 		}
-		
+
 		inventory.sort((a, b) => a.name.localeCompare(b.name));
 		treasure.sort((a, b) => a.name.localeCompare(b.name));
-		
+
 		return { items: inventory, treasure };
 	}
 
@@ -522,10 +522,10 @@ export default class PartySheetSD extends ActorSheet {
 		const gp = Math.max(0, parseInt(coins.gp) || 0);
 		const sp = Math.max(0, parseInt(coins.sp) || 0);
 		const cp = Math.max(0, parseInt(coins.cp) || 0);
-		
+
 		// Total number of coins
 		const totalCoins = gp + sp + cp;
-		
+
 		// 1 slot per 100 coins, rounded down
 		return Math.floor(totalCoins / 100);
 	}
@@ -554,10 +554,10 @@ export default class PartySheetSD extends ActorSheet {
 		const gp = Math.max(0, parseInt(coins.gp) || 0);
 		const sp = Math.max(0, parseInt(coins.sp) || 0);
 		const cp = Math.max(0, parseInt(coins.cp) || 0);
-		
+
 		// Total number of coins
 		const totalCoins = gp + sp + cp;
-		
+
 		// 1 slot per 100 coins, rounded down
 		return Math.floor(totalCoins / 100);
 	}
@@ -583,7 +583,8 @@ export default class PartySheetSD extends ActorSheet {
 		html.find("[data-action='place-members']").click(this._onPlaceMembers.bind(this));
 		html.find("[data-action='reward-xp']").click(this._onRewardXp.bind(this));
 		html.find("[data-action='reward-coins']").click(this._onRewardCoins.bind(this));
-		
+		html.find("[data-action='sync-lights']").click(this._onSyncLights.bind(this));
+
 		// XP controls
 		html.find("[data-action='xp-increment']").click(this._onXpIncrement.bind(this));
 		html.find("[data-action='xp-decrement']").click(this._onXpDecrement.bind(this));
@@ -592,7 +593,7 @@ export default class PartySheetSD extends ActorSheet {
 		html.find("[data-action='npc-count-increment']").click(this._onNpcCountIncrement.bind(this));
 		html.find("[data-action='npc-count-decrement']").click(this._onNpcCountDecrement.bind(this));
 		html.find("[data-action='npc-count-change']").change(this._onNpcCountChange.bind(this));
-		
+
 		// Inventory interactions
 		html.find("[data-action='create-item']").click(this._onCreateItem.bind(this));
 		html.find("[data-action='configure-party-slots']").click(this._onConfigurePartySlots.bind(this));
@@ -603,17 +604,23 @@ export default class PartySheetSD extends ActorSheet {
 		html.find(".item-name[data-action='show-details']").click(
 			event => shadowdark.utils.toggleItemDetails(event.currentTarget)
 		);
-		
+
 		// Item context menu
 		this._itemContextMenu(html.get(0));
-		
+
 		// Coin inputs
 		html.find(".coin-value").change(this._onCoinChange.bind(this));
 		html.find("[data-action='add-coins']").click(this._onAddCoins.bind(this));
 		html.find("[data-action='divide-coins']").click(this._onDivideCoins.bind(this));
-		
+
 		// Description editing
 		html.find("[data-action='edit-description']").click(this._onEditDescription.bind(this));
+	}
+
+	async _onSyncLights(event) {
+		event.preventDefault();
+		ui.notifications.info("Syncing party token lights...");
+		await syncPartyTokenLight(this.actor);
 	}
 
 	async _onDivideCoins(event) {
@@ -829,37 +836,37 @@ export default class PartySheetSD extends ActorSheet {
 	 */
 	async _onDropActor(event, data) {
 		if (!this.actor.isOwner) return false;
-		
+
 		const actor = await fromUuid(data.uuid);
 		if (!actor) return false;
-		
+
 		// Only allow Player and NPC type actors
 		if (actor.type !== "Player" && actor.type !== "NPC") {
 			ui.notifications.warn(game.i18n.localize("SHADOWDARK_EXTRAS.party.warn.only_players"));
 			return false;
 		}
-		
+
 		// Use UUID for compendium actors, ID for world actors
 		const isCompendiumActor = actor.uuid?.startsWith("Compendium.");
 		const memberKey = isCompendiumActor ? actor.uuid : actor.id;
-		
+
 		// Check if actor is already a member
 		const memberIds = this.memberIds;
 		if (memberIds.includes(memberKey)) {
 			ui.notifications.info(game.i18n.localize("SHADOWDARK_EXTRAS.party.warn.already_member"));
 			return false;
 		}
-		
+
 		// Add member
 		memberIds.push(memberKey);
 		await this.actor.setFlag(MODULE_ID, "members", memberIds);
-		
+
 		// Set NPC spawn formula if NPC
 		if (actor.type === "NPC") {
 			const counts = this._getNpcSpawnCounts();
 			if (counts[memberKey] === undefined) await this._setNpcSpawnFormula(memberKey, "1");
 		}
-		
+
 		ui.notifications.info(game.i18n.format("SHADOWDARK_EXTRAS.party.member_added", { name: actor.name }));
 		return true;
 	}
@@ -1069,11 +1076,11 @@ export default class PartySheetSD extends ActorSheet {
 	async _onXpIncrement(event) {
 		event.preventDefault();
 		event.stopPropagation();
-		
+
 		const memberKey = event.currentTarget.dataset.memberId;
 		const member = await this._getActorFromKey(memberKey);
 		if (!member || !member.isOwner) return;
-		
+
 		const currentXp = member.system.level?.xp ?? 0;
 		await member.update({ "system.level.xp": currentXp + 1 });
 	}
@@ -1085,11 +1092,11 @@ export default class PartySheetSD extends ActorSheet {
 	async _onXpDecrement(event) {
 		event.preventDefault();
 		event.stopPropagation();
-		
+
 		const memberKey = event.currentTarget.dataset.memberId;
 		const member = await this._getActorFromKey(memberKey);
 		if (!member || !member.isOwner) return;
-		
+
 		const currentXp = member.system.level?.xp ?? 0;
 		if (currentXp > 0) {
 			await member.update({ "system.level.xp": currentXp - 1 });
@@ -1143,12 +1150,12 @@ export default class PartySheetSD extends ActorSheet {
 	 */
 	async _onPlaceMembers(event) {
 		event.preventDefault();
-		
+
 		if (!canvas.scene) {
 			ui.notifications.warn(game.i18n.localize("SHADOWDARK_EXTRAS.party.warn.no_scene"));
 			return;
 		}
-		
+
 		const members = await this.getMembers();
 		if (members.length === 0) {
 			ui.notifications.warn(game.i18n.localize("SHADOWDARK_EXTRAS.party.warn.no_members"));
@@ -1162,7 +1169,7 @@ export default class PartySheetSD extends ActorSheet {
 			// Use UUID for compendium actors, ID for world actors
 			const isCompendiumActor = member.uuid?.startsWith("Compendium.");
 			const memberKey = isCompendiumActor ? member.uuid : member.id;
-			
+
 			if (member.type === "Player") {
 				membersToPlace.push(member);
 				continue;
@@ -1172,17 +1179,17 @@ export default class PartySheetSD extends ActorSheet {
 				for (let i = 0; i < desired; i++) membersToPlace.push(member);
 			}
 		}
-		
+
 		if (membersToPlace.length === 0) {
 			ui.notifications.info(game.i18n.localize("SHADOWDARK_EXTRAS.party.all_members_present"));
 			return;
 		}
-		
+
 		// Minimize the sheet to allow canvas interaction
 		this.minimize();
-		
+
 		let placedCount = 0;
-		
+
 		// Place each token one by one
 		for (const member of membersToPlace) {
 			const placed = await this._placeTokenWithPreview(member);
@@ -1193,10 +1200,10 @@ export default class PartySheetSD extends ActorSheet {
 				break;
 			}
 		}
-		
+
 		// Restore the sheet
 		this.maximize();
-		
+
 		if (placedCount > 0) {
 			ui.notifications.info(
 				game.i18n.format("SHADOWDARK_EXTRAS.party.members_placed", { count: placedCount })
@@ -1213,14 +1220,14 @@ export default class PartySheetSD extends ActorSheet {
 		// For compendium actors, we need to import them to the world first
 		let actorToPlace = member;
 		const isCompendiumActor = member.uuid?.startsWith("Compendium.");
-		
+
 		if (isCompendiumActor) {
 			// Check if already imported by looking for an actor with same name and compendium source
-			let existingActor = game.actors.find(a => 
-				a.name === member.name && 
+			let existingActor = game.actors.find(a =>
+				a.name === member.name &&
 				a.flags?.core?.sourceId === member.uuid
 			);
-			
+
 			if (!existingActor) {
 				// Import the actor from compendium
 				try {
@@ -1228,7 +1235,7 @@ export default class PartySheetSD extends ActorSheet {
 					if (imported) {
 						// Record the compendium source on the imported actor without using the deprecated core.sourceId flag
 						try {
-							await imported.update({"_stats.compendiumSource": member.uuid});
+							await imported.update({ "_stats.compendiumSource": member.uuid });
 						} catch {
 							// Fallback to writing the legacy flag if update fails for any reason
 							await imported.setFlag("core", "sourceId", member.uuid);
@@ -1246,69 +1253,69 @@ export default class PartySheetSD extends ActorSheet {
 					return false;
 				}
 			}
-			
+
 			if (!existingActor) {
 				ui.notifications.error(
 					game.i18n.format("SHADOWDARK_EXTRAS.party.import_failed", { name: member.name })
 				);
 				return false;
 			}
-			
+
 			actorToPlace = existingActor;
 		}
-		
+
 		// Get the token document for this actor
 		const tokenDocument = await actorToPlace.getTokenDocument();
 		const tokenData = tokenDocument.toObject();
-		
+
 		// Create a preview token sprite for the cursor
 		const texture = await loadTexture(tokenData.texture.src);
 		const preview = new PIXI.Sprite(texture);
 		const gridSize = canvas.grid.size;
 		const tokenSize = tokenData.width * gridSize;
-		
+
 		preview.anchor.set(0.5);
 		preview.width = tokenSize;
 		preview.height = tokenSize;
 		preview.alpha = 0.7;
 		preview.visible = false;
-		
+
 		canvas.stage.addChild(preview);
-		
+
 		return new Promise((resolve) => {
 			// Show placement instructions
 			ui.notifications.info(
 				game.i18n.format("SHADOWDARK_EXTRAS.party.place_member_instruction", { name: member.name })
 			);
-			
+
 			const onMouseMove = (event) => {
 				const pos = event.data.getLocalPosition(canvas.stage);
 				// Snap to grid
-				const snapped = canvas.grid.getSnappedPoint({x: pos.x, y: pos.y}, {mode: CONST.GRID_SNAPPING_MODES.TOP_LEFT_CORNER});
+				const snapped = canvas.grid.getSnappedPoint({ x: pos.x, y: pos.y }, { mode: CONST.GRID_SNAPPING_MODES.TOP_LEFT_CORNER });
 				preview.position.set(snapped.x + tokenSize / 2, snapped.y + tokenSize / 2);
 				preview.visible = true;
 			};
-			
+
 			const onClick = async (event) => {
 				// Left click to place
 				const pos = event.data.getLocalPosition(canvas.stage);
-				const snapped = canvas.grid.getSnappedPoint({x: pos.x, y: pos.y}, {mode: CONST.GRID_SNAPPING_MODES.TOP_LEFT_CORNER});
-				
+				const snapped = canvas.grid.getSnappedPoint({ x: pos.x, y: pos.y }, { mode: CONST.GRID_SNAPPING_MODES.TOP_LEFT_CORNER });
+
 				// Cleanup
 				canvas.stage.off("mousemove", onMouseMove);
 				canvas.stage.off("mousedown", onClick);
 				canvas.stage.off("rightdown", onRightClick);
 				canvas.stage.removeChild(preview);
 				preview.destroy();
-				
+
 				// Create the token
 				tokenData.x = snapped.x;
 				tokenData.y = snapped.y;
 				await canvas.scene.createEmbeddedDocuments("Token", [tokenData]);
-				
+
 				resolve(true);
 			};
-			
+
 			const onRightClick = (event) => {
 				// Right click to cancel
 				canvas.stage.off("mousemove", onMouseMove);
@@ -1316,10 +1323,10 @@ export default class PartySheetSD extends ActorSheet {
 				canvas.stage.off("rightdown", onRightClick);
 				canvas.stage.removeChild(preview);
 				preview.destroy();
-				
+
 				resolve(false);
 			};
-			
+
 			const onKeyDown = (event) => {
 				if (event.key === "Escape") {
 					canvas.stage.off("mousemove", onMouseMove);
@@ -1331,7 +1338,7 @@ export default class PartySheetSD extends ActorSheet {
 					resolve(false);
 				}
 			};
-			
+
 			canvas.stage.on("mousemove", onMouseMove);
 			canvas.stage.on("mousedown", onClick);
 			canvas.stage.on("rightdown", onRightClick);
@@ -1345,13 +1352,13 @@ export default class PartySheetSD extends ActorSheet {
 	 */
 	async _onRewardXp(event) {
 		event.preventDefault();
-		
+
 		const members = this.members.filter(m => m.type === "Player" && m.isOwner);
 		if (members.length === 0) {
 			ui.notifications.warn(game.i18n.localize("SHADOWDARK_EXTRAS.party.warn.no_members"));
 			return;
 		}
-		
+
 		// Prompt for XP amount
 		const content = `
 			<form>
@@ -1361,7 +1368,7 @@ export default class PartySheetSD extends ActorSheet {
 				</div>
 			</form>
 		`;
-		
+
 		const xpAmount = await Dialog.prompt({
 			title: game.i18n.localize("SHADOWDARK_EXTRAS.party.reward_xp_title"),
 			content: content,
@@ -1371,19 +1378,19 @@ export default class PartySheetSD extends ActorSheet {
 			},
 			rejectClose: false
 		});
-		
+
 		if (!xpAmount || xpAmount <= 0) return;
-		
+
 		// Award XP to each member
 		for (const member of members) {
 			const currentXp = member.system.level?.xp ?? 0;
 			await member.update({ "system.level.xp": currentXp + xpAmount });
 		}
-		
+
 		ui.notifications.info(
-			game.i18n.format("SHADOWDARK_EXTRAS.party.xp_rewarded", { 
-				xp: xpAmount, 
-				count: members.length 
+			game.i18n.format("SHADOWDARK_EXTRAS.party.xp_rewarded", {
+				xp: xpAmount,
+				count: members.length
 			})
 		);
 	}
@@ -1394,18 +1401,18 @@ export default class PartySheetSD extends ActorSheet {
 	 */
 	async _onRewardCoins(event) {
 		event.preventDefault();
-		
+
 		const members = this.members.filter(m => m.type === "Player" && m.isOwner);
 		if (members.length === 0) {
 			ui.notifications.warn(game.i18n.localize("SHADOWDARK_EXTRAS.party.warn.no_members"));
 			return;
 		}
-		
+
 		// Get localized labels
 		const gpLabel = game.i18n.localize("SHADOWDARK_EXTRAS.party.coin_gp");
 		const spLabel = game.i18n.localize("SHADOWDARK_EXTRAS.party.coin_sp");
 		const cpLabel = game.i18n.localize("SHADOWDARK_EXTRAS.party.coin_cp");
-		
+
 		// Dialog content with clear warning that coins go to EACH member
 		const content = `
 			<form class="reward-coins-form">
@@ -1430,7 +1437,7 @@ export default class PartySheetSD extends ActorSheet {
 				</p>
 			</form>
 		`;
-		
+
 		const result = await Dialog.prompt({
 			title: game.i18n.localize("SHADOWDARK_EXTRAS.party.reward_coins_title"),
 			content: content,
@@ -1444,36 +1451,36 @@ export default class PartySheetSD extends ActorSheet {
 			},
 			rejectClose: false
 		});
-		
+
 		if (!result) return;
 		const { gp, sp, cp } = result;
-		
+
 		// Check if any coins to award
 		if (gp <= 0 && sp <= 0 && cp <= 0) return;
-		
+
 		// Award coins to each member
 		for (const member of members) {
 			const currentGp = member.system.coins?.gp ?? 0;
 			const currentSp = member.system.coins?.sp ?? 0;
 			const currentCp = member.system.coins?.cp ?? 0;
-			
+
 			await member.update({
 				"system.coins.gp": currentGp + gp,
 				"system.coins.sp": currentSp + sp,
 				"system.coins.cp": currentCp + cp
 			});
 		}
-		
+
 		// Build notification message
 		const coinParts = [];
 		if (gp > 0) coinParts.push(`${gp} ${gpLabel}`);
 		if (sp > 0) coinParts.push(`${sp} ${spLabel}`);
 		if (cp > 0) coinParts.push(`${cp} ${cpLabel}`);
-		
+
 		ui.notifications.info(
-			game.i18n.format("SHADOWDARK_EXTRAS.party.coins_rewarded", { 
-				coins: coinParts.join(", "), 
-				count: members.length 
+			game.i18n.format("SHADOWDARK_EXTRAS.party.coins_rewarded", {
+				coins: coinParts.join(", "),
+				count: members.length
 			})
 		);
 	}
@@ -1484,13 +1491,13 @@ export default class PartySheetSD extends ActorSheet {
 	 */
 	async _onCreateItem(event) {
 		event.preventDefault();
-		
+
 		const itemData = {
 			name: game.i18n.localize("SHADOWDARK_EXTRAS.party.new_item"),
 			type: "Basic",
 			img: "icons/svg/item-bag.svg"
 		};
-		
+
 		await this.actor.createEmbeddedDocuments("Item", [itemData]);
 	}
 
@@ -1539,13 +1546,13 @@ export default class PartySheetSD extends ActorSheet {
 	 */
 	async _onToggleLightSource(event) {
 		event.preventDefault();
-		
+
 		const itemId = event.currentTarget.dataset.itemId;
 		const item = this.actor.items.get(itemId);
 		if (!item) return;
-		
+
 		const active = !item.system.light.active;
-		
+
 		if (active) {
 			// Turn off any other active light sources first
 			const activeLights = this.actor.items.filter(
@@ -1558,22 +1565,22 @@ export default class PartySheetSD extends ActorSheet {
 				}]);
 			}
 		}
-		
+
 		// Update the item's light active state
 		const dataUpdate = {
 			"_id": item.id,
 			"system.light.active": active,
 		};
-		
+
 		if (!item.system.light.hasBeenUsed) {
 			dataUpdate["system.light.hasBeenUsed"] = true;
 		}
-		
+
 		await this.actor.updateEmbeddedDocuments("Item", [dataUpdate]);
-		
+
 		// Update the party actor's token light settings
 		await this._updatePartyTokenLight(active, item);
-		
+
 		// Notify light source tracker if available
 		if (game.shadowdark?.lightSourceTracker) {
 			game.shadowdark.lightSourceTracker.toggleLightSource(this.actor, item);
@@ -1587,7 +1594,7 @@ export default class PartySheetSD extends ActorSheet {
 	 */
 	async _updatePartyTokenLight(active, item) {
 		let lightData;
-		
+
 		if (active) {
 			// Get the light settings from the mapping
 			try {
@@ -1602,13 +1609,13 @@ export default class PartySheetSD extends ActorSheet {
 		} else {
 			lightData = { dim: 0, bright: 0 };
 		}
-		
+
 		// Update the token on canvas if it exists
 		const token = this.actor.getActiveTokens()[0];
 		if (token) {
 			await token.document.update({ light: lightData });
 		}
-		
+
 		// Update the prototype token
 		await this.actor.update({ "prototypeToken.light": lightData });
 	}
@@ -1621,7 +1628,7 @@ export default class PartySheetSD extends ActorSheet {
 		const input = event.currentTarget;
 		const coinType = input.dataset.coin;
 		const value = Math.max(0, parseInt(input.value) || 0);
-		
+
 		await this.actor.setFlag(MODULE_ID, `coins.${coinType}`, value);
 	}
 
@@ -1631,11 +1638,11 @@ export default class PartySheetSD extends ActorSheet {
 	 */
 	async _onAddCoins(event) {
 		event.preventDefault();
-		
+
 		const gpLabel = game.i18n.localize("SHADOWDARK_EXTRAS.party.coin_gp");
 		const spLabel = game.i18n.localize("SHADOWDARK_EXTRAS.party.coin_sp");
 		const cpLabel = game.i18n.localize("SHADOWDARK_EXTRAS.party.coin_cp");
-		
+
 		const content = `
 			<form class="add-coins-form">
 				<p>${game.i18n.localize("SHADOWDARK_EXTRAS.party.add_coins_prompt")}</p>
@@ -1653,7 +1660,7 @@ export default class PartySheetSD extends ActorSheet {
 				</div>
 			</form>
 		`;
-		
+
 		const result = await Dialog.prompt({
 			title: game.i18n.localize("SHADOWDARK_EXTRAS.party.add_coins_title"),
 			content: content,
@@ -1667,28 +1674,28 @@ export default class PartySheetSD extends ActorSheet {
 			},
 			rejectClose: false
 		});
-		
+
 		if (!result) return;
-		
+
 		const { gp, sp, cp } = result;
 		if (gp === 0 && sp === 0 && cp === 0) return;
-		
+
 		// Get current coins and add the new amounts
 		const currentCoins = this._getPartyCoins();
 		const newGp = Math.max(0, (parseInt(currentCoins.gp) || 0) + gp);
 		const newSp = Math.max(0, (parseInt(currentCoins.sp) || 0) + sp);
 		const newCp = Math.max(0, (parseInt(currentCoins.cp) || 0) + cp);
-		
+
 		await this.actor.setFlag(MODULE_ID, "coins.gp", newGp);
 		await this.actor.setFlag(MODULE_ID, "coins.sp", newSp);
 		await this.actor.setFlag(MODULE_ID, "coins.cp", newCp);
-		
+
 		// Build notification message
 		const parts = [];
 		if (gp !== 0) parts.push(`${gp} ${gpLabel}`);
 		if (sp !== 0) parts.push(`${sp} ${spLabel}`);
 		if (cp !== 0) parts.push(`${cp} ${cpLabel}`);
-		
+
 		ui.notifications.info(
 			game.i18n.format("SHADOWDARK_EXTRAS.party.coins_added", { coins: parts.join(", ") })
 		);
@@ -1700,9 +1707,9 @@ export default class PartySheetSD extends ActorSheet {
 	 */
 	async _onEditDescription(event) {
 		event.preventDefault();
-		
+
 		const currentDescription = this.actor.getFlag(MODULE_ID, "description") ?? "";
-		
+
 		new Dialog({
 			title: game.i18n.localize("SHADOWDARK_EXTRAS.party.edit_description"),
 			content: `
@@ -1739,19 +1746,19 @@ export default class PartySheetSD extends ActorSheet {
 		const itemId = element.dataset.itemId;
 		const item = this.actor.items.get(itemId);
 		if (!item) return;
-		
+
 		// Only world actors can receive items (not compendium actors)
 		const members = this.members.filter(m => m.isOwner && !m.uuid?.startsWith("Compendium."));
 		if (members.length === 0) {
 			ui.notifications.warn(game.i18n.localize("SHADOWDARK_EXTRAS.party.warn.no_owned_members"));
 			return;
 		}
-		
+
 		// Create dialog to select member
-		const memberOptions = members.map(m => 
+		const memberOptions = members.map(m =>
 			`<option value="${m.id}">${m.name}</option>`
 		).join("");
-		
+
 		new Dialog({
 			title: game.i18n.localize("SHADOWDARK_EXTRAS.party.transfer_to_member"),
 			content: `
@@ -1770,9 +1777,9 @@ export default class PartySheetSD extends ActorSheet {
 						const memberId = html.find('[name="member"]').val();
 						const member = game.actors.get(memberId);
 						if (!member) return;
-						
+
 						await this._transferItemToActor(item, member, { move: true });
-						
+
 						// Mask item name if unidentified and user is not GM
 						const isUnidentified = item.getFlag(MODULE_ID, "unidentified");
 						const displayName = (isUnidentified && !game.user.isGM)
@@ -1795,4 +1802,205 @@ export default class PartySheetSD extends ActorSheet {
 			default: "transfer"
 		}).render(true);
 	}
+}
+
+// ============================================
+// PARTY TOKEN LIGHT SYNCHRONIZATION
+// ============================================
+
+/**
+ * Get the brightest light source from all party members
+ * @param {Actor} partyActor - The party actor
+ * @returns {Promise<Object|null>} Light configuration or null if no lights
+ */
+export async function getBrightestPartyLight(partyActor) {
+	if (!partyActor) return null;
+
+	// Get party members
+	const memberIds = partyActor.getFlag(MODULE_ID, "members") ?? [];
+	const members = [];
+
+	for (const id of memberIds) {
+		let actor = game.actors.get(id);
+		if (!actor && id.includes(".")) {
+			try {
+				actor = await fromUuid(id);
+			} catch {
+				continue;
+			}
+		}
+		if (actor) members.push(actor);
+	}
+
+	if (members.length === 0) return null;
+
+	// Find all active light sources from all members
+	let brightestLight = null;
+	let maxBright = -1;
+	let maxDim = -1;
+
+	for (const member of members) {
+		console.log(`${MODULE_ID} | Checking member: ${member.name}`);
+		// Check all items for light sources
+		for (const item of member.items) {
+			// Light sources are Basic or Effect items with light.isSource = true
+			const isLightSource = ["Basic", "Effect"].includes(item.type) && item.system?.light?.isSource;
+			const isActive = item.system?.light?.active;
+
+			console.log(`${MODULE_ID} | Item: ${item.name}, type: ${item.type}, isLightSource: ${isLightSource}, isActive: ${isActive}`);
+
+			if (isLightSource && isActive) {
+				console.log(`${MODULE_ID} | Found active light: ${item.name}`, item.system.light);
+
+				// Load Shadowdark's official light source mappings
+				const templateName = item.system.light.template;
+				let lightTemplate = null;
+
+				try {
+					const lightSources = await foundry.utils.fetchJsonWithTimeout(
+						"systems/shadowdark/assets/mappings/map-light-sources.json"
+					);
+					lightTemplate = lightSources[templateName]?.light;
+					console.log(`${MODULE_ID} | Loaded template '${templateName}' from Shadowdark mappings:`, lightTemplate);
+				} catch (e) {
+					console.warn(`${MODULE_ID} | Failed to load light mappings:`, e);
+				}
+
+				// If template not found in JSON, use fallback values
+				if (!lightTemplate) {
+					console.log(`${MODULE_ID} | Template '${templateName}' not in JSON, using fallback`);
+					// Fallback values matching Shadowdark's actual light mappings
+					const FALLBACK_TEMPLATES = {
+						"torch": { bright: 5, dim: 30, color: "#d1c846", alpha: 0.2, angle: 360 },
+						"lantern": { bright: 15, dim: 60, color: "#d1c846", alpha: 0.2, angle: 360 },
+						"candle": { bright: 5, dim: 5, color: "#d1c846", alpha: 0.2, angle: 360 }, // From EXTRA_LIGHT_SOURCES
+						"lightSpellNear": { bright: 30, dim: 0, color: null, alpha: 0.2, angle: 360 },
+						"lightSpellDouble": { bright: 60, dim: 0, color: null, alpha: 0.2, angle: 360 },
+					};
+					lightTemplate = FALLBACK_TEMPLATES[templateName];
+				}
+
+				console.log(`${MODULE_ID} | Template: ${templateName}`, lightTemplate);
+
+				// Get bright and dim from the template or item
+				let bright = lightTemplate?.bright ?? item.system.light.bright ?? 0;
+				let dim = lightTemplate?.dim ?? item.system.light.dim ?? 0;
+
+				console.log(`${MODULE_ID} | Light values - bright: ${bright}, dim: ${dim}`);
+
+				// Compare brightness (bright distance is primary, dim is tiebreaker)
+				if (bright > maxBright || (bright === maxBright && dim > maxDim)) {
+					maxBright = bright;
+					maxDim = dim;
+
+					// Build light configuration using template values or item values
+					brightestLight = {
+						bright: bright,
+						dim: dim,
+						angle: lightTemplate?.angle ?? item.system.light.angle ?? 360,
+						color: lightTemplate?.color ?? item.system.light.color,
+						alpha: lightTemplate?.alpha ?? item.system.light.alpha ?? 0.5,
+						animation: lightTemplate?.animation ?? item.system.light.animation ?? {},
+						darkness: item.system.light.darkness ?? {},
+						attenuation: lightTemplate?.attenuation ?? item.system.light.attenuation ?? 0.5,
+						luminosity: lightTemplate?.luminosity ?? item.system.light.luminosity ?? 0.5,
+						saturation: lightTemplate?.saturation ?? item.system.light.saturation ?? 0,
+						contrast: lightTemplate?.contrast ?? item.system.light.contrast ?? 0,
+						shadows: lightTemplate?.shadows ?? item.system.light.shadows ?? 0,
+						coloration: lightTemplate?.coloration ?? item.system.light.coloration ?? 1,
+					};
+					console.log(`${MODULE_ID} | New brightest light:`, brightestLight);
+				}
+			}
+		}
+	}
+
+	return brightestLight;
+}
+
+/**
+ * Sync party token lights with the brightest light from party members
+ * @param {Actor} partyActor - The party actor
+ */
+export async function syncPartyTokenLight(partyActor) {
+	console.log(`${MODULE_ID} | syncPartyTokenLight called with:`, partyActor);
+
+	// Check if this is a party by looking for the members flag
+	const hasMembers = partyActor?.getFlag(MODULE_ID, "members");
+	console.log(`${MODULE_ID} | Has members flag:`, hasMembers);
+
+	if (!partyActor || !hasMembers) {
+		console.warn(`${MODULE_ID} | syncPartyTokenLight: Not a party actor (no members flag)`, partyActor);
+		return;
+	}
+
+	console.log(`${MODULE_ID} | Syncing light for party: ${partyActor.name}`);
+
+	// Get the brightest light from party members
+	const brightestLight = await getBrightestPartyLight(partyActor);
+
+	// Find all tokens for this party actor on the current scene
+	const partyTokens = canvas?.tokens?.placeables?.filter(t => t.actor?.id === partyActor.id) ?? [];
+
+	if (partyTokens.length === 0) {
+		console.log(`${MODULE_ID} | No party tokens found on canvas for ${partyActor.name}`);
+		return;
+	}
+
+	// Update each party token
+	for (const token of partyTokens) {
+		const updates = {};
+
+		if (brightestLight) {
+			// Enable light with brightest source configuration
+			updates["light.dim"] = brightestLight.dim;
+			updates["light.bright"] = brightestLight.bright;
+			updates["light.angle"] = brightestLight.angle;
+			updates["light.color"] = brightestLight.color;
+			updates["light.alpha"] = brightestLight.alpha;
+			updates["light.animation"] = brightestLight.animation;
+			updates["light.darkness"] = brightestLight.darkness;
+			updates["light.attenuation"] = brightestLight.attenuation;
+			updates["light.luminosity"] = brightestLight.luminosity;
+			updates["light.saturation"] = brightestLight.saturation;
+			updates["light.contrast"] = brightestLight.contrast;
+			updates["light.shadows"] = brightestLight.shadows;
+			updates["light.coloration"] = brightestLight.coloration;
+
+			console.log(`${MODULE_ID} | Party token ${token.name} light ON: ${brightestLight.bright}/${brightestLight.dim}`);
+		} else {
+			// No lights active - turn off party token light
+			updates["light.dim"] = 0;
+			updates["light.bright"] = 0;
+
+			console.log(`${MODULE_ID} | Party token ${token.name} light OFF`);
+		}
+
+		await token.document.update(updates);
+	}
+}
+
+/**
+ * Find all parties that contain a given actor
+ * @param {Actor} actor - The actor to search for
+ * @returns {Actor[]} Array of party actors containing this member
+ */
+export function getPartiesContainingActor(actor) {
+	if (!actor) return [];
+
+	const parties = [];
+	const actorKey1 = actor.id;
+	const actorKey2 = actor.uuid;
+
+	for (const potentialParty of game.actors) {
+		// Check if this actor has party members (indicates it's a party)
+		const memberIds = potentialParty.getFlag(MODULE_ID, "members");
+		if (!memberIds) continue;
+
+		if (memberIds.includes(actorKey1) || memberIds.includes(actorKey2)) {
+			parties.push(potentialParty);
+		}
+	}
+
+	return parties;
 }

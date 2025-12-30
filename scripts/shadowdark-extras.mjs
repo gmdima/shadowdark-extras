@@ -3,9 +3,10 @@
  * Adds Renown tracking, additional light sources, NPC inventory, and Party management to Shadowdark RPG
  */
 
-import PartySheetSD from "./PartySheetSD.mjs";
+import PartySheetSD, { syncPartyTokenLight, getPartiesContainingActor } from "./PartySheetSD.mjs";
 import TradeWindowSD, { initializeTradeSocket, showTradeDialog, ensureTradeJournal } from "./TradeWindowSD.mjs";
 import { CombatSettingsApp, registerCombatSettings, injectDamageCard, setupCombatSocket, setupScrollingCombatText, setupSummonExpiryHook, trackSummonedTokensForExpiry } from "./CombatSettingsSD.mjs";
+import { EffectsSettingsApp, registerEffectsSettings } from "./EffectsSettingsSD.mjs";
 import { HpWavesSettingsApp, registerHpWavesSettings, getHpWaveColor, isHpWavesEnabled } from "./HpWavesSettingsSD.mjs";
 import { generateSpellConfig, generatePotionConfig, generateScrollConfig, generateWandConfig } from "./templates/ItemTypeConfigs.mjs";
 import {
@@ -21,7 +22,10 @@ import {
 import { initAutoAnimationsIntegration } from "./AutoAnimationsSD.mjs";
 import { initTorchAnimations } from "./TorchAnimationSD.mjs";
 import { initSDXROLLS, setupSDXROLLSSockets, injectSdxRollButton } from "./sdx-rolls/SdxRollsSD.mjs";
-import { initFocusSpellTracker, endFocusSpell, linkEffectToFocusSpell, getActiveFocusSpells, isFocusingOnSpell } from "./FocusSpellTrackerSD.mjs";
+import { initFocusSpellTracker, endFocusSpell, linkEffectToFocusSpell, getActiveFocusSpells, isFocusingOnSpell, startDurationSpell, endDurationSpell } from "./FocusSpellTrackerSD.mjs";
+import { initCarousing, injectCarousingTab, ensureCarousingJournal, ensureCarousingTablesJournal, initCarousingSocket, getCustomCarousingTables, getCarousingTableById, setCarousingTable } from "./CarousingSD.mjs";
+import { openCarousingTablesEditor } from "./CarousingTablesApp.mjs";
+import { openExpandedCarousingTablesEditor } from "./ExpandedCarousingTablesApp.mjs";
 
 const MODULE_ID = "shadowdark-extras";
 const TRADE_JOURNAL_NAME = "__sdx_trade_sync__"; // Must match TradeWindowSD.mjs
@@ -970,33 +974,59 @@ function setupUnidentifiedItemNameWrapper() {
 	// Get the Item class
 	const ItemClass = CONFIG.Item.documentClass;
 
-	// Store the original name descriptor
-	const originalDescriptor = Object.getOwnPropertyDescriptor(ItemClass.prototype, "name")
-		|| Object.getOwnPropertyDescriptor(Object.getPrototypeOf(ItemClass.prototype), "name");
-
-	if (!originalDescriptor || !originalDescriptor.get) {
-		console.warn(`${MODULE_ID} | Could not find Item.name getter to wrap`);
-		return;
+	// Search the entire prototype chain for the name descriptor
+	let originalDescriptor = null;
+	let proto = ItemClass.prototype;
+	while (proto && !originalDescriptor) {
+		originalDescriptor = Object.getOwnPropertyDescriptor(proto, "name");
+		if (originalDescriptor) break;
+		proto = Object.getPrototypeOf(proto);
 	}
 
-	const originalGetter = originalDescriptor.get;
+	// In Foundry v13, name might be defined as a getter that reads from _source
+	// or may not exist as a property descriptor at all (uses DataModel pattern)
+	if (originalDescriptor && originalDescriptor.get) {
+		// Traditional getter pattern - wrap it
+		const originalGetter = originalDescriptor.get;
 
-	// Define new getter that checks unidentified status
-	Object.defineProperty(ItemClass.prototype, "name", {
-		get: function () {
-			const realName = originalGetter.call(this);
+		Object.defineProperty(ItemClass.prototype, "name", {
+			get: function () {
+				const realName = originalGetter.call(this);
+				if (isUnidentified(this) && !game.user?.isGM) {
+					return getUnidentifiedName(this);
+				}
+				return realName;
+			},
+			set: originalDescriptor.set,
+			configurable: true,
+			enumerable: originalDescriptor.enumerable
+		});
 
-			// If this item is unidentified and user is not GM, return the custom or default unidentified name
-			if (isUnidentified(this) && !game.user?.isGM) {
-				return getUnidentifiedName(this);
-			}
+		console.log(`${MODULE_ID} | Successfully wrapped Item.name getter`);
+	} else {
+		// Foundry v13 DataModel pattern - define a new getter
+		// The name is typically accessed via this._source.name or this.system.name
+		Object.defineProperty(ItemClass.prototype, "name", {
+			get: function () {
+				// Get the real name from source data
+				const realName = this._source?.name ?? this._name ?? "";
+				if (isUnidentified(this) && !game.user?.isGM) {
+					return getUnidentifiedName(this);
+				}
+				return realName;
+			},
+			set: function (value) {
+				// Allow setting the name normally
+				if (this._source) {
+					this._source.name = value;
+				}
+			},
+			configurable: true,
+			enumerable: true
+		});
 
-			return realName;
-		},
-		set: originalDescriptor.set,
-		configurable: true,
-		enumerable: originalDescriptor.enumerable
-	});
+		console.log(`${MODULE_ID} | Successfully defined Item.name getter (DataModel pattern)`);
+	}
 }
 
 /**
@@ -1079,55 +1109,73 @@ function setupItemPilesUnidentifiedHooks() {
 		const maskedName = getUnidentifiedName(item);
 		const $el = $(element);
 
+		// Get the REAL name from source data (bypasses our wrapper)
+		const realName = item._source?.name;
+		if (!realName || realName === maskedName) return; // Already masked or no real name
+
+		// Escape special regex characters in the real name
+		const escapedRealName = realName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+		const realNameRegex = new RegExp(escapedRealName, 'g');
+
 		// Replace tooltip/title attributes that might show the real name
-		const realName = item._source?.name || item.name;
 		if ($el.attr("data-tooltip")?.includes(realName)) {
-			$el.attr("data-tooltip", $el.attr("data-tooltip").replace(realName, maskedName));
+			$el.attr("data-tooltip", $el.attr("data-tooltip").replace(realNameRegex, maskedName));
 		}
 		if ($el.attr("title")?.includes(realName)) {
-			$el.attr("title", $el.attr("title").replace(realName, maskedName));
+			$el.attr("title", $el.attr("title").replace(realNameRegex, maskedName));
 		}
 		// Also check child elements with tooltips
 		$el.find("[data-tooltip], [title]").each((i, tooltipEl) => {
 			const $tooltip = $(tooltipEl);
 			if ($tooltip.attr("data-tooltip")?.includes(realName)) {
-				$tooltip.attr("data-tooltip", $tooltip.attr("data-tooltip").replace(realName, maskedName));
+				$tooltip.attr("data-tooltip", $tooltip.attr("data-tooltip").replace(realNameRegex, maskedName));
 			}
 			if ($tooltip.attr("title")?.includes(realName)) {
-				$tooltip.attr("title", $tooltip.attr("title").replace(realName, maskedName));
+				$tooltip.attr("title", $tooltip.attr("title").replace(realNameRegex, maskedName));
 			}
 		});
 
 		// Find name elements and replace text - item-piles uses various structures
 		// For pile items and merchant items
-		$el.find(".item-piles-name, .item-piles-item-name, [class*='item-name'], [class*='name']").each((i, nameEl) => {
+		$el.find(".item-piles-name, .item-piles-item-name, [class*='item-name'], [class*='name'], label, span").each((i, nameEl) => {
 			const $name = $(nameEl);
-			// Don't replace if it's a container element with child elements that have the name
+			// Don't replace if it's a container element with child elements that have the name class
 			if ($name.children().length > 0 && $name.find("[class*='name']").length > 0) return;
 
 			const currentText = $name.text().trim();
-			// Check if it contains quantity suffix like "(x1)"
-			const qtyMatch = currentText.match(/\s*\(x?\d+\)$/i);
-			if (qtyMatch) {
-				$name.text(maskedName + qtyMatch[0]);
-			} else if (currentText && currentText !== maskedName) {
-				$name.text(maskedName);
+			if (!currentText) return;
+
+			// Check if the text contains the real name
+			if (currentText.includes(realName)) {
+				// Check if it contains quantity suffix like "(x1)" or "x 2"
+				const qtyMatch = currentText.match(/\s*(\(x?\d+\)|x\s*\d+)$/i);
+				if (qtyMatch) {
+					$name.text(maskedName + qtyMatch[0]);
+				} else {
+					$name.text(currentText.replace(realNameRegex, maskedName));
+				}
 			}
 		});
 
 		// Also check direct text content for simple elements
-		if ($el.hasClass("item-piles-item-row") || $el.hasClass("item-piles-item")) {
+		if ($el.hasClass("item-piles-item-row") || $el.hasClass("item-piles-item") || $el.hasClass("item-piles-flexrow")) {
 			const textNodes = $el.contents().filter(function () {
 				return this.nodeType === 3 && this.textContent.trim();
 			});
 			textNodes.each((i, node) => {
-				const text = node.textContent.trim();
-				if (text && text !== maskedName) {
-					const qtyMatch = text.match(/\s*\(x?\d+\)$/i);
-					node.textContent = qtyMatch ? maskedName + qtyMatch[0] : maskedName;
+				const text = node.textContent;
+				if (text.includes(realName)) {
+					node.textContent = text.replace(realNameRegex, maskedName);
 				}
 			});
 		}
+
+		// Also walk all descendant text nodes to catch any we might have missed
+		$el.find("*").addBack().contents().filter(function () {
+			return this.nodeType === 3 && this.textContent.includes(realName);
+		}).each((i, node) => {
+			node.textContent = node.textContent.replace(realNameRegex, maskedName);
+		});
 	}
 
 	// Hook into item-piles render hooks for each interface type
@@ -1245,6 +1293,84 @@ function setupItemPilesUnidentifiedHooks() {
 		} catch (err) {
 			console.warn(`${MODULE_ID} | Could not add unidentified flag to item-piles similarities`, err);
 		}
+
+		// Monkey patch item-piles internal PileItem class to intercept name store values
+		// This is more reliable than DOM manipulation since it affects the source of truth
+		if (!game.user?.isGM) {
+			try {
+				// Hook into PileItem name store setter by wrapping the setupProperties method
+				// or intercepting the name.set calls via Svelte store subscription
+				const patchPileItemName = (pileItem) => {
+					if (!pileItem?.item || !pileItem?.name) return;
+
+					// Check if item is unidentified
+					const item = pileItem.item;
+					if (!isUnidentified(item)) return;
+
+					const maskedName = getUnidentifiedName(item);
+
+					// Override the name store value
+					if (typeof pileItem.name?.set === "function") {
+						pileItem.name.set(maskedName);
+
+						// Also wrap the original set to intercept future updates
+						const originalSet = pileItem.name.set.bind(pileItem.name);
+						pileItem.name.set = (value) => {
+							// Always use masked name for unidentified items
+							if (isUnidentified(item)) {
+								originalSet(maskedName);
+							} else {
+								originalSet(value);
+							}
+						};
+					}
+				};
+
+				// Hook into render hooks to patch PileItem instances
+				// These hooks pass the element and the actual Item document
+				// We need to find the corresponding PileItem store
+				const patchFromRenderHook = (element, item) => {
+					if (!item || !isUnidentified(item)) return;
+
+					const maskedName = getUnidentifiedName(item);
+
+					// The element contains Svelte component data
+					// Try to find and patch the name store
+					const $el = $(element);
+
+					// Also directly manipulate visible name elements as fallback
+					$el.find("[class*='name']").each((i, nameEl) => {
+						const $name = $(nameEl);
+						const text = $name.text().trim();
+						const realName = item._source?.name || item.name;
+						if (text && text.includes(realName)) {
+							$name.text(text.replace(realName, maskedName));
+						}
+					});
+
+					// Handle direct text that might show the real name
+					const realName = item._source?.name;
+					if (realName) {
+						$el.contents().filter(function () {
+							return this.nodeType === 3;
+						}).each((i, node) => {
+							if (node.textContent.includes(realName)) {
+								node.textContent = node.textContent.replace(new RegExp(realName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), maskedName);
+							}
+						});
+					}
+				};
+
+				// Re-register hooks with enhanced patching
+				Hooks.on("item-piles-renderPileItem", patchFromRenderHook);
+				Hooks.on("item-piles-renderMerchantItem", patchFromRenderHook);
+				Hooks.on("item-piles-renderVaultGridItem", patchFromRenderHook);
+
+				console.log(`${MODULE_ID} | Enhanced item-piles name patching installed`);
+			} catch (err) {
+				console.warn(`${MODULE_ID} | Could not install enhanced item-piles name patching`, err);
+			}
+		}
 	});
 
 	// Hook into item-piles item drops to preserve flags
@@ -1283,15 +1409,30 @@ function setupItemPilesUnidentifiedHooks() {
 		if (game.user?.isGM) return;
 
 		// Check if this might be an item-piles application
-		const isItemPiles = app.constructor?.name?.includes("ItemPile") ||
-			app.constructor?.name?.includes("Trading") ||
-			app.constructor?.name?.includes("Merchant") ||
+		const appName = app.constructor?.name || "";
+		const isItemPiles = appName.includes("ItemPile") ||
+			appName.includes("Trading") ||
+			appName.includes("Merchant") ||
+			appName.includes("TradeMerchantItem") ||
 			app.options?.classes?.some(c => c.includes("item-piles")) ||
+			app.id?.includes?.("item-pile") ||
 			html.find(".item-piles").length > 0 ||
 			html.find("[class*='item-piles']").length > 0;
 
 		if (isItemPiles) {
+			// Apply immediately
 			maskUnidentifiedNamesInElement(html, getDefaultMaskedName);
+
+			// Svelte components render asynchronously, so apply again after delays
+			setTimeout(() => {
+				maskUnidentifiedNamesInElement(html, getDefaultMaskedName);
+			}, 50);
+			setTimeout(() => {
+				maskUnidentifiedNamesInElement(html, getDefaultMaskedName);
+			}, 150);
+			setTimeout(() => {
+				maskUnidentifiedNamesInElement(html, getDefaultMaskedName);
+			}, 300);
 		}
 	});
 
@@ -1305,18 +1446,41 @@ function setupItemPilesUnidentifiedHooks() {
 					if (node.nodeType !== 1) continue; // Element nodes only
 
 					const $node = $(node);
+
+					// Check if this is an item-piles trading dialog (by ID pattern)
+					const nodeId = node.id || "";
+					const isTradeDialog = nodeId.includes("item-pile-buy-item-dialog") ||
+						nodeId.includes("item-pile-trade-dialog");
+
 					// Check if this is an item-piles element
-					if ($node.hasClass("item-piles") ||
+					const isItemPilesElement = $node.hasClass("item-piles") ||
 						$node.find(".item-piles").length > 0 ||
 						$node.closest(".item-piles").length > 0 ||
 						$node.hasClass("item-piles-flexrow") ||
 						$node.find("[class*='item-piles']").length > 0 ||
-						node.className?.includes?.("item-piles")) {
+						node.className?.includes?.("item-piles") ||
+						$node.hasClass("item-piles-app");
+
+					if (isTradeDialog || isItemPilesElement) {
+						maskUnidentifiedNamesInElement($node, getDefaultMaskedName);
+
+						// For Svelte dialogs, content might render after the initial mount
+						// so we apply masking again after a brief delay
+						setTimeout(() => {
+							maskUnidentifiedNamesInElement($node, getDefaultMaskedName);
+						}, 50);
+						setTimeout(() => {
+							maskUnidentifiedNamesInElement($node, getDefaultMaskedName);
+						}, 200);
+					}
+
+					// Also check window titles 
+					if ($node.hasClass("window-title") || $node.find(".window-title").length > 0) {
 						maskUnidentifiedNamesInElement($node, getDefaultMaskedName);
 					}
 
-					// Also check window titles
-					if ($node.hasClass("window-title") || $node.find(".window-title").length > 0) {
+					// Check for any element whose parent has item-piles in the ID
+					if ($node.closest("[id*='item-pile']").length > 0) {
 						maskUnidentifiedNamesInElement($node, getDefaultMaskedName);
 					}
 				}
@@ -1354,12 +1518,63 @@ function maskUnidentifiedNamesInElement(html, getDefaultMaskedName) {
 
 	// Build map of unidentified item real names to their masked names
 	const unidentifiedNameMap = new Map();
-	for (const actor of game.actors) {
+
+	// Helper to add items from an actor
+	const addItemsFromActor = (actor) => {
+		if (!actor?.items) return;
 		for (const item of actor.items) {
 			if (isUnidentified(item)) {
 				const realName = item._source?.name;
 				if (realName) {
-					// Use custom unidentified name if set, otherwise default
+					const maskedName = getUnidentifiedName(item);
+					unidentifiedNameMap.set(realName, maskedName);
+				}
+			}
+		}
+	};
+
+	// Check all world actors
+	for (const actor of game.actors) {
+		addItemsFromActor(actor);
+	}
+
+	// Check token actors on the current scene (merchants are often synthetic token actors)
+	if (canvas?.tokens?.placeables) {
+		for (const token of canvas.tokens.placeables) {
+			if (token.actor) {
+				addItemsFromActor(token.actor);
+			}
+		}
+	}
+
+	// Check ALL scenes for unlinked token actors (not just currently viewed scene)
+	for (const scene of game.scenes) {
+		for (const tokenDoc of scene.tokens) {
+			// Unlinked tokens have their own delta actor
+			if (tokenDoc.actor) {
+				addItemsFromActor(tokenDoc.actor);
+			}
+			// Also check actorData for older Foundry versions
+			if (tokenDoc.delta?.items) {
+				for (const itemData of tokenDoc.delta.items) {
+					if (itemData.flags?.[MODULE_ID]?.unidentified) {
+						const realName = itemData.name;
+						if (realName) {
+							const maskedName = getUnidentifiedNameFromData(itemData);
+							unidentifiedNameMap.set(realName, maskedName);
+						}
+					}
+				}
+			}
+		}
+	}
+
+	// Also check world items (standalone items)
+	if (game.items) {
+		for (const item of game.items) {
+			if (isUnidentified(item)) {
+				const realName = item._source?.name;
+				if (realName) {
 					const maskedName = getUnidentifiedName(item);
 					unidentifiedNameMap.set(realName, maskedName);
 				}
@@ -3169,9 +3384,52 @@ function enableItemChatIcon(app, html) {
 
 /**
  * Register module settings
+ * 
+ * Settings are registered in order to match the section headers:
+ * 1. Configuration Menus (Combat, Effects, HP Waves, Inventory Styles)
+ * 2. Combat & Spells (Focus Tracker, Enhance Spells)
+ * 3. Character Sheet (Enhanced Header, Renown, Journal Notes, Add Coins, Conditions Theme)
+ * 4. Inventory (Containers, Trading, Unidentified, Multi-select)
+ * 5. Carousing (Enable, Mode, Tables)
+ * 6. NPC Features (NPC Inventory, Creature Type)
+ * 7. Visual & Animation (Torch Animations)
  */
 function registerSettings() {
-	// === FEATURE TOGGLES ===
+	// ═══════════════════════════════════════════════════════════════
+	// 1. CONFIGURATION MENUS
+	// ═══════════════════════════════════════════════════════════════
+
+	// Combat Settings Menu (registered via registerCombatSettings)
+	registerCombatSettings();
+
+	// Effects Settings Menu (registered via registerEffectsSettings)
+	registerEffectsSettings();
+
+	// HP Waves Settings Menu (registered via registerHpWavesSettings)
+	registerHpWavesSettings();
+
+	// Inventory Styles data setting (hidden)
+	game.settings.register(MODULE_ID, "inventoryStyles", {
+		name: "Inventory Styles Configuration",
+		scope: "world",
+		config: false,
+		type: Object,
+		default: foundry.utils.deepClone(DEFAULT_INVENTORY_STYLES)
+	});
+
+	// Inventory Styles Menu
+	game.settings.registerMenu(MODULE_ID, "inventoryStylesMenu", {
+		name: game.i18n.localize("SHADOWDARK_EXTRAS.settings.inventory_styles.name"),
+		label: game.i18n.localize("SHADOWDARK_EXTRAS.settings.inventory_styles.label"),
+		hint: game.i18n.localize("SHADOWDARK_EXTRAS.settings.inventory_styles.hint"),
+		icon: "fas fa-palette",
+		type: InventoryStylesApp,
+		restricted: true
+	});
+
+	// ═══════════════════════════════════════════════════════════════
+	// 2. COMBAT & SPELLS
+	// ═══════════════════════════════════════════════════════════════
 
 	game.settings.register(MODULE_ID, "enableFocusTracker", {
 		name: game.i18n.localize("SHADOWDARK_EXTRAS.settings.enable_focus_tracker.name"),
@@ -3182,6 +3440,30 @@ function registerSettings() {
 		type: Boolean,
 		requiresReload: true,
 	});
+
+	game.settings.register(MODULE_ID, "enhanceSpells", {
+		name: "Enhance Spells",
+		hint: "Add damage/heal configuration to spell items for automatic spell damage application similar to weapon attacks.",
+		scope: "world",
+		config: true,
+		default: true,
+		type: Boolean,
+		requiresReload: true
+	});
+
+	game.settings.register(MODULE_ID, "enableWandUses", {
+		name: game.i18n.localize("SHADOWDARK_EXTRAS.settings.enable_wand_uses.name"),
+		hint: game.i18n.localize("SHADOWDARK_EXTRAS.settings.enable_wand_uses.hint"),
+		scope: "world",
+		config: true,
+		default: true,
+		type: Boolean,
+		requiresReload: true
+	});
+
+	// ═══════════════════════════════════════════════════════════════
+	// 3. CHARACTER SHEET
+	// ═══════════════════════════════════════════════════════════════
 
 	game.settings.register(MODULE_ID, "enableEnhancedHeader", {
 		name: game.i18n.localize("SHADOWDARK_EXTRAS.settings.enable_enhanced_header.name"),
@@ -3247,15 +3529,52 @@ function registerSettings() {
 		},
 	});
 
-	game.settings.register(MODULE_ID, "enableTrading", {
-		name: game.i18n.localize("SHADOWDARK_EXTRAS.settings.enable_trading.name"),
-		hint: game.i18n.localize("SHADOWDARK_EXTRAS.settings.enable_trading.hint"),
+	game.settings.register(MODULE_ID, "enableJournalNotes", {
+		name: game.i18n.localize("SHADOWDARK_EXTRAS.settings.enable_journal_notes.name"),
+		hint: game.i18n.localize("SHADOWDARK_EXTRAS.settings.enable_journal_notes.hint"),
+		scope: "world",
+		config: true,
+		default: true,
+		type: Boolean,
+		requiresReload: true
+	});
+
+	game.settings.register(MODULE_ID, "enableAddCoinsButton", {
+		name: game.i18n.localize("SHADOWDARK_EXTRAS.settings.enable_add_coins_button.name"),
+		hint: game.i18n.localize("SHADOWDARK_EXTRAS.settings.enable_add_coins_button.hint"),
 		scope: "world",
 		config: true,
 		default: true,
 		type: Boolean,
 		requiresReload: true,
 	});
+
+	game.settings.register(MODULE_ID, "conditionsTheme", {
+		name: "Conditions theme",
+		hint: "Choose a visual theme for the quick conditions toggles",
+		scope: "world",
+		config: true,
+		default: "shadowdark",
+		type: String,
+		choices: {
+			"shadowdark": "Shadowdark",
+			"5e": "5e",
+			parchment: "Parchment (Default)",
+			stone: "Stone Tablet",
+			leather: "Leather Bound",
+			iron: "Iron & Rust",
+			moss: "Moss & Decay",
+			blood: "Blood & Shadow"
+		},
+		onChange: () => {
+			// Re-render all open player sheets
+			Object.values(ui.windows).filter(app => app instanceof globalThis.shadowdark.apps.PlayerSheetSD).forEach(app => app.render());
+		}
+	});
+
+	// ═══════════════════════════════════════════════════════════════
+	// 4. INVENTORY
+	// ═══════════════════════════════════════════════════════════════
 
 	game.settings.register(MODULE_ID, "enableContainers", {
 		name: game.i18n.localize("SHADOWDARK_EXTRAS.settings.enable_containers.name"),
@@ -3274,6 +3593,16 @@ function registerSettings() {
 		config: true,
 		default: true,
 		type: Boolean,
+	});
+
+	game.settings.register(MODULE_ID, "enableTrading", {
+		name: game.i18n.localize("SHADOWDARK_EXTRAS.settings.enable_trading.name"),
+		hint: game.i18n.localize("SHADOWDARK_EXTRAS.settings.enable_trading.hint"),
+		scope: "world",
+		config: true,
+		default: true,
+		type: Boolean,
+		requiresReload: true,
 	});
 
 	game.settings.register(MODULE_ID, "enableUnidentified", {
@@ -3296,26 +3625,75 @@ function registerSettings() {
 		requiresReload: true,
 	});
 
-	// === TORCH ANIMATIONS ===
-	game.settings.register(MODULE_ID, "enableTorchAnimations", {
-		name: game.i18n.localize("SHADOWDARK_EXTRAS.settings.enable_torch_animations.name"),
-		hint: game.i18n.localize("SHADOWDARK_EXTRAS.settings.enable_torch_animations.hint"),
+	// ═══════════════════════════════════════════════════════════════
+	// 5. CAROUSING
+	// ═══════════════════════════════════════════════════════════════
+
+	game.settings.register(MODULE_ID, "enableCarousing", {
+		name: game.i18n.localize("SHADOWDARK_EXTRAS.settings.enable_carousing.name"),
+		hint: game.i18n.localize("SHADOWDARK_EXTRAS.settings.enable_carousing.hint"),
 		scope: "world",
 		config: true,
 		default: true,
 		type: Boolean,
-		requiresReload: true,
+		requiresReload: true
 	});
 
-	game.settings.register(MODULE_ID, "enableAddCoinsButton", {
-		name: game.i18n.localize("SHADOWDARK_EXTRAS.settings.enable_add_coins_button.name"),
-		hint: game.i18n.localize("SHADOWDARK_EXTRAS.settings.enable_add_coins_button.hint"),
+	game.settings.register(MODULE_ID, "carousingMode", {
+		name: game.i18n.localize("SHADOWDARK_EXTRAS.settings.carousing_mode.name"),
+		hint: game.i18n.localize("SHADOWDARK_EXTRAS.settings.carousing_mode.hint"),
 		scope: "world",
 		config: true,
-		default: true,
-		type: Boolean,
-		requiresReload: true,
+		default: "original",
+		type: String,
+		choices: {
+			"original": game.i18n.localize("SHADOWDARK_EXTRAS.settings.carousing_mode.original"),
+			"expanded": game.i18n.localize("SHADOWDARK_EXTRAS.settings.carousing_mode.expanded")
+		},
+		onChange: () => {
+			// Re-render all open player sheets to update carousing tab
+			Object.values(ui.windows).forEach(app => {
+				if (app.actor?.type === "Player") app.render();
+			});
+		}
 	});
+
+	// Carousing Tables Editor Menu Button
+	game.settings.registerMenu(MODULE_ID, "carousingTablesMenu", {
+		name: game.i18n.localize("SHADOWDARK_EXTRAS.carousing.manage_tables"),
+		label: game.i18n.localize("SHADOWDARK_EXTRAS.carousing.manage_tables"),
+		hint: game.i18n.localize("SHADOWDARK_EXTRAS.carousing.manage_tables_hint"),
+		icon: "fas fa-beer",
+		type: class extends FormApplication {
+			render() { openCarousingTablesEditor(); }
+		},
+		restricted: true
+	});
+
+	// Expanded Carousing Tables Editor Menu Button
+	game.settings.registerMenu(MODULE_ID, "expandedCarousingTablesMenu", {
+		name: game.i18n.localize("SHADOWDARK_EXTRAS.carousing.manage_expanded_tables") || "Edit Expanded Carousing Tables",
+		label: game.i18n.localize("SHADOWDARK_EXTRAS.carousing.manage_expanded_tables") || "Edit Expanded Tables",
+		hint: game.i18n.localize("SHADOWDARK_EXTRAS.carousing.manage_expanded_tables_hint") || "Edit the Expanded Carousing mode tables (tiers, outcomes, benefits, mishaps)",
+		icon: "fas fa-dice-d20",
+		type: class extends FormApplication {
+			render() { openExpandedCarousingTablesEditor(); }
+		},
+		restricted: true
+	});
+
+	// Expanded Carousing Data Storage (hidden setting)
+	game.settings.register(MODULE_ID, "expandedCarousingData", {
+		name: "Expanded Carousing Data",
+		scope: "world",
+		config: false,
+		default: null,
+		type: Object
+	});
+
+	// ═══════════════════════════════════════════════════════════════
+	// 6. NPC FEATURES
+	// ═══════════════════════════════════════════════════════════════
 
 	game.settings.register(MODULE_ID, "enableNpcInventory", {
 		name: game.i18n.localize("SHADOWDARK_EXTRAS.settings.enable_npc_inventory.name"),
@@ -3337,80 +3715,121 @@ function registerSettings() {
 		requiresReload: false,
 	});
 
-	// === INVENTORY STYLES ===
+	// ═══════════════════════════════════════════════════════════════
+	// 7. VISUAL & ANIMATION
+	// ═══════════════════════════════════════════════════════════════
 
-	// Register the inventory styles data setting (not shown in config)
-	game.settings.register(MODULE_ID, "inventoryStyles", {
-		name: "Inventory Styles Configuration",
-		scope: "world",
-		config: false,
-		type: Object,
-		default: foundry.utils.deepClone(DEFAULT_INVENTORY_STYLES)
-	});
-
-	// Register a menu button to open the Inventory Styles app
-	game.settings.registerMenu(MODULE_ID, "inventoryStylesMenu", {
-		name: game.i18n.localize("SHADOWDARK_EXTRAS.settings.inventory_styles.name"),
-		label: game.i18n.localize("SHADOWDARK_EXTRAS.settings.inventory_styles.label"),
-		hint: game.i18n.localize("SHADOWDARK_EXTRAS.settings.inventory_styles.hint"),
-		icon: "fas fa-palette",
-		type: InventoryStylesApp,
-		restricted: true
-	});
-
-	// === JOURNAL NOTES ===
-	game.settings.register(MODULE_ID, "enableJournalNotes", {
-		name: game.i18n.localize("SHADOWDARK_EXTRAS.settings.enable_journal_notes.name"),
-		hint: game.i18n.localize("SHADOWDARK_EXTRAS.settings.enable_journal_notes.hint"),
+	game.settings.register(MODULE_ID, "enableTorchAnimations", {
+		name: game.i18n.localize("SHADOWDARK_EXTRAS.settings.enable_torch_animations.name"),
+		hint: game.i18n.localize("SHADOWDARK_EXTRAS.settings.enable_torch_animations.hint"),
 		scope: "world",
 		config: true,
 		default: true,
 		type: Boolean,
-		requiresReload: true
+		requiresReload: true,
 	});
+}
 
-	// === ENHANCE SPELLS ===
-	game.settings.register(MODULE_ID, "enhanceSpells", {
-		name: "Enhance Spells",
-		hint: "Add damage/heal configuration to spell items for automatic spell damage application similar to weapon attacks.",
-		scope: "world",
-		config: true,
-		default: true,
-		type: Boolean,
-		requiresReload: true
-	});
+/**
+ * Setup the renderSettingsConfig hook to organize settings with section headers
+ * 
+ * Settings are organized into these groups:
+ * 1. Configuration Menus: Combat, Effects, HP Waves, Inventory Styles menus
+ * 2. Combat & Spells: Focus Tracker, Enhance Spells
+ * 3. Character Sheet: Enhanced Header, backgrounds, Renown, Journal Notes, Add Coins, Conditions Theme
+ * 4. Inventory: Containers, Nested Containers, Trading, Unidentified, Multi-select
+ * 5. Carousing: Enable Carousing, Mode, Table menus
+ * 6. NPC Features: NPC Inventory, Creature Type
+ * 7. Visual & Animation: Torch Animations
+ * 8. SDX Rolls: All SDX Rolls settings
+ */
+function setupSettingsOrganization() {
+	Hooks.on("renderSettingsConfig", (app, html, data) => {
+		// In Foundry v13, html may be a native HTMLElement instead of jQuery
+		const $html = html instanceof jQuery ? html : $(html);
 
-	// === CONDITIONS THEME ===
-	game.settings.register(MODULE_ID, "conditionsTheme", {
-		name: "Conditions Theme",
-		hint: "Choose a visual theme for the quick conditions toggles",
-		scope: "world",
-		config: true,
-		default: "parchment",
-		type: String,
-		choices: {
-			parchment: "Parchment (Default)",
-			stone: "Stone Tablet",
-			leather: "Leather Bound",
-			iron: "Iron & Rust",
-			moss: "Moss & Decay",
-			blood: "Blood & Shadow"
-		},
-		onChange: () => {
-			// Re-render all open player sheets
-			for (const app of Object.values(ui.windows)) {
-				if (app.actor?.type === "Player") {
-					app.render();
+		// Only process if we're looking at our module's settings section
+		const sdxSection = $html.find(`[data-category="${MODULE_ID}"]`);
+		if (sdxSection.length === 0) return;
+
+		// Helper function to create a group header
+		const createHeader = (text, icon = null) => {
+			const iconHtml = icon ? `<i class="${icon}"></i> ` : '';
+			return $('<div>').addClass('form-group group-header sdx-settings-header').html(`${iconHtml}${text}`);
+		};
+
+		// Helper to insert header before first found element
+		const insertHeaderBefore = (selector, headerText, headerIcon) => {
+			const element = sdxSection.find(selector);
+			if (element.length) {
+				const formGroup = element.closest('.form-group');
+				if (formGroup.length && !formGroup.prev().hasClass('sdx-settings-header')) {
+					createHeader(headerText, headerIcon).insertBefore(formGroup);
 				}
 			}
-		}
+		};
+
+		// ═══════════════════════════════════════════════════════════════
+		// Insert section headers before specific settings
+		// The setting listed is the FIRST setting in that group
+		// ═══════════════════════════════════════════════════════════════
+
+		// 1. CONFIGURATION MENUS - First is Combat Settings Menu
+		insertHeaderBefore(
+			'[data-key="shadowdark-extras.combatSettingsMenu"]',
+			game.i18n.localize("SHADOWDARK_EXTRAS.settings.headers.configuration_menus"),
+			"fas fa-cogs"
+		);
+
+		// 2. COMBAT & SPELLS - First is Focus Tracker
+		insertHeaderBefore(
+			'[name="shadowdark-extras.enableFocusTracker"]',
+			game.i18n.localize("SHADOWDARK_EXTRAS.settings.headers.combat_spells"),
+			"fas fa-magic"
+		);
+
+		// 3. CHARACTER SHEET - First is Enhanced Header
+		insertHeaderBefore(
+			'[name="shadowdark-extras.enableEnhancedHeader"]',
+			game.i18n.localize("SHADOWDARK_EXTRAS.settings.headers.character_sheet"),
+			"fas fa-user"
+		);
+
+		// 4. INVENTORY - First is Containers
+		insertHeaderBefore(
+			'[name="shadowdark-extras.enableContainers"]',
+			game.i18n.localize("SHADOWDARK_EXTRAS.settings.headers.inventory"),
+			"fas fa-box-open"
+		);
+
+		// 5. CAROUSING - First is Enable Carousing
+		insertHeaderBefore(
+			'[name="shadowdark-extras.enableCarousing"]',
+			game.i18n.localize("SHADOWDARK_EXTRAS.settings.headers.carousing"),
+			"fas fa-beer-mug-empty"
+		);
+
+		// 6. NPC FEATURES - First is NPC Inventory
+		insertHeaderBefore(
+			'[name="shadowdark-extras.enableNpcInventory"]',
+			game.i18n.localize("SHADOWDARK_EXTRAS.settings.headers.npc_features"),
+			"fas fa-skull"
+		);
+
+		// 7. VISUAL & ANIMATION - First is Torch Animations
+		insertHeaderBefore(
+			'[name="shadowdark-extras.enableTorchAnimations"]',
+			game.i18n.localize("SHADOWDARK_EXTRAS.settings.headers.visual_features"),
+			"fas fa-sparkles"
+		);
+
+		// 8. SDX ROLLS - First is Recap Message
+		insertHeaderBefore(
+			'[name="shadowdark-extras.SDXROLLSRecapMessage"]',
+			game.i18n.localize("SHADOWDARK_EXTRAS.settings.headers.sdx_rolls"),
+			"fas fa-dice-d20"
+		);
 	});
-
-	// === COMBAT SETTINGS ===
-	registerCombatSettings();
-
-	// === HP WAVES SETTINGS ===
-	registerHpWavesSettings();
 }
 
 // ============================================
@@ -3954,14 +4373,33 @@ async function injectConditionsToggles(app, html, actor) {
 	addInlineEffectControls($effectsTab, actor);
 
 	// Fetch all conditions from the compendium
-	const conditionsPack = game.packs.get("shadowdark.conditions");
-	if (!conditionsPack) {
-		console.warn(`${MODULE_ID} | Conditions compendium not found`);
-		return;
+	// First check shadowdark-extras, then shadowdark
+	let conditions = [];
+
+	// Try shadowdark-extras first
+	const sdxItemsPack = game.packs.get("shadowdark-extras.pack-sdxitems");
+	if (sdxItemsPack) {
+		const sdxDocs = await sdxItemsPack.getDocuments();
+		const sdxConditions = sdxDocs.filter(doc => doc.type === "Effect" && doc.name.startsWith("Condition:"));
+		conditions.push(...sdxConditions);
+		console.log(`${MODULE_ID} | Loaded ${sdxConditions.length} conditions from shadowdark-extras`);
 	}
 
-	const conditions = await conditionsPack.getDocuments();
-	if (!conditions || conditions.length === 0) return;
+	// Then add shadowdark conditions (but don't duplicate)
+	const conditionsPack = game.packs.get("shadowdark.conditions");
+	if (conditionsPack) {
+		const shadowdarkConditions = await conditionsPack.getDocuments();
+		// Only add conditions that aren't already in our list (by name)
+		const existingNames = new Set(conditions.map(c => c.name));
+		const uniqueShadowdarkConditions = shadowdarkConditions.filter(c => !existingNames.has(c.name));
+		conditions.push(...uniqueShadowdarkConditions);
+		console.log(`${MODULE_ID} | Loaded ${uniqueShadowdarkConditions.length} unique conditions from shadowdark (${shadowdarkConditions.length} total)`);
+	}
+
+	if (!conditions || conditions.length === 0) {
+		console.warn(`${MODULE_ID} | No conditions found in either compendium`);
+		return;
+	}
 
 	// Group conditions by base name (store minimal data, not document references)
 	const groupedConditions = groupConditionsByBaseName(conditions);
@@ -3977,8 +4415,10 @@ async function injectConditionsToggles(app, html, actor) {
 		}));
 	}
 
-	// Get currently active effects on the actor
-	const activeEffects = actor.effects.contents || [];
+	// Get currently active condition items on the actor
+	const conditionItems = actor.items.filter(item =>
+		item.type === "Effect" && item.name.startsWith("Condition:")
+	);
 
 	// Get the selected theme
 	const theme = game.settings.get(MODULE_ID, "conditionsTheme") || "parchment";
@@ -3992,12 +4432,12 @@ async function injectConditionsToggles(app, html, actor) {
 		const hasVariants = conditionGroup.length > 1;
 		const firstCondition = conditionGroup[0];
 
-		// Check if any variant is active
+		// Check if any variant is active (now checking items instead of effects)
 		const isActive = conditionGroup.some(condition =>
-			activeEffects.some(effect =>
-				effect.name === condition.name ||
-				(effect._stats?.compendiumSource === condition.uuid) ||
-				(effect.flags?.core?.sourceId === condition.uuid)
+			conditionItems.some(item =>
+				item.name === condition.name ||
+				(item._stats?.compendiumSource === condition.uuid) ||
+				(item.flags?.core?.sourceId === condition.uuid)
 			)
 		);
 
@@ -4058,7 +4498,7 @@ async function injectConditionsToggles(app, html, actor) {
 			// Show submenu for variants
 			const baseName = $toggle.data('condition-base');
 			const variants = conditionDataMap[baseName];
-			showConditionSubmenu($toggle, variants, actor, activeEffects);
+			showConditionSubmenu($toggle, variants, actor, conditionItems);
 		} else {
 			// Direct toggle for single condition
 			const conditionUuid = $toggle.data('condition-uuid');
@@ -4116,7 +4556,7 @@ function groupConditionsByBaseName(conditions) {
 /**
  * Show a submenu to select condition variant
  */
-function showConditionSubmenu($toggle, variants, actor, activeEffects) {
+function showConditionSubmenu($toggle, variants, actor, conditionItems) {
 	// Remove any existing submenu
 	$('.sdx-condition-submenu').remove();
 
@@ -4124,10 +4564,10 @@ function showConditionSubmenu($toggle, variants, actor, activeEffects) {
 	let submenuHtml = '<div class="sdx-condition-submenu">';
 
 	for (const variant of variants) {
-		const isActive = activeEffects.some(effect =>
-			effect.name === variant.name ||
-			(effect._stats?.compendiumSource === variant.uuid) ||
-			(effect.flags?.core?.sourceId === variant.uuid)
+		const isActive = conditionItems.some(item =>
+			item.name === variant.name ||
+			(item._stats?.compendiumSource === variant.uuid) ||
+			(item.flags?.core?.sourceId === variant.uuid)
 		);
 
 		// Extract the variant part (e.g., "1", "Cha", etc.)
@@ -4197,59 +4637,32 @@ async function addConditionToActor(actor, conditionUuid) {
 			return;
 		}
 
-		// Check if condition already exists with improved matching
-		const existing = actor.effects.find(e => {
-			// Direct name match
-			if (e.name === condition.name) return true;
-
-			// Source ID match (support new _stats.compendiumSource with fallback)
-			if (e._stats?.compendiumSource === conditionUuid) return true;
-			if (e.flags?.core?.sourceId === conditionUuid) return true;
-
-			// Case-insensitive name match
-			if (e.name?.toLowerCase() === condition.name?.toLowerCase()) return true;
-
-			// Check if the effect name contains the condition name
-			if (e.name?.toLowerCase().includes(condition.name?.toLowerCase())) return true;
-
+		// Check if condition item already exists on actor
+		const existingItem = actor.items.find(item => {
+			// Check by name
+			if (item.name === condition.name) return true;
+			// Check by source UUID
+			if (item.flags?.core?.sourceId === conditionUuid) return true;
+			if (item._stats?.compendiumSource === conditionUuid) return true;
 			return false;
 		});
 
-		if (existing) {
-			console.log(`${MODULE_ID} | Condition ${condition.name} already active`);
+		if (existingItem) {
+			console.log(`${MODULE_ID} | Condition ${condition.name} already exists as item`);
 			return;
 		}
 
-		// Get the effects from the condition item
-		const conditionEffects = condition.effects?.contents || [];
+		// Create the condition item on the actor
+		const itemData = condition.toObject();
+		// Set source tracking
+		itemData.flags = itemData.flags || {};
+		itemData.flags.core = itemData.flags.core || {};
+		itemData.flags.core.sourceId = conditionUuid;
+		itemData.flags[MODULE_ID] = itemData.flags[MODULE_ID] || {};
+		itemData.flags[MODULE_ID].conditionToggle = true;
 
-		if (conditionEffects.length > 0) {
-			// Copy the first effect from the condition
-			const sourceEffect = conditionEffects[0];
-			const effectData = sourceEffect.toObject();
-
-			// Set flags to track origin
-			// Prefer the new _stats.compendiumSource property. Do not write the deprecated core.sourceId flag.
-			effectData._stats = effectData._stats || {};
-			effectData._stats.compendiumSource = conditionUuid;
-			effectData.flags[MODULE_ID] = effectData.flags[MODULE_ID] || {};
-			effectData.flags[MODULE_ID].conditionToggle = true;
-
-			await actor.createEmbeddedDocuments("ActiveEffect", [effectData]);
-			ui.notifications.info(`Applied: ${condition.name}`);
-		} else {
-			// If the condition has no effects, create a basic status effect
-			const effectData = {
-				name: condition.name,
-				img: condition.img,
-				_stats: { compendiumSource: conditionUuid },
-				flags: {
-					[MODULE_ID]: { conditionToggle: true }
-				}
-			};
-			await actor.createEmbeddedDocuments("ActiveEffect", [effectData]);
-			ui.notifications.info(`Applied: ${condition.name}`);
-		}
+		await actor.createEmbeddedDocuments("Item", [itemData]);
+		ui.notifications.info(`Applied: ${condition.name}`);
 	} catch (error) {
 		console.error(`${MODULE_ID} | Error adding condition:`, error);
 		ui.notifications.error(`Failed to apply condition`);
@@ -4261,17 +4674,17 @@ async function addConditionToActor(actor, conditionUuid) {
  */
 async function removeConditionFromActor(actor, conditionName, conditionUuid) {
 	try {
-		// Find the effect(s) matching this condition
-		const effectsToRemove = actor.effects.filter(e =>
-			e.name === conditionName ||
-			(e._stats?.compendiumSource === conditionUuid) ||
-			(e.flags?.core?.sourceId === conditionUuid) ||
-			(e.getFlag(MODULE_ID, "conditionToggle") && e.name === conditionName)
+		// Find the condition item(s) matching this condition
+		const itemsToRemove = actor.items.filter(item =>
+			item.name === conditionName ||
+			(item.flags?.core?.sourceId === conditionUuid) ||
+			(item._stats?.compendiumSource === conditionUuid) ||
+			(item.getFlag(MODULE_ID, "conditionToggle") && item.name === conditionName)
 		);
 
-		if (effectsToRemove.length > 0) {
-			const ids = effectsToRemove.map(e => e.id);
-			await actor.deleteEmbeddedDocuments("ActiveEffect", ids);
+		if (itemsToRemove.length > 0) {
+			const ids = itemsToRemove.map(item => item.id);
+			await actor.deleteEmbeddedDocuments("Item", ids);
 			ui.notifications.info(`Removed: ${conditionName}`);
 		}
 	} catch (error) {
@@ -4287,27 +4700,30 @@ function updateConditionToggles(actor, html) {
 	const $toggles = html.find('.sdx-condition-toggle');
 	if (!$toggles.length) return;
 
-	const activeEffects = actor.effects.contents || [];
+	// Get condition items instead of effects
+	const conditionItems = actor.items.filter(item =>
+		item.type === "Effect" && item.name.startsWith("Condition:")
+	);
 
 	$toggles.each(function () {
 		const $toggle = $(this);
 		const conditionUuid = $toggle.data('condition-uuid');
 		const conditionName = $toggle.data('condition-name');
 
-		// Check multiple ways to match the condition
-		const isActive = activeEffects.some(effect => {
+		// Check multiple ways to match the condition (now checking items)
+		const isActive = conditionItems.some(item => {
 			// Direct name match
-			if (effect.name === conditionName) return true;
+			if (item.name === conditionName) return true;
 
 			// Source ID match (prefer new _stats.compendiumSource)
-			if (effect._stats?.compendiumSource === conditionUuid) return true;
-			if (effect.flags?.core?.sourceId === conditionUuid) return true;
+			if (item._stats?.compendiumSource === conditionUuid) return true;
+			if (item.flags?.core?.sourceId === conditionUuid) return true;
 
-			// Case-insensitive name match (sometimes names don't match exactly)
-			if (effect.name?.toLowerCase() === conditionName?.toLowerCase()) return true;
+			// Case-insensitive name match
+			if (item.name?.toLowerCase() === conditionName?.toLowerCase()) return true;
 
-			// Check if the effect name contains the condition name (e.g., "Condition: Blind" contains "Blind")
-			if (effect.name?.toLowerCase().includes(conditionName?.toLowerCase())) return true;
+			// Check if the item name contains the condition name
+			if (item.name?.toLowerCase().includes(conditionName?.toLowerCase())) return true;
 
 			return false;
 		});
@@ -6927,6 +7343,7 @@ Hooks.once("ready", async () => {
 	console.log(`${MODULE_ID} | Setting up Shadowdark Extras`);
 
 	registerSettings();
+	setupSettingsOrganization();
 	extendLightSources();
 	patchLightSourceMappings();
 	extendActorCreationDialog();
@@ -6949,6 +7366,12 @@ Hooks.once("ready", async () => {
 	if (game.settings.get(MODULE_ID, "enableFocusTracker")) {
 		initFocusSpellTracker();
 		console.log(`${MODULE_ID} | Focus Spell Tracker initialized`);
+	}
+
+	// Setup wand uses blocking (prevent casting depleted wands)
+	if (game.settings.get(MODULE_ID, "enableWandUses")) {
+		setupWandUsesBlocker();
+		console.log(`${MODULE_ID} | Wand Uses Blocker initialized`);
 	}
 
 	// Setup scrolling combat text (floating damage/healing numbers)
@@ -7110,6 +7533,11 @@ Hooks.once("ready", async () => {
 
 	// Ensure trade journal exists (GM only creates it)
 	await ensureTradeJournal();
+
+	// Ensure carousing journal exists and initialize sync (GM only creates it)
+	await ensureCarousingJournal();
+	await ensureCarousingTablesJournal();
+	initCarousingSocket();
 });
 
 // Preserve unidentified flags when items are created (covers item-piles transfers)
@@ -7234,6 +7662,7 @@ Hooks.on("renderPlayerSheetSD", async (app, html, data) => {
 	injectHeaderCustomization(app, html, app.actor);
 	await injectJournalNotes(app, html, app.actor);
 	await injectConditionsToggles(app, html, app.actor);
+	await injectCarousingTab(app, html, app.actor);
 	enableItemChatIcon(app, html);
 	fixUnidentifiedWeaponBoldForAllUsers(html);
 });
@@ -10137,21 +10566,151 @@ async function enhanceScrollSheet(app, html) {
 }
 
 /**
- * Enhance Wand item sheets with damage/heal and conditions UI
+ * Inject wand uses tracking UI into wand item sheet
+ * Adds Enable Uses checkbox and Current/Max uses inputs after the Range field
  */
-async function enhanceWandSheet(app, html) {
-	// Check if spell enhancement is enabled (reuse spell enhancement setting)
-	try {
-		if (!game.settings.get(MODULE_ID, "enhanceSpells")) return;
-	} catch {
+function injectWandUsesUI(html, item) {
+	// Remove any existing wand uses UI to prevent duplicates
+	html.find('.sdx-wand-uses-row').remove();
+
+	// Get current flags
+	const wandUsesFlags = item.flags?.[MODULE_ID]?.wandUses || {
+		enabled: false,
+		current: 0,
+		max: 0
+	};
+
+	// Find the Range field in the SPELL box (it's a select with name="system.range")
+	const $rangeSelect = html.find('select[name="system.range"]');
+	if (!$rangeSelect.length) {
+		console.warn(`${MODULE_ID} | Could not find Range field in wand sheet`);
 		return;
 	}
 
+	// Get the parent row (h3 + select)
+	const $rangeRow = $rangeSelect.parent();
+
+	// Create the wand uses UI HTML
+	const usesEnabled = wandUsesFlags.enabled;
+	const usesCurrent = wandUsesFlags.current ?? 0;
+	const usesMax = wandUsesFlags.max ?? 0;
+
+	const wandUsesHTML = `
+		<h3 class="sdx-wand-uses-row">${game.i18n.localize("SHADOWDARK_EXTRAS.wand.enable_uses")}</h3>
+		<div class="sdx-wand-uses-row sdx-wand-uses-checkbox">
+			<input type="checkbox" 
+				name="flags.${MODULE_ID}.wandUses.enabled" 
+				${usesEnabled ? 'checked' : ''}
+				data-dtype="Boolean"
+			/>
+		</div>
+		${usesEnabled ? `
+			<h3 class="sdx-wand-uses-row">${game.i18n.localize("SHADOWDARK_EXTRAS.wand.uses")}</h3>
+			<div class="sdx-wand-uses-row sdx-wand-uses-inputs">
+				<input type="number" 
+					name="flags.${MODULE_ID}.wandUses.current" 
+					value="${usesCurrent}"
+					min="0"
+					style="width: 40px; text-align: center;"
+					data-dtype="Number"
+				/>
+				<span style="margin: 0 4px;">/</span>
+				<input type="number" 
+					name="flags.${MODULE_ID}.wandUses.max" 
+					value="${usesMax}"
+					min="0"
+					style="width: 40px; text-align: center;"
+					data-dtype="Number"
+				/>
+			</div>
+		` : ''}
+	`;
+
+	// Insert after the range field's row
+	$rangeRow.after(wandUsesHTML);
+
+	// Wire up the checkbox to trigger a re-render when changed
+	const $enableCheckbox = html.find(`input[name="flags.${MODULE_ID}.wandUses.enabled"]`);
+	$enableCheckbox.on('change', async function () {
+		const enabled = this.checked;
+		await item.update({
+			[`flags.${MODULE_ID}.wandUses.enabled`]: enabled,
+			// Initialize current/max to reasonable defaults if enabling for first time
+			[`flags.${MODULE_ID}.wandUses.current`]: enabled && usesMax === 0 ? 5 : usesCurrent,
+			[`flags.${MODULE_ID}.wandUses.max`]: enabled && usesMax === 0 ? 5 : usesMax
+		});
+	});
+
+	console.log(`${MODULE_ID} | Wand uses UI injected for`, item.name);
+}
+
+/**
+ * Setup a wrapper to prevent casting depleted wands
+ * Wraps the Actor.castSpell method to check wand uses before casting
+ */
+function setupWandUsesBlocker() {
+	const ActorClass = CONFIG.Actor.documentClass;
+	const originalCastSpell = ActorClass.prototype.castSpell;
+
+	if (!originalCastSpell) {
+		console.warn(`${MODULE_ID} | Could not find castSpell method on Actor prototype`);
+		return;
+	}
+
+	ActorClass.prototype.castSpell = async function (itemId, options = {}) {
+		const item = this.items.get(itemId);
+
+		// Check if this is a wand with uses tracking enabled
+		if (item?.type === "Wand") {
+			const wandUsesFlags = item.flags?.[MODULE_ID]?.wandUses;
+			if (wandUsesFlags?.enabled) {
+				const currentUses = wandUsesFlags.current ?? 0;
+
+				if (currentUses <= 0) {
+					ui.notifications.warn(game.i18n.format("SHADOWDARK_EXTRAS.wand.no_uses_remaining", { name: item.name }));
+					return null;
+				}
+			}
+		}
+
+		// Call the original method
+		return originalCastSpell.call(this, itemId, options);
+	};
+
+	console.log(`${MODULE_ID} | Wrapped castSpell for wand uses blocking`);
+}
+
+/**
+ * Enhance Wand item sheets with damage/heal and conditions UI
+ */
+async function enhanceWandSheet(app, html) {
 	// Only enhance Wand items
 	const item = app.item;
 	if (!item || item.type !== "Wand") return;
 
 	console.log(`${MODULE_ID} | Enhancing wand sheet for`, item.name);
+
+	// ═══════════════════════════════════════════════════════════════
+	// WAND USES TRACKING UI
+	// ═══════════════════════════════════════════════════════════════
+	try {
+		if (game.settings.get(MODULE_ID, "enableWandUses")) {
+			// Inject wand uses UI after the Range field
+			injectWandUsesUI(html, item);
+		}
+	} catch (err) {
+		console.error(`${MODULE_ID} | Failed to inject wand uses UI`, err);
+	}
+
+	// ═══════════════════════════════════════════════════════════════
+	// SPELL ENHANCEMENT (Activity Tab, Damage, etc.)
+	// ═══════════════════════════════════════════════════════════════
+	// Check if spell enhancement is enabled
+	try {
+		if (!game.settings.get(MODULE_ID, "enhanceSpells")) return;
+	} catch {
+		return;
+	}
 
 	// Remove any existing damage/heal boxes to prevent duplicates
 	html.find('.sdx-spell-damage-box').remove();
@@ -11151,6 +11710,68 @@ Hooks.on("preCreateChatMessage", (message, data, options, userId) => {
 				"flags.shadowdark-extras.targetIds": targetIds
 			});
 			console.log(`${MODULE_ID} | Stored ${targetIds.length} targets in message flags:`, targetIds);
+
+			// Mirror Image Automation
+			// If this is an attack roll targeting someone with Mirror Image duplicates
+			const isAttack = message.rolls?.some(r => r.terms?.some(t => t.faces === 20));
+			if (isAttack) {
+				for (const targetToken of targets) {
+					const targetActor = targetToken.actor;
+					if (!targetActor) continue;
+
+					const mirrorImages = targetActor.getFlag(MODULE_ID, "mirrorImages");
+					if (mirrorImages > 0) {
+						// Decrement duplicates
+						const newCount = mirrorImages - 1;
+
+						// Update actor flag and effect (async but we don't await blocking the message)
+						(async () => {
+							await targetActor.setFlag(MODULE_ID, "mirrorImages", newCount);
+
+							// Update visual effect and duration tracker
+							const mirrorEffect = targetActor.effects.find(e => e.getFlag(MODULE_ID, "isMirrorImage"));
+							if (mirrorEffect) {
+								if (newCount <= 0) {
+									await mirrorEffect.delete();
+
+									// If duration tracking is active, end it
+									// If duration tracking is active, end it
+									if (typeof endDurationSpell === 'function') {
+										const activeSpells = getActiveDurationSpells(targetActor);
+										const mirrorSpell = activeSpells.find(s => s.spellName === "Mirror Image");
+										if (mirrorSpell) {
+											await endDurationSpell(targetActor.id, mirrorSpell.instanceId || mirrorSpell.spellId, "expired");
+										}
+									}
+								} else {
+									await mirrorEffect.update({
+										"flags.shadowdark-extras.duplicates": newCount,
+										"name": `Mirror Image (${newCount})`
+									});
+								}
+							}
+						})();
+
+						// Notify in chat (modifying the message source)
+						const interceptHtml = `
+							<div class="shadowdark mirror-image-intercept" style="margin-top: 5px; padding: 5px; border: 1px solid #7a7a7a; border-radius: 3px; background: rgba(0, 0, 0, 0.1);">
+								<p><i class="fas fa-clone"></i> <strong>Mirror Image Intercepted!</strong></p>
+								<p>An illusory duplicate evaporates, causing the attack to miss <strong>${targetActor.name}</strong>.</p>
+								<p style="font-size: 0.9em; font-style: italic;">Remaining duplicates: ${newCount}</p>
+							</div>
+						`;
+
+						message.updateSource({
+							content: (message.content || "") + interceptHtml,
+							flavor: (message.flavor || "") + ` [Intercepted: ${targetActor.name}]`
+						});
+
+						// Only consume one duplicate per attack message even if multiple targets?
+						// Usually attacks only target one person in SD, so this is fine.
+						break;
+					}
+				}
+			}
 		}
 
 		// Store item configuration for consumables (scrolls, potions, wands)
@@ -12216,12 +12837,296 @@ Hooks.once("init", () => {
 			name: "SHADOWDARK.item.effect.predefined_effect.macroExecute",
 			mode: "CONST.ACTIVE_EFFECT_MODES.OVERRIDE",
 		},
+		silenced: {
+			defaultValue: true,
+			effectKey: `flags.${MODULE_ID}.silenced`,
+			img: "icons/magic/death/skull-horned-goat-pentagram-red.webp",
+			name: "SHADOWDARK.item.effect.predefined_effect.silenced",
+			mode: "CONST.ACTIVE_EFFECT_MODES.OVERRIDE",
+		},
+		glassbones: {
+			defaultValue: true,
+			effectKey: `flags.${MODULE_ID}.glassbones`,
+			img: "icons/skills/wounds/bone-broken-knee-beam.webp",
+			name: "SHADOWDARK.item.effect.predefined_effect.glassbones",
+			mode: "CONST.ACTIVE_EFFECT_MODES.OVERRIDE",
+		},
+		invisibility: {
+			defaultValue: true,
+			effectKey: `flags.${MODULE_ID}.invisibility`,
+			img: "icons/magic/perception/shadow-stealth-eyes-purple.webp",
+			name: "SHADOWDARK.item.effect.predefined_effect.invisibility",
+			mode: "CONST.ACTIVE_EFFECT_MODES.OVERRIDE",
+		},
+		spellAdvantageAll: {
+			defaultValue: "spellcasting",
+			effectKey: "system.bonuses.advantage",
+			img: "icons/magic/symbols/chevron-elipse-circle-blue.webp",
+			name: "SHADOWDARK.item.effect.predefined_effect.spellAdvantageAll",
+			mode: "CONST.ACTIVE_EFFECT_MODES.ADD",
+		},
 	};
 
 	// Merge ability advantage effects into the system's predefined effects
 	Object.assign(CONFIG.SHADOWDARK.PREDEFINED_EFFECTS, abilityAdvantageEffects);
 
 	console.log(`${MODULE_ID} | Added ${Object.keys(abilityAdvantageEffects).length} extra advantage effects`);
+
+	// ============================================
+	// SILENCED EFFECT - PREVENT SPELL CASTING
+	// ============================================
+
+	// Add localization for Silenced effect
+	Hooks.once("i18nInit", () => {
+		game.i18n.translations["SHADOWDARK"] = game.i18n.translations["SHADOWDARK"] || {};
+		game.i18n.translations["SHADOWDARK"].item = game.i18n.translations["SHADOWDARK"].item || {};
+		game.i18n.translations["SHADOWDARK"].item.effect = game.i18n.translations["SHADOWDARK"].item.effect || {};
+		game.i18n.translations["SHADOWDARK"].item.effect.predefined_effect = game.i18n.translations["SHADOWDARK"].item.effect.predefined_effect || {};
+		game.i18n.translations["SHADOWDARK"].item.effect.predefined_effect.silenced = "Silenced";
+		game.i18n.translations["SHADOWDARK"].item.effect.predefined_effect.glassbones = "Glassbones";
+		game.i18n.translations["SHADOWDARK"].item.effect.predefined_effect.spellAdvantageAll = "Spellcasting Advantage (All)";
+	});
+
+	// Monkey-patch ActorSD.castSpell to prevent spell casting when silenced
+	Hooks.once("ready", () => {
+		// Get the ActorSD class
+		const ActorSD = globalThis.shadowdark?.documents?.ActorSD;
+
+		if (!ActorSD) {
+			console.error(`${MODULE_ID} | ActorSD not found, cannot apply silenced effect`);
+			return;
+		}
+
+		console.log(`${MODULE_ID} | Attempting to patch ActorSD.castSpell for silenced effect`);
+
+		if (!ActorSD.prototype.castSpell) {
+			console.error(`${MODULE_ID} | castSpell method not found on ActorSD!`);
+			return;
+		}
+
+		const _originalCastSpell = ActorSD.prototype.castSpell;
+
+		ActorSD.prototype.castSpell = async function (itemId, options = {}) {
+			console.log(`${MODULE_ID} | castSpell called for actor ${this.name}, itemId: ${itemId}`);
+
+			// Check if actor has silenced effect
+			const isSilenced = this.getFlag("shadowdark-extras", "silenced");
+
+			if (isSilenced) {
+				// Get the item to check its type
+				const item = this.items.get(itemId);
+				if (!item) {
+					console.warn(`${MODULE_ID} | Item ${itemId} not found on actor`);
+					return _originalCastSpell.call(this, itemId, options);
+				}
+
+				console.log(`${MODULE_ID} | Actor ${this.name} is silenced, item type: ${item.type}`);
+
+				// Get effects settings
+				const effectsSettings = game.settings.get("shadowdark-extras", "effectsSettings");
+
+				// Check settings for each item type
+				let shouldBlock = false;
+				let blockedType = "";
+
+				if (item.type === "Spell" || item.type === "NPC Spell") {
+					shouldBlock = effectsSettings.silenced.blocksSpells;
+					blockedType = "spells";
+				} else if (item.type === "Scroll") {
+					shouldBlock = effectsSettings.silenced.blocksScrolls;
+					blockedType = "scrolls";
+				} else if (item.type === "Wand") {
+					shouldBlock = effectsSettings.silenced.blocksWands;
+					blockedType = "wands";
+				}
+
+				if (shouldBlock) {
+					ui.notifications.warn(`You are silenced and cannot cast ${blockedType}!`);
+					console.log(`${MODULE_ID} | Spell casting BLOCKED - actor is silenced and ${blockedType} are blocked`);
+					return null;
+				}
+			}
+
+			// Call original method if not blocked
+			return _originalCastSpell.call(this, itemId, options);
+		};
+
+		console.log(`${MODULE_ID} | Silenced effect spell blocking enabled via ActorSD.castSpell`);
+
+		// Patch hasAdvantage to handle universal spellcasting advantage
+		const _originalHasAdvantage = ActorSD.prototype.hasAdvantage;
+		ActorSD.prototype.hasAdvantage = function (data) {
+			if (this.type === "Player") {
+				if (this.system.bonuses.advantage.includes(data.rollType)) {
+					return true;
+				}
+
+				if (data.item?.isSpell?.() && this.system.bonuses.advantage.includes("spellcasting")) {
+					return true;
+				}
+			}
+
+			return _originalHasAdvantage.call(this, data);
+		};
+	});
+
+	// ============================================
+	// INVISIBILITY EFFECT - MAKE TOKEN INVISIBLE
+	// ============================================
+
+	// Apply invisibility visual effect to tokens using Foundry's built-in hidden property
+	Hooks.on("refreshToken", (token) => {
+		const hasInvisibility = token.actor?.getFlag(MODULE_ID, "invisibility");
+
+		if (hasInvisibility) {
+			// Use Foundry's hidden property (same as token HUD invisible button)
+			if (!token.document.hidden) {
+				token.document.update({ hidden: true });
+			}
+		}
+	});
+
+	// Auto-disable invisibility when attacking or casting spells
+	Hooks.on("preCreateChatMessage", async (message) => {
+		const speaker = message.speaker;
+		if (!speaker?.actor) return;
+
+		const actor = game.actors.get(speaker.actor);
+		if (!actor) return;
+
+		// Check if actor has invisibility
+		const hasInvisibility = actor.getFlag(MODULE_ID, "invisibility");
+		if (!hasInvisibility) return;
+
+		// Check if this is an attack or spell
+		const shadowdarkFlags = message.flags?.shadowdark;
+		const isAttack = shadowdarkFlags?.roll?.type === "attack";
+		const isSpell = shadowdarkFlags?.spell || message.flags?.shadowdark?.itemId;
+
+		// Also check if spell item is being cast
+		let isSpellCast = false;
+		if (message.flags?.shadowdark?.itemId) {
+			const item = actor.items.get(message.flags.shadowdark.itemId);
+			if (item && item.type === "Spell") {
+				isSpellCast = true;
+			}
+		}
+
+		if (isAttack || isSpell || isSpellCast) {
+			console.log(`${MODULE_ID} | ${actor.name} attacks/casts while invisible - breaking invisibility`);
+
+			// Find and disable the invisibility effect
+			const effect = actor.effects.find(e =>
+				e.changes.some(c => c.key === `flags.${MODULE_ID}.invisibility`)
+			);
+
+			if (effect) {
+				await effect.update({ disabled: true });
+
+				// Notify about invisibility breaking
+				ChatMessage.create({
+					content: `<p>${actor.name}'s invisibility fades as they take offensive action!</p>`,
+					speaker: ChatMessage.getSpeaker({ actor }),
+					whisper: []
+				});
+
+				// Restore token visibility using Foundry's hidden property
+				const tokens = actor.getActiveTokens();
+				for (const token of tokens) {
+					await token.document.update({ hidden: false });
+				}
+			}
+		}
+	});
+
+	// Restore visibility when invisibility effect is disabled or deleted
+	Hooks.on("updateActiveEffect", async (effect, changes, options, userId) => {
+		// Check if this is an invisibility effect being disabled
+		const isInvisibilityEffect = effect.changes.some(c => c.key === `flags.${MODULE_ID}.invisibility`);
+		if (!isInvisibilityEffect) return;
+
+		console.log(`${MODULE_ID} | Invisibility effect updated:`, { disabled: effect.disabled, changes });
+
+		// If effect was disabled, restore visibility
+		if (changes.disabled === true) {
+			console.log(`${MODULE_ID} | Restoring visibility (effect disabled)`);
+			// Effect.parent is the Item (Condition), we need the Actor that owns the item
+			const item = effect.parent;
+			const actor = item?.parent; // Item's parent is the Actor
+			if (actor) {
+				console.log(`${MODULE_ID} | Character Actor:`, { id: actor.id, name: actor.name, type: actor.type });
+				// Find all token documents for this actor across all scenes
+				const tokens = [];
+				for (const scene of game.scenes) {
+					console.log(`${MODULE_ID} | Checking scene: ${scene.name}, tokens: ${scene.tokens.size}`);
+					const sceneTokens = scene.tokens.filter(t => {
+						const match = t.actorId === actor.id || t.actor?.id === actor.id;
+						if (t.actor?.name === actor.name) {
+							console.log(`${MODULE_ID} | Token found:`, { tokenId: t.id, actorId: t.actorId, tokenActorId: t.actor?.id, match });
+						}
+						return match;
+					});
+					tokens.push(...sceneTokens);
+				}
+				console.log(`${MODULE_ID} | Found ${tokens.length} token documents to restore visibility`);
+				for (const tokenDoc of tokens) {
+					await tokenDoc.update({ hidden: false });
+				}
+			}
+		}
+	});
+
+	Hooks.on("deleteActiveEffect", async (effect, options, userId) => {
+		// Check if this is an invisibility effect being deleted
+		const isInvisibilityEffect = effect.changes.some(c => c.key === `flags.${MODULE_ID}.invisibility`);
+		if (!isInvisibilityEffect) return;
+
+		// Restore visibility when effect is deleted
+		// Effect.parent is the Item (Condition), we need the Actor that owns the item
+		const item = effect.parent;
+		const actor = item?.parent; // Item's parent is the Actor
+		if (actor) {
+			console.log(`${MODULE_ID} | Invisibility effect deleted, restoring visibility`);
+			// Find all token documents for this actor across all scenes
+			const tokens = [];
+			for (const scene of game.scenes) {
+				const sceneTokens = scene.tokens.filter(t => t.actorId === actor.id);
+				tokens.push(...sceneTokens);
+			}
+			console.log(`${MODULE_ID} | Found ${tokens.length} token documents to restore visibility`);
+			for (const tokenDoc of tokens) {
+				await tokenDoc.update({ hidden: false });
+			}
+		}
+	});
+
+	// Also restore visibility when the Condition item itself is deleted
+	Hooks.on("deleteItem", async (item, options, userId) => {
+		// Check if this item has an invisibility effect
+		const hasInvisibilityEffect = item.effects?.some(e =>
+			e.changes.some(c => c.key === `flags.${MODULE_ID}.invisibility`)
+		);
+		if (!hasInvisibilityEffect) return;
+
+		console.log(`${MODULE_ID} | Condition with invisibility effect deleted, restoring visibility`);
+		// Item's parent is the Actor
+		const actor = item.parent;
+		if (actor) {
+			console.log(`${MODULE_ID} | Character Actor:`, { id: actor.id, name: actor.name, type: actor.type });
+			// Find all token documents for this actor across all scenes
+			const tokens = [];
+			for (const scene of game.scenes) {
+				const sceneTokens = scene.tokens.filter(t => t.actorId === actor.id);
+				tokens.push(...sceneTokens);
+			}
+			console.log(`${MODULE_ID} | Found ${tokens.length} token documents to restore visibility`);
+			for (const tokenDoc of tokens) {
+				await tokenDoc.update({ hidden: false });
+			}
+		}
+	});
+
+	console.log(`${MODULE_ID} | Invisibility effect enabled with auto-disable on attack/spell`);
 
 	// Monkey-patch ActorSD functions to support ability-specific advantage and extra damage dice
 	// and CONFIG.DiceSD.Roll for Freya's Omen spell loss prevention
@@ -12941,7 +13846,7 @@ Hooks.on("renderChatMessage", async (message, html, data) => {
 
 	// Get stored targets
 	const storedTargetIds = message.flags?.[MODULE_ID]?.targetIds || [];
-	const targets = storedTargetIds.map(id => canvas.tokens.get(id)).filter(Boolean);
+	const targets = canvas?.tokens ? storedTargetIds.map(id => canvas.tokens.get(id)).filter(Boolean) : [];
 
 	const context = {
 		isSuccess,
@@ -13280,6 +14185,7 @@ SDX.templates = {
 		return new Promise((resolve) => {
 			let resolved = false;
 			let highlightedTokens = new Set(); // Track highlighted tokens
+			let currentElevation = originFromCaster?.elevation || 0; // Track template elevation
 
 			// Create the template document
 			const doc = new MeasuredTemplateDocument(templateData, { parent: canvas.scene });
@@ -13316,6 +14222,10 @@ SDX.templates = {
 
 				// Find all tokens inside the template
 				for (const token of canvas.tokens.placeables) {
+					// Skip tokens at different elevation
+					const tokenElevation = token.document.elevation || 0;
+					if (tokenElevation !== currentElevation) continue;
+
 					// Test if token center is inside the template shape
 					const localX = token.center.x - template.document.x;
 					const localY = token.center.y - template.document.y;
@@ -13354,6 +14264,33 @@ SDX.templates = {
 				highlightedTokens.clear();
 			};
 
+			// Create elevation indicator text (add to stage, not template)
+			const elevationText = new PIXI.Text(`Elevation: ${currentElevation}`, {
+				fontFamily: 'Modesto Condensed, Old Newspaper, serif',
+				fontSize: 36,
+				fontWeight: 'bold',
+				fill: 0x000000, // Black text
+				stroke: 0xFFFFFF, // White outline
+				strokeThickness: 6,
+				align: 'center',
+				dropShadow: true,
+				dropShadowColor: 0x000000,
+				dropShadowBlur: 4,
+				dropShadowDistance: 2
+			});
+			elevationText.anchor.set(0.5, 1); // Anchor at bottom center
+			elevationText.zIndex = 10000; // Very high z-index to be on top
+			canvas.stage.addChild(elevationText);
+
+			// Function to update elevation text position
+			const updateElevationTextPosition = () => {
+				elevationText.position.set(
+					template.document.x,
+					template.document.y - 80
+				);
+			};
+			updateElevationTextPosition();
+
 			// Cleanup function
 			const cleanup = () => {
 				if (resolved) return;
@@ -13363,10 +14300,17 @@ SDX.templates = {
 				canvas.stage.off("rightdown", onRightClick);
 				canvas.app.view.removeEventListener("wheel", onWheel);
 				document.removeEventListener("keydown", onKeyDown);
+
+				// Remove and destroy elevation text
+				if (elevationText && elevationText.parent) {
+					canvas.stage.removeChild(elevationText);
+					elevationText.destroy({ children: true, texture: true, baseTexture: true });
+				}
+
 				if (template.parent) {
 					canvas.templates.preview.removeChild(template);
 				}
-				template.destroy();
+				template.destroy({ children: true });
 			};
 
 			// Mouse move handler - update template position (or direction if originFromCaster)
@@ -13389,6 +14333,9 @@ SDX.templates = {
 				}
 				template.renderFlags.set({ refresh: true });
 
+				// Update elevation text position to follow template
+				updateElevationTextPosition();
+
 				// Throttled token highlighting
 				const now = Date.now();
 				if (now - lastHighlightTime >= HIGHLIGHT_THROTTLE) {
@@ -13397,10 +14344,28 @@ SDX.templates = {
 				}
 			};
 
-			// Mouse wheel handler - rotate template when holding Shift
+			// Mouse wheel handler - rotate template when holding Shift, elevation when holding Alt
 			// Ctrl = angle snap to 45° increments
 			const onWheel = (event) => {
 				if (resolved) return;
+
+				// Alt key = elevation control
+				if (event.altKey && !event.shiftKey) {
+					event.preventDefault();
+					event.stopPropagation();
+
+					const sign = Math.sign(event.deltaY);
+					currentElevation = Math.max(0, currentElevation - sign); // Invert scroll direction for intuitive up/down
+
+					// Update elevation indicator
+					elevationText.text = `Elevation: ${currentElevation}`;
+
+					// Update token highlighting after elevation change
+					updateTokenHighlighting();
+					return;
+				}
+
+				// Shift key = rotation
 				if (!event.shiftKey) return;
 
 				event.preventDefault();
@@ -13470,7 +14435,8 @@ SDX.templates = {
 					...templateData,
 					x: finalX,
 					y: finalY,
-					direction: finalDirection
+					direction: finalDirection,
+					elevation: currentElevation // Store elevation in template
 				}]);
 
 				const placedTemplate = created[0];
@@ -13505,12 +14471,18 @@ SDX.templates = {
 			// Escape key handler - cancel placement
 			const onKeyDown = (event) => {
 				if (resolved) return;
+
 				if (event.key === "Escape") {
 					clearTokenHighlighting(); // Clear targeting when cancelled
 					cleanup();
 					ui.notifications.info("Template placement cancelled.");
 					resolve(null);
 				}
+			};
+
+			// Key up handler - no longer needed
+			const onKeyUp = (event) => {
+				// Removed - Alt key is checked directly in wheel handler
 			};
 
 			// Attach event listeners
@@ -13520,7 +14492,7 @@ SDX.templates = {
 			canvas.app.view.addEventListener("wheel", onWheel, { passive: false });
 			document.addEventListener("keydown", onKeyDown);
 
-			ui.notifications.info("Left-click to place | Right-click/Escape to cancel | Shift+Wheel to rotate | +Ctrl to snap 45°");
+			ui.notifications.info("Left-click to place | Right-click/Esc to cancel | Shift+Wheel to rotate | Alt+Wheel for elevation");
 		});
 	},
 
@@ -13536,7 +14508,16 @@ SDX.templates = {
 		}
 
 		const templateObject = templateDoc.object;
-		return canvas.tokens.placeables.filter(t => templateObject.testPoint(t.center));
+		const templateElevation = templateDoc.elevation || 0;
+
+		return canvas.tokens.placeables.filter(t => {
+			// Check elevation match
+			const tokenElevation = t.document.elevation || 0;
+			if (tokenElevation !== templateElevation) return false;
+
+			// Check if token is inside template shape
+			return templateObject.testPoint(t.center);
+		});
 	},
 
 	/**
@@ -13568,3 +14549,75 @@ SDX.templates = {
 };
 
 console.log(`${MODULE_ID} | SDX.templates API loaded`);
+
+// ============================================
+// MODULE API
+// Export functions for use in item macros
+// ============================================
+
+Hooks.on("setup", () => {
+	const module = game.modules.get("shadowdark-extras");
+	if (module) {
+		module.api = {
+			startDurationSpell: startDurationSpell
+		};
+		console.log(`${MODULE_ID} | Module API registered`);
+	}
+});
+
+// ============================================
+// PARTY TOKEN LIGHT SYNCHRONIZATION HOOKS
+// ============================================
+
+// Sync party light when an item is updated (e.g., light toggled)
+Hooks.on("updateItem", async (item, changes, options, userId) => {
+	// Only care about light-related changes
+	if (!foundry.utils.hasProperty(changes, "system.light")) return;
+
+	// Get the owning actor
+	const actor = item.actor;
+	if (!actor) return;
+
+	// Find all parties containing this actor
+	const parties = getPartiesContainingActor(actor);
+
+	// Sync each party's token lights
+	for (const party of parties) {
+		await syncPartyTokenLight(party);
+	}
+});
+
+// Sync party light when party members change
+Hooks.on("updateActor", async (actor, changes, options, userId) => {
+	// Check if this actor has party members and they changed
+	if (foundry.utils.hasProperty(changes, `flags.${MODULE_ID}.members`)) {
+		await syncPartyTokenLight(actor);
+	}
+});
+
+// Sync party light when party sheet is rendered (delayed to ensure canvas is ready)
+Hooks.on("renderActorSheet", async (app, html, data) => {
+	// Check if this actor has party members (indicates it's a party)
+	const hasMembers = app.actor.getFlag(MODULE_ID, "members");
+	if (hasMembers) {
+		// Delay sync briefly to ensure canvas is ready
+		setTimeout(async () => {
+			await syncPartyTokenLight(app.actor);
+		}, 100);
+	}
+});
+
+// Sync party light when party token is placed on scene
+Hooks.on("createToken", async (tokenDoc, options, userId) => {
+	const actor = tokenDoc.actor;
+	if (!actor) return;
+
+	// Check if this is a party token
+	const hasMembers = actor.getFlag(MODULE_ID, "members");
+	if (hasMembers) {
+		// Delay briefly to ensure token is fully created
+		setTimeout(async () => {
+			await syncPartyTokenLight(actor);
+		}, 100);
+	}
+});

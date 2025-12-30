@@ -273,14 +273,25 @@ export function setupCombatSocket() {
 			const currentHp = token.actor.system?.attributes?.hp?.value ?? 0;
 			const maxHp = token.actor.system?.attributes?.hp?.max ?? 0;
 
+			// Check for Glassbones effect (double damage)
+			let finalDamage = data.damage;
+			const hasGlassbones = token.actor.getFlag("shadowdark-extras", "glassbones");
+			if (hasGlassbones && data.damage > 0) {
+				// Double the damage (not healing)
+				finalDamage = data.damage * 2;
+				console.log(`shadowdark-extras | Glassbones: Doubling damage from ${data.damage} to ${finalDamage}`);
+			}
+
 			// Negative damage means healing
-			const isHealing = data.damage < 0;
-			const newHp = Math.max(0, Math.min(maxHp, currentHp - data.damage));
+			const isHealing = finalDamage < 0;
+			const newHp = Math.max(0, Math.min(maxHp, currentHp - finalDamage));
 
 			console.log("shadowdark-extras | Applying damage/healing via socket:", {
 				tokenId: data.tokenId,
 				actorName: token.actor.name,
-				damage: data.damage,
+				originalDamage: data.damage,
+				finalDamage: finalDamage,
+				hasGlassbones: hasGlassbones,
 				isHealing: isHealing,
 				oldHp: currentHp,
 				newHp: newHp
@@ -617,6 +628,7 @@ export const DEFAULT_COMBAT_SETTINGS = {
 		showMultipliers: true,
 		showApplyButton: true,
 		autoApplyDamage: true,
+		autoApplyConditions: true,
 		damageMultipliers: [
 			{ value: 0, label: "×", enabled: true },
 			{ value: -1, label: "-1", enabled: false },
@@ -1121,8 +1133,9 @@ export async function injectDamageCard(message, html, data) {
 			// Check in-memory cache (synchronous, prevents race condition)
 			console.log("shadowdark-extras | Skipping summoning - already spawned for this message");
 		} else {
-			// Check if the spell cast was successful (skip this check for potions, scrolls, and wands)
-			if (!["Potion", "Scroll", "Wand"].includes(itemType)) {
+			// Check if the spell cast was successful (skip this check for potions and scrolls which always succeed)
+			// Wands have spell rolls, so they need the success check
+			if (!["Potion", "Scroll"].includes(itemType)) {
 				const shadowdarkRolls = message.flags?.shadowdark?.rolls;
 				const mainRoll = shadowdarkRolls?.main;
 
@@ -1174,7 +1187,7 @@ export async function injectDamageCard(message, html, data) {
 			console.log("shadowdark-extras | Skipping item give - already processed this message");
 		} else {
 			let shouldGive = true;
-			if (!["Potion", "Scroll", "Wand"].includes(itemType)) {
+			if (!["Potion", "Scroll"].includes(itemType)) {
 				const shadowdarkRolls = message.flags?.shadowdark?.rolls;
 				const mainRoll = shadowdarkRolls?.main;
 				if (!mainRoll || mainRoll.success !== true) {
@@ -1236,7 +1249,9 @@ export async function injectDamageCard(message, html, data) {
 		!_templatePlacedMessages.has(messageKey); // Use in-memory check instead of flags
 
 	// For spells that require success rolls, only show template if spell succeeded
-	if (useTemplateTargeting && !["Potion", "Scroll", "Wand"].includes(itemType)) {
+	// Note: Potions and Scrolls don't have successful roll requirements (they always succeed when used)
+	// Wands DO have spell rolls, so they need the success check
+	if (useTemplateTargeting && !["Potion", "Scroll"].includes(itemType)) {
 		const shadowdarkRolls = message.flags?.shadowdark?.rolls;
 		const mainRoll = shadowdarkRolls?.main;
 		if (!mainRoll || mainRoll.success !== true) {
@@ -1825,11 +1840,15 @@ export async function injectDamageCard(message, html, data) {
 		console.log("shadowdark-extras | This is a Focus Check - damage will roll but effects won't be auto-applied");
 	}
 
-	// Auto-apply damage if setting is enabled
+	// Auto-apply damage and/or conditions based on separate settings
 	// Only auto-apply if there's an attack roll that hit
 	// IMPORTANT: Only the message author should auto-apply to prevent duplicates
 	const messageAuthorId = message.author?.id ?? message.user?.id;
-	if (settings.damageCard.autoApplyDamage && targets.length > 0 && messageAuthorId === game.user.id) {
+	const shouldAutoApplyDamage = settings.damageCard.autoApplyDamage;
+	// Default to true for backwards compatibility if setting doesn't exist yet
+	const shouldAutoApplyConditions = settings.damageCard.autoApplyConditions !== false;
+
+	if ((shouldAutoApplyDamage || shouldAutoApplyConditions) && targets.length > 0 && messageAuthorId === game.user.id) {
 		// Check if this was an attack that hit
 		const shadowdarkRolls = message.flags?.shadowdark?.rolls;
 		const mainRoll = shadowdarkRolls?.main;
@@ -1840,31 +1859,35 @@ export async function injectDamageCard(message, html, data) {
 		const shouldAutoApply = !mainRoll || mainRoll.success === true;
 
 		if (shouldAutoApply) {
-			console.log("shadowdark-extras | Auto-applying damage (main roll:", mainRoll ? "exists, success: " + mainRoll.success : "none", ")");
 			// Wait a tiny bit for the card to fully render, then auto-click the apply button(s)
 			setTimeout(() => {
-				const $applyDamageBtn = html.find('.sdx-apply-damage-btn');
-				if ($applyDamageBtn.length) {
-					$applyDamageBtn.click();
+				// Auto-apply damage if enabled
+				if (shouldAutoApplyDamage) {
+					const $applyDamageBtn = html.find('.sdx-apply-damage-btn');
+					if ($applyDamageBtn.length) {
+						console.log("shadowdark-extras | Auto-applying damage (main roll:", mainRoll ? "exists, success: " + mainRoll.success : "none", ")");
+						$applyDamageBtn.click();
+					}
 				}
 
-				// Also auto-apply conditions if they exist - BUT NOT for Focus Checks
+				// Auto-apply conditions if enabled - BUT NOT for Focus Checks
 				// Effects are already applied on the initial cast
-				if (!isFocusCheck) {
+				if (shouldAutoApplyConditions && !isFocusCheck) {
 					const $applyConditionBtn = html.find('.sdx-apply-condition-btn');
 					if ($applyConditionBtn.length) {
 						setTimeout(() => {
+							console.log("shadowdark-extras | Auto-applying conditions");
 							$applyConditionBtn.click();
 						}, 200); // Slight delay after damage
 					}
-				} else {
+				} else if (isFocusCheck) {
 					console.log("shadowdark-extras | Skipping effect auto-apply for Focus Check");
 				}
 			}, 100);
 		} else {
-			console.log("shadowdark-extras | Not auto-applying damage (attack failed, success:", mainRoll?.success, ")");
+			console.log("shadowdark-extras | Not auto-applying (attack failed, success:", mainRoll?.success, ")");
 		}
-	} else if (settings.damageCard.autoApplyDamage && messageAuthorId !== game.user.id) {
+	} else if ((shouldAutoApplyDamage || shouldAutoApplyConditions) && messageAuthorId !== game.user.id) {
 		console.log("shadowdark-extras | Skipping auto-apply (not message author)");
 	}
 
@@ -2224,8 +2247,14 @@ async function buildDamageCardHtml(actor, targets, totalDamage, damageType, allE
 					damagePreviewHtml = `<div class="sdx-damage-preview">${damageSign}<span class="sdx-damage-value" data-base-damage="${targetSpecificDamage}" ${tooltipAttr}>${targetSpecificDamage}</span></div>`;
 				}
 
+				// Add enable/disable checkbox if auto-apply is disabled
+				const enableCheckbox = !cardSettings.autoApplyDamage ? `
+					<input type="checkbox" class="sdx-target-enable-checkbox" data-token-id="${target.id}" checked title="Enable/disable this target" />
+				` : '';
+
 				targetsHtml += `
-					<div class="sdx-target-item" data-token-id="${target.id}" data-actor-id="${targetActor.id}">
+					<div class="sdx-target-item" data-token-id="${target.id}" data-actor-id="${targetActor.id}" data-enabled="true">
+						${enableCheckbox}
 						<div class="sdx-target-header">
 							<img src="${targetActor.img}" alt="${targetActor.name}" class="sdx-target-img"/>
 							<div class="sdx-target-name">${targetActor.name}</div>
@@ -2428,8 +2457,14 @@ function rebuildTargetsList($card, messageId, baseDamage) {
 		const name = actor.name;
 		const img = actor.img || "icons/svg/mystery-man.svg";
 
+		// Add enable/disable checkbox if auto-apply is disabled
+		const enableCheckbox = !cardSettings.autoApplyDamage ? `
+			<input type="checkbox" class="sdx-target-enable-checkbox" data-token-id="${tokenId}" checked title="Enable/disable this target" />
+		` : '';
+
 		targetsHtml += `
-			<div class="sdx-target-item" data-token-id="${tokenId}" data-actor-id="${actorId}">
+			<div class="sdx-target-item" data-token-id="${tokenId}" data-actor-id="${actorId}" data-enabled="true">
+				${enableCheckbox}
 				<div class="sdx-target-header">
 					<img src="${img}" alt="${name}" class="sdx-target-img"/>
 					<div class="sdx-target-name">${name}</div>
@@ -2455,6 +2490,7 @@ function rebuildTargetsList($card, messageId, baseDamage) {
 
 	// Re-attach listeners for new elements
 	attachMultiplierListeners($card);
+	attachTargetEnableListeners($card);
 }
 
 /**
@@ -2499,6 +2535,33 @@ function attachMultiplierListeners($card) {
 		}
 
 		$targetItem.data('calculated-damage', newDamage);
+	});
+}
+
+/**
+ * Attach target enable/disable checkbox listeners
+ */
+function attachTargetEnableListeners($card) {
+	$card.find('.sdx-target-enable-checkbox').off('change').on('change', function (e) {
+		e.stopPropagation();
+
+		const $checkbox = $(this);
+		const tokenId = $checkbox.data('token-id');
+		const isEnabled = $checkbox.is(':checked');
+
+		// Update target item's enabled state
+		const $targetItem = $card.find(`.sdx-target-item[data-token-id="${tokenId}"]`);
+		$targetItem.attr('data-enabled', isEnabled);
+		$targetItem.data('enabled', isEnabled);
+
+		// Visual feedback - gray out disabled targets
+		if (isEnabled) {
+			$targetItem.removeClass('sdx-target-disabled');
+		} else {
+			$targetItem.addClass('sdx-target-disabled');
+		}
+
+		console.log(`shadowdark-extras | Target ${tokenId} ${isEnabled ? 'enabled' : 'disabled'}`);
 	});
 }
 
@@ -2742,6 +2805,9 @@ function attachDamageCardListeners(html, messageId) {
 
 	// Initial multiplier listeners
 	attachMultiplierListeners($card);
+
+	// Initial target enable/disable listeners
+	attachTargetEnableListeners($card);
 
 	// Individual die click to reroll single die
 	$card.on('click', '.sdx-die-clickable', async function (e) {
@@ -3072,6 +3138,14 @@ function attachDamageCardListeners(html, messageId) {
 
 			for (const targetEl of $targets) {
 				const $target = $(targetEl);
+
+				// Skip disabled targets
+				const isEnabled = $target.data('enabled') !== false && $target.attr('data-enabled') !== 'false';
+				if (!isEnabled) {
+					console.log(`shadowdark-extras | Skipping disabled target: ${$target.data('token-id')}`);
+					continue;
+				}
+
 				const tokenId = $target.data('token-id');
 				const token = canvas.tokens.get(tokenId);
 
