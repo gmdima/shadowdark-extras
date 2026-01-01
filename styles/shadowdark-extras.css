@@ -6294,6 +6294,129 @@ section[data-tab="tab-notes"].sdx-journal-active>div:not(.sdx-journal-notes) {
     background: rgba(140, 60, 60, 0.7);
 }
 
+/* Theme 7: Shadowdark (Black & White) */
+.sdx-conditions-toggles.sdx-theme-shadowdark .sdx-conditions-toggles {
+    background: #000;
+    border: 1px solid #fff;
+}
+
+.sdx-conditions-toggles.sdx-theme-shadowdark .sdx-conditions-header {
+    color: #fff;
+    border-bottom: 1px solid #333;
+}
+
+.sdx-conditions-toggles.sdx-theme-shadowdark .sdx-condition-toggle {
+    background: #111;
+    border: 1px solid #333;
+    border-radius: 0;
+}
+
+.sdx-conditions-toggles.sdx-theme-shadowdark .sdx-condition-toggle:hover {
+    background: #222;
+    border-color: #666;
+    transform: none;
+    box-shadow: none;
+}
+
+.sdx-conditions-toggles.sdx-theme-shadowdark .sdx-condition-toggle .sdx-condition-name {
+    color: #fff;
+    font-family: 'Signika', sans-serif;
+    text-transform: uppercase;
+    font-size: 14px;
+}
+
+.sdx-conditions-toggles.sdx-theme-shadowdark .sdx-condition-toggle.active {
+    background: #fff;
+    border-color: #fff;
+}
+
+.sdx-conditions-toggles.sdx-theme-shadowdark .sdx-condition-toggle.active .sdx-condition-name {
+    color: #000;
+}
+
+.sdx-conditions-toggles.sdx-theme-shadowdark .sdx-condition-toggle.active::after {
+    background: #000;
+    color: #fff;
+    border-color: #fff;
+}
+
+.sdx-conditions-toggles.sdx-theme-shadowdark .sdx-condition-submenu {
+    background: #111;
+    border: 1px solid #fff;
+    border-radius: 0;
+}
+
+.sdx-conditions-toggles.sdx-theme-shadowdark .sdx-submenu-item {
+    color: #fff;
+    border-bottom: 1px solid #333;
+    font-family: 'Signika', sans-serif;
+}
+
+.sdx-conditions-toggles.sdx-theme-shadowdark .sdx-submenu-item:hover {
+    background: #333;
+}
+
+.sdx-conditions-toggles.sdx-theme-shadowdark .sdx-submenu-item.active {
+    background: #fff;
+    color: #000;
+}
+
+/* Theme 8: 5e (classic) */
+.sdx-conditions-toggles.sdx-theme-5e .sdx-conditions-toggles {
+    background: #f0f0f0;
+    border: 1px solid #ccc;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.sdx-conditions-toggles.sdx-theme-5e .sdx-conditions-header {
+    color: #444;
+    font-family: 'Modesto Condensed', serif;
+}
+
+.sdx-conditions-toggles.sdx-theme-5e .sdx-condition-toggle {
+    background: #eef;
+    border: 1px solid #bcd;
+    border-radius: 4px;
+}
+
+.sdx-conditions-toggles.sdx-theme-5e .sdx-condition-toggle:hover {
+    background: #ddf;
+    border-color: #9ab;
+}
+
+.sdx-conditions-toggles.sdx-theme-5e .sdx-condition-toggle.active {
+    background: #4caf50;
+    border-color: #388e3c;
+    color: white;
+}
+
+.sdx-conditions-toggles.sdx-theme-5e .sdx-condition-toggle.active .sdx-condition-name {
+    color: white;
+}
+
+.sdx-conditions-toggles.sdx-theme-5e .sdx-condition-toggle.has-variants .fa-caret-down {
+    color: #666;
+}
+
+.sdx-conditions-toggles.sdx-theme-5e .sdx-condition-submenu {
+    background: white;
+    border: 1px solid #999;
+    border-radius: 4px;
+}
+
+.sdx-conditions-toggles.sdx-theme-5e .sdx-submenu-item {
+    color: #333;
+}
+
+.sdx-conditions-toggles.sdx-theme-5e .sdx-submenu-item:hover {
+    background: #eee;
+}
+
+.sdx-conditions-toggles.sdx-theme-5e .sdx-submenu-item.active {
+    background: #4caf50;
+    color: white;
+}
+
 /* ============================================
    COMBAT SETTINGS - DAMAGE CARD
    ============================================ */
@@ -11723,4 +11846,442 @@ section[data-tab="tab-notes"].sdx-journal-active>div:not(.sdx-journal-notes) {
 .sdx-settings-header.group-header i {
     margin-right: 8px;
     opacity: 0.9;
+}
+
+/* ============================================
+   DARK THEME CHAT CARDS
+   Override Shadowdark system's light theme for chat cards
+   ============================================ */
+
+/* Main chat card container */
+.shadowdark.chat-card {
+    background: #1a1a1a !important;
+    border: 1px solid #333 !important;
+    color: #e0e0e0 !important;
+    border-radius: 4px !important;
+}
+
+/* Card header */
+.shadowdark.chat-card .card-header {
+    background: linear-gradient(180deg, #252525 0%, #1a1a1a 100%) !important;
+    border-bottom: 1px solid #333 !important;
+}
+
+.shadowdark.chat-card .card-header h3 {
+    color: #fff !important;
+    text-shadow: none !important;
+}
+
+.shadowdark.chat-card .card-header img {
+    border: 1px solid #444 !important;
+    border-radius: 3px !important;
+}
+
+/* Card content */
+.shadowdark.chat-card .card-content {
+    background: transparent !important;
+    color: #e0e0e0 !important;
+}
+
+/* Attack roll section */
+.shadowdark.chat-card .card-attack-roll {
+    background: #252525 !important;
+    border: 1px solid #333 !important;
+    border-radius: 3px !important;
+    color: #e0e0e0 !important;
+}
+
+/* Roll result text */
+.shadowdark.chat-card .roll-result,
+.shadowdark.chat-card .dice-result {
+    color: #fff !important;
+}
+
+/* Success/failure states */
+.shadowdark.chat-card .roll-success {
+    background: #2a4a2a !important;
+    color: #8f8 !important;
+}
+
+.shadowdark.chat-card .roll-failure {
+    background: #4a2a2a !important;
+    color: #f88 !important;
+}
+
+/* Critical success */
+.shadowdark.chat-card .critical-success,
+.shadowdark.chat-card [class*="critical"] {
+    color: #4f4 !important;
+    text-shadow: 0 0 8px rgba(68, 255, 68, 0.5) !important;
+}
+
+/* Damage section */
+.shadowdark.chat-card .card-damage,
+.shadowdark.chat-card .damage-section {
+    background: #252525 !important;
+    border: 1px solid #333 !important;
+    border-radius: 3px !important;
+}
+
+/* Dice tooltip and formula */
+.shadowdark.chat-card .dice-formula {
+    background: #333 !important;
+    color: #aaa !important;
+    border: 1px solid #444 !important;
+}
+
+.shadowdark.chat-card .dice-total {
+    background: #1a1a1a !important;
+    color: #fff !important;
+    border: 1px solid #555 !important;
+}
+
+/* Buttons in chat cards */
+.shadowdark.chat-card button,
+.shadowdark.chat-card .card-buttons button {
+    background: #333 !important;
+    color: #e0e0e0 !important;
+    border: 1px solid #555 !important;
+    border-radius: 3px !important;
+}
+
+.shadowdark.chat-card button:hover,
+.shadowdark.chat-card .card-buttons button:hover {
+    background: #444 !important;
+    color: #fff !important;
+    border-color: #666 !important;
+}
+
+/* Tags/badges */
+.shadowdark.chat-card .tag,
+.shadowdark.chat-card .badge,
+.shadowdark.chat-card [class*="type-"],
+.shadowdark.chat-card [class*="range-"] {
+    background: #333 !important;
+    color: #aaa !important;
+    border: 1px solid #444 !important;
+}
+
+/* Target list section */
+.shadowdark.chat-card .target-list,
+.shadowdark.chat-card .targets-section {
+    background: #1f1f1f !important;
+    border: 1px solid #333 !important;
+}
+
+/* Hit bonus display */
+.sdx-hit-bonus-display {
+    background: #252525 !important;
+    border: 1px solid #333 !important;
+    border-radius: 3px !important;
+    padding: 4px 8px !important;
+    margin: 4px 0 !important;
+    color: #e0e0e0 !important;
+}
+
+.sdx-hit-bonus-label {
+    color: #888 !important;
+}
+
+.sdx-hit-bonus-result {
+    color: #8f8 !important;
+    font-weight: bold !important;
+}
+
+/* Tab buttons for targeted/selected */
+.shadowdark.chat-card .tab-button,
+.shadowdark.chat-card [data-tab] {
+    background: #2a2a2a !important;
+    color: #888 !important;
+    border: 1px solid #333 !important;
+}
+
+.shadowdark.chat-card .tab-button.active,
+.shadowdark.chat-card [data-tab].active {
+    background: #3a3a3a !important;
+    color: #fff !important;
+}
+
+/* Damage multiplier buttons */
+.shadowdark.chat-card .damage-multiplier,
+.shadowdark.chat-card [data-multiplier] {
+    background: #333 !important;
+    color: #e0e0e0 !important;
+    border: 1px solid #444 !important;
+}
+
+.shadowdark.chat-card .damage-multiplier.active,
+.shadowdark.chat-card [data-multiplier].active {
+    background: #4a4a4a !important;
+    color: #fff !important;
+    border-color: #666 !important;
+}
+
+/* Token/actor checkboxes in target list */
+.shadowdark.chat-card .target-row {
+    background: #1f1f1f !important;
+    border-bottom: 1px solid #333 !important;
+}
+
+.shadowdark.chat-card .target-row:hover {
+    background: #282828 !important;
+}
+
+/* Damage preview */
+.shadowdark.chat-card .damage-preview {
+    color: #c44 !important;
+    font-weight: bold !important;
+}
+
+/* ============================================
+   SDX DAMAGE CARD DARK THEME
+   ============================================ */
+
+/* Main damage card container */
+.sdx-damage-card {
+    background: #1a1a1a !important;
+    border: 1px solid #333 !important;
+    border-radius: 4px !important;
+    color: #e0e0e0 !important;
+    margin-top: 8px;
+}
+
+/* Damage card header */
+.sdx-damage-card-header {
+    background: linear-gradient(180deg, #2a2a2a 0%, #1f1f1f 100%) !important;
+    color: #e0e0e0 !important;
+    border-bottom: 1px solid #333 !important;
+    padding: 8px 12px !important;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.sdx-damage-card-header:hover {
+    background: linear-gradient(180deg, #333 0%, #252525 100%) !important;
+}
+
+.sdx-damage-card-header i {
+    color: #c44 !important;
+}
+
+/* Roll breakdown section */
+.sdx-roll-breakdown {
+    background: #252525 !important;
+    border-bottom: 1px solid #333 !important;
+    padding: 8px 12px !important;
+}
+
+.sdx-roll-formula-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.sdx-roll-formula {
+    background: #333 !important;
+    color: #aaa !important;
+    padding: 4px 8px !important;
+    border-radius: 3px !important;
+    font-family: monospace;
+}
+
+.sdx-reroll-btn {
+    background: #333 !important;
+    color: #e0e0e0 !important;
+    border: 1px solid #555 !important;
+    border-radius: 3px !important;
+    padding: 4px 8px !important;
+    cursor: pointer;
+}
+
+.sdx-reroll-btn:hover {
+    background: #444 !important;
+    color: #fff !important;
+}
+
+.sdx-roll-breakdown-line {
+    margin-top: 8px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.sdx-roll-total {
+    background: #1a1a1a !important;
+    color: #fff !important;
+    font-weight: bold;
+    font-size: 18px;
+    padding: 4px 12px;
+    border-radius: 3px;
+    border: 1px solid #555;
+}
+
+.sdx-equals {
+    color: #888 !important;
+}
+
+.sdx-die {
+    background: #333 !important;
+    color: #e0e0e0 !important;
+    padding: 4px 8px !important;
+    border-radius: 3px !important;
+    border: 1px solid #555 !important;
+}
+
+.sdx-die-clickable {
+    cursor: pointer;
+}
+
+.sdx-die-clickable:hover {
+    background: #444 !important;
+    border-color: #666 !important;
+}
+
+.sdx-die-max {
+    background: #2a4a2a !important;
+    color: #8f8 !important;
+    border-color: #3a5a3a !important;
+}
+
+.sdx-die-min {
+    background: #4a2a2a !important;
+    color: #f88 !important;
+    border-color: #5a3a3a !important;
+}
+
+/* Tabs */
+.sdx-damage-card-tabs {
+    display: flex;
+    background: #1a1a1a !important;
+    border-bottom: 1px solid #333 !important;
+}
+
+.sdx-damage-card-tabs .sdx-tab {
+    flex: 1;
+    padding: 8px 12px;
+    text-align: center;
+    cursor: pointer;
+    background: #222 !important;
+    color: #888 !important;
+    border-right: 1px solid #333;
+    transition: all 0.2s;
+}
+
+.sdx-damage-card-tabs .sdx-tab:last-child {
+    border-right: none;
+}
+
+.sdx-damage-card-tabs .sdx-tab:hover {
+    background: #2a2a2a !important;
+    color: #ccc !important;
+}
+
+.sdx-damage-card-tabs .sdx-tab.active {
+    background: #333 !important;
+    color: #fff !important;
+}
+
+/* Content area */
+.sdx-damage-card-content {
+    background: #1f1f1f !important;
+    padding: 8px !important;
+}
+
+/* Target items */
+.sdx-damage-targets {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.sdx-target-item {
+    background: #252525 !important;
+    border: 1px solid #333 !important;
+    border-radius: 4px !important;
+    padding: 8px !important;
+}
+
+.sdx-target-item[data-enabled="false"] {
+    opacity: 0.5;
+}
+
+.sdx-target-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.sdx-target-enable-checkbox {
+    accent-color: #4CAF50;
+}
+
+.sdx-target-img {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 1px solid #555 !important;
+}
+
+.sdx-target-name {
+    flex: 1;
+    color: #e0e0e0 !important;
+}
+
+.sdx-damage-preview {
+    color: #c44 !important;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+/* Multiplier buttons */
+.sdx-multipliers {
+    display: flex;
+    gap: 4px;
+    margin-top: 8px;
+    flex-wrap: wrap;
+}
+
+.sdx-multiplier-btn {
+    background: #333 !important;
+    color: #e0e0e0 !important;
+    border: 1px solid #555 !important;
+    border-radius: 3px !important;
+    padding: 2px 2px !important;
+    cursor: pointer;
+    min-width: 30px;
+    text-align: center;
+}
+
+.sdx-multiplier-btn:hover {
+    background: #444 !important;
+    color: #fff !important;
+}
+
+.sdx-multiplier-btn.active {
+    background: #4a4a4a !important;
+    color: #fff !important;
+    border-color: #666 !important;
+}
+
+/* Damage actions */
+.sdx-damage-actions {
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid #333;
+}
+
+.sdx-apply-damage-btn {
+    width: 100%;
+    background: #533 !important;
+    color: #fff !important;
+    border: 1px solid #744 !important;
+    border-radius: 3px !important;
+    padding: 8px 16px !important;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.sdx-apply-damage-btn:hover {
+    background: #644 !important;
+    border-color: #855 !important;
 }

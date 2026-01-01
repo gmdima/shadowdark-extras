@@ -26,6 +26,8 @@ import { initFocusSpellTracker, endFocusSpell, linkEffectToFocusSpell, getActive
 import { initCarousing, injectCarousingTab, ensureCarousingJournal, ensureCarousingTablesJournal, initCarousingSocket, getCustomCarousingTables, getCarousingTableById, setCarousingTable } from "./CarousingSD.mjs";
 import { openCarousingTablesEditor } from "./CarousingTablesApp.mjs";
 import { openExpandedCarousingTablesEditor } from "./ExpandedCarousingTablesApp.mjs";
+import { initTemplateEffects, processTemplateTurnEffects, setupTemplateEffectFlags } from "./TemplateEffectsSD.mjs";
+import { initAuraEffects, createAuraOnActor, getActiveAuras, getTokensInAura } from "./AuraEffectsSD.mjs";
 
 const MODULE_ID = "shadowdark-extras";
 const TRADE_JOURNAL_NAME = "__sdx_trade_sync__"; // Must match TradeWindowSD.mjs
@@ -3568,7 +3570,10 @@ function registerSettings() {
 		},
 		onChange: () => {
 			// Re-render all open player sheets
-			Object.values(ui.windows).filter(app => app instanceof globalThis.shadowdark.apps.PlayerSheetSD).forEach(app => app.render());
+			const PlayerSheetClass = globalThis.shadowdark?.apps?.PlayerSheetSD;
+			if (PlayerSheetClass) {
+				Object.values(ui.windows).filter(app => app instanceof PlayerSheetClass).forEach(app => app.render());
+			}
 		}
 	});
 
@@ -7380,6 +7385,14 @@ Hooks.once("ready", async () => {
 	// Setup torch animations (requires Sequencer and JB2A)
 	initTorchAnimations();
 
+	// Initialize Template Effects System (damage/effects for tokens in templates)
+	initTemplateEffects();
+	console.log(`${MODULE_ID} | Template Effects System initialized`);
+
+	// Initialize Aura Effects System (token-attached effects that follow bearer)
+	initAuraEffects();
+	console.log(`${MODULE_ID} | Aura Effects System initialized`);
+
 	patchLightSourceTrackerForParty();
 	patchToggleItemDetailsForUnidentified();
 	setupUnidentifiedItemNameWrapper();
@@ -7540,26 +7553,23 @@ Hooks.once("ready", async () => {
 	initCarousingSocket();
 });
 
-// Preserve unidentified flags when items are created (covers item-piles transfers)
+// Preserve flags when items are created (covers item-piles transfers, compendium drops, etc.)
 Hooks.on("preCreateItem", (item, data, options, userId) => {
-	// Note: This hook handles unidentified flags for items created directly,
-	// but for spells converted via dialog, we wrap shadowdark.utils.createItemFromSpell instead
+	// Note: This hook handles flag preservation for items created directly
 
-	// Check if unidentified feature is enabled
+	// Preserve unidentified flags (if feature is enabled)
 	try {
-		if (!game.settings.get(MODULE_ID, "enableUnidentified")) return;
+		if (game.settings.get(MODULE_ID, "enableUnidentified")) {
+			if (data.flags?.[MODULE_ID]?.unidentified) {
+				item.updateSource({
+					[`flags.${MODULE_ID}.unidentified`]: true,
+					[`flags.${MODULE_ID}.unidentifiedName`]: data.flags[MODULE_ID].unidentifiedName || "",
+					[`flags.${MODULE_ID}.unidentifiedDescription`]: data.flags[MODULE_ID].unidentifiedDescription || ""
+				});
+			}
+		}
 	} catch {
-		return;
-	}
-
-	// If the item data already has our unidentified flag, ensure it's preserved
-	if (data.flags?.[MODULE_ID]?.unidentified) {
-		// Flag is present, make sure it's set on the item
-		item.updateSource({
-			[`flags.${MODULE_ID}.unidentified`]: true,
-			[`flags.${MODULE_ID}.unidentifiedName`]: data.flags[MODULE_ID].unidentifiedName || "",
-			[`flags.${MODULE_ID}.unidentifiedDescription`]: data.flags[MODULE_ID].unidentifiedDescription || ""
-		});
+		// Setting may not exist yet
 	}
 
 	// Preserve spell damage flags when learning a spell from a scroll
@@ -7569,12 +7579,35 @@ Hooks.on("preCreateItem", (item, data, options, userId) => {
 		const sourceScrollId = item.parent.getFlag(MODULE_ID, "_learningFromScroll");
 		if (sourceScrollId) {
 			const sourceScroll = item.parent.items.get(sourceScrollId);
-			if (sourceScroll && sourceScroll.flags?.[MODULE_ID]?.spellDamage) {
+			if (sourceScroll) {
 				// Preserve the spell damage configuration from the scroll
-				item.updateSource({
-					[`flags.${MODULE_ID}.spellDamage`]: foundry.utils.duplicate(sourceScroll.flags[MODULE_ID].spellDamage)
-				});
-				console.log(`${MODULE_ID} | Preserved spell damage flags when learning from scroll:`, sourceScroll.name);
+				if (sourceScroll.flags?.[MODULE_ID]?.spellDamage) {
+					item.updateSource({
+						[`flags.${MODULE_ID}.spellDamage`]: foundry.utils.duplicate(sourceScroll.flags[MODULE_ID].spellDamage)
+					});
+					console.log(`${MODULE_ID} | Preserved spell damage flags when learning from scroll:`, sourceScroll.name);
+				}
+				// Preserve targeting configuration from the scroll
+				if (sourceScroll.flags?.[MODULE_ID]?.targeting) {
+					item.updateSource({
+						[`flags.${MODULE_ID}.targeting`]: foundry.utils.duplicate(sourceScroll.flags[MODULE_ID].targeting)
+					});
+					console.log(`${MODULE_ID} | Preserved targeting flags when learning from scroll:`, sourceScroll.name);
+				}
+				// Preserve template effects configuration from the scroll
+				if (sourceScroll.flags?.[MODULE_ID]?.templateEffects) {
+					item.updateSource({
+						[`flags.${MODULE_ID}.templateEffects`]: foundry.utils.duplicate(sourceScroll.flags[MODULE_ID].templateEffects)
+					});
+					console.log(`${MODULE_ID} | Preserved templateEffects flags when learning from scroll:`, sourceScroll.name);
+				}
+				// Preserve aura effects configuration from the scroll
+				if (sourceScroll.flags?.[MODULE_ID]?.auraEffects) {
+					item.updateSource({
+						[`flags.${MODULE_ID}.auraEffects`]: foundry.utils.duplicate(sourceScroll.flags[MODULE_ID].auraEffects)
+					});
+					console.log(`${MODULE_ID} | Preserved auraEffects flags when learning from scroll:`, sourceScroll.name);
+				}
 			}
 		}
 	}
@@ -7593,6 +7626,22 @@ Hooks.on("preCreateItem", (item, data, options, userId) => {
 			[`flags.${MODULE_ID}.targeting`]: foundry.utils.duplicate(data.flags[MODULE_ID].targeting)
 		});
 		console.log(`${MODULE_ID} | Preserved targeting flags on item creation:`, item.name);
+	}
+
+	// Preserve Template Effects configuration flags
+	if (data.flags?.[MODULE_ID]?.templateEffects) {
+		item.updateSource({
+			[`flags.${MODULE_ID}.templateEffects`]: foundry.utils.duplicate(data.flags[MODULE_ID].templateEffects)
+		});
+		console.log(`${MODULE_ID} | Preserved templateEffects flags on item creation:`, item.name);
+	}
+
+	// Preserve Aura Effects configuration flags
+	if (data.flags?.[MODULE_ID]?.auraEffects) {
+		item.updateSource({
+			[`flags.${MODULE_ID}.auraEffects`]: foundry.utils.duplicate(data.flags[MODULE_ID].auraEffects)
+		});
+		console.log(`${MODULE_ID} | Preserved auraEffects flags on item creation:`, item.name);
 	}
 
 	// Preserve Item Macro module's macro data (itemacro module)
@@ -7876,13 +7925,59 @@ async function enhanceSpellSheet(app, html) {
 		}
 	};
 
+	// Initialize template effects flags
+	const templateEffectsFlags = item.flags?.[MODULE_ID]?.templateEffects || {
+		enabled: false,
+		triggers: {
+			onEnter: false,
+			onTurnStart: false,
+			onTurnEnd: false,
+			onLeave: false
+		},
+		damage: {
+			formula: '',
+			type: ''
+		},
+		save: {
+			enabled: false,
+			dc: 12,
+			ability: 'dex',
+			halfOnSuccess: true
+		},
+		applyConfiguredEffects: false
+	};
+
+	// Initialize aura effects flags
+	const auraEffectsFlags = item.flags?.[MODULE_ID]?.auraEffects || {
+		enabled: false,
+		attachTo: 'caster',
+		radius: 30,
+		triggers: {
+			onEnter: false,
+			onLeave: false,
+			onTurnStart: false,
+			onTurnEnd: false
+		},
+		damage: { formula: '', type: '' },
+		save: { enabled: false, dc: 12, ability: 'con', halfOnSuccess: false },
+		animation: { enabled: true, style: 'circle', tint: '#4488ff' },
+		disposition: 'all',
+		includeSelf: false,
+		applyToOriginator: true,
+		checkVisibility: false,
+		applyConfiguredEffects: false,
+		runItemMacro: false
+	};
+
 	// Combine all flags for template
 	const flags = {
 		...spellDamageFlags,
 		summoning: summoningFlags,
 		itemGive: itemGiveFlags,
 		itemMacro: itemMacroFlags,
-		targeting: targetingFlags
+		targeting: targetingFlags,
+		templateEffects: templateEffectsFlags,
+		auraEffects: auraEffectsFlags
 	};
 
 	// Convert applyToTarget to boolean (in case it was stored as string)
@@ -8262,6 +8357,26 @@ async function enhanceSpellSheet(app, html) {
 		const colorVal = $(this).val();
 		if (/^#[0-9A-Fa-f]{6}$/.test(colorVal)) {
 			$(this).siblings('.sdx-tm-tint-picker').val(colorVal);
+		}
+	});
+
+	// Template Effects: Enable/disable config section based on checkbox
+	html.find('.sdx-template-effects-enabled').on('change', function () {
+		const $config = $(this).closest('.sdx-template-effects-section').find('.sdx-template-effects-config');
+		if ($(this).is(':checked')) {
+			$config.css({ opacity: '', pointerEvents: '' });
+		} else {
+			$config.css({ opacity: '0.5', pointerEvents: 'none' });
+		}
+	});
+
+	// Template Effects: Enable/disable save config section based on checkbox
+	html.find('.sdx-template-save-enabled').on('change', function () {
+		const $config = $(this).closest('.sdx-template-effects-section').find('.sdx-template-save-config');
+		if ($(this).is(':checked')) {
+			$config.css({ opacity: '', pointerEvents: '' });
+		} else {
+			$config.css({ opacity: '0.5', pointerEvents: 'none' });
 		}
 	});
 
@@ -9791,13 +9906,52 @@ async function enhanceScrollSheet(app, html) {
 		}
 	};
 
+	// Initialize template effects flags
+	const templateEffectsFlags = item.flags?.[MODULE_ID]?.templateEffects || {
+		enabled: false,
+		triggers: {
+			onEnter: false,
+			onTurnStart: false,
+			onTurnEnd: false,
+			onLeave: false
+		},
+		damage: {
+			formula: '',
+			type: ''
+		},
+		save: {
+			enabled: false,
+			dc: 12,
+			ability: 'dex',
+			halfOnSuccess: true
+		},
+		applyConfiguredEffects: false
+	};
+
+	// Initialize aura effects flags
+	const auraEffectsFlags = item.flags?.[MODULE_ID]?.auraEffects || {
+		enabled: false,
+		attachTo: 'caster',
+		radius: 30,
+		triggers: { onEnter: false, onLeave: false, onTurnStart: false, onTurnEnd: false },
+		damage: { formula: '', type: '' },
+		save: { enabled: false, dc: 12, ability: 'con', halfOnSuccess: false },
+		animation: { enabled: true, style: 'circle', tint: '#4488ff' },
+		disposition: 'all',
+		includeSelf: false,
+		applyConfiguredEffects: false,
+		runItemMacro: false
+	};
+
 	// Combine all flags for template
 	const flags = {
 		...spellDamageFlags,
 		summoning: summoningFlags,
 		itemGive: itemGiveFlags,
 		itemMacro: itemMacroFlags,
-		targeting: targetingFlags
+		targeting: targetingFlags,
+		templateEffects: templateEffectsFlags,
+		auraEffects: auraEffectsFlags
 	};
 
 	// Convert applyToTarget to boolean (in case it was stored as string)
@@ -10124,6 +10278,26 @@ async function enhanceScrollSheet(app, html) {
 		const colorVal = $(this).val();
 		if (/^#[0-9A-Fa-f]{6}$/.test(colorVal)) {
 			$(this).siblings('.sdx-tm-tint-picker').val(colorVal);
+		}
+	});
+
+	// Template Effects: Enable/disable config section based on checkbox
+	html.find('.sdx-template-effects-enabled').on('change', function () {
+		const $config = $(this).closest('.sdx-template-effects-section').find('.sdx-template-effects-config');
+		if ($(this).is(':checked')) {
+			$config.css({ opacity: '', pointerEvents: '' });
+		} else {
+			$config.css({ opacity: '0.5', pointerEvents: 'none' });
+		}
+	});
+
+	// Template Effects: Enable/disable save config section based on checkbox
+	html.find('.sdx-template-save-enabled').on('change', function () {
+		const $config = $(this).closest('.sdx-template-effects-section').find('.sdx-template-save-config');
+		if ($(this).is(':checked')) {
+			$config.css({ opacity: '', pointerEvents: '' });
+		} else {
+			$config.css({ opacity: '0.5', pointerEvents: 'none' });
 		}
 	});
 
@@ -10766,13 +10940,52 @@ async function enhanceWandSheet(app, html) {
 		}
 	};
 
+	// Initialize template effects flags
+	const templateEffectsFlags = item.flags?.[MODULE_ID]?.templateEffects || {
+		enabled: false,
+		triggers: {
+			onEnter: false,
+			onTurnStart: false,
+			onTurnEnd: false,
+			onLeave: false
+		},
+		damage: {
+			formula: '',
+			type: ''
+		},
+		save: {
+			enabled: false,
+			dc: 12,
+			ability: 'dex',
+			halfOnSuccess: true
+		},
+		applyConfiguredEffects: false
+	};
+
+	// Initialize aura effects flags
+	const auraEffectsFlags = item.flags?.[MODULE_ID]?.auraEffects || {
+		enabled: false,
+		attachTo: 'caster',
+		radius: 30,
+		triggers: { onEnter: false, onLeave: false, onTurnStart: false, onTurnEnd: false },
+		damage: { formula: '', type: '' },
+		save: { enabled: false, dc: 12, ability: 'con', halfOnSuccess: false },
+		animation: { enabled: true, style: 'circle', tint: '#4488ff' },
+		disposition: 'all',
+		includeSelf: false,
+		applyConfiguredEffects: false,
+		runItemMacro: false
+	};
+
 	// Combine all flags for template
 	const flags = {
 		...spellDamageFlags,
 		summoning: summoningFlags,
 		itemGive: itemGiveFlags,
 		itemMacro: itemMacroFlags,
-		targeting: targetingFlags
+		targeting: targetingFlags,
+		templateEffects: templateEffectsFlags,
+		auraEffects: auraEffectsFlags
 	};
 
 	const applyToTarget = flags.applyToTarget === "false" ? false : (flags.applyToTarget === false ? false : true);
@@ -11085,6 +11298,26 @@ async function enhanceWandSheet(app, html) {
 		const colorVal = $(this).val();
 		if (/^#[0-9A-Fa-f]{6}$/.test(colorVal)) {
 			$(this).siblings('.sdx-tm-tint-picker').val(colorVal);
+		}
+	});
+
+	// Template Effects: Enable/disable config section based on checkbox
+	html.find('.sdx-template-effects-enabled').on('change', function () {
+		const $config = $(this).closest('.sdx-template-effects-section').find('.sdx-template-effects-config');
+		if ($(this).is(':checked')) {
+			$config.css({ opacity: '', pointerEvents: '' });
+		} else {
+			$config.css({ opacity: '0.5', pointerEvents: 'none' });
+		}
+	});
+
+	// Template Effects: Enable/disable save config section based on checkbox
+	html.find('.sdx-template-save-enabled').on('change', function () {
+		const $config = $(this).closest('.sdx-template-effects-section').find('.sdx-template-save-config');
+		if ($(this).is(':checked')) {
+			$config.css({ opacity: '', pointerEvents: '' });
+		} else {
+			$config.css({ opacity: '0.5', pointerEvents: 'none' });
 		}
 	});
 
@@ -11787,7 +12020,7 @@ Hooks.on("preCreateChatMessage", (message, data, options, userId) => {
 			const actor = game.actors.get(actorId);
 			const item = actor?.items.get(itemId);
 
-			if (item && ["Scroll", "Potion", "Wand"].includes(item.type)) {
+			if (item && ["Spell", "NPC Spell", "Scroll", "Potion", "Wand"].includes(item.type)) {
 				// Store the item type and relevant configurations
 				const itemConfig = {
 					type: item.type,
@@ -11802,6 +12035,16 @@ Hooks.on("preCreateChatMessage", (message, data, options, userId) => {
 				// Store itemGive config if it exists
 				if (item.flags?.[MODULE_ID]?.itemGive) {
 					itemConfig.itemGive = foundry.utils.duplicate(item.flags[MODULE_ID].itemGive);
+				}
+
+				// Store auraEffects config if it exists
+				if (item.flags?.[MODULE_ID]?.auraEffects) {
+					itemConfig.auraEffects = foundry.utils.duplicate(item.flags[MODULE_ID].auraEffects);
+				}
+
+				// Store spellDamage config if it exists
+				if (item.flags?.[MODULE_ID]?.spellDamage) {
+					itemConfig.spellDamage = foundry.utils.duplicate(item.flags[MODULE_ID].spellDamage);
 				}
 
 				message.updateSource({
@@ -12060,6 +12303,18 @@ Hooks.once("ready", () => {
 			if (spell.flags?.[MODULE_ID]?.itemMacro) {
 				itemData.flags[MODULE_ID].itemMacro = foundry.utils.duplicate(spell.flags[MODULE_ID].itemMacro);
 				console.log(`${MODULE_ID} | Preserved itemMacro flags for ${spell.name} -> ${itemData.name}`, itemData.flags[MODULE_ID].itemMacro);
+			}
+
+			// Preserve Template Effects configuration flags
+			if (spell.flags?.[MODULE_ID]?.templateEffects) {
+				itemData.flags[MODULE_ID].templateEffects = foundry.utils.duplicate(spell.flags[MODULE_ID].templateEffects);
+				console.log(`${MODULE_ID} | Preserved templateEffects flags for ${spell.name} -> ${itemData.name}`, itemData.flags[MODULE_ID].templateEffects);
+			}
+
+			// Preserve Aura Effects configuration flags
+			if (spell.flags?.[MODULE_ID]?.auraEffects) {
+				itemData.flags[MODULE_ID].auraEffects = foundry.utils.duplicate(spell.flags[MODULE_ID].auraEffects);
+				console.log(`${MODULE_ID} | Preserved auraEffects flags for ${spell.name} -> ${itemData.name}`, itemData.flags[MODULE_ID].auraEffects);
 			}
 
 			// Preserve Item Macro module's macro data (itemacro module)
