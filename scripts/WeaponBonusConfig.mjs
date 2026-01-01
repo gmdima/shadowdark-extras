@@ -105,6 +105,44 @@ export function injectWeaponBonusTab(app, html, item) {
 
 	// Activate tab functionality
 	activateWeaponBonusListeners(html, app, item);
+
+	// Inject Animation button after the Bonuses tab
+	injectWeaponAnimationButton(html, item);
+}
+
+/**
+ * Inject the Animation button into weapon and shield item sheets
+ * @param {jQuery} html - The sheet HTML
+ * @param {Item} item - The weapon or shield item
+ */
+export function injectWeaponAnimationButton(html, item) {
+	// Find the nav tabs
+	const $nav = html.find('nav.SD-nav[data-group="primary"]');
+	if (!$nav.length) return;
+
+	// Check if button already exists
+	if ($nav.find('.sdx-weapon-animation-btn').length) return;
+
+	// Add the Animation button after the Bonuses tab
+	const animationBtn = `<a class="sdx-weapon-animation-btn navigation-tab" title="${game.i18n.localize("SHADOWDARK_EXTRAS.weaponAnimation.button")}"><i class="fas fa-wand-magic-sparkles"></i></a>`;
+	const $bonusesTab = $nav.find('[data-tab="tab-bonuses"]');
+	if ($bonusesTab.length) {
+		$bonusesTab.after(animationBtn);
+	} else {
+		$nav.append(animationBtn);
+	}
+
+	// Add click handler for the animation button
+	html.find('.sdx-weapon-animation-btn').on('click', async (event) => {
+		event.preventDefault();
+		event.stopPropagation();
+
+		// Dynamic import to avoid circular dependency
+		const { openWeaponAnimationConfig } = await import("./WeaponAnimationConfig.mjs");
+		openWeaponAnimationConfig(item);
+	});
+
+	console.log(`${MODULE_ID} | Injected weapon animation button`);
 }
 
 /**
@@ -372,6 +410,22 @@ function buildDamageBonusRowHtml(bonus, index) {
 						placeholder="e.g., 1d4 or @abilities.str.mod" title="Damage formula" />
 					<input type="text" class="sdx-damage-bonus-label" value="${label}" 
 						placeholder="Label (optional, e.g., vs Undead)" title="Label" />
+					<select class="sdx-damage-bonus-type" title="Damage Type">
+						<option value="" ${!bonus.damageType ? 'selected' : ''}>Standard Damage</option>
+						<option value="bludgeoning" ${bonus.damageType === 'bludgeoning' ? 'selected' : ''}>Bludgeoning</option>
+						<option value="slashing" ${bonus.damageType === 'slashing' ? 'selected' : ''}>Slashing</option>
+						<option value="piercing" ${bonus.damageType === 'piercing' ? 'selected' : ''}>Piercing</option>
+						<option value="physical" ${bonus.damageType === 'physical' ? 'selected' : ''}>Physical (Generic)</option>
+						<option value="fire" ${bonus.damageType === 'fire' ? 'selected' : ''}>Fire</option>
+						<option value="cold" ${bonus.damageType === 'cold' ? 'selected' : ''}>Cold</option>
+						<option value="lightning" ${bonus.damageType === 'lightning' ? 'selected' : ''}>Lightning</option>
+						<option value="acid" ${bonus.damageType === 'acid' ? 'selected' : ''}>Acid</option>
+						<option value="poison" ${bonus.damageType === 'poison' ? 'selected' : ''}>Poison</option>
+						<option value="necrotic" ${bonus.damageType === 'necrotic' ? 'selected' : ''}>Necrotic</option>
+						<option value="radiant" ${bonus.damageType === 'radiant' ? 'selected' : ''}>Radiant</option>
+						<option value="psychic" ${bonus.damageType === 'psychic' ? 'selected' : ''}>Psychic</option>
+						<option value="force" ${bonus.damageType === 'force' ? 'selected' : ''}>Force</option>
+					</select>
 				</div>
 				<button type="button" class="sdx-remove-damage-bonus" data-index="${index}">
 					<i class="fas fa-trash"></i>
@@ -926,6 +980,11 @@ function activateWeaponBonusListeners(html, app, item) {
 		await saveDamageBonusesFromDom($tab, item);
 	});
 
+	// Damage bonus type change
+	$tab.on('change', '.sdx-damage-bonus-type', async function () {
+		await saveDamageBonusesFromDom($tab, item);
+	});
+
 	// Add damage bonus requirement
 	$tab.on('click', '.sdx-add-damage-bonus-requirement', async function (e) {
 		e.preventDefault();
@@ -1224,6 +1283,7 @@ async function saveDamageBonusesFromDom($tab, item) {
 		damageBonuses.push({
 			formula: $row.find('.sdx-damage-bonus-formula').val() || "",
 			label: $row.find('.sdx-damage-bonus-label').val() || "",
+			damageType: $row.find('.sdx-damage-bonus-type').val() || "",
 			exclusive: $row.find('.sdx-damage-bonus-exclusive').is(':checked'),
 			requirements: requirements
 		});
@@ -1670,7 +1730,11 @@ export async function calculateWeaponBonusDamage(weapon, attacker, target, isCri
 			if (evaluateRequirements(bonus.requirements || [], attacker, target)) {
 				const formula = evaluateFormula(bonus.formula, attacker);
 				if (formula) {
-					const part = { formula, label: bonus.label || "" };
+					const part = {
+						formula,
+						label: bonus.label || "",
+						damageType: bonus.damageType || ""
+					};
 					// If this bonus is exclusive and has requirements, use only this bonus
 					if (bonus.exclusive && bonus.requirements && bonus.requirements.length > 0) {
 						exclusiveMatch = part;
@@ -1687,49 +1751,60 @@ export async function calculateWeaponBonusDamage(weapon, attacker, target, isCri
 		applicableParts = [exclusiveMatch];
 	}
 
-	// Combine all applicable bonus formulas
-	const bonusFormula = applicableParts.map(p => p.formula).join(" + ");
+	// Roll each damage bonus separately to track damage by type
+	const damageComponents = [];
 	let totalBonus = 0;
 	let bonusRollResults = []; // Store individual dice results for display
 
-	if (bonusFormula) {
+	for (const part of applicableParts) {
+		if (!part.formula) continue;
+
 		try {
-			const roll = new Roll(bonusFormula);
+			const roll = new Roll(part.formula);
 			await roll.evaluate();
-			totalBonus = roll.total;
+			const amount = roll.total;
+			totalBonus += amount;
+
+			damageComponents.push({
+				amount: amount,
+				type: part.damageType || "standard",
+				label: part.label || "",
+				formula: part.formula
+			});
 
 			// Extract dice results from the roll for display
-			let partIndex = 0;
 			for (const term of roll.terms) {
 				if (term.operator) continue; // Skip operators
 				if (term.faces !== undefined && term.results) {
-					// Get the label for this part if available
-					const partLabel = applicableParts[partIndex]?.label || '';
 					for (const r of term.results) {
 						bonusRollResults.push({
 							value: r.result,
 							faces: term.faces,
-							label: partLabel,
+							label: part.label || '',
+							damageType: part.damageType || '',
 							isMax: r.result === term.faces,
 							isMin: r.result === 1
 						});
 					}
-					partIndex++;
 				} else if (term.number !== undefined && !term.faces) {
 					// Static number
 					bonusRollResults.push({
 						value: term.number,
 						faces: 0, // 0 means static bonus
-						label: applicableParts[partIndex]?.label || '',
+						label: part.label || '',
+						damageType: part.damageType || '',
 						isMax: false,
 						isMin: false
 					});
 				}
 			}
 		} catch (err) {
-			console.warn(`${MODULE_ID} | Failed to evaluate damage bonus formula: ${bonusFormula}`, err);
+			console.warn(`${MODULE_ID} | Failed to evaluate damage bonus formula: ${part.formula}`, err);
 		}
 	}
+
+	// Combine all applicable bonus formulas for display
+	const bonusFormula = applicableParts.map(p => p.formula).join(" + ");
 
 	// Handle critical bonuses
 	let criticalExtraDice = 0;
@@ -1746,6 +1821,14 @@ export async function calculateWeaponBonusDamage(weapon, attacker, target, isCri
 				const critRoll = new Roll(criticalFormula);
 				await critRoll.evaluate();
 				criticalBonus = critRoll.total;
+
+				// Critical damage is treated as "standard" type
+				damageComponents.push({
+					amount: criticalBonus,
+					type: "standard",
+					label: "Critical",
+					formula: criticalFormula
+				});
 
 				// Extract dice results from critical roll
 				for (const term of critRoll.terms) {
@@ -1781,11 +1864,13 @@ export async function calculateWeaponBonusDamage(weapon, attacker, target, isCri
 		bonusFormula,
 		bonusParts: applicableParts,
 		bonusRollResults, // Actual dice results from the roll
+		damageComponents, // NEW: Array of { amount, type, label, formula }
 		criticalExtraDice,
 		criticalBonus,
 		criticalFormula,
 		criticalRollResults, // Actual dice results from critical roll
-		requirementsMet: applicableParts.length > 0 || damageBonuses.length === 0
+		requirementsMet: applicableParts.length > 0 || damageBonuses.length === 0,
+		damageTypes: applicableParts.map(p => p.damageType).filter(t => t)
 	};
 }
 

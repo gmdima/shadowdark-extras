@@ -276,12 +276,171 @@ export function setupCombatSocket() {
 			const maxHp = token.actor.system?.attributes?.hp?.max ?? 0;
 
 			// Check for Glassbones effect (double damage)
-			let finalDamage = data.damage;
 			const hasGlassbones = token.actor.getFlag("shadowdark-extras", "glassbones");
-			if (hasGlassbones && data.damage > 0) {
-				// Double the damage (not healing)
-				finalDamage = data.damage * 2;
-				console.log(`shadowdark-extras | Glassbones: Doubling damage from ${data.damage} to ${finalDamage}`);
+
+			let finalDamage = 0;
+			const isDamage = data.damage > 0;
+
+			// If damageComponents is provided, process each component separately
+			if (data.damageComponents && data.damageComponents.length > 0 && isDamage) {
+				console.log("shadowdark-extras | Processing damage components:", data.damageComponents);
+
+				for (const component of data.damageComponents) {
+					let componentDamage = component.amount || 0;
+					const componentType = (component.type || "standard").toLowerCase();
+
+					// Skip standard damage type (no resistance/immunity/vulnerability applies)
+					if (componentType !== "standard" && componentType !== "damage") {
+						// Check for immunity (0 damage for this component)
+						const isImmune = token.actor.getFlag("shadowdark-extras", `immunity.${componentType}`);
+						if (isImmune) {
+							console.log(`shadowdark-extras | Immunity: Zeroing ${componentType} damage (was ${componentDamage})`);
+							componentDamage = 0;
+						} else {
+							// Check for resistance (half damage for this component)
+							const isResistant = token.actor.getFlag("shadowdark-extras", `resistance.${componentType}`);
+							if (isResistant) {
+								const originalDamage = componentDamage;
+								componentDamage = Math.floor(componentDamage / 2);
+								console.log(`shadowdark-extras | Resistance: Halving ${componentType} damage from ${originalDamage} to ${componentDamage}`);
+							} else {
+								// Check for vulnerability (double damage for this component)
+								const isVulnerable = token.actor.getFlag("shadowdark-extras", `vulnerability.${componentType}`);
+								if (isVulnerable) {
+									const originalDamage = componentDamage;
+									componentDamage = componentDamage * 2;
+									console.log(`shadowdark-extras | Vulnerability: Doubling ${componentType} damage from ${originalDamage} to ${componentDamage}`);
+								}
+							}
+						}
+
+						// Check for physical resistance/immunity/vulnerability (applies to bludgeoning, slashing, piercing)
+						if (["bludgeoning", "slashing", "piercing"].includes(componentType)) {
+							const isPhysicalImmune = token.actor.getFlag("shadowdark-extras", "immunity.physical");
+							if (isPhysicalImmune) {
+								console.log(`shadowdark-extras | Physical Immunity: Zeroing ${componentType} damage (was ${componentDamage})`);
+								componentDamage = 0;
+							} else if (componentDamage > 0) {
+								const isPhysicalResistant = token.actor.getFlag("shadowdark-extras", "resistance.physical");
+								if (isPhysicalResistant) {
+									const originalDamage = componentDamage;
+									componentDamage = Math.floor(componentDamage / 2);
+									console.log(`shadowdark-extras | Physical Resistance: Halving ${componentType} damage from ${originalDamage} to ${componentDamage}`);
+								} else {
+									const isPhysicalVulnerable = token.actor.getFlag("shadowdark-extras", "vulnerability.physical");
+									if (isPhysicalVulnerable) {
+										const originalDamage = componentDamage;
+										componentDamage = componentDamage * 2;
+										console.log(`shadowdark-extras | Physical Vulnerability: Doubling ${componentType} damage from ${originalDamage} to ${componentDamage}`);
+									}
+								}
+							}
+						}
+					}
+
+					finalDamage += componentDamage;
+				}
+
+
+
+				// Process base damage with its type (uses baseDamageType from weapon flags)
+				if (data.baseDamage && data.baseDamage > 0) {
+					let baseDamage = data.baseDamage;
+					const baseType = (data.baseDamageType || "standard").toLowerCase();
+
+					// Apply resistance/immunity/vulnerability to base damage if not standard
+					if (baseType !== "standard" && baseType !== "damage") {
+						const isImmune = token.actor.getFlag("shadowdark-extras", `immunity.${baseType}`);
+						if (isImmune) {
+							console.log(`shadowdark-extras | Base Immunity: Zeroing ${baseType} damage (was ${baseDamage})`);
+							baseDamage = 0;
+						} else {
+							const isResistant = token.actor.getFlag("shadowdark-extras", `resistance.${baseType}`);
+							if (isResistant) {
+								const originalDamage = baseDamage;
+								baseDamage = Math.floor(baseDamage / 2);
+								console.log(`shadowdark-extras | Base Resistance: Halving ${baseType} damage from ${originalDamage} to ${baseDamage}`);
+							} else {
+								const isVulnerable = token.actor.getFlag("shadowdark-extras", `vulnerability.${baseType}`);
+								if (isVulnerable) {
+									const originalDamage = baseDamage;
+									baseDamage = baseDamage * 2;
+									console.log(`shadowdark-extras | Base Vulnerability: Doubling ${baseType} damage from ${originalDamage} to ${baseDamage}`);
+								}
+							}
+						}
+
+						// Check for physical resistance/immunity/vulnerability (applies to bludgeoning, slashing, piercing)
+						if (["bludgeoning", "slashing", "piercing"].includes(baseType) && baseDamage > 0) {
+							const isPhysicalImmune = token.actor.getFlag("shadowdark-extras", "immunity.physical");
+							if (isPhysicalImmune) {
+								console.log(`shadowdark-extras | Base Physical Immunity: Zeroing ${baseType} damage (was ${baseDamage})`);
+								baseDamage = 0;
+							} else {
+								const isPhysicalResistant = token.actor.getFlag("shadowdark-extras", "resistance.physical");
+								if (isPhysicalResistant) {
+									const originalDamage = baseDamage;
+									baseDamage = Math.floor(baseDamage / 2);
+									console.log(`shadowdark-extras | Base Physical Resistance: Halving ${baseType} damage from ${originalDamage} to ${baseDamage}`);
+								} else {
+									const isPhysicalVulnerable = token.actor.getFlag("shadowdark-extras", "vulnerability.physical");
+									if (isPhysicalVulnerable) {
+										const originalDamage = baseDamage;
+										baseDamage = baseDamage * 2;
+										console.log(`shadowdark-extras | Base Physical Vulnerability: Doubling ${baseType} damage from ${originalDamage} to ${baseDamage}`);
+									}
+								}
+							}
+						}
+					}
+
+					finalDamage += baseDamage;
+					console.log(`shadowdark-extras | Adding base damage: ${baseDamage} (type: ${baseType})`);
+				}
+
+				// Glassbones (double damage) - applies after resistance/immunity
+				if (hasGlassbones && finalDamage > 0) {
+					const originalDamage = finalDamage;
+					finalDamage = finalDamage * 2;
+					console.log(`shadowdark-extras | Glassbones: Doubling damage from ${originalDamage} to ${finalDamage}`);
+				}
+			} else {
+				// Legacy behavior: single damage value with single type
+				// Use baseDamageType if provided (weapon base damage type), otherwise fall back to damageType
+				finalDamage = data.damage;
+				const effectiveDamageType = (data.baseDamageType || data.damageType || "standard").toLowerCase();
+
+				if (isDamage && effectiveDamageType && effectiveDamageType !== "standard" && effectiveDamageType !== "damage") {
+
+					// Check for immunity (0 damage)
+					const isImmune = token.actor.getFlag("shadowdark-extras", `immunity.${effectiveDamageType}`);
+					if (isImmune) {
+						finalDamage = 0;
+						console.log(`shadowdark-extras | Immunity: Zeroing ${effectiveDamageType} damage`);
+					} else {
+						// Check for resistance (half damage)
+						const isResistant = token.actor.getFlag("shadowdark-extras", `resistance.${effectiveDamageType}`);
+						if (isResistant) {
+							finalDamage = Math.floor(finalDamage / 2);
+							console.log(`shadowdark-extras | Resistance: Halving ${effectiveDamageType} damage from ${data.damage} to ${finalDamage}`);
+						} else {
+							// Check for vulnerability (double damage)
+							const isVulnerable = token.actor.getFlag("shadowdark-extras", `vulnerability.${effectiveDamageType}`);
+							if (isVulnerable) {
+								finalDamage = finalDamage * 2;
+								console.log(`shadowdark-extras | Vulnerability: Doubling ${effectiveDamageType} damage from ${data.damage} to ${finalDamage}`);
+							}
+						}
+					}
+				}
+
+
+
+				// Glassbones (double damage) - applies after resistance/immunity
+				if (hasGlassbones && finalDamage > 0) {
+					finalDamage = finalDamage * 2;
+					console.log(`shadowdark-extras | Glassbones: Doubling damage from ${data.damage} to ${finalDamage}`);
+				}
 			}
 
 			// Negative damage means healing
@@ -295,6 +454,7 @@ export function setupCombatSocket() {
 				actorName: token.actor.name,
 				originalDamage: data.damage,
 				finalDamage: finalDamage,
+				damageComponents: data.damageComponents,
 				hasGlassbones: hasGlassbones,
 				isHealing: isHealing,
 				oldHp: currentHp,
@@ -2081,6 +2241,11 @@ export async function injectDamageCard(message, html, data) {
 					// Add bonus damage to total (but show it separately in the card)
 					totalDamage += weaponBonusDamage.totalBonus + weaponBonusDamage.criticalBonus;
 					console.log("shadowdark-extras | Added weapon bonus damage:", weaponBonusDamage);
+
+					// If weapon has specific damage types, override the generic "damage" type
+					if (weaponBonusDamage.damageTypes && weaponBonusDamage.damageTypes.length > 0) {
+						damageType = weaponBonusDamage.damageTypes[0]; // Take the first type for now
+					}
 				}
 			} catch (err) {
 				console.warn("shadowdark-extras | Failed to calculate weapon bonus damage:", err);
@@ -2102,8 +2267,12 @@ export async function injectDamageCard(message, html, data) {
 
 	console.log("shadowdark-extras | Building damage card HTML...");
 
+	// Get base damage type from weapon flags (if weapon)
+	const baseDamageType = item?.type === "Weapon" ? (item.getFlag?.(MODULE_ID, 'baseDamageType') || 'standard') : 'standard';
+
 	// Build the damage card HTML (pass allEffects which includes both spell and weapon effects)
-	const cardHtml = await buildDamageCardHtml(actor, cardTargets, totalDamage, damageType, allEffects, spellDamageConfig, settings, message, weaponBonusDamage, isCritical, item, casterTokenId);
+	const cardHtml = await buildDamageCardHtml(actor, cardTargets, totalDamage, damageType, allEffects, spellDamageConfig, settings, message, weaponBonusDamage, isCritical, item, casterTokenId, baseDamageType);
+
 
 	console.log("shadowdark-extras | Card HTML built, length:", cardHtml?.length);
 	console.log("shadowdark-extras | Injecting damage card HTML");
@@ -2488,8 +2657,9 @@ async function buildRollBreakdown(message, weaponBonusDamage = null, isCritical 
 /**
  * Build the damage card HTML
  */
-async function buildDamageCardHtml(actor, targets, totalDamage, damageType, allEffects, spellDamageConfig, settings, message, weaponBonusDamage = null, isCritical = false, spellItem = null, casterTokenId = '') {
-	console.log("shadowdark-extras | buildDamageCardHtml started", { actor, targets, totalDamage, damageType, allEffects, settings, weaponBonusDamage, isCritical, casterTokenId });
+async function buildDamageCardHtml(actor, targets, totalDamage, damageType, allEffects, spellDamageConfig, settings, message, weaponBonusDamage = null, isCritical = false, spellItem = null, casterTokenId = '', baseDamageType = 'standard') {
+	console.log("shadowdark-extras | buildDamageCardHtml started", { actor, targets, totalDamage, damageType, allEffects, settings, weaponBonusDamage, isCritical, casterTokenId, baseDamageType });
+
 
 	const cardSettings = settings.damageCard;
 	const isHealing = damageType?.toLowerCase() === "healing";
@@ -2508,7 +2678,8 @@ async function buildDamageCardHtml(actor, targets, totalDamage, damageType, allE
 				bonusFormula: weaponBonusDamage.bonusFormula || '',
 				totalBonus: weaponBonusDamage.totalBonus || 0,
 				criticalFormula: weaponBonusDamage.criticalFormula || '',
-				criticalBonus: weaponBonusDamage.criticalBonus || 0
+				criticalBonus: weaponBonusDamage.criticalBonus || 0,
+				damageComponents: weaponBonusDamage.damageComponents || []
 			};
 			weaponBonusData = JSON.stringify(bonusInfo).replace(/"/g, '&quot;');
 		}
@@ -2667,7 +2838,7 @@ async function buildDamageCardHtml(actor, targets, totalDamage, damageType, allE
 	}
 
 	const finalHtml = `
-						<div class="sdx-damage-card" data-message-id="${message.id}" data-caster-actor-id="${actor?.id || ''}" data-caster-token-id="${casterTokenId}" data-base-damage="${totalDamage}" data-damage-type="${damageType}">
+						<div class="sdx-damage-card" data-message-id="${message.id}" data-caster-actor-id="${actor?.id || ''}" data-caster-token-id="${casterTokenId}" data-base-damage="${totalDamage}" data-damage-type="${damageType}" data-base-damage-type="${baseDamageType}">
 							<div class="sdx-damage-card-header">
 								<i class="fas ${headerIcon}"></i> ${headerText} <i class="fas fa-chevron-down"></i>
 							</div>
@@ -3593,10 +3764,40 @@ function attachDamageCardListeners(html, messageId) {
 				// Use socketlib to apply damage via GM
 				if (socketlibSocket) {
 					try {
+						const damageType = $card.data('damage-type') || 'damage';
+						const baseDamage = parseInt($card.data('base-damage')) || 0;
+
+						// Get damage components from weapon bonus data if available
+						let damageComponents = [];
+						const $rerollBtn = $card.find('.sdx-reroll-btn');
+						if ($rerollBtn.length) {
+							const weaponBonusAttr = $rerollBtn.attr('data-weapon-bonus');
+							if (weaponBonusAttr) {
+								try {
+									const weaponBonusData = JSON.parse(weaponBonusAttr.replace(/&quot;/g, '"'));
+									damageComponents = weaponBonusData.damageComponents || [];
+								} catch (e) {
+									console.warn("shadowdark-extras | Failed to parse weapon bonus data:", e);
+								}
+							}
+						}
+
+						// Calculate base damage (total minus bonus components)
+						const totalBonusDamage = damageComponents.reduce((sum, c) => sum + (c.amount || 0), 0);
+						const weaponBaseDamage = Math.max(0, calculatedDamage - totalBonusDamage);
+
+						// Get base damage type from card data (set by weapon flags)
+						const baseDamageType = $card.data('base-damage-type') || damageType || 'standard';
+
 						const success = await socketlibSocket.executeAsGM("applyTokenDamage", {
 							tokenId: tokenId,
-							damage: finalDamageForSocket
+							damage: finalDamageForSocket,
+							damageType: damageType,
+							damageComponents: damageComponents,
+							baseDamage: weaponBaseDamage,
+							baseDamageType: baseDamageType
 						});
+
 
 						if (success) {
 							appliedCount++;

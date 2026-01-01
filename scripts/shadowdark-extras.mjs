@@ -17,10 +17,13 @@ import {
 	evaluateRequirements,
 	calculateWeaponBonusDamage,
 	injectWeaponBonusDisplay,
-	getWeaponItemMacroConfig
+	getWeaponItemMacroConfig,
+	injectWeaponAnimationButton
 } from "./WeaponBonusConfig.mjs";
 import { initAutoAnimationsIntegration } from "./AutoAnimationsSD.mjs";
 import { initTorchAnimations } from "./TorchAnimationSD.mjs";
+import { initWeaponAnimations } from "./WeaponAnimationSD.mjs";
+import { openWeaponAnimationConfig } from "./WeaponAnimationConfig.mjs";
 import { initSDXROLLS, setupSDXROLLSSockets, injectSdxRollButton } from "./sdx-rolls/SdxRollsSD.mjs";
 import { initFocusSpellTracker, endFocusSpell, linkEffectToFocusSpell, getActiveFocusSpells, isFocusingOnSpell, startDurationSpell, endDurationSpell } from "./FocusSpellTrackerSD.mjs";
 import { initCarousing, injectCarousingTab, ensureCarousingJournal, ensureCarousingTablesJournal, initCarousingSocket, getCustomCarousingTables, getCarousingTableById, setCarousingTable } from "./CarousingSD.mjs";
@@ -7385,6 +7388,9 @@ Hooks.once("ready", async () => {
 	// Setup torch animations (requires Sequencer and JB2A)
 	initTorchAnimations();
 
+	// Setup weapon animations (requires Sequencer)
+	initWeaponAnimations();
+
 	// Initialize Template Effects System (damage/effects for tokens in templates)
 	initTemplateEffects();
 	console.log(`${MODULE_ID} | Template Effects System initialized`);
@@ -11758,6 +11764,74 @@ async function enhanceWandSheet(app, html) {
 	console.log(`${MODULE_ID} | Wand sheet enhanced for`, item.name);
 }
 
+/**
+ * Inject a damage type dropdown into the weapon item sheet's Details tab
+ */
+function injectWeaponDamageTypeDropdown(app, html, item) {
+	// Only for Weapon type items
+	if (item.type !== "Weapon") return;
+
+	// Check if already injected
+	if (html.find('.sdx-weapon-damage-type-select').length > 0) return;
+
+	// Find the SD-grid content area within the Weapon box
+	const $weaponGrid = html.find('.SD-box .content.SD-grid').first();
+	if (!$weaponGrid.length) {
+		console.log(`${MODULE_ID} | Could not find SD-grid in weapon sheet`);
+		return;
+	}
+
+	// Find the Type select to insert after it
+	const $typeSelect = $weaponGrid.find('select[name="system.type"]');
+	if (!$typeSelect.length) {
+		console.log(`${MODULE_ID} | Could not find Type select in weapon sheet`);
+		return;
+	}
+
+	// Get current damage type from flags
+	const currentDamageType = item.getFlag(MODULE_ID, 'baseDamageType') || 'standard';
+
+	// Build damage type options
+	const damageTypes = [
+		{ id: "standard", name: "Standard Damage" },
+		{ id: "bludgeoning", name: "Bludgeoning" },
+		{ id: "slashing", name: "Slashing" },
+		{ id: "piercing", name: "Piercing" },
+		{ id: "physical", name: "Physical" },
+		{ id: "fire", name: "Fire" },
+		{ id: "cold", name: "Cold" },
+		{ id: "lightning", name: "Lightning" },
+		{ id: "acid", name: "Acid" },
+		{ id: "poison", name: "Poison" },
+		{ id: "necrotic", name: "Necrotic" },
+		{ id: "radiant", name: "Radiant" },
+		{ id: "psychic", name: "Psychic" },
+		{ id: "force", name: "Force" }
+	];
+
+	const optionsHtml = damageTypes.map(type =>
+		`<option value="${type.id}" ${currentDamageType === type.id ? 'selected' : ''}>${type.name}</option>`
+	).join('');
+
+	// Create the h3 label and select matching the existing style
+	const $damageLabel = $('<h3>Damage Type</h3>');
+	const $damageSelect = $(`<select class="sdx-weapon-damage-type-select" name="flags.${MODULE_ID}.baseDamageType">${optionsHtml}</select>`);
+
+	// Insert after the Type select (h3 + select pair)
+	$typeSelect.after($damageSelect);
+	$damageSelect.before($damageLabel);
+
+	// Handle change event
+	$damageSelect.on('change', async function () {
+		const newType = $(this).val();
+		await item.setFlag(MODULE_ID, 'baseDamageType', newType);
+		console.log(`${MODULE_ID} | Set weapon base damage type to: ${newType}`);
+	});
+
+	console.log(`${MODULE_ID} | Injected damage type dropdown for weapon: ${item.name}`);
+}
+
+
 // Inject container UI into Basic item sheets
 Hooks.on("renderItemSheet", (app, html, data) => {
 	try {
@@ -11807,10 +11881,15 @@ Hooks.on("renderItemSheet", (app, html, data) => {
 		const item = app.item || app.document;
 		if (item?.type === "Weapon") {
 			injectWeaponBonusTab(app, html, item);
+			injectWeaponDamageTypeDropdown(app, html, item);
+		} else if (item?.type === "Armor") {
+			// For shields (Armor), just inject the animation button
+			injectWeaponAnimationButton(html, item);
 		}
 	} catch (err) {
 		console.error(`${MODULE_ID} | Failed to inject weapon bonus tab`, err);
 	}
+
 
 	// Hide already-rendered Effects tab elements for non-GM players viewing unidentified items
 	try {
@@ -13122,256 +13201,324 @@ Hooks.once("init", () => {
 		},
 	};
 
+	// Define all custom damage types with proper icons for resistance, immunity, and vulnerability
+	const sdxDamageTypes = [
+		{
+			id: "bludgeoning",
+			name: "Bludgeoning",
+			resistanceImg: "icons/skills/melee/shield-block-bash-blue.webp",
+			immunityImg: "icons/skills/melee/shield-block-gray-yellow.webp",
+			vulnerabilityImg: "icons/skills/melee/strike-hammer-destructive-orange.webp"
+		},
+		{
+			id: "slashing",
+			name: "Slashing",
+			resistanceImg: "icons/skills/melee/shield-damaged-broken-blue.webp",
+			immunityImg: "icons/skills/melee/shield-damaged-broken-gold.webp",
+			vulnerabilityImg: "icons/skills/melee/strike-blade-blood-red.webp"
+		},
+		{
+			id: "piercing",
+			name: "Piercing",
+			resistanceImg: "icons/skills/melee/shield-block-bash-yellow.webp",
+			immunityImg: "icons/skills/melee/shield-block-gray-orange.webp",
+			vulnerabilityImg: "icons/skills/melee/strike-spear-red.webp"
+		},
+		{
+			id: "physical",
+			name: "Physical",
+			resistanceImg: "icons/skills/melee/shield-damaged-broken-brown.webp",
+			immunityImg: "icons/skills/melee/shield-damaged-broken-orange.webp",
+			vulnerabilityImg: "icons/skills/wounds/blood-drip-droplet-red.webp"
+		},
+		{
+			id: "fire",
+			name: "Fire",
+			resistanceImg: "icons/magic/fire/barrier-wall-flame-ring-yellow.webp",
+			immunityImg: "icons/magic/fire/orb-vortex.webp",
+			vulnerabilityImg: "icons/magic/fire/explosion-fireball-medium-orange.webp"
+		},
+		{
+			id: "cold",
+			name: "Cold",
+			resistanceImg: "icons/magic/water/barrier-ice-crystal-wall-jagged-blue.webp",
+			immunityImg: "icons/magic/water/snowflake-ice-blue-white.webp",
+			vulnerabilityImg: "icons/magic/water/ice-crystal-white.webp"
+		},
+		{
+			id: "lightning",
+			name: "Lightning",
+			resistanceImg: "icons/magic/lightning/bolt-forked-blue.webp",
+			immunityImg: "icons/magic/lightning/orb-ball-blue.webp",
+			vulnerabilityImg: "icons/magic/lightning/bolt-strike-blue.webp"
+		},
+		{
+			id: "acid",
+			name: "Acid",
+			resistanceImg: "icons/magic/acid/projectile-faceted-glob.webp",
+			immunityImg: "icons/magic/acid/orb-bubble-smoke-drip.webp",
+			vulnerabilityImg: "icons/magic/acid/dissolve-arm-flesh.webp"
+		},
+		{
+			id: "poison",
+			name: "Poison",
+			resistanceImg: "icons/skills/toxins/poison-bottle-corked-fire-green.webp",
+			immunityImg: "icons/consumables/potions/flask-ornate-skull-green.webp",
+			vulnerabilityImg: "icons/skills/toxins/symbol-poison-drop-skull-green.webp"
+		},
+		{
+			id: "necrotic",
+			name: "Necrotic",
+			resistanceImg: "icons/magic/death/skull-humanoid-crown-white-blue.webp",
+			immunityImg: "icons/magic/death/skull-energy-light-purple.webp",
+			vulnerabilityImg: "icons/magic/death/hand-withered-gray.webp"
+		},
+		{
+			id: "radiant",
+			name: "Radiant",
+			resistanceImg: "icons/magic/holy/angel-wings-gray.webp",
+			immunityImg: "icons/magic/holy/barrier-shield-winged-cross.webp",
+			vulnerabilityImg: "icons/magic/light/explosion-star-glow-yellow.webp"
+		},
+		{
+			id: "psychic",
+			name: "Psychic",
+			resistanceImg: "icons/magic/control/silhouette-hold-beam-blue.webp",
+			immunityImg: "icons/magic/control/fear-fright-monster-grin-red-orange.webp",
+			vulnerabilityImg: "icons/commodities/biological/organ-brain-pink-purple.webp"
+		},
+		{
+			id: "force",
+			name: "Force",
+			resistanceImg: "icons/magic/sonic/explosion-shock-wave-teal.webp",
+			immunityImg: "icons/magic/defensive/barrier-shield-dome-blue-purple.webp",
+			vulnerabilityImg: "icons/magic/sonic/explosion-impact-shock-wave.webp"
+		}
+	];
+
+
+	// Register Resistance, Immunity, and Vulnerability effects for each type
+	for (const type of sdxDamageTypes) {
+		const capId = type.id.charAt(0).toUpperCase() + type.id.slice(1);
+
+		// Resistance
+		abilityAdvantageEffects[`resistance${capId}`] = {
+			defaultValue: true,
+			effectKey: `flags.${MODULE_ID}.resistance.${type.id}`,
+			img: type.resistanceImg || "icons/equipment/shield/buckler-wooden-boss-brass.webp",
+			name: `SHADOWDARK_EXTRAS.item.effect.predefined_effect.resistance${capId}`,
+			mode: "CONST.ACTIVE_EFFECT_MODES.OVERRIDE"
+		};
+
+		// Immunity
+		abilityAdvantageEffects[`immunity${capId}`] = {
+			defaultValue: true,
+			effectKey: `flags.${MODULE_ID}.immunity.${type.id}`,
+			img: type.immunityImg || "icons/magic/defensive/shield-barrier-blue.webp",
+			name: `SHADOWDARK_EXTRAS.item.effect.predefined_effect.immunity${capId}`,
+			mode: "CONST.ACTIVE_EFFECT_MODES.OVERRIDE"
+		};
+
+		// Vulnerability (double damage)
+		abilityAdvantageEffects[`vulnerability${capId}`] = {
+			defaultValue: true,
+			effectKey: `flags.${MODULE_ID}.vulnerability.${type.id}`,
+			img: type.vulnerabilityImg || "icons/skills/wounds/injury-pain-body-orange.webp",
+			name: `SHADOWDARK_EXTRAS.item.effect.predefined_effect.vulnerability${capId}`,
+			mode: "CONST.ACTIVE_EFFECT_MODES.OVERRIDE"
+		};
+	}
+
+
 	// Merge ability advantage effects into the system's predefined effects
 	Object.assign(CONFIG.SHADOWDARK.PREDEFINED_EFFECTS, abilityAdvantageEffects);
 
-	console.log(`${MODULE_ID} | Added ${Object.keys(abilityAdvantageEffects).length} extra advantage effects`);
+	console.log(`${MODULE_ID} | Added ${Object.keys(abilityAdvantageEffects).length} extra advantage, resistance/immunity/vulnerability effects`);
+});
 
-	// ============================================
-	// SILENCED EFFECT - PREVENT SPELL CASTING
-	// ============================================
+// ============================================
+// SILENCED EFFECT - PREVENT SPELL CASTING
+// ============================================
 
-	// Add localization for Silenced effect
-	Hooks.once("i18nInit", () => {
-		game.i18n.translations["SHADOWDARK"] = game.i18n.translations["SHADOWDARK"] || {};
-		game.i18n.translations["SHADOWDARK"].item = game.i18n.translations["SHADOWDARK"].item || {};
-		game.i18n.translations["SHADOWDARK"].item.effect = game.i18n.translations["SHADOWDARK"].item.effect || {};
-		game.i18n.translations["SHADOWDARK"].item.effect.predefined_effect = game.i18n.translations["SHADOWDARK"].item.effect.predefined_effect || {};
-		game.i18n.translations["SHADOWDARK"].item.effect.predefined_effect.silenced = "Silenced";
-		game.i18n.translations["SHADOWDARK"].item.effect.predefined_effect.glassbones = "Glassbones";
-		game.i18n.translations["SHADOWDARK"].item.effect.predefined_effect.spellAdvantageAll = "Spellcasting Advantage (All)";
-	});
+// Monkey-patch ActorSD.castSpell to prevent spell casting when silenced
+Hooks.once("ready", () => {
+	// Get the ActorSD class
+	const ActorSD = globalThis.shadowdark?.documents?.ActorSD;
 
-	// Monkey-patch ActorSD.castSpell to prevent spell casting when silenced
-	Hooks.once("ready", () => {
-		// Get the ActorSD class
-		const ActorSD = globalThis.shadowdark?.documents?.ActorSD;
+	if (!ActorSD) {
+		console.error(`${MODULE_ID} | ActorSD not found, cannot apply silenced effect`);
+		return;
+	}
 
-		if (!ActorSD) {
-			console.error(`${MODULE_ID} | ActorSD not found, cannot apply silenced effect`);
-			return;
-		}
+	console.log(`${MODULE_ID} | Attempting to patch ActorSD.castSpell for silenced effect`);
 
-		console.log(`${MODULE_ID} | Attempting to patch ActorSD.castSpell for silenced effect`);
+	if (!ActorSD.prototype.castSpell) {
+		console.error(`${MODULE_ID} | castSpell method not found on ActorSD!`);
+		return;
+	}
 
-		if (!ActorSD.prototype.castSpell) {
-			console.error(`${MODULE_ID} | castSpell method not found on ActorSD!`);
-			return;
-		}
+	const _originalCastSpell = ActorSD.prototype.castSpell;
 
-		const _originalCastSpell = ActorSD.prototype.castSpell;
+	ActorSD.prototype.castSpell = async function (itemId, options = {}) {
+		console.log(`${MODULE_ID} | castSpell called for actor ${this.name}, itemId: ${itemId}`);
 
-		ActorSD.prototype.castSpell = async function (itemId, options = {}) {
-			console.log(`${MODULE_ID} | castSpell called for actor ${this.name}, itemId: ${itemId}`);
+		// Check if actor has silenced effect
+		const isSilenced = this.getFlag("shadowdark-extras", "silenced");
 
-			// Check if actor has silenced effect
-			const isSilenced = this.getFlag("shadowdark-extras", "silenced");
-
-			if (isSilenced) {
-				// Get the item to check its type
-				const item = this.items.get(itemId);
-				if (!item) {
-					console.warn(`${MODULE_ID} | Item ${itemId} not found on actor`);
-					return _originalCastSpell.call(this, itemId, options);
-				}
-
-				console.log(`${MODULE_ID} | Actor ${this.name} is silenced, item type: ${item.type}`);
-
-				// Get effects settings
-				const effectsSettings = game.settings.get("shadowdark-extras", "effectsSettings");
-
-				// Check settings for each item type
-				let shouldBlock = false;
-				let blockedType = "";
-
-				if (item.type === "Spell" || item.type === "NPC Spell") {
-					shouldBlock = effectsSettings.silenced.blocksSpells;
-					blockedType = "spells";
-				} else if (item.type === "Scroll") {
-					shouldBlock = effectsSettings.silenced.blocksScrolls;
-					blockedType = "scrolls";
-				} else if (item.type === "Wand") {
-					shouldBlock = effectsSettings.silenced.blocksWands;
-					blockedType = "wands";
-				}
-
-				if (shouldBlock) {
-					ui.notifications.warn(`You are silenced and cannot cast ${blockedType}!`);
-					console.log(`${MODULE_ID} | Spell casting BLOCKED - actor is silenced and ${blockedType} are blocked`);
-					return null;
-				}
+		if (isSilenced) {
+			// Get the item to check its type
+			const item = this.items.get(itemId);
+			if (!item) {
+				console.warn(`${MODULE_ID} | Item ${itemId} not found on actor`);
+				return _originalCastSpell.call(this, itemId, options);
 			}
 
-			// Call original method if not blocked
-			return _originalCastSpell.call(this, itemId, options);
-		};
+			console.log(`${MODULE_ID} | Actor ${this.name} is silenced, item type: ${item.type}`);
 
-		console.log(`${MODULE_ID} | Silenced effect spell blocking enabled via ActorSD.castSpell`);
+			// Get effects settings
+			const effectsSettings = game.settings.get("shadowdark-extras", "effectsSettings");
 
-		// Patch hasAdvantage to handle universal spellcasting advantage
-		const _originalHasAdvantage = ActorSD.prototype.hasAdvantage;
-		ActorSD.prototype.hasAdvantage = function (data) {
-			if (this.type === "Player") {
-				if (this.system.bonuses.advantage.includes(data.rollType)) {
-					return true;
-				}
+			// Check settings for each item type
+			let shouldBlock = false;
+			let blockedType = "";
 
-				if (data.item?.isSpell?.() && this.system.bonuses.advantage.includes("spellcasting")) {
-					return true;
-				}
+			if (item.type === "Spell" || item.type === "NPC Spell") {
+				shouldBlock = effectsSettings.silenced.blocksSpells;
+				blockedType = "spells";
+			} else if (item.type === "Scroll") {
+				shouldBlock = effectsSettings.silenced.blocksScrolls;
+				blockedType = "scrolls";
+			} else if (item.type === "Wand") {
+				shouldBlock = effectsSettings.silenced.blocksWands;
+				blockedType = "wands";
 			}
 
-			return _originalHasAdvantage.call(this, data);
-		};
-	});
-
-	// ============================================
-	// INVISIBILITY EFFECT - MAKE TOKEN INVISIBLE
-	// ============================================
-
-	// Apply invisibility visual effect to tokens using Foundry's built-in hidden property
-	Hooks.on("refreshToken", (token) => {
-		const hasInvisibility = token.actor?.getFlag(MODULE_ID, "invisibility");
-
-		if (hasInvisibility) {
-			// Use Foundry's hidden property (same as token HUD invisible button)
-			if (!token.document.hidden) {
-				token.document.update({ hidden: true });
-			}
-		}
-	});
-
-	// Auto-disable invisibility when attacking or casting spells
-	Hooks.on("preCreateChatMessage", async (message) => {
-		const speaker = message.speaker;
-		if (!speaker?.actor) return;
-
-		const actor = game.actors.get(speaker.actor);
-		if (!actor) return;
-
-		// Check if actor has invisibility
-		const hasInvisibility = actor.getFlag(MODULE_ID, "invisibility");
-		if (!hasInvisibility) return;
-
-		// Check if this is an attack or spell
-		const shadowdarkFlags = message.flags?.shadowdark;
-		const isAttack = shadowdarkFlags?.roll?.type === "attack";
-		const isSpell = shadowdarkFlags?.spell || message.flags?.shadowdark?.itemId;
-
-		// Also check if spell item is being cast
-		let isSpellCast = false;
-		if (message.flags?.shadowdark?.itemId) {
-			const item = actor.items.get(message.flags.shadowdark.itemId);
-			if (item && item.type === "Spell") {
-				isSpellCast = true;
+			if (shouldBlock) {
+				ui.notifications.warn(`You are silenced and cannot cast ${blockedType}!`);
+				console.log(`${MODULE_ID} | Spell casting BLOCKED - actor is silenced and ${blockedType} are blocked`);
+				return null;
 			}
 		}
 
-		if (isAttack || isSpell || isSpellCast) {
-			console.log(`${MODULE_ID} | ${actor.name} attacks/casts while invisible - breaking invisibility`);
+		// Call original method if not blocked
+		return _originalCastSpell.call(this, itemId, options);
+	};
 
-			// Find and disable the invisibility effect
-			const effect = actor.effects.find(e =>
-				e.changes.some(c => c.key === `flags.${MODULE_ID}.invisibility`)
-			);
+	console.log(`${MODULE_ID} | Silenced effect spell blocking enabled via ActorSD.castSpell`);
 
-			if (effect) {
-				await effect.update({ disabled: true });
+	// Patch hasAdvantage to handle universal spellcasting advantage
+	const _originalHasAdvantage = ActorSD.prototype.hasAdvantage;
+	ActorSD.prototype.hasAdvantage = function (data) {
+		if (this.type === "Player") {
+			if (this.system.bonuses.advantage.includes(data.rollType)) {
+				return true;
+			}
 
-				// Notify about invisibility breaking
-				ChatMessage.create({
-					content: `<p>${actor.name}'s invisibility fades as they take offensive action!</p>`,
-					speaker: ChatMessage.getSpeaker({ actor }),
-					whisper: []
-				});
-
-				// Restore token visibility using Foundry's hidden property
-				const tokens = actor.getActiveTokens();
-				for (const token of tokens) {
-					await token.document.update({ hidden: false });
-				}
+			if (data.item?.isSpell?.() && this.system.bonuses.advantage.includes("spellcasting")) {
+				return true;
 			}
 		}
-	});
 
-	// Restore visibility when invisibility effect is disabled or deleted
-	Hooks.on("updateActiveEffect", async (effect, changes, options, userId) => {
-		// Check if this is an invisibility effect being disabled
-		const isInvisibilityEffect = effect.changes.some(c => c.key === `flags.${MODULE_ID}.invisibility`);
-		if (!isInvisibilityEffect) return;
+		return _originalHasAdvantage.call(this, data);
+	};
+});
 
-		console.log(`${MODULE_ID} | Invisibility effect updated:`, { disabled: effect.disabled, changes });
+// ============================================
+// INVISIBILITY EFFECT - MAKE TOKEN INVISIBLE
+// ============================================
 
-		// If effect was disabled, restore visibility
-		if (changes.disabled === true) {
-			console.log(`${MODULE_ID} | Restoring visibility (effect disabled)`);
-			// Effect.parent is the Item (Condition), we need the Actor that owns the item
-			const item = effect.parent;
-			const actor = item?.parent; // Item's parent is the Actor
-			if (actor) {
-				console.log(`${MODULE_ID} | Character Actor:`, { id: actor.id, name: actor.name, type: actor.type });
-				// Find all token documents for this actor across all scenes
-				const tokens = [];
-				for (const scene of game.scenes) {
-					console.log(`${MODULE_ID} | Checking scene: ${scene.name}, tokens: ${scene.tokens.size}`);
-					const sceneTokens = scene.tokens.filter(t => {
-						const match = t.actorId === actor.id || t.actor?.id === actor.id;
-						if (t.actor?.name === actor.name) {
-							console.log(`${MODULE_ID} | Token found:`, { tokenId: t.id, actorId: t.actorId, tokenActorId: t.actor?.id, match });
-						}
-						return match;
-					});
-					tokens.push(...sceneTokens);
-				}
-				console.log(`${MODULE_ID} | Found ${tokens.length} token documents to restore visibility`);
-				for (const tokenDoc of tokens) {
-					await tokenDoc.update({ hidden: false });
-				}
+// Apply invisibility visual effect to tokens using Foundry's built-in hidden property
+Hooks.on("refreshToken", (token) => {
+	const hasInvisibility = token.actor?.getFlag(MODULE_ID, "invisibility");
+
+	if (hasInvisibility) {
+		// Use Foundry's hidden property (same as token HUD invisible button)
+		if (!token.document.hidden) {
+			token.document.update({ hidden: true });
+		}
+	}
+});
+
+// Auto-disable invisibility when attacking or casting spells
+Hooks.on("preCreateChatMessage", async (message) => {
+	const speaker = message.speaker;
+	if (!speaker?.actor) return;
+
+	const actor = game.actors.get(speaker.actor);
+	if (!actor) return;
+
+	// Check if actor has invisibility
+	const hasInvisibility = actor.getFlag(MODULE_ID, "invisibility");
+	if (!hasInvisibility) return;
+
+	// Check if this is an attack or spell
+	const shadowdarkFlags = message.flags?.shadowdark;
+	const isAttack = shadowdarkFlags?.roll?.type === "attack";
+	const isSpell = shadowdarkFlags?.spell || message.flags?.shadowdark?.itemId;
+
+	// Also check if spell item is being cast
+	let isSpellCast = false;
+	if (message.flags?.shadowdark?.itemId) {
+		const item = actor.items.get(message.flags.shadowdark.itemId);
+		if (item && item.type === "Spell") {
+			isSpellCast = true;
+		}
+	}
+
+	if (isAttack || isSpell || isSpellCast) {
+		console.log(`${MODULE_ID} | ${actor.name} attacks/casts while invisible - breaking invisibility`);
+
+		// Find and disable the invisibility effect
+		const effect = actor.effects.find(e =>
+			e.changes.some(c => c.key === `flags.${MODULE_ID}.invisibility`)
+		);
+
+		if (effect) {
+			await effect.update({ disabled: true });
+
+			// Notify about invisibility breaking
+			ChatMessage.create({
+				content: `<p>${actor.name}'s invisibility fades as they take offensive action!</p>`,
+				speaker: ChatMessage.getSpeaker({ actor }),
+				whisper: []
+			});
+
+			// Restore token visibility using Foundry's hidden property
+			const tokens = actor.getActiveTokens();
+			for (const token of tokens) {
+				await token.document.update({ hidden: false });
 			}
 		}
-	});
+	}
+});
 
-	Hooks.on("deleteActiveEffect", async (effect, options, userId) => {
-		// Check if this is an invisibility effect being deleted
-		const isInvisibilityEffect = effect.changes.some(c => c.key === `flags.${MODULE_ID}.invisibility`);
-		if (!isInvisibilityEffect) return;
+// Restore visibility when invisibility effect is disabled or deleted
+Hooks.on("updateActiveEffect", async (effect, changes, options, userId) => {
+	// Check if this is an invisibility effect being disabled
+	const isInvisibilityEffect = effect.changes.some(c => c.key === `flags.${MODULE_ID}.invisibility`);
+	if (!isInvisibilityEffect) return;
 
-		// Restore visibility when effect is deleted
+	console.log(`${MODULE_ID} | Invisibility effect updated:`, { disabled: effect.disabled, changes });
+
+	// If effect was disabled, restore visibility
+	if (changes.disabled === true) {
+		console.log(`${MODULE_ID} | Restoring visibility (effect disabled)`);
 		// Effect.parent is the Item (Condition), we need the Actor that owns the item
 		const item = effect.parent;
 		const actor = item?.parent; // Item's parent is the Actor
-		if (actor) {
-			console.log(`${MODULE_ID} | Invisibility effect deleted, restoring visibility`);
-			// Find all token documents for this actor across all scenes
-			const tokens = [];
-			for (const scene of game.scenes) {
-				const sceneTokens = scene.tokens.filter(t => t.actorId === actor.id);
-				tokens.push(...sceneTokens);
-			}
-			console.log(`${MODULE_ID} | Found ${tokens.length} token documents to restore visibility`);
-			for (const tokenDoc of tokens) {
-				await tokenDoc.update({ hidden: false });
-			}
-		}
-	});
-
-	// Also restore visibility when the Condition item itself is deleted
-	Hooks.on("deleteItem", async (item, options, userId) => {
-		// Check if this item has an invisibility effect
-		const hasInvisibilityEffect = item.effects?.some(e =>
-			e.changes.some(c => c.key === `flags.${MODULE_ID}.invisibility`)
-		);
-		if (!hasInvisibilityEffect) return;
-
-		console.log(`${MODULE_ID} | Condition with invisibility effect deleted, restoring visibility`);
-		// Item's parent is the Actor
-		const actor = item.parent;
 		if (actor) {
 			console.log(`${MODULE_ID} | Character Actor:`, { id: actor.id, name: actor.name, type: actor.type });
 			// Find all token documents for this actor across all scenes
 			const tokens = [];
 			for (const scene of game.scenes) {
-				const sceneTokens = scene.tokens.filter(t => t.actorId === actor.id);
+				console.log(`${MODULE_ID} | Checking scene: ${scene.name}, tokens: ${scene.tokens.size}`);
+				const sceneTokens = scene.tokens.filter(t => {
+					const match = t.actorId === actor.id || t.actor?.id === actor.id;
+					if (t.actor?.name === actor.name) {
+						console.log(`${MODULE_ID} | Token found:`, { tokenId: t.id, actorId: t.actorId, tokenActorId: t.actor?.id, match });
+					}
+					return match;
+				});
 				tokens.push(...sceneTokens);
 			}
 			console.log(`${MODULE_ID} | Found ${tokens.length} token documents to restore visibility`);
@@ -13379,127 +13526,177 @@ Hooks.once("init", () => {
 				await tokenDoc.update({ hidden: false });
 			}
 		}
-	});
-
-	console.log(`${MODULE_ID} | Invisibility effect enabled with auto-disable on attack/spell`);
-
-	// Monkey-patch ActorSD functions to support ability-specific advantage and extra damage dice
-	// and CONFIG.DiceSD.Roll for Freya's Omen spell loss prevention
-	if (globalThis.shadowdark?.documents?.ActorSD) {
-		const ActorSD = globalThis.shadowdark.documents.ActorSD;
-		const RollSD = CONFIG.DiceSD; // CONFIG.DiceSD is the class reference
-
-		console.log(`${MODULE_ID} | Monkey-patching ActorSD methods and DiceSD`);
-
-		// Store original methods
-		const originalRollAbility = ActorSD.prototype.rollAbility;
-		const originalHasAdvantage = ActorSD.prototype.hasAdvantage;
-		const originalGetExtraDamageDiceForWeapon = ActorSD.prototype.getExtraDamageDiceForWeapon;
-		const originalRoll = RollSD.Roll;
-
-		// Override getExtraDamageDiceForWeapon to add damage dice from flags
-		ActorSD.prototype.getExtraDamageDiceForWeapon = async function (item, data) {
-			await originalGetExtraDamageDiceForWeapon.call(this, item, data);
-
-			// Add custom damage dice from flags
-			if (this.type === "Player") {
-				if (item.system.type === "melee") {
-					let bonus = this.getFlag(MODULE_ID, "meleeDamageDice");
-					if (bonus) {
-						if (typeof bonus === "string" && bonus.startsWith("d=")) bonus = bonus.substring(2);
-						data.sdxMeleeDamageDice = bonus;
-						if (data.damageParts) data.damageParts.push("@sdxMeleeDamageDice");
-					}
-				} else if (item.system.type === "ranged") {
-					let bonus = this.getFlag(MODULE_ID, "rangedDamageDice");
-					if (bonus) {
-						if (typeof bonus === "string" && bonus.startsWith("d=")) bonus = bonus.substring(2);
-						data.sdxRangedDamageDice = bonus;
-						if (data.damageParts) data.damageParts.push("@sdxRangedDamageDice");
-					}
-				}
-			}
-		};
-
-		// Override rollAbility to include abilityId in data
-		ActorSD.prototype.rollAbility = async function (abilityId, options = {}) {
-			// If we can't easily wrap the internal logic of rollAbility (it constructs data internally),
-			// we have to re-implement it or intercept the call to RollDialog.
-			// Re-implementing is safer for ensuring data is passed, but riskier for system updates.
-			// Let's try to wrap it by hooking into Config if possible? No, system calls CONFIG.DiceSD.RollDialog directly.
-			// So we MUST re-implement the function to add the extra data property.
-			// Copy of system logic with one addition:
-
-			const parts = ["1d20", "@abilityBonus"];
-			const abilityBonus = this.abilityModifier(abilityId);
-			const ability = CONFIG.SHADOWDARK.ABILITIES_LONG[abilityId];
-
-			const data = {
-				rollType: "ability",
-				abilityId: abilityId, // <--- ADDED THIS
-				abilityBonus,
-				ability,
-				actor: this,
-			};
-
-			options.title = game.i18n.localize(`SHADOWDARK.dialog.ability_check.${abilityId}`);
-			options.flavor = options.title;
-			options.speaker = ChatMessage.getSpeaker({ actor: this });
-			options.dialogTemplate = "systems/shadowdark/templates/dialog/roll-ability-check-dialog.hbs";
-			options.chatCardTemplate = "systems/shadowdark/templates/chat/ability-card.hbs";
-
-			return await CONFIG.DiceSD.RollDialog(parts, data, options);
-		};
-
-		// Override hasAdvantage to check for abilityId and attackType
-		ActorSD.prototype.hasAdvantage = function (data) {
-
-			// Check standard system advantage first
-			if (originalHasAdvantage.call(this, data)) return true;
-
-			// Check for ability-specific advantage
-			if (this.type === "Player" && data.rollType === "ability" && data.abilityId) {
-				return this.system.bonuses.advantage.includes(data.abilityId);
-			}
-
-			// Check for attack type (melee/ranged) advantage
-			if (this.type === "Player" && data.attackType) {
-				return this.system.bonuses.advantage.includes(data.attackType);
-			}
-
-			return false;
-		};
-
-		// Monkey-patch RollSD.Roll to prevent spell loss if Freya's Omen is active
-		if (RollSD) {
-			const originalRoll = RollSD.Roll;
-			RollSD.Roll = async function (parts, data, $form, adv = 0, options = {}) {
-				// If it's a spell and we have the flag, we might need to protect it
-				// Use getFlag safely
-				const hasFreyasOmen = data.actor?.getFlag && data.actor.getFlag(MODULE_ID, "freyasOmen");
-
-				if (data.item?.isSpell() && hasFreyasOmen) {
-					// We need to wrap data.item.update to intercept "system.lost"
-					const originalUpdate = data.item.update;
-					data.item.update = async function (updates, options = {}) {
-						if (updates["system.lost"]) {
-							console.log(`${MODULE_ID} | Freya's Omen prevented spell loss for ${data.item.name}`);
-							// Remove the lost update
-							delete updates["system.lost"];
-							// If no other updates, return early
-							if (foundry.utils.isEmpty(updates)) return;
-						}
-						return originalUpdate.call(this, updates, options);
-					};
-				}
-
-				return originalRoll.call(this, parts, data, $form, adv, options);
-			};
-		}
-	} else {
-		console.warn(`${MODULE_ID} | ActorSD not found, could not apply ability advantage patches`);
 	}
 });
+
+Hooks.on("deleteActiveEffect", async (effect, options, userId) => {
+	// Check if this is an invisibility effect being deleted
+	const isInvisibilityEffect = effect.changes.some(c => c.key === `flags.${MODULE_ID}.invisibility`);
+	if (!isInvisibilityEffect) return;
+
+	// Restore visibility when effect is deleted
+	// Effect.parent is the Item (Condition), we need the Actor that owns the item
+	const item = effect.parent;
+	const actor = item?.parent; // Item's parent is the Actor
+	if (actor) {
+		console.log(`${MODULE_ID} | Invisibility effect deleted, restoring visibility`);
+		// Find all token documents for this actor across all scenes
+		const tokens = [];
+		for (const scene of game.scenes) {
+			const sceneTokens = scene.tokens.filter(t => t.actorId === actor.id);
+			tokens.push(...sceneTokens);
+		}
+		console.log(`${MODULE_ID} | Found ${tokens.length} token documents to restore visibility`);
+		for (const tokenDoc of tokens) {
+			await tokenDoc.update({ hidden: false });
+		}
+	}
+});
+
+// Also restore visibility when the Condition item itself is deleted
+Hooks.on("deleteItem", async (item, options, userId) => {
+	// Check if this item has an invisibility effect
+	const hasInvisibilityEffect = item.effects?.some(e =>
+		e.changes.some(c => c.key === `flags.${MODULE_ID}.invisibility`)
+	);
+	if (!hasInvisibilityEffect) return;
+
+	console.log(`${MODULE_ID} | Condition with invisibility effect deleted, restoring visibility`);
+	// Item's parent is the Actor
+	const actor = item.parent;
+	if (actor) {
+		console.log(`${MODULE_ID} | Character Actor:`, { id: actor.id, name: actor.name, type: actor.type });
+		// Find all token documents for this actor across all scenes
+		const tokens = [];
+		for (const scene of game.scenes) {
+			const sceneTokens = scene.tokens.filter(t => t.actorId === actor.id);
+			tokens.push(...sceneTokens);
+		}
+		console.log(`${MODULE_ID} | Found ${tokens.length} token documents to restore visibility`);
+		for (const tokenDoc of tokens) {
+			await tokenDoc.update({ hidden: false });
+		}
+	}
+});
+
+console.log(`${MODULE_ID} | Invisibility effect enabled with auto-disable on attack/spell`);
+
+// Monkey-patch ActorSD functions to support ability-specific advantage and extra damage dice
+// and CONFIG.DiceSD.Roll for Freya's Omen spell loss prevention
+if (globalThis.shadowdark?.documents?.ActorSD) {
+	const ActorSD = globalThis.shadowdark.documents.ActorSD;
+	const RollSD = CONFIG.DiceSD; // CONFIG.DiceSD is the class reference
+
+	console.log(`${MODULE_ID} | Monkey-patching ActorSD methods and DiceSD`);
+
+	// Store original methods
+	const originalRollAbility = ActorSD.prototype.rollAbility;
+	const originalHasAdvantage = ActorSD.prototype.hasAdvantage;
+	const originalGetExtraDamageDiceForWeapon = ActorSD.prototype.getExtraDamageDiceForWeapon;
+	const originalRoll = RollSD.Roll;
+
+	// Override getExtraDamageDiceForWeapon to add damage dice from flags
+	ActorSD.prototype.getExtraDamageDiceForWeapon = async function (item, data) {
+		await originalGetExtraDamageDiceForWeapon.call(this, item, data);
+
+		// Add custom damage dice from flags
+		if (this.type === "Player") {
+			if (item.system.type === "melee") {
+				let bonus = this.getFlag(MODULE_ID, "meleeDamageDice");
+				if (bonus) {
+					if (typeof bonus === "string" && bonus.startsWith("d=")) bonus = bonus.substring(2);
+					data.sdxMeleeDamageDice = bonus;
+					if (data.damageParts) data.damageParts.push("@sdxMeleeDamageDice");
+				}
+			} else if (item.system.type === "ranged") {
+				let bonus = this.getFlag(MODULE_ID, "rangedDamageDice");
+				if (bonus) {
+					if (typeof bonus === "string" && bonus.startsWith("d=")) bonus = bonus.substring(2);
+					data.sdxRangedDamageDice = bonus;
+					if (data.damageParts) data.damageParts.push("@sdxRangedDamageDice");
+				}
+			}
+		}
+	};
+
+	// Override rollAbility to include abilityId in data
+	ActorSD.prototype.rollAbility = async function (abilityId, options = {}) {
+		// If we can't easily wrap the internal logic of rollAbility (it constructs data internally),
+		// we have to re-implement it or intercept the call to RollDialog.
+		// Re-implementing is safer for ensuring data is passed, but riskier for system updates.
+		// Let's try to wrap it by hooking into Config if possible? No, system calls CONFIG.DiceSD.RollDialog directly.
+		// So we MUST re-implement the function to add the extra data property.
+		// Copy of system logic with one addition:
+
+		const parts = ["1d20", "@abilityBonus"];
+		const abilityBonus = this.abilityModifier(abilityId);
+		const ability = CONFIG.SHADOWDARK.ABILITIES_LONG[abilityId];
+
+		const data = {
+			rollType: "ability",
+			abilityId: abilityId, // <--- ADDED THIS
+			abilityBonus,
+			ability,
+			actor: this,
+		};
+
+		options.title = game.i18n.localize(`SHADOWDARK.dialog.ability_check.${abilityId}`);
+		options.flavor = options.title;
+		options.speaker = ChatMessage.getSpeaker({ actor: this });
+		options.dialogTemplate = "systems/shadowdark/templates/dialog/roll-ability-check-dialog.hbs";
+		options.chatCardTemplate = "systems/shadowdark/templates/chat/ability-card.hbs";
+
+		return await CONFIG.DiceSD.RollDialog(parts, data, options);
+	};
+
+	// Override hasAdvantage to check for abilityId and attackType
+	ActorSD.prototype.hasAdvantage = function (data) {
+
+		// Check standard system advantage first
+		if (originalHasAdvantage.call(this, data)) return true;
+
+		// Check for ability-specific advantage
+		if (this.type === "Player" && data.rollType === "ability" && data.abilityId) {
+			return this.system.bonuses.advantage.includes(data.abilityId);
+		}
+
+		// Check for attack type (melee/ranged) advantage
+		if (this.type === "Player" && data.attackType) {
+			return this.system.bonuses.advantage.includes(data.attackType);
+		}
+
+		return false;
+	};
+
+	// Monkey-patch RollSD.Roll to prevent spell loss if Freya's Omen is active
+	if (RollSD) {
+		const originalRoll = RollSD.Roll;
+		RollSD.Roll = async function (parts, data, $form, adv = 0, options = {}) {
+			// If it's a spell and we have the flag, we might need to protect it
+			// Use getFlag safely
+			const hasFreyasOmen = data.actor?.getFlag && data.actor.getFlag(MODULE_ID, "freyasOmen");
+
+			if (data.item?.isSpell() && hasFreyasOmen) {
+				// We need to wrap data.item.update to intercept "system.lost"
+				const originalUpdate = data.item.update;
+				data.item.update = async function (updates, options = {}) {
+					if (updates["system.lost"]) {
+						console.log(`${MODULE_ID} | Freya's Omen prevented spell loss for ${data.item.name}`);
+						// Remove the lost update
+						delete updates["system.lost"];
+						// If no other updates, return early
+						if (foundry.utils.isEmpty(updates)) return;
+					}
+					return originalUpdate.call(this, updates, options);
+				};
+			}
+
+			return originalRoll.call(this, parts, data, $form, adv, options);
+		};
+	}
+} else {
+	console.warn(`${MODULE_ID} | ActorSD not found, could not apply ability advantage patches`);
+}
 
 // ============================================
 // MACRO EXECUTE EFFECT HANDLERS

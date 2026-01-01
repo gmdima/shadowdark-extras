@@ -9273,6 +9273,7 @@ section[data-tab="tab-notes"].sdx-journal-active>div:not(.sdx-journal-notes) {
     background: rgba(255, 255, 255, 0.8);
     color: #2a2218;
     font-size: 12px;
+    min-width: 175px;
 }
 
 .sdx-hit-bonus-label {
@@ -12284,4 +12285,216 @@ section[data-tab="tab-notes"].sdx-journal-active>div:not(.sdx-journal-notes) {
 .sdx-apply-damage-btn:hover {
     background: #644 !important;
     border-color: #855 !important;
+}
+
+/* ============================================
+   WEAPON ANIMATION CONFIG
+   ============================================ */
+
+/* Animation button in weapon sheet nav */
+.sdx-weapon-animation-btn {
+    cursor: pointer;
+    color: #9b8d6f;
+    transition: all 0.2s;
+    margin-left: 8px;
+    width: 32px;
+    height: 32px;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    align-self: center;
+    border: 1px solid rgba(135, 120, 90, 0.3);
+    border-radius: 4px;
+}
+
+.sdx-weapon-animation-btn:hover {
+    color: #c9aa58;
+    background: rgba(255, 255, 255, 0.05);
+    border-color: #c9aa58;
+}
+
+.sdx-weapon-animation-btn i {
+    font-size: 14px;
+    margin: 0 !important;
+}
+
+/* Weapon animation config dialog */
+.weapon-animation-config {
+    padding: 16px;
+}
+
+.weapon-animation-config-content {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.weapon-animation-config .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.weapon-animation-config .form-group label {
+    font-weight: 500;
+    color: #e0e0e0;
+    font-size: 13px;
+}
+
+.weapon-animation-config .weapon-animation-enabled {
+    margin-right: 8px;
+}
+
+.weapon-animation-config select {
+    padding: 8px 12px;
+    border: 1px solid #444;
+    border-radius: 4px;
+    background: #2a2a2a;
+    color: #e0e0e0;
+    font-size: 12px;
+}
+
+.weapon-animation-config select optgroup {
+    font-weight: bold;
+    color: #c9aa58;
+    background: #1a1a1a;
+}
+
+.weapon-animation-config select option {
+    padding: 4px 8px;
+    background: #2a2a2a;
+    color: #e0e0e0;
+}
+
+/* Preview container */
+.weapon-preview-container {
+    margin: 12px 0;
+}
+
+.weapon-preview-box {
+    width: 120px;
+    height: 120px;
+    border: 2px dashed #444;
+    border-radius: 8px;
+    background: #1a1a1a;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.weapon-preview-img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+
+.weapon-preview-placeholder {
+    font-size: 48px;
+    color: #444;
+}
+
+/* Slider controls */
+.slider-group {
+    flex-direction: row !important;
+    align-items: center;
+    gap: 12px;
+}
+
+.slider-group label {
+    flex: 0 0 120px;
+}
+
+.slider-container {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.slider-container input[type="range"] {
+    flex: 1;
+    height: 6px;
+    border-radius: 3px;
+    background: #444;
+    appearance: none;
+    cursor: pointer;
+}
+
+.slider-container input[type="range"]::-webkit-slider-thumb {
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #c9aa58;
+    cursor: pointer;
+}
+
+.slider-container input[type="range"]::-moz-range-thumb {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #c9aa58;
+    cursor: pointer;
+    border: none;
+}
+
+.slider-value {
+    flex: 0 0 40px;
+    text-align: right;
+    font-family: 'Courier New', monospace;
+    color: #c9aa58;
+    font-size: 12px;
+}
+
+/* Footer buttons */
+.weapon-animation-config .sheet-footer {
+    margin-top: 16px;
+    padding-top: 12px;
+    border-top: 1px solid #333;
+    gap: 8px;
+}
+
+.weapon-animation-config .sheet-footer button {
+    flex: 1;
+    padding: 8px 16px;
+    border: 1px solid #444;
+    border-radius: 4px;
+    background: #2a2a2a;
+    color: #e0e0e0;
+    cursor: pointer;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    transition: all 0.2s;
+}
+
+.weapon-animation-config .sheet-footer button:hover {
+    background: #3a3a3a;
+    border-color: #555;
+}
+
+.weapon-animation-config .sheet-footer button[data-action="save"] {
+    background: linear-gradient(135deg, #4a3a1a 0%, #2a2010 100%);
+    border-color: #c9aa58;
+    color: #c9aa58;
+}
+
+.weapon-animation-config .sheet-footer button[data-action="save"]:hover {
+    background: linear-gradient(135deg, #5a4a2a 0%, #3a3020 100%);
+}
+
+.weapon-animation-settings hr {
+    border: none;
+    border-top: 1px solid #333;
+    margin: 12px 0;
+}
+/* Tab visibility for Weapon Animation Config */
+.weapon-animation-config .tab {
+    display: none;
+}
+.weapon-animation-config .tab.active {
+    display: block;
 }
