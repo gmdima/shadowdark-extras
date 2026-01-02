@@ -630,7 +630,8 @@ export default class PartySheetSD extends ActorSheet {
 			return;
 		}
 
-		const members = this.members;
+		// Filter to only include Player type actors (exclude NPCs)
+		const members = this.members.filter(m => m.type === "Player");
 		if (members.length === 0) {
 			ui.notifications.warn(game.i18n.localize("SHADOWDARK_EXTRAS.party.divide_coins_no_members"));
 			return;
@@ -1156,11 +1157,52 @@ export default class PartySheetSD extends ActorSheet {
 			return;
 		}
 
-		const members = await this.getMembers();
-		if (members.length === 0) {
+		const allMembers = await this.getMembers();
+		if (allMembers.length === 0) {
 			ui.notifications.warn(game.i18n.localize("SHADOWDARK_EXTRAS.party.warn.no_members"));
 			return;
 		}
+
+		// Check what types of members we have
+		const hasPlayers = allMembers.some(m => m.type === "Player");
+		const hasNpcs = allMembers.some(m => m.type === "NPC");
+
+		// If we have both types, show a selection dialog
+		let filter = "all";
+		if (hasPlayers && hasNpcs) {
+			filter = await new Promise((resolve) => {
+				new Dialog({
+					title: game.i18n.localize("SHADOWDARK_EXTRAS.party.place_tokens_title"),
+					content: `<p>${game.i18n.localize("SHADOWDARK_EXTRAS.party.place_tokens_prompt")}</p>`,
+					buttons: {
+						all: {
+							icon: '<i class="fas fa-users"></i>',
+							label: game.i18n.localize("SHADOWDARK_EXTRAS.party.place_all"),
+							callback: () => resolve("all")
+						},
+						players: {
+							icon: '<i class="fas fa-user"></i>',
+							label: game.i18n.localize("SHADOWDARK_EXTRAS.party.place_players"),
+							callback: () => resolve("players")
+						},
+						npcs: {
+							icon: '<i class="fas fa-dragon"></i>',
+							label: game.i18n.localize("SHADOWDARK_EXTRAS.party.place_npcs"),
+							callback: () => resolve("npcs")
+						}
+					},
+					default: "all",
+					close: () => resolve(null)
+				}).render(true);
+			});
+
+			if (!filter) return; // User closed the dialog
+		}
+
+		// Filter members based on selection
+		const members = filter === "players" ? allMembers.filter(m => m.type === "Player")
+			: filter === "npcs" ? allMembers.filter(m => m.type === "NPC")
+				: allMembers;
 
 		// Build list of members to place
 		// PCs: place once. NPCs: roll configured formula and place that many.

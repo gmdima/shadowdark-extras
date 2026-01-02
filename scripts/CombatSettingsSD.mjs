@@ -815,6 +815,70 @@ export function setupCombatSocket() {
 		return removeAuraEffectsFromAll(auraEffect);
 	});
 
+	// --- Trade Socket Handlers ---
+	// These are for player-to-player trade requests using socketlib prompts
+
+	// Handler: Show trade request prompt to target player
+	socketlibSocket.register("showTradeRequestPrompt", async ({ initiatorActorId, targetActorId, initiatorUserId, tradeId }) => {
+		const initiatorActor = game.actors.get(initiatorActorId);
+		const targetActor = game.actors.get(targetActorId);
+
+		if (!initiatorActor || !targetActor) {
+			console.warn(`${MODULE_ID} | Trade request: actors not found`);
+			return { accepted: false };
+		}
+
+		// Check if this user owns the target actor
+		if (!targetActor.isOwner) {
+			console.log(`${MODULE_ID} | Trade request: user doesn't own target actor`);
+			return { accepted: false };
+		}
+
+		// Show confirmation dialog to the target player
+		const accepted = await Dialog.confirm({
+			title: game.i18n.localize("SHADOWDARK_EXTRAS.trade.request_title"),
+			content: `<p>${game.i18n.format("SHADOWDARK_EXTRAS.trade.request_prompt", { player: initiatorActor.name })}</p>`,
+			yes: () => true,
+			no: () => false,
+			defaultYes: false
+		});
+
+		return { accepted };
+	});
+
+	// Handler: Open trade window on this client  
+	socketlibSocket.register("openTradeWindow", async ({ tradeId, localActorId, remoteActorId, isInitiator }) => {
+		const localActor = game.actors.get(localActorId);
+		const remoteActor = game.actors.get(remoteActorId);
+
+		if (!localActor || !remoteActor) {
+			console.warn(`${MODULE_ID} | openTradeWindow: actors not found`);
+			return;
+		}
+
+		// Check if this user owns the local actor
+		if (!localActor.isOwner) {
+			return; // Not for this user
+		}
+
+		// Dynamically import TradeWindowSD to avoid circular imports
+		const { default: TradeWindowSD } = await import("./TradeWindowSD.mjs");
+
+		// Create and render the trade window
+		const tradeWindow = new TradeWindowSD({
+			tradeId: tradeId,
+			localActor: localActor,
+			remoteActor: remoteActor,
+			isInitiator: isInitiator
+		});
+		tradeWindow.render(true);
+	});
+
+	// Handler: Notify initiator that trade was declined
+	socketlibSocket.register("notifyTradeDeclined", async ({ targetActorName }) => {
+		ui.notifications.info(game.i18n.format("SHADOWDARK_EXTRAS.trade.declined_by", { player: targetActorName }));
+	});
+
 	console.log("shadowdark-extras | All socket handlers registered");
 }
 

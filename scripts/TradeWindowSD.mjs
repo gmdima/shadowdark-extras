@@ -1,10 +1,14 @@
 /**
  * Diablo-style Trading Window for Shadowdark RPG
  * Uses a shared Journal Entry for state synchronization
+ * Uses socketlib for direct player-to-player trade requests
  */
+
+import { getSocket } from "./CombatSettingsSD.mjs";
 
 const MODULE_ID = "shadowdark-extras";
 const TRADE_JOURNAL_NAME = "__sdx_trade_sync__"; // Internal journal name (hidden from sidebar)
+
 
 // Active trade windows - keyed by trade ID
 const activeTrades = new Map();
@@ -27,7 +31,7 @@ function getTradeJournal() {
 	if (_tradeJournal && game.journal.get(_tradeJournal.id)) {
 		return _tradeJournal;
 	}
-	
+
 	// Find by name
 	_tradeJournal = game.journal.find(j => j.name === TRADE_JOURNAL_NAME);
 	return _tradeJournal;
@@ -39,12 +43,12 @@ function getTradeJournal() {
 export async function ensureTradeJournal() {
 	// Only GM can create
 	if (!game.user.isGM) return;
-	
+
 	let journal = game.journal.find(j => j.name === TRADE_JOURNAL_NAME);
-	
+
 	if (!journal) {
 		console.log(`${MODULE_ID} | Creating trade sync journal...`);
-		
+
 		// Create with default ownership for all players
 		journal = await JournalEntry.create({
 			name: TRADE_JOURNAL_NAME,
@@ -55,7 +59,7 @@ export async function ensureTradeJournal() {
 				}
 			}
 		});
-		
+
 		console.log(`${MODULE_ID} | Trade sync journal created:`, journal.id);
 	} else {
 		// Ensure ownership is correct (in case it was changed)
@@ -65,7 +69,7 @@ export async function ensureTradeJournal() {
 			});
 		}
 	}
-	
+
 	_tradeJournal = journal;
 	return journal;
 }
@@ -146,16 +150,16 @@ export default class TradeWindowSD extends HandlebarsApplicationMixin(Applicatio
 	 */
 	constructor(options = {}) {
 		super(options);
-		
+
 		this.tradeId = options.tradeId;
 		this.localActor = options.localActor;
 		this.remoteActor = options.remoteActor;
 		this.isInitiator = options.isInitiator ?? false;
-		
+
 		// Determine which side we are (initiator = side A, acceptor = side B)
 		this.localSide = this.isInitiator ? "A" : "B";
 		this.remoteSide = this.isInitiator ? "B" : "A";
-		
+
 		// Register this trade window
 		activeTrades.set(this.tradeId, this);
 	}
@@ -217,14 +221,14 @@ export default class TradeWindowSD extends HandlebarsApplicationMixin(Applicatio
 
 	async _prepareContext(options) {
 		const context = await super._prepareContext(options);
-		
+
 		const localState = this.getLocalState();
 		const remoteState = this.getRemoteState();
-		
+
 		context.tradeId = this.tradeId;
 		context.localActor = this.localActor;
 		context.remoteActor = this.remoteActor;
-		
+
 		// Process items to mask unidentified names for non-GM users
 		const processItems = (items) => {
 			if (game.user?.isGM) return items;
@@ -233,15 +237,15 @@ export default class TradeWindowSD extends HandlebarsApplicationMixin(Applicatio
 				if (isUnidentified) {
 					// Get custom unidentified name or default
 					const customName = itemData.flags?.[MODULE_ID]?.unidentifiedName;
-					const maskedName = (customName && customName.trim()) 
-						? customName.trim() 
+					const maskedName = (customName && customName.trim())
+						? customName.trim()
 						: game.i18n.localize("SHADOWDARK_EXTRAS.item.unidentified.label");
 					return { ...itemData, name: maskedName, _realName: itemData.name };
 				}
 				return itemData;
 			});
 		};
-		
+
 		context.localItems = processItems(localState.items);
 		context.remoteItems = processItems(remoteState.items);
 		context.localCoins = localState.coins;
@@ -252,18 +256,18 @@ export default class TradeWindowSD extends HandlebarsApplicationMixin(Applicatio
 		context.remoteAccepted = remoteState.accepted;
 		context.bothLocked = localState.locked && remoteState.locked;
 		context.canAccept = localState.locked && remoteState.locked && !localState.accepted;
-		
+
 		// Get actor's available coins for validation display
 		context.localActorCoins = {
 			gp: this.localActor.system?.coins?.gp ?? 0,
 			sp: this.localActor.system?.coins?.sp ?? 0,
 			cp: this.localActor.system?.coins?.cp ?? 0
 		};
-		
+
 		// Calculate total value for each side (items + coins)
 		context.localTotalGp = this._calculateTotalValue(localState.items, localState.coins);
 		context.remoteTotalGp = this._calculateTotalValue(remoteState.items, remoteState.coins);
-		
+
 		return context;
 	}
 
@@ -281,16 +285,16 @@ export default class TradeWindowSD extends HandlebarsApplicationMixin(Applicatio
 
 	_onRender(context, options) {
 		super._onRender(context, options);
-		
+
 		const html = this.element;
-		
+
 		// Setup drag & drop for local trade area
 		const localDropZone = html.querySelector(".trade-local .trade-items");
 		if (localDropZone) {
 			localDropZone.addEventListener("dragover", this._onDragOver.bind(this));
 			localDropZone.addEventListener("drop", this._onDropItem.bind(this));
 		}
-		
+
 		// Setup coin input handlers
 		const coinInputs = html.querySelectorAll(".trade-local .trade-coin-input");
 		coinInputs.forEach(input => {
@@ -305,15 +309,15 @@ export default class TradeWindowSD extends HandlebarsApplicationMixin(Applicatio
 			this.render(); // Reset the input to previous value
 			return;
 		}
-		
+
 		const input = event.target;
 		const coinType = input.dataset.coinType;
 		let value = parseInt(input.value) || 0;
-		
+
 		// Validate against actor's available coins
 		const actorCoins = this.localActor.system?.coins || {};
 		const maxAvailable = actorCoins[coinType] ?? 0;
-		
+
 		if (value < 0) value = 0;
 		if (value > maxAvailable) {
 			ui.notifications.warn(game.i18n.format("SHADOWDARK_EXTRAS.trade.not_enough_coins", {
@@ -322,11 +326,11 @@ export default class TradeWindowSD extends HandlebarsApplicationMixin(Applicatio
 			}));
 			value = maxAvailable;
 		}
-		
+
 		// Update coins
 		const newCoins = { ...localState.coins };
 		newCoins[coinType] = value;
-		
+
 		await this._updateLocalState({ coins: newCoins });
 	}
 
@@ -343,46 +347,46 @@ export default class TradeWindowSD extends HandlebarsApplicationMixin(Applicatio
 			ui.notifications.warn(game.i18n.localize("SHADOWDARK_EXTRAS.trade.offer_locked"));
 			return;
 		}
-		
+
 		event.preventDefault();
-		
+
 		let data;
 		try {
 			data = JSON.parse(event.dataTransfer.getData("text/plain"));
 		} catch (e) {
 			return;
 		}
-		
+
 		if (data.type !== "Item") return;
-		
+
 		// Get the item
 		const item = await fromUuid(data.uuid);
 		if (!item) return;
-		
+
 		// Verify item belongs to local actor
 		if (item.parent?.id !== this.localActor.id) {
 			ui.notifications.warn(game.i18n.localize("SHADOWDARK_EXTRAS.trade.wrong_actor"));
 			return;
 		}
-		
+
 		// Check if item is already in trade
 		if (localState.items.some(i => i._id === item.id)) {
 			ui.notifications.warn(game.i18n.localize("SHADOWDARK_EXTRAS.trade.already_in_trade"));
 			return;
 		}
-		
+
 		// Don't allow items inside containers (must remove from container first)
 		if (item.getFlag(MODULE_ID, "containerId")) {
 			ui.notifications.warn(game.i18n.localize("SHADOWDARK_EXTRAS.trade.item_in_container"));
 			return;
 		}
-		
+
 		// Don't allow containers (too complex to handle contents)
 		if (item.getFlag(MODULE_ID, "isContainer")) {
 			ui.notifications.warn(game.i18n.localize("SHADOWDARK_EXTRAS.trade.no_containers"));
 			return;
 		}
-		
+
 		// Add item to local trade and save to journal
 		await this._updateLocalState({
 			items: [...localState.items, item.toObject()]
@@ -391,7 +395,7 @@ export default class TradeWindowSD extends HandlebarsApplicationMixin(Applicatio
 
 	async _updateLocalState(updates) {
 		const state = this.getTradeState();
-		
+
 		if (this.localSide === "A") {
 			if (updates.items !== undefined) state.itemsA = updates.items;
 			if (updates.coins !== undefined) state.coinsA = updates.coins;
@@ -403,7 +407,7 @@ export default class TradeWindowSD extends HandlebarsApplicationMixin(Applicatio
 			if (updates.locked !== undefined) state.lockedB = updates.locked;
 			if (updates.accepted !== undefined) state.acceptedB = updates.accepted;
 		}
-		
+
 		await saveTradeData(this.tradeId, state);
 		// Note: render will be called by the journal update hook
 	}
@@ -414,10 +418,10 @@ export default class TradeWindowSD extends HandlebarsApplicationMixin(Applicatio
 			ui.notifications.warn(game.i18n.localize("SHADOWDARK_EXTRAS.trade.offer_locked"));
 			return;
 		}
-		
+
 		const itemId = target.closest(".trade-item")?.dataset.itemId;
 		if (!itemId) return;
-		
+
 		// Remove item from local trade
 		await this._updateLocalState({
 			items: localState.items.filter(i => i._id !== itemId)
@@ -426,7 +430,7 @@ export default class TradeWindowSD extends HandlebarsApplicationMixin(Applicatio
 
 	static async #onLockOffer(event, target) {
 		const localState = this.getLocalState();
-		
+
 		if (localState.locked) {
 			// Unlock - also reset acceptances
 			const state = this.getTradeState();
@@ -447,12 +451,12 @@ export default class TradeWindowSD extends HandlebarsApplicationMixin(Applicatio
 	static async #onAcceptTrade(event, target) {
 		const localState = this.getLocalState();
 		const remoteState = this.getRemoteState();
-		
+
 		if (!localState.locked || !remoteState.locked) {
 			ui.notifications.warn(game.i18n.localize("SHADOWDARK_EXTRAS.trade.both_must_lock"));
 			return;
 		}
-		
+
 		// Get current state and update it directly (avoid race with journal sync)
 		const state = this.getTradeState();
 		if (this.localSide === "A") {
@@ -460,13 +464,13 @@ export default class TradeWindowSD extends HandlebarsApplicationMixin(Applicatio
 		} else {
 			state.acceptedB = true;
 		}
-		
+
 		// Check if both accepted BEFORE saving (using our local update)
 		const bothAccepted = state.acceptedA && state.acceptedB;
-		
+
 		// Save the state
 		await saveTradeData(this.tradeId, state);
-		
+
 		// If both accepted, execute trade
 		if (bothAccepted) {
 			await this._executeTrade();
@@ -479,49 +483,49 @@ export default class TradeWindowSD extends HandlebarsApplicationMixin(Applicatio
 		state.cancelled = true;
 		state.cancelledBy = this.localActor.name;
 		await saveTradeData(this.tradeId, state);
-		
+
 		// Close our window
 		this.close();
-		
+
 		ui.notifications.info(game.i18n.localize("SHADOWDARK_EXTRAS.trade.cancelled"));
 	}
 
 	async _executeTrade() {
 		const state = this.getTradeState();
-		
+
 		// Only initiator executes the actual trade to prevent double-transfer
 		if (!this.isInitiator) {
 			// Wait for initiator to complete
 			return;
 		}
-		
+
 		// Check if Item Piles is available
 		if (!game.modules.get("item-piles")?.active || !game.itempiles?.API) {
 			ui.notifications.error("Item Piles module is required for trading.");
 			return;
 		}
-		
+
 		try {
 			// Get actors
 			const actorA = game.actors.get(state.actorAId);
 			const actorB = game.actors.get(state.actorBId);
-			
+
 			if (!actorA || !actorB) {
 				throw new Error("Trade actors not found");
 			}
-			
+
 			// Transfer items from A to B
 			if (state.itemsA.length > 0) {
 				const itemsA = state.itemsA.map(i => ({ _id: i._id, quantity: i.system?.quantity ?? 1 }));
 				await game.itempiles.API.transferItems(actorA, actorB, itemsA, { interactionId: false });
 			}
-			
+
 			// Transfer items from B to A
 			if (state.itemsB.length > 0) {
 				const itemsB = state.itemsB.map(i => ({ _id: i._id, quantity: i.system?.quantity ?? 1 }));
 				await game.itempiles.API.transferItems(actorB, actorA, itemsB, { interactionId: false });
 			}
-			
+
 			// Transfer coins from A to B using Item Piles transferAttributes API
 			const coinsA = state.coinsA || { gp: 0, sp: 0, cp: 0 };
 			if (coinsA.gp > 0 || coinsA.sp > 0 || coinsA.cp > 0) {
@@ -530,7 +534,7 @@ export default class TradeWindowSD extends HandlebarsApplicationMixin(Applicatio
 				const result = await game.itempiles.API.transferAttributes(actorA, actorB, attributesA, { interactionId: false });
 				console.log(`${MODULE_ID} | Currency transfer A->B result:`, result);
 			}
-			
+
 			// Transfer coins from B to A using Item Piles transferAttributes API
 			const coinsB = state.coinsB || { gp: 0, sp: 0, cp: 0 };
 			if (coinsB.gp > 0 || coinsB.sp > 0 || coinsB.cp > 0) {
@@ -539,11 +543,11 @@ export default class TradeWindowSD extends HandlebarsApplicationMixin(Applicatio
 				const result = await game.itempiles.API.transferAttributes(actorB, actorA, attributesB, { interactionId: false });
 				console.log(`${MODULE_ID} | Currency transfer B->A result:`, result);
 			}
-			
+
 			// Mark trade as complete
 			state.complete = true;
 			await saveTradeData(this.tradeId, state);
-			
+
 		} catch (error) {
 			console.error(`${MODULE_ID} | Trade execution failed:`, error);
 			ui.notifications.error(game.i18n.localize("SHADOWDARK_EXTRAS.trade.failed"));
@@ -568,7 +572,7 @@ export default class TradeWindowSD extends HandlebarsApplicationMixin(Applicatio
 	onJournalUpdate() {
 		const state = this.getTradeState();
 		if (!state) return;
-		
+
 		// Check if cancelled
 		if (state.cancelled && state.cancelledBy !== this.localActor.name) {
 			ui.notifications.info(game.i18n.format("SHADOWDARK_EXTRAS.trade.cancelled_by", {
@@ -577,7 +581,7 @@ export default class TradeWindowSD extends HandlebarsApplicationMixin(Applicatio
 			this.close({ skipJournalCleanup: true });
 			return;
 		}
-		
+
 		// Check if complete
 		if (state.complete) {
 			ui.notifications.info(game.i18n.format("SHADOWDARK_EXTRAS.trade.complete", {
@@ -586,13 +590,13 @@ export default class TradeWindowSD extends HandlebarsApplicationMixin(Applicatio
 			this.close({ skipJournalCleanup: true });
 			return;
 		}
-		
+
 		// Check if both accepted - initiator should execute trade
 		if (state.acceptedA && state.acceptedB && this.isInitiator) {
 			this._executeTrade();
 			return;
 		}
-		
+
 		// Just re-render to show updated state
 		this.render();
 	}
@@ -600,12 +604,12 @@ export default class TradeWindowSD extends HandlebarsApplicationMixin(Applicatio
 	async close(options = {}) {
 		// Remove from active trades
 		activeTrades.delete(this.tradeId);
-		
+
 		// Clean up journal data if we're the one closing (not from remote cancel/complete)
 		if (!options.skipJournalCleanup) {
 			await clearTradeData(this.tradeId);
 		}
-		
+
 		return super.close(options);
 	}
 }
@@ -615,7 +619,7 @@ export default class TradeWindowSD extends HandlebarsApplicationMixin(Applicatio
 // ============================================
 
 /**
- * Initialize trade system - hooks for journal updates and chat buttons
+ * Initialize trade system - uses socketlib for direct player prompts
  */
 export function initializeTradeSocket() {
 	// Watch for journal updates to sync trade state
@@ -623,11 +627,11 @@ export function initializeTradeSocket() {
 		// Check if this is our trade journal
 		const tradeJournal = getTradeJournal();
 		if (!tradeJournal || journal.id !== tradeJournal.id) return;
-		
+
 		// Check if any trade flags changed
 		const flagChanges = changes?.flags?.[MODULE_ID];
 		if (!flagChanges) return;
-		
+
 		// Notify all active trade windows
 		for (const [tradeId, tradeWindow] of activeTrades) {
 			if (flagChanges[`trade-${tradeId}`] !== undefined) {
@@ -635,267 +639,129 @@ export function initializeTradeSocket() {
 			}
 		}
 	});
-	
-	// Hook into chat message rendering for trade buttons
-	Hooks.on("renderChatMessage", (message, html, data) => {
-		// Handle trade request message (Accept/Decline buttons)
-		// Only show to the target (whisper recipient), not the sender
-		const tradeRequestDiv = html.find(".trade-request-message");
-		if (tradeRequestDiv.length) {
-			const initiatorUserId = html.find(".trade-accept-btn").data("initiatorUser");
-			
-			// If current user is the initiator (sender), hide the buttons
-			if (initiatorUserId === game.user.id) {
-				html.find(".trade-request-buttons").html(`<em>${game.i18n.localize("SHADOWDARK_EXTRAS.trade.waiting_for_response")}</em>`);
-			} else {
-				// Show buttons for the target
-				html.find(".trade-accept-btn").on("click", async (event) => {
-					event.preventDefault();
-					const btn = event.currentTarget;
-					const tradeId = btn.dataset.tradeId;
-					const initiatorActorId = btn.dataset.initiatorActor;
-					const targetActorId = btn.dataset.targetActor;
-					
-					// Hide buttons immediately in DOM
-					html.find(".trade-request-buttons").html(`<div class="trade-request-accepted"><i class="fas fa-check"></i> ${game.i18n.localize("SHADOWDARK_EXTRAS.trade.accepted")}</div>`);
-					
-					await acceptTradeFromChat(tradeId, initiatorActorId, targetActorId, message.id);
-				});
-				
-				html.find(".trade-decline-btn").on("click", async (event) => {
-					event.preventDefault();
-					const btn = event.currentTarget;
-					const tradeId = btn.dataset.tradeId;
-					const initiatorUserId = btn.dataset.initiatorUser;
-					
-					// Hide buttons immediately in DOM
-					html.find(".trade-request-buttons").html(`<div class="trade-request-declined"><i class="fas fa-times"></i> ${game.i18n.localize("SHADOWDARK_EXTRAS.trade.declined")}</div>`);
-					
-					await declineTradeFromChat(tradeId, initiatorUserId, message.id);
-				});
-			}
-		}
-		
-		// Handle trade accepted message (Open Trade Window button)
-		// Only show to the initiator, not the acceptor who sent it
-		const tradeAcceptedDiv = html.find(".trade-accepted-message");
-		if (tradeAcceptedDiv.length) {
-			const initiatorActorId = html.find(".trade-open-btn").data("initiatorActor");
-			const initiatorActor = game.actors.get(initiatorActorId);
-			
-			// Check if current user owns the initiator actor
-			const isInitiator = initiatorActor && initiatorActor.isOwner;
-			
-			if (!isInitiator) {
-				// Hide button for the acceptor (they already have their window open)
-				html.find(".trade-request-buttons").html(`<em>${game.i18n.localize("SHADOWDARK_EXTRAS.trade.trade_in_progress")}</em>`);
-			} else {
-				html.find(".trade-open-btn").on("click", async (event) => {
-					event.preventDefault();
-					const btn = event.currentTarget;
-					const tradeId = btn.dataset.tradeId;
-					const initiatorActorId = btn.dataset.initiatorActor;
-					const targetActorId = btn.dataset.targetActor;
-					
-					// Hide button immediately in DOM
-					html.find(".trade-request-buttons").html(`<div class="trade-request-accepted"><i class="fas fa-check"></i> ${game.i18n.localize("SHADOWDARK_EXTRAS.trade.window_opened")}</div>`);
-					
-					await openTradeWindowFromChat(tradeId, initiatorActorId, targetActorId, message.id);
-				});
-			}
-		}
-	});
-	
-	console.log(`${MODULE_ID} | Trade system initialized (journal-based)`);
+
+	// Note: Trade socket handlers (showTradeRequestPrompt, openTradeWindow, notifyTradeDeclined)
+	// are registered in setupCombatSocket() in CombatSettingsSD.mjs during socketlib.ready hook
+	// This ensures they're available on all clients before any trade is initiated
+
+	console.log(`${MODULE_ID} | Trade system initialized`);
 }
 
-// ============================================
-// CHAT BUTTON HANDLERS
-// ============================================
-
-/**
- * Accept trade from chat button - opens window for acceptor
- */
-async function acceptTradeFromChat(tradeId, initiatorActorId, targetActorId, messageId) {
-	const initiatorActor = game.actors.get(initiatorActorId);
-	const targetActor = game.actors.get(targetActorId);
-	
-	if (!initiatorActor || !targetActor) {
-		ui.notifications.error("Trade actors not found");
-		return;
-	}
-	
-	// Initialize trade state in journal
-	await saveTradeData(tradeId, {
-		actorAId: initiatorActorId,
-		actorBId: targetActorId,
-		itemsA: [],
-		itemsB: [],
-		lockedA: false,
-		lockedB: false,
-		acceptedA: false,
-		acceptedB: false
-	});
-	
-	// Open trade window for acceptor (they are side B)
-	const tradeWindow = new TradeWindowSD({
-		tradeId: tradeId,
-		localActor: targetActor,
-		remoteActor: initiatorActor,
-		isInitiator: false
-	});
-	tradeWindow.render(true);
-	
-	// Find initiator and send them a message
-	let initiatorOwner = game.users.find(u => 
-		initiatorActor.testUserPermission(u, "OWNER") && 
-		u.id !== game.user.id && 
-		u.active && 
-		!u.isGM
-	);
-	if (!initiatorOwner) {
-		initiatorOwner = game.users.find(u => 
-			initiatorActor.testUserPermission(u, "OWNER") && 
-			u.id !== game.user.id && 
-			u.active
-		);
-	}
-	
-	if (initiatorOwner) {
-		const acceptMessageContent = `
-			<div class="trade-accepted-message" data-trade-id="${tradeId}">
-				<h3><i class="fas fa-check-circle"></i> ${game.i18n.localize("SHADOWDARK_EXTRAS.trade.accepted")}</h3>
-				<p>${game.i18n.format("SHADOWDARK_EXTRAS.trade.accepted_by_message", { player: targetActor.name })}</p>
-				<div class="trade-request-buttons">
-					<button type="button" class="trade-open-btn" data-trade-id="${tradeId}" data-initiator-actor="${initiatorActorId}" data-target-actor="${targetActorId}">
-						<i class="fas fa-exchange-alt"></i> ${game.i18n.localize("SHADOWDARK_EXTRAS.trade.open_trade_window")}
-					</button>
-				</div>
-			</div>
-		`;
-		
-		await ChatMessage.create({
-			content: acceptMessageContent,
-			whisper: [initiatorOwner.id],
-			speaker: { alias: targetActor.name }
-		});
-	}
-}
-
-/**
- * Decline trade from chat button
- */
-async function declineTradeFromChat(tradeId, initiatorUserId, messageId) {
-	// Send decline message to initiator
-	const declineMessageContent = `
-		<div class="trade-declined-message">
-			<p><i class="fas fa-times-circle"></i> ${game.i18n.format("SHADOWDARK_EXTRAS.trade.declined_by", { player: game.user.name })}</p>
-		</div>
-	`;
-	
-	await ChatMessage.create({
-		content: declineMessageContent,
-		whisper: [initiatorUserId],
-		speaker: { alias: game.user.name }
-	});
-	
-	ui.notifications.info(game.i18n.localize("SHADOWDARK_EXTRAS.trade.you_declined"));
-}
-
-/**
- * Open trade window from chat button (for initiator after acceptance)
- */
-async function openTradeWindowFromChat(tradeId, initiatorActorId, targetActorId, messageId) {
-	const initiatorActor = game.actors.get(initiatorActorId);
-	const targetActor = game.actors.get(targetActorId);
-	
-	if (!initiatorActor || !targetActor) {
-		ui.notifications.error("Trade actors not found");
-		return;
-	}
-	
-	// Check if window already exists
-	let tradeWindow = activeTrades.get(tradeId);
-	if (!tradeWindow) {
-		tradeWindow = new TradeWindowSD({
-			tradeId: tradeId,
-			localActor: initiatorActor,
-			remoteActor: targetActor,
-			isInitiator: true
-		});
-	}
-	tradeWindow.render(true);
-}
 
 // ============================================
 // TRADE INITIATION
 // ============================================
 
 /**
- * Initiate a trade with another player
+ * Initiate a trade with another player using socketlib
  */
 export async function initiateTradeWithPlayer(localActor, remoteActor) {
 	if (!localActor || !remoteActor) {
 		ui.notifications.error("Invalid actors for trade");
 		return;
 	}
-	
+
 	// Check trade journal exists
 	const journal = getTradeJournal();
 	if (!journal) {
 		ui.notifications.error("Trade journal not found. Please ensure journal ID is configured.");
 		return;
 	}
-	
+
+	// Get the socketlib socket
+	const socket = getSocket();
+	if (!socket) {
+		ui.notifications.error("socketlib not available. Trade system requires socketlib module.");
+		return;
+	}
+
 	// Find the ONLINE non-GM owner of the remote actor
-	let remoteOwner = game.users.find(u => 
-		remoteActor.testUserPermission(u, "OWNER") && 
-		u.id !== game.user.id && 
-		u.active && 
+	let remoteOwner = game.users.find(u =>
+		remoteActor.testUserPermission(u, "OWNER") &&
+		u.id !== game.user.id &&
+		u.active &&
 		!u.isGM
 	);
-	
+
 	if (!remoteOwner) {
-		remoteOwner = game.users.find(u => 
-			remoteActor.testUserPermission(u, "OWNER") && 
-			u.id !== game.user.id && 
+		remoteOwner = game.users.find(u =>
+			remoteActor.testUserPermission(u, "OWNER") &&
+			u.id !== game.user.id &&
 			u.active
 		);
 	}
-	
+
 	if (!remoteOwner) {
 		ui.notifications.error(game.i18n.localize("SHADOWDARK_EXTRAS.trade.no_owner"));
 		return;
 	}
-	
+
 	// Generate trade ID
 	const tradeId = generateTradeId();
-	
-	// Send trade request via whispered chat message
-	const messageContent = `
-		<div class="trade-request-message" data-trade-id="${tradeId}">
-			<h3><i class="fas fa-exchange-alt"></i> ${game.i18n.localize("SHADOWDARK_EXTRAS.trade.request_title")}</h3>
-			<p>${game.i18n.format("SHADOWDARK_EXTRAS.trade.request_message", { player: localActor.name })}</p>
-			<div class="trade-request-buttons">
-				<button type="button" class="trade-accept-btn" data-trade-id="${tradeId}" data-initiator-user="${game.user.id}" data-initiator-actor="${localActor.id}" data-target-actor="${remoteActor.id}">
-					<i class="fas fa-check"></i> ${game.i18n.localize("SHADOWDARK_EXTRAS.trade.accept")}
-				</button>
-				<button type="button" class="trade-decline-btn" data-trade-id="${tradeId}" data-initiator-user="${game.user.id}">
-					<i class="fas fa-times"></i> ${game.i18n.localize("SHADOWDARK_EXTRAS.trade.decline")}
-				</button>
-			</div>
-		</div>
-	`;
-	
-	await ChatMessage.create({
-		content: messageContent,
-		whisper: [remoteOwner.id],
-		speaker: { alias: localActor.name }
-	});
-	
+
+	// Notify user that request is being sent
 	ui.notifications.info(game.i18n.format("SHADOWDARK_EXTRAS.trade.request_sent", {
 		player: remoteActor.name
 	}));
+
+	// Send trade request prompt to the remote user via socketlib
+	// Use executeAsUser which waits for and returns the result from that specific user
+	try {
+		console.log(`${MODULE_ID} | Sending trade request to user ${remoteOwner.id}`);
+		const result = await socket.executeAsUser("showTradeRequestPrompt", remoteOwner.id, {
+			initiatorActorId: localActor.id,
+			targetActorId: remoteActor.id,
+			initiatorUserId: game.user.id,
+			tradeId: tradeId
+		});
+
+		console.log(`${MODULE_ID} | Trade request result:`, result);
+
+		// executeAsUser returns the result directly (unlike executeForUsers)
+		if (result?.accepted) {
+			// Trade accepted! Initialize trade state and open windows for both players
+			console.log(`${MODULE_ID} | Trade accepted, initializing trade state`);
+			await saveTradeData(tradeId, {
+				actorAId: localActor.id,
+				actorBId: remoteActor.id,
+				itemsA: [],
+				itemsB: [],
+				lockedA: false,
+				lockedB: false,
+				acceptedA: false,
+				acceptedB: false
+			});
+
+			// Open trade window for initiator (this user) - we are side A
+			const tradeWindow = new TradeWindowSD({
+				tradeId: tradeId,
+				localActor: localActor,
+				remoteActor: remoteActor,
+				isInitiator: true
+			});
+			tradeWindow.render(true);
+
+			// Open trade window for target user (they are side B)
+			console.log(`${MODULE_ID} | Opening trade window for target user`);
+			await socket.executeForUsers("openTradeWindow", [remoteOwner.id], {
+				tradeId: tradeId,
+				localActorId: remoteActor.id,
+				remoteActorId: localActor.id,
+				isInitiator: false
+			});
+
+			ui.notifications.info(game.i18n.localize("SHADOWDARK_EXTRAS.trade.accepted"));
+		} else {
+			// Trade declined
+			ui.notifications.info(game.i18n.format("SHADOWDARK_EXTRAS.trade.declined_by", {
+				player: remoteActor.name
+			}));
+		}
+
+	} catch (error) {
+		console.error(`${MODULE_ID} | Error initiating trade:`, error);
+		ui.notifications.error(game.i18n.localize("SHADOWDARK_EXTRAS.trade.failed"));
+	}
 }
 
 /**
@@ -913,12 +779,12 @@ export async function showTradeDialog(localActor) {
 		// Check if the actor has any active owner who can trade
 		return game.users.some(u => a.testUserPermission(u, "OWNER") && u.id !== game.user.id && u.active);
 	});
-	
+
 	if (allPlayers.length === 0) {
 		ui.notifications.warn(game.i18n.localize("SHADOWDARK_EXTRAS.trade.no_players"));
 		return;
 	}
-	
+
 	// Categorize actors
 	const connectedAssigned = allPlayers.filter(a => {
 		// Check if any connected user (not current user) has this as their assigned character
@@ -928,10 +794,10 @@ export async function showTradeDialog(localActor) {
 		// Not connected/assigned
 		return !game.users.some(u => u.active && u.id !== game.user.id && u.character?.id === a.id);
 	});
-	
+
 	// Build options HTML with optgroups and data attributes for searching
 	let optionsHtml = '';
-	
+
 	// Connected & Assigned characters
 	if (connectedAssigned.length > 0) {
 		optionsHtml += `<optgroup label="🟢 Connected Players" data-group="connected">`;
@@ -944,7 +810,7 @@ export async function showTradeDialog(localActor) {
 		}
 		optionsHtml += `</optgroup>`;
 	}
-	
+
 	// Other player characters (only shown when filter is unchecked)
 	if (otherPlayers.length > 0) {
 		optionsHtml += `<optgroup label="⚪ Other Characters" data-group="other">`;
@@ -957,7 +823,7 @@ export async function showTradeDialog(localActor) {
 		}
 		optionsHtml += `</optgroup>`;
 	}
-	
+
 	const content = `
 		<form>
 			<div class="form-group" style="margin-bottom: 8px;">
@@ -979,7 +845,7 @@ export async function showTradeDialog(localActor) {
 			</div>
 		</form>
 	`;
-	
+
 	return new Promise((resolve) => {
 		const dialog = new Dialog({
 			title: game.i18n.localize("SHADOWDARK_EXTRAS.trade.initiate_title"),
@@ -1008,28 +874,28 @@ export async function showTradeDialog(localActor) {
 				const $select = html.find('#sdx-trade-target');
 				const $filterCheckbox = html.find('#sdx-filter-connected');
 				const $searchInput = html.find('#sdx-trade-search');
-				
+
 				// Combined filter function for both checkbox and search
 				const updateFilter = () => {
 					const showOnlyConnected = $filterCheckbox.is(':checked');
 					const searchText = $searchInput.val().toLowerCase().trim();
-					
-					$select.find('optgroup').each(function() {
+
+					$select.find('optgroup').each(function () {
 						const $group = $(this);
 						const groupType = $group.data('group');
-						
+
 						// First, apply connected filter to groups
 						if (groupType === 'other' && showOnlyConnected) {
 							$group.hide();
 							return;
 						}
-						
+
 						// Then apply search filter to options within visible groups
 						let visibleCount = 0;
-						$group.find('option').each(function() {
+						$group.find('option').each(function () {
 							const $option = $(this);
 							const optionSearch = $option.data('search') || '';
-							
+
 							if (searchText === '' || optionSearch.includes(searchText)) {
 								$option.show();
 								visibleCount++;
@@ -1037,22 +903,22 @@ export async function showTradeDialog(localActor) {
 								$option.hide();
 							}
 						});
-						
+
 						// Hide group if no visible options
 						$group.toggle(visibleCount > 0);
 					});
-					
+
 					// If current selection is now hidden, select first visible option
 					const $selectedOption = $select.find('option:selected');
 					if (!$selectedOption.is(':visible') || $selectedOption.parent('optgroup').is(':hidden')) {
 						$select.find('option:visible').first().prop('selected', true);
 					}
 				};
-				
+
 				updateFilter();
 				$filterCheckbox.on('change', updateFilter);
 				$searchInput.on('input', updateFilter);
-				
+
 				// Focus search input for immediate typing
 				setTimeout(() => $searchInput.focus(), 100);
 			}

@@ -34,6 +34,15 @@ import { initAuraEffects, createAuraOnActor, getActiveAuras, getTokensInAura } f
 
 const MODULE_ID = "shadowdark-extras";
 const TRADE_JOURNAL_NAME = "__sdx_trade_sync__"; // Must match TradeWindowSD.mjs
+const CAROUSING_JOURNAL_NAME = "__sdx_carousing_sync__"; // Must match CarousingSD.mjs
+const CAROUSING_TABLES_JOURNAL_NAME = "__sdx_carousing_tables__"; // Must match CarousingSD.mjs
+
+// All internal journals that should be hidden from the sidebar
+const HIDDEN_JOURNAL_NAMES = [
+	TRADE_JOURNAL_NAME,
+	CAROUSING_JOURNAL_NAME,
+	CAROUSING_TABLES_JOURNAL_NAME
+];
 
 // ============================================
 // INVENTORY STYLES APP
@@ -6154,20 +6163,47 @@ function injectAddCoinsButton(html, actor) {
 
 	if (coinsBox.length === 0) return;
 
-	// Find the empty span in the header and add the + button
+	// Find the empty span in the header and add the buttons
 	const headerSpan = coinsBox.find('.header span').first();
 	if (headerSpan.length === 0) return;
 
-	// Add the + button
-	const addBtnHtml = `<a class="sdx-add-coins-btn" data-action="add-coins" data-tooltip="${game.i18n.localize("SHADOWDARK_EXTRAS.party.add_coins_title")}"><i class="fas fa-plus"></i></a>`;
-	headerSpan.html(addBtnHtml);
+	// Check if there are other players/Party to transfer to
+	const hasTransferTargets = game.actors.some(a => {
+		if (a.id === actor.id) return false;
+		const isParty = a.type === "NPC" && a.getFlag(MODULE_ID, "isParty");
+		if (a.type !== "Player" && !isParty) return false;
+		if (!isParty) {
+			return game.users.some(u => a.testUserPermission(u, "OWNER"));
+		}
+		return true;
+	});
 
-	// Attach click handler
+	// Build buttons HTML - Add + Transfer
+	let buttonsHtml = `<a class="sdx-add-coins-btn" data-action="add-coins" data-tooltip="${game.i18n.localize("SHADOWDARK_EXTRAS.party.add_coins_title")}"><i class="fas fa-plus"></i></a>`;
+
+	// Only add transfer button if there are targets
+	if (hasTransferTargets) {
+		buttonsHtml += `<a class="sdx-transfer-coins-btn" data-action="transfer-coins" data-tooltip="${game.i18n.localize("SHADOWDARK_EXTRAS.dialog.transfer_coins_title")}" style="margin-left: 6px;"><i class="fas fa-share"></i></a>`;
+	}
+
+	headerSpan.html(buttonsHtml);
+
+	// Attach click handler for add coins
 	coinsBox.find('[data-action="add-coins"]').on("click", async (event) => {
 		event.preventDefault();
 		await showAddCoinsDialog(actor);
 	});
+
+	// Attach click handler for transfer coins
+	coinsBox.find('[data-action="transfer-coins"]').on("click", async (event) => {
+		event.preventDefault();
+		const result = await showCoinTransferDialog(actor);
+		if (result) {
+			await transferCoinsToPlayer(actor, result.coins, result.targetActorId);
+		}
+	});
 }
+
 
 /**
  * Show dialog to add/remove coins from an actor
@@ -7038,9 +7074,298 @@ async function transferItemToPlayer(sourceActor, item, targetActorId) {
 }
 
 /**
+ * Transfer coins to another player's character using Item Piles API
+ */
+async function transferCoinsToPlayer(sourceActor, coins, targetActorId) {
+	if (!sourceActor || !coins) return;
+
+	// Check if Item Piles is available
+	if (!game.modules.get("item-piles")?.active || !game.itempiles?.API) {
+		ui.notifications.error("Item Piles module is required for player-to-player transfers.");
+		console.error(`${MODULE_ID} | Item Piles API not available`);
+		return;
+	}
+
+	const targetActor = game.actors.get(targetActorId);
+	if (!targetActor) {
+		ui.notifications.error(
+			game.i18n.localize("SHADOWDARK_EXTRAS.notifications.transfer_no_target")
+		);
+		return;
+	}
+
+	// Validate source has enough coins
+	const sourceCoins = sourceActor.system?.coins || {};
+	if ((coins.gp || 0) > (sourceCoins.gp || 0) ||
+		(coins.sp || 0) > (sourceCoins.sp || 0) ||
+		(coins.cp || 0) > (sourceCoins.cp || 0)) {
+		ui.notifications.error(
+			game.i18n.localize("SHADOWDARK_EXTRAS.notifications.not_enough_coins_transfer")
+		);
+		return;
+	}
+
+	try {
+		console.log(`${MODULE_ID} | Transferring coins from ${sourceActor.name} to ${targetActor.name}:`, coins);
+
+		// Build attributes for Item Piles transferAttributes API
+		const attributes = {};
+		if (coins.gp > 0) attributes["system.coins.gp"] = coins.gp;
+		if (coins.sp > 0) attributes["system.coins.sp"] = coins.sp;
+		if (coins.cp > 0) attributes["system.coins.cp"] = coins.cp;
+
+		// Use Item Piles API to transfer the currency
+		const result = await game.itempiles.API.transferAttributes(
+			sourceActor,
+			targetActor,
+			attributes,
+			{ interactionId: false }
+		);
+
+		if (result) {
+			// Build a human-readable coins string
+			const coinParts = [];
+			if (coins.gp > 0) coinParts.push(`${coins.gp} GP`);
+			if (coins.sp > 0) coinParts.push(`${coins.sp} SP`);
+			if (coins.cp > 0) coinParts.push(`${coins.cp} CP`);
+			const coinsStr = coinParts.join(", ");
+
+			ui.notifications.info(
+				game.i18n.format("SHADOWDARK_EXTRAS.notifications.coins_transferred", {
+					coins: coinsStr,
+					target: targetActor.name
+				})
+			);
+		} else {
+			console.warn(`${MODULE_ID} | Coin transfer returned no results`);
+			ui.notifications.warn("Transfer may not have completed successfully.");
+		}
+	} catch (error) {
+		console.error(`${MODULE_ID} | Error during coin transfer:`, error);
+		ui.notifications.error(
+			game.i18n.localize("SHADOWDARK_EXTRAS.notifications.transfer_failed")
+		);
+	}
+}
+
+/**
+ * Show dialog to select target player and coin amounts for transfer
+ * Similar to showTransferDialog but for coins instead of items
+ */
+async function showCoinTransferDialog(sourceActor) {
+	// Get all player characters that are not the source actor and have an owner
+	const allPlayers = game.actors.filter(a => {
+		if (a.id === sourceActor.id) return false;
+		// Include Player type actors and Party type actors (NPC type with party flag)
+		const isParty = a.type === "NPC" && a.getFlag(MODULE_ID, "isParty");
+		if (a.type !== "Player" && !isParty) return false;
+		// For players, check if the actor has any owner who can receive the coins
+		if (!isParty) {
+			return game.users.some(u => a.testUserPermission(u, "OWNER"));
+		}
+		return true; // Party actors are always available
+	});
+
+	if (allPlayers.length === 0) {
+		ui.notifications.warn(
+			game.i18n.localize("SHADOWDARK_EXTRAS.notifications.no_players_available")
+		);
+		return;
+	}
+
+	// Get source actor's coins for validation
+	const sourceCoins = {
+		gp: sourceActor.system?.coins?.gp ?? 0,
+		sp: sourceActor.system?.coins?.sp ?? 0,
+		cp: sourceActor.system?.coins?.cp ?? 0
+	};
+
+	// Categorize actors and build searchable data
+	const partyActors = allPlayers.filter(a => a.type === "NPC" && a.getFlag(MODULE_ID, "isParty"));
+	const connectedAssigned = allPlayers.filter(a => {
+		if (a.type !== "Player") return false;
+		return game.users.some(u => u.active && u.character?.id === a.id);
+	});
+	const otherPlayers = allPlayers.filter(a => {
+		if (a.type !== "Player") return false;
+		return !game.users.some(u => u.active && u.character?.id === a.id);
+	});
+
+	// Build options HTML
+	let optionsHtml = '';
+
+	if (partyActors.length > 0) {
+		optionsHtml += `<optgroup label="📦 Party Storage" data-group="party">`;
+		for (const p of partyActors) {
+			optionsHtml += `<option value="${p.id}" data-search="${p.name.toLowerCase()}">🎒 ${p.name}</option>`;
+		}
+		optionsHtml += `</optgroup>`;
+	}
+
+	if (connectedAssigned.length > 0) {
+		optionsHtml += `<optgroup label="🟢 Connected Players" data-group="connected">`;
+		for (const p of connectedAssigned) {
+			const user = game.users.find(u => u.active && u.character?.id === p.id);
+			const userName = user ? user.name : '';
+			const displayUserName = userName ? ` (${userName})` : '';
+			const searchText = `${p.name} ${userName}`.toLowerCase();
+			optionsHtml += `<option value="${p.id}" data-search="${searchText}">🟢 ${p.name}${displayUserName}</option>`;
+		}
+		optionsHtml += `</optgroup>`;
+	}
+
+	if (otherPlayers.length > 0) {
+		optionsHtml += `<optgroup label="⚪ Other Characters" data-group="other">`;
+		for (const p of otherPlayers) {
+			const owners = game.users.filter(u => p.testUserPermission(u, "OWNER"));
+			const ownerNames = owners.map(u => u.name).join(' ');
+			const searchText = `${p.name} ${ownerNames}`.toLowerCase();
+			optionsHtml += `<option value="${p.id}" data-search="${searchText}">⚪ ${p.name}</option>`;
+		}
+		optionsHtml += `</optgroup>`;
+	}
+
+	const content = `
+		<form>
+			<div class="form-group" style="margin-bottom: 8px;">
+				<label style="display: flex; align-items: center; gap: 8px;">
+					<input type="checkbox" id="sdx-filter-connected" checked />
+					${game.i18n.localize("SHADOWDARK_EXTRAS.dialog.filter_connected")}
+				</label>
+			</div>
+			<div class="form-group" style="margin-bottom: 8px;">
+				<label>Search:</label>
+				<input type="text" id="sdx-transfer-search" placeholder="Type to filter by name..." 
+				       style="width: 100%;" autocomplete="off" />
+			</div>
+			<div class="form-group">
+				<label>${game.i18n.localize("SHADOWDARK_EXTRAS.dialog.select_recipient")}</label>
+				<select name="targetActorId" id="sdx-transfer-target" style="width: 100%; min-height: 150px;" size="8">
+					${optionsHtml}
+				</select>
+			</div>
+			<hr style="margin: 12px 0;" />
+			<div class="form-group">
+				<label>${game.i18n.localize("SHADOWDARK_EXTRAS.dialog.transfer_coins_amount")}</label>
+				<div style="display: flex; gap: 12px; margin-top: 4px;">
+					<div style="flex: 1; text-align: center;">
+						<input type="number" name="gp" id="sdx-coin-gp" value="0" min="0" max="${sourceCoins.gp}" 
+						       style="width: 100%; text-align: center;" />
+						<label style="font-size: 0.85em; color: #c9a227;">GP (${sourceCoins.gp})</label>
+					</div>
+					<div style="flex: 1; text-align: center;">
+						<input type="number" name="sp" id="sdx-coin-sp" value="0" min="0" max="${sourceCoins.sp}" 
+						       style="width: 100%; text-align: center;" />
+						<label style="font-size: 0.85em; color: #aaa;">SP (${sourceCoins.sp})</label>
+					</div>
+					<div style="flex: 1; text-align: center;">
+						<input type="number" name="cp" id="sdx-coin-cp" value="0" min="0" max="${sourceCoins.cp}" 
+						       style="width: 100%; text-align: center;" />
+						<label style="font-size: 0.85em; color: #b87333;">CP (${sourceCoins.cp})</label>
+					</div>
+				</div>
+			</div>
+			<p style="font-size: 0.9em; opacity: 0.8; margin-top: 12px;">
+				${game.i18n.localize("SHADOWDARK_EXTRAS.dialog.transfer_coins_warning")}
+			</p>
+		</form>
+	`;
+
+	return new Promise((resolve) => {
+		const dialog = new Dialog({
+			title: game.i18n.localize("SHADOWDARK_EXTRAS.dialog.transfer_coins_title"),
+			content: content,
+			buttons: {
+				transfer: {
+					icon: '<i class="fas fa-coins"></i>',
+					label: game.i18n.localize("SHADOWDARK_EXTRAS.dialog.transfer"),
+					callback: (html) => {
+						const targetActorId = html.find('[name="targetActorId"]').val();
+						const gp = parseInt(html.find('#sdx-coin-gp').val()) || 0;
+						const sp = parseInt(html.find('#sdx-coin-sp').val()) || 0;
+						const cp = parseInt(html.find('#sdx-coin-cp').val()) || 0;
+
+						// Validate at least some coins are being transferred
+						if (gp <= 0 && sp <= 0 && cp <= 0) {
+							ui.notifications.warn(game.i18n.localize("SHADOWDARK_EXTRAS.dialog.no_coins_selected"));
+							resolve(null);
+							return;
+						}
+
+						resolve({ targetActorId, coins: { gp, sp, cp } });
+					}
+				},
+				cancel: {
+					icon: '<i class="fas fa-times"></i>',
+					label: game.i18n.localize("Cancel"),
+					callback: () => resolve(null)
+				}
+			},
+			default: "transfer",
+			render: (html) => {
+				const $select = html.find('#sdx-transfer-target');
+				const $filterCheckbox = html.find('#sdx-filter-connected');
+				const $searchInput = html.find('#sdx-transfer-search');
+
+				const updateFilter = () => {
+					const showOnlyConnected = $filterCheckbox.is(':checked');
+					const searchText = $searchInput.val().toLowerCase().trim();
+
+					$select.find('optgroup').each(function () {
+						const $group = $(this);
+						const groupType = $group.data('group');
+
+						if (groupType === 'other' && showOnlyConnected) {
+							$group.hide();
+							return;
+						}
+
+						let visibleCount = 0;
+						$group.find('option').each(function () {
+							const $option = $(this);
+							const optionSearch = $option.data('search') || '';
+
+							if (searchText === '' || optionSearch.includes(searchText)) {
+								$option.show();
+								visibleCount++;
+							} else {
+								$option.hide();
+							}
+						});
+
+						$group.toggle(visibleCount > 0);
+					});
+
+					const $selectedOption = $select.find('option:selected');
+					if (!$selectedOption.is(':visible') || $selectedOption.parent('optgroup').is(':hidden')) {
+						$select.find('option:visible').first().prop('selected', true);
+					}
+				};
+
+				updateFilter();
+				$filterCheckbox.on('change', updateFilter);
+				$searchInput.on('input', updateFilter);
+
+				// Validate coin inputs don't exceed available
+				html.find('#sdx-coin-gp, #sdx-coin-sp, #sdx-coin-cp').on('change', function () {
+					const max = parseInt(this.max) || 0;
+					let val = parseInt(this.value) || 0;
+					if (val < 0) val = 0;
+					if (val > max) val = max;
+					this.value = val;
+				});
+
+				setTimeout(() => $searchInput.focus(), 100);
+			}
+		}).render(true);
+	});
+}
+
+/**
  * Show dialog to select target player for transfer
  * Enhanced with filtering for connected/assigned characters and Party actors
  */
+
 async function showTransferDialog(sourceActor, item) {
 	// Get all player characters that are not the source actor and have an owner
 	const allPlayers = game.actors.filter(a => {
@@ -7327,14 +7652,15 @@ Hooks.on("renderJournalDirectory", (app, html, data) => {
 		const entryId = entry.dataset?.entryId || entry.dataset?.documentId;
 		if (entryId) {
 			const journal = game.journal.get(entryId);
-			if (journal?.name === TRADE_JOURNAL_NAME) {
+			if (journal && HIDDEN_JOURNAL_NAMES.includes(journal.name)) {
 				entry.remove();
 				return;
 			}
 		}
 		// Also check by name in the entry text as fallback
 		const nameEl = entry.querySelector(".entry-name, .document-name");
-		if (nameEl?.textContent?.trim() === TRADE_JOURNAL_NAME) {
+		const entryName = nameEl?.textContent?.trim();
+		if (entryName && HIDDEN_JOURNAL_NAMES.includes(entryName)) {
 			entry.remove();
 		}
 	});
