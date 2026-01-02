@@ -1,3 +1,8 @@
-2025/12/31-17:32:40.190 94ac Recovering log #146
-2025/12/31-17:32:40.199 94ac Delete type=0 #146
-2025/12/31-17:32:40.199 94ac Delete type=3 #145
+2026/01/02-00:38:15.626 6194 Recovering log #152
+2026/01/02-00:38:15.635 6194 Delete type=0 #152
+2026/01/02-00:38:15.635 6194 Delete type=3 #151
+2026/01/02-01:58:15.913 5f2c Level-0 table #156: started
+2026/01/02-01:58:15.913 5f2c Level-0 table #156: 0 bytes OK
+2026/01/02-01:58:15.918 5f2c Delete type=0 #154
+2026/01/02-01:58:15.929 5f2c Manual compaction at level-0 from '!actors!X2leBdJeqwKWrTlE' @ 72057594037927935 : 1 .. '!actors!X2leBdJeqwKWrTlE' @ 0 : 0; will stop at (end)
+2026/01/02-01:58:15.929 5f2c Manual compaction at level-1 from '!actors!X2leBdJeqwKWrTlE' @ 72057594037927935 : 1 .. '!actors!X2leBdJeqwKWrTlE' @ 0 : 0; will stop at (end)

@@ -4368,7 +4368,7 @@ function addInlineEffectControls($effectsTab, actor) {
  * Inject conditions quick toggles into the Effects tab
  */
 async function injectConditionsToggles(app, html, actor) {
-	if (actor.type !== "Player") return;
+	if (actor.type !== "Player" && actor.type !== "NPC") return;
 
 	// Find the active effects section
 	const $effectsTab = html.find('.tab[data-tab="tab-effects"]');
@@ -7739,6 +7739,7 @@ Hooks.on("renderNpcSheetSD", async (app, html, data) => {
 	maskUnidentifiedItemsOnSheet(app, html);
 	applyInventoryStylesToSheet(html, app.actor);
 	enableItemChatIcon(app, html);
+	await injectConditionsToggles(app, html, app.actor);
 });
 
 // Inject Creature Type dropdown into NPC sheets
@@ -13129,6 +13130,48 @@ Hooks.once("init", () => {
 			name: "SHADOWDARK.item.effect.predefined_effect.abilityAdvantageCha",
 			mode: "CONST.ACTIVE_EFFECT_MODES.ADD",
 		},
+		abilityDisadvantageStr: {
+			defaultValue: "str",
+			effectKey: "system.bonuses.disadvantage",
+			img: "icons/skills/wounds/bone-broken-hand.webp",
+			name: "SHADOWDARK.item.effect.predefined_effect.abilityDisadvantageStr",
+			mode: "CONST.ACTIVE_EFFECT_MODES.ADD",
+		},
+		abilityDisadvantageDex: {
+			defaultValue: "dex",
+			effectKey: "system.bonuses.disadvantage",
+			img: "icons/skills/movement/feet-winged-boots-glowing-yellow.webp",
+			name: "SHADOWDARK.item.effect.predefined_effect.abilityDisadvantageDex",
+			mode: "CONST.ACTIVE_EFFECT_MODES.ADD",
+		},
+		abilityDisadvantageCon: {
+			defaultValue: "con",
+			effectKey: "system.bonuses.disadvantage",
+			img: "icons/magic/life/heart-black-red.webp",
+			name: "SHADOWDARK.item.effect.predefined_effect.abilityDisadvantageCon",
+			mode: "CONST.ACTIVE_EFFECT_MODES.ADD",
+		},
+		abilityDisadvantageInt: {
+			defaultValue: "int",
+			effectKey: "system.bonuses.disadvantage",
+			img: "icons/commodities/gems/gem-broken-red.webp",
+			name: "SHADOWDARK.item.effect.predefined_effect.abilityDisadvantageInt",
+			mode: "CONST.ACTIVE_EFFECT_MODES.ADD",
+		},
+		abilityDisadvantageWis: {
+			defaultValue: "wis",
+			effectKey: "system.bonuses.disadvantage",
+			img: "icons/magic/perception/eye-ringed-glow-angry-small-red.webp",
+			name: "SHADOWDARK.item.effect.predefined_effect.abilityDisadvantageWis",
+			mode: "CONST.ACTIVE_EFFECT_MODES.ADD",
+		},
+		abilityDisadvantageCha: {
+			defaultValue: "cha",
+			effectKey: "system.bonuses.disadvantage",
+			img: "icons/magic/light/hand-sparks-smoke-teal.webp",
+			name: "SHADOWDARK.item.effect.predefined_effect.abilityDisadvantageCha",
+			mode: "CONST.ACTIVE_EFFECT_MODES.ADD",
+		},
 		meleeAdvantage: {
 			defaultValue: "melee",
 			effectKey: "system.bonuses.advantage",
@@ -13342,85 +13385,266 @@ Hooks.once("init", () => {
 
 // Monkey-patch ActorSD.castSpell to prevent spell casting when silenced
 Hooks.once("ready", () => {
-	// Get the ActorSD class
+	// Get the ActorSD and RollSD class references
 	const ActorSD = globalThis.shadowdark?.documents?.ActorSD;
+	const RollSD = CONFIG.DiceSD;
 
 	if (!ActorSD) {
-		console.error(`${MODULE_ID} | ActorSD not found, cannot apply silenced effect`);
+		console.error(`${MODULE_ID} | ActorSD not found, cannot apply system patches`);
 		return;
 	}
 
-	console.log(`${MODULE_ID} | Attempting to patch ActorSD.castSpell for silenced effect`);
+	console.log(`${MODULE_ID} | Applying consolidated ActorSD and RollSD patches`);
 
-	if (!ActorSD.prototype.castSpell) {
-		console.error(`${MODULE_ID} | castSpell method not found on ActorSD!`);
-		return;
+	// ============================================
+	// SILENCED EFFECT - PREVENT SPELL CASTING
+	// ============================================
+	if (ActorSD.prototype.castSpell) {
+		const _originalCastSpell = ActorSD.prototype.castSpell;
+		ActorSD.prototype.castSpell = async function (itemId, options = {}) {
+			const isSilenced = this.getFlag(MODULE_ID, "silenced");
+			if (isSilenced) {
+				const item = this.items.get(itemId);
+				if (item) {
+					const effectsSettings = game.settings.get(MODULE_ID, "effectsSettings");
+					let shouldBlock = false;
+					let blockedType = "";
+
+					if (item.type === "Spell" || item.type === "NPC Spell") {
+						shouldBlock = effectsSettings.silenced.blocksSpells;
+						blockedType = "spells";
+					} else if (item.type === "Scroll") {
+						shouldBlock = effectsSettings.silenced.blocksScrolls;
+						blockedType = "scrolls";
+					} else if (item.type === "Wand") {
+						shouldBlock = effectsSettings.silenced.blocksWands;
+						blockedType = "wands";
+					}
+
+					if (shouldBlock) {
+						ui.notifications.warn(`You are silenced and cannot cast ${blockedType}!`);
+						return null;
+					}
+				}
+			}
+			return _originalCastSpell.call(this, itemId, options);
+		};
 	}
 
-	const _originalCastSpell = ActorSD.prototype.castSpell;
+	// ============================================
+	// EXTRA DAMAGE DICE SUPPORT
+	// ============================================
+	if (ActorSD.prototype.getExtraDamageDiceForWeapon) {
+		const _originalGetExtraDamageDiceForWeapon = ActorSD.prototype.getExtraDamageDiceForWeapon;
+		ActorSD.prototype.getExtraDamageDiceForWeapon = async function (item, data) {
+			await _originalGetExtraDamageDiceForWeapon.call(this, item, data);
 
-	ActorSD.prototype.castSpell = async function (itemId, options = {}) {
-		console.log(`${MODULE_ID} | castSpell called for actor ${this.name}, itemId: ${itemId}`);
-
-		// Check if actor has silenced effect
-		const isSilenced = this.getFlag("shadowdark-extras", "silenced");
-
-		if (isSilenced) {
-			// Get the item to check its type
-			const item = this.items.get(itemId);
-			if (!item) {
-				console.warn(`${MODULE_ID} | Item ${itemId} not found on actor`);
-				return _originalCastSpell.call(this, itemId, options);
+			if (this.type === "Player") {
+				if (item.system.type === "melee") {
+					let bonus = this.getFlag(MODULE_ID, "meleeDamageDice");
+					if (bonus) {
+						if (typeof bonus === "string" && bonus.startsWith("d=")) bonus = bonus.substring(2);
+						data.sdxMeleeDamageDice = bonus;
+						if (data.damageParts) data.damageParts.push("@sdxMeleeDamageDice");
+					}
+				} else if (item.system.type === "ranged") {
+					let bonus = this.getFlag(MODULE_ID, "rangedDamageDice");
+					if (bonus) {
+						if (typeof bonus === "string" && bonus.startsWith("d=")) bonus = bonus.substring(2);
+						data.sdxRangedDamageDice = bonus;
+						if (data.damageParts) data.damageParts.push("@sdxRangedDamageDice");
+					}
+				}
 			}
+		};
+	}
 
-			console.log(`${MODULE_ID} | Actor ${this.name} is silenced, item type: ${item.type}`);
+	// ============================================
+	// ABILITY ADVANTAGE SUPPORT
+	// ============================================
 
-			// Get effects settings
-			const effectsSettings = game.settings.get("shadowdark-extras", "effectsSettings");
+	// 1. Patch rollAbility to include abilityId in the data object
+	if (ActorSD.prototype.rollAbility) {
+		ActorSD.prototype.rollAbility = async function (abilityId, options = {}) {
+			const parts = ["1d20", "@abilityBonus"];
+			const abilityBonus = this.abilityModifier(abilityId);
+			const ability = CONFIG.SHADOWDARK.ABILITIES_LONG[abilityId];
 
-			// Check settings for each item type
-			let shouldBlock = false;
-			let blockedType = "";
+			const data = {
+				rollType: "ability",
+				abilityId: abilityId, // ← Inject abilityId
+				abilityBonus,
+				ability,
+				actor: this,
+			};
 
-			if (item.type === "Spell" || item.type === "NPC Spell") {
-				shouldBlock = effectsSettings.silenced.blocksSpells;
-				blockedType = "spells";
-			} else if (item.type === "Scroll") {
-				shouldBlock = effectsSettings.silenced.blocksScrolls;
-				blockedType = "scrolls";
-			} else if (item.type === "Wand") {
-				shouldBlock = effectsSettings.silenced.blocksWands;
-				blockedType = "wands";
-			}
+			options.title = game.i18n.localize(`SHADOWDARK.dialog.ability_check.${abilityId}`);
+			options.flavor = options.title;
+			options.speaker = ChatMessage.getSpeaker({ actor: this });
+			options.dialogTemplate = "systems/shadowdark/templates/dialog/roll-ability-check-dialog.hbs";
+			options.chatCardTemplate = "systems/shadowdark/templates/chat/ability-card.hbs";
 
-			if (shouldBlock) {
-				ui.notifications.warn(`You are silenced and cannot cast ${blockedType}!`);
-				console.log(`${MODULE_ID} | Spell casting BLOCKED - actor is silenced and ${blockedType} are blocked`);
-				return null;
-			}
-		}
+			return await CONFIG.DiceSD.RollDialog(parts, data, options);
+		};
+	}
 
-		// Call original method if not blocked
-		return _originalCastSpell.call(this, itemId, options);
-	};
-
-	console.log(`${MODULE_ID} | Silenced effect spell blocking enabled via ActorSD.castSpell`);
-
-	// Patch hasAdvantage to handle universal spellcasting advantage
+	// 2. Patch hasAdvantage to check for custom advantages
 	const _originalHasAdvantage = ActorSD.prototype.hasAdvantage;
 	ActorSD.prototype.hasAdvantage = function (data) {
 		if (this.type === "Player") {
-			if (this.system.bonuses.advantage.includes(data.rollType)) {
+			const bonuses = this.system.bonuses || {};
+			const adv = bonuses.advantage || [];
+
+			// Spellcasting advantage
+			if (data.item?.isSpell?.() && adv.includes("spellcasting")) {
 				return true;
 			}
 
-			if (data.item?.isSpell?.() && this.system.bonuses.advantage.includes("spellcasting")) {
+			// Ability-specific advantage
+			if (data.rollType === "ability" && data.abilityId) {
+				if (adv.includes(data.abilityId)) return true;
+			}
+
+			// Attack type (melee/ranged/slugified weapon) advantage
+			if (data.rollType && adv.includes(data.rollType)) {
+				return true;
+			}
+
+			// Additional attack type check for flexibility
+			if (data.attackType && adv.includes(data.attackType)) {
 				return true;
 			}
 		}
 
 		return _originalHasAdvantage.call(this, data);
 	};
+
+	// 3. Implement hasDisadvantage
+	ActorSD.prototype.hasDisadvantage = function (data) {
+		if (this.type === "Player") {
+			const bonuses = this.system.bonuses || {};
+			const dis = bonuses.disadvantage || [];
+
+			// Spellcasting disadvantage
+			if (data.item?.isSpell?.() && dis.includes("spellcasting")) {
+				return true;
+			}
+
+			// Ability-specific disadvantage
+			if (data.rollType === "ability" && data.abilityId) {
+				if (dis.includes(data.abilityId)) return true;
+			}
+
+			// Attack type disadvantage
+			if (data.rollType && dis.includes(data.rollType)) {
+				return true;
+			}
+
+			if (data.attackType && dis.includes(data.attackType)) {
+				return true;
+			}
+
+			// Standard rollType check (for cases not handled above)
+			if (dis.includes(data.rollType)) {
+				return true;
+			}
+		}
+
+		return false;
+	};
+
+	// 4. Override RollDialog to add disadvantage highlights
+	if (CONFIG.DiceSD?.RollDialog) {
+		console.log(`${MODULE_ID} | Overriding CONFIG.DiceSD.RollDialog for highlights`);
+		CONFIG.DiceSD.RollDialog = async function (parts, data, options = {}) {
+			if (options.skipPrompt) {
+				return await this.Roll(parts, data, false, options.adv ?? 0, options);
+			}
+
+			if (!options.title) {
+				options.title = game.i18n.localize("SHADOWDARK.dialog.roll");
+			}
+
+			// Render the HTML for the dialog
+			let content = await this._getRollDialogContent(parts, data, options);
+
+			const dialogData = {
+				title: options.title,
+				content,
+				classes: ["shadowdark-dialog"],
+				buttons: {
+					advantage: {
+						label: game.i18n.localize("SHADOWDARK.roll.advantage"),
+						callback: async html => {
+							return this.Roll(parts, data, html, 1, options);
+						},
+					},
+					normal: {
+						label: game.i18n.localize("SHADOWDARK.roll.normal"),
+						callback: async html => {
+							return this.Roll(parts, data, html, 0, options);
+						},
+					},
+					disadvantage: {
+						label: game.i18n.localize("SHADOWDARK.roll.disadvantage"),
+						callback: async html => {
+							return this.Roll(parts, data, html, -1, options);
+						},
+					},
+				},
+				close: () => null,
+				default: "normal",
+				render: html => {
+					// Check if the actor has advantage, and add highlight if that
+					// is the case (Standard System Logic)
+					if (data.actor?.hasAdvantage(data)) {
+						html.find("button.advantage")
+							.attr("title", game.i18n.localize(
+								"SHADOWDARK.dialog.tooltip.talent_advantage"
+							))
+							.addClass("talent-highlight");
+					}
+
+					// Custom Disadvantage Highlight Logic (Shadowdark Extras)
+					if (data.actor?.hasDisadvantage?.(data)) {
+						html.find("button.disadvantage")
+							.attr("title", game.i18n.localize(
+								"SHADOWDARK.dialog.tooltip.talent_advantage"
+							))
+							.addClass("talent-highlight");
+					}
+				},
+			};
+
+			return Dialog.wait(dialogData, options.dialogOptions);
+		};
+	}
+
+	// ============================================
+	// FREYA'S OMEN - PREVENT SPELL LOSS
+	// ============================================
+	if (RollSD?.Roll) {
+		const _originalRoll = RollSD.Roll;
+		RollSD.Roll = async function (parts, data, $form, adv = 0, options = {}) {
+			const hasFreyasOmen = data.actor?.getFlag && data.actor.getFlag(MODULE_ID, "freyasOmen");
+
+			if (data.item?.isSpell() && hasFreyasOmen) {
+				const originalUpdate = data.item.update;
+				data.item.update = async function (updates, options = {}) {
+					if (updates["system.lost"]) {
+						console.log(`${MODULE_ID} | Freya's Omen prevented spell loss for ${data.item.name}`);
+						delete updates["system.lost"];
+						if (foundry.utils.isEmpty(updates)) return;
+					}
+					return originalUpdate.call(this, updates, options);
+				};
+			}
+
+			return _originalRoll.call(this, parts, data, $form, adv, options);
+		};
+	}
+
+	console.log(`${MODULE_ID} | Consolidated ActorSD and RollSD patches applied`);
 });
 
 // ============================================
@@ -13581,122 +13805,8 @@ Hooks.on("deleteItem", async (item, options, userId) => {
 
 console.log(`${MODULE_ID} | Invisibility effect enabled with auto-disable on attack/spell`);
 
-// Monkey-patch ActorSD functions to support ability-specific advantage and extra damage dice
-// and CONFIG.DiceSD.Roll for Freya's Omen spell loss prevention
-if (globalThis.shadowdark?.documents?.ActorSD) {
-	const ActorSD = globalThis.shadowdark.documents.ActorSD;
-	const RollSD = CONFIG.DiceSD; // CONFIG.DiceSD is the class reference
 
-	console.log(`${MODULE_ID} | Monkey-patching ActorSD methods and DiceSD`);
 
-	// Store original methods
-	const originalRollAbility = ActorSD.prototype.rollAbility;
-	const originalHasAdvantage = ActorSD.prototype.hasAdvantage;
-	const originalGetExtraDamageDiceForWeapon = ActorSD.prototype.getExtraDamageDiceForWeapon;
-	const originalRoll = RollSD.Roll;
-
-	// Override getExtraDamageDiceForWeapon to add damage dice from flags
-	ActorSD.prototype.getExtraDamageDiceForWeapon = async function (item, data) {
-		await originalGetExtraDamageDiceForWeapon.call(this, item, data);
-
-		// Add custom damage dice from flags
-		if (this.type === "Player") {
-			if (item.system.type === "melee") {
-				let bonus = this.getFlag(MODULE_ID, "meleeDamageDice");
-				if (bonus) {
-					if (typeof bonus === "string" && bonus.startsWith("d=")) bonus = bonus.substring(2);
-					data.sdxMeleeDamageDice = bonus;
-					if (data.damageParts) data.damageParts.push("@sdxMeleeDamageDice");
-				}
-			} else if (item.system.type === "ranged") {
-				let bonus = this.getFlag(MODULE_ID, "rangedDamageDice");
-				if (bonus) {
-					if (typeof bonus === "string" && bonus.startsWith("d=")) bonus = bonus.substring(2);
-					data.sdxRangedDamageDice = bonus;
-					if (data.damageParts) data.damageParts.push("@sdxRangedDamageDice");
-				}
-			}
-		}
-	};
-
-	// Override rollAbility to include abilityId in data
-	ActorSD.prototype.rollAbility = async function (abilityId, options = {}) {
-		// If we can't easily wrap the internal logic of rollAbility (it constructs data internally),
-		// we have to re-implement it or intercept the call to RollDialog.
-		// Re-implementing is safer for ensuring data is passed, but riskier for system updates.
-		// Let's try to wrap it by hooking into Config if possible? No, system calls CONFIG.DiceSD.RollDialog directly.
-		// So we MUST re-implement the function to add the extra data property.
-		// Copy of system logic with one addition:
-
-		const parts = ["1d20", "@abilityBonus"];
-		const abilityBonus = this.abilityModifier(abilityId);
-		const ability = CONFIG.SHADOWDARK.ABILITIES_LONG[abilityId];
-
-		const data = {
-			rollType: "ability",
-			abilityId: abilityId, // <--- ADDED THIS
-			abilityBonus,
-			ability,
-			actor: this,
-		};
-
-		options.title = game.i18n.localize(`SHADOWDARK.dialog.ability_check.${abilityId}`);
-		options.flavor = options.title;
-		options.speaker = ChatMessage.getSpeaker({ actor: this });
-		options.dialogTemplate = "systems/shadowdark/templates/dialog/roll-ability-check-dialog.hbs";
-		options.chatCardTemplate = "systems/shadowdark/templates/chat/ability-card.hbs";
-
-		return await CONFIG.DiceSD.RollDialog(parts, data, options);
-	};
-
-	// Override hasAdvantage to check for abilityId and attackType
-	ActorSD.prototype.hasAdvantage = function (data) {
-
-		// Check standard system advantage first
-		if (originalHasAdvantage.call(this, data)) return true;
-
-		// Check for ability-specific advantage
-		if (this.type === "Player" && data.rollType === "ability" && data.abilityId) {
-			return this.system.bonuses.advantage.includes(data.abilityId);
-		}
-
-		// Check for attack type (melee/ranged) advantage
-		if (this.type === "Player" && data.attackType) {
-			return this.system.bonuses.advantage.includes(data.attackType);
-		}
-
-		return false;
-	};
-
-	// Monkey-patch RollSD.Roll to prevent spell loss if Freya's Omen is active
-	if (RollSD) {
-		const originalRoll = RollSD.Roll;
-		RollSD.Roll = async function (parts, data, $form, adv = 0, options = {}) {
-			// If it's a spell and we have the flag, we might need to protect it
-			// Use getFlag safely
-			const hasFreyasOmen = data.actor?.getFlag && data.actor.getFlag(MODULE_ID, "freyasOmen");
-
-			if (data.item?.isSpell() && hasFreyasOmen) {
-				// We need to wrap data.item.update to intercept "system.lost"
-				const originalUpdate = data.item.update;
-				data.item.update = async function (updates, options = {}) {
-					if (updates["system.lost"]) {
-						console.log(`${MODULE_ID} | Freya's Omen prevented spell loss for ${data.item.name}`);
-						// Remove the lost update
-						delete updates["system.lost"];
-						// If no other updates, return early
-						if (foundry.utils.isEmpty(updates)) return;
-					}
-					return originalUpdate.call(this, updates, options);
-				};
-			}
-
-			return originalRoll.call(this, parts, data, $form, adv, options);
-		};
-	}
-} else {
-	console.warn(`${MODULE_ID} | ActorSD not found, could not apply ability advantage patches`);
-}
 
 // ============================================
 // MACRO EXECUTE EFFECT HANDLERS

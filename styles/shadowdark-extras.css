@@ -153,6 +153,14 @@
 }
 
 /* ============================================
+   ROLL DIALOG HIGHLIGHTS
+   ============================================ */
+
+.dialog-button.disadvantage.talent-highlight {
+    background-color: #e0bebe !important;
+}
+
+/* ============================================
    NPC INVENTORY STYLES
    ============================================ */
 
@@ -12491,10 +12499,265 @@ section[data-tab="tab-notes"].sdx-journal-active>div:not(.sdx-journal-notes) {
     border-top: 1px solid #333;
     margin: 12px 0;
 }
+
 /* Tab visibility for Weapon Animation Config */
 .weapon-animation-config .tab {
     display: none;
 }
+
 .weapon-animation-config .tab.active {
     display: block;
+}
+
+/* ============================================
+   QUICK CONDITIONS TOGGLES
+   ============================================ */
+
+.sdx-conditions-toggles {
+    margin-top: 16px;
+    padding: 12px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.sdx-conditions-header {
+    margin: 0 0 12px 0;
+    padding-bottom: 8px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+    font-size: 14px;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #c9aa58;
+}
+
+/* Grid Layout - 3 columns with auto-fit for responsiveness */
+.sdx-conditions-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 6px;
+}
+
+/* Individual condition toggle button */
+.sdx-condition-toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 10px;
+    background: rgba(40, 40, 40, 0.8);
+    border: 1px solid rgba(100, 100, 100, 0.4);
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    overflow: hidden;
+}
+
+.sdx-condition-toggle:hover {
+    background: rgba(60, 60, 60, 0.9);
+    border-color: rgba(150, 150, 150, 0.5);
+    transform: translateY(-1px);
+}
+
+.sdx-condition-toggle.active {
+    background: linear-gradient(135deg, rgba(60, 100, 60, 0.8) 0%, rgba(40, 70, 40, 0.9) 100%);
+    border-color: rgba(120, 200, 120, 0.6);
+    box-shadow: 0 0 8px rgba(100, 180, 100, 0.3);
+}
+
+.sdx-condition-toggle.active:hover {
+    background: linear-gradient(135deg, rgba(70, 110, 70, 0.9) 0%, rgba(50, 80, 50, 0.9) 100%);
+}
+
+/* Condition icon */
+.sdx-condition-toggle img {
+    width: 28px;
+    height: 28px;
+    border-radius: 4px;
+    flex-shrink: 0;
+    border: 1px solid rgba(80, 80, 80, 0.5);
+}
+
+/* Condition name - key for readability */
+.sdx-condition-name {
+    flex: 1;
+    font-size: 11px;
+    font-weight: 500;
+    color: #e0e0e0;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    line-height: 1.2;
+    /* Allow text to wrap for long names */
+    word-break: break-word;
+    hyphens: auto;
+}
+
+.sdx-condition-toggle.active .sdx-condition-name {
+    color: #a0e0a0;
+}
+
+/* Variant indicator (dropdown arrow) */
+.sdx-condition-toggle.has-variants i.fa-caret-down {
+    color: #888;
+    font-size: 10px;
+    flex-shrink: 0;
+    margin-left: auto;
+}
+
+.sdx-condition-toggle.has-variants:hover i.fa-caret-down {
+    color: #c9aa58;
+}
+
+/* ============================================
+   THEME VARIATIONS
+   ============================================ */
+
+/* Parchment theme */
+.sdx-theme-parchment {
+    background: linear-gradient(135deg, rgba(80, 60, 40, 0.3) 0%, rgba(50, 40, 30, 0.4) 100%);
+    border-color: rgba(160, 120, 80, 0.3);
+}
+
+.sdx-theme-parchment .sdx-conditions-header {
+    color: #d4a84a;
+}
+
+.sdx-theme-parchment .sdx-condition-toggle {
+    background: rgba(60, 50, 40, 0.7);
+    border-color: rgba(120, 100, 70, 0.4);
+}
+
+.sdx-theme-parchment .sdx-condition-toggle:hover {
+    background: rgba(80, 70, 50, 0.8);
+    border-color: rgba(160, 130, 90, 0.5);
+}
+
+/* Dark theme */
+.sdx-theme-dark {
+    background: linear-gradient(135deg, rgba(20, 20, 25, 0.9) 0%, rgba(10, 10, 15, 0.95) 100%);
+    border-color: rgba(60, 60, 70, 0.5);
+}
+
+.sdx-theme-dark .sdx-conditions-header {
+    color: #8ab4f8;
+}
+
+.sdx-theme-dark .sdx-condition-toggle {
+    background: rgba(30, 30, 40, 0.9);
+    border-color: rgba(70, 70, 90, 0.5);
+}
+
+.sdx-theme-dark .sdx-condition-toggle:hover {
+    background: rgba(40, 40, 55, 0.95);
+    border-color: rgba(100, 100, 130, 0.6);
+}
+
+/* 5e theme */
+.sdx-theme-5e {
+    background: linear-gradient(135deg, rgba(50, 40, 35, 0.8) 0%, rgba(35, 30, 25, 0.9) 100%);
+    border-color: rgba(140, 100, 60, 0.4);
+}
+
+.sdx-theme-5e .sdx-conditions-header {
+    color: #c9aa58;
+}
+
+.sdx-theme-5e .sdx-condition-toggle {
+    background: rgba(60, 50, 40, 0.8);
+    border-color: rgba(110, 90, 60, 0.5);
+}
+
+.sdx-theme-5e .sdx-condition-toggle:hover {
+    background: rgba(80, 65, 50, 0.9);
+}
+
+/* Shadowdark theme (black and white) */
+.sdx-theme-shadowdark {
+    background: linear-gradient(135deg, rgba(10, 10, 10, 0.95) 0%, rgba(0, 0, 0, 0.98) 100%);
+    border-color: rgba(80, 80, 80, 0.5);
+}
+
+.sdx-theme-shadowdark .sdx-conditions-header {
+    color: #ffffff;
+}
+
+.sdx-theme-shadowdark .sdx-condition-toggle {
+    background: rgba(20, 20, 20, 0.9);
+    border-color: rgba(100, 100, 100, 0.5);
+}
+
+.sdx-theme-shadowdark .sdx-condition-toggle:hover {
+    background: rgba(40, 40, 40, 0.95);
+    border-color: rgba(150, 150, 150, 0.6);
+}
+
+.sdx-theme-shadowdark .sdx-condition-name {
+    color: #ffffff;
+}
+
+.sdx-theme-shadowdark .sdx-condition-toggle.active {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.5);
+}
+
+.sdx-theme-shadowdark .sdx-condition-toggle.active .sdx-condition-name {
+    color: #ffffff;
+}
+
+/* ============================================
+   CONDITION SUBMENU (for variants)
+   ============================================ */
+
+.sdx-condition-submenu {
+    position: fixed;
+    z-index: 10000;
+    min-width: 200px;
+    max-width: 280px;
+    background: rgba(30, 30, 35, 0.98);
+    border: 1px solid rgba(100, 100, 120, 0.5);
+    border-radius: 6px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+    padding: 6px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.sdx-condition-submenu-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px;
+    background: rgba(50, 50, 60, 0.6);
+    border: 1px solid transparent;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.sdx-condition-submenu-item:hover {
+    background: rgba(70, 70, 85, 0.8);
+    border-color: rgba(120, 120, 150, 0.4);
+}
+
+.sdx-condition-submenu-item.active {
+    background: rgba(60, 100, 60, 0.7);
+    border-color: rgba(100, 180, 100, 0.5);
+}
+
+.sdx-condition-submenu-item img {
+    width: 24px;
+    height: 24px;
+    border-radius: 3px;
+    flex-shrink: 0;
+}
+
+.sdx-condition-submenu-item-name {
+    font-size: 12px;
+    color: #e0e0e0;
+    flex: 1;
+}
+
+.sdx-condition-submenu-item.active .sdx-condition-submenu-item-name {
+    color: #a0e0a0;
 }
