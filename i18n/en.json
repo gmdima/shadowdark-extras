@@ -647,5 +647,7 @@
   "SHADOWDARK_EXTRAS.weaponAnimation.noImages": "No weapon images found in assets/Weapons folder",
   "SHADOWDARK_EXTRAS.weaponAnimation.button": "Animation",
   "SHADOWDARK_EXTRAS.settings.enable_weapon_animations.name": "Enable Weapon Animations",
-  "SHADOWDARK_EXTRAS.settings.enable_weapon_animations.hint": "Show equipped weapon images on tokens (requires Sequencer module)"
+  "SHADOWDARK_EXTRAS.settings.enable_weapon_animations.hint": "Show equipped weapon images on tokens (requires Sequencer module)",
+  "SHADOWDARK_EXTRAS.settings.enable_level_up_animation.name": "Enable Level Up Token Animation",
+  "SHADOWDARK_EXTRAS.settings.enable_level_up_animation.hint": "Show a glowing arrow on tokens when a character has enough XP to level up (requires Sequencer module)"
 }

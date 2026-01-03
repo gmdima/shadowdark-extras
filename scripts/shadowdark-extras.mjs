@@ -23,6 +23,7 @@ import {
 import { initAutoAnimationsIntegration } from "./AutoAnimationsSD.mjs";
 import { initTorchAnimations } from "./TorchAnimationSD.mjs";
 import { initWeaponAnimations } from "./WeaponAnimationSD.mjs";
+import { initLevelUpAnimations } from "./LevelUpAnimationSD.mjs";
 import { openWeaponAnimationConfig } from "./WeaponAnimationConfig.mjs";
 import { initSDXROLLS, setupSDXROLLSSockets, injectSdxRollButton } from "./sdx-rolls/SdxRollsSD.mjs";
 import { initFocusSpellTracker, endFocusSpell, linkEffectToFocusSpell, getActiveFocusSpells, isFocusingOnSpell, startDurationSpell, endDurationSpell } from "./FocusSpellTrackerSD.mjs";
@@ -3739,6 +3740,16 @@ function registerSettings() {
 	game.settings.register(MODULE_ID, "enableTorchAnimations", {
 		name: game.i18n.localize("SHADOWDARK_EXTRAS.settings.enable_torch_animations.name"),
 		hint: game.i18n.localize("SHADOWDARK_EXTRAS.settings.enable_torch_animations.hint"),
+		scope: "world",
+		config: true,
+		default: true,
+		type: Boolean,
+		requiresReload: true,
+	});
+
+	game.settings.register(MODULE_ID, "enableLevelUpAnimation", {
+		name: game.i18n.localize("SHADOWDARK_EXTRAS.settings.enable_level_up_animation.name"),
+		hint: game.i18n.localize("SHADOWDARK_EXTRAS.settings.enable_level_up_animation.hint"),
 		scope: "world",
 		config: true,
 		default: true,
@@ -7716,6 +7727,9 @@ Hooks.once("ready", async () => {
 
 	// Setup weapon animations (requires Sequencer)
 	initWeaponAnimations();
+
+	// Setup level-up token animations (requires Sequencer)
+	initLevelUpAnimations();
 
 	// Initialize Template Effects System (damage/effects for tokens in templates)
 	initTemplateEffects();

@@ -23,7 +23,7 @@ function isEnabled() {
 function checkDependencies() {
 	const hasSequencer = game.modules.get("sequencer")?.active;
 	const hasJB2A = game.modules.get("jb2a_patreon")?.active || game.modules.get("JB2A_DnD5e")?.active;
-	
+
 	return {
 		hasSequencer,
 		hasJB2A,
@@ -49,7 +49,7 @@ function getEffectName(token, itemId) {
 function getAnimationConfig(item) {
 	const lightTemplate = item.system?.light?.template?.toLowerCase() || "";
 	const itemName = item.name?.toLowerCase() || "";
-	
+
 	// Default torch animation - use local torch.webp
 	let config = {
 		type: "torch",
@@ -65,7 +65,7 @@ function getAnimationConfig(item) {
 		flameRotation: 45,
 		isSpell: false
 	};
-	
+
 	// Customize based on light source type
 	if (itemName.includes("light spell") || itemName.includes("light (")) {
 		// Light Spell - magical bluish glow above token
@@ -112,7 +112,7 @@ function getAnimationConfig(item) {
 		config.flameOffsetX = 0.50;
 		config.flameOffsetY = -0.07;
 	}
-	
+
 	return config;
 }
 
@@ -123,7 +123,7 @@ function getAnimationConfig(item) {
  */
 async function playTorchAnimation(token, item) {
 	if (!isEnabled()) return;
-	
+
 	const deps = checkDependencies();
 	if (!deps.ready) {
 		if (!deps.hasSequencer) {
@@ -134,26 +134,26 @@ async function playTorchAnimation(token, item) {
 		}
 		return;
 	}
-	
+
 	const effectName = getEffectName(token, item.id);
 	const config = getAnimationConfig(item);
 	const hasPatreon = game.modules.get("jb2a_patreon")?.active;
-	
+
 	// End any existing animation for this light source
 	await Sequencer.EffectManager.endEffects({ name: effectName, object: token });
-	
+
 	// Get token dimensions
 	const tokenWidth = token.document.width;
 	const tokenScale = {
 		x: token.document.texture?.scaleX ?? 1,
 		y: token.document.texture?.scaleY ?? 1
 	};
-	
+
 	console.log(`${MODULE_ID} | Playing torch animation for ${token.name}'s ${item.name}`, config);
-	
+
 	// Build the animation sequence
 	const seq = new Sequence();
-	
+
 	// Handle spell light differently - magical glow above token
 	if (config.isSpell) {
 		// Initial magical burst
@@ -171,7 +171,7 @@ async function playTorchAnimation(token, item) {
 				.aboveLighting()
 				.zIndex(1);
 		}
-		
+
 		// Magical orb/glow effect above the token
 		seq.effect()
 			.name(effectName)
@@ -190,7 +190,7 @@ async function playTorchAnimation(token, item) {
 			.persist()
 			.aboveLighting()
 			.zIndex(2);
-		
+
 		// Add subtle particle effect around the light
 		seq.effect()
 			.delay(300)
@@ -207,11 +207,11 @@ async function playTorchAnimation(token, item) {
 			.opacity(0.7)
 			.aboveLighting()
 			.zIndex(3);
-			
+
 		await seq.play();
 		return;
 	}
-	
+
 	// Initial impact/ignition effect for physical light sources (only for patreon)
 	if (hasPatreon && config.impactFile) {
 		seq.effect()
@@ -229,7 +229,7 @@ async function playTorchAnimation(token, item) {
 			.aboveLighting()
 			.zIndex(1);
 	}
-	
+
 	// Main torch/lantern/candle image effect - persistent
 	if (config.torchFile) {
 		seq.effect()
@@ -253,7 +253,7 @@ async function playTorchAnimation(token, item) {
 			.aboveLighting()
 			.zIndex(2);
 	}
-	
+
 	// Flame effect on the torch - persistent
 	seq.effect()
 		.delay(250)
@@ -271,7 +271,7 @@ async function playTorchAnimation(token, item) {
 		.persist()
 		.aboveLighting()
 		.zIndex(3);
-	
+
 	await seq.play();
 }
 
@@ -283,7 +283,7 @@ async function playTorchAnimation(token, item) {
 async function stopTorchAnimation(token, itemId = null) {
 	const deps = checkDependencies();
 	if (!deps.hasSequencer) return;
-	
+
 	if (itemId) {
 		const effectName = getEffectName(token, itemId);
 		await Sequencer.EffectManager.endEffects({ name: effectName, object: token });
@@ -302,7 +302,7 @@ async function stopTorchAnimation(token, itemId = null) {
 async function stopAllTorchAnimations(token) {
 	const deps = checkDependencies();
 	if (!deps.hasSequencer) return;
-	
+
 	await Sequencer.EffectManager.endEffects({ name: `${MODULE_ID}-torch-${token.id}*` });
 	console.log(`${MODULE_ID} | Stopped all torch animations for ${token.name}`);
 }
@@ -314,15 +314,15 @@ async function stopAllTorchAnimations(token) {
  */
 function getTokensForActor(actor) {
 	if (!canvas.scene) return [];
-	
+
 	// For synthetic/unlinked tokens
 	if (actor.isToken) {
 		const token = canvas.tokens.get(actor.token?.id);
 		return token ? [token] : [];
 	}
-	
+
 	// For linked tokens, find all tokens on the scene
-	return canvas.tokens.placeables.filter(t => 
+	return canvas.tokens.placeables.filter(t =>
 		t.actor?.id === actor.id && t.document.actorLink
 	);
 }
@@ -336,37 +336,37 @@ export function initTorchAnimations() {
 		console.log(`${MODULE_ID} | Torch animations disabled in settings`);
 		return;
 	}
-	
+
 	const deps = checkDependencies();
-	
+
 	if (!deps.hasSequencer) {
 		console.log(`${MODULE_ID} | Torch animations disabled - Sequencer module not found`);
 		return;
 	}
-	
+
 	if (!deps.hasJB2A) {
 		console.log(`${MODULE_ID} | Torch animations disabled - JB2A module not found`);
 		return;
 	}
-	
+
 	console.log(`${MODULE_ID} | Initializing torch animations`);
-	
+
 	// Hook into item updates to detect light source toggling
 	Hooks.on("updateItem", async (item, changes, options, userId) => {
 		// Only process light items
 		if (!item.system?.light) return;
-		
+
 		// Check if light.active was changed
 		const activeChanged = foundry.utils.hasProperty(changes, "system.light.active");
 		if (!activeChanged) return;
-		
+
 		const isActive = changes.system.light.active;
 		const actor = item.actor;
 		if (!actor) return;
-		
+
 		// Get all tokens for this actor
 		const tokens = getTokensForActor(actor);
-		
+
 		for (const token of tokens) {
 			if (isActive) {
 				// Light turned on - play animation
@@ -377,60 +377,89 @@ export function initTorchAnimations() {
 			}
 		}
 	});
-	
+
 	// Hook into actor light changes (for turnLightOn/turnLightOff)
 	// The actor's turnLightOn method changes the token's light settings
 	Hooks.on("updateToken", async (tokenDoc, changes, options, userId) => {
 		// Check if light settings were changed
 		const lightChanged = foundry.utils.hasProperty(changes, "light");
 		if (!lightChanged) return;
-		
+
 		const token = canvas.tokens.get(tokenDoc.id);
 		if (!token) return;
-		
+
 		const actor = token.actor;
 		if (!actor) return;
-		
+
 		// Check if light was turned off (dim and bright both 0)
 		const lightDim = changes.light?.dim ?? tokenDoc.light?.dim ?? 0;
 		const lightBright = changes.light?.bright ?? tokenDoc.light?.bright ?? 0;
-		
+
 		if (lightDim === 0 && lightBright === 0) {
 			// All lights turned off
 			await stopAllTorchAnimations(token);
 		}
 	});
-	
+
 	// Also hook into when an active light source is detected on scene ready
 	Hooks.on("canvasReady", async () => {
 		// Small delay to ensure everything is loaded
 		await new Promise(resolve => setTimeout(resolve, 500));
-		
+
 		// Check all tokens for active light sources
 		for (const token of canvas.tokens.placeables) {
 			const actor = token.actor;
 			if (!actor) continue;
-			
+
 			// Get active light sources
 			const activeLightSources = await actor.getActiveLightSources?.();
 			if (!activeLightSources || activeLightSources.length === 0) continue;
-			
+
 			// Play animation for each active light source
 			for (const item of activeLightSources) {
 				await playTorchAnimation(token, item);
 			}
 		}
 	});
-	
+
 	// Clean up animations when token is deleted
 	Hooks.on("deleteToken", async (tokenDoc, options, userId) => {
 		const deps = checkDependencies();
 		if (!deps.hasSequencer) return;
-		
+
 		// End all effects for this token
 		await Sequencer.EffectManager.endEffects({ name: `${MODULE_ID}-torch-${tokenDoc.id}*` });
 	});
-	
+
+	// Check for active light sources when a new token is created
+	Hooks.on("createToken", async (tokenDoc, options, userId) => {
+		// Small delay to ensure token is fully initialized
+		await new Promise(resolve => setTimeout(resolve, 200));
+
+		const token = canvas.tokens.get(tokenDoc.id);
+		if (!token) return;
+
+		// Check if token has light settings (dim or bright > 0)
+		const tokenLight = tokenDoc.light || {};
+		const hasLight = (tokenLight.dim > 0) || (tokenLight.bright > 0);
+		if (!hasLight) return;
+
+		const actor = token.actor;
+		if (!actor) return;
+
+		// Find active light source items from the actor
+		const activeLightSources = actor.items.filter(i =>
+			i.system?.light?.active === true
+		);
+
+		if (activeLightSources.length === 0) return;
+
+		// Play animation for each active light source
+		for (const item of activeLightSources) {
+			await playTorchAnimation(token, item);
+		}
+	});
+
 	console.log(`${MODULE_ID} | Torch animations initialized successfully`);
 }
 

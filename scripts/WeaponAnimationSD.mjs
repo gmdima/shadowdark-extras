@@ -483,5 +483,29 @@ export function initWeaponAnimations() {
         await Sequencer.EffectManager.endEffects({ name: `${MODULE_ID}-weapon-${tokenDoc.id}*` });
     });
 
+    // Check for equipped weapons when a new token is created
+    Hooks.on("createToken", async (tokenDoc, options, userId) => {
+        // Small delay to ensure token is fully initialized
+        await new Promise(resolve => setTimeout(resolve, 100));
+
+        const token = canvas.tokens.get(tokenDoc.id);
+        if (!token) return;
+
+        const actor = token.actor;
+        if (!actor) return;
+
+        // Get all equipped items with animation config
+        const equippedItems = actor.items.filter(i =>
+            (i.type === "Weapon" || i.type === "Armor") &&
+            i.system?.equipped === true &&
+            i.getFlag(MODULE_ID, "weaponAnimation")?.enabled
+        );
+
+        // Play animation for each equipped item
+        for (const item of equippedItems) {
+            await playWeaponAnimation(token, item);
+        }
+    });
+
     console.log(`${MODULE_ID} | Weapon animations initialized successfully`);
 }
