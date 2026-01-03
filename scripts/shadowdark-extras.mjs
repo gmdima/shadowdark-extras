@@ -5850,7 +5850,7 @@ function applyHeaderBackground(html, actor) {
 
 		// Calculate from the top of header to the bottom of nav, relative to form
 		// Add extra padding to ensure it covers the full nav including border-bottom
-		const totalHeight = (navRect.bottom - formRect.top) + 50;
+		const totalHeight = (navRect.bottom - formRect.top) + 30;
 		$form.find('.sdx-header-bg-extension').css('height', totalHeight + 'px');
 	};
 

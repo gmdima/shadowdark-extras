@@ -652,6 +652,8 @@ function getOnlinePlayers() {
         const canAfford = actorGp >= cost;
         const isConfirmed = session.confirmations[user.id] === true;
         const result = session.results?.[user.id];
+        const renown = droppedActor ? (droppedActor.getFlag(MODULE_ID, "renown") || 0) : 0;
+        const totalBonus = selectedTier ? (selectedTier.bonus + renown) : renown;
 
         return {
             id: user.id,
@@ -668,7 +670,9 @@ function getOnlinePlayers() {
             actorGp: actorGp,
             canAfford: canAfford,
             isConfirmed: isConfirmed,
-            result: result
+            result: result,
+            renown: renown,
+            totalBonus: totalBonus
         };
     });
 }
@@ -1218,6 +1222,7 @@ export async function injectCarousingTab(app, html, actor) {
         playerCount: onlinePlayers.length,
         tierOptions: tierOptions,
         selectedTier: session.selectedTier,
+        hasSelectedTier: session.selectedTier !== null,
         selectedTierCost: session.selectedTier !== null ? activeTable.tiers[session.selectedTier]?.cost || 0 : 0,
         phase: session.phase,
         canRoll: canRoll,
@@ -1297,10 +1302,9 @@ function activateCarousingListeners(html, actor, app) {
     // GM: Tier selection
     carousingSection.find('[data-action="select-tier"]').change(async (event) => {
         if (!game.user.isGM) return;
-        const tierIndex = parseInt(event.target.value);
-        if (!isNaN(tierIndex) && tierIndex >= 0) {
-            await setCarousingTier(tierIndex);
-        }
+        const val = event.target.value;
+        const tierIndex = val === "" ? null : parseInt(val);
+        await setCarousingTier(tierIndex);
     });
 
     // GM: Roll button

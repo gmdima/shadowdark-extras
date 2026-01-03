@@ -10387,6 +10387,11 @@ section[data-tab="tab-notes"].sdx-journal-active>div:not(.sdx-journal-notes) {
    CAROUSING TAB - DARK SHADOWDARK THEME
    ============================================ */
 
+/* Ensure window resize handles are above carousing content */
+.shadowdark.sheet .window-resizable-handle {
+    z-index: 100 !important;
+}
+
 .tab-carousing {
     height: 100%;
     background: #0a0a0a;
@@ -10413,7 +10418,6 @@ section[data-tab="tab-notes"].sdx-journal-active>div:not(.sdx-journal-notes) {
     display: flex;
     flex-direction: column;
     position: relative;
-    z-index: 1;
     padding: 16px;
 }
 
@@ -11158,10 +11162,8 @@ section[data-tab="tab-notes"].sdx-journal-active>div:not(.sdx-journal-notes) {
 
 /* Hide header, we'll use overlay text */
 .sdx-carousing-dropbox-header {
-    position: absolute;
-    bottom: 5px;
-    left: 0;
-    right: 0;
+    position: relative;
+    margin-top: 8px;
     z-index: 10;
     padding: 0;
     background: transparent;
@@ -11196,7 +11198,7 @@ section[data-tab="tab-notes"].sdx-journal-active>div:not(.sdx-journal-notes) {
     flex-direction: column;
     align-items: center;
     justify-content: flex-start;
-    min-height: 200px;
+    min-height: 180px;
     position: relative;
     padding: 0;
     background: rgba(20, 20, 20, 0.6);
@@ -11226,20 +11228,30 @@ section[data-tab="tab-notes"].sdx-journal-active>div:not(.sdx-journal-notes) {
     box-shadow: 0 0 20px rgba(212, 175, 55, 0.6) !important;
 }
 
-/* Empty state */
-.sdx-carousing-dropbox-content i {
+/* Dropbox placeholder state */
+.sdx-carousing-dropbox-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 180px;
+    background: rgba(20, 20, 20, 0.4);
+    border-radius: 8px;
+    border: 2px dashed rgba(80, 80, 80, 0.4);
+    color: #555;
+    padding: 0 10px;
+    text-align: center;
+}
+
+.sdx-carousing-dropbox-placeholder i {
     font-size: 2em;
     opacity: 0.3;
-    color: #666;
-    margin-top: 10px;
+    margin-bottom: 10px;
 }
 
 .sdx-carousing-drop-hint {
     font-size: 0.75em;
     font-style: italic;
-    color: #555;
-    text-align: center;
-    padding: 0 10px;
 }
 
 /* ============================================
@@ -11271,73 +11283,89 @@ section[data-tab="tab-notes"].sdx-journal-active>div:not(.sdx-journal-notes) {
 }
 
 /* ============================================
-   CONTROLS OVERLAY AT BOTTOM OF PORTRAIT
+   PLAYER DETAILS BOX - BELOW PORTRAIT
    ============================================ */
-
-.sdx-carousing-portrait-controls {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
+.sdx-carousing-player-details {
+    margin-top: 10px;
+    padding: 8px;
+    background: rgba(10, 10, 10, 0.7);
+    border: 1px solid #333;
+    border-radius: 4px;
     display: flex;
     flex-direction: column;
+    gap: 8px;
+    transition: all 0.2s ease;
+}
+
+.sdx-carousing-dropbox.is-confirmed .sdx-carousing-player-details {
+    border-color: #4caf50;
+    background: rgba(76, 175, 80, 0.05);
+}
+
+.sdx-carousing-detail-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+}
+
+.sdx-carousing-detail-gp {
+    font-family: "Old Newspaper Font", serif;
+    font-size: 1.1em;
+    color: #eee;
+    white-space: nowrap;
+}
+
+.sdx-carousing-detail-gp.can-afford {
+    color: #4caf50;
+}
+
+.sdx-carousing-detail-gp.cannot-afford {
+    color: #f44336;
+}
+
+.sdx-carousing-detail-bonus {
+    font-size: 0.85em;
+    color: #aaa;
+    display: flex;
     align-items: center;
     gap: 4px;
-    padding: 6px;
-    background: linear-gradient(transparent, rgba(0, 0, 0, 0.95));
 }
 
-/* Affordability indicator */
-.sdx-carousing-affordability {
-    font-size: 0.75em;
-    padding: 3px 8px;
-    border-radius: 3px;
-    font-weight: bold;
-    margin-bottom: 50%;
+.sdx-carousing-detail-bonus i {
+    font-size: 0.9em;
 }
 
-.sdx-carousing-affordability.can-afford {
-    background: rgba(76, 175, 80, 0.3);
-    color: #4caf50;
-    border: 1px solid rgba(76, 175, 80, 0.5);
-}
-
-.sdx-carousing-affordability.cannot-afford {
-    background: rgba(244, 67, 54, 0.3);
-    color: #f44336;
-    border: 1px solid rgba(244, 67, 54, 0.5);
-    height: 40px;
-}
-
-/* Confirm button */
+/* Confirm button styles refined */
 .sdx-carousing-confirm-btn {
-    padding: 2px 6px;
+    width: 100%;
+    padding: 4px 8px;
     border-radius: 3px;
     cursor: pointer;
-    font-size: 0.95em;
+    font-size: 0.85em;
     font-weight: bold;
     transition: all 0.2s ease;
-    border: 1px solid #6f5f34;
-    background: rgba(100, 80, 40, 0.4);
-    color: #c9aa58;
+    border: 1px solid #444;
+    background: #111;
+    color: #ccc;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    margin-bottom: 13px;
 }
 
 .sdx-carousing-confirm-btn:hover {
-    background: rgba(100, 80, 40, 0.6);
-    box-shadow: 0 0 8px rgba(111, 95, 52, 0.4);
+    background: #222;
+    border-color: #666;
+    color: #fff;
 }
 
 .sdx-carousing-confirm-btn.confirmed {
-    background: rgba(76, 175, 80, 0.3);
-    border-color: rgba(76, 175, 80, 0.6);
-    color: #81c784;
+    background: #1b5e20;
+    border-color: #4caf50;
+    color: #fff;
 }
 
 .sdx-carousing-confirm-btn.confirmed:hover {
-    background: rgba(76, 175, 80, 0.5);
+    background: #2e7d32;
 }
 
 /* Confirmed dropbox styling */
@@ -11356,8 +11384,8 @@ section[data-tab="tab-notes"].sdx-journal-active>div:not(.sdx-journal-notes) {
 
 .sdx-carousing-result-badge {
     position: absolute;
-    top: 76%;
-    left: 23%;
+    top: 94%;
+    left: 50%;
     transform: translate(-50%, -50%);
     display: flex;
     flex-direction: column;
@@ -11366,7 +11394,8 @@ section[data-tab="tab-notes"].sdx-journal-active>div:not(.sdx-journal-notes) {
     padding: 3px 9px;
     background: rgba(0, 0, 0, 0.85);
     border: 2px solid #695922;
-    border-radius: 8px;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
     box-shadow: 0 0 20px rgba(212, 175, 55, 0.5);
     z-index: 15;
 }

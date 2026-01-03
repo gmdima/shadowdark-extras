@@ -460,6 +460,8 @@
   "SHADOWDARK_EXTRAS.carousing.some_cannot_afford": "Some participants cannot afford this tier",
   "SHADOWDARK_EXTRAS.carousing.no_participants": "No participants have dropped characters",
   "SHADOWDARK_EXTRAS.carousing.rolls_complete": "Carousing rolls complete!",
+  "SHADOWDARK_EXTRAS.carousing.total_bonus_hint": "Total carousing roll bonus (Tier Bonus + Renown)",
+  "SHADOWDARK_EXTRAS.carousing.renown": "Renown",
   "SHADOWDARK_EXTRAS.carousing.no_journal": "Carousing sync journal not found!",
   "SHADOWDARK_EXTRAS.carousing.resetting": "Resetting carousing session...",
   "SHADOWDARK_EXTRAS.carousing.cost": "Cost",
