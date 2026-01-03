@@ -630,7 +630,13 @@ export async function pruneOfflineCarousingData() {
 function getOnlinePlayers() {
     const drops = getCarousingDrops();
     const session = getCarousingSession();
-    const activeTable = getCarousingTableById(session.selectedTableId);
+
+    // Get the correct table based on mode
+    const mode = getCarousingMode();
+    const activeTable = mode === "expanded"
+        ? getExpandedCarousingData()
+        : getCarousingTableById(session.selectedTableId);
+
     const selectedTier = session.selectedTier !== null ? activeTable.tiers[session.selectedTier] : null;
     const cost = selectedTier?.cost || 0;
 
@@ -905,7 +911,12 @@ export async function executeCarousingRolls() {
 
     const session = getCarousingSession();
     const drops = getCarousingDrops();
-    const activeTable = getCarousingTableById(session.selectedTableId);
+
+    // Get the correct table based on mode
+    const mode = getCarousingMode();
+    const activeTable = mode === "expanded"
+        ? getExpandedCarousingData()
+        : getCarousingTableById(session.selectedTableId);
 
     if (session.selectedTier === null) {
         ui.notifications.warn(game.i18n.localize("SHADOWDARK_EXTRAS.carousing.no_tier_selected"));
@@ -939,7 +950,6 @@ export async function executeCarousingRolls() {
     session.results = {};
 
     // Branch based on carousing mode
-    const mode = getCarousingMode();
     if (mode === "expanded") {
         await executeExpandedCarousingRolls(session, tier, participants);
         return;

@@ -22,7 +22,8 @@ export default class ExpandedCarousingTablesApp extends FormApplication {
             closeOnSubmit: false,
             submitOnChange: false,
             submitOnClose: false,
-            resizable: true
+            resizable: true,
+            tabs: [{ navSelector: ".tabs", contentSelector: ".tab-content", initial: "tiers" }]
         });
     }
 
@@ -71,11 +72,20 @@ export default class ExpandedCarousingTablesApp extends FormApplication {
         html.find('[data-action="reset-outcomes"]').click(() => this._onResetSection("outcomes"));
         html.find('[data-action="reset-benefits"]').click(() => this._onResetSection("benefits"));
         html.find('[data-action="reset-mishaps"]').click(() => this._onResetSection("mishaps"));
+        html.find('[data-action="import-tiers"]').click(this._onImportTiers.bind(this));
+        html.find('[data-action="import-outcomes"]').click(this._onImportOutcomes.bind(this));
+        html.find('[data-action="import-benefits"]').click(this._onImportBenefits.bind(this));
+        html.find('[data-action="import-mishaps"]').click(this._onImportMishaps.bind(this));
 
-        // Tab switching
-        if (this._tabs?.[0]) {
-            this._tabs[0].bind(html[0]);
-        }
+        // Tab switching (manual jQuery approach like CarousingTablesApp)
+        html.find('.tabs .item').click((event) => {
+            event.preventDefault();
+            const tab = $(event.currentTarget).data('tab');
+            html.find('.tabs .item').removeClass('active');
+            $(event.currentTarget).addClass('active');
+            html.find('.tab-pane').removeClass('active');
+            html.find(`.tab-pane[data-tab="${tab}"]`).addClass('active');
+        });
     }
 
     _onNewTable(event) {
@@ -332,6 +342,219 @@ export default class ExpandedCarousingTablesApp extends FormApplication {
         };
 
         input.click();
+    }
+
+    /**
+     * Import tiers from text format
+     * Format: "cost gp description +bonus" per line
+     * Example: "30 gp Night at the tavern to toast and gossip +0"
+     */
+    async _onImportTiers(event) {
+        event.preventDefault();
+        if (!this.editingTable) return;
+
+        const content = `
+            <p>Paste tier entries. Each line: <code>cost gp description +bonus</code></p>
+            <p><small>Example:<br>
+            30 gp Night at the tavern to toast and gossip +0<br>
+            100 gp Festive day of high spirits and revelry +1</small></p>
+            <textarea id="import-text" style="width:100%; height:300px;"></textarea>
+        `;
+
+        const result = await Dialog.prompt({
+            title: game.i18n.localize("SHADOWDARK_EXTRAS.carousing.import_tiers"),
+            content: content,
+            label: game.i18n.localize("SHADOWDARK_EXTRAS.carousing.import"),
+            callback: (html) => html.find('#import-text').val()
+        });
+
+        if (result) {
+            const lines = result.split('\n').filter(l => l.trim());
+            const entries = [];
+
+            for (const line of lines) {
+                // Pattern: "cost gp description +bonus" or "cost gp description -bonus"
+                // Cost can have commas (e.g., 1,200 gp)
+                const match = line.match(/^([\d,]+)\s*gp\s+(.+?)\s*([+-]\d+)\s*$/i);
+
+                if (match) {
+                    const cost = parseInt(match[1].replace(/,/g, '')) || 0;
+                    const description = match[2].trim();
+                    const bonus = parseInt(match[3]) || 0;
+                    entries.push({ cost, bonus, description });
+                }
+            }
+
+            if (entries.length > 0) {
+                this.editingTable.tiers = entries;
+                this.render(true);
+                ui.notifications.info(game.i18n.format("SHADOWDARK_EXTRAS.carousing.imported_count", { count: entries.length }));
+            } else {
+                ui.notifications.warn("No valid tier entries found. Format: cost gp description +bonus");
+            }
+        }
+    }
+
+    /**
+     * Import outcomes from text format
+     * Format per line: roll mishaps benefits modifier xp
+     * Example: "1 2 - -20 2" means roll=1, mishaps=2, benefits=0, modifier=-20, xp=2
+     * "-" means 0 for numeric fields
+     */
+    async _onImportOutcomes(event) {
+        event.preventDefault();
+        if (!this.editingTable) return;
+
+        const content = `
+            <p>Paste outcome entries. Each line: <code>roll mishaps benefits modifier xp</code></p>
+            <p><small>Use "-" for 0. Example:<br>
+            1 2 - -20 2<br>
+            5 - 1 -10 3<br>
+            25+ - 3 +25 10</small></p>
+            <textarea id="import-text" style="width:100%; height:300px;"></textarea>
+        `;
+
+        const result = await Dialog.prompt({
+            title: game.i18n.localize("SHADOWDARK_EXTRAS.carousing.import_outcomes"),
+            content: content,
+            label: game.i18n.localize("SHADOWDARK_EXTRAS.carousing.import"),
+            callback: (html) => html.find('#import-text').val()
+        });
+
+        if (result) {
+            const lines = result.split('\n').filter(l => l.trim());
+            const entries = [];
+
+            for (const line of lines) {
+                // Split by whitespace
+                const parts = line.trim().split(/\s+/);
+                if (parts.length >= 5) {
+                    // Parse roll (can be "25+" format)
+                    const rollStr = parts[0].replace('+', '');
+                    const roll = parseInt(rollStr) || entries.length + 1;
+
+                    // Parse other fields, "-" means 0
+                    const parseField = (val) => val === '-' ? 0 : parseInt(val) || 0;
+
+                    const mishaps = parseField(parts[1]);
+                    const benefits = parseField(parts[2]);
+
+                    // Modifier can be "+20", "-20", or "-" for 0
+                    let modifier = 0;
+                    if (parts[3] !== '-') {
+                        modifier = parseInt(parts[3]) || 0;
+                    }
+
+                    const xp = parseField(parts[4]);
+
+                    entries.push({ roll, mishaps, benefits, modifier, xp });
+                }
+            }
+
+            if (entries.length > 0) {
+                this.editingTable.outcomes = entries;
+                this.render(true);
+                ui.notifications.info(game.i18n.format("SHADOWDARK_EXTRAS.carousing.imported_count", { count: entries.length }));
+            } else {
+                ui.notifications.warn("No valid outcome entries found. Format: roll mishaps benefits modifier xp");
+            }
+        }
+    }
+
+    /**
+     * Import benefits from text format
+     * Format per line: roll description
+     * Example: "01 You drank with a gossiper and learned a random rumor"
+     */
+    async _onImportBenefits(event) {
+        event.preventDefault();
+        if (!this.editingTable) return;
+
+        const content = `
+            <p>Paste benefit entries. Each line: <code>roll description</code></p>
+            <p><small>Roll can have leading zeros (01, 02). Example:<br>
+            01 Terrible luck dogs you; re-roll this benefit as a mishap<br>
+            02 You drank with a gossiper and learned a random rumor</small></p>
+            <textarea id="import-text" style="width:100%; height:300px;"></textarea>
+        `;
+
+        const result = await Dialog.prompt({
+            title: game.i18n.localize("SHADOWDARK_EXTRAS.carousing.import_benefits"),
+            content: content,
+            label: game.i18n.localize("SHADOWDARK_EXTRAS.carousing.import"),
+            callback: (html) => html.find('#import-text').val()
+        });
+
+        if (result) {
+            const lines = result.split('\n').filter(l => l.trim());
+            const entries = [];
+
+            for (const line of lines) {
+                // Pattern: roll (1-3 digits) followed by space and description
+                const match = line.match(/^(\d{1,3})\s+(.+)$/);
+                if (match) {
+                    const roll = parseInt(match[1]) || entries.length + 1;
+                    const description = match[2].trim();
+                    entries.push({ roll, description });
+                }
+            }
+
+            if (entries.length > 0) {
+                this.editingTable.benefits = entries;
+                this.render(true);
+                ui.notifications.info(game.i18n.format("SHADOWDARK_EXTRAS.carousing.imported_count", { count: entries.length }));
+            } else {
+                ui.notifications.warn("No valid benefit entries found. Format: roll description");
+            }
+        }
+    }
+
+    /**
+     * Import mishaps from text format
+     * Format per line: roll description
+     * Example: "01 You wake up in the Duke's Donjon accused of a major crime"
+     */
+    async _onImportMishaps(event) {
+        event.preventDefault();
+        if (!this.editingTable) return;
+
+        const content = `
+            <p>Paste mishap entries. Each line: <code>roll description</code></p>
+            <p><small>Roll can have leading zeros (01, 02). Example:<br>
+            01 You wake up in the Duke's Donjon accused of a major crime<br>
+            02 You wake up in the stocks accused of a minor crime</small></p>
+            <textarea id="import-text" style="width:100%; height:300px;"></textarea>
+        `;
+
+        const result = await Dialog.prompt({
+            title: game.i18n.localize("SHADOWDARK_EXTRAS.carousing.import_mishaps"),
+            content: content,
+            label: game.i18n.localize("SHADOWDARK_EXTRAS.carousing.import"),
+            callback: (html) => html.find('#import-text').val()
+        });
+
+        if (result) {
+            const lines = result.split('\n').filter(l => l.trim());
+            const entries = [];
+
+            for (const line of lines) {
+                // Pattern: roll (1-3 digits) followed by space and description
+                const match = line.match(/^(\d{1,3})\s+(.+)$/);
+                if (match) {
+                    const roll = parseInt(match[1]) || entries.length + 1;
+                    const description = match[2].trim();
+                    entries.push({ roll, description });
+                }
+            }
+
+            if (entries.length > 0) {
+                this.editingTable.mishaps = entries;
+                this.render(true);
+                ui.notifications.info(game.i18n.format("SHADOWDARK_EXTRAS.carousing.imported_count", { count: entries.length }));
+            } else {
+                ui.notifications.warn("No valid mishap entries found. Format: roll description");
+            }
+        }
     }
 }
 
