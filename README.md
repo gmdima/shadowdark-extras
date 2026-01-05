@@ -5,7 +5,7 @@
 
 ### ☕ Support My Late-Night Coding Sessions
 
-[![Buy Me a Coffee at ko-fi.com](https://storage.ko-fi.com/cdn/kofi2.png?v=3)](https://ko-fi.com/kaleth)
+[![Buy Me a Coffee at ko-fi.com]](https://ko-fi.com/kaleth)
 
 *This module is crafted during countless late nights, fueled by determination and way too little sleep. If Shadowdark Extras has made your games better, consider buying me a coffee — it helps keep the code flowing and the torches burning!* ☕🕯️
 
