@@ -829,6 +829,12 @@ async function applyFocusSpellPerTurnDamage(focusSpell, targetActor, targetToken
 		const roll = new Roll(formula);
 		await roll.evaluate();
 
+		// Show 3D dice animation if Dice So Nice is available
+		if (game.dice3d) {
+			await game.dice3d.showForRoll(roll, game.user, true);
+		}
+
+
 		const damage = roll.total;
 		const damageType = focusSpell.damageType || "damage";
 		const isHealing = damageType.toLowerCase() === "healing";
@@ -1244,6 +1250,12 @@ async function applyDurationSpellPerTurnDamage(durationSpell, targetActor, targe
 		// Roll the damage
 		const roll = new Roll(formula);
 		await roll.evaluate();
+
+		// Show 3D dice animation if Dice So Nice is available
+		if (game.dice3d) {
+			await game.dice3d.showForRoll(roll, game.user, true);
+		}
+
 
 		const damage = roll.total;
 		const damageType = durationSpell.damageType || "damage";

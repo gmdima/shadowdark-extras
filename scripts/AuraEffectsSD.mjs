@@ -860,8 +860,15 @@ export async function rollAuraSave(actor, saveConfig) {
 
     // Roll the save
     const roll = await new Roll(`1d20 + ${modifier}`).evaluate();
+
+    // Show 3D dice animation if Dice So Nice is available
+    if (game.dice3d) {
+        await game.dice3d.showForRoll(roll, game.user, true);
+    }
+
     const total = roll.total;
     const success = total >= dc;
+
 
     return {
         roll: roll,
@@ -885,7 +892,14 @@ export async function applyAuraDamage(token, config, savedSuccessfully) {
 
     console.log("shadowdark-extras | applyAuraDamage: Rolling damage", config.damage.formula);
     const roll = await new Roll(config.damage.formula).evaluate();
+
+    // Show 3D dice animation if Dice So Nice is available
+    if (game.dice3d) {
+        await game.dice3d.showForRoll(roll, game.user, true);
+    }
+
     let damage = roll.total;
+
     console.log("shadowdark-extras | applyAuraDamage: Rolled", damage, "damage");
 
     // Half damage if saved

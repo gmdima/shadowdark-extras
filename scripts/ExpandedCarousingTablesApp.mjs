@@ -8,6 +8,7 @@ export default class ExpandedCarousingTablesApp extends FormApplication {
     constructor(object, options) {
         super(object, options);
         this.editingTable = null;
+        this._currentTab = "tiers"; // Track current tab for persistence
     }
 
     static get defaultOptions() {
@@ -81,11 +82,20 @@ export default class ExpandedCarousingTablesApp extends FormApplication {
         html.find('.tabs .item').click((event) => {
             event.preventDefault();
             const tab = $(event.currentTarget).data('tab');
+            this._currentTab = tab; // Remember the active tab
             html.find('.tabs .item').removeClass('active');
             $(event.currentTarget).addClass('active');
             html.find('.tab-pane').removeClass('active');
             html.find(`.tab-pane[data-tab="${tab}"]`).addClass('active');
         });
+
+        // Restore last active tab if we have one
+        if (this._currentTab && this._currentTab !== "tiers") {
+            html.find('.tabs .item').removeClass('active');
+            html.find(`.tabs .item[data-tab="${this._currentTab}"]`).addClass('active');
+            html.find('.tab-pane').removeClass('active');
+            html.find(`.tab-pane[data-tab="${this._currentTab}"]`).addClass('active');
+        }
     }
 
     _onNewTable(event) {

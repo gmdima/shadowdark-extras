@@ -37,28 +37,29 @@ export function getDefaultWeaponBonusConfig() {
 		}
 	};
 }
-
 /**
  * Activate the Bonuses tab in an item sheet
  */
-function activateBonusesTab(app) {
-	const html = app.element;
-	if (!html || !html.length) return;
+function activateBonusesTab(app, html) {
+	const $html = html || app.element;
+	if (!$html || !$html.length) return;
 
-	// Try to activate using the app's tab controller if available
+	// Remove active class from all tabs/sections
+	$html.find('nav.SD-nav[data-group="primary"] .navigation-tab').removeClass('active');
+	$html.find('.SD-content-body .tab[data-group="primary"]').removeClass('active');
+
+	// Add active class to bonuses tab
+	$html.find('nav.SD-nav[data-group="primary"] [data-tab="tab-bonuses"]').addClass('active');
+	$html.find('.tab[data-tab="tab-bonuses"]').addClass('active');
+
+	// Also update Foundry's tab controller if available
 	if (app._tabs && app._tabs.length > 0) {
 		for (const tabs of app._tabs) {
 			if (tabs._group === "primary") {
-				tabs.activate("tab-bonuses");
-				return;
+				tabs.active = "tab-bonuses";
+				break;
 			}
 		}
-	}
-
-	// Fallback: Click the bonuses tab to activate it
-	const $bonusesTab = html.find('nav.SD-nav[data-group="primary"] [data-tab="tab-bonuses"]');
-	if ($bonusesTab.length) {
-		$bonusesTab.trigger('click');
 	}
 }
 
@@ -105,6 +106,19 @@ export function injectWeaponBonusTab(app, html, item) {
 
 	// Activate tab functionality
 	activateWeaponBonusListeners(html, app, item);
+
+	// Restore active tab if it was the Bonuses tab - use setTimeout to run after Foundry's native handlers
+	if (app._shadowdarkExtrasActiveTab === "tab-bonuses") {
+		setTimeout(() => activateBonusesTab(app, html), 0);
+	}
+
+	// Track tab changes to handle re-renders
+	html.find('nav.SD-nav[data-group="primary"] .navigation-tab').on('click', function () {
+		const tabName = $(this).data('tab');
+		if (tabName) {
+			app._shadowdarkExtrasActiveTab = tabName;
+		}
+	});
 
 	// Inject Animation button after the Bonuses tab
 	injectWeaponAnimationButton(html, item);
@@ -854,8 +868,8 @@ function activateWeaponBonusListeners(html, app, item) {
 			requirements: []
 		});
 		await saveWeaponBonusConfig(item, { hitBonuses });
+		app._shadowdarkExtrasActiveTab = "tab-bonuses";
 		app.render(false);
-		setTimeout(() => activateBonusesTab(app), 50);
 	});
 
 	// Remove hit bonus button
@@ -867,8 +881,8 @@ function activateWeaponBonusListeners(html, app, item) {
 		const hitBonuses = currentFlags.hitBonuses || [];
 		hitBonuses.splice(index, 1);
 		await saveWeaponBonusConfig(item, { hitBonuses });
+		app._shadowdarkExtrasActiveTab = "tab-bonuses";
 		app.render(false);
-		setTimeout(() => activateBonusesTab(app), 50);
 	});
 
 	// Hit bonus formula/label change - debounced save
@@ -900,8 +914,8 @@ function activateWeaponBonusListeners(html, app, item) {
 				value: ""
 			});
 			await saveWeaponBonusConfig(item, { hitBonuses });
+			app._shadowdarkExtrasActiveTab = "tab-bonuses";
 			app.render(false);
-			setTimeout(() => activateBonusesTab(app), 50);
 		}
 	});
 
@@ -917,8 +931,8 @@ function activateWeaponBonusListeners(html, app, item) {
 		if (hitBonuses[bonusIndex]?.requirements) {
 			hitBonuses[bonusIndex].requirements.splice(reqIndex, 1);
 			await saveWeaponBonusConfig(item, { hitBonuses });
+			app._shadowdarkExtrasActiveTab = "tab-bonuses";
 			app.render(false);
-			setTimeout(() => activateBonusesTab(app), 50);
 		}
 	});
 
@@ -950,8 +964,8 @@ function activateWeaponBonusListeners(html, app, item) {
 			requirements: []
 		});
 		await saveWeaponBonusConfig(item, { damageBonuses });
+		app._shadowdarkExtrasActiveTab = "tab-bonuses";
 		app.render(false);
-		setTimeout(() => activateBonusesTab(app), 50);
 	});
 
 	// Remove damage bonus button
@@ -963,8 +977,8 @@ function activateWeaponBonusListeners(html, app, item) {
 		const damageBonuses = currentFlags.damageBonuses || [];
 		damageBonuses.splice(index, 1);
 		await saveWeaponBonusConfig(item, { damageBonuses });
+		app._shadowdarkExtrasActiveTab = "tab-bonuses";
 		app.render(false);
-		setTimeout(() => activateBonusesTab(app), 50);
 	});
 
 	// Damage bonus formula/label change - debounced save
@@ -1001,8 +1015,8 @@ function activateWeaponBonusListeners(html, app, item) {
 				value: ""
 			});
 			await saveWeaponBonusConfig(item, { damageBonuses });
+			app._shadowdarkExtrasActiveTab = "tab-bonuses";
 			app.render(false);
-			setTimeout(() => activateBonusesTab(app), 50);
 		}
 	});
 
@@ -1018,8 +1032,8 @@ function activateWeaponBonusListeners(html, app, item) {
 		if (damageBonuses[bonusIndex]?.requirements) {
 			damageBonuses[bonusIndex].requirements.splice(reqIndex, 1);
 			await saveWeaponBonusConfig(item, { damageBonuses });
+			app._shadowdarkExtrasActiveTab = "tab-bonuses";
 			app.render(false);
-			setTimeout(() => activateBonusesTab(app), 50);
 		}
 	});
 
@@ -1090,9 +1104,8 @@ function activateWeaponBonusListeners(html, app, item) {
 		});
 
 		await saveWeaponBonusConfig(item, { effects });
+		app._shadowdarkExtrasActiveTab = "tab-bonuses";
 		app.render(false);
-		// Re-activate the bonuses tab after render
-		setTimeout(() => activateBonusesTab(app), 50);
 	});
 
 	// Remove effect button
@@ -1104,9 +1117,8 @@ function activateWeaponBonusListeners(html, app, item) {
 		const effects = currentFlags.effects || [];
 		effects.splice(index, 1);
 		await saveWeaponBonusConfig(item, { effects });
+		app._shadowdarkExtrasActiveTab = "tab-bonuses";
 		app.render(false);
-		// Re-activate the bonuses tab after render
-		setTimeout(() => activateBonusesTab(app), 50);
 	});
 
 	// Effect chance change
@@ -1165,9 +1177,8 @@ function activateWeaponBonusListeners(html, app, item) {
 				value: ""
 			});
 			await saveWeaponBonusConfig(item, { effects });
+			app._shadowdarkExtrasActiveTab = "tab-bonuses";
 			app.render(false);
-			// Re-activate the bonuses tab after render
-			setTimeout(() => activateBonusesTab(app), 50);
 		}
 	});
 
@@ -1183,9 +1194,8 @@ function activateWeaponBonusListeners(html, app, item) {
 		if (effects[effectIndex]?.requirements) {
 			effects[effectIndex].requirements.splice(reqIndex, 1);
 			await saveWeaponBonusConfig(item, { effects });
+			app._shadowdarkExtrasActiveTab = "tab-bonuses";
 			app.render(false);
-			// Re-activate the bonuses tab after render
-			setTimeout(() => activateBonusesTab(app), 50);
 		}
 	});
 
@@ -1755,6 +1765,7 @@ export async function calculateWeaponBonusDamage(weapon, attacker, target, isCri
 	const damageComponents = [];
 	let totalBonus = 0;
 	let bonusRollResults = []; // Store individual dice results for display
+	let bonusRolls = []; // NEW: Store actual Roll objects for DSN/Sync
 
 	for (const part of applicableParts) {
 		if (!part.formula) continue;
@@ -1762,6 +1773,7 @@ export async function calculateWeaponBonusDamage(weapon, attacker, target, isCri
 		try {
 			const roll = new Roll(part.formula);
 			await roll.evaluate();
+			bonusRolls.push(roll); // Store the roll
 			const amount = roll.total;
 			totalBonus += amount;
 
@@ -1811,6 +1823,7 @@ export async function calculateWeaponBonusDamage(weapon, attacker, target, isCri
 	let criticalBonus = 0;
 	let criticalFormula = "";
 	let criticalRollResults = [];
+	let criticalRolls = []; // NEW: Store actual critical Roll objects
 
 	if (isCritical) {
 		criticalExtraDice = parseInt(flags.criticalExtraDice) || 0;
@@ -1820,6 +1833,7 @@ export async function calculateWeaponBonusDamage(weapon, attacker, target, isCri
 			try {
 				const critRoll = new Roll(criticalFormula);
 				await critRoll.evaluate();
+				criticalRolls.push(critRoll); // Store the roll
 				criticalBonus = critRoll.total;
 
 				// Critical damage is treated as "standard" type
@@ -1863,11 +1877,13 @@ export async function calculateWeaponBonusDamage(weapon, attacker, target, isCri
 		totalBonus,
 		bonusFormula,
 		bonusParts: applicableParts,
+		bonusRolls, // Actual Roll objects
 		bonusRollResults, // Actual dice results from the roll
-		damageComponents, // NEW: Array of { amount, type, label, formula }
+		damageComponents, // Array of { amount, type, label, formula }
 		criticalExtraDice,
 		criticalBonus,
 		criticalFormula,
+		criticalRolls, // Actual Roll objects for critical damage
 		criticalRollResults, // Actual dice results from critical roll
 		requirementsMet: applicableParts.length > 0 || damageBonuses.length === 0,
 		damageTypes: applicableParts.map(p => p.damageType).filter(t => t)

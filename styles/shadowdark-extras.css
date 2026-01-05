@@ -12356,7 +12356,12 @@ section[data-tab="tab-notes"].sdx-journal-active>div:not(.sdx-journal-notes) {
 
 /* Weapon animation config dialog */
 .weapon-animation-config {
-    padding: 16px;
+    padding: 6px;
+}
+
+.weapon-animation-config .window-title {
+    font-size: 20px;
+    font-family: "Old Newspaper Font";
 }
 
 .weapon-animation-config-content {
@@ -12586,11 +12591,11 @@ section[data-tab="tab-notes"].sdx-journal-active>div:not(.sdx-journal-notes) {
 
 /* Image browser panel */
 .weapon-image-browser {
-    margin-top: 8px;
+
     background: #1a1a1a;
     border: 1px solid #333;
     border-radius: 4px;
-    max-height: 350px;
+    max-height: 260px;
     overflow-y: auto;
 }
 
@@ -15039,4 +15044,84 @@ body:not(.game-master) .sdx-carousing-chat .sdx-player-only {
 .sdx-modifier-display {
     color: #ffd700;
     font-weight: bold;
+}
+/* Minimal Damage Summary Expandable Roll */
+.sdx-minimal-damage-summary .sdx-expandable-roll {
+    transition: all 0.2s ease;
+}
+
+.sdx-minimal-damage-summary .sdx-expandable-roll.expanded .dice-formula {
+    color: #000;
+}
+
+.sdx-minimal-damage-summary .sdx-expandable-roll .dice-total {
+    transition: all 0.2s ease;
+}
+
+.sdx-minimal-damage-summary .sdx-expandable-roll:hover .dice-total {
+    background: rgba(0,0,0,0.1) !important;
+}
+
+.sdx-damage-tooltip {
+    border-top: 1px solid rgba(0,0,0,0.1);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+/* ======================================
+   CAROUSING ROLLING HIGHLIGHT ANIMATION
+   ====================================== */
+
+/* Card highlight animation when GM is rolling for this player */
+[data-user-id].sdx-rolling {
+    animation: sdx-pulse-rolling 0.6s ease-in-out infinite alternate;
+    box-shadow: 0 0 20px #ffcc00,
+                0 0 40px #ffcc00,
+                0 0 60px rgba(255, 204, 0, 0.3) !important;
+    z-index: 10;
+    position: relative;
+}
+
+@keyframes sdx-pulse-rolling {
+    from {
+        transform: scale(1);
+        filter: brightness(1);
+    }
+    to {
+        transform: scale(1.02);
+        filter: brightness(1.1);
+    }
+}
+
+/* ======================================
+   CAROUSING ROLL ANNOUNCEMENT TOAST
+   ====================================== */
+
+.sdx-roll-announcement {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0, 0, 0, 0.85);
+    color: #ffcc00;
+    padding: 20px 40px;
+    border: 2px solid #ffcc00;
+    border-radius: 10px;
+    font-size: 2.5em;
+    font-weight: bold;
+    text-transform: uppercase;
+    z-index: 10000;
+    pointer-events: none;
+    box-shadow: 0 0 30px rgba(255, 204, 0, 0.5);
+    animation: sdx-announce-pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    text-shadow: 2px 2px 4px black;
+}
+
+@keyframes sdx-announce-pop {
+    0% { transform: translate(-50%, -50%) scale(0.5); opacity: 0; }
+    100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+}
+
+.sdx-roll-announcement.sdx-fade-out {
+    opacity: 0;
+    transition: opacity 0.5s ease;
 }

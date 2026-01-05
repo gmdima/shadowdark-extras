@@ -298,6 +298,10 @@
   "SDX.Settings.AAAnimateSpellsWithoutTarget.Hint": "Play animations for spells that don't have a target DC (e.g., utility spells)",
   "SHADOWDARK_EXTRAS.combat.scrolling_text.name": "Scrolling Combat Text",
   "SHADOWDARK_EXTRAS.combat.scrolling_text.hint": "Show floating damage (red) and healing (green) numbers above tokens when HP changes",
+  "SHADOWDARK_EXTRAS.combat.require_target.blocked": "You must target a token before attacking with {itemName}!",
+  "SHADOWDARK_EXTRAS.combat.require_target.warning": "No target selected for {itemName} attack.",
+  "SHADOWDARK_EXTRAS.combat.range_check.blocked": "{itemName} cannot reach target at {distance} ft! Max range: {range}",
+  "SHADOWDARK_EXTRAS.combat.range_check.warning": "Target is at {distance} ft, beyond {itemName}'s {range} range.",
   "SHADOWDARK_EXTRAS.settings.hp_waves.name": "HP Wave Animation",
   "SHADOWDARK_EXTRAS.settings.hp_waves.label": "Configure HP Waves",
   "SHADOWDARK_EXTRAS.settings.hp_waves.hint": "Configure the animated HP wave overlay on character portraits",
@@ -672,5 +676,7 @@
   "SHADOWDARK_EXTRAS.carousing.modifiers": "GM Roll Modifiers",
   "SHADOWDARK_EXTRAS.carousing.outcome": "Outcome",
   "SHADOWDARK_EXTRAS.carousing.benefits": "Benefits",
-  "SHADOWDARK_EXTRAS.carousing.mishaps": "Mishaps"
+  "SHADOWDARK_EXTRAS.carousing.mishaps": "Mishaps",
+  "SHADOWDARK_EXTRAS.chat.base_damage": "Base Damage",
+  "SHADOWDARK_EXTRAS.chat.base_healing": "Base Healing"
 }

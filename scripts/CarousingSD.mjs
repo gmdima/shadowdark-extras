@@ -625,6 +625,12 @@ export async function addCarousingResult(userId, type) {
 
     // Roll 1d100 for the new result
     const roll = await new Roll("1d100").evaluate();
+
+    // Show 3D dice animation if Dice So Nice is available
+    if (game.dice3d) {
+        await game.dice3d.showForRoll(roll, game.user, true);
+    }
+
     const rollTotal = roll.total;
 
     let newResult;
@@ -839,6 +845,84 @@ function getParticipants() {
 }
 
 // ============================================
+// DICE SO NICE APPEARANCE CUSTOMIZATION
+// ============================================
+
+/**
+ * Dice So Nice colorset configurations for carousing rolls
+ */
+const DSN_CAROUSING_APPEARANCE = {
+    outcome: { colorset: "black" },      // Black dice for d8 outcome roll
+    benefit: { colorset: "acid" },       // Green dice for d100 benefit rolls
+    mishap: { colorset: "fire" }         // Red dice for d100 mishap rolls
+};
+
+/**
+ * Show a roll with Dice So Nice using custom appearance
+ * Sets the appearance on the dice options before calling showForRoll
+ * @param {Roll} roll - The evaluated Roll object
+ * @param {string} type - 'outcome', 'benefit', or 'mishap'
+ */
+async function showDSNRoll(roll, type = 'outcome') {
+    if (!game.dice3d) return;
+
+    const appearances = {
+        outcome: { colorset: "black" },           // Black dice for d8 outcome
+        benefit: { colorset: "acid" },            // Green dice for benefits
+        mishap: { colorset: "fire" }              // Red dice for mishaps
+    };
+
+    const appearance = appearances[type] || {};
+    console.log(`${MODULE_ID} | showDSNRoll: type=${type}, setting dice appearance`, appearance);
+
+    // Set appearance directly on each die in the roll
+    for (const die of roll.dice) {
+        die.options.appearance = appearance;
+    }
+    await game.dice3d.showForRoll(roll, game.user, true);
+}
+
+/**
+ * Broadcast a roll announcement to all clients
+ * Shows a prominent message like "ROLLING FOR ELBIN!"
+ * @param {string} characterName - The character name being rolled for
+ */
+function broadcastRollAnnouncement(characterName) {
+    const message = `🎲 Rolling for ${characterName}!`;
+    console.log(`${MODULE_ID} | broadcastRollAnnouncement: ${message}`);
+
+    // Broadcast to all other clients
+    game.socket.emit(`module.${MODULE_ID}`, {
+        type: "carousing-roll-announce",
+        message: message
+    });
+
+    // Also show locally for the GM
+    _showRollAnnouncement(message);
+}
+
+/**
+ * Show a roll announcement locally (prominent centered message)
+ * @param {string} message - The announcement message
+ */
+function _showRollAnnouncement(message) {
+    // Remove any existing announcement
+    const existing = document.querySelector('.sdx-roll-announcement');
+    if (existing) existing.remove();
+
+    const announcement = document.createElement('div');
+    announcement.className = 'sdx-roll-announcement';
+    announcement.innerHTML = `<span>${message}</span>`;
+    document.body.appendChild(announcement);
+
+    // Auto-remove after 2 seconds
+    setTimeout(() => {
+        announcement.classList.add('sdx-fade-out');
+        setTimeout(() => announcement.remove(), 500);
+    }, 2000);
+}
+
+// ============================================
 // EXPANDED CAROUSING ROLL LOGIC
 // ============================================
 
@@ -865,6 +949,9 @@ async function executeExpandedCarousingRolls(session, tier, participants) {
         const actor = participant.droppedActor;
         if (!actor) continue;
 
+        // Announce that we are rolling for this player
+        broadcastRollAnnouncement(participant.droppedActorName || actor.name);
+
         // Deduct shared cost from each participant
         await deductCoins(actor, costPerPerson);
 
@@ -878,6 +965,10 @@ async function executeExpandedCarousingRolls(session, tier, participants) {
 
         // Roll 1d8 + tier bonus + renown bonus + custom modifier for outcome table
         const outcomeRoll = await new Roll(`1d8 + ${tier.bonus} + ${renownBonus}${outcomeMod}`).evaluate();
+
+        // Show 3D dice animation with black dice for outcome
+        await showDSNRoll(outcomeRoll, 'outcome');
+
         const outcomeDice = outcomeRoll.dice[0]?.total || outcomeRoll.total;
         const outcomeTotal = outcomeRoll.total;
         const outcome = getExpandedOutcome(outcomeTotal);
@@ -897,6 +988,10 @@ async function executeExpandedCarousingRolls(session, tier, participants) {
         const benefitMod = playerMods.benefits ? ` + ${playerMods.benefits}` : "";
         for (let i = 0; i < outcome.benefits; i++) {
             const benefitRoll = await new Roll(`1d100${benefitMod}`).evaluate();
+
+            // Show 3D dice animation with green dice for benefits
+            await showDSNRoll(benefitRoll, 'benefit');
+
             const diceResult = benefitRoll.total;
             const finalResult = applyModifier(diceResult, outcome.modifier);
             const benefit = getExpandedBenefit(finalResult);
@@ -913,6 +1008,10 @@ async function executeExpandedCarousingRolls(session, tier, participants) {
         const mishapMod = playerMods.mishaps ? ` + ${playerMods.mishaps}` : "";
         for (let i = 0; i < outcome.mishaps; i++) {
             const mishapRoll = await new Roll(`1d100${mishapMod}`).evaluate();
+
+            // Show 3D dice animation with red dice for mishaps
+            await showDSNRoll(mishapRoll, 'mishap');
+
             const diceResult = mishapRoll.total;
             const finalResult = applyModifier(diceResult, outcome.modifier);
             const mishap = getExpandedMishap(finalResult);
@@ -1140,6 +1239,9 @@ export async function executeCarousingRolls() {
         const actor = participant.droppedActor;
         if (!actor) continue;
 
+        // Announce that we are rolling for this player
+        broadcastRollAnnouncement(participant.droppedActorName || actor.name);
+
         // Deduct shared cost from each participant
         await deductCoins(actor, costPerPerson);
 
@@ -1149,6 +1251,10 @@ export async function executeCarousingRolls() {
 
         // Roll 1d8 + bonus + custom modifier
         const roll = await new Roll(`1d8 + ${tier.bonus}${outcomeMod}`).evaluate();
+
+        // Show 3D dice animation with black dice for outcome
+        await showDSNRoll(roll, 'outcome');
+
         const diceResult = roll.dice[0]?.total || roll.total;
         const rollTotal = roll.total;
         const outcome = getOutcome(rollTotal, activeTable.outcomes);
@@ -1310,9 +1416,14 @@ export function initCarousingSocket() {
 
     // Listen for carousing toast notifications from other clients
     game.socket.on(`module.${MODULE_ID}`, (data) => {
-        // Only handle carousing toast messages from other users
+        // Handle carousing toast messages from other users
         if (data.type === "carousing-toast" && data.senderId !== game.user.id) {
             _showCarousingToast(data.message, data.toastType);
+        }
+
+        // Handle roll announcement events during GM rolling
+        if (data.type === "carousing-roll-announce") {
+            _showRollAnnouncement(data.message);
         }
     });
 

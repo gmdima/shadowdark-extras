@@ -487,8 +487,15 @@ async function createInteractiveTemplateCard(templateDoc, token, trigger, config
             ...actor?.getRollData?.() || {}
         };
         damageRoll = await new Roll(config.damage.formula, rollData).evaluate();
+
+        // Show 3D dice animation if Dice So Nice is available
+        if (game.dice3d) {
+            await game.dice3d.showForRoll(damageRoll, game.user, true);
+        }
+
         damageTotal = damageRoll.total;
     }
+
 
     let content = `
         <div class="sdx-template-effect-card" style="background: #1a1a1a; border: 1px solid #333; border-radius: 4px; padding: 10px; color: #e0e0e0;">
@@ -619,7 +626,14 @@ async function applyTemplateDamage(templateDoc, token, config, savedSuccessfully
 
     // Roll the damage
     const roll = await new Roll(formula, rollData).evaluate();
+
+    // Show 3D dice animation if Dice So Nice is available
+    if (game.dice3d) {
+        await game.dice3d.showForRoll(roll, game.user, true);
+    }
+
     let damage = roll.total;
+
 
     // Half damage on successful save
     if (savedSuccessfully && config.save?.halfOnSuccess) {
@@ -672,7 +686,14 @@ async function rollTemplateSave(actor, saveConfig) {
 
     // Roll the save
     const roll = await new Roll(formula).evaluate();
+
+    // Show 3D dice animation if Dice So Nice is available
+    if (game.dice3d) {
+        await game.dice3d.showForRoll(roll, game.user, true);
+    }
+
     const success = roll.total >= dc;
+
 
     // Get die results for display
     if (rollMode === 'advantage' || rollMode === 'disadvantage') {

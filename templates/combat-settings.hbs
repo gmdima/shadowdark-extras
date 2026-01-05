@@ -38,6 +38,52 @@
 			<p class="sdx-setting-hint">{{localize "SHADOWDARK_EXTRAS.combat.scrolling_text.hint"}}</p>
 		</div>
 
+		<div class="sdx-setting-item">
+			<div class="sdx-setting-header">
+				<label for="hideItemDescription">
+					<input type="checkbox" name="hideItemDescription" id="hideItemDescription" {{checked
+						settings.hideItemDescription}} />
+					<strong>Hide Item Description</strong>
+				</label>
+			</div>
+			<p class="sdx-setting-hint">Hide weapon/spell description text from chat cards</p>
+		</div>
+
+		<div class="sdx-setting-item">
+			<div class="sdx-setting-header">
+				<label for="requireTargetForAttack">
+					<strong>Require Target for Attack</strong>
+				</label>
+				<select name="requireTargetForAttack" id="requireTargetForAttack">
+					<option value="none" {{#if (eq settings.requireTargetForAttack "none" )}}selected{{/if}}>None - No
+						check</option>
+					<option value="warn" {{#if (eq settings.requireTargetForAttack "warn" )}}selected{{/if}}>Warn - Show
+						warning but allow attack</option>
+					<option value="block" {{#if (eq settings.requireTargetForAttack "block" )}}selected{{/if}}>Block -
+						Prevent attack without target</option>
+				</select>
+			</div>
+			<p class="sdx-setting-hint">Require the player to target a token before making a weapon attack</p>
+		</div>
+
+		<div class="sdx-setting-item">
+			<div class="sdx-setting-header">
+				<label for="checkWeaponRange">
+					<strong>Check Weapon Range</strong>
+				</label>
+				<select name="checkWeaponRange" id="checkWeaponRange">
+					<option value="none" {{#if (eq settings.checkWeaponRange "none" )}}selected{{/if}}>None - No check
+					</option>
+					<option value="warn" {{#if (eq settings.checkWeaponRange "warn" )}}selected{{/if}}>Warn - Show
+						warning if out of range</option>
+					<option value="block" {{#if (eq settings.checkWeaponRange "block" )}}selected{{/if}}>Block - Prevent
+						attack if out of range</option>
+				</select>
+			</div>
+			<p class="sdx-setting-hint">Check if the target is within the weapon's range (Close=5ft, Near=30ft,
+				Far=unlimited)</p>
+		</div>
+
 		<div class="sdx-subsettings" data-parent="showDamageCard">
 			<div class="sdx-setting-item">
 				<div class="sdx-setting-header">

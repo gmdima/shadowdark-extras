@@ -12705,6 +12705,18 @@ Hooks.on("renderChatMessage", (message, html, data) => {
 	} catch (err) {
 		console.error(`${MODULE_ID} | Failed to process weapon bonuses`, err);
 	}
+
+	// Hide item description if setting is enabled
+	try {
+		const combatSettings = game.settings.get(MODULE_ID, "combatSettings");
+		if (combatSettings?.hideItemDescription) {
+			// Hide the card-content which contains weapon/spell descriptions
+			const $html = $(html);
+			$html.find('.card-content').hide();
+		}
+	} catch (err) {
+		// Settings may not be registered yet, ignore
+	}
 });
 
 /**
@@ -13933,6 +13945,172 @@ Hooks.once("ready", () => {
 					}
 				}
 			}
+		};
+	}
+
+	// ============================================
+	// EDGE-TO-EDGE DISTANCE HELPER
+	// ============================================
+	/**
+	 * Calculate the edge-to-edge distance between two tokens.
+	 * Unlike center-to-center, this properly handles different token sizes.
+	 * @param {Token} token1 - First token
+	 * @param {Token} token2 - Second token
+	 * @returns {number} Distance in grid units (feet)
+	 */
+	function getEdgeToEdgeDistance(token1, token2) {
+		const gridSize = canvas.grid.size;
+
+		// Get token bounds in pixels
+		const t1 = {
+			left: token1.x,
+			right: token1.x + (token1.document.width * gridSize),
+			top: token1.y,
+			bottom: token1.y + (token1.document.height * gridSize)
+		};
+		const t2 = {
+			left: token2.x,
+			right: token2.x + (token2.document.width * gridSize),
+			top: token2.y,
+			bottom: token2.y + (token2.document.height * gridSize)
+		};
+
+		// Find the closest edge points between the two bounding boxes
+		// For X: clamp t2's center to t1's horizontal range, and vice versa
+		const t1CenterX = (t1.left + t1.right) / 2;
+		const t1CenterY = (t1.top + t1.bottom) / 2;
+		const t2CenterX = (t2.left + t2.right) / 2;
+		const t2CenterY = (t2.top + t2.bottom) / 2;
+
+		// Find the nearest point on t1's edge to t2
+		const p1x = Math.max(t1.left, Math.min(t2CenterX, t1.right));
+		const p1y = Math.max(t1.top, Math.min(t2CenterY, t1.bottom));
+
+		// Find the nearest point on t2's edge to t1
+		const p2x = Math.max(t2.left, Math.min(t1CenterX, t2.right));
+		const p2y = Math.max(t2.top, Math.min(t1CenterY, t2.bottom));
+
+		// Check if tokens are overlapping/adjacent (distance would be 0)
+		const overlapsX = !(t2.left > t1.right || t1.left > t2.right);
+		const overlapsY = !(t2.top > t1.bottom || t1.top > t2.bottom);
+
+		if (overlapsX && overlapsY) {
+			// Tokens are overlapping or adjacent
+			console.log(`${MODULE_ID} | Edge distance calc: tokens overlap/adjacent, distance = 0`);
+			return 0;
+		}
+
+		// Use Foundry's measurePath for proper grid-based distance (respects 5-10-5 rule)
+		const path = canvas.grid.measurePath([{ x: p1x, y: p1y }, { x: p2x, y: p2y }]);
+		const result = path.distance;
+
+		console.log(`${MODULE_ID} | Edge distance calc:`, {
+			token1: token1.name,
+			token2: token2.name,
+			p1: { x: p1x, y: p1y },
+			p2: { x: p2x, y: p2y },
+			measurePathDistance: result
+		});
+
+		return result;
+	}
+
+	// ============================================
+	// REQUIRE TARGET FOR ATTACK + RANGE CHECK
+	// ============================================
+	if (ActorSD.prototype.rollAttack) {
+		const _originalRollAttack = ActorSD.prototype.rollAttack;
+		ActorSD.prototype.rollAttack = async function (itemId, options = {}) {
+			// Prevent double-checking when Shadowdark recurses for multiple targets
+			if (options._sdxChecked) return _originalRollAttack.call(this, itemId, options);
+			options._sdxChecked = true;
+
+			const item = this.items.get(itemId);
+			const itemName = item?.name || "weapon";
+
+			try {
+				const combatSettings = game.settings.get(MODULE_ID, "combatSettings");
+				const requireTarget = combatSettings?.requireTargetForAttack || "none";
+				const checkRange = combatSettings?.checkWeaponRange || "none";
+
+				// Check if user has targets
+				const hasTargets = game.user.targets && game.user.targets.size > 0;
+
+				// Feature 2: Check if target is required
+				if (requireTarget !== "none" && !hasTargets) {
+					if (requireTarget === "block") {
+						ui.notifications.warn(game.i18n.format("SHADOWDARK_EXTRAS.combat.require_target.blocked", {
+							itemName: itemName
+						}) || `You must target a token before attacking with ${itemName}!`);
+						return null;
+					} else if (requireTarget === "warn") {
+						ui.notifications.info(game.i18n.format("SHADOWDARK_EXTRAS.combat.require_target.warning", {
+							itemName: itemName
+						}) || `No target selected for ${itemName} attack.`);
+					}
+				}
+
+				// Feature 3: Check weapon range vs target distance
+				if (checkRange !== "none" && hasTargets && item) {
+					// Get the attacker's token
+					const attackerToken = this.getActiveTokens()[0] || canvas.tokens.placeables.find(t => t.actor?.id === this.id);
+
+					if (attackerToken) {
+						const targets = Array.from(game.user.targets);
+
+						// Determine weapon range type
+						const weaponType = item.system?.type || "melee"; // melee or ranged
+						const isThrown = await item.isThrownWeapon?.() || false;
+
+						// Edge-to-edge distance (in feet based on Shadowdark distances)
+						// Close = adjacent (0 ft edge-to-edge), Near = ~25 ft edge, Far = beyond
+						let maxRange;
+						let rangeLabel;
+						if (weaponType === "melee" && !isThrown) {
+							maxRange = 0; // Close range = must be adjacent (edge-to-edge 0)
+							rangeLabel = "Close (Adjacent)";
+						} else if (isThrown) {
+							maxRange = 25; // Near range for thrown (5 squares edge-to-edge)
+							rangeLabel = "Near (30 ft)";
+						} else {
+							maxRange = Infinity; // Ranged weapons have no limit
+							rangeLabel = "Far";
+						}
+
+						// Check distance to each target  
+						for (const targetToken of targets) {
+							// Calculate edge-to-edge distance (properly handles different token sizes)
+							const distance = getEdgeToEdgeDistance(attackerToken, targetToken);
+							// Convert to traditional D&D distance for display (add 5 ft for target's space)
+							const displayDistance = distance + 5;
+
+							console.log(`${MODULE_ID} | Range check: ${itemName} (${rangeLabel}) vs target at ${distance.toFixed(1)} ft edge-to-edge (${displayDistance.toFixed(0)} ft display)`);
+
+							if (distance > maxRange) {
+								if (checkRange === "block") {
+									ui.notifications.warn(game.i18n.format("SHADOWDARK_EXTRAS.combat.range_check.blocked", {
+										itemName: itemName,
+										range: rangeLabel,
+										distance: displayDistance.toFixed(0)
+									}) || `${itemName} cannot reach target at ${displayDistance.toFixed(0)} ft! Max range: ${rangeLabel}`);
+									return null;
+								} else if (checkRange === "warn") {
+									ui.notifications.info(game.i18n.format("SHADOWDARK_EXTRAS.combat.range_check.warning", {
+										itemName: itemName,
+										range: rangeLabel,
+										distance: displayDistance.toFixed(0)
+									}) || `Target is at ${displayDistance.toFixed(0)} ft, beyond ${itemName}'s ${rangeLabel} range.`);
+								}
+							}
+						}
+					}
+				}
+			} catch (err) {
+				console.log(`${MODULE_ID} | Range check error:`, err);
+				// Settings not available yet, continue normally
+			}
+
+			return _originalRollAttack.call(this, itemId, options);
 		};
 	}
 
