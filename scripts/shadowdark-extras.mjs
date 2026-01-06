@@ -9,6 +9,7 @@ import { CombatSettingsApp, registerCombatSettings, injectDamageCard, setupComba
 import { EffectsSettingsApp, registerEffectsSettings } from "./EffectsSettingsSD.mjs";
 import { HpWavesSettingsApp, registerHpWavesSettings, getHpWaveColor, isHpWavesEnabled } from "./HpWavesSettingsSD.mjs";
 import { generateSpellConfig, generatePotionConfig, generateScrollConfig, generateWandConfig } from "./templates/ItemTypeConfigs.mjs";
+import { activateTemplateTargetingListeners } from "./templates/TemplateTargetingConfig.mjs";
 import {
 	injectWeaponBonusTab,
 	getWeaponBonuses,
@@ -8440,18 +8441,25 @@ async function enhanceSpellSheet(app, html) {
 		triggers: {
 			onEnter: false,
 			onLeave: false,
-			onTurnStart: false,
-			onTurnEnd: false
+			onSourceTurnStart: false,
+			onSourceTurnEnd: false,
+			onTargetTurnStart: false,
+			onTargetTurnEnd: false
 		},
 		damage: { formula: '', type: '' },
-		save: { enabled: false, dc: 12, ability: 'con', halfOnSuccess: false },
-		animation: { enabled: true, style: 'circle', tint: '#4488ff' },
+		damageTriggers: { onEnter: false, onLeave: false, onSourceTurnStart: false, onSourceTurnEnd: false, onTargetTurnStart: false, onTargetTurnEnd: false },
+		save: { enabled: false, dc: 12, ability: 'con', halfOnSave: false },
+		animation: { enabled: true, style: 'circle', tint: '#4488ff', opacity: 0.6, scaleMultiplier: 1.0 },
+		tokenFilters: { enabled: false, preset: '' },
 		disposition: 'all',
 		includeSelf: false,
+		includeAuraBearer: false,
 		applyToOriginator: true,
 		checkVisibility: false,
 		applyConfiguredEffects: false,
-		runItemMacro: false
+		effectsTriggers: { onEnter: false, onLeave: false, onSourceTurnStart: false, onSourceTurnEnd: false, onTargetTurnStart: false, onTargetTurnEnd: false },
+		runItemMacro: false,
+		macroTriggers: { onEnter: false, onLeave: false, onSourceTurnStart: false, onSourceTurnEnd: false, onTargetTurnStart: false, onTargetTurnEnd: false }
 	};
 
 	// Combine all flags for template
@@ -9528,6 +9536,9 @@ async function enhanceSpellSheet(app, html) {
 	// Setup activity toggles as radio buttons (only one can be active at a time)
 	setupActivityRadioToggles(html, item);
 
+	// Setup UI listeners for targeting and aura effects
+	activateTemplateTargetingListeners(html[0], MODULE_ID);
+
 	console.log(`${MODULE_ID} | Spell sheet enhanced for`, item.name);
 }
 
@@ -9582,10 +9593,33 @@ async function enhancePotionSheet(app, html) {
 		profiles: []
 	};
 
-	// Initialize item macro flags
-	const itemMacroFlags = item.flags?.[MODULE_ID]?.itemMacro || {
-		runAsGm: false,
-		triggers: []
+	// Initialize aura effects flags
+	const auraEffectsFlags = item.flags?.[MODULE_ID]?.auraEffects || {
+		enabled: false,
+		attachTo: 'caster',
+		radius: 30,
+		triggers: {
+			onEnter: false,
+			onLeave: false,
+			onSourceTurnStart: false,
+			onSourceTurnEnd: false,
+			onTargetTurnStart: false,
+			onTargetTurnEnd: false
+		},
+		damage: { formula: '', type: '' },
+		damageTriggers: { onEnter: false, onLeave: false, onSourceTurnStart: false, onSourceTurnEnd: false, onTargetTurnStart: false, onTargetTurnEnd: false },
+		save: { enabled: false, dc: 12, ability: 'con', halfOnSave: false },
+		animation: { enabled: true, style: 'circle', tint: '#4488ff', opacity: 0.6, scaleMultiplier: 1.0 },
+		tokenFilters: { enabled: false, preset: '' },
+		disposition: 'all',
+		includeSelf: false,
+		includeAuraBearer: false,
+		applyToOriginator: true,
+		checkVisibility: false,
+		applyConfiguredEffects: false,
+		effectsTriggers: { onEnter: false, onLeave: false, onSourceTurnStart: false, onSourceTurnEnd: false, onTargetTurnStart: false, onTargetTurnEnd: false },
+		runItemMacro: false,
+		macroTriggers: { onEnter: false, onLeave: false, onSourceTurnStart: false, onSourceTurnEnd: false, onTargetTurnStart: false, onTargetTurnEnd: false }
 	};
 
 	// Combine all flags for template
@@ -9593,7 +9627,8 @@ async function enhancePotionSheet(app, html) {
 		...spellDamageFlags,
 		summoning: summoningFlags,
 		itemGive: itemGiveFlags,
-		itemMacro: itemMacroFlags
+		itemMacro: itemMacroFlags,
+		auraEffects: auraEffectsFlags
 	};
 
 	// Convert applyToTarget to boolean (in case it was stored as string)
@@ -10314,6 +10349,9 @@ async function enhancePotionSheet(app, html) {
 	// Setup activity toggles as radio buttons (only one can be active at a time)
 	setupActivityRadioToggles(html, item);
 
+	// Setup UI listeners for targeting and aura effects
+	activateTemplateTargetingListeners(html[0], MODULE_ID);
+
 	console.log(`${MODULE_ID} | Potion sheet enhanced for`, item.name);
 }
 
@@ -10418,14 +10456,28 @@ async function enhanceScrollSheet(app, html) {
 		enabled: false,
 		attachTo: 'caster',
 		radius: 30,
-		triggers: { onEnter: false, onLeave: false, onTurnStart: false, onTurnEnd: false },
+		triggers: {
+			onEnter: false,
+			onLeave: false,
+			onSourceTurnStart: false,
+			onSourceTurnEnd: false,
+			onTargetTurnStart: false,
+			onTargetTurnEnd: false
+		},
 		damage: { formula: '', type: '' },
-		save: { enabled: false, dc: 12, ability: 'con', halfOnSuccess: false },
-		animation: { enabled: true, style: 'circle', tint: '#4488ff' },
+		damageTriggers: { onEnter: false, onLeave: false, onSourceTurnStart: false, onSourceTurnEnd: false, onTargetTurnStart: false, onTargetTurnEnd: false },
+		save: { enabled: false, dc: 12, ability: 'con', halfOnSave: false },
+		animation: { enabled: true, style: 'circle', tint: '#4488ff', opacity: 0.6, scaleMultiplier: 1.0 },
+		tokenFilters: { enabled: false, preset: '' },
 		disposition: 'all',
 		includeSelf: false,
+		includeAuraBearer: false,
+		applyToOriginator: true,
+		checkVisibility: false,
 		applyConfiguredEffects: false,
-		runItemMacro: false
+		effectsTriggers: { onEnter: false, onLeave: false, onSourceTurnStart: false, onSourceTurnEnd: false, onTargetTurnStart: false, onTargetTurnEnd: false },
+		runItemMacro: false,
+		macroTriggers: { onEnter: false, onLeave: false, onSourceTurnStart: false, onSourceTurnEnd: false, onTargetTurnStart: false, onTargetTurnEnd: false }
 	};
 
 	// Combine all flags for template
@@ -11221,6 +11273,9 @@ async function enhanceScrollSheet(app, html) {
 	// Setup activity toggles as radio buttons (only one can be active at a time)
 	setupActivityRadioToggles(html, item);
 
+	// Setup UI listeners for targeting and aura effects
+	activateTemplateTargetingListeners(html[0], MODULE_ID);
+
 	console.log(`${MODULE_ID} | Scroll sheet enhanced for`, item.name);
 }
 
@@ -11452,14 +11507,28 @@ async function enhanceWandSheet(app, html) {
 		enabled: false,
 		attachTo: 'caster',
 		radius: 30,
-		triggers: { onEnter: false, onLeave: false, onTurnStart: false, onTurnEnd: false },
+		triggers: {
+			onEnter: false,
+			onLeave: false,
+			onSourceTurnStart: false,
+			onSourceTurnEnd: false,
+			onTargetTurnStart: false,
+			onTargetTurnEnd: false
+		},
 		damage: { formula: '', type: '' },
-		save: { enabled: false, dc: 12, ability: 'con', halfOnSuccess: false },
-		animation: { enabled: true, style: 'circle', tint: '#4488ff' },
+		damageTriggers: { onEnter: false, onLeave: false, onSourceTurnStart: false, onSourceTurnEnd: false, onTargetTurnStart: false, onTargetTurnEnd: false },
+		save: { enabled: false, dc: 12, ability: 'con', halfOnSave: false },
+		animation: { enabled: true, style: 'circle', tint: '#4488ff', opacity: 0.6, scaleMultiplier: 1.0 },
+		tokenFilters: { enabled: false, preset: '' },
 		disposition: 'all',
 		includeSelf: false,
+		includeAuraBearer: false,
+		applyToOriginator: true,
+		checkVisibility: false,
 		applyConfiguredEffects: false,
-		runItemMacro: false
+		effectsTriggers: { onEnter: false, onLeave: false, onSourceTurnStart: false, onSourceTurnEnd: false, onTargetTurnStart: false, onTargetTurnEnd: false },
+		runItemMacro: false,
+		macroTriggers: { onEnter: false, onLeave: false, onSourceTurnStart: false, onSourceTurnEnd: false, onTargetTurnStart: false, onTargetTurnEnd: false }
 	};
 
 	// Combine all flags for template
@@ -12239,6 +12308,9 @@ async function enhanceWandSheet(app, html) {
 
 	// Setup activity toggles as radio buttons (only one can be active at a time)
 	setupActivityRadioToggles(html, item);
+
+	// Setup UI listeners for targeting and aura effects
+	activateTemplateTargetingListeners(html[0], MODULE_ID);
 
 	console.log(`${MODULE_ID} | Wand sheet enhanced for`, item.name);
 }

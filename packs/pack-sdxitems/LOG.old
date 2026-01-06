@@ -1,5 +1,1 @@
-2026/01/06-13:01:30.244 a1c Log #231: 0 ops saved to Table #232 OK
-2026/01/06-13:01:30.245 a1c Archiving C:\Users\Cristian\AppData\Local\FoundryVTT\Data\modules\shadowdark-extras\packs\pack-sdxitems/000231.log: OK
-2026/01/06-13:01:30.246 a1c Table #227: 201 entries OK
-2026/01/06-13:01:30.254 a1c Archiving C:\Users\Cristian\AppData\Local\FoundryVTT\Data\modules\shadowdark-extras\packs\pack-sdxitems/MANIFEST-000230: OK
-2026/01/06-13:01:30.263 a1c **** Repaired leveldb C:\Users\Cristian\AppData\Local\FoundryVTT\Data\modules\shadowdark-extras\packs\pack-sdxitems; recovered 1 files; 122004 bytes. Some data may have been lost. ****
+2026/01/06-13:01:30.279 a1c Delete type=3 #1

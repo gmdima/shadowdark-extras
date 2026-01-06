@@ -1,5 +1,1 @@
-2026/01/06-13:01:30.290 a1c Log #204: 0 ops saved to Table #205 OK
-2026/01/06-13:01:30.291 a1c Archiving C:\Users\Cristian\AppData\Local\FoundryVTT\Data\modules\shadowdark-extras\packs\pack-sdxactors/000204.log: OK
-2026/01/06-13:01:30.291 a1c Table #7: 1 entries OK
-2026/01/06-13:01:30.299 a1c Archiving C:\Users\Cristian\AppData\Local\FoundryVTT\Data\modules\shadowdark-extras\packs\pack-sdxactors/MANIFEST-000203: OK
-2026/01/06-13:01:30.307 a1c **** Repaired leveldb C:\Users\Cristian\AppData\Local\FoundryVTT\Data\modules\shadowdark-extras\packs\pack-sdxactors; recovered 1 files; 1644 bytes. Some data may have been lost. ****
+2026/01/06-13:01:30.321 a1c Delete type=3 #1
