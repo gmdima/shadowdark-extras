@@ -33,6 +33,7 @@ import { openCarousingTablesEditor } from "./CarousingTablesApp.mjs";
 import { openExpandedCarousingTablesEditor } from "./ExpandedCarousingTablesApp.mjs";
 import { initTemplateEffects, processTemplateTurnEffects, setupTemplateEffectFlags } from "./TemplateEffectsSD.mjs";
 import { initAuraEffects, createAuraOnActor, getActiveAuras, getTokensInAura } from "./AuraEffectsSD.mjs";
+import { registerDisplayNpcEnricher } from "./DisplayNpc.mjs";
 
 const MODULE_ID = "shadowdark-extras";
 const TRADE_JOURNAL_NAME = "__sdx_trade_sync__"; // Must match TradeWindowSD.mjs
@@ -13731,6 +13732,20 @@ Hooks.once("init", () => {
 			name: "SHADOWDARK.item.effect.predefined_effect.spellAdvantageAll",
 			mode: "CONST.ACTIVE_EFFECT_MODES.ADD",
 		},
+		spellDisadvantageAll: {
+			defaultValue: "spellcasting",
+			effectKey: "system.bonuses.disadvantage",
+			img: "icons/magic/unholy/hand-light-pink.webp",
+			name: "SHADOWDARK.item.effect.predefined_effect.spellDisadvantageAll",
+			mode: "CONST.ACTIVE_EFFECT_MODES.ADD",
+		},
+		spellDisadvantage: {
+			defaultValue: "REPLACEME",
+			effectKey: "system.bonuses.disadvantage",
+			img: "icons/magic/unholy/hand-light-pink.webp",
+			name: "SHADOWDARK.item.effect.predefined_effect.spellDisadvantage",
+			mode: "CONST.ACTIVE_EFFECT_MODES.ADD",
+		},
 	};
 
 	// Define all custom damage types with proper icons for resistance, immunity, and vulnerability
@@ -13866,6 +13881,43 @@ Hooks.once("init", () => {
 	Object.assign(CONFIG.SHADOWDARK.PREDEFINED_EFFECTS, abilityAdvantageEffects);
 
 	console.log(`${MODULE_ID} | Added ${Object.keys(abilityAdvantageEffects).length} extra advantage, resistance/immunity/vulnerability effects`);
+
+	// ============================================
+	// SPELL DISADVANTAGE HANDLER PATCH
+	// ============================================
+	// Add disadvantage to EFFECT_ASK_INPUT so the system knows to prompt for selection
+	if (!CONFIG.SHADOWDARK.EFFECT_ASK_INPUT.includes("system.bonuses.disadvantage")) {
+		CONFIG.SHADOWDARK.EFFECT_ASK_INPUT.push("system.bonuses.disadvantage");
+	}
+
+	// Patch handlePredefinedEffect to support spellDisadvantage (like spellAdvantage)
+	const originalHandlePredefinedEffect = shadowdark.effects.handlePredefinedEffect;
+	shadowdark.effects.handlePredefinedEffect = async function (key, value, name = null) {
+		// Handle spellDisadvantage the same way as spellAdvantage
+		if (key === "spellDisadvantage") {
+			const type = "spell";
+			const options = await shadowdark.utils.getSlugifiedItemList(
+				await shadowdark.compendiums.spells()
+			);
+			const chosen = await this.askEffectInput({ name, type, options });
+			return chosen[type] ?? [value];
+		}
+		// Fall back to original for all other keys
+		return originalHandlePredefinedEffect.call(this, key, value, name);
+	};
+
+	// Patch modifyEffectChangesWithInput to map disadvantage -> spellDisadvantage
+	// This ensures that Talents with system.bonuses.disadvantage = REPLACEME
+	// trigger the spell selection choice.
+	const originalModifyEffectChangesWithInput = shadowdark.effects.modifyEffectChangesWithInput;
+	shadowdark.effects.modifyEffectChangesWithInput = async function (item, effect, key = false) {
+		if (!key && effect.changes?.some(c => c.key === "system.bonuses.disadvantage" && c.value === "REPLACEME")) {
+			key = "spellDisadvantage";
+		}
+		return originalModifyEffectChangesWithInput.call(this, item, effect, key);
+	};
+
+	console.log(`${MODULE_ID} | Patched effects system for spellDisadvantage support`);
 });
 
 // ============================================
@@ -15938,5 +15990,14 @@ Hooks.on("renderApplication", (app, html, data) => {
 	if (app.constructor.name === "SpellBookSD") {
 		injectSpellbookCompendiumFilter(app, html);
 	}
+});
+
+// ============================================
+// NPC CARD ENRICHER
+// ============================================
+
+// Register the DisplayNpcCard enricher
+Hooks.once("ready", () => {
+	registerDisplayNpcEnricher();
 });
 

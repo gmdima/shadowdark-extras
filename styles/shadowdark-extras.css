@@ -15045,6 +15045,7 @@ body:not(.game-master) .sdx-carousing-chat .sdx-player-only {
     color: #ffd700;
     font-weight: bold;
 }
+
 /* Minimal Damage Summary Expandable Roll */
 .sdx-minimal-damage-summary .sdx-expandable-roll {
     transition: all 0.2s ease;
@@ -15059,12 +15060,12 @@ body:not(.game-master) .sdx-carousing-chat .sdx-player-only {
 }
 
 .sdx-minimal-damage-summary .sdx-expandable-roll:hover .dice-total {
-    background: rgba(0,0,0,0.1) !important;
+    background: rgba(0, 0, 0, 0.1) !important;
 }
 
 .sdx-damage-tooltip {
-    border-top: 1px solid rgba(0,0,0,0.1);
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
 /* ======================================
@@ -15075,8 +15076,8 @@ body:not(.game-master) .sdx-carousing-chat .sdx-player-only {
 [data-user-id].sdx-rolling {
     animation: sdx-pulse-rolling 0.6s ease-in-out infinite alternate;
     box-shadow: 0 0 20px #ffcc00,
-                0 0 40px #ffcc00,
-                0 0 60px rgba(255, 204, 0, 0.3) !important;
+        0 0 40px #ffcc00,
+        0 0 60px rgba(255, 204, 0, 0.3) !important;
     z-index: 10;
     position: relative;
 }
@@ -15086,6 +15087,7 @@ body:not(.game-master) .sdx-carousing-chat .sdx-player-only {
         transform: scale(1);
         filter: brightness(1);
     }
+
     to {
         transform: scale(1.02);
         filter: brightness(1.1);
@@ -15117,11 +15119,169 @@ body:not(.game-master) .sdx-carousing-chat .sdx-player-only {
 }
 
 @keyframes sdx-announce-pop {
-    0% { transform: translate(-50%, -50%) scale(0.5); opacity: 0; }
-    100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+    0% {
+        transform: translate(-50%, -50%) scale(0.5);
+        opacity: 0;
+    }
+
+    100% {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 1;
+    }
 }
 
 .sdx-roll-announcement.sdx-fade-out {
     opacity: 0;
     transition: opacity 0.5s ease;
+}
+
+/* ============================================
+   DISPLAY NPC CARD STYLES (Journal Enricher)
+   ============================================ */
+
+/* Container for the NPC card */
+.sdx-display-npc-container {
+    margin: 16px 0;
+}
+
+/* Main NPC card styling - clean black and white */
+.sdx-display-npc {
+    background: #0a0a0a;
+    border: 1px solid #333;
+    border-radius: 4px;
+    padding: 0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+    font-family: "Roboto Condensed", "Arial Narrow", sans-serif;
+    overflow: hidden;
+}
+
+/* Title - centered, large, Old Newspaper Font */
+.sdx-npc-title {
+    background: #111;
+    border-bottom: 2px solid #333;
+    padding: 12px 16px;
+    text-align: center;
+    font-family: "Old Newspaper Font", "Times New Roman", serif;
+    font-size: 1.8em;
+    font-weight: normal;
+    color: #fff;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+    letter-spacing: 1px;
+}
+
+.sdx-npc-title a {
+    color: #fff;
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+.sdx-npc-title a:hover {
+    color: #ccc;
+    text-decoration: underline;
+}
+
+.sdx-npc-title.named .sdx-npc-name {
+    color: #fff;
+}
+
+/* Ability scores row */
+.sdx-npc-abilities {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    background: #151515;
+    border-bottom: 1px solid #333;
+}
+
+.sdx-npc-ability {
+    text-align: center;
+    padding: 6px 4px;
+    border-right: 1px solid #252525;
+}
+
+.sdx-npc-ability:last-child {
+    border-right: none;
+}
+
+.sdx-npc-ability-label {
+    display: block;
+    font-size: 0.85em;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #cdcccc;
+    margin-bottom: 1px;
+    font-weight: bold;
+}
+
+.sdx-npc-ability-mod {
+    font-size: 1em;
+    font-weight: bold;
+    color: #ddd;
+}
+
+/* Stats grid - HP, AC, LV, MV (4 columns) */
+.sdx-npc-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    background: #0d0d0d;
+    border-bottom: 1px solid #333;
+}
+
+.sdx-npc-stat {
+    padding: 8px 6px;
+    text-align: center;
+    border-right: 1px solid #252525;
+}
+
+.sdx-npc-stat:last-child {
+    border-right: none;
+}
+
+.sdx-npc-stat-label {
+    display: block;
+    font-size: 0.85em;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #cdcccc;
+    margin-bottom: 1px;
+    font-weight: bold;
+}
+
+.sdx-npc-stat-value {
+    font-size: 1.1em;
+    font-weight: bold;
+    color: #fff;
+    text-transform: uppercase;
+}
+
+/* Description section */
+.sdx-npc-description {
+    padding: 10px 14px;
+    background: #0d0d0d;
+    border-bottom: 1px solid #333;
+    color: #aaa;
+    font-size: 0.9em;
+    line-height: 1.5;
+    font-style: italic;
+}
+
+.sdx-npc-description p {
+    margin: 0 0 8px 0;
+}
+
+.sdx-npc-description p:last-child {
+    margin-bottom: 0;
+}
+
+/* Broken link styling */
+.sdx-display-npc-container.broken {
+    background: #1a1010;
+    border: 1px dashed #4a2020;
+    border-radius: 4px;
+    padding: 10px 14px;
+    color: #aa6666;
+}
+
+.sdx-display-npc-container.broken i {
+    margin-right: 8px;
+    color: #885555;
 }
