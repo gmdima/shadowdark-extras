@@ -555,13 +555,15 @@ export async function endDurationSpell(casterId, instanceId, reason = "expired")
 	const chatContent = `
 		<div class="shadowdark chat-card focus-ended">
 			<header class="card-header flexrow">
-				<img src="${durationEntry.spellImg}" alt="${durationEntry.spellName}"/>
-				<h3>Spell Duration Ended</h3>
+				<img class="focus-ended-icon" src="${durationEntry.spellImg}" alt="${durationEntry.spellName}"/>
+				<div class="focus-ended-header-text">
+					<h3>${game.i18n.localize("SHADOWDARK_EXTRAS.duration_tracker.spell_ended_title")}</h3>
+					<p class="spell-name">${durationEntry.spellName}</p>
+				</div>
 			</header>
 			<div class="card-content">
-				<p><strong>${durationEntry.spellName}</strong></p>
-				<p>${reason === "expired" ? "The spell has expired." : "The spell was ended manually."}</p>
-				${durationEntry.targetEffects?.length > 0 ? `<p>Effects removed from ${durationEntry.targetEffects.length} target(s).</p>` : ""}
+				<p class="reason-text">${reason === "expired" ? game.i18n.localize("SHADOWDARK_EXTRAS.duration_tracker.reason_expired") : game.i18n.localize("SHADOWDARK_EXTRAS.duration_tracker.reason_manual")}</p>
+				${durationEntry.targetEffects?.length > 0 ? `<p style="font-size: 11px; color: #999;">${game.i18n.format("SHADOWDARK_EXTRAS.duration_tracker.effects_removed", { count: durationEntry.targetEffects.length })}</p>` : ""}
 			</div>
 		</div>
 	`;

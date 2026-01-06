@@ -22,11 +22,74 @@ const _auraAffectedThisTurn = new Map();
 const _previousPositions = new Map();
 
 /**
+ * Apply TokenMagic filter to a token when entering an aura
+ * @param {Token} token - The token to apply filter to
+ * @param {string} presetName - The TokenMagic preset name
+ * @param {string} auraEffectId - The aura effect ID for tracking
+ */
+async function applyTokenMagicFilter(token, presetName, auraEffectId) {
+
+    if (!presetName) {
+        return;
+    }
+    if (!game.modules.get('tokenmagic')?.active) {
+        return;
+    }
+
+    try {
+        // Get the preset from TokenMagic library
+        const preset = TokenMagic.getPreset(presetName);
+        if (!preset) {
+            console.warn(`shadowdark-extras | TokenMagic preset '${presetName}' not found`);
+            return;
+        }
+
+        // Create a unique filter ID for this aura so we can remove it later
+        const filterId = `sdx-aura-${auraEffectId}`;
+
+        // Clone the preset and add our custom filter ID
+        const params = preset.map(p => ({
+            ...p,
+            filterId: filterId
+        }));
+
+        await TokenMagic.addUpdateFilters(token, params);
+    } catch (e) {
+        console.error("shadowdark-extras | Error applying TokenMagic filter:", e);
+    }
+}
+
+/**
+ * Remove TokenMagic filter from a token when leaving an aura
+ * @param {Token} token - The token to remove filter from
+ * @param {string} auraEffectId - The aura effect ID for tracking
+ */
+async function removeTokenMagicFilter(token, auraEffectId) {
+
+    if (!game.modules.get('tokenmagic')?.active) {
+        return;
+    }
+
+    try {
+        const filterId = `sdx-aura-${auraEffectId}`;
+
+        // Check if the token has this filter applied
+        const hasFilter = TokenMagic.hasFilterId(token, filterId);
+        if (!hasFilter) {
+            return;
+        }
+
+        await TokenMagic.deleteFilters(token, filterId);
+    } catch (e) {
+        console.error("shadowdark-extras | Error removing TokenMagic filter:", e);
+    }
+}
+
+/**
  * Initialize the aura effects system
  * Call this from the main module during 'ready' hook
  */
 export function initAuraEffects() {
-    console.log("shadowdark-extras | Initializing Aura Effects System");
 
     // Track token positions before movement
     Hooks.on("preUpdateToken", (tokenDoc, changes, options, userId) => {
@@ -38,7 +101,6 @@ export function initAuraEffects() {
                 y: tokenDoc.y + (tokenDoc.height * canvas.grid.size) / 2
             };
 
-            console.log(`shadowdark-extras | preUpdateToken: Storing previous position for ${tokenDoc.name}`);
 
             _previousPositions.set(tokenDoc.id, {
                 x: tokenDoc.x,
@@ -102,7 +164,6 @@ export function initAuraEffects() {
             if (!game.user.isGM) {
                 const socket = getSocket();
                 if (socket) {
-                    console.log("shadowdark-extras | Applying aura damage via GM socket");
                     socket.executeAsGM("applyAuraDamageViaGM", {
                         targetTokenId: targetId,
                         config: config,
@@ -181,7 +242,6 @@ export function initAuraEffects() {
             if (!game.user.isGM) {
                 const socket = getSocket();
                 if (socket) {
-                    console.log("shadowdark-extras | Applying aura conditions via GM socket");
                     socket.executeAsGM("applyAuraConditionsViaGM", {
                         auraEffectId: auraEffectId,
                         auraEffectActorId: auraActorId,
@@ -217,19 +277,16 @@ export function initAuraEffects() {
     // Re-evaluate auras when walls change (LOS updates)
     Hooks.on("createWall", (wall) => {
         if (game.user.isGM) {
-            console.log("shadowdark-extras | Wall created, triggering aura refresh");
             refreshSceneAuras();
         }
     });
     Hooks.on("updateWall", (wall, changes) => {
         if (game.user.isGM && (changes.c !== undefined || changes.ds !== undefined || changes.sense !== undefined)) {
-            console.log("shadowdark-extras | Wall updated, triggering aura refresh");
             refreshSceneAuras();
         }
     });
     Hooks.on("deleteWall", (wall) => {
         if (game.user.isGM) {
-            console.log("shadowdark-extras | Wall deleted, triggering aura refresh");
             refreshSceneAuras();
         }
     });
@@ -237,7 +294,6 @@ export function initAuraEffects() {
     // Also re-evaluate on scene updates that might affect vision/lighting
     Hooks.on("updateScene", (scene, changes) => {
         if (game.user.isGM && (changes.grid !== undefined || changes.padding !== undefined || changes.fogExploration !== undefined)) {
-            console.log("shadowdark-extras | Scene updated, triggering aura refresh");
             refreshSceneAuras();
         }
     });
@@ -261,7 +317,6 @@ export function initAuraEffects() {
         await removeAuraEffectsFromAll(effect);
     });
 
-    console.log("shadowdark-extras | Aura Effects System initialized");
 }
 
 /**
@@ -270,7 +325,6 @@ export function initAuraEffects() {
  */
 export async function refreshSceneAuras() {
     if (!game.user.isGM) return;
-    console.log("shadowdark-extras | refreshSceneAuras: Forcing re-evaluation of all auras");
     const auras = getActiveAuras();
     if (auras.length === 0) return;
 
@@ -294,14 +348,16 @@ export async function refreshSceneAuras() {
                 i.type === "Effect" && i.flags?.[MODULE_ID]?.auraOrigin === effect.id
             );
 
-            if (!hasEffect && isInside && config.triggers?.onEnter) {
-                console.log(`shadowdark-extras | refreshSceneAuras: [ENTER] ${targetToken.name} entering aura of ${sourceToken.name}`);
+            if (!hasEffect && isInside && shouldAnyComponentTrigger(config, 'enter')) {
                 await applyAuraEffect(sourceToken, targetToken, "enter", config, effect);
             } else if (hasEffect && !isInside && config.triggers?.onLeave) {
-                console.log(`shadowdark-extras | refreshSceneAuras: [LEAVE] ${targetToken.name} leaving aura of ${sourceToken.name}`);
                 await removeAuraEffectsFromToken(effect, targetToken);
+            } else if (!isInside) {
+                // Token is outside aura - always remove TokenMagic filter even if onLeave trigger isn't configured
+                if (config.tokenFilters?.enabled) {
+                    await removeTokenMagicFilter(targetToken, effect.id);
+                }
             } else {
-                console.log(`shadowdark-extras | refreshSceneAuras: No change for ${targetToken.name} (hasEffect=${hasEffect}, isInside=${isInside})`);
             }
         }
     }
@@ -384,7 +440,6 @@ export function getTokensInAura(sourceToken, radiusFeet, disposition = 'all', in
 function isTokenInAura(sourceToken, testToken, radiusFeet) {
     // Safety check for missing center properties
     if (!sourceToken?.center || !testToken?.center) {
-        console.log(`shadowdark-extras | isTokenInAura: Missing center for ${sourceToken?.name} or ${testToken?.name}`);
         return false;
     }
 
@@ -408,7 +463,6 @@ async function processAuraMovement(tokenDoc, changes = {}) {
     const token = canvas.tokens.get(tokenDoc.id);
     if (!token) return;
 
-    console.log(`shadowdark-extras | processAuraMovement called for token: ${token.name}`);
 
     const previousPos = _previousPositions.get(tokenDoc.id);
 
@@ -421,15 +475,12 @@ async function processAuraMovement(tokenDoc, changes = {}) {
         y: newY + (tokenDoc.height * canvas.grid.size) / 2
     };
 
-    console.log(`shadowdark-extras | Token positions: previous=${previousPos?.center?.x},${previousPos?.center?.y}, new=${newCenter.x},${newCenter.y}`);
 
     const auras = getActiveAuras();
-    console.log(`shadowdark-extras | Found ${auras.length} active auras on scene`);
 
     for (const { effect, token: sourceToken, config } of auras) {
         // Skip if source is the moving token (can't enter/leave own aura)
         if (sourceToken.id === token.id) {
-            console.log(`shadowdark-extras | Skipping - token is aura source`);
             continue;
         }
 
@@ -447,16 +498,27 @@ async function processAuraMovement(tokenDoc, changes = {}) {
             i.type === "Effect" && i.flags?.[MODULE_ID]?.auraOrigin === effect.id
         );
 
-        console.log(`shadowdark-extras | Aura check for ${token.name} vs ${sourceToken.name}: isInside=${isInside}, hasEffect=${hasEffect}`);
 
-        if (!hasEffect && isInside && config.triggers?.onEnter) {
-            console.log(`shadowdark-extras | Token ${token.name} entering aura of ${sourceToken.name}`);
+        if (!hasEffect && isInside && shouldAnyComponentTrigger(config, 'enter')) {
             await applyAuraEffect(sourceToken, token, 'enter', config, effect);
-        } else if (hasEffect && !isInside && config.triggers?.onLeave) {
-            console.log(`shadowdark-extras | Token ${token.name} leaving aura of ${sourceToken.name}`);
-            await removeAuraEffectsFromToken(effect, token);
+        } else if (!isInside && hasEffect) {
+            // Token LEFT the aura (it had effect, now it's outside)
+            // First, apply any 'leave' triggered effects (damage, effects, macro)
+            if (shouldAnyComponentTrigger(config, 'leave')) {
+                await applyAuraEffect(sourceToken, token, 'leave', config, effect);
+            }
+            // Then, remove existing effects if Standard 'On Leave (remove)' is checked
+            if (config.triggers?.onLeave) {
+                await removeAuraEffectsFromToken(effect, token);
+            }
+            // Always remove TokenMagic filters when leaving
+            if (config.tokenFilters?.enabled) {
+                await removeTokenMagicFilter(token, effect.id);
+            }
+        } else if (!isInside && !hasEffect && config.tokenFilters?.enabled) {
+            // Token is outside aura and never had effect - just clean up filters if any
+            await removeTokenMagicFilter(token, effect.id);
         } else {
-            console.log(`shadowdark-extras | No enter/leave trigger needed: isInside=${isInside}, hasEffect=${hasEffect}`);
         }
     }
 }
@@ -511,18 +573,14 @@ async function processAuraSourceMovement(sourceTokenDoc, changes = {}) {
                 i.type === "Effect" && i.flags?.[MODULE_ID]?.auraOrigin === effect.id
             );
 
-            if (!hasEffect && isInside && config.triggers?.onEnter) {
-                console.log(`shadowdark-extras | [SOURCE MOVE] Applying effect to ${otherToken.name}`);
+            if (!hasEffect && isInside && shouldAnyComponentTrigger(config, 'enter')) {
                 await applyAuraEffect(sourceToken, otherToken, 'enter', config, effect);
             } else if (hasEffect && !isInside && config.triggers?.onLeave) {
-                console.log(`shadowdark-extras | [SOURCE MOVE] Removing effect from ${otherToken.name}`);
                 await removeAuraEffectsFromToken(effect, otherToken);
-            } else {
-                // If it should have had the effect but didn't, and onEnter is true, we force it if triggers onEnter
-                // This covers cases where initial application might have failed or been skipped
-                if (!hasEffect && isInside && config.triggers?.onEnter) {
-                    console.log(`shadowdark-extras | [SOURCE MOVE] Catch-up application for ${otherToken.name}`);
-                    await applyAuraEffect(sourceToken, otherToken, 'enter', config, effect);
+            } else if (!isInside) {
+                // Token is outside aura - always remove TokenMagic filter even if onLeave trigger isn't configured
+                if (config.tokenFilters?.enabled) {
+                    await removeTokenMagicFilter(otherToken, effect.id);
                 }
             }
         }
@@ -556,7 +614,6 @@ function checkAuraVisibility(sourceToken, targetToken, fromPosition = null, toPo
     if (visibilityApi?.testVisibility) {
         const isVisible = visibilityApi.testVisibility(endPos, { object: sourceToken });
         if (isVisible) {
-            console.log(`shadowdark-extras | checkAuraVisibility: Foundry API says visible for ${targetToken.name}`);
             return true;
         }
     }
@@ -596,13 +653,11 @@ function checkAuraVisibility(sourceToken, targetToken, fromPosition = null, toPo
             }
 
             if (!secondaryBlocked) {
-                console.log(`shadowdark-extras | checkAuraVisibility: Visible via offset check for ${targetToken.name}`);
                 return true;
             }
         }
     }
 
-    console.log(`shadowdark-extras | checkAuraVisibility: [LOS RESULT] ${!isBlocked} for ${targetToken.name} from ${sourceToken.name}`);
     return !isBlocked;
 }
 
@@ -628,12 +683,10 @@ function isTokenInAuraAtPosition(sourceToken, position, radiusFeet) {
  */
 async function processAuraTurnEffects(combat, changes) {
     const combatant = combat.combatant;
-    if (!combatant?.token) return;
-
-    const currentToken = canvas.tokens.get(combatant.token.id);
-    if (!currentToken) return;
+    console.log(`shadowdark-extras | processAuraTurnEffects: Called for ${combatant?.name}, round=${combat.round}, turn=${combat.turn}, prev=${combat.previous?.combatantId}`);
 
     const auras = getActiveAuras();
+    if (auras.length === 0) return;
 
     // Check for expired auras and delete them
     // Only GM should do this to avoid race conditions
@@ -647,58 +700,117 @@ async function processAuraTurnEffects(combat, changes) {
                 const expiryRound = startRound + rounds;
 
                 if (currentRound >= expiryRound) {
-                    console.log(`shadowdark-extras | removing expired aura effect: ${effect.name} (Expired at round ${expiryRound}, current: ${currentRound})`);
                     await effect.delete();
-                    continue; // Skip processing for this deleted effect
+                    continue;
                 }
             }
         }
     }
 
-    // Process turnEnd for previous combatant
-    if (combat.previous?.tokenId) {
-        const prevToken = canvas.tokens.get(combat.previous.tokenId);
+    // Process turnEnd for previous combatant FIRST (before checking current token)
+    // This ensures we don't skip turnEnd just because the current combatant has no token
+    if (combat.previous?.combatantId) {
+        const prevCombatant = combat.combatants.get(combat.previous.combatantId);
+        const prevToken = prevCombatant?.token ? canvas.tokens.get(prevCombatant.token.id) : null;
+        console.log(`shadowdark-extras | handleCombatUpdate: turnEnd for prevToken=${prevToken?.name}`);
         if (prevToken) {
             for (const { effect, token: sourceToken, config } of auras) {
-                if (!config.triggers?.onTurnEnd) continue;
+                // Case 1: Source Turn End - previous combatant IS the aura source -> apply to all tokens in range
+                // Check both standard triggers AND component-specific triggers
+                const hasSourceTurnEnd = config.triggers?.onSourceTurnEnd ||
+                    config.damageTriggers?.onSourceTurnEnd ||
+                    config.effectsTriggers?.onSourceTurnEnd ||
+                    config.macroTriggers?.onSourceTurnEnd;
+                if (sourceToken.id === prevToken.id && hasSourceTurnEnd) {
+                    console.log(`shadowdark-extras | handleCombatUpdate: Source Turn End - checking all tokens in aura`);
+                    for (const targetToken of canvas.tokens.placeables) {
+                        if (targetToken.id === sourceToken.id && !config.includeSelf) continue;
+                        if (!targetToken.actor) continue;
+                        if (!isTokenInAura(sourceToken, targetToken, config.radius)) continue;
+                        if (!checkDisposition(sourceToken, targetToken, config.disposition)) continue;
+                        if (config.checkVisibility && !checkAuraVisibility(sourceToken, targetToken)) continue;
 
-                // Check if previous token is in this aura
-                if (!isTokenInAura(sourceToken, prevToken, config.radius)) continue;
-                if (sourceToken.id === prevToken.id && !config.includeSelf) continue;
+                        console.log(`shadowdark-extras | handleCombatUpdate: Source Turn End applying to ${targetToken.name}`);
+                        await applyAuraEffect(sourceToken, targetToken, 'sourceTurnEnd', config, effect);
+                    }
+                }
 
-                // Check disposition
-                if (!checkDisposition(sourceToken, prevToken, config.disposition)) continue;
+                // Case 2: Target Turn End - previous combatant is inside an aura -> apply to that combatant only
+                // Check both standard triggers AND component-specific triggers
+                const hasTargetTurnEnd = config.triggers?.onTargetTurnEnd ||
+                    config.damageTriggers?.onTargetTurnEnd ||
+                    config.effectsTriggers?.onTargetTurnEnd ||
+                    config.macroTriggers?.onTargetTurnEnd;
+                if (hasTargetTurnEnd) {
+                    console.log(`shadowdark-extras | handleCombatUpdate: Checking Target Turn End for ${prevToken.name} in ${effect.name}`);
+                    if (sourceToken.id === prevToken.id && !config.includeSelf) {
+                        console.log(`shadowdark-extras | handleCombatUpdate: Target Turn End skipped (self)`);
+                        continue;
+                    }
+                    const inAura = isTokenInAura(sourceToken, prevToken, config.radius);
+                    console.log(`shadowdark-extras | handleCombatUpdate: Target Turn End inAura=${inAura}`);
+                    if (!inAura) continue;
+                    if (!checkDisposition(sourceToken, prevToken, config.disposition)) continue;
+                    if (config.checkVisibility && !checkAuraVisibility(sourceToken, prevToken)) continue;
 
-                // Check visibility
-                if (config.checkVisibility && !checkAuraVisibility(sourceToken, prevToken)) continue;
-
-                console.log(`shadowdark-extras | Aura turnEnd for ${prevToken.name} in ${sourceToken.name}'s aura`);
-                await applyAuraEffect(sourceToken, prevToken, 'turnEnd', config, effect);
+                    console.log(`shadowdark-extras | handleCombatUpdate: Target Turn End applying to ${prevToken.name}`);
+                    await applyAuraEffect(sourceToken, prevToken, 'targetTurnEnd', config, effect);
+                }
             }
         }
     }
 
-    // Process turnStart for current combatant
+    // Process turnStart for current combatant (only if current combatant has a token)
+    if (!combatant?.token) return;
+    const currentToken = canvas.tokens.get(combatant.token.id);
+    if (!currentToken) return;
+
     for (const { effect, token: sourceToken, config } of auras) {
-        if (!config.triggers?.onTurnStart) continue;
+        // Case 1: Source Turn Start - current combatant IS the aura source -> apply to all tokens in range
+        // Check both standard triggers AND component-specific triggers
+        const hasSourceTurnStart = config.triggers?.onSourceTurnStart ||
+            config.damageTriggers?.onSourceTurnStart ||
+            config.effectsTriggers?.onSourceTurnStart ||
+            config.macroTriggers?.onSourceTurnStart;
+        if (sourceToken.id === currentToken.id && hasSourceTurnStart) {
+            console.log(`shadowdark-extras | handleCombatUpdate: Source Turn Start - checking all tokens in aura`);
+            for (const targetToken of canvas.tokens.placeables) {
+                if (targetToken.id === sourceToken.id && !config.includeSelf) continue;
+                if (!targetToken.actor) continue;
+                if (!isTokenInAura(sourceToken, targetToken, config.radius)) continue;
+                if (!checkDisposition(sourceToken, targetToken, config.disposition)) continue;
+                if (config.checkVisibility && !checkAuraVisibility(sourceToken, targetToken)) continue;
 
-        // Check if current token is in this aura
-        if (!isTokenInAura(sourceToken, currentToken, config.radius)) continue;
-        if (sourceToken.id === currentToken.id && !config.includeSelf) continue;
+                // Prevent duplicate processing
+                const key = `${effect.id}-${targetToken.id}-sourceTurnStart`;
+                if (_auraAffectedThisTurn.has(key)) continue;
+                _auraAffectedThisTurn.set(key, true);
 
-        // Check disposition
-        if (!checkDisposition(sourceToken, currentToken, config.disposition)) continue;
+                console.log(`shadowdark-extras | handleCombatUpdate: Source Turn Start applying to ${targetToken.name}`);
+                await applyAuraEffect(sourceToken, targetToken, 'sourceTurnStart', config, effect);
+            }
+        }
 
-        // Check visibility
-        if (config.checkVisibility && !checkAuraVisibility(sourceToken, currentToken)) continue;
+        // Case 2: Target Turn Start - current combatant is inside an aura -> apply to that combatant only
+        // Check both standard triggers AND component-specific triggers
+        const hasTargetTurnStart = config.triggers?.onTargetTurnStart ||
+            config.damageTriggers?.onTargetTurnStart ||
+            config.effectsTriggers?.onTargetTurnStart ||
+            config.macroTriggers?.onTargetTurnStart;
+        if (hasTargetTurnStart) {
+            if (sourceToken.id === currentToken.id && !config.includeSelf) continue;
+            if (!isTokenInAura(sourceToken, currentToken, config.radius)) continue;
+            if (!checkDisposition(sourceToken, currentToken, config.disposition)) continue;
+            if (config.checkVisibility && !checkAuraVisibility(sourceToken, currentToken)) continue;
 
-        // Prevent duplicate processing
-        const key = `${effect.id}-${currentToken.id}-turnStart`;
-        if (_auraAffectedThisTurn.has(key)) continue;
-        _auraAffectedThisTurn.set(key, true);
+            // Prevent duplicate processing
+            const key = `${effect.id}-${currentToken.id}-targetTurnStart`;
+            if (_auraAffectedThisTurn.has(key)) continue;
+            _auraAffectedThisTurn.set(key, true);
 
-        console.log(`shadowdark-extras | Aura turnStart for ${currentToken.name} in ${sourceToken.name}'s aura`);
-        await applyAuraEffect(sourceToken, currentToken, 'turnStart', config, effect);
+            console.log(`shadowdark-extras | handleCombatUpdate: Target Turn Start applying to ${currentToken.name}`);
+            await applyAuraEffect(sourceToken, currentToken, 'targetTurnStart', config, effect);
+        }
     }
 }
 
@@ -718,6 +830,50 @@ function checkDisposition(sourceToken, targetToken, disposition) {
 }
 
 /**
+ * Check if a specific component (damage, effects, macro) should trigger
+ * @param {Object} componentTriggers - Component-specific triggers
+ * @param {Object} standardTriggers - Standard aura triggers
+ * @param {string} eventType - 'enter', 'sourceTurnStart', 'sourceTurnEnd', 'targetTurnStart', 'targetTurnEnd'
+ * @returns {boolean}
+ */
+function shouldTriggerComponent(componentTriggers, standardTriggers, eventType) {
+    const key = `on${eventType.charAt(0).toUpperCase()}${eventType.slice(1)}`;
+
+    // Check if any specific triggers are enabled for this component
+    const anySpecific = componentTriggers && Object.values(componentTriggers).some(v => v === true);
+
+    if (anySpecific) {
+        return !!componentTriggers[key];
+    }
+
+    return !!standardTriggers[key];
+}
+
+/**
+ * Check if at least one component of the aura should trigger for this event
+ * @param {Object} config - Aura configuration
+ * @param {string} eventType - 'enter', 'turnStart', or 'turnEnd'
+ * @returns {boolean}
+ */
+function shouldAnyComponentTrigger(config, eventType) {
+    const key = `on${eventType.charAt(0).toUpperCase()}${eventType.slice(1)}`;
+
+    // Standard trigger
+    if (config.triggers?.[key]) return true;
+
+    // Damage
+    if (config.damage?.formula && config.damageTriggers?.[key]) return true;
+
+    // Effects
+    if (config.applyConfiguredEffects && config.effects?.length > 0 && config.effectsTriggers?.[key]) return true;
+
+    // Macro
+    if (config.runItemMacro && config.macroTriggers?.[key]) return true;
+
+    return false;
+}
+
+/**
  * Apply aura effect to a token
  * @param {Token} sourceToken - The aura source
  * @param {Token} targetToken - The affected token
@@ -726,11 +882,9 @@ function checkDisposition(sourceToken, targetToken, disposition) {
  * @param {ActiveEffect} auraEffect - The source aura effect
  */
 export async function applyAuraEffect(sourceToken, targetToken, trigger, config, auraEffect) {
-    // If not GM, execute via socket to avoid permission issues
     if (!game.user.isGM) {
         const socket = getSocket();
         if (socket) {
-            console.log("shadowdark-extras | applyAuraEffect: Player client, executing via GM socket");
             socket.executeAsGM("applyAuraEffectViaGM", {
                 sourceTokenId: sourceToken.id,
                 targetTokenId: targetToken.id,
@@ -743,18 +897,25 @@ export async function applyAuraEffect(sourceToken, targetToken, trigger, config,
         }
     }
 
-    const actor = targetToken.actor;
-    if (!actor) {
-        console.log("shadowdark-extras | applyAuraEffect: No actor on token");
+    console.log(`shadowdark-extras | applyAuraEffect: source=${sourceToken.name}, target=${targetToken.name}, trigger=${trigger}`);
+
+    // Skip if target is source and includeSelf is false
+    if (sourceToken.id === targetToken.id && !config.includeSelf) {
+        console.log(`shadowdark-extras | applyAuraEffect: Self-target skipped (includeSelf=false)`);
         return;
     }
 
-    console.log("shadowdark-extras | applyAuraEffect:", {
-        source: sourceToken.name,
-        target: targetToken.name,
-        trigger: trigger,
-        config: config
-    });
+    const actor = targetToken.actor;
+    if (!actor) {
+        console.log(`shadowdark-extras | applyAuraEffect: No actor for target, skipping.`);
+        return;
+    }
+
+    // Apply TokenMagic filter if configured (independent of damage/effects settings)
+    if (config.tokenFilters?.enabled && config.tokenFilters?.preset) {
+        console.log(`shadowdark-extras | applyAuraEffect: Applying TokenMagic filter: ${config.tokenFilters.preset}`);
+        await applyTokenMagicFilter(targetToken, config.tokenFilters.preset, auraEffect.id);
+    }
 
     // Get auto-apply settings
     let autoApplyDamage = true;
@@ -763,24 +924,26 @@ export async function applyAuraEffect(sourceToken, targetToken, trigger, config,
         const settings = game.settings.get(MODULE_ID, "combatSettings") || {};
         autoApplyDamage = settings.damageCard?.autoApplyDamage ?? true;
         autoApplyConditions = settings.damageCard?.autoApplyConditions ?? true;
-        console.log("shadowdark-extras | applyAuraEffect: autoApplyDamage =", autoApplyDamage, ", autoApplyConditions =", autoApplyConditions);
     } catch (e) {
-        console.log("shadowdark-extras | applyAuraEffect: Could not get settings, using defaults");
     }
 
     // Apply effects/conditions immediately if autoApplyConditions is on (regardless of damage setting)
-    if (autoApplyConditions && config.effects?.length > 0) {
-        console.log("shadowdark-extras | applyAuraEffect: Auto-applying conditions to", targetToken.name);
+    const triggerEffects = shouldTriggerComponent(config.effectsTriggers, config.triggers, trigger);
+    console.log(`shadowdark-extras | applyAuraEffect: triggerEffects=${triggerEffects}, autoApplyConditions=${autoApplyConditions}`);
+    if (triggerEffects && autoApplyConditions && config.effects?.length > 0) {
         await applyAuraConditions(auraEffect, targetToken, config.effects);
     }
 
     // If auto-apply damage is OFF, create interactive card for damage
-    if (!autoApplyDamage) {
-        console.log("shadowdark-extras | applyAuraEffect: autoApplyDamage OFF, creating interactive card");
+    const triggerDamage = shouldTriggerComponent(config.damageTriggers, config.triggers, trigger);
+    console.log(`shadowdark-extras | applyAuraEffect: triggerDamage=${triggerDamage}, autoApplyDamage=${autoApplyDamage}`);
+    if (!autoApplyDamage && triggerDamage) {
         await createInteractiveAuraCard(sourceToken, targetToken, trigger, config, auraEffect);
 
         // Still run item macro
-        if (config.runItemMacro && config.spellId) {
+        const triggerMacro = shouldTriggerComponent(config.macroTriggers, config.triggers, trigger);
+        console.log(`shadowdark-extras | applyAuraEffect: triggerMacro=${triggerMacro}`);
+        if (config.runItemMacro && triggerMacro && config.spellId) {
             await runAuraItemMacro(sourceToken, targetToken, trigger, config);
         }
         return;
@@ -793,13 +956,10 @@ export async function applyAuraEffect(sourceToken, targetToken, trigger, config,
 
     // Handle save if configured
     if (config.save?.enabled && config.save?.dc) {
-        console.log("shadowdark-extras | applyAuraEffect: Rolling save DC", config.save.dc);
         saveResult = await rollAuraSave(actor, config.save);
         savedSuccessfully = saveResult.success;
-        console.log("shadowdark-extras | applyAuraEffect: Save result:", savedSuccessfully ? "SUCCESS" : "FAILED");
 
         if (savedSuccessfully && !config.save.halfOnSuccess) {
-            console.log("shadowdark-extras | applyAuraEffect: Save negates, returning early");
             await createAuraEffectMessage(sourceToken, targetToken, trigger, {
                 saved: true,
                 saveResult: saveResult,
@@ -810,30 +970,19 @@ export async function applyAuraEffect(sourceToken, targetToken, trigger, config,
     }
 
     // Apply damage if configured
-    console.log("shadowdark-extras | applyAuraEffect: Checking damage formula:", config.damage?.formula);
-    if (config.damage?.formula) {
-        console.log("shadowdark-extras | applyAuraEffect: Applying damage with formula:", config.damage.formula);
+    if (triggerDamage && config.damage?.formula) {
+        console.log(`shadowdark-extras | applyAuraEffect: Rolling damage...`);
         damageApplied = await applyAuraDamage(targetToken, config, savedSuccessfully);
-        console.log("shadowdark-extras | applyAuraEffect: Damage applied:", damageApplied);
-    } else {
-        console.log("shadowdark-extras | applyAuraEffect: No damage formula configured");
     }
 
     // Apply effects if configured and not saved
-    console.log("shadowdark-extras | applyAuraEffect: Effects check:", {
-        effects: config.effects,
-        effectsLength: config.effects?.length,
-        savedSuccessfully: savedSuccessfully
-    });
-    if (config.effects?.length > 0 && !savedSuccessfully) {
-        console.log("shadowdark-extras | applyAuraEffect: Applying conditions to", targetToken.name);
+    if (triggerEffects && config.effects?.length > 0 && !savedSuccessfully) {
         await applyAuraConditions(auraEffect, targetToken, config.effects);
-    } else {
-        console.log("shadowdark-extras | applyAuraEffect: Skipping conditions (empty or saved)");
     }
 
     // Run item macro if configured
-    if (config.runItemMacro && config.spellId) {
+    const triggerMacro = shouldTriggerComponent(config.macroTriggers, config.triggers, trigger);
+    if (config.runItemMacro && triggerMacro && config.spellId) {
         await runAuraItemMacro(sourceToken, targetToken, trigger, config);
     }
 
@@ -886,11 +1035,9 @@ export async function rollAuraSave(actor, saveConfig) {
 export async function applyAuraDamage(token, config, savedSuccessfully) {
     const actor = token.actor;
     if (!actor) {
-        console.log("shadowdark-extras | applyAuraDamage: No actor found for token", token.name);
         return 0;
     }
 
-    console.log("shadowdark-extras | applyAuraDamage: Rolling damage", config.damage.formula);
     const roll = await new Roll(config.damage.formula).evaluate();
 
     // Show 3D dice animation if Dice So Nice is available
@@ -900,24 +1047,19 @@ export async function applyAuraDamage(token, config, savedSuccessfully) {
 
     let damage = roll.total;
 
-    console.log("shadowdark-extras | applyAuraDamage: Rolled", damage, "damage");
 
     // Half damage if saved
     if (savedSuccessfully && config.save?.halfOnSuccess) {
         damage = Math.floor(damage / 2);
-        console.log("shadowdark-extras | applyAuraDamage: Halved to", damage);
     }
 
     // Apply to HP
     const currentHp = actor.system?.attributes?.hp?.value ?? 0;
     const newHp = Math.max(0, currentHp - damage);
 
-    console.log(`shadowdark-extras | applyAuraDamage: Applying to ${actor.name} (${actor.type}). Link: ${token.document.actorLink}`);
-    console.log(`shadowdark-extras | applyAuraDamage: HP Calc: ${currentHp} - ${damage} = ${newHp}`);
 
     try {
         await actor.update({ "system.attributes.hp.value": newHp });
-        console.log("shadowdark-extras | applyAuraDamage: Successfully updated HP for", actor.name);
     } catch (err) {
         console.error("shadowdark-extras | applyAuraDamage: Error updating HP:", err);
     }
@@ -929,11 +1071,6 @@ export async function applyAuraDamage(token, config, savedSuccessfully) {
  * Apply condition effects from an aura
  */
 export async function applyAuraConditions(auraEffect, token, effectUuids) {
-    console.log(`shadowdark-extras | applyAuraConditions: Called with`, {
-        auraEffectName: auraEffect?.name,
-        tokenName: token?.name,
-        effectUuids: effectUuids
-    });
 
     const actor = token.actor;
     if (!actor) return;
@@ -942,15 +1079,9 @@ export async function applyAuraConditions(auraEffect, token, effectUuids) {
         try {
             const effectDoc = await fromUuid(effectUuid);
             if (!effectDoc) {
-                console.log(`shadowdark-extras | applyAuraConditions: Could not find effect for UUID ${effectUuid}`);
                 continue;
             }
 
-            console.log(`shadowdark-extras | applyAuraConditions: Found effect`, {
-                name: effectDoc.name,
-                type: effectDoc.type,
-                documentType: effectDoc.constructor.name
-            });
 
             // Check if already has this effect from this aura (by name + aura origin flag)
             const existingItem = actor.items.find(i =>
@@ -960,7 +1091,6 @@ export async function applyAuraConditions(auraEffect, token, effectUuids) {
             );
 
             if (existingItem) {
-                console.log(`shadowdark-extras | applyAuraConditions: Already has effect ${effectDoc.name}, skipping`);
                 continue;
             }
 
@@ -973,7 +1103,6 @@ export async function applyAuraConditions(auraEffect, token, effectUuids) {
             effectData.flags[MODULE_ID].auraOrigin = auraEffect.id;
 
             await actor.createEmbeddedDocuments("Item", [effectData]);
-            console.log(`shadowdark-extras | Applied aura effect ${effectDoc.name} to ${token.name}`);
         } catch (err) {
             console.error(`shadowdark-extras | Error applying aura condition:`, err);
         }
@@ -988,7 +1117,6 @@ export async function removeAuraEffectsFromToken(auraEffect, token) {
     if (!game.user.isGM) {
         const socket = getSocket();
         if (socket) {
-            console.log("shadowdark-extras | removeAuraEffectsFromToken: Player client, executing via GM socket");
             socket.executeAsGM("removeAuraEffectViaGM", {
                 auraEffectId: auraEffect.id,
                 auraEffectActorId: auraEffect.parent?.id,
@@ -1002,7 +1130,6 @@ export async function removeAuraEffectsFromToken(auraEffect, token) {
     if (!actor) return;
 
     // Remove Effect Items that came from this aura
-    console.log(`shadowdark-extras | removeAuraEffectsFromToken: Searching for items with auraOrigin=${auraEffect.id} on ${token.name}`);
     const itemsToRemove = actor.items.filter(i =>
         i.type === "Effect" &&
         i.flags?.[MODULE_ID]?.auraOrigin === auraEffect.id
@@ -1010,12 +1137,12 @@ export async function removeAuraEffectsFromToken(auraEffect, token) {
 
     if (itemsToRemove.length > 0) {
         const ids = itemsToRemove.map(i => i.id);
-        console.log(`shadowdark-extras | removeAuraEffectsFromToken: Found ${ids.length} items to remove:`, itemsToRemove.map(i => i.name));
         await actor.deleteEmbeddedDocuments("Item", ids);
-        console.log(`shadowdark-extras | Removed ${ids.length} aura effect items from ${token.name}`);
     } else {
-        console.log(`shadowdark-extras | No matching aura effects found for origin ${auraEffect.id} on ${token.name}`);
     }
+
+    // Remove TokenMagic filter if any was applied by this aura
+    await removeTokenMagicFilter(token, auraEffect.id);
 }
 
 /**
@@ -1063,7 +1190,6 @@ async function runAuraItemMacro(sourceToken, targetToken, trigger, config) {
             isAura: true
         };
 
-        console.log(`shadowdark-extras | Running aura item macro for ${spellItem.name} on ${targetToken.name}`);
 
         const macroBody = `(async () => { ${itemMacro.command} })();`;
         const fn = new Function("item", "actor", "token", "speaker", "character", "args", `return ${macroBody}`);
@@ -1205,10 +1331,15 @@ export async function createAuraOnActor(actor, auraConfig, sourceItem, duration 
                     save: auraConfig.save || {},
                     effects: auraConfig.effects || [],
                     animation: auraConfig.animation || {},
+                    tokenFilters: auraConfig.tokenFilters || {},
                     disposition: auraConfig.disposition || 'all',
                     includeSelf: auraConfig.includeSelf || false,
                     checkVisibility: auraConfig.checkVisibility || false,
+                    applyConfiguredEffects: auraConfig.applyConfiguredEffects || false,
+                    effectsTriggers: auraConfig.effectsTriggers || {},
+                    damageTriggers: auraConfig.damageTriggers || {},
                     runItemMacro: auraConfig.runItemMacro || false,
+                    macroTriggers: auraConfig.macroTriggers || {},
                     spellId: sourceItem.id
                 }
             }
@@ -1225,13 +1356,11 @@ export async function createAuraOnActor(actor, auraConfig, sourceItem, duration 
         }
     }
 
-    console.log(`shadowdark-extras | Created aura effect on ${actor.name}`);
 
     // Process initial tokens in aura range (apply effects immediately on creation)
     // IMPORTANT: Use canvas.tokens.placeables to get Token objects (with .center), NOT actor.token (TokenDocument)
     const sourceToken = canvas.tokens.placeables.find(t => t.actor?.id === actor.id);
-    if (sourceToken && auraConfig.triggers?.onEnter) {
-        console.log(`shadowdark-extras | Processing initial tokens in aura range for ${sourceToken.name}`);
+    if (sourceToken && shouldAnyComponentTrigger(auraConfig, 'enter')) {
 
         const config = {
             radius: auraConfig.radius || 30,
@@ -1240,15 +1369,19 @@ export async function createAuraOnActor(actor, auraConfig, sourceItem, duration 
             save: auraConfig.save || {},
             effects: auraConfig.effects || [],
             animation: auraConfig.animation || {},
+            tokenFilters: auraConfig.tokenFilters || {},
             disposition: auraConfig.disposition || 'all',
             includeSelf: auraConfig.includeSelf || false,
             checkVisibility: auraConfig.checkVisibility || false,
+            applyConfiguredEffects: auraConfig.applyConfiguredEffects || false,
+            effectsTriggers: auraConfig.effectsTriggers || {},
+            damageTriggers: auraConfig.damageTriggers || {},
             runItemMacro: auraConfig.runItemMacro || false,
+            macroTriggers: auraConfig.macroTriggers || {},
             spellId: sourceItem.id
         };
 
         // Get all tokens in scene
-        console.log(`shadowdark-extras | Initial aura processing: radius=${config.radius}, checkVisibility=${config.checkVisibility}`);
 
         for (const otherToken of canvas.tokens.placeables) {
             // 1. Basic Skip Checks
@@ -1262,7 +1395,6 @@ export async function createAuraOnActor(actor, auraConfig, sourceItem, duration 
             // 3. Disposition Check
             const dispOk = checkDisposition(sourceToken, otherToken, config.disposition);
             if (!dispOk) {
-                console.log(`shadowdark-extras | Initial aura processing: Skipping ${otherToken.name} - invalid disposition`);
                 continue;
             }
 
@@ -1270,16 +1402,13 @@ export async function createAuraOnActor(actor, auraConfig, sourceItem, duration 
             if (config.checkVisibility) {
                 const isVisible = checkAuraVisibility(sourceToken, otherToken);
                 if (!isVisible) {
-                    console.log(`shadowdark-extras | Initial aura processing: Skipping ${otherToken.name} - NOT in LOS`);
                     continue;
                 }
             }
 
-            console.log(`shadowdark-extras | Initial aura processing: applying to ${otherToken.name}`);
             await applyAuraEffect(sourceToken, otherToken, 'enter', config, effect);
         }
     } else if (!sourceToken) {
-        console.log(`shadowdark-extras | Could not find source token on canvas for ${actor.name}`);
     }
 
     return effect;
@@ -1290,7 +1419,6 @@ export async function createAuraOnActor(actor, auraConfig, sourceItem, duration 
  */
 async function createAuraAnimation(token, effect, config) {
     if (typeof Sequencer === 'undefined') {
-        console.log("shadowdark-extras | Sequencer not available, skipping aura animation");
         return;
     }
 
@@ -1325,7 +1453,6 @@ async function createAuraAnimation(token, effect, config) {
             break;
     }
 
-    console.log(`shadowdark-extras | Creating aura animation: style=${style}, file=${animationFile}, opacity=${opacity}, scale=${finalScale}`);
 
     // Try to use JB2A if available
     if (typeof Sequencer !== 'undefined') {
@@ -1344,5 +1471,4 @@ async function createAuraAnimation(token, effect, config) {
             .play();
     }
 
-    console.log(`shadowdark-extras | Created aura animation for ${token.name}`);
 }
