@@ -15296,7 +15296,7 @@ body:not(.game-master) .sdx-carousing-chat .sdx-player-only {
 }
 
 .sdx-display-table {
-    background: #f4eee1;
+    background: none;
     /* Parchment-like background */
     border: none;
     padding: 0;
@@ -15314,7 +15314,7 @@ body:not(.game-master) .sdx-carousing-chat .sdx-player-only {
     font-weight: bold;
     color: #fff;
     position: relative;
-    margin: 10px 30px;
+    margin: 10px 10px;
     border-top: 2px solid #1a645b;
     border-bottom: 2px solid #1a645b;
 }
@@ -15324,8 +15324,8 @@ body:not(.game-master) .sdx-carousing-chat .sdx-player-only {
 .sdx-table-header::after {
     content: '';
     position: absolute;
-    top: -6px;
-    bottom: -6px;
+    top: -2px;
+    bottom: -2px;
     width: 14px;
     background: #1a645b;
     border: 2px solid #0d3b36;
@@ -15333,11 +15333,11 @@ body:not(.game-master) .sdx-carousing-chat .sdx-player-only {
 }
 
 .sdx-table-header::before {
-    left: -10px;
+    left: -8px;
 }
 
 .sdx-table-header::after {
-    right: -10px;
+    right: -8px;
 }
 
 /* Roll Bar */
@@ -15386,13 +15386,15 @@ body:not(.game-master) .sdx-carousing-chat .sdx-player-only {
 
 /* Results List */
 .sdx-table-results {
-    margin: 5px 10px;
+    margin: 0 10px 10px 10px;
+    background: #f4eee1;
+    /* Parchment background only on results */
+    border-bottom: 1px solid #4b4a44;
 }
 
 .sdx-table-row {
     display: flex;
-    border-bottom: 1px solid #ccc;
-    background: rgba(255, 255, 255, 0.2);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
 }
 
 .sdx-table-row:last-child {
@@ -15400,7 +15402,7 @@ body:not(.game-master) .sdx-carousing-chat .sdx-player-only {
 }
 
 .sdx-table-row:nth-child(even) {
-    background: rgba(0, 0, 0, 0.05);
+    background: rgba(0, 0, 0, 0.03);
 }
 
 .sdx-table-row-range {
@@ -15421,11 +15423,13 @@ body:not(.game-master) .sdx-carousing-chat .sdx-player-only {
 /* Link styling inside the table */
 .sdx-table-row-text a,
 .sdx-table-row-text .content-link {
-    color: #23897d;
+    color: #1a1a1a;
+    /* Black labels as requested */
     font-weight: bold;
     background: none;
     border: none;
     padding: 0;
+    text-decoration: underline;
 }
 
 .sdx-table-row-text a:hover {
