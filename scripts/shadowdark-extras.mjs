@@ -35,6 +35,7 @@ import { openExpandedCarousingTablesEditor } from "./ExpandedCarousingTablesApp.
 import { initTemplateEffects, processTemplateTurnEffects, setupTemplateEffectFlags } from "./TemplateEffectsSD.mjs";
 import { initAuraEffects, createAuraOnActor, getActiveAuras, getTokensInAura } from "./AuraEffectsSD.mjs";
 import { registerDisplayNpcEnricher } from "./DisplayNpc.mjs";
+import { registerDisplayTableEnricher } from "./DisplayTable.mjs";
 
 const MODULE_ID = "shadowdark-extras";
 const TRADE_JOURNAL_NAME = "__sdx_trade_sync__"; // Must match TradeWindowSD.mjs
@@ -16071,5 +16072,19 @@ Hooks.on("renderApplication", (app, html, data) => {
 // Register the DisplayNpcCard enricher
 Hooks.once("ready", () => {
 	registerDisplayNpcEnricher();
+	registerDisplayTableEnricher();
+
+	// Global listener for @DisplayTable roll buttons
+	$(document).on("click", ".sdx-table-roll-btn", async (event) => {
+		event.preventDefault();
+		const container = $(event.currentTarget).closest(".sdx-display-table-container");
+		const uuid = container.data("table-uuid");
+		if (!uuid) return;
+
+		const table = fromUuidSync(uuid) || await fromUuid(uuid);
+		if (table) {
+			table.draw();
+		}
+	});
 });
 

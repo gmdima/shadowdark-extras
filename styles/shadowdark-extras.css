@@ -15285,3 +15285,149 @@ body:not(.game-master) .sdx-carousing-chat .sdx-player-only {
     margin-right: 8px;
     color: #885555;
 }
+
+/* ============================================
+   DISPLAY TABLE STYLES (Journal Enricher)
+   ============================================ */
+
+.sdx-display-table-container {
+    margin: 20px 0;
+    clear: both;
+}
+
+.sdx-display-table {
+    background: #f4eee1;
+    /* Parchment-like background */
+    border: none;
+    padding: 0;
+    font-family: "Roboto Condensed", "Arial Narrow", sans-serif;
+    color: #333;
+}
+
+/* Green Header Bar */
+.sdx-table-header {
+    background: #23897d;
+    padding: 6px 40px;
+    text-align: center;
+    font-family: "Modesto Condensed", "Times New Roman", serif;
+    font-size: 1.8em;
+    font-weight: bold;
+    color: #fff;
+    position: relative;
+    margin: 10px 30px;
+    border-top: 2px solid #1a645b;
+    border-bottom: 2px solid #1a645b;
+}
+
+/* Decorative End Caps for Header */
+.sdx-table-header::before,
+.sdx-table-header::after {
+    content: '';
+    position: absolute;
+    top: -6px;
+    bottom: -6px;
+    width: 14px;
+    background: #1a645b;
+    border: 2px solid #0d3b36;
+    border-radius: 4px;
+}
+
+.sdx-table-header::before {
+    left: -10px;
+}
+
+.sdx-table-header::after {
+    right: -10px;
+}
+
+/* Roll Bar */
+.sdx-table-roll-bar {
+    display: flex;
+    align-items: center;
+    padding: 4px 0;
+    border-bottom: 2px solid #4b4a44;
+    margin: 0 10px;
+}
+
+.sdx-table-roll-btn {
+    background: #1a1a1a;
+    color: #fff;
+    padding: 2px 8px;
+    border-radius: 2px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 1.1em;
+    font-family: "Modesto Condensed", serif;
+    transition: all 0.2s ease;
+    margin-right: 10px;
+}
+
+.sdx-table-roll-btn:hover {
+    background: #333;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+}
+
+.sdx-table-roll-btn i {
+    font-size: 0.8em;
+}
+
+.sdx-table-roll-formula {
+    letter-spacing: 1px;
+}
+
+.sdx-table-result-label {
+    font-weight: bold;
+    font-family: "Modesto Condensed", serif;
+    font-size: 1.25em;
+    color: #333;
+}
+
+/* Results List */
+.sdx-table-results {
+    margin: 5px 10px;
+}
+
+.sdx-table-row {
+    display: flex;
+    border-bottom: 1px solid #ccc;
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.sdx-table-row:last-child {
+    border-bottom: none;
+}
+
+.sdx-table-row:nth-child(even) {
+    background: rgba(0, 0, 0, 0.05);
+}
+
+.sdx-table-row-range {
+    width: 40px;
+    padding: 6px 10px;
+    font-weight: normal;
+    font-size: 1.1em;
+    color: #444;
+}
+
+.sdx-table-row-text {
+    flex: 1;
+    padding: 4px 10px;
+    font-size: 1.2em;
+    line-height: 1.3;
+}
+
+/* Link styling inside the table */
+.sdx-table-row-text a,
+.sdx-table-row-text .content-link {
+    color: #23897d;
+    font-weight: bold;
+    background: none;
+    border: none;
+    padding: 0;
+}
+
+.sdx-table-row-text a:hover {
+    text-decoration: underline;
+}

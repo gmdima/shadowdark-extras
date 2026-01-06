@@ -1,0 +1,356 @@
+{
+  "description": "",
+  "displayRoll": true,
+  "folder": null,
+  "formula": "1d12",
+  "img": "icons/magic/unholy/strike-body-explode-disintegrate.webp",
+  "name": "Wizard Mishap Tier 1-2",
+  "replacement": true,
+  "results": [
+    {
+      "_id": "t1IT7UBVnDsVcBhm",
+      "description": "<b>Devastation!</b> Roll twice and combine both effects (reroll any further 1s).",
+      "drawn": false,
+      "img": "icons/svg/d20-black.svg",
+      "name": "",
+      "range": [
+        1,
+        1
+      ],
+      "type": "text",
+      "weight": 1,
+      "_stats": {
+        "compendiumSource": null,
+        "duplicateSource": null,
+        "exportSource": null,
+        "coreVersion": "13.350",
+        "systemId": "shadowdark",
+        "systemVersion": "3.6.0",
+        "lastModifiedBy": null
+      },
+      "flags": {}
+    },
+    {
+      "_id": "y1lafduW3hINmggm",
+      "description": "",
+      "documentUuid": "Compendium.shadowdark.rollable-tables.RollTable.NiiJKAiBjpPAj5U1",
+      "drawn": false,
+      "img": "icons/magic/unholy/strike-body-explode-disintegrate.webp",
+      "name": "Wizard Mishap Tier 1-2",
+      "range": [
+        1,
+        1
+      ],
+      "type": "document",
+      "weight": 1,
+      "_stats": {
+        "compendiumSource": null,
+        "duplicateSource": null,
+        "exportSource": null,
+        "coreVersion": "13.350",
+        "systemId": "shadowdark",
+        "systemVersion": "3.6.0",
+        "lastModifiedBy": null
+      },
+      "flags": {}
+    },
+    {
+      "_id": "mSXl6A8WKJmVkGjO",
+      "description": "<b>Explosion!</b> You take [[/r 1d8]] damage",
+      "drawn": false,
+      "img": "icons/svg/d20-black.svg",
+      "name": "",
+      "range": [
+        2,
+        2
+      ],
+      "type": "text",
+      "weight": 1,
+      "_stats": {
+        "compendiumSource": null,
+        "duplicateSource": null,
+        "exportSource": null,
+        "coreVersion": "13.350",
+        "systemId": "shadowdark",
+        "systemVersion": "3.6.0",
+        "lastModifiedBy": null
+      },
+      "flags": {}
+    },
+    {
+      "_id": "b4iC8LuRcPRGE4at",
+      "description": "<b>Refraction!</b> You target yourself with the spell",
+      "drawn": false,
+      "img": "icons/svg/d20-black.svg",
+      "name": "",
+      "range": [
+        3,
+        3
+      ],
+      "type": "text",
+      "weight": 1,
+      "_stats": {
+        "compendiumSource": null,
+        "duplicateSource": null,
+        "exportSource": null,
+        "coreVersion": "13.350",
+        "systemId": "shadowdark",
+        "systemVersion": "3.6.0",
+        "lastModifiedBy": null
+      },
+      "flags": {}
+    },
+    {
+      "_id": "S2SRrlxctDoHACm1",
+      "description": "<b>Your hand slipped!</b> You target a random ally with the spell",
+      "drawn": false,
+      "img": "icons/svg/d20-black.svg",
+      "name": "",
+      "range": [
+        4,
+        4
+      ],
+      "type": "text",
+      "weight": 1,
+      "_stats": {
+        "compendiumSource": null,
+        "duplicateSource": null,
+        "exportSource": null,
+        "coreVersion": "13.350",
+        "systemId": "shadowdark",
+        "systemVersion": "3.6.0",
+        "lastModifiedBy": null
+      },
+      "flags": {}
+    },
+    {
+      "_id": "PxVizZdjigztf4UH",
+      "description": "<b>Mind wound!</b> You can't cast this spell again for a week",
+      "drawn": false,
+      "img": "icons/svg/d20-black.svg",
+      "name": "",
+      "range": [
+        5,
+        5
+      ],
+      "type": "text",
+      "weight": 1,
+      "_stats": {
+        "compendiumSource": null,
+        "duplicateSource": null,
+        "exportSource": null,
+        "coreVersion": "13.350",
+        "systemId": "shadowdark",
+        "systemVersion": "3.6.0",
+        "lastModifiedBy": null
+      },
+      "flags": {}
+    },
+    {
+      "_id": "e3Y6IBqetlQqrwnw",
+      "description": "<b>Discorporation!</b> One random piece of your gear disappears forever",
+      "drawn": false,
+      "img": "icons/svg/d20-black.svg",
+      "name": "",
+      "range": [
+        6,
+        6
+      ],
+      "type": "text",
+      "weight": 1,
+      "_stats": {
+        "compendiumSource": null,
+        "duplicateSource": null,
+        "exportSource": null,
+        "coreVersion": "13.350",
+        "systemId": "shadowdark",
+        "systemVersion": "3.6.0",
+        "lastModifiedBy": null
+      },
+      "flags": {}
+    },
+    {
+      "_id": "75GJHt36EtuofTvq",
+      "description": "<b>Spell worm!</b> You lose the ability to cast a random spell on each of your turns until you pass a [[check 12 con]] check. You regain the ability to cast those spells after completing a rest",
+      "drawn": false,
+      "img": "icons/svg/d20-black.svg",
+      "name": "",
+      "range": [
+        7,
+        7
+      ],
+      "type": "text",
+      "weight": 1,
+      "_stats": {
+        "compendiumSource": null,
+        "duplicateSource": null,
+        "exportSource": null,
+        "coreVersion": "13.350",
+        "systemId": "shadowdark",
+        "systemVersion": "3.6.0",
+        "lastModifiedBy": null
+      },
+      "flags": {}
+    },
+    {
+      "_id": "EI6osFZJ0JTXPNFP",
+      "description": "<b>Harmonic failure!</b> You lose the ability to cast a random spell until you complete a rest",
+      "drawn": false,
+      "img": "icons/svg/d20-black.svg",
+      "name": "",
+      "range": [
+        8,
+        8
+      ],
+      "type": "text",
+      "weight": 1,
+      "_stats": {
+        "compendiumSource": null,
+        "duplicateSource": null,
+        "exportSource": null,
+        "coreVersion": "13.350",
+        "systemId": "shadowdark",
+        "systemVersion": "3.6.0",
+        "lastModifiedBy": null
+      },
+      "flags": {}
+    },
+    {
+      "_id": "FL0DEM3DhRGbv4AG",
+      "description": "<b>Poof!</b> You suppress all light within a near distance from you, including sunlight and magical light, for 10 rounds",
+      "drawn": false,
+      "img": "icons/svg/d20-black.svg",
+      "name": "",
+      "range": [
+        9,
+        9
+      ],
+      "type": "text",
+      "weight": 1,
+      "_stats": {
+        "compendiumSource": null,
+        "duplicateSource": null,
+        "exportSource": null,
+        "coreVersion": "13.350",
+        "systemId": "shadowdark",
+        "systemVersion": "3.6.0",
+        "lastModifiedBy": null
+      },
+      "flags": {}
+    },
+    {
+      "_id": "M8VKYie0UBgGPGRB",
+      "description": "<b>The horror!</b> You scream uncontrollably for 3 rounds in Primordial, drawing lots of attention",
+      "drawn": false,
+      "img": "icons/svg/d20-black.svg",
+      "name": "",
+      "range": [
+        10,
+        10
+      ],
+      "type": "text",
+      "weight": 1,
+      "_stats": {
+        "compendiumSource": null,
+        "duplicateSource": null,
+        "exportSource": null,
+        "coreVersion": "13.350",
+        "systemId": "shadowdark",
+        "systemVersion": "3.6.0",
+        "lastModifiedBy": null
+      },
+      "flags": {}
+    },
+    {
+      "_id": "8wXIzpo54QsbWBxT",
+      "description": "<b>Energy surge!</b> You glow bright purple for 10 rounds, granting enemies advantage on attacks against you",
+      "drawn": false,
+      "img": "icons/svg/d20-black.svg",
+      "name": "",
+      "range": [
+        11,
+        11
+      ],
+      "type": "text",
+      "weight": 1,
+      "_stats": {
+        "compendiumSource": null,
+        "duplicateSource": null,
+        "exportSource": null,
+        "coreVersion": "13.350",
+        "systemId": "shadowdark",
+        "systemVersion": "3.6.0",
+        "lastModifiedBy": null
+      },
+      "flags": {}
+    },
+    {
+      "_id": "bhGIFPdpt9gUJAny",
+      "description": "<b>Unstable conduit!</b> You have disadvantage on casting spells of the same tier for 10 rounds",
+      "drawn": false,
+      "img": "icons/svg/d20-black.svg",
+      "name": "",
+      "range": [
+        12,
+        12
+      ],
+      "type": "text",
+      "weight": 1,
+      "_stats": {
+        "compendiumSource": null,
+        "duplicateSource": null,
+        "exportSource": null,
+        "coreVersion": "13.350",
+        "systemId": "shadowdark",
+        "systemVersion": "3.6.0",
+        "lastModifiedBy": null
+      },
+      "flags": {}
+    },
+    {
+      "_id": "nJ0VC8CPWGRjVnGf",
+      "description": "",
+      "documentUuid": "Compendium.shadowdark.rollable-tables.RollTable.NiiJKAiBjpPAj5U1",
+      "drawn": false,
+      "img": "icons/magic/unholy/strike-body-explode-disintegrate.webp",
+      "name": "Wizard Mishap Tier 1-2",
+      "range": [
+        1,
+        1
+      ],
+      "type": "document",
+      "weight": 1,
+      "_stats": {
+        "compendiumSource": null,
+        "duplicateSource": null,
+        "exportSource": null,
+        "coreVersion": "13.350",
+        "systemId": "shadowdark",
+        "systemVersion": "3.6.0",
+        "lastModifiedBy": null
+      },
+      "flags": {}
+    }
+  ],
+  "_stats": {
+    "compendiumSource": "Compendium.shadowdark.rollable-tables.RollTable.NiiJKAiBjpPAj5U1",
+    "duplicateSource": null,
+    "exportSource": {
+      "worldId": "test-sd",
+      "uuid": "RollTable.b1x0SyDMUj7XI6jD",
+      "coreVersion": "13.350",
+      "systemId": "shadowdark",
+      "systemVersion": "3.6.0"
+    },
+    "coreVersion": "13.350",
+    "systemId": "shadowdark",
+    "systemVersion": "3.6.0",
+    "createdTime": 1767712805384,
+    "modifiedTime": 1767712805384,
+    "lastModifiedBy": "0ytHXTPwhcliLZRf"
+  },
+  "flags": {},
+  "ownership": {
+    "default": 0
+  }
+}
