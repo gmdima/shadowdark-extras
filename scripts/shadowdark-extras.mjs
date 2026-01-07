@@ -3419,6 +3419,53 @@ function enableItemChatIcon(app, html) {
  * 6. NPC Features (NPC Inventory, Creature Type)
  * 7. Visual & Animation (Torch Animations)
  */
+
+/**
+ * Apply sheet decoration styles dynamically based on settings
+ * Injects CSS custom properties for border and panel images
+ */
+function applySheetDecorationStyles() {
+	// Remove existing style if any
+	const existingStyle = document.getElementById('sdx-decoration-styles');
+	if (existingStyle) existingStyle.remove();
+
+	// Get settings - with fallback defaults for when settings aren't registered yet
+	let sheetBorder, abilityPanel, acPanel, statPanel;
+	try {
+		sheetBorder = game.settings.get(MODULE_ID, "sheetBorderStyle") || "panel-border-004.png";
+		abilityPanel = game.settings.get(MODULE_ID, "abilityPanelStyle") || "panel-013.png";
+		acPanel = game.settings.get(MODULE_ID, "acPanelStyle") || "panel-transparent-center-004.png";
+		statPanel = game.settings.get(MODULE_ID, "statPanelStyle") || "panel-transparent-center-015.png";
+	} catch {
+		// Settings not registered yet, use defaults
+		sheetBorder = "panel-border-004.png";
+		abilityPanel = "panel-013.png";
+		acPanel = "panel-transparent-center-004.png";
+		statPanel = "panel-transparent-center-015.png";
+	}
+
+	// Build paths - use absolute paths from Foundry root to avoid relative path issues
+	const borderPath = `/modules/${MODULE_ID}/art/PNG/Default/Border/${sheetBorder}`;
+	const abilityPanelPath = `/modules/${MODULE_ID}/art/PNG/Default/Panel/${abilityPanel}`;
+	const acPanelPath = `/modules/${MODULE_ID}/art/PNG/Default/Transparent center/${acPanel}`;
+	const statPanelPath = `/modules/${MODULE_ID}/art/PNG/Default/Transparent center/${statPanel}`;
+
+	// Create style element with CSS custom properties
+	const style = document.createElement('style');
+	style.id = 'sdx-decoration-styles';
+	style.textContent = `
+		:root {
+			--sdx-sheet-border: url('${borderPath}');
+			--sdx-ability-panel: url('${abilityPanelPath}');
+			--sdx-ac-panel: url('${acPanelPath}');
+			--sdx-stat-panel: url('${statPanelPath}');
+		}
+	`;
+	document.head.appendChild(style);
+
+	console.log(`${MODULE_ID} | Applied sheet decoration styles`);
+}
+
 function registerSettings() {
 	// ═══════════════════════════════════════════════════════════════
 	// 1. CONFIGURATION MENUS
@@ -3552,6 +3599,69 @@ function registerSettings() {
 			max: 100,
 			step: 1,
 		},
+	});
+
+	// Sheet Decoration Settings - Border and Panel Styles
+	const borderChoices = {};
+	for (let i = 0; i <= 31; i++) {
+		const num = String(i).padStart(3, '0');
+		borderChoices[`panel-border-${num}.png`] = `Border Style ${i}`;
+	}
+
+	const panelChoices = {};
+	for (let i = 0; i <= 31; i++) {
+		const num = String(i).padStart(3, '0');
+		panelChoices[`panel-${num}.png`] = `Panel Style ${i}`;
+	}
+
+	const transparentCenterChoices = {};
+	for (let i = 0; i <= 31; i++) {
+		const num = String(i).padStart(3, '0');
+		transparentCenterChoices[`panel-transparent-center-${num}.png`] = `Panel Style ${i}`;
+	}
+
+	game.settings.register(MODULE_ID, "sheetBorderStyle", {
+		name: "Sheet Border Style",
+		hint: "Choose the decorative border frame around the player character sheet.",
+		scope: "world",
+		config: true,
+		default: "panel-border-004.png",
+		type: String,
+		choices: borderChoices,
+		onChange: () => applySheetDecorationStyles()
+	});
+
+	game.settings.register(MODULE_ID, "abilityPanelStyle", {
+		name: "Ability Panel Style",
+		hint: "Choose the panel background for ability stat boxes (STR, DEX, etc.).",
+		scope: "world",
+		config: true,
+		default: "panel-013.png",
+		type: String,
+		choices: panelChoices,
+		onChange: () => applySheetDecorationStyles()
+	});
+
+	game.settings.register(MODULE_ID, "acPanelStyle", {
+		name: "AC Panel Style",
+		hint: "Choose the panel background for the Armor Class box.",
+		scope: "world",
+		config: true,
+		default: "panel-transparent-center-004.png",
+		type: String,
+		choices: transparentCenterChoices,
+		onChange: () => applySheetDecorationStyles()
+	});
+
+	game.settings.register(MODULE_ID, "statPanelStyle", {
+		name: "Init/Level/Luck Panel Style",
+		hint: "Choose the panel background for Initiative, Level, and Luck boxes.",
+		scope: "world",
+		config: true,
+		default: "panel-transparent-center-015.png",
+		type: String,
+		choices: transparentCenterChoices,
+		onChange: () => applySheetDecorationStyles()
 	});
 
 	game.settings.register(MODULE_ID, "enableJournalNotes", {
@@ -5539,7 +5649,6 @@ async function injectEnhancedHeader(app, html, actor) {
 			<div class="sdx-ability" data-ability="${key}" data-tooltip="${key.toUpperCase()}">
 				<div class="sdx-ability-label">${key.toUpperCase()}</div>
 				<div class="sdx-ability-mod">${modSign}${mod}</div>
-				<div class="sdx-ability-score">${total}</div>
 			</div>
 		`;
 	}
@@ -5615,7 +5724,7 @@ async function injectEnhancedHeader(app, html, actor) {
 				
 				<div class="sdx-stats-row">
 					<div class="sdx-ac-container" data-tooltip="Armor Class">
-						<i class="fas fa-shield-halved"></i>
+						<div class="sdx-ac-label">AC</div>
 						<div class="sdx-ac-value">${ac}</div>
 					</div>
 					
@@ -7846,6 +7955,7 @@ Hooks.once("ready", async () => {
 	console.log(`${MODULE_ID} | Setting up Shadowdark Extras`);
 
 	registerSettings();
+	applySheetDecorationStyles();
 	setupSettingsOrganization();
 	extendLightSources();
 	patchLightSourceMappings();

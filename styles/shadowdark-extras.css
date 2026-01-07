@@ -4737,8 +4737,19 @@ li.entry.sdx-sidebar-unidentified {
 /* ============================================================
    ENHANCED INTERACTIVE HEADER - Tidy5e Style
    ============================================================ */
+
 .shadowdark.sheet.player .SD-header {
     margin: 0px !important;
+}
+
+.shadowdark.sheet.player {
+    min-width: 590px;
+    background: black !important;
+    background-clip: border-box !important;
+    background-origin: border-box !important;
+    border: 10px solid transparent !important;
+    border-image: var(--sdx-sheet-border) 12 fill !important;
+    border-image-repeat: stretch !important;
 }
 
 .shadowdark.sheet.player .SD-nav {
@@ -4765,7 +4776,7 @@ li.entry.sdx-sidebar-unidentified {
 .sdx-enhanced-content {
     display: flex;
     align-items: stretch;
-    gap: 18px;
+    gap: 11px;
     padding: 8px;
     height: 100%;
     min-height: 100px;
@@ -4779,11 +4790,12 @@ li.entry.sdx-sidebar-unidentified {
     position: relative;
     flex-shrink: 0;
     width: 100px;
-    height: 100px;
+    height: 115px;
     border-radius: 8px;
     overflow: hidden;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
     border: 2px solid rgba(255, 255, 255, 0.2);
+    margin-left: 2px;
 }
 
 /* HP wave overlay for player sheet portrait */
@@ -4863,7 +4875,7 @@ li.entry.sdx-sidebar-unidentified {
     display: flex;
     flex-direction: column;
     gap: 4px;
-    min-width: 0;
+    min-width: 390px;
 }
 
 /* Actor name row with title */
@@ -4985,30 +4997,35 @@ li.entry.sdx-sidebar-unidentified {
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
-    width: 40px;
-    height: 52px;
-    position: relative;
+    justify-content: flex-start;
+    width: 44px;
     cursor: default;
+    gap: 2px;
 }
 
 .sdx-enhanced-content .sdx-ac-container i {
-    position: absolute;
-    font-size: 44px;
-    color: rgba(160, 140, 110, 0.4);
-    z-index: 0;
+    display: none;
+    /* Hide shield icon, using panel bg now */
+}
+
+.sdx-enhanced-content .sdx-ac-label {
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 9px;
+    font-weight: 600;
+    text-transform: uppercase;
 }
 
 .sdx-enhanced-content .sdx-ac-value {
-    position: relative;
-    z-index: 1;
-    color: #c8b48c;
-    font-size: 22px;
+    color: #000;
+    font-size: 16px;
     font-weight: bold;
     line-height: 1;
-    font-family: 'Modesto Condensed', 'Palatino Linotype', serif;
-    text-shadow: 0 0 8px rgba(200, 180, 140, 0.8),
-        1px 1px 3px rgba(0, 0, 0, 0.9);
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--sdx-ac-panel) center / contain no-repeat;
 }
 
 /* Abilities Container */
@@ -5021,40 +5038,42 @@ li.entry.sdx-sidebar-unidentified {
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
-    width: 38px;
-    height: 48px;
-    background: rgba(0, 0, 0, 0.7);
-    border: 1px solid rgba(255, 255, 255, 0.4);
-    border-radius: 6px;
+    justify-content: flex-start;
+    width: 44px;
     cursor: pointer;
     transition: all 0.2s ease;
+    gap: 2px;
 }
 
 .sdx-enhanced-content .sdx-ability:hover {
-    background: rgba(255, 255, 255, 0.15);
-    border-color: rgba(255, 255, 255, 0.4);
     transform: translateY(-2px);
 }
 
 .sdx-enhanced-content .sdx-ability-label {
-    color: rgba(255, 255, 255, 0.7);
-    font-size: 8px;
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 9px;
     font-weight: 600;
     text-transform: uppercase;
+    order: -1;
+    /* Put label first/above */
 }
 
 .sdx-enhanced-content .sdx-ability-mod {
-    color: #fff;
-    font-size: 14px;
+    color: #000;
+    font-size: 16px;
     font-weight: bold;
-    line-height: 1.1;
+    line-height: 1;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--sdx-ability-panel) center / contain no-repeat;
 }
 
 .sdx-enhanced-content .sdx-ability-score {
-    color: rgba(255, 255, 255, 0.5);
-    font-size: 9px;
-    line-height: 1;
+    display: none;
+    /* Base scores removed for cleaner look */
 }
 
 /* Initiative Container */
@@ -5062,34 +5081,37 @@ li.entry.sdx-sidebar-unidentified {
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
-    width: 38px;
-    height: 48px;
-    background: rgba(234, 179, 8, 0.4);
-    border: 1px solid rgba(234, 179, 8, 0.4);
-    border-radius: 6px;
+    justify-content: flex-start;
+    width: 44px;
     cursor: pointer;
     transition: all 0.2s ease;
+    gap: 2px;
 }
 
 .sdx-enhanced-content .sdx-init-container:hover {
-    background: rgba(234, 179, 8, 0.3);
-    border-color: rgba(234, 179, 8, 0.6);
     transform: translateY(-2px);
 }
 
 .sdx-enhanced-content .sdx-init-label {
-    color: rgba(234, 179, 8, 0.9);
-    font-size: 8px;
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 9px;
     font-weight: 600;
     text-transform: uppercase;
+    order: -1;
+    /* Put label above */
 }
 
 .sdx-enhanced-content .sdx-init-mod {
-    color: #fbbf24;
-    font-size: 14px;
+    color: #000;
+    font-size: 16px;
     font-weight: bold;
-    line-height: 1.1;
+    line-height: 1;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--sdx-stat-panel) center / contain no-repeat;
 }
 
 /* Right side container - Luck & Level */
@@ -5098,7 +5120,7 @@ li.entry.sdx-sidebar-unidentified {
     flex-direction: column;
     align-items: center;
     justify-content: space-between;
-    gap: 8px;
+    gap: 1px;
     padding: 4px 0;
 }
 
@@ -5107,16 +5129,13 @@ li.entry.sdx-sidebar-unidentified {
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-start;
     width: 44px;
-    height: 44px;
-    background: rgba(30, 30, 30, 0.9);
-    border: 2px solid rgba(200, 180, 140, 0.4);
-    border-radius: 8px;
     cursor: pointer;
     transition: all 0.2s ease;
     font-family: 'Modesto Condensed', 'Palatino Linotype', serif;
     position: relative;
+    gap: 2px;
 }
 
 .sdx-enhanced-content .sdx-luck-container:hover {
@@ -5128,7 +5147,8 @@ li.entry.sdx-sidebar-unidentified {
 /* Standard Mode - Toggle Icon */
 .sdx-enhanced-content .sdx-luck-container.standard-mode {
     color: rgba(200, 180, 140, 0.4);
-    font-size: 20px;
+    font-size: 30px;
+    margin-bottom: 28px;
 }
 
 .sdx-enhanced-content .sdx-luck-container.standard-mode.has-luck {
@@ -5163,19 +5183,25 @@ li.entry.sdx-sidebar-unidentified {
 }
 
 .sdx-enhanced-content .sdx-luck-container.pulp-mode .sdx-luck-value {
-    font-size: 18px;
+    font-size: 16px;
     font-weight: bold;
-    color: #c8b48c;
+    color: #000;
     line-height: 1;
-    text-shadow: 0 0 4px rgba(200, 180, 140, 0.5);
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--sdx-stat-panel) center / contain no-repeat;
 }
 
 .sdx-enhanced-content .sdx-luck-container.pulp-mode .sdx-luck-label {
-    font-size: 9px;
-    letter-spacing: 0.5px;
-    color: rgba(200, 180, 140, 0.7);
+    font-size: 11px;
+    letter-spacing: 0.7px;
+    color: rgba(255, 255, 255, 0.85);
     text-transform: uppercase;
-    margin-top: 2px;
+    order: -1;
+    /* Put label above */
 }
 
 /* Luck input field when editing */
@@ -5205,28 +5231,17 @@ li.entry.sdx-sidebar-unidentified {
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-start;
     width: 44px;
-    height: 44px;
-    background: rgba(30, 30, 30, 0.9);
-    border: 2px solid rgba(200, 180, 140, 0.6);
-    border-radius: 8px;
-    padding: 4px;
-    gap: 1px;
+    gap: 2px;
     transition: all 0.3s ease;
 }
 
 .sdx-enhanced-content .sdx-level-container.can-level-up {
     cursor: pointer;
-    background: rgba(50, 30, 10, 0.95);
-    border: 2px solid #d4af37;
-    box-shadow: 0 0 12px rgba(212, 175, 55, 0.6), inset 0 0 8px rgba(212, 175, 55, 0.3);
 }
 
 .sdx-enhanced-content .sdx-level-container.can-level-up:hover {
-    background: rgba(60, 35, 15, 1);
-    border-color: #f4d03f;
-    box-shadow: 0 0 16px rgba(244, 208, 63, 0.8), inset 0 0 12px rgba(244, 208, 63, 0.4);
     transform: translateY(-2px);
 }
 
@@ -5237,20 +5252,27 @@ li.entry.sdx-sidebar-unidentified {
 }
 
 .sdx-enhanced-content .sdx-level-value {
-    color: #c8b48c;
-    font-size: 20px;
+    color: #000;
+    font-size: 16px;
     font-weight: bold;
     line-height: 1;
     font-family: 'Modesto Condensed', 'Palatino Linotype', serif;
-    text-shadow: 0 0 6px rgba(200, 180, 140, 0.5);
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--sdx-stat-panel) center / contain no-repeat;
 }
 
 .sdx-enhanced-content .sdx-level-label {
-    font-size: 8px;
-    letter-spacing: 0.5px;
-    color: rgba(200, 180, 140, 0.6);
+    font-size: 11px;
+    letter-spacing: 0.7px;
+    color: rgba(255, 255, 255, 0.85);
     text-transform: uppercase;
     font-family: 'Modesto Condensed', 'Palatino Linotype', serif;
+    order: -1;
+    /* Put label above */
 }
 
 /* Integration with custom header backgrounds */
@@ -15518,9 +15540,10 @@ body:not(.game-master) .sdx-carousing-chat .sdx-player-only {
 }
 
 .sdx-display-item {
-    background: #fff;
+    background: #000;
     border: 3px solid #000;
     padding: 0;
+    padding-top: 4px;
     box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.3);
     font-family: "Roboto Condensed", "Arial Narrow", sans-serif;
     overflow: hidden;
@@ -15544,12 +15567,18 @@ body:not(.game-master) .sdx-carousing-chat .sdx-player-only {
 /* Header with title and type */
 .sdx-item-header {
     background: #000;
-    border-bottom: 3px solid #000;
-    padding: 10px 16px;
+    padding: 0px 4px;
     display: flex;
     justify-content: space-between;
     align-items: center;
     gap: 12px;
+    border: 12px solid transparent;
+    /* border-right: 34px; */
+    border-image: url(../art/PNG/Default/Border/panel-border-000.png) 12 fill;
+    border-image-repeat: stretch;
+    margin-bottom: 5px;
+    margin-right: 2px;
+    margin-left: 2px;
 }
 
 .sdx-item-title {

@@ -473,31 +473,50 @@ export async function endDurationSpell(casterId, instanceId, reason = "expired")
 		}
 	}
 
-	// Clean up Holy Weapon bonuses if this is a Holy Weapon spell
+	// Clean up Holy Weapon or Cleansing Weapon bonuses
 	// Check all actors for weapons that were blessed by this spell
 	for (const actor of game.actors.contents) {
 		const weapons = actor.items.filter(item => item.type === "Weapon");
 		for (const weapon of weapons) {
 			const holyWeaponSpellId = weapon.getFlag("shadowdark-extras", "holyWeaponSpellId");
 			const holyWeaponCasterId = weapon.getFlag("shadowdark-extras", "holyWeaponCasterId");
+			const cleansingWeaponSpellId = weapon.getFlag("shadowdark-extras", "cleansingWeaponSpellId");
+			const cleansingWeaponCasterId = weapon.getFlag("shadowdark-extras", "cleansingWeaponCasterId");
 
 			// Check if this weapon was blessed by the ending spell
-			if (holyWeaponSpellId === durationEntry.spellId && holyWeaponCasterId === casterId) {
-				console.log(`shadowdark-extras | Removing Holy Weapon bonuses from ${weapon.name} on ${actor.name}`);
+			if ((holyWeaponSpellId === durationEntry.spellId && holyWeaponCasterId === casterId) ||
+				(cleansingWeaponSpellId === durationEntry.spellId && cleansingWeaponCasterId === casterId)) {
+
+				const isCleansing = !!cleansingWeaponSpellId;
+				console.log(`shadowdark-extras | Removing ${isCleansing ? 'Cleansing' : 'Holy'} Weapon bonuses from ${weapon.name} on ${actor.name}`);
 
 				// Remove the weapon bonuses and magical status
-				await weapon.update({
+				const updates = {
 					"system.magicItem": false,
-					[`flags.shadowdark-extras.weaponBonus`]: null,
-					[`flags.shadowdark-extras.holyWeaponSpellId`]: null,
-					[`flags.shadowdark-extras.holyWeaponCasterId`]: null
-				});
+					[`flags.shadowdark-extras.weaponBonus`]: null
+				};
+
+				if (isCleansing) {
+					updates[`flags.shadowdark-extras.cleansingWeaponSpellId`] = null;
+					updates[`flags.shadowdark-extras.cleansingWeaponCasterId`] = null;
+				} else {
+					updates[`flags.shadowdark-extras.holyWeaponSpellId`] = null;
+					updates[`flags.shadowdark-extras.holyWeaponCasterId`] = null;
+				}
+
+				await weapon.update(updates);
 
 				// Post to chat
+				const title = isCleansing ? "Cleansing Weapon Ended" : "Holy Weapon Ended";
+				const icon = isCleansing ? "fas fa-fire" : "fas fa-hand-sparkles";
+				const messageText = isCleansing
+					? `The purifying flames fade from <strong>${actor.name}'s ${weapon.name}</strong>.`
+					: `The holy blessing fades from <strong>${actor.name}'s ${weapon.name}</strong>.`;
+
 				await ChatMessage.create({
 					content: `<div class="shadowdark chat-card">
-						<h3><i class="fas fa-hand-sparkles"></i> Holy Weapon Ended</h3>
-						<p>The holy blessing fades from <strong>${actor.name}'s ${weapon.name}</strong>.</p>
+						<h3><i class="${icon}"></i> ${title}</h3>
+						<p>${messageText}</p>
 					</div>`,
 					speaker: ChatMessage.getSpeaker({ actor: caster }),
 					type: CONST.CHAT_MESSAGE_STYLES.OTHER
