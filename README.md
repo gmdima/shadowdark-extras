@@ -1,4 +1,5 @@
 # Shadowdark Extras
+<img width="3584" height="1184" alt="Gemini_Generated_Image_tiknyftiknyftikn" src="https://github.com/user-attachments/assets/173d6548-314e-42a6-9e8c-cbd2ca2a4150" />
 
 A comprehensive enhancement module for [Shadowdark RPG](https://www.thearcanelibrary.com/pages/shadowdark) in [Foundry VTT](https://foundryvtt.com/). This module adds quality-of-life features, automation, visual enhancements, and expanded gameplay options to elevate your Shadowdark experience.
 
