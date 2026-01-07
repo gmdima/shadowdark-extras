@@ -30,7 +30,7 @@ import { initWeaponAnimations } from "./WeaponAnimationSD.mjs";
 import { initLevelUpAnimations } from "./LevelUpAnimationSD.mjs";
 import { openWeaponAnimationConfig } from "./WeaponAnimationConfig.mjs";
 import { initSDXROLLS, setupSDXROLLSSockets, injectSdxRollButton } from "./sdx-rolls/SdxRollsSD.mjs";
-import { initFocusSpellTracker, endFocusSpell, linkEffectToFocusSpell, getActiveFocusSpells, isFocusingOnSpell, startDurationSpell, endDurationSpell } from "./FocusSpellTrackerSD.mjs";
+import { initFocusSpellTracker, endFocusSpell, linkEffectToFocusSpell, getActiveFocusSpells, isFocusingOnSpell, startDurationSpell, endDurationSpell, registerSpellModification } from "./FocusSpellTrackerSD.mjs";
 import { initCarousing, injectCarousingTab, ensureCarousingJournal, ensureCarousingTablesJournal, initCarousingSocket, getCustomCarousingTables, getCarousingTableById, setCarousingTable } from "./CarousingSD.mjs";
 import { openCarousingOverlay, refreshCarousingOverlay } from "./CarousingOverlaySD.mjs";
 import { openCarousingTablesEditor } from "./CarousingTablesApp.mjs";
@@ -16263,7 +16263,8 @@ Hooks.on("setup", () => {
 	const module = game.modules.get("shadowdark-extras");
 	if (module) {
 		module.api = {
-			startDurationSpell: startDurationSpell
+			startDurationSpell: startDurationSpell,
+			registerSpellModification: registerSpellModification
 		};
 		console.log(`${MODULE_ID} | Module API registered`);
 	}

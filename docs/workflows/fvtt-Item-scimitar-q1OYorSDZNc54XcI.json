@@ -1,0 +1,186 @@
+{
+  "effects": [],
+  "folder": "yNt6CqqtzoAqyjOI",
+  "img": "icons/weapons/swords/scimitar-guard-gold.webp",
+  "name": "Scimitar",
+  "system": {
+    "description": "",
+    "source": {
+      "title": "cursed-scroll-2",
+      "page": 0
+    },
+    "broken": false,
+    "canBeEquipped": true,
+    "cost": {
+      "cp": 0,
+      "gp": 8,
+      "sp": 0
+    },
+    "equipped": true,
+    "isAmmunition": false,
+    "isPhysical": true,
+    "magicItem": true,
+    "quantity": 1,
+    "slots": {
+      "free_carry": 0,
+      "per_slot": 1,
+      "slots_used": 1
+    },
+    "stashed": false,
+    "ammoClass": "",
+    "baseWeapon": "longsword",
+    "bonuses": {
+      "attackBonus": 0,
+      "critical": {
+        "failureThreshold": 1,
+        "multiplier": 2,
+        "successThreshold": 20
+      },
+      "damageBonus": 0,
+      "damageMultiplier": 1
+    },
+    "damage": {
+      "numDice": 1,
+      "oneHanded": "d6",
+      "twoHanded": ""
+    },
+    "properties": [
+      "Compendium.shadowdark.properties.Item.rqQwpoeWEqi0ZcYK"
+    ],
+    "range": "close",
+    "type": "melee",
+    "weaponMastery": false,
+    "predefinedEffects": ""
+  },
+  "type": "Weapon",
+  "_stats": {
+    "coreVersion": "13.348",
+    "systemId": "shadowdark",
+    "systemVersion": "3.6.1",
+    "createdTime": 1767814836708,
+    "modifiedTime": 1767814836727,
+    "lastModifiedBy": "lDQovrTY32fJwPBR",
+    "exportSource": {
+      "worldId": "bbb",
+      "uuid": "Item.q1OYorSDZNc54XcI",
+      "coreVersion": "13.348",
+      "systemId": "shadowdark",
+      "systemVersion": "3.6.1"
+    }
+  },
+  "flags": {
+    "shadowdark-extras": {
+      "weaponBonus": {
+        "enabled": true,
+        "hitBonuses": [],
+        "damageBonuses": [
+          {
+            "formula": "1d4",
+            "label": "Cleansing Weapon",
+            "damageType": "fire",
+            "exclusive": false,
+            "prompt": false,
+            "requirements": []
+          },
+          {
+            "formula": "1d6",
+            "label": "Cleansing Weapon (vs Undead)",
+            "damageType": "fire",
+            "exclusive": true,
+            "prompt": false,
+            "requirements": [
+              {
+                "type": "targetSubtype",
+                "operator": "equals",
+                "value": "Undead"
+              }
+            ]
+          }
+        ],
+        "damageBonus": "",
+        "criticalExtraDice": "",
+        "criticalExtraDamage": "",
+        "requirements": [],
+        "effects": [],
+        "itemMacro": {
+          "enabled": false,
+          "runAsGm": false,
+          "triggers": []
+        }
+      },
+      "holyWeaponSpellId": null,
+      "holyWeaponCasterId": null,
+      "unidentified": false,
+      "unidentifiedName": "spadina",
+      "baseDamageType": "bludgeoning",
+      "weaponAnimation": {
+        "enabled": true,
+        "imagePath": "modules/shadowdark-extras/assets/Weapons/Swords/Scimitars/Scimitar_A_03_1x1.webp",
+        "offsetX": 0.35,
+        "offsetY": 0.1,
+        "scale": 1,
+        "wobble": true,
+        "rotation": 0,
+        "animationType": "wobble",
+        "flipX": false,
+        "flipY": false,
+        "filters": {
+          "colorMatrix": {
+            "hue": 0,
+            "brightness": 1,
+            "contrast": 1,
+            "saturate": 0
+          },
+          "glow": {
+            "enabled": false,
+            "distance": 10,
+            "outerStrength": 4,
+            "innerStrength": 0,
+            "color": "#ffffff",
+            "quality": 0.1,
+            "knockout": false
+          },
+          "dropShadow": {
+            "enabled": false,
+            "color": "#000000",
+            "alpha": 0.5,
+            "blur": 2,
+            "distance": 5,
+            "rotation": 45
+          }
+        },
+        "imageName": "Scimitar_A_03_1x1"
+      },
+      "spellModifications": [
+        {
+          "instanceId": "UWOnwNyz9hAmLXQr-1767814679660-skcuzgaj7",
+          "spellId": "UWOnwNyz9hAmLXQr",
+          "casterId": "JyUXFdnlpchlM2Jr",
+          "casterName": "Elbin Grizzlegut",
+          "spellName": "Cleansing Weapon",
+          "spellImg": "icons/weapons/swords/sword-winged-pink.webp",
+          "originalState": {
+            "system": {
+              "magicItem": false
+            },
+            "flags": {
+              "shadowdark-extras": {
+                "weaponBonus": null
+              }
+            }
+          },
+          "modifiedPaths": [
+            "system.magicItem",
+            "flags.shadowdark-extras.weaponBonus"
+          ],
+          "icon": "fas fa-fire",
+          "endMessage": "The purifying flames fade from <strong>{weapon}</strong> on <strong>{actor}</strong>.",
+          "createdAt": 1767814679660
+        }
+      ]
+    }
+  },
+  "ownership": {
+    "default": 0
+  }
+}

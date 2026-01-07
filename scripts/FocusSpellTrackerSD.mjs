@@ -402,6 +402,172 @@ export function getActiveDurationSpells(actor) {
 	return actor.getFlag(MODULE_ID, DURATION_SPELL_FLAG) || [];
 }
 
+// Storage key for spell modifications on items
+const SPELL_MODIFICATIONS_FLAG = "spellModifications";
+
+/**
+ * Register a spell modification on an item
+ * This stores the original state of the item so it can be reverted when the spell ends.
+ * 
+ * @param {Actor} caster - The caster who applied the modification
+ * @param {Item} spell - The spell item that applied the modification
+ * @param {Item} targetItem - The item being modified (weapon, armor, etc.)
+ * @param {Object} changes - The changes being applied (keys are paths like "system.magicItem")
+ * @param {Object} options - Display options for when the spell ends
+ * @param {string} options.icon - FontAwesome icon class (e.g., "fas fa-hand-sparkles")
+ * @param {string} options.endMessage - Message template with {weapon} and {actor} placeholders
+ * @returns {Object} - The modification entry created
+ */
+export async function registerSpellModification(caster, spell, targetItem, changes, options = {}) {
+	if (!caster || !spell || !targetItem) {
+		console.warn("shadowdark-extras | registerSpellModification called with missing parameters");
+		return null;
+	}
+
+	// Get current modifications on the item
+	const currentMods = targetItem.getFlag(MODULE_ID, SPELL_MODIFICATIONS_FLAG) || [];
+
+	// Capture original state for the paths being changed
+	const originalState = {};
+	const modifiedPaths = Object.keys(changes);
+
+	for (const path of modifiedPaths) {
+		// Deep get the current value at this path
+		originalState[path] = foundry.utils.getProperty(targetItem, path) ?? null;
+	}
+
+	// Generate unique instance ID that matches duration tracking
+	const instanceId = `${spell.id}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+
+	// Create the modification entry
+	const modEntry = {
+		instanceId: instanceId,
+		spellId: spell.id,
+		casterId: caster.id,
+		casterName: caster.name,
+		spellName: spell.name,
+		spellImg: spell.img,
+		originalState: originalState,
+		modifiedPaths: modifiedPaths,
+		icon: options.icon || "fas fa-magic",
+		endMessage: options.endMessage || `The spell effect fades from {weapon} on {actor}.`,
+		createdAt: Date.now()
+	};
+
+	// Add to item's modifications list
+	currentMods.push(modEntry);
+	await targetItem.setFlag(MODULE_ID, SPELL_MODIFICATIONS_FLAG, currentMods);
+
+	console.log(`shadowdark-extras | Registered spell modification for ${spell.name} on ${targetItem.name}`, modEntry);
+	console.log(`shadowdark-extras | Captured original state:`, originalState);
+
+	return modEntry;
+}
+
+/**
+ * Revert all spell modifications when a spell ends
+ * Automatically called by endDurationSpell/endFocusSpell
+ * 
+ * @param {string} spellId - The spell ID
+ * @param {string} casterId - The caster actor ID
+ */
+async function revertSpellModifications(spellId, casterId) {
+	console.warn(`shadowdark-extras | [REVERT] Reverting spell modifications for spell ${spellId} by caster ${casterId}`);
+
+	const caster = game.actors.get(casterId);
+	const revertedItems = [];
+	const processedActorIds = new Set();
+
+	// Helper function to process an actor's items
+	async function processActorItems(actor) {
+		if (!actor || processedActorIds.has(actor.id)) return;
+		processedActorIds.add(actor.id);
+
+		const items = actor.items.filter(item => {
+			const mods = item.getFlag(MODULE_ID, SPELL_MODIFICATIONS_FLAG);
+			return mods && mods.some(m => m.spellId === spellId && m.casterId === casterId);
+		});
+
+		for (const item of items) {
+			const mods = item.getFlag(MODULE_ID, SPELL_MODIFICATIONS_FLAG) || [];
+			const matchingMods = mods.filter(m => m.spellId === spellId && m.casterId === casterId);
+
+			if (matchingMods.length === 0) continue;
+
+			// Build the update object to restore original state
+			const updates = {};
+			let modEntry = null;
+
+			for (const mod of matchingMods) {
+				modEntry = mod; // Keep reference for chat message
+
+				// Restore each path to its original value
+				for (const path of mod.modifiedPaths) {
+					const originalValue = mod.originalState[path];
+					// Use null instead of undefined for proper deletion, or use the original value
+					updates[path] = originalValue === undefined ? null : originalValue;
+				}
+			}
+
+			// Apply the reversion
+			try {
+				console.log(`shadowdark-extras | Applying reversion to ${item.name} on ${actor.name}:`, updates);
+				await item.update(updates);
+				console.log(`shadowdark-extras | Reverted ${item.name} on ${actor.name}`, updates);
+
+				// Remove the modification entries from the item
+				const remainingMods = mods.filter(m => !(m.spellId === spellId && m.casterId === casterId));
+				if (remainingMods.length > 0) {
+					await item.setFlag(MODULE_ID, SPELL_MODIFICATIONS_FLAG, remainingMods);
+				} else {
+					await item.unsetFlag(MODULE_ID, SPELL_MODIFICATIONS_FLAG);
+				}
+
+				revertedItems.push({ item, actor, modEntry });
+			} catch (err) {
+				console.error(`shadowdark-extras | Failed to revert ${item.name}:`, err);
+			}
+		}
+	}
+
+	// Search all actors in the actors directory
+	for (const actor of game.actors.contents) {
+		await processActorItems(actor);
+	}
+
+	// Also search token actors on the current scene (for unlinked tokens)
+	if (canvas.tokens?.placeables) {
+		for (const token of canvas.tokens.placeables) {
+			if (token.actor && !token.document.actorLink) {
+				// This is an unlinked token - process its actor
+				await processActorItems(token.actor);
+			}
+		}
+	}
+
+	// Post chat messages for reverted items
+	for (const { item, actor, modEntry } of revertedItems) {
+		const message = modEntry.endMessage
+			.replace("{weapon}", item.name)
+			.replace("{actor}", actor.name);
+
+		await ChatMessage.create({
+			content: `<div class="shadowdark chat-card">
+				<h3><i class="${modEntry.icon}"></i> ${modEntry.spellName} Ended</h3>
+				<p>${message}</p>
+			</div>`,
+			speaker: ChatMessage.getSpeaker({ actor: caster }),
+			type: CONST.CHAT_MESSAGE_STYLES.OTHER
+		});
+	}
+
+	if (revertedItems.length > 0) {
+		console.log(`shadowdark-extras | Reverted ${revertedItems.length} item(s) modified by spell ${spellId}`);
+	}
+
+	return revertedItems;
+}
+
 /**
  * End a duration spell and remove all associated effects from targets
  * @param {string} casterId - The caster actor ID
@@ -409,6 +575,8 @@ export function getActiveDurationSpells(actor) {
  * @param {string} reason - The reason for ending ("expired" or "manual")
  */
 export async function endDurationSpell(casterId, instanceId, reason = "expired") {
+	console.warn(`shadowdark-extras | [ENTRY] endDurationSpell called with casterId=${casterId}, instanceId=${instanceId}, reason=${reason}`);
+
 	const caster = game.actors.get(casterId);
 	if (!caster) return;
 
@@ -422,6 +590,7 @@ export async function endDurationSpell(casterId, instanceId, reason = "expired")
 	if (spellIndex < 0) return;
 
 	const durationEntry = activeDuration[spellIndex];
+	console.log(`shadowdark-extras | [DEBUG] Found duration entry:`, durationEntry);
 
 	// Remove all effects applied to targets
 	if (durationEntry.targetEffects && durationEntry.targetEffects.length > 0) {
@@ -473,8 +642,13 @@ export async function endDurationSpell(casterId, instanceId, reason = "expired")
 		}
 	}
 
-	// Clean up Holy Weapon or Cleansing Weapon bonuses
-	// Check all actors for weapons that were blessed by this spell
+	// Revert any item modifications made by this spell (generic system)
+	console.log(`shadowdark-extras | [DEBUG] About to call revertSpellModifications with spellId=${durationEntry.spellId}, casterId=${casterId}`);
+	await revertSpellModifications(durationEntry.spellId, casterId);
+
+	// Legacy support: Clean up old Holy Weapon or Cleansing Weapon bonuses (pre-generic system)
+	// This can be removed in a future version after macros are updated
+	console.log(`shadowdark-extras | [DEBUG] Checking legacy weapon cleanup for spellId=${durationEntry.spellId}, casterId=${casterId}`);
 	for (const actor of game.actors.contents) {
 		const weapons = actor.items.filter(item => item.type === "Weapon");
 		for (const weapon of weapons) {
@@ -483,12 +657,20 @@ export async function endDurationSpell(casterId, instanceId, reason = "expired")
 			const cleansingWeaponSpellId = weapon.getFlag("shadowdark-extras", "cleansingWeaponSpellId");
 			const cleansingWeaponCasterId = weapon.getFlag("shadowdark-extras", "cleansingWeaponCasterId");
 
-			// Check if this weapon was blessed by the ending spell
+			// Debug log to see what flags are set on weapons
+			if (holyWeaponSpellId || cleansingWeaponSpellId) {
+				console.log(`shadowdark-extras | [DEBUG] Weapon ${weapon.name} on ${actor.name} has flags:`, {
+					holyWeaponSpellId, holyWeaponCasterId, cleansingWeaponSpellId, cleansingWeaponCasterId,
+					targetSpellId: durationEntry.spellId, targetCasterId: casterId
+				});
+			}
+
+			// Check if this weapon was blessed by the ending spell (old flag system)
 			if ((holyWeaponSpellId === durationEntry.spellId && holyWeaponCasterId === casterId) ||
 				(cleansingWeaponSpellId === durationEntry.spellId && cleansingWeaponCasterId === casterId)) {
 
 				const isCleansing = !!cleansingWeaponSpellId;
-				console.log(`shadowdark-extras | Removing ${isCleansing ? 'Cleansing' : 'Holy'} Weapon bonuses from ${weapon.name} on ${actor.name}`);
+				console.log(`shadowdark-extras | [Legacy] Removing ${isCleansing ? 'Cleansing' : 'Holy'} Weapon bonuses from ${weapon.name} on ${actor.name}`);
 
 				// Remove the weapon bonuses and magical status
 				const updates = {
@@ -1241,12 +1423,17 @@ async function handleDurationSpellCombatUpdate(combat, changed, options, userId)
 		const activeDuration = actor.getFlag(MODULE_ID, DURATION_SPELL_FLAG) || [];
 		if (activeDuration.length === 0) continue;
 
+		console.log(`shadowdark-extras | [DEBUG] Actor ${actor.name} has ${activeDuration.length} duration spell(s):`,
+			activeDuration.map(d => ({ name: d.spellName, expiryRound: d.expiryRound, currentRound })));
+
 		let needsUpdate = false;
 		const expiredSpellIds = [];
 
 		for (const durationSpell of activeDuration) {
 			// Use instanceId if available, fallback to spellId
 			const spellInstanceId = durationSpell.instanceId || durationSpell.spellId;
+
+			console.log(`shadowdark-extras | [DEBUG] Checking spell ${durationSpell.spellName}: currentRound=${currentRound}, expiryRound=${durationSpell.expiryRound}, shouldExpire=${currentRound >= durationSpell.expiryRound}`);
 
 			// Check for expiry - use >= so spell expires ON the expiry round, not after
 			if (currentRound >= durationSpell.expiryRound) {
