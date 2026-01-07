@@ -323,6 +323,7 @@ function buildHitBonusRowHtml(bonus, index) {
 	const formula = bonus.formula || "";
 	const label = bonus.label || "";
 	const exclusive = bonus.exclusive || false;
+	const prompt = bonus.prompt || false;
 	const requirements = bonus.requirements || [];
 
 	// Build requirements for this hit bonus
@@ -350,6 +351,10 @@ function buildHitBonusRowHtml(bonus, index) {
 					<label class="sdx-exclusive-label" title="If checked and requirements are met, only this bonus applies (ignores other bonuses)">
 						<input type="checkbox" class="sdx-hit-bonus-exclusive" data-bonus-index="${index}" ${exclusive ? 'checked' : ''} />
 						<span>Exclusive</span>
+					</label>
+					<label class="sdx-prompt-label" title="If checked, this bonus will appear in the attack roll dialog for optional activation">
+						<input type="checkbox" class="sdx-hit-bonus-prompt" data-bonus-index="${index}" ${prompt ? 'checked' : ''} />
+						<span>Prompt</span>
 					</label>
 					<button type="button" class="sdx-add-hit-bonus-requirement" data-bonus-index="${index}">
 						<i class="fas fa-plus"></i>
@@ -408,6 +413,7 @@ function buildDamageBonusRowHtml(bonus, index) {
 	const formula = bonus.formula || "";
 	const label = bonus.label || "";
 	const exclusive = bonus.exclusive || false;
+	const prompt = bonus.prompt || false;
 	const requirements = bonus.requirements || [];
 
 	// Build requirements for this damage bonus
@@ -451,6 +457,10 @@ function buildDamageBonusRowHtml(bonus, index) {
 					<label class="sdx-exclusive-label" title="If checked and requirements are met, only this bonus applies (ignores other bonuses)">
 						<input type="checkbox" class="sdx-damage-bonus-exclusive" data-bonus-index="${index}" ${exclusive ? 'checked' : ''} />
 						<span>Exclusive</span>
+					</label>
+					<label class="sdx-prompt-label" title="If checked, this bonus will appear in the attack roll dialog for optional activation">
+						<input type="checkbox" class="sdx-damage-bonus-prompt" data-bonus-index="${index}" ${prompt ? 'checked' : ''} />
+						<span>Prompt</span>
 					</label>
 					<button type="button" class="sdx-add-damage-bonus-requirement" data-bonus-index="${index}">
 						<i class="fas fa-plus"></i>
@@ -950,6 +960,11 @@ function activateWeaponBonusListeners(html, app, item) {
 		await saveHitBonusesFromDom($tab, item);
 	});
 
+	// Hit bonus prompt checkbox change
+	$tab.on('change', '.sdx-hit-bonus-prompt', async function () {
+		await saveHitBonusesFromDom($tab, item);
+	});
+
 	// ========== DAMAGE BONUS LISTENERS ==========
 
 	// Add damage bonus button
@@ -1048,6 +1063,11 @@ function activateWeaponBonusListeners(html, app, item) {
 			// Uncheck all other exclusive checkboxes
 			$tab.find('.sdx-damage-bonus-exclusive').not(this).prop('checked', false);
 		}
+		await saveDamageBonusesFromDom($tab, item);
+	});
+
+	// Damage bonus prompt checkbox change
+	$tab.on('change', '.sdx-damage-bonus-prompt', async function () {
 		await saveDamageBonusesFromDom($tab, item);
 	});
 
@@ -1267,6 +1287,7 @@ async function saveHitBonusesFromDom($tab, item) {
 			formula: $row.find('.sdx-hit-bonus-formula').val() || "",
 			label: $row.find('.sdx-hit-bonus-label').val() || "",
 			exclusive: $row.find('.sdx-hit-bonus-exclusive').is(':checked'),
+			prompt: $row.find('.sdx-hit-bonus-prompt').is(':checked'),
 			requirements: requirements
 		});
 	});
@@ -1295,6 +1316,7 @@ async function saveDamageBonusesFromDom($tab, item) {
 			label: $row.find('.sdx-damage-bonus-label').val() || "",
 			damageType: $row.find('.sdx-damage-bonus-type').val() || "",
 			exclusive: $row.find('.sdx-damage-bonus-exclusive').is(':checked'),
+			prompt: $row.find('.sdx-damage-bonus-prompt').is(':checked'),
 			requirements: requirements
 		});
 	});
@@ -1521,6 +1543,9 @@ export function getWeaponHitBonuses(weapon, attacker, target) {
 	for (const bonus of hitBonuses) {
 		if (!bonus.formula) continue;
 
+		// Skip prompt bonuses - they are handled separately via the roll dialog
+		if (bonus.prompt) continue;
+
 		// Check this bonus's requirements
 		if (evaluateRequirements(bonus.requirements || [], attacker, target)) {
 			if (bonus.exclusive) {
@@ -1583,6 +1608,9 @@ export function getWeaponBonuses(weapon, attacker, target, isCritical = false) {
 		for (const bonus of damageBonuses) {
 			if (!bonus.formula) continue;
 
+			// Skip prompt bonuses - they are handled separately via the roll dialog
+			if (bonus.prompt) continue;
+
 			// Check this bonus's requirements
 			if (evaluateRequirements(bonus.requirements || [], attacker, target)) {
 				if (bonus.exclusive) {
@@ -1622,6 +1650,73 @@ export function getWeaponBonuses(weapon, attacker, target, isCritical = false) {
 }
 
 /**
+ * Get promptable to-hit bonuses for a weapon (bonuses that appear in roll dialog)
+ * @param {Item} weapon - The weapon item
+ * @param {Actor} attacker - The attacking actor
+ * @param {Actor} target - The target actor (optional)
+ * @returns {Object[]} - Array of { formula, label, index } for promptable bonuses
+ */
+export function getPromptableHitBonuses(weapon, attacker, target) {
+	const flags = weapon.flags?.[MODULE_ID]?.weaponBonus;
+	if (!flags?.enabled) {
+		return [];
+	}
+
+	const hitBonuses = flags.hitBonuses || [];
+	const promptableBonuses = [];
+
+	// Process each hit bonus entry
+	hitBonuses.forEach((bonus, index) => {
+		if (!bonus.formula || !bonus.prompt) return;
+
+		// Check this bonus's requirements
+		if (evaluateRequirements(bonus.requirements || [], attacker, target)) {
+			promptableBonuses.push({
+				formula: bonus.formula,
+				label: bonus.label || "",
+				index: index
+			});
+		}
+	});
+
+	return promptableBonuses;
+}
+
+/**
+ * Get promptable damage bonuses for a weapon (bonuses that appear in roll dialog)
+ * @param {Item} weapon - The weapon item
+ * @param {Actor} attacker - The attacking actor
+ * @param {Actor} target - The target actor (optional)
+ * @returns {Object[]} - Array of { formula, label, damageType, index } for promptable bonuses
+ */
+export function getPromptableDamageBonuses(weapon, attacker, target) {
+	const flags = weapon.flags?.[MODULE_ID]?.weaponBonus;
+	if (!flags?.enabled) {
+		return [];
+	}
+
+	const damageBonuses = flags.damageBonuses || [];
+	const promptableBonuses = [];
+
+	// Process each damage bonus entry
+	damageBonuses.forEach((bonus, index) => {
+		if (!bonus.formula || !bonus.prompt) return;
+
+		// Check this bonus's requirements
+		if (evaluateRequirements(bonus.requirements || [], attacker, target)) {
+			promptableBonuses.push({
+				formula: bonus.formula,
+				label: bonus.label || "",
+				damageType: bonus.damageType || "",
+				index: index
+			});
+		}
+	});
+
+	return promptableBonuses;
+}
+
+/**
  * Get effects to apply from a weapon hit
  * @param {Item} weapon - The weapon item
  * @param {Actor} attacker - The attacking actor
@@ -1629,6 +1724,7 @@ export function getWeaponBonuses(weapon, attacker, target, isCritical = false) {
  * @returns {Object[]} - Array of { uuid, name, img } for effects that should apply
  */
 export function getWeaponEffectsToApply(weapon, attacker, target) {
+
 	const flags = weapon.flags?.[MODULE_ID]?.weaponBonus;
 	if (!flags?.enabled || !flags.effects?.length) {
 		return [];
@@ -1736,6 +1832,9 @@ export async function calculateWeaponBonusDamage(weapon, attacker, target, isCri
 		for (const bonus of damageBonuses) {
 			if (!bonus.formula) continue;
 
+			// Skip prompt bonuses - they are handled separately via the roll dialog
+			if (bonus.prompt) continue;
+
 			// Check this bonus's requirements
 			if (evaluateRequirements(bonus.requirements || [], attacker, target)) {
 				const formula = evaluateFormula(bonus.formula, attacker);
@@ -1756,9 +1855,33 @@ export async function calculateWeaponBonusDamage(weapon, attacker, target, isCri
 		}
 	}
 
+
 	// If an exclusive bonus matched, use only that
 	if (exclusiveMatch) {
 		applicableParts = [exclusiveMatch];
+	}
+
+	// Check for user-selected prompt bonuses from the roll dialog
+	// These are stored in a global map by weapon ID
+	if (window._sdxSelectedPromptDamageBonuses && weapon?.id) {
+		const selectedPromptBonuses = window._sdxSelectedPromptDamageBonuses.get(weapon.id);
+		if (selectedPromptBonuses && selectedPromptBonuses.length > 0) {
+			console.log(`${MODULE_ID} | Adding selected prompt damage bonuses:`, selectedPromptBonuses);
+			for (const bonus of selectedPromptBonuses) {
+				const formula = evaluateFormula(bonus.formula, attacker);
+				if (formula) {
+					applicableParts.push({
+						formula,
+						label: "",
+						damageType: bonus.damageType || "",
+						isPromptBonus: true
+					});
+
+				}
+			}
+			// Clear the stored bonuses after using them
+			window._sdxSelectedPromptDamageBonuses.delete(weapon.id);
+		}
 	}
 
 	// Roll each damage bonus separately to track damage by type
@@ -1767,12 +1890,26 @@ export async function calculateWeaponBonusDamage(weapon, attacker, target, isCri
 	let bonusRollResults = []; // Store individual dice results for display
 	let bonusRolls = []; // NEW: Store actual Roll objects for DSN/Sync
 
+
 	for (const part of applicableParts) {
 		if (!part.formula) continue;
 
 		try {
 			const roll = new Roll(part.formula);
 			await roll.evaluate();
+
+			// If this is a prompt bonus (added from dialog selection), set black dice appearance
+			if (part.isPromptBonus && game.dice3d) {
+				roll.options.appearance = {
+					colorset: "custom",
+					foreground: "#FFFFFF",
+					background: "#1a1a1a",
+					outline: "#000000",
+					edge: "#333333",
+					material: "metal"
+				};
+			}
+
 			bonusRolls.push(roll); // Store the roll
 			const amount = roll.total;
 			totalBonus += amount;
@@ -1783,6 +1920,7 @@ export async function calculateWeaponBonusDamage(weapon, attacker, target, isCri
 				label: part.label || "",
 				formula: part.formula
 			});
+
 
 			// Extract dice results from the roll for display
 			for (const term of roll.terms) {

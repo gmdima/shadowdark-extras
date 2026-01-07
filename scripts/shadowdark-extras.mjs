@@ -19,8 +19,11 @@ import {
 	calculateWeaponBonusDamage,
 	injectWeaponBonusDisplay,
 	getWeaponItemMacroConfig,
-	injectWeaponAnimationButton
+	injectWeaponAnimationButton,
+	getPromptableHitBonuses,
+	getPromptableDamageBonuses
 } from "./WeaponBonusConfig.mjs";
+
 import { initAutoAnimationsIntegration } from "./AutoAnimationsSD.mjs";
 import { initTorchAnimations } from "./TorchAnimationSD.mjs";
 import { initWeaponAnimations } from "./WeaponAnimationSD.mjs";
@@ -36,6 +39,9 @@ import { initTemplateEffects, processTemplateTurnEffects, setupTemplateEffectFla
 import { initAuraEffects, createAuraOnActor, getActiveAuras, getTokensInAura } from "./AuraEffectsSD.mjs";
 import { registerDisplayNpcEnricher } from "./DisplayNpc.mjs";
 import { registerDisplayTableEnricher } from "./DisplayTable.mjs";
+import { registerDisplayItemEnricher } from "./DisplayItem.mjs";
+import { initEasyReferenceMenu, registerEasyReferenceSettings } from "./easy-reference/EasyReferenceMenu.mjs";
+import { CreatureTypesApp, getCreatureTypes } from "./CreatureTypesApp.mjs";
 
 const MODULE_ID = "shadowdark-extras";
 const TRADE_JOURNAL_NAME = "__sdx_trade_sync__"; // Must match TradeWindowSD.mjs
@@ -3757,6 +3763,24 @@ function registerSettings() {
 		requiresReload: false,
 	});
 
+	// Custom creature types storage
+	game.settings.register(MODULE_ID, "customCreatureTypes", {
+		scope: "world",
+		config: false,
+		default: [],
+		type: Array,
+	});
+
+	// Menu button to open creature types editor
+	game.settings.registerMenu(MODULE_ID, "manageCreatureTypes", {
+		name: game.i18n.localize("SHADOWDARK_EXTRAS.settings.manage_creature_types.name"),
+		label: game.i18n.localize("SHADOWDARK_EXTRAS.settings.manage_creature_types.name"),
+		hint: game.i18n.localize("SHADOWDARK_EXTRAS.settings.manage_creature_types.hint"),
+		icon: "fas fa-dragon",
+		type: CreatureTypesApp,
+		restricted: true,
+	});
+
 	// ═══════════════════════════════════════════════════════════════
 	// 7. VISUAL & ANIMATION
 	// ═══════════════════════════════════════════════════════════════
@@ -3780,6 +3804,13 @@ function registerSettings() {
 		type: Boolean,
 		requiresReload: true,
 	});
+
+	// ═══════════════════════════════════════════════════════════════
+	// 9. EASY REFERENCE MENU
+	// ═══════════════════════════════════════════════════════════════
+
+	// Easy Reference ProseMirror menu settings
+	registerEasyReferenceSettings();
 }
 
 /**
@@ -6528,26 +6559,7 @@ function calculateNpcCoinSlots(coins) {
 // NPC CREATURE TYPE DROPDOWN
 // ============================================
 
-/**
- * Standard D&D creature types that can be assigned to NPCs
- */
-const CREATURE_TYPES = [
-	"",            // None/Unset
-	"Aberration",
-	"Beast",
-	"Celestial",
-	"Construct",
-	"Dragon",
-	"Elemental",
-	"Fey",
-	"Fiend",
-	"Giant",
-	"Humanoid",
-	"Monstrosity",
-	"Ooze",
-	"Plant",
-	"Undead"
-];
+// Note: Creature types are now managed dynamically via getCreatureTypes() from CreatureTypesApp.mjs
 
 /**
  * Inject the creature type dropdown into NPC sheets
@@ -6577,8 +6589,9 @@ function injectNpcCreatureType(app, html, actor) {
 
 	console.log(`${MODULE_ID} | Current creature type: "${currentType}"`);
 
-	// Build the options HTML
-	const optionsHtml = CREATURE_TYPES.map(type => {
+	// Build the options HTML using dynamic creature types
+	const creatureTypes = getCreatureTypes();
+	const optionsHtml = creatureTypes.map(type => {
 		const selected = type === currentType ? "selected" : "";
 		const label = type || game.i18n.localize("SHADOWDARK_EXTRAS.npc.creature_type.none");
 		return `<option value="${type}" ${selected}>${label}</option>`;
@@ -14333,9 +14346,9 @@ Hooks.once("ready", () => {
 		return false;
 	};
 
-	// 4. Override RollDialog to add disadvantage highlights
+	// 4. Override RollDialog to add disadvantage highlights and promptable bonuses
 	if (CONFIG.DiceSD?.RollDialog) {
-		console.log(`${MODULE_ID} | Overriding CONFIG.DiceSD.RollDialog for highlights`);
+		console.log(`${MODULE_ID} | Overriding CONFIG.DiceSD.RollDialog for highlights and promptable bonuses`);
 		CONFIG.DiceSD.RollDialog = async function (parts, data, options = {}) {
 			if (options.skipPrompt) {
 				return await this.Roll(parts, data, false, options.adv ?? 0, options);
@@ -14348,6 +14361,42 @@ Hooks.once("ready", () => {
 			// Render the HTML for the dialog
 			let content = await this._getRollDialogContent(parts, data, options);
 
+			// Check for promptable bonuses if this is a weapon attack
+			let promptableHitBonuses = [];
+			let promptableDamageBonuses = [];
+
+			// The weapon item could be in data.item or we need to find it from options
+			const weaponItem = data.item || options.item;
+			const actor = data.actor;
+
+			console.log(`${MODULE_ID} | RollDialog - checking for prompt bonuses:`, {
+				hasWeaponItem: !!weaponItem,
+				weaponType: weaponItem?.type,
+				hasActor: !!actor,
+				dataKeys: Object.keys(data),
+				optionsKeys: Object.keys(options)
+			});
+
+			if (weaponItem?.type === "Weapon" && actor) {
+				const targetToken = game.user.targets.first();
+				const targetActor = targetToken?.actor || null;
+
+				promptableHitBonuses = getPromptableHitBonuses(weaponItem, actor, targetActor);
+				promptableDamageBonuses = getPromptableDamageBonuses(weaponItem, actor, targetActor);
+
+				console.log(`${MODULE_ID} | Promptable bonuses found:`, {
+					hitBonuses: promptableHitBonuses,
+					damageBonuses: promptableDamageBonuses
+				});
+
+				// Note: Checkbox injection moved to render callback to bypass HTML sanitization
+			}
+
+
+			// Store promptable bonuses in data for later access
+			data._sdxPromptableHitBonuses = promptableHitBonuses;
+			data._sdxPromptableDamageBonuses = promptableDamageBonuses;
+
 			const dialogData = {
 				title: options.title,
 				content,
@@ -14356,18 +14405,24 @@ Hooks.once("ready", () => {
 					advantage: {
 						label: game.i18n.localize("SHADOWDARK.roll.advantage"),
 						callback: async html => {
+							// Process selected promptable bonuses
+							await this._processPromptableBonuses(html, data, parts);
 							return this.Roll(parts, data, html, 1, options);
 						},
 					},
 					normal: {
 						label: game.i18n.localize("SHADOWDARK.roll.normal"),
 						callback: async html => {
+							// Process selected promptable bonuses
+							await this._processPromptableBonuses(html, data, parts);
 							return this.Roll(parts, data, html, 0, options);
 						},
 					},
 					disadvantage: {
 						label: game.i18n.localize("SHADOWDARK.roll.disadvantage"),
 						callback: async html => {
+							// Process selected promptable bonuses
+							await this._processPromptableBonuses(html, data, parts);
 							return this.Roll(parts, data, html, -1, options);
 						},
 					},
@@ -14393,11 +14448,199 @@ Hooks.once("ready", () => {
 							))
 							.addClass("talent-highlight");
 					}
+
+					// Inject promptable bonus checkboxes directly into DOM (bypasses sanitization)
+					if (promptableHitBonuses.length > 0 || promptableDamageBonuses.length > 0) {
+						const dialogContent = html.find('.shadowdark-dialog')[0];
+						if (dialogContent) {
+							// Create container for prompt bonuses using native DOM
+							const promptContainer = document.createElement('div');
+							promptContainer.className = 'sdx-prompt-bonuses';
+							const hr = document.createElement('hr');
+							promptContainer.appendChild(hr);
+
+							// Add hit bonus checkboxes (using custom div toggles)
+							if (promptableHitBonuses.length > 0) {
+								const hitSection = document.createElement('div');
+								hitSection.className = 'sdx-prompt-section';
+								hitSection.innerHTML = '<label class="sdx-prompt-section-label"><i class="fas fa-bullseye"></i> Optional To Hit Bonuses</label>';
+
+								promptableHitBonuses.forEach((bonus, i) => {
+									const displayLabel = bonus.label ? `${bonus.formula} (${bonus.label})` : bonus.formula;
+									const row = document.createElement('div');
+									row.className = 'sdx-prompt-bonus-row sdx-bonus-checked';
+									row.setAttribute('data-bonus-type', 'hit');
+									row.setAttribute('data-bonus-index', i);
+									row.setAttribute('data-formula', bonus.formula);
+									row.setAttribute('data-original-index', bonus.index);
+
+									// Create custom checkbox icon
+									const checkIcon = document.createElement('i');
+									checkIcon.className = 'fas fa-check-square sdx-toggle-icon';
+
+									const span = document.createElement('span');
+									span.className = 'sdx-prompt-bonus-label';
+									span.textContent = `+${displayLabel}`;
+
+									row.appendChild(checkIcon);
+									row.appendChild(span);
+
+									// Add click handler to toggle
+									row.addEventListener('click', function () {
+										this.classList.toggle('sdx-bonus-checked');
+										const icon = this.querySelector('.sdx-toggle-icon');
+										if (this.classList.contains('sdx-bonus-checked')) {
+											icon.className = 'fas fa-check-square sdx-toggle-icon';
+										} else {
+											icon.className = 'far fa-square sdx-toggle-icon';
+										}
+									});
+
+									hitSection.appendChild(row);
+								});
+								promptContainer.appendChild(hitSection);
+							}
+
+							// Add damage bonus checkboxes (using custom div toggles)
+							if (promptableDamageBonuses.length > 0) {
+								const damageSection = document.createElement('div');
+								damageSection.className = 'sdx-prompt-section';
+								damageSection.innerHTML = '<label class="sdx-prompt-section-label"><i class="fas fa-burst"></i> Optional Damage Bonuses</label>';
+
+								promptableDamageBonuses.forEach((bonus, i) => {
+									let displayLabel = bonus.label ? `${bonus.formula} (${bonus.label})` : bonus.formula;
+									if (bonus.damageType) {
+										displayLabel += ` [${bonus.damageType}]`;
+									}
+									const row = document.createElement('div');
+									row.className = 'sdx-prompt-bonus-row sdx-bonus-checked';
+									row.setAttribute('data-bonus-type', 'damage');
+									row.setAttribute('data-bonus-index', i);
+									row.setAttribute('data-formula', bonus.formula);
+									row.setAttribute('data-original-index', bonus.index);
+									row.setAttribute('data-damage-type', bonus.damageType || '');
+
+									// Create custom checkbox icon
+									const checkIcon = document.createElement('i');
+									checkIcon.className = 'fas fa-check-square sdx-toggle-icon';
+
+									const span = document.createElement('span');
+									span.className = 'sdx-prompt-bonus-label';
+									span.textContent = `+${displayLabel}`;
+
+									row.appendChild(checkIcon);
+									row.appendChild(span);
+
+									// Add click handler to toggle
+									row.addEventListener('click', function () {
+										this.classList.toggle('sdx-bonus-checked');
+										const icon = this.querySelector('.sdx-toggle-icon');
+										if (this.classList.contains('sdx-bonus-checked')) {
+											icon.className = 'fas fa-check-square sdx-toggle-icon';
+										} else {
+											icon.className = 'far fa-square sdx-toggle-icon';
+										}
+									});
+
+									damageSection.appendChild(row);
+								});
+								promptContainer.appendChild(damageSection);
+							}
+
+							// Insert before the last hr (before the buttons)
+							const lastHr = dialogContent.querySelectorAll('hr');
+							if (lastHr.length > 0) {
+								lastHr[lastHr.length - 1].before(promptContainer);
+							} else {
+								dialogContent.appendChild(promptContainer);
+							}
+
+							console.log(`${MODULE_ID} | Injected prompt bonuses via custom toggles`);
+						}
+					}
 				},
+
 			};
 
 			return Dialog.wait(dialogData, options.dialogOptions);
 		};
+
+		// Add helper function to process promptable bonuses from dialog
+		CONFIG.DiceSD._processPromptableBonuses = async function (html, data, parts) {
+
+			if (!data._sdxPromptableHitBonuses?.length && !data._sdxPromptableDamageBonuses?.length) {
+				return;
+			}
+
+			// Process selected hit bonuses (from custom div toggles)
+			if (data._sdxPromptableHitBonuses?.length) {
+				const selectedHitBonuses = [];
+				html.find('.sdx-prompt-bonus-row.sdx-bonus-checked[data-bonus-type="hit"]').each(function () {
+					const formula = $(this).attr('data-formula');
+					if (formula) {
+						selectedHitBonuses.push(String(formula));
+					}
+				});
+
+				if (selectedHitBonuses.length > 0) {
+					// Add to the roll - evaluate dice and add to data
+					const combinedFormula = selectedHitBonuses.join(' + ');
+					try {
+						const roll = new Roll(combinedFormula);
+						await roll.evaluate();
+
+						// Show Dice So Nice animation with gold appearance if available
+						if (game.dice3d) {
+							// Set gold appearance for prompt hit bonus dice
+							roll.options.appearance = {
+								colorset: "custom",
+								foreground: "#000000",
+								background: "#FFD700",
+								outline: "#B8860B",
+								edge: "#B8860B",
+								material: "metal"
+							};
+							await game.dice3d.showForRoll(roll, game.user, true);
+						}
+
+						data.sdxPromptHitBonus = roll.total;
+						if (!parts.includes("@sdxPromptHitBonus")) {
+							parts.push("@sdxPromptHitBonus");
+						}
+						console.log(`${MODULE_ID} | Applied prompted hit bonuses: ${combinedFormula} = ${roll.total}`);
+					} catch (err) {
+						console.warn(`${MODULE_ID} | Failed to evaluate prompted hit bonus: ${combinedFormula}`, err);
+					}
+				}
+
+			}
+
+
+			// Store selected damage bonuses for later application (from custom div toggles)
+			if (data._sdxPromptableDamageBonuses?.length) {
+				const selectedDamageBonuses = [];
+				html.find('.sdx-prompt-bonus-row.sdx-bonus-checked[data-bonus-type="damage"]').each(function () {
+					const formula = String($(this).attr('data-formula'));
+					const damageType = $(this).attr('data-damage-type') || "";
+					const index = parseInt($(this).attr('data-original-index'));
+					if (formula) {
+						selectedDamageBonuses.push({ formula, damageType, index });
+					}
+				});
+
+				// Store in global map keyed by weapon ID for access by calculateWeaponBonusDamage
+				const weaponItem = data.item;
+				if (weaponItem?.id) {
+					if (!window._sdxSelectedPromptDamageBonuses) {
+						window._sdxSelectedPromptDamageBonuses = new Map();
+					}
+					window._sdxSelectedPromptDamageBonuses.set(weaponItem.id, selectedDamageBonuses);
+					console.log(`${MODULE_ID} | Stored prompted damage bonuses for weapon ${weaponItem.id}:`, selectedDamageBonuses);
+				}
+			}
+
+		};
+
 	}
 
 	// ============================================
@@ -16073,6 +16316,10 @@ Hooks.on("renderApplication", (app, html, data) => {
 Hooks.once("ready", () => {
 	registerDisplayNpcEnricher();
 	registerDisplayTableEnricher();
+	registerDisplayItemEnricher();
+
+	// Initialize Easy Reference ProseMirror menu
+	initEasyReferenceMenu();
 
 	// Global listener for @DisplayTable roll buttons
 	$(document).on("click", ".sdx-table-roll-btn", async (event) => {

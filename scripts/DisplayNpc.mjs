@@ -3,6 +3,7 @@
  * 
  * Allows journal pages to display styled NPC stat cards using:
  * @DisplayNpcCard[Actor.UUID named]{Display Name}
+ * @DisplayNpcCardDetailed[Actor.UUID named]{Display Name} - includes attacks, special attacks, features
  * 
  * Based on Dragonbane's DisplayMonsterCard implementation.
  */
@@ -123,18 +124,139 @@ function getLocalizedMove(moveKey) {
 }
 
 /**
+ * Get the creature type from NPC flags
+ * @param {Actor} npc - The NPC actor  
+ * @returns {String} Creature type or empty string
+ */
+function getCreatureType(npc) {
+    return npc.flags?.[MODULE_ID]?.creatureType ?? "";
+}
+
+/**
+ * Get range label for attack
+ * @param {Array} ranges - Array of range keys
+ * @returns {String} Formatted range string
+ */
+function getRangeLabel(ranges) {
+    if (!ranges || ranges.length === 0) return "";
+    const rangeLabels = {
+        "close": "Close",
+        "near": "Near",
+        "far": "Far",
+        "doubleNear": "Double Near",
+        "tripleNear": "Triple Near"
+    };
+    return ranges.map(r => rangeLabels[r] || r).join(", ");
+}
+
+/**
+ * Build attacks section HTML
+ * @param {Actor} npc - The NPC actor
+ * @returns {String} HTML string for attacks
+ */
+async function buildAttacksHtml(npc) {
+    const attacks = npc.items.filter(i => i.type === "NPC Attack");
+    if (attacks.length === 0) return "";
+
+    let html = `<div class="sdx-npc-section">
+        <div class="sdx-npc-section-header">Attacks</div>
+        <div class="sdx-npc-section-content">`;
+
+    for (const attack of attacks) {
+        const num = attack.system.attack?.num ?? 1;
+        const bonus = attack.system.bonuses?.attackBonus ?? 0;
+        const bonusStr = formatModifier(bonus);
+        const damage = attack.system.damage?.value ?? "";
+        const rangeStr = getRangeLabel(attack.system.ranges);
+
+        html += `<div class="sdx-npc-attack">
+            <span class="sdx-npc-attack-num">${num}</span>
+            <strong class="sdx-npc-attack-name">${attack.name}</strong>`;
+        if (rangeStr) html += ` <span class="sdx-npc-attack-range">(${rangeStr})</span>`;
+        html += ` <span class="sdx-npc-attack-bonus">${bonusStr}</span>`;
+        if (damage) html += ` <span class="sdx-npc-attack-damage">(${damage})</span>`;
+        html += `</div>`;
+    }
+
+    html += `</div></div>`;
+    return html;
+}
+
+/**
+ * Build special attacks section HTML
+ * @param {Actor} npc - The NPC actor
+ * @returns {String} HTML string for special attacks
+ */
+async function buildSpecialAttacksHtml(npc) {
+    const specials = npc.items.filter(i => i.type === "NPC Special Attack");
+    if (specials.length === 0) return "";
+
+    let html = `<div class="sdx-npc-section">
+        <div class="sdx-npc-section-header">Special Attacks</div>
+        <div class="sdx-npc-section-content">`;
+
+    for (const special of specials) {
+        const num = special.system.attack?.num ?? 1;
+        const desc = special.system.description ?? "";
+        const enrichedDesc = await TextEditor.enrichHTML(desc, { async: true });
+        // Strip <p> tags for inline display
+        const cleanDesc = enrichedDesc.replace(/<\/?p>/g, "").trim();
+
+        html += `<div class="sdx-npc-special-attack">
+            <span class="sdx-npc-attack-num">${num}</span>
+            <strong class="sdx-npc-attack-name">${special.name}</strong>`;
+        if (cleanDesc) html += ` <span class="sdx-npc-special-desc">${cleanDesc}</span>`;
+        html += `</div>`;
+    }
+
+    html += `</div></div>`;
+    return html;
+}
+
+/**
+ * Build features section HTML
+ * @param {Actor} npc - The NPC actor
+ * @returns {String} HTML string for features
+ */
+async function buildFeaturesHtml(npc) {
+    const features = npc.items.filter(i => i.type === "NPC Feature");
+    if (features.length === 0) return "";
+
+    let html = `<div class="sdx-npc-section">
+        <div class="sdx-npc-section-header">Features</div>
+        <div class="sdx-npc-section-content">`;
+
+    for (const feature of features) {
+        const desc = feature.system.description ?? "";
+        const enrichedDesc = await TextEditor.enrichHTML(desc, { async: true });
+        // Strip <p> tags for inline display
+        const cleanDesc = enrichedDesc.replace(/<\/?p>/g, "").trim();
+
+        html += `<div class="sdx-npc-feature">
+            <strong class="sdx-npc-feature-name">${feature.name}.</strong>`;
+        if (cleanDesc) html += ` <span class="sdx-npc-feature-desc">${cleanDesc}</span>`;
+        html += `</div>`;
+    }
+
+    html += `</div></div>`;
+    return html;
+}
+
+/**
  * Main enricher function for @DisplayNpcCard
  * @param {RegExpMatchArray} match - The regex match array
  * @param {Object} _options - Enricher options
+ * @param {Boolean} detailed - Whether to include detailed sections (attacks, features)
  * @returns {HTMLElement} The rendered element
  */
-export async function enrichDisplayNpcCard(match, _options) {
+export async function enrichDisplayNpcCard(match, _options, detailed = false) {
     const parsedMatch = parseMatch(match[1]);
     const npc = await getActorFromUUID(parsedMatch.uuid);
     const npcName = match[2] ?? npc?.name;
 
     const container = document.createElement("div");
     container.classList.add("sdx-display-npc-container");
+    if (detailed) container.classList.add("sdx-display-npc-detailed");
 
     if (npc) {
         // Build title - centered, large
@@ -156,6 +278,9 @@ export async function enrichDisplayNpcCard(match, _options) {
         const moveStr = getLocalizedMove(moveKey);
         const moveDisplay = moveNote ? `${moveStr} (${moveNote})` : moveStr;
 
+        // Get creature type
+        const creatureType = getCreatureType(npc);
+
         // Build sections
         const abilityScoresHtml = buildAbilityScoresHtml(npc);
         const descriptionHtml = await buildDescriptionHtml(npc);
@@ -163,7 +288,7 @@ export async function enrichDisplayNpcCard(match, _options) {
         // Pre-localized labels
         const hpLabel = "HP";
         const acLabel = "AC";
-        const lvLabel = "LV";
+        const lvLabel = creatureType ? `LV (${creatureType})` : "LV";
         const moveLabel = "MV";
 
         let html = `
@@ -190,8 +315,17 @@ export async function enrichDisplayNpcCard(match, _options) {
                     <span class="sdx-npc-stat-value">${moveDisplay}</span>
                 </div>
             </div>
-            ${descriptionHtml}
-        </div>`;
+            ${descriptionHtml}`;
+
+        // Add detailed sections if requested
+        if (detailed) {
+            const attacksHtml = await buildAttacksHtml(npc);
+            const specialAttacksHtml = await buildSpecialAttacksHtml(npc);
+            const featuresHtml = await buildFeaturesHtml(npc);
+            html += attacksHtml + specialAttacksHtml + featuresHtml;
+        }
+
+        html += `</div>`;
 
         container.innerHTML = await TextEditor.enrichHTML(html, { async: true });
     } else {
@@ -206,7 +340,14 @@ export async function enrichDisplayNpcCard(match, _options) {
 }
 
 /**
- * Register the DisplayNpcCard enricher with Foundry
+ * Enricher wrapper for detailed NPC card
+ */
+export async function enrichDisplayNpcCardDetailed(match, _options) {
+    return enrichDisplayNpcCard(match, _options, true);
+}
+
+/**
+ * Register the DisplayNpcCard enrichers with Foundry
  * Call this during the ready hook
  */
 export function registerDisplayNpcEnricher() {
@@ -215,5 +356,11 @@ export function registerDisplayNpcEnricher() {
         enricher: enrichDisplayNpcCard
     });
 
-    console.log("SDX | Registered DisplayNpcCard enricher");
+    CONFIG.TextEditor.enrichers.push({
+        pattern: /@DisplayNpcCardDetailed\[(.+?)\](?:\{(.+?)\})?/gm,
+        enricher: enrichDisplayNpcCardDetailed
+    });
+
+    console.log("SDX | Registered DisplayNpcCard and DisplayNpcCardDetailed enrichers");
 }
+

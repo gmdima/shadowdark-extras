@@ -335,14 +335,15 @@ export function generateAuraConfigHTML(moduleId, flags) {
                             
                             <div class="sdx-aura-animation-config" style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; ${animation.enabled !== false ? '' : 'opacity: 0.5; pointer-events: none;'}">
                                 <div>
-                                    <label style="font-size: 11px; color: #999;">Style</label>
-                                    <select name="flags.${moduleId}.auraEffects.animation.style" style="width: 100%;">
-                                        <option value="circle" ${animation.style === 'circle' ? 'selected' : ''}>Circle Aura</option>
-                                        <option value="darkness" ${animation.style === 'darkness' ? 'selected' : ''}>Darkness</option>
-                                        <option value="pulse" ${animation.style === 'pulse' ? 'selected' : ''}>Pulsing</option>
-                                        <option value="glow" ${animation.style === 'glow' ? 'selected' : ''}>Glow</option>
-                                    </select>
+                                    <label style="font-size: 11px; color: #999;">Animation Path</label>
+                                    <input type="text" 
+                                        name="flags.${moduleId}.auraEffects.animation.style"
+                                        value="${animation.style || ''}"
+                                        placeholder="e.g., jb2a.shield_aura.01.blue"
+                                        style="width: 100%;"
+                                        title="Sequencer database path (browse with Sequencer Effect Manager)">
                                 </div>
+
                                 <div>
                                     <label style="font-size: 11px; color: #999;">Tint Color</label>
                                     <input type="color" 

@@ -654,21 +654,15 @@ async function handleEffectCreated(item, options, userId) {
 	const activeFocus = sourceActor.getFlag(MODULE_ID, FOCUS_SPELL_FLAG) || [];
 	const focusEntry = activeFocus.find(f => f.spellId === sourceSpell.id);
 
-	if (!focusEntry) return;
-
-	// Link this effect to the focus spell
 	const targetToken = item.actor.getActiveTokens()?.[0];
 
-	focusEntry.targetEffects.push({
-		targetActorId: item.actor.id,
-		targetTokenId: targetToken?.id ?? null,
-		effectItemId: item.id,
-		targetName: item.actor.name
-	});
+	if (focusEntry) {
+		await linkEffectToFocusSpell(sourceActor, sourceSpell.id, item.actor, targetToken?.id, item.id);
+		return;
+	}
 
-	await sourceActor.setFlag(MODULE_ID, FOCUS_SPELL_FLAG, activeFocus);
-
-	console.log(`shadowdark-extras | Linked effect ${item.name} to focus spell ${sourceSpell.name}`);
+	// Check if it's a duration spell being tracked
+	await linkEffectToDurationSpell(sourceActor, sourceSpell.id, item.actor, targetToken?.id, item.id);
 }
 
 /**
@@ -677,56 +671,108 @@ async function handleEffectCreated(item, options, userId) {
 async function handleEffectDeleted(item, options, userId) {
 	if (item.type !== "Effect") return;
 
-	// Find and clean up any focus spell tracking that referenced this effect
+	// Find and clean up any focus/duration spell tracking that referenced this effect
 	for (const actor of game.actors) {
 		const activeFocus = actor.getFlag(MODULE_ID, FOCUS_SPELL_FLAG);
-		if (!activeFocus || activeFocus.length === 0) continue;
+		if (activeFocus && activeFocus.length > 0) {
+			let updated = false;
+			for (const focusEntry of activeFocus) {
+				const effectIndex = focusEntry.targetEffects.findIndex(
+					te => te.effectItemId === item.id && te.targetActorId === item.actor?.id
+				);
 
-		let updated = false;
-		for (const focusEntry of activeFocus) {
-			const effectIndex = focusEntry.targetEffects.findIndex(
-				te => te.effectItemId === item.id && te.targetActorId === item.actor?.id
-			);
+				if (effectIndex >= 0) {
+					focusEntry.targetEffects.splice(effectIndex, 1);
+					updated = true;
+				}
+			}
 
-			if (effectIndex >= 0) {
-				focusEntry.targetEffects.splice(effectIndex, 1);
-				updated = true;
+			if (updated) {
+				await actor.setFlag(MODULE_ID, FOCUS_SPELL_FLAG, activeFocus);
 			}
 		}
 
-		if (updated) {
-			await actor.setFlag(MODULE_ID, FOCUS_SPELL_FLAG, activeFocus);
+		// Check Duration Spells
+		const activeDuration = actor.getFlag(MODULE_ID, DURATION_SPELL_FLAG);
+		if (activeDuration && activeDuration.length > 0) {
+			let updated = false;
+			for (const durationEntry of activeDuration) {
+				if (!durationEntry.targetEffects) continue;
+
+				const effectIndex = durationEntry.targetEffects.findIndex(
+					te => te.effectItemId === item.id && te.targetActorId === item.actor?.id
+				);
+
+				if (effectIndex >= 0) {
+					durationEntry.targetEffects.splice(effectIndex, 1);
+					updated = true;
+				}
+			}
+
+			if (updated) {
+				await actor.setFlag(MODULE_ID, DURATION_SPELL_FLAG, activeDuration);
+			}
 		}
 	}
 }
 
 /**
- * Handle token deletion - clean up any focus tracking that targeted this token
+ * Handle token deletion - clean up any focus/duration tracking that targeted this token
  */
 async function handleTokenDeleted(tokenDoc, options, userId) {
 	const deletedTokenId = tokenDoc.id;
 
-	// Search all actors for focus spells targeting this token
+	// Search all actors for focus/duration spells targeting this token
 	for (const actor of game.actors) {
 		const activeFocus = actor.getFlag(MODULE_ID, FOCUS_SPELL_FLAG);
-		if (!activeFocus || activeFocus.length === 0) continue;
+		if (activeFocus && activeFocus.length > 0) {
+			let updated = false;
+			for (const focusEntry of activeFocus) {
+				// Remove any target effects that reference the deleted token
+				const originalLength = focusEntry.targetEffects.length;
+				focusEntry.targetEffects = focusEntry.targetEffects.filter(
+					te => te.targetTokenId !== deletedTokenId
+				);
 
-		let updated = false;
-		for (const focusEntry of activeFocus) {
-			// Remove any target effects that reference the deleted token
-			const originalLength = focusEntry.targetEffects.length;
-			focusEntry.targetEffects = focusEntry.targetEffects.filter(
-				te => te.targetTokenId !== deletedTokenId
-			);
+				if (focusEntry.targetEffects.length !== originalLength) {
+					updated = true;
+					console.log(`shadowdark-extras | Removed target effects for deleted token ${deletedTokenId} from focus spell ${focusEntry.spellName}`);
+				}
+			}
 
-			if (focusEntry.targetEffects.length !== originalLength) {
-				updated = true;
-				console.log(`shadowdark-extras | Removed target effects for deleted token ${deletedTokenId} from focus spell ${focusEntry.spellName}`);
+			if (updated) {
+				await actor.setFlag(MODULE_ID, FOCUS_SPELL_FLAG, activeFocus);
 			}
 		}
 
-		if (updated) {
-			await actor.setFlag(MODULE_ID, FOCUS_SPELL_FLAG, activeFocus);
+		// Check Duration Spells
+		const activeDuration = actor.getFlag(MODULE_ID, DURATION_SPELL_FLAG);
+		if (activeDuration && activeDuration.length > 0) {
+			let updated = false;
+			for (const durationEntry of activeDuration) {
+				// Clean up targetEffects
+				if (durationEntry.targetEffects) {
+					const originalLength = durationEntry.targetEffects.length;
+					durationEntry.targetEffects = durationEntry.targetEffects.filter(
+						te => te.targetTokenId !== deletedTokenId
+					);
+					if (durationEntry.targetEffects.length !== originalLength) updated = true;
+				}
+
+				// Clean up targets
+				if (durationEntry.targets) {
+					const originalLength = durationEntry.targets.length;
+					durationEntry.targets = durationEntry.targets.filter(
+						t => t.tokenId !== deletedTokenId
+					);
+					if (durationEntry.targets.length !== originalLength) updated = true;
+				}
+			}
+
+			if (updated) {
+				await actor.setFlag(MODULE_ID, DURATION_SPELL_FLAG, activeDuration);
+				console.log(`shadowdark-extras | Removed targets for deleted token ${deletedTokenId} from duration spells`);
+			}
 		}
 	}
 }
@@ -872,7 +918,7 @@ async function applyFocusSpellPerTurnDamage(focusSpell, targetActor, targetToken
 				</div>
 				<div class="sdx-duration-damage-content">
 					<span class="sdx-duration-damage-target">
-						<strong>${targetActor.name}</strong> ${isHealing ? 'regains' : 'takes'} <strong class="sdx-damage-value">${damage}</strong> ${damageType}${isHealing ? '' : ' damage'}!
+						<strong>${token.name}</strong> ${isHealing ? 'regains' : 'takes'} <strong class="sdx-damage-value">${damage}</strong> ${damageType}${isHealing ? '' : ' damage'}!
 					</span>
 					<span class="sdx-duration-damage-roll">${formula} = ${roll.result}</span>
 				</div>
@@ -1291,7 +1337,7 @@ async function applyDurationSpellPerTurnDamage(durationSpell, targetActor, targe
 				</div>
 				<div class="sdx-duration-damage-content">
 					<span class="sdx-duration-damage-target">
-						<strong>${targetActor.name}</strong> takes <strong class="sdx-damage-value">${damage}</strong> ${damageType} damage!
+						<strong>${token.name}</strong> takes <strong class="sdx-damage-value">${damage}</strong> ${damageType} damage!
 					</span>
 					<span class="sdx-duration-damage-roll">${formula} = ${roll.result}</span>
 				</div>
@@ -1376,16 +1422,25 @@ export async function linkEffectToDurationSpell(casterActorOrId, instanceId, tar
 		return true;
 	}
 
+	// Resolve target name (prefer token name)
+	let targetName = targetActor?.name || "Unknown";
+	if (targetTokenId) {
+		const token = canvas.tokens?.get(targetTokenId);
+		if (token) targetName = token.name;
+	} else if (targetActor?.token) {
+		targetName = targetActor.token.name;
+	}
+
 	// Add the effect to tracking
 	durationEntry.targetEffects.push({
 		targetActorId: targetActor?.id || null,
 		targetTokenId: targetTokenId,
 		effectItemId: effectItemId,
-		targetName: targetActor?.name || "Unknown"
+		targetName: targetName
 	});
 
 	// Also add to main targets array if not already present (for UI display)
-	// This ensures self-targeted spells show correct target count
+	// We allow the caster to be a target for Duration spells (e.g. self-buffs like Mage Armor)
 	if (targetActor || targetTokenId) {
 		const targetAlreadyInList = durationEntry.targets.some(t =>
 			(t.actorId && t.actorId === targetActor?.id) ||
@@ -1395,7 +1450,7 @@ export async function linkEffectToDurationSpell(casterActorOrId, instanceId, tar
 			durationEntry.targets.push({
 				tokenId: targetTokenId || null,
 				actorId: targetActor?.id || null,
-				name: targetActor?.name || "Unknown"
+				name: targetName
 			});
 			console.log(`shadowdark-extras | Added target to duration spell targets: ${targetActor?.name || targetTokenId}`);
 		}
@@ -2134,8 +2189,12 @@ function buildFocusSpellsHtml(actor, activeFocus) {
 		// Calculate how long focus has been maintained
 		const focusedTime = calculateFocusDuration(focus);
 
-		// Build target list for tooltip
-		const targetsList = focus.targetEffects.map(te => te.targetName).join(", ") ||
+		// Filter out concentration effects (effects on the caster) for display
+		const nonConcentrationEffects = focus.targetEffects.filter(te => te.targetActorId !== focus.casterId);
+		const targetCount = nonConcentrationEffects.length;
+
+		// Build target list for tooltip (excluding concentration on caster)
+		const targetsList = nonConcentrationEffects.map(te => te.targetName).join(", ") ||
 			game.i18n.localize("SHADOWDARK_EXTRAS.focus_tracker.no_targets");
 
 		spellsHtml += `
@@ -2148,7 +2207,7 @@ function buildFocusSpellsHtml(actor, activeFocus) {
 				</div>
 				<span class="sdx-focus-time" title="${game.i18n.localize("SHADOWDARK_EXTRAS.focus_tracker.time_focused")}">${focusedTime}</span>
 				<span class="sdx-focus-targets" title="${targetsList}">
-					<i class="fas fa-bullseye"></i> ${focus.targetEffects.length}
+					<i class="fas fa-bullseye"></i> ${targetCount}
 				</span>
 				<div class="actions">
 					<a data-action="focus-roll" data-spell-id="${focus.spellId}" 
@@ -2285,11 +2344,21 @@ export async function linkEffectToFocusSpell(casterActorOrId, spellId, targetAct
 	if (existing) {
 		return true; // Already linked
 	}
+
+	// Resolve target name (prefer token name)
+	let targetName = targetActor.name;
+	if (resolvedTokenId) {
+		const token = canvas.tokens?.get(resolvedTokenId);
+		if (token) targetName = token.name;
+	} else if (targetActor.token) {
+		targetName = targetActor.token.name;
+	}
+
 	focusEntry.targetEffects.push({
 		targetActorId: targetActor.id,
 		targetTokenId: resolvedTokenId,
 		effectItemId: effectItemId,
-		targetName: targetActor.name
+		targetName: targetName
 	});
 
 	await casterActor.setFlag(MODULE_ID, FOCUS_SPELL_FLAG, activeFocus);
@@ -2364,17 +2433,26 @@ export async function linkTargetToFocusSpell(casterActorOrId, spellId, targetAct
 		return true; // Already linked
 	}
 
+	// Resolve target name (prefer token name)
+	let targetName = targetActor.name;
+	if (resolvedTokenId) {
+		const token = canvas.tokens?.get(resolvedTokenId);
+		if (token) targetName = token.name;
+	} else if (targetActor.token) {
+		targetName = targetActor.token.name;
+	}
+
 	// Add target without an effect ID
 	focusEntry.targetEffects.push({
 		targetActorId: targetActor.id,
 		targetTokenId: resolvedTokenId,
 		effectItemId: null, // No effect, just tracking the target
-		targetName: targetActor.name
+		targetName: targetName
 	});
 
 	await casterActor.setFlag(MODULE_ID, FOCUS_SPELL_FLAG, activeFocus);
 
-	console.log(`shadowdark-extras | Linked target ${targetActor.name} to focus spell ${spellId} (no effect)`);
+	console.log(`shadowdark-extras | Linked target ${targetName} to focus spell ${spellId} (no effect)`);
 
 	// Refresh the actor sheet if open
 	casterActor.sheet?.render(false);

@@ -84,6 +84,23 @@
 				Far=unlimited)</p>
 		</div>
 
+		<div class="sdx-setting-item">
+			<div class="sdx-setting-header">
+				<label for="untargetAtEndOfTurn">
+					<strong>Un-target at End of Turn</strong>
+				</label>
+				<select name="untargetAtEndOfTurn" id="untargetAtEndOfTurn">
+					<option value="none" {{#if (eq settings.untargetAtEndOfTurn "none" )}}selected{{/if}}>None - Keep
+						all targets</option>
+					<option value="dead" {{#if (eq settings.untargetAtEndOfTurn "dead" )}}selected{{/if}}>Un-target dead
+						after roll</option>
+					<option value="all" {{#if (eq settings.untargetAtEndOfTurn "all" )}}selected{{/if}}>Un-target all at
+						end of turn</option>
+				</select>
+			</div>
+			<p class="sdx-setting-hint">At the end of your turn, choose which targets to automatically un-target</p>
+		</div>
+
 		<div class="sdx-subsettings" data-parent="showDamageCard">
 			<div class="sdx-setting-item">
 				<div class="sdx-setting-header">

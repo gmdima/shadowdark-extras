@@ -9494,6 +9494,118 @@ section[data-tab="tab-notes"].sdx-journal-active>div:not(.sdx-journal-notes) {
     font-weight: 500;
 }
 
+/* Prompt checkbox styling (show bonus in attack roll dialog) */
+.sdx-prompt-label {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 10px;
+    color: black;
+    cursor: pointer;
+    padding: 2px 6px;
+    border-radius: 3px;
+    background: rgba(40, 180, 100, 0.1);
+    border: 1px solid rgba(40, 180, 100, 0.3);
+    margin-right: 8px;
+}
+
+.sdx-prompt-label:hover {
+    background: rgba(40, 180, 100, 0.2);
+}
+
+.sdx-prompt-label input {
+    margin: 0;
+    cursor: pointer;
+}
+
+.sdx-prompt-label span {
+    font-weight: 500;
+}
+
+/* ============================================
+   PROMPTABLE BONUSES IN ROLL DIALOG
+   ============================================ */
+
+.sdx-prompt-bonuses {
+    margin-top: 8px;
+}
+
+.sdx-prompt-bonuses hr {
+    border: none;
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+    margin: 8px 0;
+}
+
+.sdx-prompt-section {
+    margin-bottom: 10px;
+}
+
+/* Fix for Damage Roll header readability on dark background */
+.card-damage-rolls h3 {
+    color: white;
+}
+
+.sdx-prompt-section-label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    font-weight: bold;
+    color: black;
+    margin-bottom: 6px;
+}
+
+.sdx-prompt-section-label i {
+    color: var(--party-bg-light);
+}
+
+.sdx-prompt-bonus-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 10px;
+    margin: 4px 0;
+    background: rgba(201, 170, 88, 0.1);
+    border: 1px solid rgba(201, 170, 88, 0.3);
+    border-radius: 4px;
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.15s ease;
+}
+
+.sdx-prompt-bonus-row:hover {
+    background: rgba(201, 170, 88, 0.25);
+}
+
+.sdx-prompt-bonus-row.sdx-bonus-checked {
+    background: rgba(100, 180, 100, 0.15);
+    border-color: rgba(100, 180, 100, 0.4);
+}
+
+.sdx-prompt-bonus-row.sdx-bonus-checked:hover {
+    background: rgba(100, 180, 100, 0.25);
+}
+
+/* Custom toggle icon styling */
+.sdx-toggle-icon {
+    font-size: 16px;
+    color: #666;
+    flex-shrink: 0;
+    width: 18px;
+    text-align: center;
+}
+
+.sdx-bonus-checked .sdx-toggle-icon {
+    color: #2a7a2a;
+}
+
+.sdx-prompt-bonus-label {
+    font-size: 12px;
+    color: black;
+    font-family: 'Courier New', monospace;
+}
+
+
 /* ============================================
    DURATION TRACKING STYLES
    ============================================ */
@@ -15137,46 +15249,64 @@ body:not(.game-master) .sdx-carousing-chat .sdx-player-only {
 
 /* ============================================
    DISPLAY NPC CARD STYLES (Journal Enricher)
+   Shadowdark Black & White Gothic Aesthetic
    ============================================ */
 
 /* Container for the NPC card */
 .sdx-display-npc-container {
-    margin: 16px 0;
+    margin: 20px 0;
 }
 
-/* Main NPC card styling - clean black and white */
+/* Main NPC card styling - Shadowdark B&W theme */
 .sdx-display-npc {
-    background: #0a0a0a;
-    border: 1px solid #333;
-    border-radius: 4px;
+    background: #fff;
+    border: 3px solid #000;
     padding: 0;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+    box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.3);
     font-family: "Roboto Condensed", "Arial Narrow", sans-serif;
     overflow: hidden;
 }
 
-/* Title - centered, large, Old Newspaper Font */
+/* Title - Black header with Old Newspaper Font */
 .sdx-npc-title {
-    background: #111;
-    border-bottom: 2px solid #333;
-    padding: 12px 16px;
+    background: #000;
+    border-bottom: 3px solid #000;
+    padding: 10px 20px;
     text-align: center;
     font-family: "Old Newspaper Font", "Times New Roman", serif;
-    font-size: 1.8em;
+    font-size: 1.6em;
     font-weight: normal;
     color: #fff;
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
-    letter-spacing: 1px;
+    letter-spacing: 2px;
+    position: relative;
+}
+
+/* Decorative dagger symbols */
+.sdx-npc-title::before,
+.sdx-npc-title::after {
+    content: '†';
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 1.2em;
+    color: #fff;
+}
+
+.sdx-npc-title::before {
+    left: 12px;
+}
+
+.sdx-npc-title::after {
+    right: 12px;
 }
 
 .sdx-npc-title a {
     color: #fff;
     text-decoration: none;
-    transition: all 0.2s ease;
+    transition: all 0.15s ease;
 }
 
 .sdx-npc-title a:hover {
-    color: #ccc;
     text-decoration: underline;
 }
 
@@ -15184,18 +15314,18 @@ body:not(.game-master) .sdx-carousing-chat .sdx-player-only {
     color: #fff;
 }
 
-/* Ability scores row */
+/* Ability scores row - white bg, black text */
 .sdx-npc-abilities {
     display: grid;
     grid-template-columns: repeat(6, 1fr);
-    background: #151515;
-    border-bottom: 1px solid #333;
+    background: #f5f5f5;
+    border-bottom: 2px solid #000;
 }
 
 .sdx-npc-ability {
     text-align: center;
-    padding: 6px 4px;
-    border-right: 1px solid #252525;
+    padding: 8px 4px;
+    border-right: 2px solid #000;
 }
 
 .sdx-npc-ability:last-child {
@@ -15207,29 +15337,29 @@ body:not(.game-master) .sdx-carousing-chat .sdx-player-only {
     font-size: 0.85em;
     text-transform: uppercase;
     letter-spacing: 1px;
-    color: #cdcccc;
-    margin-bottom: 1px;
+    color: #000;
+    margin-bottom: 2px;
     font-weight: bold;
 }
 
 .sdx-npc-ability-mod {
-    font-size: 1em;
+    font-size: 1.1em;
     font-weight: bold;
-    color: #ddd;
+    color: #000;
 }
 
 /* Stats grid - HP, AC, LV, MV (4 columns) */
 .sdx-npc-stats-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    background: #0d0d0d;
-    border-bottom: 1px solid #333;
+    background: #fff;
+    border-bottom: 2px solid #000;
 }
 
 .sdx-npc-stat {
     padding: 8px 6px;
     text-align: center;
-    border-right: 1px solid #252525;
+    border-right: 2px solid #000;
 }
 
 .sdx-npc-stat:last-child {
@@ -15241,25 +15371,24 @@ body:not(.game-master) .sdx-carousing-chat .sdx-player-only {
     font-size: 0.85em;
     text-transform: uppercase;
     letter-spacing: 1px;
-    color: #cdcccc;
-    margin-bottom: 1px;
+    color: #000;
+    margin-bottom: 2px;
     font-weight: bold;
 }
 
 .sdx-npc-stat-value {
     font-size: 1.1em;
     font-weight: bold;
-    color: #fff;
+    color: #000;
     text-transform: uppercase;
 }
 
 /* Description section */
 .sdx-npc-description {
-    padding: 10px 14px;
-    background: #0d0d0d;
-    border-bottom: 1px solid #333;
-    color: #aaa;
-    font-size: 0.9em;
+    padding: 12px 14px;
+    background: #fff;
+    color: #000;
+    font-size: 1em;
     line-height: 1.5;
     font-style: italic;
 }
@@ -15274,20 +15403,297 @@ body:not(.game-master) .sdx-carousing-chat .sdx-player-only {
 
 /* Broken link styling */
 .sdx-display-npc-container.broken {
-    background: #1a1010;
-    border: 1px dashed #4a2020;
-    border-radius: 4px;
-    padding: 10px 14px;
-    color: #aa6666;
+    background: #fff;
+    border: 2px dashed #000;
+    padding: 12px 16px;
+    color: #000;
+    font-weight: bold;
 }
 
 .sdx-display-npc-container.broken i {
     margin-right: 8px;
-    color: #885555;
+    color: #000;
+}
+
+/* ============================================
+   DETAILED NPC CARD SECTIONS (Attacks, Features)
+   ============================================ */
+
+.sdx-npc-section {
+    border-top: 2px solid #000;
+}
+
+.sdx-npc-section-header {
+    background: #000;
+    color: #fff;
+    padding: 6px 14px;
+    font-family: "Old Newspaper Font", "Times New Roman", serif;
+    font-size: 1.2em;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.sdx-npc-section-content {
+    background: #fff;
+    padding: 10px 14px;
+}
+
+/* Attack styling */
+.sdx-npc-attack,
+.sdx-npc-special-attack {
+    margin-bottom: 6px;
+    line-height: 1.5;
+}
+
+.sdx-npc-attack:last-child,
+.sdx-npc-special-attack:last-child {
+    margin-bottom: 0;
+}
+
+.sdx-npc-attack-num {
+    font-weight: bold;
+    margin-right: 4px;
+}
+
+.sdx-npc-attack-name {
+    font-weight: bold;
+}
+
+.sdx-npc-attack-range {
+    color: #444;
+    font-style: italic;
+}
+
+.sdx-npc-attack-bonus {
+    font-weight: bold;
+}
+
+.sdx-npc-attack-damage {
+    color: #000;
+}
+
+.sdx-npc-special-desc {
+    color: #000;
+}
+
+/* Feature styling */
+.sdx-npc-feature {
+    margin-bottom: 6px;
+    line-height: 1.5;
+}
+
+.sdx-npc-feature:last-child {
+    margin-bottom: 0;
+}
+
+.sdx-npc-feature-name {
+    font-weight: bold;
+}
+
+.sdx-npc-feature-desc {
+    color: #000;
+}
+
+/* Inline rolls in detailed sections */
+.sdx-npc-section-content .inline-roll {
+    background: #000;
+    color: #fff;
+    padding: 1px 6px;
+    border-radius: 0;
+    font-weight: bold;
+    border: 1px solid #000;
+}
+
+.sdx-npc-section-content .inline-roll:hover {
+    background: #333;
+}
+
+/* ============================================
+   DISPLAY ITEM CARD STYLES (Journal Enricher)
+   Shadowdark Black & White Gothic Aesthetic
+   ============================================ */
+
+.sdx-display-item-container {
+    margin: 20px 0;
+}
+
+.sdx-display-item {
+    background: #fff;
+    border: 3px solid #000;
+    padding: 0;
+    box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.3);
+    font-family: "Roboto Condensed", "Arial Narrow", sans-serif;
+    overflow: hidden;
+}
+
+/* Magic item styling - gold border */
+.sdx-display-item.sdx-item-magic {
+    border-color: #8b7500;
+    box-shadow: 4px 4px 0 rgba(139, 117, 0, 0.4);
+}
+
+.sdx-display-item.sdx-item-magic .sdx-item-header {
+    background: linear-gradient(135deg, #1a1a00 0%, #000 100%);
+    border-bottom-color: #8b7500;
+}
+
+.sdx-display-item.sdx-item-magic .sdx-item-title {
+    color: #ffd700;
+}
+
+/* Header with title and type */
+.sdx-item-header {
+    background: #000;
+    border-bottom: 3px solid #000;
+    padding: 10px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+}
+
+.sdx-item-title {
+    font-family: "Old Newspaper Font", "Times New Roman", serif;
+    font-size: 1.5em;
+    font-weight: normal;
+    color: #fff;
+    letter-spacing: 1px;
+    flex: 1;
+}
+
+.sdx-item-title a {
+    color: #fff;
+    text-decoration: none;
+}
+
+.sdx-item-title a:hover {
+    text-decoration: underline;
+}
+
+.sdx-item-type {
+    font-size: 0.9em;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #888;
+    background: #222;
+    padding: 4px 10px;
+    border: 1px solid #444;
+}
+
+/* Stats grid */
+.sdx-item-stats-grid {
+    display: grid;
+    background: #f5f5f5;
+    border-bottom: 2px solid #000;
+}
+
+.sdx-item-weapon-grid {
+    grid-template-columns: repeat(2, 1fr);
+}
+
+.sdx-item-armor-grid {
+    grid-template-columns: repeat(2, 1fr);
+}
+
+.sdx-item-spell-grid {
+    grid-template-columns: repeat(3, 1fr);
+}
+
+.sdx-item-stat {
+    padding: 8px 12px;
+    text-align: center;
+    border-right: 2px solid #000;
+    border-bottom: 1px solid #ddd;
+}
+
+.sdx-item-stat:nth-child(2n) {
+    border-right: none;
+}
+
+.sdx-item-spell-grid .sdx-item-stat:nth-child(3n) {
+    border-right: none;
+}
+
+.sdx-item-spell-grid .sdx-item-stat:nth-child(2n) {
+    border-right: 2px solid #000;
+}
+
+.sdx-item-stat:last-child {
+    border-right: none;
+}
+
+.sdx-item-stats-grid .sdx-item-stat:nth-last-child(-n+2) {
+    border-bottom: none;
+}
+
+.sdx-item-spell-grid .sdx-item-stat:nth-last-child(-n+3) {
+    border-bottom: none;
+}
+
+.sdx-item-stat-label {
+    display: block;
+    font-size: 0.85em;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #000;
+    margin-bottom: 2px;
+    font-weight: bold;
+}
+
+.sdx-item-stat-value {
+    font-size: 1.1em;
+    font-weight: bold;
+    color: #000;
+}
+
+/* Description section */
+.sdx-item-description {
+    padding: 12px 14px;
+    background: #fff;
+    color: #000;
+    font-size: 1em;
+    line-height: 1.5;
+}
+
+.sdx-item-description p {
+    margin: 0 0 8px 0;
+}
+
+.sdx-item-description p:last-child {
+    margin-bottom: 0;
+}
+
+/* Inline rolls in item descriptions */
+.sdx-item-description .inline-roll {
+    background: #000;
+    color: #fff;
+    padding: 1px 6px;
+    border-radius: 0;
+    font-weight: bold;
+    border: 1px solid #000;
+}
+
+.sdx-item-description .inline-roll:hover {
+    background: #333;
+}
+
+/* Broken link styling */
+.sdx-display-item-container.broken {
+    background: #fff;
+    border: 2px dashed #000;
+    padding: 12px 16px;
+    color: #000;
+    font-weight: bold;
+}
+
+.sdx-display-item-container.broken i {
+    margin-right: 8px;
+    color: #000;
 }
 
 /* ============================================
    DISPLAY TABLE STYLES (Journal Enricher)
+   Shadowdark Black & White Gothic Aesthetic
    ============================================ */
 
 .sdx-display-table-container {
@@ -15296,105 +15702,108 @@ body:not(.game-master) .sdx-carousing-chat .sdx-player-only {
 }
 
 .sdx-display-table {
-    background: none;
-    /* Parchment-like background */
-    border: none;
+    background: #fff;
+    border: 3px solid #000;
     padding: 0;
     font-family: "Roboto Condensed", "Arial Narrow", sans-serif;
-    color: #333;
+    color: #000;
+    box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.3);
 }
 
-/* Green Header Bar */
+/* Black Header Bar - Shadowdark Style */
 .sdx-table-header {
-    background: #23897d;
-    padding: 6px 40px;
+    background: #000;
+    padding: 10px 20px;
     text-align: center;
-    font-family: "Modesto Condensed", "Times New Roman", serif;
-    font-size: 1.8em;
-    font-weight: bold;
+    font-family: "Old Newspaper Font", "Times New Roman", serif;
+    font-size: 1.6em;
+    font-weight: normal;
     color: #fff;
+    letter-spacing: 2px;
     position: relative;
-    margin: 10px 10px;
-    border-top: 2px solid #1a645b;
-    border-bottom: 2px solid #1a645b;
+    margin: 0;
+    border-bottom: 3px solid #000;
 }
 
-/* Decorative End Caps for Header */
+/* Decorative sword/dagger ends like the character sheet */
 .sdx-table-header::before,
 .sdx-table-header::after {
-    content: '';
+    content: '†';
     position: absolute;
-    top: -2px;
-    bottom: -2px;
-    width: 14px;
-    background: #1a645b;
-    border: 2px solid #0d3b36;
-    border-radius: 4px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 1.2em;
+    color: #fff;
 }
 
 .sdx-table-header::before {
-    left: -8px;
+    left: 12px;
 }
 
 .sdx-table-header::after {
-    right: -8px;
+    right: 12px;
 }
 
-/* Roll Bar */
+/* Roll Bar - clean black and white */
 .sdx-table-roll-bar {
     display: flex;
     align-items: center;
-    padding: 4px 0;
-    border-bottom: 2px solid #4b4a44;
-    margin: 0 10px;
+    padding: 8px 12px;
+    background: #f5f5f5;
+    border-bottom: 2px solid #000;
 }
 
 .sdx-table-roll-btn {
-    background: #1a1a1a;
+    background: #000;
     color: #fff;
-    padding: 2px 8px;
-    border-radius: 2px;
+    padding: 4px 12px;
+    border: 2px solid #000;
     cursor: pointer;
     display: flex;
     align-items: center;
     gap: 6px;
-    font-size: 1.1em;
+    font-size: 1em;
     font-family: "Modesto Condensed", serif;
-    transition: all 0.2s ease;
-    margin-right: 10px;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: all 0.15s ease;
+    margin-right: 12px;
 }
 
 .sdx-table-roll-btn:hover {
-    background: #333;
-    box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+    background: #fff;
+    color: #000;
+    box-shadow: 2px 2px 0 #000;
 }
 
 .sdx-table-roll-btn i {
-    font-size: 0.8em;
+    font-size: 0.9em;
 }
 
-.sdx-table-roll-formula {
+.sdx-table-formula {
+    font-weight: bold;
     letter-spacing: 1px;
 }
 
 .sdx-table-result-label {
     font-weight: bold;
     font-family: "Modesto Condensed", serif;
-    font-size: 1.25em;
-    color: #333;
+    font-size: 1.2em;
+    color: #000;
+    text-transform: uppercase;
+    letter-spacing: 1px;
 }
 
-/* Results List */
+/* Results List - white with black text */
 .sdx-table-results {
-    margin: 0 10px 10px 10px;
-    background: #f4eee1;
-    /* Parchment background only on results */
-    border-bottom: 1px solid #4b4a44;
+    margin: 0;
+    background: #fff;
 }
 
 .sdx-table-row {
     display: flex;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    border-bottom: 1px solid #000;
 }
 
 .sdx-table-row:last-child {
@@ -15402,36 +15811,78 @@ body:not(.game-master) .sdx-carousing-chat .sdx-player-only {
 }
 
 .sdx-table-row:nth-child(even) {
-    background: rgba(0, 0, 0, 0.03);
+    background: #f0f0f0;
+}
+
+/* Hover effect for rows */
+.sdx-table-row:hover {
+    background: #e8e8e8;
 }
 
 .sdx-table-row-range {
-    width: 40px;
-    padding: 6px 10px;
-    font-weight: normal;
+    width: 50px;
+    min-width: 50px;
+    padding: 8px 10px;
+    font-weight: bold;
     font-size: 1.1em;
-    color: #444;
+    color: #000;
+    text-align: center;
+    border-right: 2px solid #000;
+    background: #f5f5f5;
 }
 
 .sdx-table-row-text {
     flex: 1;
-    padding: 4px 10px;
-    font-size: 1.2em;
-    line-height: 1.3;
+    padding: 8px 12px;
+    font-size: 1.1em;
+    line-height: 1.4;
+    color: #000;
 }
 
 /* Link styling inside the table */
 .sdx-table-row-text a,
 .sdx-table-row-text .content-link {
-    color: #1a1a1a;
-    /* Black labels as requested */
+    color: #000;
     font-weight: bold;
     background: none;
     border: none;
     padding: 0;
     text-decoration: underline;
+    text-decoration-style: dotted;
 }
 
-.sdx-table-row-text a:hover {
-    text-decoration: underline;
+.sdx-table-row-text a:hover,
+.sdx-table-row-text .content-link:hover {
+    text-decoration-style: solid;
+    background: #000;
+    color: #fff;
+    padding: 0 4px;
+}
+
+/* Inline roll styling */
+.sdx-table-row-text .inline-roll {
+    background: #000;
+    color: #fff;
+    padding: 1px 6px;
+    border-radius: 0;
+    font-weight: bold;
+    border: 1px solid #000;
+}
+
+.sdx-table-row-text .inline-roll:hover {
+    background: #333;
+}
+
+/* Broken link fallback styling */
+.sdx-display-table-container.broken {
+    background: #fff;
+    border: 2px dashed #000;
+    padding: 12px 16px;
+    color: #000;
+    font-weight: bold;
+}
+
+.sdx-display-table-container.broken i {
+    margin-right: 8px;
+    color: #000;
 }

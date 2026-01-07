@@ -893,6 +893,7 @@ export const DEFAULT_COMBAT_SETTINGS = {
 	hideItemDescription: false, // Hide item description in chat cards (weapon/spell details)
 	requireTargetForAttack: "none", // 'none' = no check, 'warn' = warn but proceed, 'block' = prevent attack
 	checkWeaponRange: "none", // 'none' = no check, 'warn' = warn but proceed, 'block' = prevent attack if out of range
+	untargetAtEndOfTurn: "dead", // 'none' = no untargeting, 'dead' = untarget dead tokens, 'all' = untarget all
 	damageCard: {
 		showTargets: true,
 		showMultipliers: true,
@@ -936,6 +937,9 @@ export function registerCombatSettings() {
 
 	// Setup hook for summoned token expiry
 	setupSummonExpiryHook();
+
+	// Setup hook for un-targeting tokens at end of turn
+	setupUntargetHook();
 }
 
 // Track HP values before updates for scrolling text
@@ -1164,8 +1168,65 @@ export function setupSummonExpiryHook() {
 
 }
 
+/**
+ * Un-target dead tokens after a roll
+ * Called when untargetAtEndOfTurn is set to "dead"
+ */
+export function untargetDeadTokens() {
+	game.user?.targets.forEach((token) => {
+		const hp = token.actor?.system?.attributes?.hp?.value;
+		if (hp !== undefined && hp <= 0) {
+			token.setTarget(false, { releaseOthers: false });
+		}
+	});
+}
+
+/**
+ * Un-target all tokens for the current user
+ * Called when untargetAtEndOfTurn is set to "all"
+ */
+export function untargetAllTokens() {
+	game.user?.targets.forEach((token) => {
+		token.setTarget(false, { releaseOthers: false });
+	});
+}
+
+/**
+ * Setup hook for un-targeting tokens at end of turn
+ * This runs when the combat turn advances
+ */
+export function setupUntargetHook() {
+	Hooks.on("updateCombat", (combat, changed, options, userId) => {
+		// Only process on turn changes
+		if (!("turn" in changed)) {
+			return;
+		}
+
+		// Get the untarget setting
+		let settings;
+		try {
+			settings = game.settings.get(MODULE_ID, "combatSettings");
+		} catch (e) {
+			return; // Settings not registered yet
+		}
+
+		const untargetMode = settings.untargetAtEndOfTurn || "none";
+		if (untargetMode === "none") return;
+
+		// Delay slightly to let any pending damage/HP updates complete
+		setTimeout(() => {
+			if (untargetMode === "dead") {
+				untargetDeadTokens();
+			} else if (untargetMode === "all") {
+				untargetAllTokens();
+			}
+		}, 100);
+	});
+}
+
 // Track messages that have already had template placement to prevent re-triggering
 const _templatePlacedMessages = new Set();
+
 
 /**
  * Show a dialog allowing the user to select which effects to apply

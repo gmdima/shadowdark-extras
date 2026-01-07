@@ -85,9 +85,16 @@ export async function enrichDisplayTable(match, _options) {
             if (result.type === CONST.TABLE_RESULT_TYPES.TEXT) {
                 resultText = result.text || result.description || "";
             } else if (result.type === CONST.TABLE_RESULT_TYPES.DOCUMENT) {
-                resultText = `@UUID[${result.documentCollection}.${result.documentId}]{${result.text}}`;
+                // Try to get the actual UUID from the linked document
+                const doc = fromUuidSync(`${result.documentCollection}.${result.documentId}`);
+                const docUuid = doc?.uuid ?? `${result.documentCollection}.${result.documentId}`;
+                resultText = `@UUID[${docUuid}]{${result.text}}`;
             } else if (result.type === CONST.TABLE_RESULT_TYPES.COMPENDIUM) {
-                resultText = `@UUID[Compendium.${result.documentCollection}.${result.documentId}]{${result.text}}`;
+                // Try to get the actual UUID from the linked compendium document
+                // v10+ UUIDs include the document type (e.g., Compendium.pack.id.RollTable.docId)
+                const doc = fromUuidSync(`Compendium.${result.documentCollection}.${result.documentId}`);
+                const docUuid = doc?.uuid ?? `Compendium.${result.documentCollection}.${result.documentId}`;
+                resultText = `@UUID[${docUuid}]{${result.text}}`;
             }
 
             html += `

@@ -934,10 +934,14 @@ export async function applyAuraEffect(sourceToken, targetToken, trigger, config,
         await applyAuraConditions(auraEffect, targetToken, config.effects);
     }
 
-    // If auto-apply damage is OFF, create interactive card for damage
+    // If auto-apply damage is OFF, OR if auto-apply conditions is OFF (and we have effects), create interactive card
     const triggerDamage = shouldTriggerComponent(config.damageTriggers, config.triggers, trigger);
-    console.log(`shadowdark-extras | applyAuraEffect: triggerDamage=${triggerDamage}, autoApplyDamage=${autoApplyDamage}`);
-    if (!autoApplyDamage && triggerDamage) {
+    const needsManualDamage = !autoApplyDamage && triggerDamage;
+    const needsManualEffects = !autoApplyConditions && triggerEffects && config.effects?.length > 0;
+
+    console.log(`shadowdark-extras | applyAuraEffect: triggerDamage=${triggerDamage}, autoApplyDamage=${autoApplyDamage}, needsManualEffects=${needsManualEffects}`);
+
+    if (needsManualDamage || needsManualEffects) {
         await createInteractiveAuraCard(sourceToken, targetToken, trigger, config, auraEffect);
 
         // Still run item macro
@@ -976,7 +980,8 @@ export async function applyAuraEffect(sourceToken, targetToken, trigger, config,
     }
 
     // Apply effects if configured and not saved
-    if (triggerEffects && config.effects?.length > 0 && !savedSuccessfully) {
+    // We check autoApplyConditions here as a safeguard, though the block above should catch it
+    if (triggerEffects && config.effects?.length > 0 && !savedSuccessfully && autoApplyConditions) {
         await applyAuraConditions(auraEffect, targetToken, config.effects);
     }
 
@@ -1101,6 +1106,13 @@ export async function applyAuraConditions(auraEffect, token, effectUuids) {
             effectData.flags = effectData.flags || {};
             effectData.flags[MODULE_ID] = effectData.flags[MODULE_ID] || {};
             effectData.flags[MODULE_ID].auraOrigin = auraEffect.id;
+
+            // Link the embedded effects to the original source spell if possible
+            if (effectData.effects && auraEffect.origin) {
+                effectData.effects.forEach(e => {
+                    e.origin = auraEffect.origin;
+                });
+            }
 
             await actor.createEmbeddedDocuments("Item", [effectData]);
         } catch (err) {
@@ -1426,8 +1438,8 @@ async function createAuraAnimation(token, effect, config) {
     const radius = config.radius || 30;
     const tint = animation.tint || '#ffffff';
     const style = animation.style || 'circle';
-    const opacity = animation.opacity ?? 0.6;
-    const scaleMultiplier = animation.scaleMultiplier ?? 1.0;
+    const opacity = Number(animation.opacity) || 0.6;
+    const scaleMultiplier = Number(animation.scaleMultiplier) || 1.0;
 
     // Calculate scale based on radius (radius in grid squares)
     const gridDistance = canvas.scene.grid.distance || 5;
@@ -1436,21 +1448,21 @@ async function createAuraAnimation(token, effect, config) {
     const finalScale = radiusInSquares * scaleMultiplier;
 
     // Select animation file based on style
+    // Select animation file based on style
     let animationFile;
-    switch (style) {
-        case 'darkness':
-            animationFile = 'jb2a.darkness.black';
-            break;
-        case 'pulse':
-            animationFile = 'jb2a.template_circle.out_pulse.01.burst.bluewhite';
-            break;
-        case 'glow':
-            animationFile = 'jb2a.extras.tmfx.outpulse.circle.01.normal';
-            break;
-        case 'circle':
-        default:
-            animationFile = 'jb2a.template_circle.aura.01.complete.small.blue';
-            break;
+    const legacyStyles = {
+        'darkness': 'jb2a.darkness.black',
+        'pulse': 'jb2a.template_circle.out_pulse.01.burst.bluewhite',
+        'glow': 'jb2a.extras.tmfx.outpulse.circle.01.normal',
+        'circle': 'jb2a.template_circle.aura.01.complete.small.blue'
+    };
+
+    if (legacyStyles[style]) {
+        animationFile = legacyStyles[style];
+    } else {
+        // Assume it's a direct Sequencer path if not a legacy keyword
+        // If the user typed something custom, use it directly
+        animationFile = style;
     }
 
 
