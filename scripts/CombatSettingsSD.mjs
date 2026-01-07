@@ -1318,6 +1318,13 @@ export async function injectDamageCard(message, html, data) {
 		return;
 	}
 
+	// Skip initiative rolls - they should not show damage cards
+	const messageFlavor = (message.flavor || "").toLowerCase();
+	const rollType = message.flags?.shadowdark?.rollType;
+	if (rollType === "initiative" || messageFlavor.includes("initiative")) {
+		return;
+	}
+
 	// Check if player damage cards are enabled (for non-GMs)
 	// Note: We don't return early here - we still process templates, summoning, effects, etc.
 	// We just skip the damage card HTML injection at the end

@@ -1,12 +1,8 @@
-# Shadowdark-Extras
-![aiease_1767752940765](https://github.com/user-attachments/assets/86753c12-69f6-4a1b-8615-6a373071e7ce)
-
-
 # Shadowdark Extras
 
 A comprehensive enhancement module for [Shadowdark RPG](https://www.thearcanelibrary.com/pages/shadowdark) in [Foundry VTT](https://foundryvtt.com/). This module adds quality-of-life features, automation, visual enhancements, and expanded gameplay options to elevate your Shadowdark experience.
 
-![Foundry VTT](https://img.shields.io/badge/Foundry-v13+-informational)
+![Foundry VTT](https://img.shields.io/badge/Foundry-v12+-informational)
 ![Shadowdark](https://img.shields.io/badge/System-Shadowdark-purple)
 
 ---
@@ -263,7 +259,7 @@ Display weapon and shield images directly on tokens when equipped:
 - **Visual Image Picker** - Collapsible categories with thumbnail grid, search, and preview
 - **Positioning Controls** - Offset X/Y, scale, rotation, and anchor point
 - **PIXI Filters** - Apply visual effects like glow, outline, drop shadow, bevel, and more
-
+- **Auto-show on Attack** - Optionally display weapon only during attacks
 
 ---
 
@@ -341,7 +337,7 @@ All features can be individually enabled/disabled in module settings. Settings a
 
 ## 🤝 Compatibility
 
-- **Foundry VTT**: v13+
+- **Foundry VTT**: v12+
 - **Shadowdark System**: Latest version
 - Tested with popular modules including Dice So Nice, Token Action HUD, and more
 
@@ -366,6 +362,3 @@ This module is provided under the MIT License.
 - **Issues**: [GitHub Issues](https://github.com/gmdima/shadowdark-extras/issues)
 - **Discord**: Find me on the Shadowdark or Foundry VTT Discord servers
 
-
-
-Thank you to Forgotten Adventures for some free assets included in this free module

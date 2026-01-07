@@ -199,6 +199,9 @@ export function initLevelUpAnimations() {
 
     // Hook into actor updates to detect XP or level changes
     Hooks.on("updateActor", async (actor, changes, options, userId) => {
+        // Only the user who made the change should update the animation
+        if (userId !== game.user.id) return;
+
         // Check if XP or level was changed
         const xpChanged = foundry.utils.hasProperty(changes, "system.level.xp");
         const levelChanged = foundry.utils.hasProperty(changes, "system.level.value");
@@ -211,6 +214,11 @@ export function initLevelUpAnimations() {
 
     // Restore animations on scene ready
     Hooks.on("canvasReady", async () => {
+        // Only the first active user should restore animations
+        // This prevents all clients from creating duplicate effects
+        const firstActiveUser = game.users.find(u => u.active);
+        if (game.user.id !== firstActiveUser?.id) return;
+
         // Small delay to ensure everything is loaded
         await new Promise(resolve => setTimeout(resolve, 500));
 
@@ -227,6 +235,9 @@ export function initLevelUpAnimations() {
 
     // Clean up animations when token is deleted
     Hooks.on("deleteToken", async (tokenDoc, options, userId) => {
+        // Only the user who deleted the token should clean up
+        if (userId !== game.user.id) return;
+
         const deps = checkDependencies();
         if (!deps.hasSequencer) return;
 
@@ -236,6 +247,9 @@ export function initLevelUpAnimations() {
 
     // Check for level-up when a new token is created
     Hooks.on("createToken", async (tokenDoc, options, userId) => {
+        // Only the user who created the token should add animations
+        if (userId !== game.user.id) return;
+
         // Small delay to ensure token is fully initialized
         await new Promise(resolve => setTimeout(resolve, 100));
 
