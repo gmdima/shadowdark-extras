@@ -1,5 +1,6 @@
 # Shadowdark-Extras
-<img width="908" height="287" alt="image" src="https://github.com/user-attachments/assets/2a8b6d83-1610-4cda-a008-dc0698eb92a9" />
+![aiease_1767752940765](https://github.com/user-attachments/assets/86753c12-69f6-4a1b-8615-6a373071e7ce)
+
 
 # Shadowdark Extras
 
