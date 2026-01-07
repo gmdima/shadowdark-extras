@@ -628,6 +628,11 @@ async function handleEffectCreated(item, options, userId) {
 	if (item.type !== "Effect") return;
 	if (!item.actor) return;
 
+	// Skip concentration effects - these are on the caster, not targets
+	// Without this check, the caster would be added to targetEffects and receive per-turn damage
+	const isConcentration = item.getFlag("shadowdark-extras", "isConcentration");
+	if (isConcentration) return;
+
 	// Check if this effect was created via the damage card's "Apply Condition" button
 	// We need to link it to the caster's active focus spell
 

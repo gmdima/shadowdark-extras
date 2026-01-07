@@ -5666,6 +5666,15 @@ async function injectEnhancedHeader(app, html, actor) {
 		if (!actor.isOwner) return;
 		e.stopPropagation();
 
+		// If ctrl is held, open ImagePopout (Show to Players)
+		if (e.ctrlKey) {
+			new ImagePopout(actor.img, {
+				title: actor.name,
+				uuid: actor.uuid
+			}).render(true);
+			return;
+		}
+
 		// If shift is held, open the default file picker
 		if (e.shiftKey) {
 			const fp = new FilePicker({

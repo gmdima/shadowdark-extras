@@ -33,7 +33,7 @@ export function setupSDXROLLSSockets() {
     SocketSD.register("updateSdxRoll", (data) => {
         ui.SdxRollsSD._currentRoll.update(data);
     });
-    
+
     SocketSD.register(
         "routeRequest",
         async (data) => {
@@ -46,7 +46,7 @@ export function setupSDXROLLSSockets() {
         },
         { response: true },
     );
-    
+
     SocketSD.register(
         "dispatchSdxRoll",
         (data) => {
@@ -63,15 +63,15 @@ export function setupSDXROLLSSockets() {
         },
         { response: true },
     );
-    
+
     SocketSD.register("endSdxRoll", (data) => {
         ui.SdxRollsSD._currentRoll.endSdxRoll(data);
     });
-    
+
     SocketSD.register("toggleRollButton", (data) => {
         ui.SdxRollsSD._currentRoll.toggleRollButton(data.uuid, data.rolling);
     });
-    
+
     SocketSD.register(
         "recoverQueue",
         (data) => {
@@ -100,7 +100,7 @@ async function recoverQueue() {
     const res = await SocketSD.recoverQueue({});
     const queues = res.map((r) => r.response.queue);
     const current = res.map((r) => r.response.current).find((r) => r);
-    
+
     if (queues.length) {
         let longestQueue = queues[0];
         queues.forEach((queue) => {
@@ -112,7 +112,7 @@ async function recoverQueue() {
             ui.SdxRollsSD._queue.push(new SdxRollSD(data));
         });
     }
-    
+
     if (current) {
         new SdxRollSD(current).init().render(true);
     }
@@ -123,7 +123,7 @@ async function recoverQueue() {
  */
 export function injectSdxRollButton() {
     if (!game.user.isGM) return;
-    
+
     // Find the control-buttons within #chat-controls
     const target = document.querySelector("#chat-controls .control-buttons");
     if (!target) {
@@ -131,21 +131,21 @@ export function injectSdxRollButton() {
     }
     const existing = target.querySelector(".sdx-roll-sd-chat-control");
     if (existing) return;
-    
+
     const label = document.createElement("button");
     label.type = "button";
     label.classList.add("sdx-roll-sd-chat-control", "ui-control", "icon", "fa-solid", "fa-dice-d20");
     label.dataset.tooltip = game.i18n.localize(`SHADOWDARK_EXTRAS.SDXROLLS.buttonTooltip`);
     label.dataset.tooltipDirection = "LEFT";
-    
+
     label.addEventListener("click", () => {
         new GetRollDataSD().render(true);
     });
-    
+
     label.addEventListener("contextmenu", (e) => {
         const existingMenu = document.querySelector(".sdx-recent-rolls");
         if (existingMenu) return;
-        
+
         const recentRolls = getSDXROLLSSetting("recentRolls");
         const wrapper = document.createElement("div");
         const ul = document.createElement("ul");
@@ -160,19 +160,19 @@ export function injectSdxRollButton() {
                 new GetRollDataSD(roll).render(true);
             });
         });
-        
+
         const labelPos = label.getBoundingClientRect();
         wrapper.style.bottom = `${window.innerHeight - labelPos.bottom + labelPos.height + 2}px`;
         wrapper.style.right = `${window.innerWidth - labelPos.right}px`;
         document.body.appendChild(wrapper);
-        
+
         const listener = () => {
             wrapper.remove();
             document.removeEventListener("click", listener);
         };
         document.addEventListener("click", listener);
     });
-    
+
     target.prepend(label);
 }
 
@@ -249,7 +249,7 @@ function registSDXXROLLSSettings() {
             name: `SHADOWDARK_EXTRAS.SDXROLLS.settings.bannerColor.name`,
             hint: `SHADOWDARK_EXTRAS.SDXROLLS.settings.bannerColor.hint`,
             scope: "world",
-            config: true,
+            config: false,
             type: String,
             default: "#8b0000",
         },
@@ -263,7 +263,7 @@ function registSDXXROLLSSettings() {
             filePicker: "image",
         },
     };
-    
+
     for (const [key, value] of Object.entries(settings)) {
         game.settings.register(MODULE_ID, key, value);
     }
