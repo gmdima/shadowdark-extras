@@ -5,7 +5,7 @@
 
 A comprehensive enhancement module for [Shadowdark RPG](https://www.thearcanelibrary.com/pages/shadowdark) in [Foundry VTT](https://foundryvtt.com/). This module adds quality-of-life features, automation, visual enhancements, and expanded gameplay options to elevate your Shadowdark experience.
 
-![Foundry VTT](https://img.shields.io/badge/Foundry-v12+-informational)
+![Foundry VTT](https://img.shields.io/badge/Foundry-v13+-informational)
 ![Shadowdark](https://img.shields.io/badge/System-Shadowdark-purple)
 
 ---
