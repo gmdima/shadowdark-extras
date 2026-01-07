@@ -1,105 +1,370 @@
 # Shadowdark-Extras
 <img width="908" height="287" alt="image" src="https://github.com/user-attachments/assets/2a8b6d83-1610-4cda-a008-dc0698eb92a9" />
 
+# Shadowdark Extras
+
+A comprehensive enhancement module for [Shadowdark RPG](https://www.thearcanelibrary.com/pages/shadowdark) in [Foundry VTT](https://foundryvtt.com/). This module adds quality-of-life features, automation, visual enhancements, and expanded gameplay options to elevate your Shadowdark experience.
+
+![Foundry VTT](https://img.shields.io/badge/Foundry-v12+-informational)
+![Shadowdark](https://img.shields.io/badge/System-Shadowdark-purple)
+
 ---
 
-### ☕ Support My Late-Night Coding Sessions
+## 📦 Installation
 
-[![Buy Me a Coffee at ko-fi.com]](https://ko-fi.com/kaleth)
+1. In Foundry VTT, go to **Add-on Modules** → **Install Module**
+2. Paste the manifest URL: `https://github.com/gmdima/shadowdark-extras/releases/latest/download/module.json`
+3. Click **Install**
+4. Enable the module in your world's module settings
 
-*This module is crafted during countless late nights, fueled by determination and way too little sleep. If Shadowdark Extras has made your games better, consider buying me a coffee — it helps keep the code flowing and the torches burning!* ☕🕯️
+### Dependencies
+- **Shadowdark System** (required)
+- **socketlib** (required) - For multiplayer functionality
+- **Sequencer** (optional) - For torch and level-up animations
+- **JB2A** (optional) - Animation assets for visual effects
+- **Automated Animations** (optional) - For attack/spell animations
+- **TokenMagic FX** (optional) - For template effects
 
 ---
 
-Foundryvtt v13 module to implement extra features for the shadowdark system, like npc inventory, unidentified items, party sheet etc.
+## ✨ Features
 
-Enhance your Shadowdark RPG experience with this essential companion module that adds powerful party management tools and quality-of-life features for both players and GMs.
+### ⚔️ Combat & Damage System
 
-All settings enabled by default. You can turn them off from module settings
+#### Enhanced Damage Cards
+Adds a powerful damage application interface to chat messages with:
+- **Target Selection** - Apply damage to targeted or selected tokens
+- **Damage Multipliers** - Quick buttons for ×0, ½, 1, 2× damage (resistance/vulnerability)
+- **Auto-Apply Damage** - Optionally apply damage automatically on successful attacks
+- **Scrolling Combat Text** - Floating damage/healing numbers on tokens
+- **Weapon Range Checking** - Warn or prevent attacks on out-of-range targets
 
-## Automatic damage/healing/items applications
+#### Weapon Bonuses System
+A **Bonuses** tab on weapon items provides granular control over weapon behavior:
 
-<img width="427" alt="image" src="https://github.com/user-attachments/assets/736b68fb-a792-4331-a72d-c077ac5012f8" />
+##### To Hit Bonuses
+- Add flat bonuses or formulas (`2`, `@abilities.dex.mod`)
+- Conditional requirements (target name, ancestry, creature type, HP %, conditions)
+- Operators: equals, contains, starts with, does not equal, etc.
+- **Exclusive** option - if requirements met, only this bonus applies
+- **Prompt** option - show in attack roll dialog for optional activation
 
+##### Damage Bonuses
+- Add bonus damage with optional damage types
+- Same requirement system as to-hit bonuses
+- Per-bonus damage type (fire, cold, radiant, etc.) for resistance processing
 
-## Spells/scrolls/wands/potions Activities
-<img width="900" alt="image" src="https://github.com/user-attachments/assets/c915da26-4188-459c-baf5-7d82c5a0b64d" />
+##### Critical Hit Bonuses
+- Extra critical hit dice
+- Extra critical damage formulas
 
-## Weapons activities
-<img width="700" alt="image" src="https://github.com/user-attachments/assets/ab0e6e93-6127-4978-be6d-af4e7e785f48" />
+##### Effects on Hit
+- Drag & drop effects/conditions to apply when the weapon hits
+- Applied automatically on successful attacks
 
-
-## 📦 Trading System
-Trade items and coins between players (GM must be online - item piles installed)
-Multiple trading between multiple players at the same time is also working.
-
-![Trading System](https://github.com/user-attachments/assets/96c7f070-9598-4e73-b105-46b19770b53c)
-
-## 🎭 Party Management Sheet
-Take control of your adventuring party with a dedicated Party actor type:
-- At-a-glance overview — See all party members' HP, AC, Level, and ability modifiers in one place
-- Active Effects display — View all active effects on party members
-- Interactive token placement — Place party members on the scene with a visual token preview that follows your cursor and snaps to the grid
-- Compendium support — Add actors directly from compendiums; they auto-import when placed on scene
-- NPC & Quantity support — Save and spawn encounters easily with quantity tracking
-- Bulk XP rewards — Award XP to all party members simultaneously
-- Shared inventory — Manage party loot, treasure, and communal treasury (GP/SP/CP)
-- Divide Treasury — Split coins evenly among party members with one click
-- Easy item transfers — Drag and drop items between party inventory and members (Normal = Move, Ctrl = Copy)
-- Auto calculates coins weight in slots for the inventory
-- Added a + button to add coins easily in party inventory treasury
-- Party actors created with token vision same as players. Party tokens can be used on scenes to represent the party and torches can be light up from the party inventory. Tracked from the normal light tracker macro.
-
-<img width="800"  alt="image" src="https://github.com/user-attachments/assets/a50bf65c-6747-4bc8-8663-7d0baae26b0a" />
-
-
-## 📦 Container System
-Create and manage containers within your inventory:
-- Nested storage — Items can be stored inside containers and containers into containers etc...
-- Coins in containers — Store GP/SP/CP inside containers
-- Automatic slot calculation — Coins auto-calculate slots (1 slot per 100gp value)
-- Item-Piles integration — Full support for the Item Piles module
-- Container descriptions — Shows contained items with clickable links
-- Edit button — Quick access to open container sheets
-
-<img width="400" alt="image" src="https://github.com/user-attachments/assets/7aec6d36-9dc0-4c9a-a2b6-6a5e0fdbe064" />
-
-## 🎭 Player Sheet Enhancements
-- Player's header rewritten - supports video as well
-- Inventory items list color theme editor (from SDX module settings)
-- Notes as a journal system
-- 
-<img width="800" alt="image" src="https://github.com/user-attachments/assets/6c04de19-fc64-4dd5-8556-dba73c8606a7" />
+##### Item Macro Integration
+Execute Item Macro scripts with triggers:
+- Before attack, on hit, on critical, on miss, on critical miss
+- On equip/unequip events
+- Run as GM option for elevated permissions
 
 
+#### Focus Spell Tracker
+Track concentration-style spells with:
+- Visual tracker on character sheets
+- Automatic effect cleanup when focus is lost
+- Duration spell support with per-turn damage/healing
 
-## 🎒 Inventory Enhancements
-- Gear Slots tracking — See used/max slots per item and total
-- Multi-select — Shift+Click for range, Ctrl+Click for individual selection
-- Bulk delete — Right-click context menu to delete multiple selected items
-- Unidentified items — Non-GM players see masked names ("Unidentified Weapon") everywhere: inventory, chat, dialogs, item sheets, description (added Unidentified Description field for GMs, and that's all the players will see)
-- Added a + button to add coins easily
 
-![Inventory](https://github.com/user-attachments/assets/a0d1cfeb-67a5-411d-8b6e-9c1359202ba4)
+#### Spell Activity System
+A comprehensive spell configuration system accessed via the **Activity** tab on spell items. Configure every aspect of how spells behave:
 
-![Unidentified Items](https://github.com/user-attachments/assets/91dc7634-db86-4a46-a18c-3bd7ffa6862a)
+##### Targeting
+Choose between:
+- **Targeted Tokens** - Use the standard targeting system
+- **Template Targeting** - Place measured templates on cast with:
+  - Multiple shapes (circle, cone, ray, rectangle)
+  - Configurable size and placement mode
+  - Auto-delete options (end of turn, after X rounds, after X seconds)
+  - TokenMagic FX integration (textures, opacity, special effects)
+  - Template Effects that trigger damage/conditions when tokens enter or start/end turns
 
-## ⭐ Renown Tracking
-Add a Renown stat to player character sheets — perfect for tracking faction reputation, fame, or any campaign-specific metric. Configurable maximum value in module settings.
+##### Aura Effects
+Create persistent auras around the caster or target:
+- Configurable radius and disposition (allies/enemies/all)
+- Flexible triggers: on enter, on leave, turn start/end (source or target)
+- Per-trigger damage with saving throws
+- Apply conditions/effects to tokens in range
+- Sequencer animations with customizable tint, scale, and opacity
+- TokenMagic token filters for affected tokens
+- Line of sight checking option
 
-## 🕯️ Additional Light Sources
-Expands Shadowdark's light source options with Candle — a dim, flickering light source for those tense dungeon crawls when torches are too precious to burn.
+##### Damage/Healing
+Three formula modes:
+- **Basic** - Simple dice + bonus with optional level scaling
+- **Formula** - Custom formulas with variables (`@level`, `@int`, `@target.hp`, etc.)
+- **Tiered** - Level-based tiers (e.g., `1-3:1d6, 4-6:2d8, 7+:3d10`)
 
-## 👹 NPC Inventory Tab
-Adds a full Inventory tab to NPC sheets:
-- Transfer in/out items to other actors
-- Track items, weapons, and armor carried by NPCs
-- Manage NPC treasure and loot
-- Track coins (GP/SP/CP) for easy player looting
-- Quick delete and multi-select support
+Additional options:
+- Damage type selection (fire, cold, lightning, healing, etc.)
+- Requirement formulas for conditional damage
+- Critical multipliers
 
-Current settings:
+##### Effects/Conditions
+- Drag & drop effects from compendiums
+- Separate normal and critical effect slots
+- Apply to target or self
+- Selection modes: All, Random, or Prompt
+- Effect requirement formulas
 
-<img width="335" height="2517" alt="image" src="https://github.com/user-attachments/assets/3bb9aaeb-ff6c-4654-94d1-0d022eee55ca" />
+##### Duration Tracking
+For spells with ongoing effects:
+- Track in the Duration Tracker UI
+- Per-turn damage formulas
+- Trigger on turn start or end
+- Reapply effects each turn
+
+##### Summoning
+Spawn creatures when the spell is cast:
+- Multiple summon profiles per spell
+- Actor UUID from compendium
+- Quantity and placement options
+- Auto-delete at spell expiry
+
+##### Item Giving
+Grant items to the caster on successful cast (e.g., conjured weapons).
+
+##### Item Macro Integration
+Execute Item Macro scripts with configurable triggers:
+- On cast, on success, on critical, on failure, on critical failure
+- Run as GM option for elevated permissions
+- Full access to spell data, targets, and roll results
+
+---
+
+
+### 🎭 Character Sheet Enhancements
+
+#### Enhanced Header
+Replace the default header with an interactive display showing:
+- HP bar with current/max values
+- Armor Class display
+- Ability score modifiers
+- Luck tracker
+- XP progress and level
+- Custom background image/video support
+
+
+#### HP Wave Animation
+Animated wave overlay on character portraits that responds to HP levels - watch the "blood" rise and fall as characters take damage or heal.
+
+
+#### Quick Conditions
+Toggle conditions directly from the character sheet with themed buttons:
+- Multiple visual themes (Shadowdark, Parchment, Stone, Leather, Iron, Blood, etc.)
+- Works for both PCs and NPCs
+
+
+#### Renown Tracking
+Track faction reputation or fame with a configurable Renown stat on character sheets.
+
+#### Journal Notes
+Replace the simple Notes tab with a multi-page journal system:
+- **Multiple Pages** - Create separate pages for backstory, session notes, goals, etc.
+- **Page Sidebar** - Quick navigation between journal pages
+- **Rich Text Editor** - Full formatting with quick-insert buttons (Info, Warning, Quest, Loot, NPC)
+- **Add Page Button** - Easily create new journal entries
+
+#### Add Coins Button
+Quick button to add or remove coins without opening dialogs.
+
+---
+
+### 📦 Inventory System
+
+#### Container System
+Use items as containers with:
+- Nested storage (bags within bags)
+- Per-container coin storage
+- Automatic slot calculation
+- Visual nesting in inventory
+
+
+#### Trading System
+Player-to-player trading with:
+- Item and coin transfers
+- Trade request prompts via socketlib
+- Works across different player clients
+
+#### Unidentified Items
+Mark items as unidentified to hide their true name and description from players until identified.
+
+#### Multi-Select & Bulk Delete
+Shift+Click and Ctrl+Click to select multiple items for quick bulk deletion.
+
+#### Inventory Styling
+Customize item appearance in inventory lists based on:
+- Item type
+- Magical status
+- Rarity
+- Custom CSS rules
+
+---
+
+### 🍺 Carousing System
+
+Full carousing downtime implementation with two modes:
+
+#### Original Mode
+Simple d8-based carousing with customizable outcome tables.
+
+#### Expanded Mode
+Advanced carousing with:
+- Tier-based spending (copper to platinum)
+- d8 outcome roll + d100 benefit/mishap tables
+- Fully customizable tables via built-in editor
+- GM-only mishap descriptions option
+
+
+---
+
+### 🐉 NPC Features
+
+#### NPC Inventory Tab
+Full inventory management for NPCs including items and coins.
+
+#### Creature Types
+Assign creature types to NPCs (Beast, Undead, Dragon, Humanoid, etc.) for:
+- Weapon bonus targeting (e.g., "+2 damage vs Dragons")
+- Quick reference during combat
+- Customizable type list
+
+
+---
+
+### ✨ Visual & Animation
+
+#### Torch Animations
+Animated flame effects on tokens when light sources are active. Requires Sequencer and JB2A.
+
+
+#### Level Up Indicator
+Glowing arrow animation on tokens when a character has enough XP to level up.
+
+#### Automated Animations Integration
+Custom integration with the Automated Animations module to:
+- Play animations only on successful attacks/spells
+- Animate utility spells without targets
+
+#### Weapon Animation on Token
+Display weapon and shield images directly on tokens when equipped:
+- **Bundled Image Library** - 780+ weapon and shield images organized by category (swords, axes, bows, shields, etc.)
+- **Visual Image Picker** - Collapsible categories with thumbnail grid, search, and preview
+- **Positioning Controls** - Offset X/Y, scale, rotation, and anchor point
+- **PIXI Filters** - Apply visual effects like glow, outline, drop shadow, bevel, and more
+
+
+---
+
+### 🎲 SDX Rolls
+
+Dramatic group roll system with:
+- Customizable intro/success/failure sounds
+- Banner color and image customization
+- Recap messages (GM-only or public)
+- Automatic message cleanup option
+
+
+---
+
+### 📚 Easy Reference
+
+A dropdown menu integrated into Foundry's ProseMirror text editor for quickly inserting enriched content:
+
+#### NPC Cards
+- **Stat Card** - Insert `@DisplayNpcCard[uuid]{name}` to show compact NPC stat blocks
+- **Detailed Card** - Insert `@DisplayNpcCardDetailed[uuid]{name}` for full NPC information
+
+#### Item Cards
+- Insert `@DisplayItemCard[uuid]{name}` to embed interactive item cards
+
+#### Rollable Tables
+- Insert `@DisplayTable[uuid]{name}` to embed rollable tables directly in journals
+
+#### Ability Checks
+- **Custom Check Dialog** - Configure DC, ability, and type (check vs request)
+- **Quick Inserts** - Per-ability shortcuts for STR, DEX, CON, INT, WIS, CHA
+- Outputs `[[check DC stat]]` or `[[request DC stat]]` enriched links
+
+#### Dice Rolls
+- **Custom Dice Dialog** - Enter any dice formula (e.g., `2d6+3`)
+- **Quick Dice** - One-click inserts for d4, d6, d8, d10, d12, d20
+- Outputs `[[/r formula]]` enriched roll links
+
+Each category can be individually enabled/disabled in module settings.
+
+
+---
+
+### 🛡️ Effects & Conditions
+
+#### Damage Type System
+Full resistance/immunity/vulnerability support for damage types:
+- Physical (bludgeoning, slashing, piercing)
+- Elemental (fire, cold, lightning, acid, poison, etc.)
+- Per-damage-component processing
+
+#### Predefined Effects
+Built-in effect library including:
+- Advantage/disadvantage on specific abilities
+- Spell advantage
+- Glassbones (double damage taken)
+- Custom condition creation
+
+---
+
+## ⚙️ Configuration
+
+All features can be individually enabled/disabled in module settings. Settings are organized into logical groups:
+
+- **Configuration Menus** - Combat, Effects, HP Waves, Inventory Styles, Carousing, Creature Types
+- **SDX Rolls** - Sounds, colors, visibility
+- **Combat & Spells** - Focus tracker, spell enhancement, wand tracking
+- **Character Sheet** - Enhanced header, renown, journal, conditions
+- **Inventory** - Containers, trading, unidentified items
+- **Carousing** - Mode selection, visibility options
+- **NPC Features** - Inventory, creature types
+- **Visual & Animation** - Torch effects, level-up indicator, Easy Reference options
+
+---
+
+## 🤝 Compatibility
+
+- **Foundry VTT**: v13+
+- **Shadowdark System**: Latest version
+- Tested with popular modules including Dice So Nice, Token Action HUD, and more
+
+---
+
+## 📝 License
+
+This module is provided under the MIT License.
+
+---
+
+## 🙏 Credits
+
+- [Shadowdark RPG](https://www.thearcanelibrary.com/pages/shadowdark) by The Arcane Library
+- [Foundry VTT Shadowdark System](https://github.com/Muttley/foundryvtt-shadowdark)
+- Icons from [Font Awesome](https://fontawesome.com/)
+
+---
+
+## 📬 Support & Feedback
+
+- **Issues**: [GitHub Issues](https://github.com/gmdima/shadowdark-extras/issues)
+- **Discord**: Find me on the Shadowdark or Foundry VTT Discord servers
+
+
 
 Thank you to Forgotten Adventures for some free assets included in this free module
