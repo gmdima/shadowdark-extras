@@ -4750,6 +4750,7 @@ li.entry.sdx-sidebar-unidentified {
     border: 10px solid transparent !important;
     border-image: var(--sdx-sheet-border) 12 fill !important;
     border-image-repeat: stretch !important;
+    border-image-width: 16px !important;
 }
 
 .shadowdark.sheet.player .SD-nav {
