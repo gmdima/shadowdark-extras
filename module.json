@@ -80,6 +80,9 @@
     },
     {
       "src": "styles/sdx-rolls-sd.css"
+    },
+    {
+      "src": "styles/token-toolbar.css"
     }
   ],
   "languages": [

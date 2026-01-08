@@ -1,0 +1,371 @@
+/**
+ * Token Toolbar Styles
+ * Self-contained CSS for the token toolbar HUD
+ */
+
+/* ============================================
+   CSS Variables
+   ============================================ */
+#sdx-token-toolbar {
+    --sdx-toolbar-bg: linear-gradient(180deg, #2a2a2a 0%, #1a1a1a 100%);
+    --sdx-toolbar-border: #333;
+    --sdx-toolbar-text: #eaeaea;
+    --sdx-toolbar-text-dim: #a8a8a8;
+    --sdx-toolbar-shadow: 0 0 15px rgba(0, 0, 0, 0.6);
+    --sdx-toolbar-shadow-text: 0 0 5px rgba(0, 0, 0, 1);
+
+    /* HP bar gradients */
+    --sdx-hp-healthy: linear-gradient(180deg, #ba2524 0%, #861211 100%);
+    --sdx-hp-hurt: linear-gradient(180deg, #ba2524 0%, #861211 100%);
+    --sdx-hp-injured: linear-gradient(180deg, #971e1d 0%, #660e0d 100%);
+    --sdx-hp-critical: linear-gradient(180deg, #6a1413 0%, #410808 100%);
+}
+
+/* ============================================
+   Main Container
+   ============================================ */
+#sdx-token-toolbar {
+    opacity: 0;
+    display: flex;
+    font-family: var(--font-body, sans-serif);
+    font-weight: 500;
+    color: var(--sdx-toolbar-text);
+    padding-bottom: 1rem;
+    pointer-events: all;
+    transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+}
+
+#sdx-token-toolbar.sdx-toolbar-visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+#sdx-token-toolbar.sdx-toolbar-hidden {
+    opacity: 0;
+    transform: translateY(10px);
+    pointer-events: none;
+}
+
+/* ============================================
+   Character Info Layout
+   ============================================ */
+#sdx-token-toolbar .sdx-toolbar-info {
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    position: relative;
+}
+
+#sdx-token-toolbar .sdx-toolbar-details {
+    position: absolute;
+    top: -0.75rem;
+    left: 50%;
+    transform: translateX(-50%);
+    width: max-content;
+    text-align: center;
+    z-index: 99;
+}
+
+#sdx-token-toolbar .sdx-toolbar-name {
+    font-size: 1.7em;
+    font-family: var(--font-header, "Modesto Condensed", serif);
+    font-weight: bold;
+    text-align: center;
+    text-shadow: var(--sdx-toolbar-shadow-text);
+}
+
+#sdx-token-toolbar .sdx-toolbar-top {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* ============================================
+   Portrait / Picture
+   ============================================ */
+#sdx-token-toolbar .sdx-toolbar-picture {
+    width: 100px;
+    height: 100px;
+    background: var(--sdx-toolbar-bg);
+    border: 1px solid var(--sdx-toolbar-border);
+    box-shadow: var(--sdx-toolbar-shadow);
+    border-radius: 50%;
+    position: relative;
+    margin: 1em;
+    z-index: 10;
+}
+
+#sdx-token-toolbar .sdx-toolbar-img {
+    background-size: cover;
+    width: 94px;
+    height: 94px;
+    margin: 2px;
+    border-radius: 50%;
+    border: 1px solid var(--sdx-toolbar-border);
+    object-fit: cover;
+}
+
+/* Sheet overlay on hover */
+#sdx-token-toolbar .sdx-toolbar-sheet {
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+#sdx-token-toolbar .sdx-toolbar-picture:hover .sdx-toolbar-sheet {
+    opacity: 1;
+    height: 100px;
+    width: 100px;
+    border-radius: 50%;
+    top: -1px;
+    left: -1px;
+    position: absolute;
+    background: rgba(0, 0, 0, 0.7);
+    text-align: center;
+    line-height: 100px;
+    font-weight: bold;
+    cursor: pointer;
+    font-size: 0.9em;
+    letter-spacing: 0.1em;
+}
+
+/* ============================================
+   Level Badge
+   ============================================ */
+#sdx-token-toolbar .sdx-toolbar-level {
+    position: absolute;
+    bottom: -10px;
+    left: calc(50% - 13px);
+}
+
+#sdx-token-toolbar .sdx-toolbar-level-badge {
+    background: var(--sdx-toolbar-bg);
+    height: 26px;
+    width: 26px;
+    border: 1px solid var(--sdx-toolbar-border);
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.8);
+    transform: rotate(45deg);
+    position: absolute;
+    z-index: 4;
+}
+
+#sdx-token-toolbar .sdx-toolbar-level-badge::before {
+    content: "";
+    height: 18.5px;
+    width: 18.5px;
+    background: #111;
+    position: absolute;
+    bottom: 2.75px;
+    left: 2.75px;
+}
+
+#sdx-token-toolbar .sdx-toolbar-level span {
+    display: block;
+    width: 26px;
+    line-height: 26px;
+    text-align: center;
+    z-index: 5;
+    position: relative;
+    font-weight: bold;
+}
+
+/* ============================================
+   Attributes (Luck, AC) & Health Bars
+   ============================================ */
+#sdx-token-toolbar .sdx-toolbar-health,
+#sdx-token-toolbar .sdx-toolbar-attrs {
+    width: 200px;
+    min-height: 50px;
+    background: var(--sdx-toolbar-bg);
+    border-radius: 5px;
+    border: 1px solid var(--sdx-toolbar-border);
+    box-shadow: var(--sdx-toolbar-shadow);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+#sdx-token-toolbar .sdx-toolbar-health {
+    margin-left: -25px;
+}
+
+#sdx-token-toolbar .sdx-toolbar-attrs {
+    margin-right: -25px;
+}
+
+#sdx-token-toolbar .sdx-toolbar-bar-wrapper {
+    width: 192px;
+    height: 42px;
+    background: #111;
+    border-radius: 4px;
+    border: 1px solid #000;
+    box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5);
+    margin: 3px;
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+/* ============================================
+   HP Bar
+   ============================================ */
+#sdx-token-toolbar .sdx-toolbar-bar {
+    position: absolute;
+    left: 1px;
+    top: 1px;
+    bottom: 1px;
+    border-radius: 2px;
+    z-index: 2;
+    box-shadow: 0 1px 0 1px rgba(255, 255, 255, 0.2) inset;
+    transition: width 0.3s ease;
+}
+
+#sdx-token-toolbar .sdx-toolbar-bar.healthy {
+    background: var(--sdx-hp-healthy);
+}
+
+#sdx-token-toolbar .sdx-toolbar-bar.hurt {
+    background: var(--sdx-hp-hurt);
+}
+
+#sdx-token-toolbar .sdx-toolbar-bar.injured {
+    background: var(--sdx-hp-injured);
+}
+
+#sdx-token-toolbar .sdx-toolbar-bar.critical {
+    background: var(--sdx-hp-critical);
+}
+
+/* HP Input */
+#sdx-token-toolbar .sdx-toolbar-health input {
+    color: var(--sdx-toolbar-text);
+    width: 60px;
+    border: none;
+    outline: none;
+    box-shadow: none;
+    text-shadow: var(--sdx-toolbar-shadow-text);
+    text-align: center;
+    font-size: 1.4em;
+    z-index: 3;
+    background: transparent;
+}
+
+#sdx-token-toolbar .sdx-toolbar-hp-max {
+    opacity: 0.7;
+}
+
+#sdx-token-toolbar .sdx-toolbar-divider {
+    flex: 1;
+    text-align: center;
+    padding-top: 2px;
+    z-index: 3;
+    text-shadow: var(--sdx-toolbar-shadow-text);
+}
+
+/* ============================================
+   Attribute Display (Luck, AC)
+   ============================================ */
+#sdx-token-toolbar .sdx-toolbar-attr {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+}
+
+#sdx-token-toolbar .sdx-toolbar-attr-luck {
+    cursor: pointer;
+}
+
+#sdx-token-toolbar .sdx-toolbar-attr-luck:hover {
+    opacity: 0.8;
+}
+
+#sdx-token-toolbar .sdx-toolbar-attr:not(:first-child)::after {
+    content: "";
+    height: 14px;
+    width: 1px;
+    background-color: var(--sdx-toolbar-text-dim);
+    left: 0;
+    top: 7px;
+    position: absolute;
+}
+
+#sdx-token-toolbar .sdx-toolbar-attr label {
+    font-weight: bold;
+    color: var(--sdx-toolbar-text-dim);
+    letter-spacing: 0.1em;
+    font-size: 0.8em;
+    text-transform: uppercase;
+    line-height: 1em;
+    margin-bottom: 4px;
+}
+
+#sdx-token-toolbar .sdx-toolbar-attr span {
+    font-size: 1.4em;
+    line-height: 0.8em;
+}
+
+/* ============================================
+   Icons (Effects & Equipped Items)
+   ============================================ */
+#sdx-token-toolbar .sdx-toolbar-icons {
+    display: flex;
+    gap: 3px;
+    justify-content: center;
+    padding: 0px 4px;
+    flex-wrap: wrap;
+    max-width: 192px;
+    margin-bottom: 5px;
+}
+
+#sdx-token-toolbar .sdx-toolbar-icon {
+    width: 24px;
+    height: 24px;
+    border-radius: 3px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+#sdx-token-toolbar .sdx-toolbar-icon:hover {
+    transform: scale(1.15);
+    z-index: 10;
+}
+
+#sdx-token-toolbar .sdx-toolbar-icon img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Effect Icons */
+#sdx-token-toolbar .sdx-toolbar-icon-effect {
+    border: 1px solid #444;
+    background: #1a1a1a;
+}
+
+#sdx-token-toolbar .sdx-toolbar-icon-effect:hover {
+    border-color: #666;
+    box-shadow: 0 0 6px rgba(255, 255, 255, 0.3);
+}
+
+/* Equipped Items Icons */
+#sdx-token-toolbar .sdx-toolbar-icon-equipped {
+    border: 1px solid #444;
+    background: #1a1a1a;
+}
+
+#sdx-token-toolbar .sdx-toolbar-icon-equipped:hover {
+    border-color: #666;
+    box-shadow: 0 0 6px rgba(255, 255, 255, 0.3);
+}
+
+/* Icons container under attrs - left side */
+#sdx-token-toolbar .sdx-toolbar-equipped {
+    margin-top: 2px;
+}
+
+/* Icons container under health - right side */
+#sdx-token-toolbar .sdx-toolbar-effects {
+    margin-top: 2px;
+}

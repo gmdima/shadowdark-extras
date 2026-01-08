@@ -790,5 +790,19 @@
   "SHADOWDARK_EXTRAS.identify.isActually": "is actually...",
   "SHADOWDARK_EXTRAS.identify.itemRevealed": "Item Revealed!",
   "SHADOWDARK_EXTRAS.identify.success": "{name} has been identified!",
-  "SHADOWDARK_EXTRAS.identify.noItems": "No unidentified items found on this target."
+  "SHADOWDARK_EXTRAS.identify.noItems": "No unidentified items found on this target.",
+  "SHADOWDARK_EXTRAS.settings.tokenToolbar.enabled.name": "Enable Token Toolbar",
+  "SHADOWDARK_EXTRAS.settings.tokenToolbar.enabled.hint": "Show a HUD toolbar displaying the selected token's stats (HP, AC, Luck, Level)",
+  "SHADOWDARK_EXTRAS.settings.tokenToolbar.visibility.name": "Token Toolbar Visibility",
+  "SHADOWDARK_EXTRAS.settings.tokenToolbar.visibility.hint": "Control who can see the token toolbar",
+  "SHADOWDARK_EXTRAS.settings.tokenToolbar.visibility.both": "Both GM and Players",
+  "SHADOWDARK_EXTRAS.settings.tokenToolbar.visibility.gm": "GM Only",
+  "SHADOWDARK_EXTRAS.settings.tokenToolbar.visibility.players": "Players Only",
+  "SHADOWDARK_EXTRAS.settings.tokenToolbar.combatOnly.name": "Token Toolbar Combat Only",
+  "SHADOWDARK_EXTRAS.settings.tokenToolbar.combatOnly.hint": "Only show the token toolbar during active combat",
+  "SHADOWDARK_EXTRAS.settings.tokenToolbar.showEffects.name": "Show Active Effects",
+  "SHADOWDARK_EXTRAS.settings.tokenToolbar.showEffects.hint": "Display active effects as icons below the HP bar",
+  "SHADOWDARK_EXTRAS.settings.tokenToolbar.showEquipped.name": "Show Equipped Items",
+  "SHADOWDARK_EXTRAS.settings.tokenToolbar.showEquipped.hint": "Display equipped items as icons below the attributes",
+  "SHADOWDARK_EXTRAS.settings.headers.token_toolbar": "Token Toolbar"
 }

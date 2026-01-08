@@ -43,6 +43,7 @@ import { registerDisplayItemEnricher } from "./DisplayItem.mjs";
 import { initEasyReferenceMenu, registerEasyReferenceSettings } from "./easy-reference/EasyReferenceMenu.mjs";
 import { CreatureTypesApp, getCreatureTypes } from "./CreatureTypesApp.mjs";
 import SheetEditorConfig from "./SheetEditorConfig.mjs";
+import { initTokenToolbar, registerTokenToolbarSettings } from "./TokenToolbarSD.mjs";
 
 const MODULE_ID = "shadowdark-extras";
 const TRADE_JOURNAL_NAME = "__sdx_trade_sync__"; // Must match TradeWindowSD.mjs
@@ -4057,6 +4058,12 @@ function registerSettings() {
 
 	// Easy Reference ProseMirror menu settings
 	registerEasyReferenceSettings();
+
+	// 10. TOKEN TOOLBAR
+	// ═══════════════════════════════════════════════════════════════
+
+	// Token Toolbar settings
+	registerTokenToolbarSettings();
 }
 
 /**
@@ -4157,6 +4164,13 @@ function setupSettingsOrganization() {
 			'[name="shadowdark-extras.SDXROLLSRecapMessage"]',
 			game.i18n.localize("SHADOWDARK_EXTRAS.settings.headers.sdx_rolls"),
 			"fas fa-dice-d20"
+		);
+
+		// 9. TOKEN TOOLBAR - First is Enable Token Toolbar
+		insertHeaderBefore(
+			'[name="shadowdark-extras.tokenToolbar.enabled"]',
+			game.i18n.localize("SHADOWDARK_EXTRAS.settings.headers.token_toolbar"),
+			"fas fa-id-badge"
 		);
 	});
 }
@@ -16576,6 +16590,9 @@ Hooks.once("ready", () => {
 
 	// Initialize Easy Reference ProseMirror menu
 	initEasyReferenceMenu();
+
+	// Initialize Token Toolbar
+	initTokenToolbar();
 
 	// Global listener for @DisplayTable roll buttons
 	$(document).on("click", ".sdx-table-roll-btn", async (event) => {
