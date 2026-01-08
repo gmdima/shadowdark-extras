@@ -85,6 +85,33 @@
                     <input type="number" data-setting="borderImageSlice" value="{{borderImageSlice}}" min="1" max="200">
                 </div>
             </div>
+            <div class="header-control-group">
+                <label>{{localize "SHADOWDARK_EXTRAS.sheetEditor.borderImageOutset"}}</label>
+                <div class="control-input">
+                    <input type="number" data-setting="borderImageOutset" value="{{borderImageOutset}}" min="0"
+                        max="50">
+                </div>
+            </div>
+            <div class="header-control-group">
+                <label>{{localize "SHADOWDARK_EXTRAS.sheetEditor.borderImageRepeat"}}</label>
+                <div class="control-input">
+                    <select data-setting="borderImageRepeat">
+                        <option value="stretch" {{#if (eq borderImageRepeat "stretch" )}}selected{{/if}}>Stretch
+                        </option>
+                        <option value="repeat" {{#if (eq borderImageRepeat "repeat" )}}selected{{/if}}>Repeat</option>
+                        <option value="round" {{#if (eq borderImageRepeat "round" )}}selected{{/if}}>Round</option>
+                        <option value="space" {{#if (eq borderImageRepeat "space" )}}selected{{/if}}>Space</option>
+                    </select>
+                </div>
+            </div>
+            <div class="header-control-group">
+                <label>{{localize "SHADOWDARK_EXTRAS.sheetEditor.borderBackgroundColor"}}</label>
+                <div class="control-input">
+                    <input type="color" data-setting="borderBackgroundColor" value="{{borderBackgroundColor}}">
+                    <input type="text" data-setting="borderBackgroundColor" value="{{borderBackgroundColor}}"
+                        placeholder="transparent" class="color-text-input">
+                </div>
+            </div>
         </div>
     </div>
 

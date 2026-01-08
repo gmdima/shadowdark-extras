@@ -17,6 +17,9 @@ const DEFAULTS = {
     statPanelStyle: "panel-transparent-center-015.png",
     borderImageWidth: 16,
     borderImageSlice: 12,
+    borderImageOutset: 0,
+    borderImageRepeat: "stretch",
+    borderBackgroundColor: "",
     borderWidth: 10,
     sdBoxBorderStyle: "panel-border-001.png",
     sdBoxBorderWidth: 16,
@@ -235,12 +238,17 @@ export default class SheetEditorConfig extends HandlebarsApplicationMixin(Applic
             });
         });
 
-        // Frame tweak inputs
-        const frameInputs = html.querySelectorAll('.frame-controls input, .box-frame-controls input');
+        // Frame tweak inputs (number, select, color)
+        const frameInputs = html.querySelectorAll('.frame-controls input, .frame-controls select, .box-frame-controls input');
         frameInputs.forEach(input => {
             input.addEventListener('input', (e) => {
                 const settingKey = input.dataset.setting;
-                const value = parseInt(e.target.value);
+                let value;
+                if (input.type === 'number') {
+                    value = parseInt(e.target.value) || 0;
+                } else {
+                    value = e.target.value;
+                }
 
                 // Update preview state
                 this._previewState[settingKey] = value;
@@ -248,6 +256,15 @@ export default class SheetEditorConfig extends HandlebarsApplicationMixin(Applic
                 // Update preview immediately
                 this._updatePreview();
             });
+
+            // Also handle change event for select elements
+            if (input.tagName === 'SELECT') {
+                input.addEventListener('change', (e) => {
+                    const settingKey = input.dataset.setting;
+                    this._previewState[settingKey] = e.target.value;
+                    this._updatePreview();
+                });
+            }
         });
     }
 
@@ -267,6 +284,9 @@ export default class SheetEditorConfig extends HandlebarsApplicationMixin(Applic
             preview.style.setProperty('--preview-border-width', `${this._previewState.borderWidth}px`);
             preview.style.setProperty('--preview-border-image-width', `${this._previewState.borderImageWidth}px`);
             preview.style.setProperty('--preview-border-slice', this._previewState.borderImageSlice);
+            preview.style.setProperty('--preview-border-outset', `${this._previewState.borderImageOutset}px`);
+            preview.style.setProperty('--preview-border-repeat', this._previewState.borderImageRepeat);
+            preview.style.setProperty('--preview-border-bg', this._previewState.borderBackgroundColor || 'transparent');
 
             // Box Border Preview
             preview.style.setProperty('--preview-box-border', `url('${basePath}/Border/${this._previewState.sdBoxBorderStyle}')`);
@@ -323,6 +343,9 @@ export default class SheetEditorConfig extends HandlebarsApplicationMixin(Applic
                 --sdx-border-width: ${this._previewState.borderWidth}px;
                 --sdx-border-image-width: ${this._previewState.borderImageWidth}px;
                 --sdx-border-image-slice: ${this._previewState.borderImageSlice};
+                --sdx-border-image-outset: ${this._previewState.borderImageOutset}px;
+                --sdx-border-image-repeat: ${this._previewState.borderImageRepeat};
+                --sdx-border-background-color: ${this._previewState.borderBackgroundColor || 'transparent'};
                 --sdx-box-border: url('${boxBorderPath}');
                 --sdx-box-border-image-width: ${this._previewState.sdBoxBorderWidth}px;
                 --sdx-box-border-image-slice: ${this._previewState.sdBoxBorderSlice};

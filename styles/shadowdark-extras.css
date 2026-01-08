@@ -4745,13 +4745,14 @@ li.entry.sdx-sidebar-unidentified {
 
 .shadowdark.sheet.player {
     min-width: 590px;
-    background: black !important;
+    background: var(--sdx-border-background-color, black) !important;
     background-clip: border-box !important;
     background-origin: border-box !important;
     border: var(--sdx-border-width) solid transparent !important;
     border-image: var(--sdx-sheet-border) var(--sdx-border-image-slice) fill !important;
-    border-image-repeat: stretch !important;
+    border-image-repeat: var(--sdx-border-image-repeat, stretch) !important;
     border-image-width: var(--sdx-border-image-width) !important;
+    border-image-outset: var(--sdx-border-image-outset, 0px) !important;
 }
 
 .shadowdark.sheet .tab-abilities.sdx-enhanced-abilities .SD-box,

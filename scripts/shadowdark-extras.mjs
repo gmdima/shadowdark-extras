@@ -3433,6 +3433,7 @@ function applySheetDecorationStyles() {
 	// Get settings - with fallback defaults for when settings aren't registered yet
 	let sheetBorder, abilityPanel, acPanel, statPanel;
 	let borderImageWidth, borderImageSlice, borderTransparencyWidth;
+	let borderImageOutset, borderImageRepeat, borderBackgroundColor;
 	let boxBorder, boxBorderImageWidth, boxBorderImageSlice, boxBorderTransparencyWidth;
 	try {
 		sheetBorder = game.settings.get(MODULE_ID, "sheetBorderStyle") || "panel-border-004.png";
@@ -3441,6 +3442,9 @@ function applySheetDecorationStyles() {
 		statPanel = game.settings.get(MODULE_ID, "statPanelStyle") || "panel-transparent-center-015.png";
 		borderImageWidth = game.settings.get(MODULE_ID, "borderImageWidth") ?? 16;
 		borderImageSlice = game.settings.get(MODULE_ID, "borderImageSlice") ?? 12;
+		borderImageOutset = game.settings.get(MODULE_ID, "borderImageOutset") ?? 0;
+		borderImageRepeat = game.settings.get(MODULE_ID, "borderImageRepeat") || "stretch";
+		borderBackgroundColor = game.settings.get(MODULE_ID, "borderBackgroundColor") || "";
 		borderTransparencyWidth = game.settings.get(MODULE_ID, "borderWidth") ?? 10;
 		boxBorder = game.settings.get(MODULE_ID, "sdBoxBorderStyle") || "panel-border-001.png";
 		boxBorderImageWidth = game.settings.get(MODULE_ID, "sdBoxBorderWidth") ?? 16;
@@ -3454,6 +3458,9 @@ function applySheetDecorationStyles() {
 		statPanel = "panel-transparent-center-015.png";
 		borderImageWidth = 16;
 		borderImageSlice = 12;
+		borderImageOutset = 0;
+		borderImageRepeat = "stretch";
+		borderBackgroundColor = "";
 		borderTransparencyWidth = 10;
 		boxBorder = "panel-border-001.png";
 		boxBorderImageWidth = 16;
@@ -3479,6 +3486,9 @@ function applySheetDecorationStyles() {
 			--sdx-stat-panel: url('${statPanelPath}');
 			--sdx-border-image-width: ${borderImageWidth}px;
 			--sdx-border-image-slice: ${borderImageSlice};
+			--sdx-border-image-outset: ${borderImageOutset}px;
+			--sdx-border-image-repeat: ${borderImageRepeat};
+			--sdx-border-background-color: ${borderBackgroundColor || 'transparent'};
 			--sdx-border-width: ${borderTransparencyWidth}px;
 			--sdx-box-border: url('${boxBorderPath}');
 			--sdx-box-border-image-width: ${boxBorderImageWidth}px;
@@ -3486,6 +3496,7 @@ function applySheetDecorationStyles() {
 			--sdx-box-border-width: ${boxBorderTransparencyWidth}px;
 		}
 	`;
+
 	document.head.appendChild(style);
 
 	console.log(`${MODULE_ID} | Applied sheet decoration styles`);
@@ -3714,6 +3725,33 @@ function registerSettings() {
 		config: false,
 		default: 12,
 		type: Number,
+		onChange: () => applySheetDecorationStyles()
+	});
+
+	game.settings.register(MODULE_ID, "borderImageOutset", {
+		name: "Border Image Outset",
+		scope: "world",
+		config: false,
+		default: 0,
+		type: Number,
+		onChange: () => applySheetDecorationStyles()
+	});
+
+	game.settings.register(MODULE_ID, "borderImageRepeat", {
+		name: "Border Image Repeat",
+		scope: "world",
+		config: false,
+		default: "stretch",
+		type: String,
+		onChange: () => applySheetDecorationStyles()
+	});
+
+	game.settings.register(MODULE_ID, "borderBackgroundColor", {
+		name: "Border Background Color",
+		scope: "world",
+		config: false,
+		default: "",
+		type: String,
 		onChange: () => applySheetDecorationStyles()
 	});
 
