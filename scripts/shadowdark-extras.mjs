@@ -42,6 +42,7 @@ import { registerDisplayTableEnricher } from "./DisplayTable.mjs";
 import { registerDisplayItemEnricher } from "./DisplayItem.mjs";
 import { initEasyReferenceMenu, registerEasyReferenceSettings } from "./easy-reference/EasyReferenceMenu.mjs";
 import { CreatureTypesApp, getCreatureTypes } from "./CreatureTypesApp.mjs";
+import SheetEditorConfig from "./SheetEditorConfig.mjs";
 
 const MODULE_ID = "shadowdark-extras";
 const TRADE_JOURNAL_NAME = "__sdx_trade_sync__"; // Must match TradeWindowSD.mjs
@@ -3431,17 +3432,33 @@ function applySheetDecorationStyles() {
 
 	// Get settings - with fallback defaults for when settings aren't registered yet
 	let sheetBorder, abilityPanel, acPanel, statPanel;
+	let borderImageWidth, borderImageSlice, borderTransparencyWidth;
+	let boxBorder, boxBorderImageWidth, boxBorderImageSlice, boxBorderTransparencyWidth;
 	try {
 		sheetBorder = game.settings.get(MODULE_ID, "sheetBorderStyle") || "panel-border-004.png";
 		abilityPanel = game.settings.get(MODULE_ID, "abilityPanelStyle") || "panel-013.png";
 		acPanel = game.settings.get(MODULE_ID, "acPanelStyle") || "panel-transparent-center-004.png";
 		statPanel = game.settings.get(MODULE_ID, "statPanelStyle") || "panel-transparent-center-015.png";
+		borderImageWidth = game.settings.get(MODULE_ID, "borderImageWidth") ?? 16;
+		borderImageSlice = game.settings.get(MODULE_ID, "borderImageSlice") ?? 12;
+		borderTransparencyWidth = game.settings.get(MODULE_ID, "borderWidth") ?? 10;
+		boxBorder = game.settings.get(MODULE_ID, "sdBoxBorderStyle") || "panel-border-001.png";
+		boxBorderImageWidth = game.settings.get(MODULE_ID, "sdBoxBorderWidth") ?? 16;
+		boxBorderImageSlice = game.settings.get(MODULE_ID, "sdBoxBorderSlice") ?? 12;
+		boxBorderTransparencyWidth = game.settings.get(MODULE_ID, "sdBoxBorderTransparencyWidth") ?? 10;
 	} catch {
 		// Settings not registered yet, use defaults
 		sheetBorder = "panel-border-004.png";
 		abilityPanel = "panel-013.png";
 		acPanel = "panel-transparent-center-004.png";
 		statPanel = "panel-transparent-center-015.png";
+		borderImageWidth = 16;
+		borderImageSlice = 12;
+		borderTransparencyWidth = 10;
+		boxBorder = "panel-border-001.png";
+		boxBorderImageWidth = 16;
+		boxBorderImageSlice = 12;
+		boxBorderTransparencyWidth = 10;
 	}
 
 	// Build paths - use absolute paths from Foundry root to avoid relative path issues
@@ -3449,6 +3466,7 @@ function applySheetDecorationStyles() {
 	const abilityPanelPath = `/modules/${MODULE_ID}/art/PNG/Default/Panel/${abilityPanel}`;
 	const acPanelPath = `/modules/${MODULE_ID}/art/PNG/Default/Transparent center/${acPanel}`;
 	const statPanelPath = `/modules/${MODULE_ID}/art/PNG/Default/Transparent center/${statPanel}`;
+	const boxBorderPath = `/modules/${MODULE_ID}/art/PNG/Default/Border/${boxBorder}`;
 
 	// Create style element with CSS custom properties
 	const style = document.createElement('style');
@@ -3459,6 +3477,13 @@ function applySheetDecorationStyles() {
 			--sdx-ability-panel: url('${abilityPanelPath}');
 			--sdx-ac-panel: url('${acPanelPath}');
 			--sdx-stat-panel: url('${statPanelPath}');
+			--sdx-border-image-width: ${borderImageWidth}px;
+			--sdx-border-image-slice: ${borderImageSlice};
+			--sdx-border-width: ${borderTransparencyWidth}px;
+			--sdx-box-border: url('${boxBorderPath}');
+			--sdx-box-border-image-width: ${boxBorderImageWidth}px;
+			--sdx-box-border-image-slice: ${boxBorderImageSlice};
+			--sdx-box-border-width: ${boxBorderTransparencyWidth}px;
 		}
 	`;
 	document.head.appendChild(style);
@@ -3496,6 +3521,16 @@ function registerSettings() {
 		hint: game.i18n.localize("SHADOWDARK_EXTRAS.settings.inventory_styles.hint"),
 		icon: "fas fa-palette",
 		type: InventoryStylesApp,
+		restricted: true
+	});
+
+	// Sheet Style Editor Menu
+	game.settings.registerMenu(MODULE_ID, "sheetEditorMenu", {
+		name: game.i18n.localize("SHADOWDARK_EXTRAS.sheetEditor.menuName"),
+		label: game.i18n.localize("SHADOWDARK_EXTRAS.sheetEditor.menuLabel"),
+		hint: game.i18n.localize("SHADOWDARK_EXTRAS.sheetEditor.menuHint"),
+		icon: "fas fa-paint-brush",
+		type: SheetEditorConfig,
 		restricted: true
 	});
 
@@ -3624,7 +3659,7 @@ function registerSettings() {
 		name: "Sheet Border Style",
 		hint: "Choose the decorative border frame around the player character sheet.",
 		scope: "world",
-		config: true,
+		config: false,
 		default: "panel-border-004.png",
 		type: String,
 		choices: borderChoices,
@@ -3635,7 +3670,7 @@ function registerSettings() {
 		name: "Ability Panel Style",
 		hint: "Choose the panel background for ability stat boxes (STR, DEX, etc.).",
 		scope: "world",
-		config: true,
+		config: false,
 		default: "panel-013.png",
 		type: String,
 		choices: panelChoices,
@@ -3646,7 +3681,7 @@ function registerSettings() {
 		name: "AC Panel Style",
 		hint: "Choose the panel background for the Armor Class box.",
 		scope: "world",
-		config: true,
+		config: false,
 		default: "panel-transparent-center-004.png",
 		type: String,
 		choices: transparentCenterChoices,
@@ -3657,10 +3692,73 @@ function registerSettings() {
 		name: "Init/Level/Luck Panel Style",
 		hint: "Choose the panel background for Initiative, Level, and Luck boxes.",
 		scope: "world",
-		config: true,
+		config: false,
 		default: "panel-transparent-center-015.png",
 		type: String,
 		choices: transparentCenterChoices,
+		onChange: () => applySheetDecorationStyles()
+	});
+
+	game.settings.register(MODULE_ID, "borderImageWidth", {
+		name: "Border Image Width",
+		scope: "world",
+		config: false,
+		default: 16,
+		type: Number,
+		onChange: () => applySheetDecorationStyles()
+	});
+
+	game.settings.register(MODULE_ID, "borderImageSlice", {
+		name: "Border Image Slice",
+		scope: "world",
+		config: false,
+		default: 12,
+		type: Number,
+		onChange: () => applySheetDecorationStyles()
+	});
+
+	game.settings.register(MODULE_ID, "borderWidth", {
+		name: "Border Width",
+		scope: "world",
+		config: false,
+		default: 10,
+		type: Number,
+		onChange: () => applySheetDecorationStyles()
+	});
+
+	game.settings.register(MODULE_ID, "sdBoxBorderStyle", {
+		name: "SD-Box Border Style",
+		scope: "world",
+		config: false,
+		default: "panel-border-001.png",
+		type: String,
+		onChange: () => applySheetDecorationStyles()
+	});
+
+	game.settings.register(MODULE_ID, "sdBoxBorderWidth", {
+		name: "SD-Box Border Image Width",
+		scope: "world",
+		config: false,
+		default: 16,
+		type: Number,
+		onChange: () => applySheetDecorationStyles()
+	});
+
+	game.settings.register(MODULE_ID, "sdBoxBorderSlice", {
+		name: "SD-Box Border Image Slice",
+		scope: "world",
+		config: false,
+		default: 12,
+		type: Number,
+		onChange: () => applySheetDecorationStyles()
+	});
+
+	game.settings.register(MODULE_ID, "sdBoxBorderTransparencyWidth", {
+		name: "SD-Box Border Width",
+		scope: "world",
+		config: false,
+		default: 10,
+		type: Number,
 		onChange: () => applySheetDecorationStyles()
 	});
 

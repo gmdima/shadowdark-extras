@@ -1,0 +1,252 @@
+<form class="sheet-editor-form" autocomplete="off">
+    {{!-- Live Preview Panel --}}
+    <div class="sheet-editor-preview">
+        <div class="preview-header">
+            <i class="fas fa-eye"></i> {{localize "SHADOWDARK_EXTRAS.sheetEditor.livePreview"}}
+        </div>
+        <div class="preview-container">
+            {{!-- Mini sheet mockup --}}
+            <div class="preview-sheet">
+                <div class="preview-border"></div>
+                <div class="preview-content">
+                    <div class="preview-abilities">
+                        <div class="preview-ability-box">STR</div>
+                        <div class="preview-ability-box">DEX</div>
+                        <div class="preview-ability-box">CON</div>
+                    </div>
+                    <div class="preview-stats">
+                        <div class="preview-ac-box">AC</div>
+                        <div class="preview-stat-box">Init</div>
+                        <div class="preview-stat-box">Lvl</div>
+                    </div>
+                    {{!-- Box preview for border tweaks --}}
+                    <div class="preview-sd-box">
+                        <span style="font-size: 8px;">Box Border Preview</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{!-- Sheet Border Style --}}
+    <div class="sheet-editor-category" data-category="border">
+        <div class="sheet-editor-category-header">
+            <div class="category-title">
+                <i class="fas fa-chevron-right category-toggle"></i>
+                <i class="fas fa-border-all category-icon"></i>
+                <span>{{localize "SHADOWDARK_EXTRAS.sheetEditor.sheetBorder"}}</span>
+                <span class="category-count">({{borderImages.length}})</span>
+            </div>
+            <div class="current-selection">
+                <img class="current-border-img" src="{{borderPath}}" alt="Current">
+            </div>
+        </div>
+        <div class="sheet-editor-grid" style="display: none;">
+            <input type="text" class="sheet-editor-filter"
+                placeholder="{{localize 'SHADOWDARK_EXTRAS.sheetEditor.search'}}">
+            <div class="sheet-editor-thumbs">
+                {{#each borderImages}}
+                <div class="sheet-editor-thumb {{#if (eq this.filename ../sheetBorderStyle)}}selected{{/if}}"
+                    data-setting="sheetBorderStyle" data-filename="{{this.filename}}" data-path="{{this.path}}"
+                    data-name="{{this.name}}">
+                    <img src="{{this.path}}" alt="{{this.name}}">
+                    <span class="thumb-label">{{this.name}}</span>
+                </div>
+                {{/each}}
+            </div>
+        </div>
+    </div>
+
+    {{!-- Sheet Frame Tweaking --}}
+    <div class="sheet-editor-category" data-category="frame">
+        <div class="sheet-editor-category-header">
+            <div class="category-title">
+                <i class="fas fa-chevron-right category-toggle"></i>
+                <i class="fas fa-expand-arrows-alt category-icon"></i>
+                <span>{{localize "SHADOWDARK_EXTRAS.sheetEditor.sheetFrameTweaking"}}</span>
+            </div>
+        </div>
+        <div class="sheet-editor-grid frame-controls" style="display: none;">
+            <div class="header-control-group">
+                <label>{{localize "SHADOWDARK_EXTRAS.sheetEditor.borderWidth"}}</label>
+                <div class="control-input">
+                    <input type="number" data-setting="borderWidth" value="{{borderWidth}}" min="0" max="100">
+                </div>
+            </div>
+            <div class="header-control-group">
+                <label>{{localize "SHADOWDARK_EXTRAS.sheetEditor.borderImageWidth"}}</label>
+                <div class="control-input">
+                    <input type="number" data-setting="borderImageWidth" value="{{borderImageWidth}}" min="1" max="100">
+                </div>
+            </div>
+            <div class="header-control-group">
+                <label>{{localize "SHADOWDARK_EXTRAS.sheetEditor.borderImageSlice"}}</label>
+                <div class="control-input">
+                    <input type="number" data-setting="borderImageSlice" value="{{borderImageSlice}}" min="1" max="100">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{!-- Box Border Style --}}
+    <div class="sheet-editor-category" data-category="box-border">
+        <div class="sheet-editor-category-header">
+            <div class="category-title">
+                <i class="fas fa-chevron-right category-toggle"></i>
+                <i class="fas fa-vector-square category-icon"></i>
+                <span>{{localize "SHADOWDARK_EXTRAS.sheetEditor.sdBoxBorder"}}</span>
+                <span class="category-count">({{borderImages.length}})</span>
+            </div>
+            <div class="current-selection">
+                <img class="current-box-border-img" src="{{boxBorderPath}}" alt="Current">
+            </div>
+        </div>
+        <div class="sheet-editor-grid" style="display: none;">
+            <input type="text" class="sheet-editor-filter"
+                placeholder="{{localize 'SHADOWDARK_EXTRAS.sheetEditor.search'}}">
+            <div class="sheet-editor-thumbs">
+                {{#each borderImages}}
+                <div class="sheet-editor-thumb {{#if (eq this.filename ../sdBoxBorderStyle)}}selected{{/if}}"
+                    data-setting="sdBoxBorderStyle" data-filename="{{this.filename}}" data-path="{{this.path}}"
+                    data-name="{{this.name}}">
+                    <img src="{{this.path}}" alt="{{this.name}}">
+                    <span class="thumb-label">{{this.name}}</span>
+                </div>
+                {{/each}}
+            </div>
+        </div>
+    </div>
+
+    {{!-- Box Border Tweaking --}}
+    <div class="sheet-editor-category" data-category="box-frame">
+        <div class="sheet-editor-category-header">
+            <div class="category-title">
+                <i class="fas fa-chevron-right category-toggle"></i>
+                <i class="fas fa-expand-arrows-alt category-icon"></i>
+                <span>{{localize "SHADOWDARK_EXTRAS.sheetEditor.boxBorderTweaking"}}</span>
+            </div>
+        </div>
+        <div class="sheet-editor-grid box-frame-controls" style="display: none;">
+            <div class="header-control-group">
+                <label>{{localize "SHADOWDARK_EXTRAS.sheetEditor.boxBorderWidth"}}</label>
+                <div class="control-input">
+                    <input type="number" data-setting="sdBoxBorderTransparencyWidth"
+                        value="{{sdBoxBorderTransparencyWidth}}" min="0" max="100">
+                </div>
+            </div>
+            <div class="header-control-group">
+                <label>{{localize "SHADOWDARK_EXTRAS.sheetEditor.boxBorderImageWidth"}}</label>
+                <div class="control-input">
+                    <input type="number" data-setting="sdBoxBorderWidth" value="{{sdBoxBorderWidth}}" min="1" max="100">
+                </div>
+            </div>
+            <div class="header-control-group">
+                <label>{{localize "SHADOWDARK_EXTRAS.sheetEditor.boxBorderImageSlice"}}</label>
+                <div class="control-input">
+                    <input type="number" data-setting="sdBoxBorderSlice" value="{{sdBoxBorderSlice}}" min="1" max="100">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{!-- Ability Panel Style --}}
+    <div class="sheet-editor-category" data-category="ability">
+        <div class="sheet-editor-category-header">
+            <div class="category-title">
+                <i class="fas fa-chevron-right category-toggle"></i>
+                <i class="fas fa-square category-icon"></i>
+                <span>{{localize "SHADOWDARK_EXTRAS.sheetEditor.abilityPanel"}}</span>
+                <span class="category-count">({{panelImages.length}})</span>
+            </div>
+            <div class="current-selection">
+                <img class="current-ability-img" src="{{abilityPath}}" alt="Current">
+            </div>
+        </div>
+        <div class="sheet-editor-grid" style="display: none;">
+            <input type="text" class="sheet-editor-filter"
+                placeholder="{{localize 'SHADOWDARK_EXTRAS.sheetEditor.search'}}">
+            <div class="sheet-editor-thumbs">
+                {{#each panelImages}}
+                <div class="sheet-editor-thumb {{#if (eq this.filename ../abilityPanelStyle)}}selected{{/if}}"
+                    data-setting="abilityPanelStyle" data-filename="{{this.filename}}" data-path="{{this.path}}"
+                    data-name="{{this.name}}">
+                    <img src="{{this.path}}" alt="{{this.name}}">
+                    <span class="thumb-label">{{this.name}}</span>
+                </div>
+                {{/each}}
+            </div>
+        </div>
+    </div>
+
+    {{!-- AC Panel Style --}}
+    <div class="sheet-editor-category" data-category="ac">
+        <div class="sheet-editor-category-header">
+            <div class="category-title">
+                <i class="fas fa-chevron-right category-toggle"></i>
+                <i class="fas fa-shield-alt category-icon"></i>
+                <span>{{localize "SHADOWDARK_EXTRAS.sheetEditor.acPanel"}}</span>
+                <span class="category-count">({{transparentImages.length}})</span>
+            </div>
+            <div class="current-selection">
+                <img class="current-ac-img" src="{{acPath}}" alt="Current">
+            </div>
+        </div>
+        <div class="sheet-editor-grid" style="display: none;">
+            <input type="text" class="sheet-editor-filter"
+                placeholder="{{localize 'SHADOWDARK_EXTRAS.sheetEditor.search'}}">
+            <div class="sheet-editor-thumbs">
+                {{#each transparentImages}}
+                <div class="sheet-editor-thumb {{#if (eq this.filename ../acPanelStyle)}}selected{{/if}}"
+                    data-setting="acPanelStyle" data-filename="{{this.filename}}" data-path="{{this.path}}"
+                    data-name="{{this.name}}">
+                    <img src="{{this.path}}" alt="{{this.name}}">
+                    <span class="thumb-label">{{this.name}}</span>
+                </div>
+                {{/each}}
+            </div>
+        </div>
+    </div>
+
+    {{!-- Init/Level/Luck Panel Style --}}
+    <div class="sheet-editor-category" data-category="stat">
+        <div class="sheet-editor-category-header">
+            <div class="category-title">
+                <i class="fas fa-chevron-right category-toggle"></i>
+                <i class="fas fa-dice-d20 category-icon"></i>
+                <span>{{localize "SHADOWDARK_EXTRAS.sheetEditor.statPanel"}}</span>
+                <span class="category-count">({{transparentImages.length}})</span>
+            </div>
+            <div class="current-selection">
+                <img class="current-stat-img" src="{{statPath}}" alt="Current">
+            </div>
+        </div>
+        <div class="sheet-editor-grid" style="display: none;">
+            <input type="text" class="sheet-editor-filter"
+                placeholder="{{localize 'SHADOWDARK_EXTRAS.sheetEditor.search'}}">
+            <div class="sheet-editor-thumbs">
+                {{#each transparentImages}}
+                <div class="sheet-editor-thumb {{#if (eq this.filename ../statPanelStyle)}}selected{{/if}}"
+                    data-setting="statPanelStyle" data-filename="{{this.filename}}" data-path="{{this.path}}"
+                    data-name="{{this.name}}">
+                    <img src="{{this.path}}" alt="{{this.name}}">
+                    <span class="thumb-label">{{this.name}}</span>
+                </div>
+                {{/each}}
+            </div>
+        </div>
+    </div>
+
+    {{!-- Action Buttons --}}
+    <div class="sheet-editor-buttons">
+        <button type="button" data-action="loadDefaults" class="load-defaults-btn">
+            <i class="fas fa-undo"></i> {{localize "SHADOWDARK_EXTRAS.sheetEditor.loadDefaults"}}
+        </button>
+        <div class="button-spacer"></div>
+        <button type="button" data-action="cancel" class="cancel-btn">
+            <i class="fas fa-times"></i> {{localize "SHADOWDARK_EXTRAS.sheetEditor.cancel"}}
+        </button>
+        <button type="button" data-action="save" class="save-btn">
+            <i class="fas fa-save"></i> {{localize "SHADOWDARK_EXTRAS.sheetEditor.save"}}
+        </button>
+    </div>
+</form>

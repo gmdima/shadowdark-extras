@@ -3436,8 +3436,9 @@ li.entry.sdx-sidebar-unidentified {
     color: rgba(255, 255, 255, 0.9);
     padding: 0px 0px !important;
     margin-top: 0px;
-    margin-bottom: 1px;
-    margin-left: 9px;
+    margin-bottom: 0px;
+    margin-left: 0px;
+    gap: 1px;
 }
 
 /* Ensure all text elements are white */
@@ -4747,10 +4748,18 @@ li.entry.sdx-sidebar-unidentified {
     background: black !important;
     background-clip: border-box !important;
     background-origin: border-box !important;
-    border: 10px solid transparent !important;
-    border-image: var(--sdx-sheet-border) 12 fill !important;
+    border: var(--sdx-border-width) solid transparent !important;
+    border-image: var(--sdx-sheet-border) var(--sdx-border-image-slice) fill !important;
     border-image-repeat: stretch !important;
-    border-image-width: 16px !important;
+    border-image-width: var(--sdx-border-image-width) !important;
+}
+
+.shadowdark.sheet .tab-abilities.sdx-enhanced-abilities .SD-box,
+.shadowdark.sheet .tab-details.sdx-enhanced-details .SD-box {
+    border: var(--sdx-box-border-width) solid transparent !important;
+    border-image: var(--sdx-box-border) var(--sdx-box-border-image-slice) fill !important;
+    border-image-repeat: stretch !important;
+    border-image-width: var(--sdx-box-border-image-width) !important;
 }
 
 .shadowdark.sheet.player .SD-nav {
@@ -9700,6 +9709,10 @@ section[data-tab="tab-notes"].sdx-journal-active>div:not(.sdx-journal-notes) {
     background: linear-gradient(90deg, rgba(217, 119, 6, 0.3) 0%, transparent 100%);
     padding: 6px 10px;
     border-bottom: 1px solid rgba(217, 119, 6, 0.5);
+}
+
+.shadowdark .SD-box .header label {
+    font-size: 16px !important;
 }
 
 .sdx-duration-spells-section .header label {
@@ -15915,4 +15928,390 @@ body:not(.game-master) .sdx-carousing-chat .sdx-player-only {
 .sdx-display-table-container.broken i {
     margin-right: 8px;
     color: #000;
+}
+
+/* ---------------------------------------------------------------
+   SHEET EDITOR CONFIGURATION
+   --------------------------------------------------------------- */
+
+.sheet-editor-config {
+    --se-bg: #1a1a1a;
+    --se-border: #3a3a3a;
+    --se-accent: #c9a358;
+    --se-text: #e0e0e0;
+    --se-hover: #2a2a2a;
+    --se-selected: rgba(201, 163, 88, 0.3);
+}
+
+.sheet-editor-config .sheet-editor-form {
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+/* Live Preview Panel */
+.sheet-editor-config .sheet-editor-preview {
+    background: var(--se-bg);
+    border: 1px solid var(--se-border);
+    border-radius: 6px;
+    padding: 10px;
+}
+
+.sheet-editor-config .preview-header {
+    color: var(--se-accent);
+    font-weight: bold;
+    margin-bottom: 10px;
+    font-size: 14px;
+}
+
+.sheet-editor-config .preview-header i {
+    margin-right: 6px;
+}
+
+.sheet-editor-config .preview-container {
+    display: flex;
+    justify-content: center;
+    padding: 10px;
+}
+
+.sheet-editor-config .preview-sheet {
+    position: relative;
+    width: 300px;
+    height: 120px;
+    background: #2a2a2a;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.sheet-editor-config .preview-border {
+    position: absolute;
+    inset: 0;
+    border: var(--preview-border-width) solid transparent;
+    border-image: var(--preview-border) var(--preview-border-slice) fill;
+    border-image-repeat: stretch;
+    border-image-width: var(--preview-border-image-width);
+    pointer-events: none;
+}
+
+.sheet-editor-config .preview-content {
+    position: relative;
+    z-index: 1;
+    padding: 20px 25px;
+    display: flex;
+    gap: 20px;
+}
+
+.sheet-editor-config .preview-abilities {
+    display: flex;
+    gap: 8px;
+}
+
+.sheet-editor-config .preview-ability-box {
+    width: 32px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 8px;
+    font-weight: bold;
+    color: var(--se-text);
+    background-image: var(--preview-ability);
+    background-size: 100% 100%;
+    background-repeat: no-repeat;
+}
+
+.sheet-editor-config .preview-stats {
+    display: flex;
+    gap: 8px;
+}
+
+.sheet-editor-config .preview-ac-box {
+    width: 32px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 8px;
+    font-weight: bold;
+    color: var(--se-text);
+    background-image: var(--preview-ac);
+    background-size: 100% 100%;
+    background-repeat: no-repeat;
+}
+
+.sheet-editor-config .preview-stat-box {
+    width: 32px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 8px;
+    font-weight: bold;
+    color: var(--se-text);
+    background-image: var(--preview-stat);
+    background-size: 100% 100%;
+    background-repeat: no-repeat;
+}
+
+.sheet-editor-config .preview-sd-box {
+    margin-top: 10px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: var(--preview-box-border-width) solid transparent;
+    border-image: var(--preview-box-border) var(--preview-box-border-slice) fill;
+    border-image-repeat: stretch;
+    border-image-width: var(--preview-box-border-image-width);
+}
+
+/* Category Sections */
+.sheet-editor-config .sheet-editor-category {
+    background: var(--se-bg);
+    border: 1px solid var(--se-border);
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.sheet-editor-config .sheet-editor-category-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 12px;
+    cursor: pointer;
+    background: linear-gradient(to bottom, #2a2a2a, #1a1a1a);
+    transition: background 0.2s;
+}
+
+.sheet-editor-config .sheet-editor-category-header:hover {
+    background: linear-gradient(to bottom, #333, #222);
+}
+
+.sheet-editor-config .category-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--se-text);
+    font-weight: 500;
+}
+
+.sheet-editor-config .category-toggle {
+    color: var(--se-accent);
+    width: 12px;
+    transition: transform 0.2s;
+}
+
+.sheet-editor-config .category-icon {
+    color: var(--se-accent);
+}
+
+.sheet-editor-config .category-count {
+    color: #888;
+    font-size: 12px;
+}
+
+.sheet-editor-config .current-selection img {
+    width: 50px;
+    height: 30px;
+    object-fit: cover;
+    border: 1px solid var(--se-border);
+    border-radius: 3px;
+}
+
+/* Image Grid */
+.sheet-editor-config .sheet-editor-grid {
+    padding: 10px;
+    border-top: 1px solid var(--se-border);
+}
+
+.sheet-editor-config .sheet-editor-filter {
+    width: 100%;
+    padding: 6px 10px;
+    margin-bottom: 10px;
+    background: #222;
+    border: 1px solid var(--se-border);
+    border-radius: 4px;
+    color: var(--se-text);
+    font-size: 12px;
+}
+
+.sheet-editor-config .sheet-editor-filter::placeholder {
+    color: #666;
+}
+
+.sheet-editor-config .sheet-editor-thumbs {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+    gap: 8px;
+    max-height: 200px;
+    overflow-y: auto;
+    padding-right: 5px;
+}
+
+.sheet-editor-config .sheet-editor-thumb {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 6px;
+    background: #222;
+    border: 2px solid transparent;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.sheet-editor-config .sheet-editor-thumb:hover {
+    background: var(--se-hover);
+    border-color: var(--se-accent);
+}
+
+.sheet-editor-config .sheet-editor-thumb.selected {
+    background: var(--se-selected);
+    border-color: var(--se-accent);
+}
+
+.sheet-editor-config .sheet-editor-thumb img {
+    width: 60px;
+    height: auto;
+    max-height: 60px;
+    object-fit: contain;
+    border-radius: 2px;
+}
+
+.sheet-editor-config .thumb-label {
+    font-size: 9px;
+    color: #aaa;
+    margin-top: 4px;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 100%;
+}
+
+/* Tooltip */
+.sheet-editor-tooltip {
+    position: fixed;
+    z-index: 10000;
+    background: #1a1a1a;
+    border: 1px solid #c9a358;
+    border-radius: 6px;
+    padding: 8px;
+    display: none;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+}
+
+.sheet-editor-tooltip img {
+    width: 150px;
+    height: auto;
+    display: block;
+    border-radius: 4px;
+}
+
+.sheet-editor-tooltip span {
+    display: block;
+    text-align: center;
+    margin-top: 6px;
+    color: #e0e0e0;
+    font-size: 11px;
+}
+
+/* Action Buttons */
+.sheet-editor-config .sheet-editor-buttons {
+    display: flex;
+    gap: 10px;
+    padding: 10px 0 0;
+    border-top: 1px solid var(--se-border);
+}
+
+.sheet-editor-config .button-spacer {
+    flex: 1;
+}
+
+.sheet-editor-config .sheet-editor-buttons button {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 13px;
+    transition: all 0.2s;
+}
+
+.sheet-editor-config .load-defaults-btn {
+    background: #444;
+    color: #fff;
+}
+
+.sheet-editor-config .load-defaults-btn:hover {
+    background: #555;
+}
+
+.sheet-editor-config .cancel-btn {
+    background: #555;
+    color: #fff;
+}
+
+.sheet-editor-config .cancel-btn:hover {
+    background: #666;
+}
+
+.sheet-editor-config .save-btn {
+    background: var(--se-accent);
+    color: #000;
+    font-weight: bold;
+}
+
+.sheet-editor-config .save-btn:hover {
+    background: #dab76a;
+}
+
+
+/* Header Customization Controls */
+.sheet-editor-config .header-controls {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+    padding: 15px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
+}
+
+.sheet-editor-config .header-control-group {
+    display: grid;
+    grid-template-columns: 1fr 60px;
+    align-items: center;
+    gap: 8px;
+    padding: 8px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 4px;
+}
+
+.sheet-editor-config .header-control-group label {
+    font-size: 11px;
+    color: #ccc;
+}
+
+.sheet-editor-config .header-control-group input[type="color"] {
+    width: 100%;
+    height: 24px;
+    padding: 0;
+    border: 1px solid #444;
+    background: transparent;
+    cursor: pointer;
+}
+
+.sheet-editor-config .header-control-group input[type="number"] {
+    width: 100%;
+    height: 24px;
+    background: #111;
+    color: #fff;
+    border: 1px solid #444;
+    border-radius: 3px;
+    padding: 0 4px;
+    font-size: 11px;
+}
+
+.sheet-editor-config .control-input {
+    display: flex;
+    align-items: center;
 }

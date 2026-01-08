@@ -1,5 +1,18 @@
 # Shadowdark Extras - Release Notes
 
+## [4.15] - 2026-01-08
+
+### New Features
+- **Visual Sheet Editor**: Replaced the previous dropdown settings with a new visual configuration tool for character sheets.
+    - Real-time preview of all aesthetic changes.
+    - Gallery search for border and panel styles.
+    - **Sheet Frame Tweaking**: Customize the transparency border thickness, border image width, and slice.
+    - **Box Border Customization**: Add and customize decorative frames for Ability and Details tab boxes.
+- Removed legacy "Header Customization" font settings in favor of more robust framing options.
+
+### Bug Fixes
+- Fixed gallery image cropping in the Sheet Editor for a cleaner visual experience.
+
 ## [4.14] - 2026-01-07
 
 ### New Features
