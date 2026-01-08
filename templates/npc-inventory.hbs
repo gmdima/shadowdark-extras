@@ -5,7 +5,8 @@
 			<div class="SD-box">
 				<div class="header">
 					<label>
-						<a class="fa-solid fa-square-plus" data-action="npc-create-item" style="margin:0px 8px 0px 4px"></a>
+						<a class="fa-solid fa-square-plus" data-action="npc-create-item"
+							style="margin:0px 8px 0px 4px"></a>
 						{{localize "SHADOWDARK_EXTRAS.sheet.npc.inventory.items"}}
 					</label>
 					<span></span>
@@ -24,36 +25,38 @@
 
 						{{#each npcInventory as |item|}}
 						<li class="item" data-item-id="{{item._id}}" data-uuid="{{item.uuid}}" draggable="true">
-								<div class="item-image" style="background-image: url({{item.img}})">
-									<i class="fas fa-comment fa-lg"></i>
-								</div>
-								<a class="item-name" data-action="show-details">
-									{{item.name}}
-									{{#if item.lightSourceUsed}}
-										<em>{{localize "SHADOWDARK.inventory.item.light_used"}}</em>
-									{{/if}}
+							<div class="item-image" style="background-image: url({{item.img}})">
+								<i class="fas fa-comment fa-lg"></i>
+							</div>
+							<a class="item-name" data-action="show-details">
+								{{item.name}}
+								{{#if item.lightSourceUsed}}
+								<em>{{localize "SHADOWDARK.inventory.item.light_used"}}</em>
+								{{/if}}
+							</a>
+
+							<div class="quantity">
+								{{#if item.showQuantity}}
+								{{#if ../owner}}
+								<a data-action="npc-item-decrement" data-item-id="{{item._id}}"
+									data-tooltip="{{localize 'SHADOWDARK.inventory.tooltip.item_decrement'}}">
+									<i class="fa-regular fa-minus fa-xs"></i>
 								</a>
+								{{/if}}
+								{{item.system.quantity}}/{{item.system.slots.per_slot}}
+								{{#if ../owner}}
+								<a data-action="npc-item-increment" data-item-id="{{item._id}}"
+									data-tooltip="{{localize 'SHADOWDARK.inventory.tooltip.item_increment'}}">
+									<i class="fa-regular fa-plus fa-xs"></i>
+								</a>
+								{{/if}}
+								{{else}}
+								&nbsp;
+								{{/if}}
+							</div>
 
-								<div class="quantity">
-									{{#if item.showQuantity}}
-										{{#if ../owner}}
-											<a data-action="npc-item-decrement" data-item-id="{{item._id}}" data-tooltip="{{localize 'SHADOWDARK.inventory.tooltip.item_decrement'}}">
-												<i class="fa-regular fa-minus fa-xs"></i>
-											</a>
-										{{/if}}
-										{{item.system.quantity}}/{{item.system.slots.per_slot}}
-										{{#if ../owner}}
-											<a data-action="npc-item-increment" data-item-id="{{item._id}}" data-tooltip="{{localize 'SHADOWDARK.inventory.tooltip.item_increment'}}">
-												<i class="fa-regular fa-plus fa-xs"></i>
-											</a>
-										{{/if}}
-									{{else}}
-										&nbsp;
-									{{/if}}
-								</div>
-
-								<div class="actions"></div>
-							</li>
+							<div class="actions"></div>
+						</li>
 						{{/each}}
 					</ol>
 				</div>
@@ -70,21 +73,21 @@
 					<ol class="SD-list item-list npc-item-list">
 						{{#each npcTreasure as |item|}}
 						<li class="item" data-item-id="{{item._id}}" data-uuid="{{item.uuid}}" draggable="true">
-								<div class="item-image" style="background-image: url({{item.img}})">
-									<i class="fas fa-comment fa-lg"></i>
-								</div>
-								<a class="item-name" data-action="show-details">
-									{{item.name}}
-								</a>
-								<div class="quantity">
-									{{#if item.showQuantity}}
-										{{item.system.quantity}}
-									{{else}}
-										&nbsp;
-									{{/if}}
-								</div>
-								<div class="actions"></div>
-							</li>
+							<div class="item-image" style="background-image: url({{item.img}})">
+								<i class="fas fa-comment fa-lg"></i>
+							</div>
+							<a class="item-name" data-action="show-details">
+								{{item.name}}
+							</a>
+							<div class="quantity">
+								{{#if item.showQuantity}}
+								{{item.system.quantity}}
+								{{else}}
+								&nbsp;
+								{{/if}}
+							</div>
+							<div class="actions"></div>
+						</li>
 						{{/each}}
 					</ol>
 				</div>
@@ -102,7 +105,8 @@
 				<div class="content">
 					<div class="npc-slot-total">{{npcSlotsUsed}}</div>
 					<div class="npc-slot-breakdown">
-						{{localize "SHADOWDARK_EXTRAS.sheet.npc.inventory.items"}}: {{npcItemSlots}} · {{localize "SHADOWDARK_EXTRAS.sheet.npc.inventory.coins"}}: {{npcCoinSlots}}
+						{{localize "SHADOWDARK_EXTRAS.sheet.npc.inventory.items"}}: {{npcItemSlots}} · {{localize
+						"SHADOWDARK_EXTRAS.sheet.npc.inventory.coins"}}: {{npcCoinSlots}}
 					</div>
 				</div>
 			</div>
@@ -113,13 +117,16 @@
 				</div>
 				<div class="content">
 					<div class="SD-grid center centered npc-coins-grid">
-						<input type="number" name="flags.shadowdark-extras.coins.gp" value="{{npcCoins.gp}}" class="coin-value" placeholder="0" data-dtype="Number" min="0">
+						<input type="number" name="system.coins.gp" value="{{npcCoins.gp}}" class="coin-value"
+							placeholder="0" data-dtype="Number" min="0">
 						<h3>{{localize "SHADOWDARK.coins.gp"}}</h3>
 
-						<input type="number" name="flags.shadowdark-extras.coins.sp" value="{{npcCoins.sp}}" class="coin-value" placeholder="0" data-dtype="Number" min="0">
+						<input type="number" name="system.coins.sp" value="{{npcCoins.sp}}" class="coin-value"
+							placeholder="0" data-dtype="Number" min="0">
 						<h3>{{localize "SHADOWDARK.coins.sp"}}</h3>
 
-						<input type="number" name="flags.shadowdark-extras.coins.cp" value="{{npcCoins.cp}}" class="coin-value" placeholder="0" data-dtype="Number" min="0">
+						<input type="number" name="system.coins.cp" value="{{npcCoins.cp}}" class="coin-value"
+							placeholder="0" data-dtype="Number" min="0">
 						<h3>{{localize "SHADOWDARK.coins.cp"}}</h3>
 					</div>
 				</div>

@@ -6753,13 +6753,13 @@ function prepareNpcInventory(actor) {
 }
 
 /**
- * Get NPC coins from flags
+ * Get NPC coins from system data
  */
 function getNpcCoins(actor) {
 	return {
-		gp: actor.getFlag(MODULE_ID, "coins.gp") ?? 0,
-		sp: actor.getFlag(MODULE_ID, "coins.sp") ?? 0,
-		cp: actor.getFlag(MODULE_ID, "coins.cp") ?? 0
+		gp: actor.system?.coins?.gp ?? 0,
+		sp: actor.system?.coins?.sp ?? 0,
+		cp: actor.system?.coins?.cp ?? 0
 	};
 }
 

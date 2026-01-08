@@ -71,7 +71,8 @@
   "socket": true,
   "esmodules": [
     "scripts/shadowdark-extras.mjs",
-    "scripts/SheetEditorConfig.mjs"
+    "scripts/SheetEditorConfig.mjs",
+    "scripts/SpellMacrosSD.mjs"
   ],
   "styles": [
     {

@@ -3164,7 +3164,7 @@ li.entry.sdx-sidebar-unidentified {
     background: rgba(50, 50, 48, 0.8);
     border: 1px solid rgba(80, 80, 75, 0.5);
     border-radius: 0px;
-    padding: 6px 10px;
+    padding: 4px 10px;
     color: rgba(255, 255, 255, 0.9) !important;
     font-family: 'Modesto Condensed', 'Palatino Linotype', serif;
 }
@@ -16314,4 +16314,249 @@ body:not(.game-master) .sdx-carousing-chat .sdx-player-only {
 .sheet-editor-config .control-input {
     display: flex;
     align-items: center;
+}
+
+/* ============================================
+   IDENTIFY SPELL DIALOGS
+   ============================================ */
+
+/* Selection Dialog */
+.sdx-identify-dialog {
+    padding: 10px;
+}
+
+.sdx-identify-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 15px;
+    font-size: 1.1em;
+    color: #fbbf24;
+    text-shadow: 0 0 10px rgba(251, 191, 36, 0.5);
+}
+
+.sdx-identify-header i {
+    color: #f59e0b;
+    animation: sdx-sparkle 2s ease-in-out infinite;
+}
+
+@keyframes sdx-sparkle {
+
+    0%,
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+
+    50% {
+        opacity: 0.6;
+        transform: scale(1.1);
+    }
+}
+
+.sdx-identify-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 12px;
+    max-height: 400px;
+    overflow-y: auto;
+    padding: 5px;
+}
+
+.sdx-identify-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 8px;
+    background: rgba(30, 30, 30, 0.9);
+    border: 2px solid rgba(100, 100, 100, 0.5);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.sdx-identify-item:hover {
+    border-color: rgba(251, 191, 36, 0.5);
+    background: rgba(40, 35, 25, 0.9);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(251, 191, 36, 0.2);
+}
+
+.sdx-identify-item.selected {
+    border-color: #fbbf24;
+    background: rgba(50, 45, 30, 0.95);
+    box-shadow: 0 0 15px rgba(251, 191, 36, 0.4),
+        inset 0 0 20px rgba(251, 191, 36, 0.1);
+}
+
+.sdx-identify-item-img {
+    width: 64px;
+    height: 64px;
+    margin-bottom: 8px;
+    border-radius: 6px;
+    overflow: hidden;
+    background: rgba(0, 0, 0, 0.3);
+}
+
+.sdx-identify-item-img img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.sdx-identify-item-name {
+    font-size: 11px;
+    text-align: center;
+    color: rgba(255, 255, 255, 0.85);
+    word-wrap: break-word;
+    max-width: 100%;
+}
+
+/* Reveal Modal */
+.sdx-identify-reveal {
+    position: relative;
+    padding: 20px;
+    text-align: center;
+    overflow: hidden;
+}
+
+.sdx-reveal-glow {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at center, rgba(251, 191, 36, 0.15) 0%, transparent 70%);
+    pointer-events: none;
+    animation: sdx-reveal-pulse 2s ease-in-out infinite;
+}
+
+@keyframes sdx-reveal-pulse {
+
+    0%,
+    100% {
+        opacity: 0.5;
+        transform: scale(1);
+    }
+
+    50% {
+        opacity: 1;
+        transform: scale(1.05);
+    }
+}
+
+.sdx-reveal-content {
+    position: relative;
+    z-index: 1;
+}
+
+.sdx-reveal-image {
+    width: 120px;
+    height: 120px;
+    margin: 0 auto 20px;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 0 30px rgba(251, 191, 36, 0.5),
+        0 0 60px rgba(251, 191, 36, 0.3);
+    animation: sdx-reveal-image-pop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+@keyframes sdx-reveal-image-pop {
+    0% {
+        transform: scale(0);
+        opacity: 0;
+    }
+
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.sdx-reveal-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.sdx-reveal-name {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 15px;
+    font-size: 1.4em;
+    font-weight: bold;
+    color: #fbbf24;
+    text-shadow: 0 0 15px rgba(251, 191, 36, 0.7);
+    animation: sdx-reveal-text 0.8s ease-out 0.3s forwards;
+    opacity: 0;
+}
+
+@keyframes sdx-reveal-text {
+    0% {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.sdx-reveal-name i {
+    color: #f59e0b;
+    animation: sdx-sparkle 1.5s ease-in-out infinite;
+}
+
+.sdx-reveal-description {
+    max-height: 200px;
+    overflow-y: auto;
+    padding: 15px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 8px;
+    border: 1px solid rgba(251, 191, 36, 0.2);
+    font-size: 0.95em;
+    color: rgba(255, 255, 255, 0.9);
+    text-align: left;
+    animation: sdx-reveal-text 0.8s ease-out 0.5s forwards;
+    opacity: 0;
+}
+
+/* Chat Card Styling */
+.sdx-identify-chat .card-header {
+    background: linear-gradient(135deg, rgba(251, 191, 36, 0.2), transparent);
+    border-bottom: 1px solid rgba(251, 191, 36, 0.3);
+}
+
+.sdx-identify-chat .item-image {
+    max-width: 48px;
+    border-radius: 6px;
+    box-shadow: 0 0 10px rgba(251, 191, 36, 0.4);
+}
+
+.sdx-identify-chat h3 {
+    color: #fbbf24;
+    margin: 0;
+}
+
+.sdx-identify-chat h3 i {
+    margin-right: 6px;
+}
+
+.sdx-identify-chat .reveal-text {
+    color: rgba(255, 255, 255, 0.7);
+    font-style: italic;
+}
+
+.sdx-identify-chat .item-name {
+    font-size: 1.2em;
+    color: #fbbf24;
+    margin: 8px 0;
+}
+
+.sdx-identify-chat .item-description {
+    padding: 10px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
+    border-left: 3px solid rgba(251, 191, 36, 0.5);
+    font-size: 0.9em;
 }
