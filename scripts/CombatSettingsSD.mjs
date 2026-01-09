@@ -193,7 +193,29 @@ function evaluateRequirement(formula, rollData) {
 		evalFormula = evalFormula.replace(variableRegex, (match, path) => {
 			// Navigate the path in rollData (e.g., "target.level" -> rollData.target.level)
 			const value = path.split('.').reduce((obj, key) => obj?.[key], rollData);
-			return value !== undefined ? value : 0;
+			if (value === undefined) return 0;
+			// Quote string values to prevent ReferenceErrors
+			if (typeof value === 'string') return JSON.stringify(value);
+			return value;
+		});
+
+		// Auto-quote bareword string literals on the right side of comparisons
+		// This handles cases like "@target.subtype = undead" -> "..." == "undead"
+		// Match: comparison operator followed by a bareword (not a number, not already quoted)
+		evalFormula = evalFormula.replace(/(==?|!=|<=?|>=?)\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*$/g, (match, op, word) => {
+			// Don't quote if it's a boolean or looks like a number
+			if (word === 'true' || word === 'false' || !isNaN(Number(word))) {
+				return match;
+			}
+			return `${op} "${word}"`;
+		});
+
+		// Also handle barewords after operators in the middle of expressions
+		evalFormula = evalFormula.replace(/(==?|!=|<=?|>=?)\s*([a-zA-Z_][a-zA-Z0-9_]*)(\s+(?:&&|\|\|))/g, (match, op, word, rest) => {
+			if (word === 'true' || word === 'false' || !isNaN(Number(word))) {
+				return match;
+			}
+			return `${op} "${word}"${rest}`;
 		});
 
 		// Now evaluate the formula as a JavaScript expression
