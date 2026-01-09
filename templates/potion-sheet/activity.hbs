@@ -443,6 +443,15 @@
                     </div>
                 </div>
 
+                {{!-- Usage Field --}}
+                <div class="form-group" style="margin-top: 8px;">
+                    <label>Usage <i class="fas fa-question-circle"
+                            data-tooltip="Number of uses before depleted. Empty = permanent poison."></i></label>
+                    <input type="number" name="flags.shadowdark-extras.coatingPoison.usage"
+                        value="{{sdxFlags.coatingPoison.usage}}" min="1" step="1"
+                        placeholder="∞ (permanent)" style="width: 100%;" />
+                </div>
+
                 {{!-- Examples Section --}}
                 <details class="examples-section" style="margin-top: 12px;">
                     <summary

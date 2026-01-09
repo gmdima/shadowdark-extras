@@ -813,5 +813,7 @@
   "SHADOWDARK_EXTRAS.potionSheet.tabs.activity": "Activity",
   "SHADOWDARK_EXTRAS.potionSheet.tabs.description": "Description",
   "SHADOWDARK_EXTRAS.potionSheet.tabs.effects": "Effects",
-  "SHADOWDARK_EXTRAS.potionSheet.tabs.macro": "Macro"
+  "SHADOWDARK_EXTRAS.potionSheet.tabs.macro": "Macro",
+  "SHADOWDARK_EXTRAS.weaponBonus.usage.tooltip": "Number of uses before depleted. Empty = permanent bonus.",
+  "SHADOWDARK_EXTRAS.weaponBonus.usage.label": "Usage"
 }

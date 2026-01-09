@@ -415,6 +415,8 @@ function buildDamageBonusRowHtml(bonus, index) {
 	const exclusive = bonus.exclusive || false;
 	const prompt = bonus.prompt || false;
 	const requirements = bonus.requirements || [];
+	// Usage: null/undefined/"" = permanent, number > 0 = limited uses
+	const usage = bonus.usage !== undefined && bonus.usage !== null && bonus.usage !== "" ? bonus.usage : "";
 
 	// Build requirements for this damage bonus
 	let reqsHtml = "";
@@ -426,9 +428,9 @@ function buildDamageBonusRowHtml(bonus, index) {
 		<div class="sdx-damage-bonus-row" data-index="${index}">
 			<div class="sdx-damage-bonus-header">
 				<div class="sdx-damage-bonus-inputs">
-					<input type="text" class="sdx-damage-bonus-formula" value="${formula}" 
+					<input type="text" class="sdx-damage-bonus-formula" value="${formula}"
 						placeholder="e.g., 1d4 or @abilities.str.mod" title="Damage formula" />
-					<input type="text" class="sdx-damage-bonus-label" value="${label}" 
+					<input type="text" class="sdx-damage-bonus-label" value="${label}"
 						placeholder="Label (optional, e.g., vs Undead)" title="Label" />
 					<select class="sdx-damage-bonus-type" title="Damage Type">
 						<option value="" ${!bonus.damageType ? 'selected' : ''}>Standard Damage</option>
@@ -446,6 +448,8 @@ function buildDamageBonusRowHtml(bonus, index) {
 						<option value="psychic" ${bonus.damageType === 'psychic' ? 'selected' : ''}>Psychic</option>
 						<option value="force" ${bonus.damageType === 'force' ? 'selected' : ''}>Force</option>
 					</select>
+					<input type="number" class="sdx-damage-bonus-usage" value="${usage}" min="0" step="1"
+						placeholder="∞" title="${game.i18n.localize("SHADOWDARK_EXTRAS.weaponBonus.usage.tooltip")}" />
 				</div>
 				<button type="button" class="sdx-remove-damage-bonus" data-index="${index}">
 					<i class="fas fa-trash"></i>
@@ -1014,6 +1018,11 @@ function activateWeaponBonusListeners(html, app, item) {
 		await saveDamageBonusesFromDom($tab, item);
 	});
 
+	// Damage bonus usage change
+	$tab.on('change', '.sdx-damage-bonus-usage', async function () {
+		await saveDamageBonusesFromDom($tab, item);
+	});
+
 	// Add damage bonus requirement
 	$tab.on('click', '.sdx-add-damage-bonus-requirement', async function (e) {
 		e.preventDefault();
@@ -1311,13 +1320,18 @@ async function saveDamageBonusesFromDom($tab, item) {
 			});
 		});
 
+		// Parse usage: empty string = null (permanent), otherwise parse as integer
+		const usageVal = $row.find('.sdx-damage-bonus-usage').val();
+		const usage = usageVal === "" || usageVal === undefined ? null : parseInt(usageVal, 10);
+
 		damageBonuses.push({
 			formula: $row.find('.sdx-damage-bonus-formula').val() || "",
 			label: $row.find('.sdx-damage-bonus-label').val() || "",
 			damageType: $row.find('.sdx-damage-bonus-type').val() || "",
 			exclusive: $row.find('.sdx-damage-bonus-exclusive').is(':checked'),
 			prompt: $row.find('.sdx-damage-bonus-prompt').is(':checked'),
-			requirements: requirements
+			requirements: requirements,
+			usage: usage
 		});
 	});
 	await saveWeaponBonusConfig(item, { damageBonuses });
@@ -1829,11 +1843,15 @@ export async function calculateWeaponBonusDamage(weapon, attacker, target, isCri
 		}
 	} else {
 		// Process each damage bonus entry
-		for (const bonus of damageBonuses) {
+		for (let i = 0; i < damageBonuses.length; i++) {
+			const bonus = damageBonuses[i];
 			if (!bonus.formula) continue;
 
 			// Skip prompt bonuses - they are handled separately via the roll dialog
 			if (bonus.prompt) continue;
+
+			// Skip bonuses with usage === 0 (depleted)
+			if (bonus.usage === 0) continue;
 
 			// Check this bonus's requirements
 			if (evaluateRequirements(bonus.requirements || [], attacker, target)) {
@@ -1842,7 +1860,9 @@ export async function calculateWeaponBonusDamage(weapon, attacker, target, isCri
 					const part = {
 						formula,
 						label: bonus.label || "",
-						damageType: bonus.damageType || ""
+						damageType: bonus.damageType || "",
+						bonusIndex: i, // Track index for usage decrement
+						hasUsage: bonus.usage !== null && bonus.usage !== undefined && bonus.usage > 0
 					};
 					// If this bonus is exclusive and has requirements, use only this bonus
 					if (bonus.exclusive && bonus.requirements && bonus.requirements.length > 0) {
@@ -2011,6 +2031,11 @@ export async function calculateWeaponBonusDamage(weapon, attacker, target, isCri
 		}
 	}
 
+	// Collect indices of bonuses with usage that were applied (for decrementing)
+	const appliedBonusIndicesWithUsage = applicableParts
+		.filter(p => p.hasUsage && p.bonusIndex !== undefined)
+		.map(p => p.bonusIndex);
+
 	return {
 		totalBonus,
 		bonusFormula,
@@ -2024,8 +2049,39 @@ export async function calculateWeaponBonusDamage(weapon, attacker, target, isCri
 		criticalRolls, // Actual Roll objects for critical damage
 		criticalRollResults, // Actual dice results from critical roll
 		requirementsMet: applicableParts.length > 0 || damageBonuses.length === 0,
-		damageTypes: applicableParts.map(p => p.damageType).filter(t => t)
+		damageTypes: applicableParts.map(p => p.damageType).filter(t => t),
+		appliedBonusIndicesWithUsage // Indices of bonuses that have usage and were applied
 	};
+}
+
+/**
+ * Decrement usage for damage bonuses that were applied
+ * @param {Item} weapon - The weapon item
+ * @param {number[]} bonusIndices - Array of bonus indices to decrement
+ */
+export async function decrementDamageBonusUsage(weapon, bonusIndices) {
+	if (!weapon || !bonusIndices || bonusIndices.length === 0) return;
+
+	const flags = weapon.flags?.[MODULE_ID]?.weaponBonus;
+	if (!flags?.damageBonuses) return;
+
+	const damageBonuses = [...flags.damageBonuses];
+	let updated = false;
+
+	for (const index of bonusIndices) {
+		if (damageBonuses[index] && damageBonuses[index].usage !== null && damageBonuses[index].usage > 0) {
+			damageBonuses[index] = {
+				...damageBonuses[index],
+				usage: damageBonuses[index].usage - 1
+			};
+			updated = true;
+			console.log(`${MODULE_ID} | Decremented usage for damage bonus "${damageBonuses[index].label || damageBonuses[index].formula}" to ${damageBonuses[index].usage}`);
+		}
+	}
+
+	if (updated) {
+		await weapon.setFlag(MODULE_ID, "weaponBonus.damageBonuses", damageBonuses);
+	}
 }
 
 /**

@@ -1,3 +1,7 @@
-2026/01/09-05:35:39.253 e0cc Recovering log #274
-2026/01/09-05:35:39.263 e0cc Delete type=0 #274
-2026/01/09-05:35:39.263 e0cc Delete type=3 #273
+2026/01/09-15:23:03.800 ea5c Recovering log #278
+2026/01/09-15:23:03.809 ea5c Delete type=0 #278
+2026/01/09-15:23:03.809 ea5c Delete type=3 #277
+2026/01/09-16:01:14.854 c4a0 Level-0 table #282: started
+2026/01/09-16:01:14.854 c4a0 Level-0 table #282: 0 bytes OK
+2026/01/09-16:01:14.858 c4a0 Delete type=0 #280
+2026/01/09-16:01:14.858 c4a0 Manual compaction at level-0 from '!actors!X2leBdJeqwKWrTlE' @ 72057594037927935 : 1 .. '!actors!X2leBdJeqwKWrTlE' @ 0 : 0; will stop at (end)

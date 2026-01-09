@@ -266,7 +266,8 @@ export default class PotionSheetSD extends HandlebarsApplicationMixin(DocumentSh
                 dieType: flags.coatingPoison?.dieType ?? "d6",
                 bonus: flags.coatingPoison?.bonus ?? 0,
                 formula: flags.coatingPoison?.formula ?? "",
-                tieredFormula: flags.coatingPoison?.tieredFormula ?? ""
+                tieredFormula: flags.coatingPoison?.tieredFormula ?? "",
+                usage: flags.coatingPoison?.usage ?? null
             }
         };
     }

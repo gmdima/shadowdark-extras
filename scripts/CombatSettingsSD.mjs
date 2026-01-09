@@ -3,7 +3,7 @@
  * Adds enhanced damage card features similar to midi-qol
  */
 
-import { getWeaponBonuses, getWeaponEffectsToApply, evaluateRequirements, calculateWeaponBonusDamage } from "./WeaponBonusConfig.mjs";
+import { getWeaponBonuses, getWeaponEffectsToApply, evaluateRequirements, calculateWeaponBonusDamage, decrementDamageBonusUsage } from "./WeaponBonusConfig.mjs";
 import { startDurationSpell, linkEffectToDurationSpell, linkEffectToFocusSpell, linkTargetToFocusSpell, startFocusSpellIfNeeded, getActiveDurationSpells, endFocusSpell } from "./FocusSpellTrackerSD.mjs";
 import { setupTemplateEffectFlags } from "./TemplateEffectsSD.mjs";
 import { createAuraOnActor } from "./AuraEffectsSD.mjs";
@@ -2452,7 +2452,11 @@ export async function injectDamageCard(message, html, data) {
 						criticalFormula: weaponBonusDamage.criticalFormula,
 						criticalRollResults: weaponBonusDamage.criticalRollResults,
 						requirementsMet: weaponBonusDamage.requirementsMet,
-						damageTypes: weaponBonusDamage.damageTypes
+						damageTypes: weaponBonusDamage.damageTypes,
+						// Track usage info for decrementing after damage is applied
+						appliedBonusIndicesWithUsage: weaponBonusDamage.appliedBonusIndicesWithUsage || [],
+						weaponItemId: item?.id,
+						actorId: actor?.id
 					};
 
 					await message.setFlag(MODULE_ID, "weaponBonusResults", persistData);
@@ -3728,13 +3732,14 @@ async function applyCoatingPoison(casterActor, targetActor, config, potionName) 
 		return;
 	}
 
-	// Filter out weapons that already have poison damage bonuses
+	// Filter out weapons that already have active poison damage bonuses (usage > 0 or no usage = permanent)
+	// Allow weapons with depleted poison (usage === 0) to be coated again
 	const availableWeapons = weapons.filter(weapon => {
 		const currentBonus = weapon.getFlag(MODULE_ID, "weaponBonus");
-		const hasPoisonBonus = currentBonus?.damageBonuses?.some(b =>
-			b.damageType?.toLowerCase() === "poison"
+		const hasActivePoisonBonus = currentBonus?.damageBonuses?.some(b =>
+			b.damageType?.toLowerCase() === "poison" && b.usage !== 0
 		);
-		return !hasPoisonBonus;
+		return !hasActivePoisonBonus;
 	});
 
 	if (availableWeapons.length === 0) {
@@ -3764,6 +3769,12 @@ async function applyCoatingPoison(casterActor, targetActor, config, potionName) 
 		damageFormula = parseTieredFormula(tieredFormula, casterLevel) || "1d6";
 	}
 
+	// Get usage from config (null/undefined = permanent)
+	const poisonUsage = config.usage !== undefined && config.usage !== null && config.usage !== ""
+		? parseInt(config.usage, 10)
+		: null;
+	const usageText = poisonUsage !== null ? `${poisonUsage} uses` : "permanently";
+
 	// Build weapon selection dropdown
 	const weaponChoices = availableWeapons.map(w =>
 		`<option value="${w.id}">${w.name}</option>`
@@ -3778,7 +3789,7 @@ async function applyCoatingPoison(casterActor, targetActor, config, potionName) 
 					<select name="weaponId" style="width: 100%; margin-top: 5px;">${weaponChoices}</select>
 				</div>
 				<p style="margin-top: 10px; font-style: italic; font-size: 0.9em;">
-					The weapon will deal +${damageFormula} poison damage permanently.
+					The weapon will deal +${damageFormula} poison damage (${usageText}).
 				</p>
 			</form>
 		`,
@@ -3809,7 +3820,8 @@ async function applyCoatingPoison(casterActor, targetActor, config, potionName) 
 								damageType: "poison",
 								exclusive: false,
 								prompt: false,
-								requirements: []
+								requirements: [],
+								usage: poisonUsage
 							}
 						],
 						damageBonus: existingBonus.damageBonus || "",
@@ -3823,13 +3835,13 @@ async function applyCoatingPoison(casterActor, targetActor, config, potionName) 
 					// Update the weapon with the poison coating
 					await weapon.setFlag(MODULE_ID, "weaponBonus", poisonCoatingBonus);
 
-					ui.notifications.info(`${weapon.name} is now coated with poison (+${damageFormula})!`);
+					ui.notifications.info(`${weapon.name} is now coated with poison (+${damageFormula}, ${usageText})!`);
 					ChatMessage.create({
 						speaker: ChatMessage.getSpeaker({ actor: casterActor }),
 						content: `<div class="shadowdark chat-card">
 							<h3><i class="fas fa-skull-crossbones"></i> Poison Coating</h3>
 							<p><strong>${casterActor?.name || "Someone"}</strong> coats <strong>${targetActor.name}'s ${weapon.name}</strong> with poison!</p>
-							<p><em>The weapon now deals +${damageFormula} poison damage.</em></p>
+							<p><em>The weapon now deals +${damageFormula} poison damage (${usageText}).</em></p>
 						</div>`
 					});
 				}
@@ -4316,6 +4328,25 @@ function attachDamageCardListeners(html, messageId) {
 				const appliedText = isHealing ? 'Healing' : 'Damage';
 				ui.notifications.info(`${appliedText} applied to ${appliedCount} target(s)`);
 				$btn.html('<i class="fas fa-check"></i> APPLIED');
+
+				// Decrement weapon bonus usage for bonuses that have limited uses
+				try {
+					const messageId = $card.data('message-id');
+					if (messageId) {
+						const message = game.messages.get(messageId);
+						const weaponBonusResults = message?.getFlag(MODULE_ID, "weaponBonusResults");
+						if (weaponBonusResults?.appliedBonusIndicesWithUsage?.length > 0 &&
+							weaponBonusResults.weaponItemId && weaponBonusResults.actorId) {
+							const ownerActor = game.actors.get(weaponBonusResults.actorId);
+							const weaponItem = ownerActor?.items.get(weaponBonusResults.weaponItemId);
+							if (weaponItem) {
+								await decrementDamageBonusUsage(weaponItem, weaponBonusResults.appliedBonusIndicesWithUsage);
+							}
+						}
+					}
+				} catch (decrementError) {
+					console.warn("shadowdark-extras | Failed to decrement weapon bonus usage:", decrementError);
+				}
 			} else {
 				ui.notifications.warn("No damage to apply");
 				$btn.html('<i class="fas fa-exclamation"></i> NO TARGETS');
