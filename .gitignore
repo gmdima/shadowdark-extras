@@ -2,7 +2,7 @@
 .agent/
 .macros/
 .README.md
-
+CLAUDE.md
 # OS files
 .DS_Store
 Thumbs.db

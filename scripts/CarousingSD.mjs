@@ -1482,10 +1482,10 @@ function rerenderPlayerSheets() {
 // ============================================
 
 /**
- * Inject the Carousing tab into player character sheets
- * Now just shows an "Open Carousing" button that opens the full-screen overlay
+ * Inject the Carousing button into player character sheets
+ * Shows a "tongue" button on the side that opens the full-screen overlay
  */
-export async function injectCarousingTab(app, html, actor) {
+export async function injectCarousingButton(app, html, actor) {
     try {
         if (!game.settings.get(MODULE_ID, "enableCarousing")) return;
     } catch {
@@ -1493,92 +1493,37 @@ export async function injectCarousingTab(app, html, actor) {
     }
 
     if (actor.type !== "Player") return;
-    if (html.find('.tab-carousing').length > 0) return;
 
-    // GM Cleanup: Remove offline players from carousing state
-    if (game.user.isGM) {
-        await pruneOfflineCarousingData();
-    }
+    // Dedup: Remove existing if present
+    // app.element is the window app, find the button inside it
+    app.element.find('.sdx-carousing-toggle-btn').remove();
 
-    const nav = html.find('.SD-nav');
-    if (nav.length === 0) return;
-
-    const effectsTab = nav.find('a[data-tab="tab-effects"]');
-    if (effectsTab.length === 0) return;
-
-    const carousingTabHtml = `<a class="navigation-tab" data-tab="tab-carousing">${game.i18n.localize("SHADOWDARK_EXTRAS.carousing.tab_label")}</a>`;
-    effectsTab.after(carousingTabHtml);
-
-    // Create simplified tab content with just an "Open Carousing" button
-    const carousingContentHtml = `
-        <section class="tab tab-carousing" data-tab="tab-carousing">
-            <div class="sdx-carousing-launcher">
-                <div class="sdx-carousing-launcher-icon">
-                    <i class="fas fa-beer fa-4x"></i>
-                    <h2>${game.i18n.localize("SHADOWDARK_EXTRAS.carousing.title")}</h2>
-                    <p>${game.i18n.localize("SHADOWDARK_EXTRAS.carousing.open_overlay_hint")}</p>
-                    <button type="button" class="sdx-carousing-open-btn" data-action="open-carousing">
-                        <i class="fas fa-external-link-alt"></i>
-                        ${game.i18n.localize("SHADOWDARK_EXTRAS.carousing.open_carousing")}
-                    </button>
-                </div>
-            </div>
-        </section>
+    // Create the button
+    const buttonHtml = `
+        <div class="sdx-carousing-toggle-btn" data-tooltip="${game.i18n.localize("SHADOWDARK_EXTRAS.carousing.title")}">
+            <i class="fas fa-beer"></i>
+        </div>
     `;
 
-    const contentBody = html.find('.SD-content-body');
-    const effectsSection = contentBody.find('.tab[data-tab="tab-effects"]');
+    // Append to the window app wrapper, after the header
+    // We use app.element because 'html' in the hook might be just the form content
+    const header = app.element.find('.window-header');
 
-    if (effectsSection.length > 0) {
-        effectsSection.after(carousingContentHtml);
-    } else {
-        contentBody.append(carousingContentHtml);
+    if (header.length > 0) {
+        // Remove any existing buttons first (just in case they are in the new location)
+        app.element.children('.sdx-carousing-toggle-btn').remove();
+
+        header.after(buttonHtml);
+
+        // Add listener
+        app.element.find('.sdx-carousing-toggle-btn').click((event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            if (window.sdxOpenCarousingOverlay) {
+                window.sdxOpenCarousingOverlay();
+            }
+        });
     }
-
-    const carousingTabBtn = nav.find('.navigation-tab[data-tab="tab-carousing"]');
-    const carousingContent = contentBody.find('.tab[data-tab="tab-carousing"]');
-
-    carousingTabBtn.click((event) => {
-        event.preventDefault();
-        event.stopPropagation();
-
-        nav.find('.navigation-tab').removeClass('active');
-        contentBody.find('.tab').removeClass('active');
-
-        carousingTabBtn.addClass('active');
-        carousingContent.addClass('active');
-
-        if (app._tabs?.[0]) {
-            app._tabs[0].active = "tab-carousing";
-        }
-
-        carousingActiveTabTracker.set(actor.id, "tab-carousing");
-    });
-
-    nav.find('.navigation-tab:not([data-tab="tab-carousing"])').click(() => {
-        carousingActiveTabTracker.set(actor.id, null);
-    });
-
-    const lastActiveTab = carousingActiveTabTracker.get(actor.id);
-    if (lastActiveTab === "tab-carousing") {
-        nav.find('.navigation-tab').removeClass('active');
-        carousingTabBtn.addClass('active');
-        contentBody.find('.tab').removeClass('active');
-        carousingContent.addClass('active');
-
-        if (app._tabs?.[0]) {
-            app._tabs[0].active = "tab-carousing";
-        }
-    }
-
-    // Activate open button listener
-    carousingContent.find('[data-action="open-carousing"]').click((event) => {
-        event.preventDefault();
-        // Use the global function to open the overlay
-        if (window.sdxOpenCarousingOverlay) {
-            window.sdxOpenCarousingOverlay();
-        }
-    });
 }
 
 /**

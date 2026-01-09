@@ -412,9 +412,14 @@ async function applyTemplateEffect(templateDoc, token, trigger) {
     let halfDamage = false;
 
     // Handle save if configured
-    if (config.save?.enabled && config.save?.dc) {
-        // Roll save for the token
-        saveResult = await rollTemplateSave(actor, config.save);
+    // Check for either static DC or formula
+    if (config.save?.enabled && (config.save?.dc || config.save?.dcFormula)) {
+        // Roll save for the token - pass casterData for formula evaluation
+        const saveConfig = {
+            ...config.save,
+            casterData: config.casterData
+        };
+        saveResult = await rollTemplateSave(actor, saveConfig);
         savedSuccessfully = saveResult.success;
 
         if (savedSuccessfully && !config.save.halfOnSuccess) {
@@ -508,7 +513,13 @@ async function createInteractiveTemplateCard(templateDoc, token, trigger, config
     `;
 
     // Show save info if save is configured
-    if (config.save?.enabled && config.save?.dc) {
+    if (config.save?.enabled && (config.save?.dc || config.save?.dcFormula)) {
+        // Evaluate DC
+        let dc = config.save.dc || 10;
+        if (config.save.dcFormula) {
+            dc = await evaluateDCFormula(config.save.dcFormula, config.casterData);
+        }
+
         const abilityName = abilityNames[config.save.ability] || config.save.ability;
         const btnBaseStyle = `flex: 1; color: #fff; border: 1px solid #555; padding: 6px 4px; cursor: pointer; border-radius: 3px; font-size: 11px;`;
         content += `
@@ -519,14 +530,14 @@ async function createInteractiveTemplateCard(templateDoc, token, trigger, config
             </style>
             <div style="background: #252525; border: 1px solid #333; border-radius: 3px; padding: 8px; margin-bottom: 8px;">
                 <p style="margin: 0 0 6px 0; font-size: 11px; color: #aaa;">
-                    <i class="fas fa-shield-alt" style="margin-right: 4px;"></i>${abilityName} Save DC ${config.save.dc}
+                    <i class="fas fa-shield-alt" style="margin-right: 4px;"></i>${abilityName} Save DC ${dc}
                 </p>
                 <div style="display: flex; gap: 4px;">
                     <button type="button" class="sdx-template-roll-save-btn sdx-save-btn-adv" 
                         data-token-id="${token.document?.id || token.id}"
                         data-actor-id="${actor?.id}"
                         data-ability="${config.save.ability}"
-                        data-dc="${config.save.dc}"
+                        data-dc="${dc}"
                         data-half-on-success="${config.save.halfOnSuccess}"
                         data-roll-mode="advantage"
                         style="${btnBaseStyle} background: #2a3a2a;">
@@ -536,7 +547,7 @@ async function createInteractiveTemplateCard(templateDoc, token, trigger, config
                         data-token-id="${token.document?.id || token.id}"
                         data-actor-id="${actor?.id}"
                         data-ability="${config.save.ability}"
-                        data-dc="${config.save.dc}"
+                        data-dc="${dc}"
                         data-half-on-success="${config.save.halfOnSuccess}"
                         data-roll-mode="normal"
                         style="${btnBaseStyle} background: #3a3a3a;">
@@ -546,7 +557,7 @@ async function createInteractiveTemplateCard(templateDoc, token, trigger, config
                         data-token-id="${token.document?.id || token.id}"
                         data-actor-id="${actor?.id}"
                         data-ability="${config.save.ability}"
-                        data-dc="${config.save.dc}"
+                        data-dc="${dc}"
                         data-half-on-success="${config.save.halfOnSuccess}"
                         data-roll-mode="disadvantage"
                         style="${btnBaseStyle} background: #3a2a2a;">
@@ -656,7 +667,15 @@ async function applyTemplateDamage(templateDoc, token, config, savedSuccessfully
  */
 async function rollTemplateSave(actor, saveConfig) {
     const ability = saveConfig.ability || 'dex';
-    const dc = saveConfig.dc || 10;
+    // Evaluate DC if formula is present
+    let dc = saveConfig.dc || 10;
+    if (saveConfig.dcFormula) {
+        dc = await evaluateDCFormula(saveConfig.dcFormula, saveConfig.casterData);
+    }
+
+    // Fallback if evaluation failed or resulted in 0/NaN
+    if (!dc || isNaN(dc)) dc = 10;
+
     const rollMode = saveConfig.rollMode || 'normal';
 
     // Get ability modifier - handle both PCs and NPCs
@@ -716,6 +735,49 @@ async function rollTemplateSave(actor, saveConfig) {
         rollMode,
         dieResults
     };
+}
+
+/**
+ * Evaluate DC formula using caster data
+ * @param {string} formula - The formula string (e.g. "12", "@spellcastingCheck", "8 + @caster.int")
+ * @param {Object} casterData - The caster data object
+ * @returns {Promise<number>} - The evaluated DC
+ */
+async function evaluateDCFormula(formula, casterData) {
+    if (!formula) return 10;
+
+    // If it's just a number, return it
+    if (!isNaN(formula)) return parseInt(formula);
+
+    console.log(`shadowdark-extras | Evaluating DC formula: "${formula}" with data:`, casterData);
+
+    if (!casterData) return 10;
+
+    // Replace @spellcastingCheck
+    let parsed = formula.replace(/@spellcastingCheck/g, casterData.spellcastingCheck || 0);
+    parsed = parsed.replace(/@caster\.spellcastingCheck/g, casterData.spellcastingCheck || 0);
+
+    // Replace @caster.level
+    parsed = parsed.replace(/@caster\.level/g, casterData.level || 0);
+
+    // Replace ability mods
+    const abilities = ['str', 'dex', 'con', 'int', 'wis', 'cha'];
+    for (const ab of abilities) {
+        const regex = new RegExp(`@caster\\.${ab}`, 'g');
+        parsed = parsed.replace(regex, casterData.abilities?.[ab] || 0);
+    }
+
+    console.log(`shadowdark-extras | DC formula parsed to: "${parsed}"`);
+
+    try {
+        const roll = await new Roll(parsed).evaluate();
+        const result = Math.floor(roll.total);
+        console.log(`shadowdark-extras | DC evaluation result: ${result}`);
+        return result;
+    } catch (e) {
+        console.warn(`shadowdark-extras | Failed to evaluate DC formula "${formula}":`, e);
+        return 10;
+    }
 }
 
 /**
@@ -1054,9 +1116,15 @@ export async function setupTemplateEffectFlags(templateDoc, config) {
         },
         save: {
             enabled: config.saveEnabled || false,
-            dc: config.saveDC || 10,
+            dcFormula: config.saveDCFormula || config.saveDC?.toString() || "10",  // Store as formula string
             ability: config.saveAbility || "dex",
             halfOnSuccess: config.halfOnSuccess || false
+        },
+        // Store caster data for formula evaluation
+        casterData: {
+            spellcastingCheck: config.spellcastingCheckTotal || 0,
+            level: config.casterLevel || 1,
+            abilities: config.casterAbilities || {}
         },
         effects: config.effects || [],
         excludeCaster: config.excludeCaster || false,

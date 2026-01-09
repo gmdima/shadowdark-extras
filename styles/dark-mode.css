@@ -1,0 +1,189 @@
+/* ============================================
+   DARK MODE INTEGRATION (Based on Lights Out Theme)
+   ============================================ */
+#sidebar-content #chat {
+    background-color: var(--lights-out-color-background-primary);
+    width: 95%;
+}
+
+#sidebar-tabs>menu {
+    margin-right: -10px;
+    gap: 4px;
+}
+
+body.sdx-dark-mode {
+    /* Variables from Lights Out Theme (Dark) */
+    --lights-out-color-background-primary: rgba(0, 0, 0, 1);
+    --lights-out-color-background-secondary: rgba(0, 0, 0, 0.5);
+    --lights-out-color-foreground-primary: white;
+    --lights-out-color-foreground-secondary: #a8a8a8;
+
+    --lights-out-color-text-primary: #dddddd;
+
+    --lights-out-color-chat-message-background: #111111;
+    --lights-out-color-chat-message-background-secondary: #1a1a1a;
+    --lights-out-color-chat-message-text: var(--lights-out-color-text-primary);
+    --lights-out-color-chat-message-border: rgba(255, 255, 255, 0.1);
+
+    --lights-out-color-roll-fail: #cb0100;
+    --lights-out-color-roll-success: #007e2a;
+
+    --lights-out-color-bar-unknown: linear-gradient(180deg, #323232, #292929);
+    --lights-out-color-bar-healthy: linear-gradient(180deg, #ba2524, #861211);
+    --lights-out-color-bar-hurt: linear-gradient(180deg, #ba2524, #861211);
+    --lights-out-color-bar-injured: linear-gradient(180deg, #971e1d, #660e0d);
+    --lights-out-color-bar-critical: linear-gradient(180deg, #6a1413, #410808);
+
+    --font-body: "Montserrat-Medium", sans-serif;
+    --font-header: "Old Newspaper Font", sans-serif;
+}
+
+/* Chat Styles scoped to Dark Mode */
+body.sdx-dark-mode #chat-message {
+    background: var(--lights-out-color-chat-message-background);
+    border: 1px solid var(--lights-out-color-foreground-secondary);
+    margin-left: 4px;
+    /* margin-right: 47px; */
+    /* right: 5px; */
+    width: auto;
+}
+
+.chat-sidebar .jump-to-bottom {
+    left: 17px;
+}
+
+.chat-sidebar #chat-controls {
+    margin-left: 4px;
+}
+
+body.sdx-dark-mode #chat-message:focus {
+    outline: none;
+    box-shadow: 0 0 5px var(--lights-out-color-foreground-primary);
+}
+
+body.sdx-dark-mode .chat-log {
+    font-family: var(--font-body);
+}
+
+body.sdx-dark-mode .chat-message.whisper {
+    background: black !important;
+}
+
+body.sdx-dark-mode .chat-message.whisper .dice-roll .dice-result {
+    background-color: #0f0f0f;
+}
+
+body.sdx-dark-mode .chat-message.whisper .message-sender {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+body.sdx-dark-mode .chat-message.whisper .message-sender::after {
+    content: "";
+    width: 16px;
+    height: 16px;
+    background-image: url("/modules/lights-out-theme-shadowdark/images/backgrounds/icons/eye-slash-solid.svg");
+    background-size: contain;
+    background-repeat: no-repeat;
+    filter: invert(1);
+    opacity: 0.4;
+}
+
+body.sdx-dark-mode .chat-message,
+body.sdx-dark-mode .chat-message.whisper,
+body.sdx-dark-mode .chat-message.emote {
+    background: var(--lights-out-color-chat-message-background);
+    color: var(--lights-out-color-chat-message-text);
+    border-radius: 2px;
+    border: 1px solid var(--lights-out-color-chat-message-border);
+    margin: 8px 3px;
+}
+
+
+body.game .app .window-resizable-handle {
+    width: 12px;
+    height: 12px;
+    position: absolute;
+    bottom: -10px;
+    right: -10px;
+    background: #493f3fad;
+    padding: 0px;
+}
+
+body.sdx-dark-mode .card-footer {
+    display: none;
+}
+
+body.sdx-dark-mode .chat-message .message-header {
+    color: var(--lights-out-color-chat-message-text);
+}
+
+body.sdx-dark-mode .shadowdark.item-card .card-header,
+body.sdx-dark-mode .shadowdark.item-card .card-attack-roll,
+body.sdx-dark-mode .shadowdark.item-card .card-footer,
+body.sdx-dark-mode .shadowdark.roll-card .card-header,
+body.sdx-dark-mode .shadowdark.light-source-card .card-header {
+    border: none;
+}
+
+body.sdx-dark-mode .shadowdark.item-card .card-header img,
+body.sdx-dark-mode .shadowdark.roll-card .card-header img,
+body.sdx-dark-mode .shadowdark.light-source-card .card-header img {
+    border-radius: 10% !important;
+    margin-left: 5px;
+}
+
+body.sdx-dark-mode .dice-roll .dice-total {
+    font-family: var(--font-header);
+    font-size: 22px;
+    line-height: 140%;
+}
+
+body.sdx-dark-mode .dice-roll .dice-total.success,
+body.sdx-dark-mode .dice-roll .dice-total.failure {
+    font-family: var(--font-header);
+    /* Colors handled by variables above if standard classes used */
+}
+
+body.sdx-dark-mode .dice-roll .dice-total.success {
+    color: var(--lights-out-color-roll-success);
+}
+
+body.sdx-dark-mode .dice-roll .dice-total.failure {
+    color: var(--lights-out-color-roll-fail);
+}
+
+body.sdx-dark-mode .dice-roll .dice-result {
+    background-color: var(--lights-out-color-chat-message-background-secondary);
+    padding: 2px 8px;
+}
+
+body.sdx-dark-mode .dice-roll .dice-formula,
+body.sdx-dark-mode .dice-roll .dice-total {
+    border: none;
+    box-shadow: none;
+    background: none;
+}
+
+body.sdx-dark-mode .chat-portrait-text-size-name-generic {
+    font-family: "Old Newspaper Font";
+}
+
+body.sdx-dark-mode .message-sender {
+    font-family: "Old Newspaper Font";
+    font-size: 16px;
+}
+
+
+
+body.sdx-dark-mode .chat-portrait-image-size-name-generic {
+    display: none;
+}
+
+body.sdx-dark-mode .shadowdark.item-card .card-header img,
+body.sdx-dark-mode .shadowdark.roll-card .card-header img,
+body.sdx-dark-mode .shadowdark.light-source-card .card-header img {
+    border: 1px solid var(--lights-out-color-foreground-secondary);
+    border-radius: 50%;
+}

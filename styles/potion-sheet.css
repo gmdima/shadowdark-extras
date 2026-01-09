@@ -1,0 +1,544 @@
+/**
+ * Potion Sheet Styles - AppV2
+ * Minimal layout styles - Foundry handles theming automatically
+ */
+
+/* ============================================
+   Reset Shadowdark System Styles
+   ============================================ */
+
+
+
+/* ============================================
+   Header Layout
+   ============================================ */
+
+
+.potion-sheet-header .item-image {
+    width: 64px;
+    height: 64px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+
+.potion-sheet-header .item-name {
+    font-size: 1.4rem;
+    font-weight: bold;
+    border: none;
+    background: transparent;
+    padding: 4px 0;
+}
+
+.potion-sheet-header .item-type-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.85rem;
+    opacity: 0.7;
+    width: fit-content;
+}
+
+.item-macro-header-btn:hover {
+    color: var(--color-shadow-highlight);
+    text-shadow: 0 0 5px var(--color-shadow-highlight);
+}
+
+/* ============================================
+   Tabs Navigation
+   ============================================ */
+.potion-sheet-tabs {
+    display: flex;
+    border-bottom: 1px solid var(--color-border-light);
+}
+
+.potion-sheet-tabs .tab-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 16px;
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+    opacity: 0.7;
+}
+
+.potion-sheet-tabs .tab-item:hover {
+    opacity: 1;
+}
+
+.potion-sheet-tabs .tab-item.active {
+    opacity: 1;
+    border-bottom-color: var(--color-border-highlight);
+}
+
+/* ============================================
+   Tab Content
+   ============================================ */
+.potion-sheet .tab-content {
+    display: none;
+
+    overflow-y: auto;
+}
+
+.potion-sheet .prosemirror .editor-container {
+    height: 150px;
+}
+
+.potion-sheet .standard-form button,
+.potion-sheet .add-profile-btn {
+    border: 1px solid darkgrey;
+}
+
+.potion-sheet .standard-form button,
+.potion-sheet .add-profile-btn,
+.potion-sheet .prosemirror menu {
+    background: unset;
+    padding: 5px 7px;
+}
+
+.potion-sheet .prosemirror .editor-content {
+    background: #2f283052;
+}
+
+.potion-sheet .tab-content.active {
+    display: block;
+}
+
+/* ============================================
+   Details Group (for grouping related sections)
+   ============================================ */
+.potion-details-group {
+    border: 1px solid var(--color-border-light);
+    border-radius: 6px;
+    margin-bottom: 12px;
+    padding: 8px;
+    background: rgb(129 108 176 / 12%);
+}
+
+.potion-details-group summary {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    font-weight: 600;
+    font-family: var(--font-primary);
+    text-transform: uppercase;
+    font-size: 0.9rem;
+    letter-spacing: 0.5px;
+    color: var(--color-text-light-1);
+    cursor: pointer;
+    border-radius: 4px;
+    margin: -8px -8px 8px -8px;
+    background: rgba(0, 0, 0, 0.15);
+}
+
+.potion-details-group summary:hover {
+    background: rgba(0, 0, 0, 0.25);
+}
+
+.potion-details-group summary i {
+    font-size: 0.85rem;
+}
+
+.potion-details-group>.potion-fieldset {
+    margin-bottom: 8px;
+}
+
+.potion-details-group>.potion-fieldset:last-child {
+    margin-bottom: 0;
+}
+
+/* ============================================
+   Fieldsets
+   ============================================ */
+.potion-fieldset {
+    border: 1px solid var(--color-border-light);
+    border-radius: 4px;
+    padding: 12px;
+    margin-bottom: 12px;
+}
+
+.potion-fieldset legend {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 12px;
+    font-weight: 600;
+    font-family: var(--font-primary);
+    text-transform: uppercase;
+    font-size: 0.9rem;
+    letter-spacing: 0.5px;
+    color: var(--color-text-light-1);
+}
+
+.potion-fieldset legend i {
+    font-size: 0.8rem;
+    opacity: 0.8;
+}
+
+/* ============================================
+   Form Layout & Spacing
+   ============================================ */
+.potion-sheet .form-group {
+    display: grid;
+    grid-template-columns: 140px 1fr;
+    gap: 12px;
+    align-items: center;
+    margin-bottom: 8px;
+    padding: 0 4px;
+}
+
+.potion-sheet .form-group label {
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.potion-sheet .form-group .form-fields {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.potion-sheet .section-content {
+    padding: 10px 4px 4px 4px;
+}
+
+.potion-sheet .hint {
+    margin-top: 2px;
+    font-size: 0.8rem;
+    opacity: 0.7;
+    grid-column: 2;
+    line-height: 1.2;
+}
+
+/* ============================================
+   Grids
+   ============================================ */
+.cost-grid {
+    display: flex;
+    gap: 12px;
+}
+
+.cost-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.cost-item input {
+    width: 60px;
+    text-align: center;
+}
+
+.slots-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+}
+
+.scaling-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+/* ============================================
+   Inline Groups
+   ============================================ */
+.inline-group {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 8px;
+}
+
+.formula-type-group {
+    display: flex;
+    gap: 16px;
+    margin: 12px 0;
+    padding: 10px;
+    background: rgba(0, 0, 0, 0.1);
+    border-radius: 4px;
+    justify-content: center;
+}
+
+/* ============================================
+   Effects Container
+   ============================================ */
+.effects-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.effects-drop-area {
+    min-height: 80px;
+    border: 2px dashed var(--color-border-light);
+    border-radius: 4px;
+    display: flex;
+    flex-direction: column;
+}
+
+.effects-drop-area.drag-over {
+    border-color: var(--color-border-highlight);
+    background: var(--color-bg);
+}
+
+.effects-placeholder {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    opacity: 0.5;
+    border: 2px dotted #786689;
+}
+
+.effects-list {
+    padding: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.effect-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 8px;
+    border: 1px solid var(--color-border-light);
+    border-radius: 4px;
+}
+
+.effect-item img {
+    width: 24px;
+    height: 24px;
+    border-radius: 4px;
+}
+
+.effect-item span {
+    flex: 1;
+}
+
+.effect-item .remove-effect {
+    background: none;
+    border: none;
+    cursor: pointer;
+    opacity: 0.5;
+}
+
+.effect-item .remove-effect:hover {
+    opacity: 1;
+}
+
+/* ============================================
+   Summon & Item Give Profiles
+   ============================================ */
+.summon-profiles,
+.item-give-profiles {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.summon-profile,
+.item-give-profile {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px;
+    border: 1px solid var(--color-border-light);
+    border-radius: 4px;
+}
+
+.summon-creature-drop,
+.item-give-drop {
+    flex: 0 0 120px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px;
+    border: 2px dashed var(--color-border-light);
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.summon-creature-drop.drag-over,
+.item-give-drop.drag-over {
+    border-color: var(--color-border-highlight);
+}
+
+.summon-creature-drop img,
+.item-give-drop img {
+    width: 32px;
+    height: 32px;
+    border-radius: 4px;
+}
+
+.summon-options,
+.item-give-options {
+    flex: 1;
+    display: flex;
+    gap: 8px;
+}
+
+/* ============================================
+   Buttons
+   ============================================ */
+.potion-sheet .standard-form button,
+.potion-sheet .add-profile-btn {
+    appearance: none;
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid var(--color-border-dark-primary);
+    border-radius: 4px;
+    color: var(--color-text-light-2);
+    cursor: pointer;
+    font-family: var(--font-primary);
+    font-size: 0.9rem;
+    padding: 6px 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.2s ease;
+    margin: 8px 0;
+}
+
+.potion-sheet .standard-form button:hover,
+.potion-sheet .add-profile-btn:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: var(--color-border-highlight);
+    box-shadow: 0 0 5px var(--color-shadow-highlight);
+}
+
+.potion-sheet .add-profile-btn {
+    width: 100%;
+    margin-top: 12px;
+}
+
+.potion-sheet .remove-summon,
+.potion-sheet .remove-item-give,
+.potion-sheet .remove-effect {
+    padding: 4px;
+    margin: 0;
+    width: auto;
+    opacity: 0.6;
+    border: none;
+    background: none;
+    flex: 0 0 auto;
+}
+
+.potion-sheet .remove-summon:hover,
+.potion-sheet .remove-item-give:hover,
+.potion-sheet .remove-effect:hover {
+    opacity: 1;
+    color: var(--color-shadow-primary);
+    box-shadow: none;
+}
+
+/* ============================================
+   Macro Tab
+   ============================================ */
+.macro-fieldset {
+    margin-top: 10px;
+    display: flex;
+    flex-direction: column;
+}
+
+.macro-editor-container {
+    min-height: 200px;
+    background: rgba(71, 68, 68, 0.246);
+    border: 1px solid var(--color-border-dark-primary);
+    border-radius: 4px;
+    padding: 5px;
+}
+
+.macro-textarea {
+    width: 100%;
+    height: 100%;
+    min-height: 200px;
+    background: transparent;
+    border: none;
+    color: var(--color-text-light-2);
+    font-family: var(--font-mono);
+    font-size: 0.9rem;
+    resize: vertical;
+    padding: 8px;
+    line-height: 1.4;
+}
+
+.macro-textarea:focus {
+    outline: none;
+    box-shadow: none;
+}
+
+.macro-content pre {
+    margin: 0;
+    padding: 10px;
+    background: #111;
+    color: #eee;
+    border-radius: 4px;
+    overflow-x: auto;
+}
+
+.macro-info {
+    margin-bottom: 12px;
+}
+
+.macro-settings-fieldset {
+    margin-top: 10px;
+}
+
+.macro-settings-fieldset .form-group {
+    border-bottom: 1px solid var(--color-border-light-2);
+    padding-bottom: 5px;
+    margin-bottom: 5px;
+}
+
+.macro-settings-fieldset .form-group:last-child {
+    border-bottom: none;
+}
+
+/* ============================================
+   Description Tab
+   ============================================ */
+.description-fieldset {
+    min-height: 150px;
+}
+
+.editor-wrapper {
+    min-height: 120px;
+}
+
+/* ============================================
+   Checkbox/Radio Labels
+   ============================================ */
+.checkbox-label,
+.radio-label,
+.toggle-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    padding: 6px 0;
+    line-height: 1;
+    margin: 2px 0;
+}
+
+.checkbox-label input,
+.radio-label input,
+.toggle-label input {
+    margin: 0;
+}
+
+.macro-options {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}

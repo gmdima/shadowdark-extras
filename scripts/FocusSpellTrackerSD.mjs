@@ -596,7 +596,11 @@ export async function endDurationSpell(casterId, instanceId, reason = "expired")
 	if (durationEntry.targetEffects && durationEntry.targetEffects.length > 0) {
 		console.log(`shadowdark-extras | Removing ${durationEntry.targetEffects.length} effects from duration spell ${durationEntry.spellName}`);
 
-		for (const targetEffect of durationEntry.targetEffects) {
+		// Create a copy of the array to iterate, as the original might be mutated by handleEffectDeleted hooks
+		// This fixes the "N-1" bug where one target might be skipped if the array shrinks during iteration
+		const effectsToRemove = [...durationEntry.targetEffects];
+
+		for (const targetEffect of effectsToRemove) {
 			try {
 				// Use socketlib to remove the effect as GM
 				const socket = getFocusSpellSocket();

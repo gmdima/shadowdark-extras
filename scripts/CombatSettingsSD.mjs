@@ -329,6 +329,19 @@ export function setupCombatSocket() {
 									}
 								}
 							}
+
+							// Check for non-magical weapon resistance/immunity (only if weapon is not magical)
+							if (componentDamage > 0 && !data.isMagicalWeapon) {
+								const isNonMagicImmune = token.actor.getFlag("shadowdark-extras", "immunity.nonmagic");
+								if (isNonMagicImmune) {
+									componentDamage = 0;
+								} else {
+									const isNonMagicResistant = token.actor.getFlag("shadowdark-extras", "resistance.nonmagic");
+									if (isNonMagicResistant) {
+										componentDamage = Math.floor(componentDamage / 2);
+									}
+								}
+							}
 						}
 					}
 
@@ -379,6 +392,19 @@ export function setupCombatSocket() {
 									}
 								}
 							}
+
+							// Check for non-magical weapon resistance/immunity (only if weapon is not magical)
+							if (baseDamage > 0 && !data.isMagicalWeapon) {
+								const isNonMagicImmune = token.actor.getFlag("shadowdark-extras", "immunity.nonmagic");
+								if (isNonMagicImmune) {
+									baseDamage = 0;
+								} else {
+									const isNonMagicResistant = token.actor.getFlag("shadowdark-extras", "resistance.nonmagic");
+									if (isNonMagicResistant) {
+										baseDamage = Math.floor(baseDamage / 2);
+									}
+								}
+							}
 						}
 					}
 
@@ -415,9 +441,20 @@ export function setupCombatSocket() {
 							}
 						}
 					}
+
+					// Check for non-magical weapon resistance/immunity (physical damage from non-magical weapons)
+					if (finalDamage > 0 && ["bludgeoning", "slashing", "piercing"].includes(effectiveDamageType) && !data.isMagicalWeapon) {
+						const isNonMagicImmune = token.actor.getFlag("shadowdark-extras", "immunity.nonmagic");
+						if (isNonMagicImmune) {
+							finalDamage = 0;
+						} else {
+							const isNonMagicResistant = token.actor.getFlag("shadowdark-extras", "resistance.nonmagic");
+							if (isNonMagicResistant) {
+								finalDamage = Math.floor(finalDamage / 2);
+							}
+						}
+					}
 				}
-
-
 
 				// Glassbones (double damage) - applies after resistance/immunity
 				if (hasGlassbones && finalDamage > 0) {
@@ -1033,6 +1070,7 @@ export function setupScrollingCombatText() {
 // Track which messages have already spawned creatures (in-memory cache)
 const _spawnedMessages = new Set();
 const _itemGiveMessages = new Set();
+const _coatingPoisonMessages = new Set();
 
 // Track summoned tokens with expiry info for auto-deletion
 // Map<sceneId, Array<{tokenIds: string[], expiryRound: number, spellName: string}>>
@@ -1226,6 +1264,8 @@ export function setupUntargetHook() {
 
 // Track messages that have already had template placement to prevent re-triggering
 const _templatePlacedMessages = new Set();
+// Track messages that have already auto-applied conditions/damage to prevent duplicates
+const _autoAppliedMessages = new Set();
 
 
 /**
@@ -1394,7 +1434,8 @@ export async function injectDamageCard(message, html, data) {
 						summoning: storedConfig.summoning,
 						itemGive: storedConfig.itemGive,
 						auraEffects: storedConfig.auraEffects,
-						spellDamage: storedConfig.spellDamage
+						spellDamage: storedConfig.spellDamage,
+						coatingPoison: storedConfig.coatingPoison
 					}
 				}
 			};
@@ -1520,6 +1561,26 @@ export async function injectDamageCard(message, html, data) {
 					}
 				}
 				await giveItemsToCaster(casterActor, item, profiles);
+			}
+		}
+	}
+
+	// Process coating poison for potions
+	const coatingPoisonConfig = item?.flags?.[MODULE_ID]?.coatingPoison;
+	if (coatingPoisonConfig?.enabled && itemType === "Potion") {
+		if (message.author.id !== game.user.id) {
+			// Don't process for other users
+		} else if (_coatingPoisonMessages.has(message.id)) {
+			// Already processed
+		} else {
+			_coatingPoisonMessages.add(message.id);
+
+			// Determine target actor - use target if present, otherwise self
+			const targetToken = Array.from(game.user.targets)[0];
+			const targetActor = targetToken?.actor || casterActor;
+
+			if (targetActor) {
+				await applyCoatingPoison(casterActor, targetActor, coatingPoisonConfig, item.name);
 			}
 		}
 	}
@@ -1698,7 +1759,36 @@ export async function injectDamageCard(message, html, data) {
 							damageFormula: templateEffectsConfig.damage?.formula || '',
 							damageType: templateEffectsConfig.damage?.type || '',
 							saveEnabled: templateEffectsConfig.save?.enabled || false,
-							saveDC: templateEffectsConfig.save?.dc || 12,
+							saveDCFormula: templateEffectsConfig.save?.dc || '12',  // Store as formula string
+							spellcastingCheckTotal: (() => {
+								let total = message.flags?.shadowdark?.rolls?.main?.total;
+
+								// Check for nested roll object (structure shown in user screenshot)
+								if (total === undefined) {
+									total = message.flags?.shadowdark?.rolls?.main?.roll?.total;
+								}
+
+								// Fallback to core rolls if flags are missing
+								if (total === undefined && message.rolls?.length > 0) {
+									total = message.rolls[0].total;
+								}
+
+								total = total || 0;
+								console.log(`shadowdark-extras | Extracted spellcastingCheckTotal: ${total}`, {
+									flags: message.flags?.shadowdark?.rolls,
+									core: message.rolls?.map(r => r.total)
+								});
+								return total;
+							})(), // Caster's spell roll
+							casterLevel: casterActor?.system?.level?.value || 1,
+							casterAbilities: {
+								str: casterActor?.system?.abilities?.str?.mod || 0,
+								dex: casterActor?.system?.abilities?.dex?.mod || 0,
+								con: casterActor?.system?.abilities?.con?.mod || 0,
+								int: casterActor?.system?.abilities?.int?.mod || 0,
+								wis: casterActor?.system?.abilities?.wis?.mod || 0,
+								cha: casterActor?.system?.abilities?.cha?.mod || 0
+							},
 							saveAbility: templateEffectsConfig.save?.ability || 'dex',
 							halfOnSuccess: templateEffectsConfig.save?.halfOnSuccess || false,
 							effects: templateEffectsConfig.applyConfiguredEffects ?
@@ -2406,8 +2496,11 @@ export async function injectDamageCard(message, html, data) {
 	// Get base damage type (use item flag for weapons, damageType for spells/others)
 	const baseDamageType = item?.type === "Weapon" ? (item.getFlag?.(MODULE_ID, 'baseDamageType') || 'standard') : damageType;
 
+	// Check if this is a magical weapon attack
+	const isMagicalWeapon = item?.type === "Weapon" && item?.system?.magicItem === true;
+
 	// Build the damage card HTML (pass allEffects which includes both spell and weapon effects)
-	const cardHtml = await buildDamageCardHtml(actor, cardTargets, totalDamage, damageType, allEffects, spellDamageConfig, settings, message, weaponBonusDamage, isCritical, item, casterTokenId, baseDamageType);
+	const cardHtml = await buildDamageCardHtml(actor, cardTargets, totalDamage, damageType, allEffects, spellDamageConfig, settings, message, weaponBonusDamage, isCritical, item, casterTokenId, baseDamageType, isMagicalWeapon);
 
 
 
@@ -2527,13 +2620,22 @@ export async function injectDamageCard(message, html, data) {
 		const shadowdarkRolls = message.flags?.shadowdark?.rolls;
 		const mainRoll = shadowdarkRolls?.main;
 
+
+		// Check for already applied flag (persistently) or in-memory (for immediate re-renders)
+		const alreadyApplied = message.getFlag(MODULE_ID, "autoApplied") || _autoAppliedMessages.has(message.id);
+
 		// Only auto-apply if:
 		// 1. There's no main roll at all (pure damage roll with no attack), OR
 		// 2. The main roll exists AND success is explicitly true
 		// AND 3. No aura was just created/processed to avoid double-application
-		const shouldAutoApply = (!mainRoll || mainRoll.success === true) && !auraCreatedThisCall;
+		// AND 4. Has not already been applied
+		const shouldAutoApply = (!mainRoll || mainRoll.success === true) && !auraCreatedThisCall && !alreadyApplied;
 
 		if (shouldAutoApply) {
+			// Mark as applied immediately to prevent race conditions
+			_autoAppliedMessages.add(message.id);
+			// Persist the flag (async, but in-memory set handles the gap)
+			message.setFlag(MODULE_ID, "autoApplied", true);
 			// Wait a tiny bit for the card to fully render, then auto-click the apply button(s)
 			setTimeout(() => {
 				// Auto-apply damage if enabled
@@ -2942,7 +3044,7 @@ async function buildRollBreakdown(message, weaponBonusDamage = null, isCritical 
 /**
  * Build the damage card HTML
  */
-async function buildDamageCardHtml(actor, targets, totalDamage, damageType, allEffects, spellDamageConfig, settings, message, weaponBonusDamage = null, isCritical = false, spellItem = null, casterTokenId = '', baseDamageType = 'standard') {
+async function buildDamageCardHtml(actor, targets, totalDamage, damageType, allEffects, spellDamageConfig, settings, message, weaponBonusDamage = null, isCritical = false, spellItem = null, casterTokenId = '', baseDamageType = 'standard', isMagicalWeapon = false) {
 
 
 	const cardSettings = settings.damageCard;
@@ -3118,7 +3220,7 @@ async function buildDamageCardHtml(actor, targets, totalDamage, damageType, allE
 	}
 
 	const finalHtml = `
-						<div class="sdx-damage-card" data-message-id="${message.id}" data-caster-actor-id="${actor?.id || ''}" data-caster-token-id="${casterTokenId}" data-base-damage="${totalDamage}" data-damage-type="${damageType}" data-base-damage-type="${baseDamageType}">
+						<div class="sdx-damage-card" data-message-id="${message.id}" data-caster-actor-id="${actor?.id || ''}" data-caster-token-id="${casterTokenId}" data-base-damage="${totalDamage}" data-damage-type="${damageType}" data-base-damage-type="${baseDamageType}" data-is-magical-weapon="${isMagicalWeapon}">
 							<div class="sdx-damage-card-header">
 								<i class="fas ${headerIcon}"></i> ${headerText} <i class="fas fa-chevron-down"></i>
 							</div>
@@ -3606,6 +3708,139 @@ async function giveItemsToCaster(casterActor, item, profiles) {
 }
 
 /**
+ * Apply coating poison to a weapon from a potion
+ * Shows a dialog to select a weapon, then adds poison damage bonus to it
+ * @param {Actor} casterActor - The actor who used the potion
+ * @param {Actor} targetActor - The actor whose weapon will be coated (may be same as caster)
+ * @param {object} config - The coating poison configuration
+ * @param {string} potionName - Name of the potion for display purposes
+ */
+async function applyCoatingPoison(casterActor, targetActor, config, potionName) {
+	if (!targetActor) {
+		ui.notifications.warn("No target found for coating poison!");
+		return;
+	}
+
+	// Get all weapons from target actor
+	const weapons = targetActor.items.filter(item => item.type === "Weapon");
+	if (weapons.length === 0) {
+		ui.notifications.warn(`${targetActor.name} has no weapons to coat!`);
+		return;
+	}
+
+	// Filter out weapons that already have poison damage bonuses
+	const availableWeapons = weapons.filter(weapon => {
+		const currentBonus = weapon.getFlag(MODULE_ID, "weaponBonus");
+		const hasPoisonBonus = currentBonus?.damageBonuses?.some(b =>
+			b.damageType?.toLowerCase() === "poison"
+		);
+		return !hasPoisonBonus;
+	});
+
+	if (availableWeapons.length === 0) {
+		ui.notifications.warn(`${targetActor.name} has no weapons available for poison coating (all already have poison damage)!`);
+		return;
+	}
+
+	// Build the damage formula based on config
+	let damageFormula = "";
+	const casterLevel = casterActor?.system?.level?.value || 1;
+
+	if (config.formulaType === "basic") {
+		const numDice = config.numDice || 1;
+		const dieType = config.dieType || "d6";
+		const bonus = config.bonus || 0;
+		damageFormula = `${numDice}${dieType}`;
+		if (bonus !== 0) {
+			damageFormula += bonus > 0 ? `+${bonus}` : `${bonus}`;
+		}
+	} else if (config.formulaType === "formula") {
+		damageFormula = config.formula || "1d6";
+		// Replace level placeholder with actual level
+		damageFormula = damageFormula.replace(/@level/gi, casterLevel);
+	} else if (config.formulaType === "tiered") {
+		// Parse tiered formula like "1-3:1d4, 4-6:1d6, 7+:1d8"
+		const tieredFormula = config.tieredFormula || "1+:1d6";
+		damageFormula = parseTieredFormula(tieredFormula, casterLevel) || "1d6";
+	}
+
+	// Build weapon selection dropdown
+	const weaponChoices = availableWeapons.map(w =>
+		`<option value="${w.id}">${w.name}</option>`
+	).join('');
+
+	new Dialog({
+		title: `${potionName} - Coat Weapon`,
+		content: `
+			<form>
+				<div class="form-group">
+					<label>Choose a weapon to coat with poison:</label>
+					<select name="weaponId" style="width: 100%; margin-top: 5px;">${weaponChoices}</select>
+				</div>
+				<p style="margin-top: 10px; font-style: italic; font-size: 0.9em;">
+					The weapon will deal +${damageFormula} poison damage permanently.
+				</p>
+			</form>
+		`,
+		buttons: {
+			coat: {
+				icon: '<i class="fas fa-skull-crossbones"></i>',
+				label: "Coat Weapon",
+				callback: async (html) => {
+					const weaponId = html.find('[name="weaponId"]').val();
+					const weapon = targetActor.items.get(weaponId);
+					if (!weapon) {
+						ui.notifications.error("Weapon not found!");
+						return;
+					}
+
+					// Get existing weapon bonus or create new structure
+					const existingBonus = weapon.getFlag(MODULE_ID, "weaponBonus") || {};
+
+					// Create the poison coating bonus
+					const poisonCoatingBonus = {
+						enabled: true,
+						hitBonuses: existingBonus.hitBonuses || [],
+						damageBonuses: [
+							...(existingBonus.damageBonuses || []),
+							{
+								formula: damageFormula,
+								label: potionName,
+								damageType: "poison",
+								exclusive: false,
+								prompt: false,
+								requirements: []
+							}
+						],
+						damageBonus: existingBonus.damageBonus || "",
+						criticalExtraDice: existingBonus.criticalExtraDice || "",
+						criticalExtraDamage: existingBonus.criticalExtraDamage || "",
+						requirements: existingBonus.requirements || [],
+						effects: existingBonus.effects || [],
+						itemMacro: existingBonus.itemMacro || { enabled: false, runAsGm: false, triggers: [] }
+					};
+
+					// Update the weapon with the poison coating
+					await weapon.setFlag(MODULE_ID, "weaponBonus", poisonCoatingBonus);
+
+					ui.notifications.info(`${weapon.name} is now coated with poison (+${damageFormula})!`);
+					ChatMessage.create({
+						speaker: ChatMessage.getSpeaker({ actor: casterActor }),
+						content: `<div class="shadowdark chat-card">
+							<h3><i class="fas fa-skull-crossbones"></i> Poison Coating</h3>
+							<p><strong>${casterActor?.name || "Someone"}</strong> coats <strong>${targetActor.name}'s ${weapon.name}</strong> with poison!</p>
+							<p><em>The weapon now deals +${damageFormula} poison damage.</em></p>
+						</div>`
+					});
+				}
+			},
+			cancel: { icon: '<i class="fas fa-times"></i>', label: "Cancel" }
+		},
+		default: "coat"
+	}).render(true);
+}
+
+/**
  * Attach event listeners to damage card elements
  */
 function attachDamageCardListeners(html, messageId) {
@@ -4049,13 +4284,17 @@ function attachDamageCardListeners(html, messageId) {
 						// Get base damage type from card data (set by weapon flags)
 						const baseDamageType = $card.data('base-damage-type') || damageType || 'standard';
 
+						// Check if this is a magical weapon attack
+						const isMagicalWeapon = $card.data('is-magical-weapon') === true || $card.data('is-magical-weapon') === 'true';
+
 						const success = await socketlibSocket.executeAsGM("applyTokenDamage", {
 							tokenId: tokenId,
 							damage: finalDamageForSocket,
 							damageType: damageType,
 							damageComponents: damageComponents,
 							baseDamage: weaponBaseDamage,
-							baseDamageType: baseDamageType
+							baseDamageType: baseDamageType,
+							isMagicalWeapon: isMagicalWeapon
 						});
 
 

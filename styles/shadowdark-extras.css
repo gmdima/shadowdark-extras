@@ -4088,6 +4088,24 @@ li.entry.sdx-sidebar-unidentified {
     color: rgba(255, 255, 255, 1) !important;
 }
 
+/* Light toggle active state - Player Sheet */
+.shadowdark.sheet .sdx-light-active,
+.shadowdark.sheet .sdx-light-toggle-active i {
+    color: #ff9500 !important;
+    text-shadow: 0 0 8px #ff9500, 0 0 12px #ff6600;
+    animation: sdx-light-flicker 2s ease-in-out infinite;
+}
+
+.shadowdark.sheet .sdx-light-toggle-active:hover i {
+    color: #ffb347 !important;
+    text-shadow: 0 0 10px #ffb347, 0 0 16px #ff9500;
+}
+
+@keyframes sdx-light-flicker {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.85; }
+}
+
 /* Input and select styling */
 .shadowdark.sheet .tab-inventory.sdx-enhanced-inventory input,
 .shadowdark.sheet .tab-inventory.sdx-enhanced-inventory select,
@@ -6793,7 +6811,9 @@ section[data-tab="tab-notes"].sdx-journal-active>div:not(.sdx-journal-notes) {
 .sdx-damage-card-tabs {
     display: flex;
     background: rgba(200, 190, 180, 0.15);
-    border-bottom: 1px solid rgba(100, 90, 80, 0.2);
+    border-bottom: 0px solid rgba(100, 90, 80, 0.2);
+    gap: 5px;
+    margin: 5px;
 }
 
 .sdx-damage-card-tabs .sdx-tab {
@@ -6944,19 +6964,21 @@ section[data-tab="tab-notes"].sdx-journal-active>div:not(.sdx-journal-notes) {
     flex-wrap: wrap;
 }
 
+.sdx-plus {
+    color: white !important;
+}
+
 .sdx-multiplier-btn {
-    min-width: 30px;
-    height: 32px;
-    padding: 4px 8px;
-    background: rgba(255, 255, 255, 0.8);
-    border: 1px solid rgba(100, 90, 80, 0.3);
-    border-radius: 3px;
-    color: rgba(60, 50, 40, 0.8);
+    background: #333 !important;
+    color: #e0e0e0 !important;
+    border: 1px solid #555 !important;
+    border-radius: 3px !important;
+    cursor: pointer;
+    min-width: 28px;
+    text-align: center;
     font-size: 13px;
     font-weight: 600;
-    cursor: pointer;
     transition: all 0.15s ease;
-    text-align: center;
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
@@ -8803,12 +8825,28 @@ section[data-tab="tab-notes"].sdx-journal-active>div:not(.sdx-journal-notes) {
    FOCUS SPELL TRACKER STYLES
    ============================================ */
 
-/* Focus Spells Section in Player Sheet */
 .sdx-focus-spells-section {
-    margin-bottom: 1rem;
-    border: 2px solid #9b59b6;
-    border-radius: 8px;
     background: linear-gradient(135deg, rgba(155, 89, 182, 0.15) 0%, rgba(0, 0, 0, 0.2) 100%);
+    border: var(--sdx-box-border-width) solid transparent !important;
+    position: relative;
+    isolation: isolate;
+    /* Create stacking context so ::before can be z-index -1 but visible */
+}
+
+/* Tint the border image using a pseudo-element */
+.sdx-focus-spells-section::before {
+    content: "";
+    position: absolute;
+    inset: calc(var(--sdx-box-border-width) * -1);
+    /* Cover the border area */
+    border: var(--sdx-box-border-width) solid transparent;
+    border-image: var(--sdx-box-border) var(--sdx-box-border-image-slice) fill !important;
+    border-image-repeat: stretch !important;
+    border-image-width: var(--sdx-box-border-image-width) !important;
+    filter: sepia(100%) hue-rotate(240deg) saturate(200%);
+    /* Purple tint */
+    pointer-events: none;
+    z-index: -1;
 }
 
 .sdx-focus-spells-section .header {
@@ -9696,14 +9734,29 @@ section[data-tab="tab-notes"].sdx-journal-active>div:not(.sdx-journal-notes) {
 
 /* Duration spell in tracker (orange/amber theme) */
 .sdx-duration-spell {
-    border-left: 3px solid #d97706 !important;
+    border-left: 1px solid #d97706 !important;
 }
 
 .sdx-duration-spells-section {
     margin-bottom: 1rem;
-    border: 2px solid #d97706;
-    border-radius: 8px;
     background: linear-gradient(135deg, rgba(217, 119, 6, 0.15) 0%, rgba(0, 0, 0, 0.2) 100%);
+    border: var(--sdx-box-border-width) solid transparent !important;
+    position: relative;
+    isolation: isolate;
+}
+
+.sdx-duration-spells-section::before {
+    content: "";
+    position: absolute;
+    inset: calc(var(--sdx-box-border-width) * -1);
+    border: var(--sdx-box-border-width) solid transparent;
+    border-image: var(--sdx-box-border) var(--sdx-box-border-image-slice) fill !important;
+    border-image-repeat: stretch !important;
+    border-image-width: var(--sdx-box-border-image-width) !important;
+    filter: sepia(100%) hue-rotate(340deg) saturate(300%) contrast(1.2);
+    /* Burnt Orange tint */
+    pointer-events: none;
+    z-index: -1;
 }
 
 .sdx-duration-spells-section .header {
@@ -9777,15 +9830,13 @@ section[data-tab="tab-notes"].sdx-journal-active>div:not(.sdx-journal-notes) {
 /* Duration Spell Header Row */
 .sdx-duration-spell-header {
     display: grid;
-    grid-template-columns: 32px 1fr 70px 50px auto;
+    grid-template-columns: 32px 222px 77px 50px auto;
     align-items: center;
     gap: 6px;
     padding: 6px 8px;
 }
 
-.sdx-duration-spell-header:hover {
-    background: rgba(217, 119, 6, 0.1);
-}
+
 
 .sdx-duration-spell-header .item-image {
     width: 28px;
@@ -9827,10 +9878,10 @@ section[data-tab="tab-notes"].sdx-journal-active>div:not(.sdx-journal-notes) {
 /* Duration Spell Targets List */
 .sdx-duration-targets-list {
     background: rgba(0, 0, 0, 0.2);
-    border-top: 1px solid rgba(217, 119, 6, 0.3);
-    padding: 8px 12px;
-    margin: 0 8px 8px 8px;
-    border-radius: 0 0 6px 6px;
+    /* border-top: 1px solid rgba(217, 119, 6, 0.3); */
+    /* padding: 0px 1px; */
+    margin: 0 8px 2px 8px;
+    /* border-radius: 0 0 6px 6px; */
 }
 
 .sdx-duration-target {
@@ -12427,16 +12478,7 @@ section[data-tab="tab-notes"].sdx-journal-active>div:not(.sdx-journal-notes) {
     flex-wrap: wrap;
 }
 
-.sdx-multiplier-btn {
-    background: #333 !important;
-    color: #e0e0e0 !important;
-    border: 1px solid #555 !important;
-    border-radius: 3px !important;
-    padding: 2px 2px !important;
-    cursor: pointer;
-    min-width: 30px;
-    text-align: center;
-}
+
 
 .sdx-multiplier-btn:hover {
     background: #444 !important;
@@ -16560,4 +16602,62 @@ body:not(.game-master) .sdx-carousing-chat .sdx-player-only {
     border-radius: 4px;
     border-left: 3px solid rgba(251, 191, 36, 0.5);
     font-size: 0.9em;
+}
+
+/* ============================================ */
+/* CAROUSING BUTTON (Tongue Style) */
+/* ============================================ */
+
+.sdx-carousing-toggle-btn {
+    position: absolute;
+    right: -42px;
+    /* Width + border approx */
+    top: 115px;
+    /* Position below tabs (usually ~130px+, adjusted for visual alignment) */
+    width: 40px;
+    height: 40px;
+    background-image: url(../../../systems/shadowdark/assets/ui/parchment_texture.webp);
+    background-color: #d4a574;
+    /* Fallback parchment color */
+    border: 1px solid #000;
+    border-left: none;
+    /* Seamless join with sheet */
+    border-radius: 0 8px 8px 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    box-shadow: 3px 3px 5px rgba(0, 0, 0, 0.4);
+    z-index: -1;
+    /* Behind the sheet so the border join looks seamless if overlapped, or needs adjustments */
+    color: #191919;
+}
+
+/* Dark Mode Support */
+body.sdx-dark-mode .sdx-carousing-toggle-btn {
+    background-image: none;
+    background-color: #1a1a1a;
+    border-color: #444;
+    color: #a78bfa;
+    /* Light purple to match focus spells or generic theme */
+    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.8);
+}
+
+body.sdx-dark-mode .sdx-carousing-toggle-btn:hover {
+    color: #7c4ee8;
+}
+
+
+.sdx-carousing-toggle-btn i {
+    font-size: 20px;
+    filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.5));
+}
+
+body.sdx-dark-mode .sdx-carousing-toggle-btn i {
+    filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.8));
+}
+
+/* Ensure the sheet itself allows overflow if needed, although mostly absolute child should be visible if parent is relative */
+.shadowdark.sheet.actor .window-content {
+    overflow: visible !important;
 }

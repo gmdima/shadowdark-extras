@@ -122,10 +122,10 @@ function generateTemplateEffectsHTML(MODULE_ID, flags) {
 					<div class="sdx-template-save-config SD-grid" style="grid-template-columns: 1fr 1fr 1fr; gap: 8px; ${save.enabled ? '' : 'opacity: 0.5; pointer-events: none;'}">
 						<div>
 							<label style="font-size: 11px; color: #999;">Save DC</label>
-							<input type="number" 
+							<input type="text" 
 								name="flags.${MODULE_ID}.templateEffects.save.dc"
 								value="${save.dc || 12}"
-								min="1" max="30"
+								placeholder="e.g. 15 or @spellcastingCheck"
 								style="width: 100%;">
 						</div>
 						<div>

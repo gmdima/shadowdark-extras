@@ -1,6 +1,37 @@
 # Shadowdark Extras - Release Notes
 
+## [4.16] - 2026-01-09
+
+### New Features
+- **Coating Poison for Potions**: New potion sheet activity that coats weapons with poison damage
+    - Enable coating poison on any potion via the Activity tab
+    - Configure damage formula (Basic dice, custom Formula, or Tiered by level)
+    - Uses the potion on a target to show weapon selection dialog
+    - Filters out weapons that already have poison damage
+    - Adds permanent poison damage bonus to the selected weapon
+    - Includes Examples & Reference section with formula documentation
+- **Potion Image Picker**: Fixed potion sheet image editing - clicking the potion image now opens FilePicker
+- Added **Resistance/Immunity to Non-Magical Weapons** predefined effects
+    - `resistanceNonMagic` - Halves physical damage (bludgeoning, slashing, piercing) from non-magical weapons
+    - `immunityNonMagic` - Negates physical damage from non-magical weapons entirely
+    - Magical weapons (items with `magicItem: true`) bypass this resistance/immunity
+    - Works with the damage card system for automatic damage calculation
+- Added **Light Toggle Active Styling**: Light sources now display with an orange glow effect when active in the player sheet inventory
+- **Redesigned Potion Item Sheet (AppV2)**: Completely rebuilt potion sheets using Foundry's modern ApplicationV2 framework
+    - Modern dark-themed design with clean tab navigation
+    - **Consolidated Details Tab**: Cost, Slots, Source, and Identification settings all in one place (removed separate Source tab)
+    - **Activity Tab**: Full support for damage/healing, effects, duration tracking, summoning, item give, and macros
+    - **Drag-and-Drop Effects**: Drop Effect/Condition items directly onto the sheet to configure what happens when the potion is used
+    - **Description Tab**: Rich text editor with separate unidentified description support
+    - **Effects Tab**: View and manage active effects on the potion
+
+### Bug Fixes
+- Fixed **Potion Activity Tab Missing**: The Activity tab was not appearing on Potion item sheets due to a missing variable declaration (`itemMacroFlags`)
+
 ## [4.15] - 2026-01-08
+
+### Bug Fixes
+- Spell fix: Bogboil
 
 ### New Features
 - **Token Toolbar HUD**: A new floating toolbar that displays when you control a token.

@@ -31,7 +31,7 @@ import { initLevelUpAnimations } from "./LevelUpAnimationSD.mjs";
 import { openWeaponAnimationConfig } from "./WeaponAnimationConfig.mjs";
 import { initSDXROLLS, setupSDXROLLSSockets, injectSdxRollButton } from "./sdx-rolls/SdxRollsSD.mjs";
 import { initFocusSpellTracker, endFocusSpell, linkEffectToFocusSpell, getActiveFocusSpells, isFocusingOnSpell, startDurationSpell, endDurationSpell, registerSpellModification } from "./FocusSpellTrackerSD.mjs";
-import { initCarousing, injectCarousingTab, ensureCarousingJournal, ensureCarousingTablesJournal, initCarousingSocket, getCustomCarousingTables, getCarousingTableById, setCarousingTable } from "./CarousingSD.mjs";
+import { initCarousing, injectCarousingButton, ensureCarousingJournal, ensureCarousingTablesJournal, initCarousingSocket, getCustomCarousingTables, getCarousingTableById, setCarousingTable } from "./CarousingSD.mjs";
 import { openCarousingOverlay, refreshCarousingOverlay } from "./CarousingOverlaySD.mjs";
 import { openCarousingTablesEditor } from "./CarousingTablesApp.mjs";
 import { openExpandedCarousingTablesEditor } from "./ExpandedCarousingTablesApp.mjs";
@@ -43,7 +43,9 @@ import { registerDisplayItemEnricher } from "./DisplayItem.mjs";
 import { initEasyReferenceMenu, registerEasyReferenceSettings } from "./easy-reference/EasyReferenceMenu.mjs";
 import { CreatureTypesApp, getCreatureTypes } from "./CreatureTypesApp.mjs";
 import SheetEditorConfig from "./SheetEditorConfig.mjs";
+import PotionSheetSD from "./PotionSheetSD.mjs";
 import { initTokenToolbar, registerTokenToolbarSettings } from "./TokenToolbarSD.mjs";
+import { initAppearanceSettings } from "./AppearanceSettingsSD.mjs";
 
 const MODULE_ID = "shadowdark-extras";
 const TRADE_JOURNAL_NAME = "__sdx_trade_sync__"; // Must match TradeWindowSD.mjs
@@ -5707,6 +5709,23 @@ function enhanceInventoryTab(app, html, actor) {
 
 	// Add enhanced class to the inventory tab
 	$inventoryTab.addClass('sdx-enhanced-inventory');
+
+	// Style light toggle icons based on active state
+	html.find('[data-action="toggle-light"]').each(function () {
+		const $toggle = $(this);
+		const itemId = $toggle.data('item-id');
+		const item = actor.items.get(itemId);
+
+		if (item?.system?.light?.active) {
+			// Light is active - add glow effect
+			$toggle.find('i').addClass('sdx-light-active');
+			$toggle.addClass('sdx-light-toggle-active');
+		} else {
+			// Light is not active - ensure classes are removed
+			$toggle.find('i').removeClass('sdx-light-active');
+			$toggle.removeClass('sdx-light-toggle-active');
+		}
+	});
 }
 
 // ============================================
@@ -7207,6 +7226,20 @@ function registerPartySheet() {
 }
 
 /**
+ * Register the AppV2 Potion item sheet
+ */
+function registerPotionSheet() {
+	// Register the Potion sheet for Potion type items
+	Items.registerSheet(MODULE_ID, PotionSheetSD, {
+		types: ["Potion"],
+		makeDefault: true,
+		label: "Shadowdark Extras: Potion Sheet"
+	});
+
+	console.log(`${MODULE_ID} | Potion sheet registered`);
+}
+
+/**
  * Add Party option to actor creation dialog
  */
 function extendActorCreationDialog() {
@@ -8059,11 +8092,20 @@ Hooks.once("init", () => {
 		`modules/${MODULE_ID}/templates/party.hbs`,
 		`modules/${MODULE_ID}/templates/trade-window.hbs`,
 		`modules/${MODULE_ID}/templates/journal-notes.hbs`,
-		`modules/${MODULE_ID}/templates/journal-editor.hbs`
+		`modules/${MODULE_ID}/templates/journal-editor.hbs`,
+		`modules/${MODULE_ID}/templates/potion-sheet/header.hbs`,
+		`modules/${MODULE_ID}/templates/potion-sheet/tabs.hbs`,
+		`modules/${MODULE_ID}/templates/potion-sheet/details.hbs`,
+		`modules/${MODULE_ID}/templates/potion-sheet/activity.hbs`,
+		`modules/${MODULE_ID}/templates/potion-sheet/description.hbs`,
+		`modules/${MODULE_ID}/templates/potion-sheet/effects.hbs`
 	]);
 
 	// Register the Party sheet early
 	registerPartySheet();
+
+	// Register the Potion sheet
+	registerPotionSheet();
 
 	// Wrap Actor.create to handle Party type conversion
 	wrapActorCreate();
@@ -8479,7 +8521,7 @@ Hooks.on("renderPlayerSheetSD", async (app, html, data) => {
 	injectHeaderCustomization(app, html, app.actor);
 	await injectJournalNotes(app, html, app.actor);
 	await injectConditionsToggles(app, html, app.actor);
-	await injectCarousingTab(app, html, app.actor);
+	await injectCarousingButton(app, html, app.actor);
 	enableItemChatIcon(app, html);
 	fixUnidentifiedWeaponBoldForAllUsers(html);
 });
@@ -9874,6 +9916,12 @@ async function enhancePotionSheet(app, html) {
 	const itemGiveFlags = item.flags?.[MODULE_ID]?.itemGive || {
 		enabled: false,
 		profiles: []
+	};
+
+	// Initialize item macro flags
+	const itemMacroFlags = item.flags?.[MODULE_ID]?.itemMacro || {
+		runAsGm: false,
+		triggers: []
 	};
 
 	// Initialize aura effects flags
@@ -12960,6 +13008,11 @@ Hooks.on("preCreateChatMessage", (message, data, options, userId) => {
 					itemConfig.spellDamage = foundry.utils.duplicate(item.flags[MODULE_ID].spellDamage);
 				}
 
+				// Store coatingPoison config if it exists
+				if (item.flags?.[MODULE_ID]?.coatingPoison) {
+					itemConfig.coatingPoison = foundry.utils.duplicate(item.flags[MODULE_ID].coatingPoison);
+				}
+
 				message.updateSource({
 					"flags.shadowdark-extras.itemConfig": itemConfig
 				});
@@ -14231,6 +14284,22 @@ Hooks.once("init", () => {
 		};
 	}
 
+	// Resistance and Immunity to Non-Magical Weapon attacks
+	abilityAdvantageEffects.resistanceNonMagic = {
+		defaultValue: true,
+		effectKey: `flags.${MODULE_ID}.resistance.nonmagic`,
+		img: "icons/magic/defensive/shield-barrier-glowing-triangle-blue.webp",
+		name: `SHADOWDARK_EXTRAS.item.effect.predefined_effect.resistanceNonMagic`,
+		mode: "CONST.ACTIVE_EFFECT_MODES.OVERRIDE"
+	};
+
+	abilityAdvantageEffects.immunityNonMagic = {
+		defaultValue: true,
+		effectKey: `flags.${MODULE_ID}.immunity.nonmagic`,
+		img: "icons/magic/defensive/shield-barrier-glowing-triangle-orange.webp",
+		name: `SHADOWDARK_EXTRAS.item.effect.predefined_effect.immunityNonMagic`,
+		mode: "CONST.ACTIVE_EFFECT_MODES.OVERRIDE"
+	};
 
 	// Merge ability advantage effects into the system's predefined effects
 	Object.assign(CONFIG.SHADOWDARK.PREDEFINED_EFFECTS, abilityAdvantageEffects);
@@ -16584,6 +16653,7 @@ Hooks.on("renderApplication", (app, html, data) => {
 
 // Register the DisplayNpcCard enricher
 Hooks.once("ready", () => {
+	initAppearanceSettings();
 	registerDisplayNpcEnricher();
 	registerDisplayTableEnricher();
 	registerDisplayItemEnricher();

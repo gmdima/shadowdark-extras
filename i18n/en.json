@@ -623,6 +623,8 @@
   "SHADOWDARK_EXTRAS.item.effect.predefined_effect.vulnerabilityRadiant": "Vulnerability: Radiant",
   "SHADOWDARK_EXTRAS.item.effect.predefined_effect.vulnerabilityPsychic": "Vulnerability: Psychic",
   "SHADOWDARK_EXTRAS.item.effect.predefined_effect.vulnerabilityForce": "Vulnerability: Force",
+  "SHADOWDARK_EXTRAS.item.effect.predefined_effect.resistanceNonMagic": "Resistance: Non-Magical Weapons",
+  "SHADOWDARK_EXTRAS.item.effect.predefined_effect.immunityNonMagic": "Immunity: Non-Magical Weapons",
   "SHADOWDARK_EXTRAS.weaponAnimation.title": "Weapon Animation",
   "SHADOWDARK_EXTRAS.weaponAnimation.title_with_item": "Weapon Animation: {item}",
   "SHADOWDARK_EXTRAS.weaponAnimation.enabled": "Enable Weapon Animation",
@@ -798,11 +800,18 @@
   "SHADOWDARK_EXTRAS.settings.tokenToolbar.visibility.both": "Both GM and Players",
   "SHADOWDARK_EXTRAS.settings.tokenToolbar.visibility.gm": "GM Only",
   "SHADOWDARK_EXTRAS.settings.tokenToolbar.visibility.players": "Players Only",
+  "SHADOWDARK_EXTRAS.settings.darkMode.name": "Dark Mode",
+  "SHADOWDARK_EXTRAS.settings.darkMode.hint": "Enable dark theme for chat messages and other UI elements",
   "SHADOWDARK_EXTRAS.settings.tokenToolbar.combatOnly.name": "Token Toolbar Combat Only",
   "SHADOWDARK_EXTRAS.settings.tokenToolbar.combatOnly.hint": "Only show the token toolbar during active combat",
   "SHADOWDARK_EXTRAS.settings.tokenToolbar.showEffects.name": "Show Active Effects",
   "SHADOWDARK_EXTRAS.settings.tokenToolbar.showEffects.hint": "Display active effects as icons below the HP bar",
   "SHADOWDARK_EXTRAS.settings.tokenToolbar.showEquipped.name": "Show Equipped Items",
   "SHADOWDARK_EXTRAS.settings.tokenToolbar.showEquipped.hint": "Display equipped items as icons below the attributes",
-  "SHADOWDARK_EXTRAS.settings.headers.token_toolbar": "Token Toolbar"
+  "SHADOWDARK_EXTRAS.settings.headers.token_toolbar": "Token Toolbar",
+  "SHADOWDARK_EXTRAS.potionSheet.tabs.details": "Details",
+  "SHADOWDARK_EXTRAS.potionSheet.tabs.activity": "Activity",
+  "SHADOWDARK_EXTRAS.potionSheet.tabs.description": "Description",
+  "SHADOWDARK_EXTRAS.potionSheet.tabs.effects": "Effects",
+  "SHADOWDARK_EXTRAS.potionSheet.tabs.macro": "Macro"
 }

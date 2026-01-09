@@ -109,10 +109,6 @@
 #sdx-token-toolbar .sdx-toolbar-sheet {
     opacity: 0;
     transition: opacity 0.2s ease;
-}
-
-#sdx-token-toolbar .sdx-toolbar-picture:hover .sdx-toolbar-sheet {
-    opacity: 1;
     height: 100px;
     width: 100px;
     border-radius: 50%;
@@ -126,6 +122,13 @@
     cursor: pointer;
     font-size: 0.9em;
     letter-spacing: 0.1em;
+    pointer-events: none;
+}
+
+#sdx-token-toolbar .sdx-toolbar-img:hover~.sdx-toolbar-sheet,
+#sdx-token-toolbar .sdx-toolbar-sheet:hover {
+    opacity: 1;
+    pointer-events: auto;
 }
 
 /* ============================================
