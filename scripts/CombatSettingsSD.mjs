@@ -199,10 +199,14 @@ function evaluateRequirement(formula, rollData) {
 			return value;
 		});
 
+		// Convert single = to == for comparison (users often write "= value" instead of "== value")
+		// Must be careful not to affect ==, !=, <=, >=
+		evalFormula = evalFormula.replace(/([^=!<>])=([^=])/g, '$1==$2');
+
 		// Auto-quote bareword string literals on the right side of comparisons
-		// This handles cases like "@target.subtype = undead" -> "..." == "undead"
+		// This handles cases like "@target.subtype == undead" -> "..." == "undead"
 		// Match: comparison operator followed by a bareword (not a number, not already quoted)
-		evalFormula = evalFormula.replace(/(==?|!=|<=?|>=?)\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*$/g, (match, op, word) => {
+		evalFormula = evalFormula.replace(/(==|!=|<=?|>=?)\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*$/g, (match, op, word) => {
 			// Don't quote if it's a boolean or looks like a number
 			if (word === 'true' || word === 'false' || !isNaN(Number(word))) {
 				return match;
@@ -211,7 +215,7 @@ function evaluateRequirement(formula, rollData) {
 		});
 
 		// Also handle barewords after operators in the middle of expressions
-		evalFormula = evalFormula.replace(/(==?|!=|<=?|>=?)\s*([a-zA-Z_][a-zA-Z0-9_]*)(\s+(?:&&|\|\|))/g, (match, op, word, rest) => {
+		evalFormula = evalFormula.replace(/(==|!=|<=?|>=?)\s*([a-zA-Z_][a-zA-Z0-9_]*)(\s+(?:&&|\|\|))/g, (match, op, word, rest) => {
 			if (word === 'true' || word === 'false' || !isNaN(Number(word))) {
 				return match;
 			}
