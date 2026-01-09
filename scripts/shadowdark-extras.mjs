@@ -44,8 +44,10 @@ import { initEasyReferenceMenu, registerEasyReferenceSettings } from "./easy-ref
 import { CreatureTypesApp, getCreatureTypes } from "./CreatureTypesApp.mjs";
 import SheetEditorConfig from "./SheetEditorConfig.mjs";
 import PotionSheetSD from "./PotionSheetSD.mjs";
+import BackgroundSheetSD from "./BackgroundSheetSD.mjs";
 import { initTokenToolbar, registerTokenToolbarSettings } from "./TokenToolbarSD.mjs";
 import { initAppearanceSettings } from "./AppearanceSettingsSD.mjs";
+import AmmunitionSelector from "./AmmunitionSelector.mjs";
 
 const MODULE_ID = "shadowdark-extras";
 const TRADE_JOURNAL_NAME = "__sdx_trade_sync__"; // Must match TradeWindowSD.mjs
@@ -7240,6 +7242,20 @@ function registerPotionSheet() {
 }
 
 /**
+ * Register the AppV2 Background item sheet
+ */
+function registerBackgroundSheet() {
+	// Register the Background sheet for Background type items
+	Items.registerSheet(MODULE_ID, BackgroundSheetSD, {
+		types: ["Background"],
+		makeDefault: true,
+		label: "Shadowdark Extras: Background Sheet"
+	});
+
+	console.log(`${MODULE_ID} | Background sheet registered`);
+}
+
+/**
  * Add Party option to actor creation dialog
  */
 function extendActorCreationDialog() {
@@ -8098,7 +8114,10 @@ Hooks.once("init", () => {
 		`modules/${MODULE_ID}/templates/potion-sheet/details.hbs`,
 		`modules/${MODULE_ID}/templates/potion-sheet/activity.hbs`,
 		`modules/${MODULE_ID}/templates/potion-sheet/description.hbs`,
-		`modules/${MODULE_ID}/templates/potion-sheet/effects.hbs`
+		`modules/${MODULE_ID}/templates/background-sheet/header.hbs`,
+		`modules/${MODULE_ID}/templates/background-sheet/tabs.hbs`,
+		`modules/${MODULE_ID}/templates/background-sheet/description.hbs`,
+		`modules/${MODULE_ID}/templates/background-sheet/advancement.hbs`
 	]);
 
 	// Register the Party sheet early
@@ -8106,6 +8125,9 @@ Hooks.once("init", () => {
 
 	// Register the Potion sheet
 	registerPotionSheet();
+
+	// Register the Background sheet
+	registerBackgroundSheet();
 
 	// Wrap Actor.create to handle Party type conversion
 	wrapActorCreate();
@@ -8284,58 +8306,27 @@ Hooks.once("ready", async () => {
 					const hitBonusResult = getWeaponHitBonuses(this, data.actor, targetActor);
 
 					if (hitBonusResult.hitBonus) {
-						// The hitBonus could be a formula like "2", "+2", "1d4", etc.
-						// We need to evaluate it to get a numeric value for the roll system
-						let bonusFormula = hitBonusResult.hitBonus.trim();
+						let h = hitBonusResult.hitBonus.trim();
+						if (h.startsWith("+")) h = h.substring(1).trim();
+						if (h) {
+							// Normalize d... to 1d... for parseInt check in _digestParts
+							if (h.toLowerCase().startsWith("d")) h = "1" + h;
 
-						// Remove leading + if present
-						if (bonusFormula.startsWith("+")) {
-							bonusFormula = bonusFormula.substring(1).trim();
-						}
+							if (!parts.includes("@sdxHitBonus")) {
+								parts.push("@sdxHitBonus");
+								data.sdxHitBonus = h;
+							}
 
-						// Try to evaluate the formula if it contains dice
-						// The Shadowdark roll system expects @variable references with numeric values
-						// For dice formulas, we'll pre-roll them and add the result
-						try {
-							const roll = new Roll(bonusFormula);
-							await roll.evaluate();
-							data.sdxHitBonus = roll.total;
-							parts.push("@sdxHitBonus");
-
-							// Store hit bonus info for chat message display
-							// This will be picked up by preCreateChatMessage hook
+							// Store hit bonus info for chat message display (will evaluate during message creation)
 							const actorId = data.actor._id || data.actor.id;
 							const itemId = this.id;
-							const hitBonusKey = `${actorId}-${itemId}`;
-							_pendingHitBonusInfo.set(hitBonusKey, {
-								formula: bonusFormula,
-								result: roll.total,
+							_pendingHitBonusInfo.set(`${actorId}-${itemId}`, {
+								formula: h,
 								parts: hitBonusResult.hitBonusParts,
 								timestamp: Date.now()
 							});
 
-							console.log(`${MODULE_ID} | Applied weapon hit bonus: ${bonusFormula} = ${roll.total}, key: ${hitBonusKey}`, hitBonusResult.hitBonusParts);
-						} catch (evalErr) {
-							// If evaluation fails, try to parse as a simple number
-							const numValue = parseInt(bonusFormula, 10);
-							if (!isNaN(numValue) && numValue !== 0) {
-								data.sdxHitBonus = numValue;
-								parts.push("@sdxHitBonus");
-
-								// Store hit bonus info for chat message display
-								const actorId = data.actor._id || data.actor.id;
-								const itemId = this.id;
-								_pendingHitBonusInfo.set(`${actorId}-${itemId}`, {
-									formula: String(numValue),
-									result: numValue,
-									parts: hitBonusResult.hitBonusParts,
-									timestamp: Date.now()
-								});
-
-								console.log(`${MODULE_ID} | Applied weapon hit bonus: ${numValue}`, hitBonusResult.hitBonusParts);
-							} else {
-								console.warn(`${MODULE_ID} | Could not parse hit bonus formula: ${bonusFormula}`);
-							}
+							console.log(`${MODULE_ID} | Injected weapon hit bonus formula: ${h}`, hitBonusResult.hitBonusParts);
 						}
 					}
 				} catch (err) {
@@ -12718,6 +12709,7 @@ function injectWeaponDamageTypeDropdown(app, html, item) {
 Hooks.on("renderItemSheet", (app, html, data) => {
 	try {
 		injectBasicContainerUI(app, html);
+		injectAmmunitionBonuses(app, html);
 	} catch (err) {
 		console.error(`${MODULE_ID} | Failed to inject Basic item container UI`, err);
 	}
@@ -13591,6 +13583,154 @@ Hooks.on("deleteItem", (item, options, userId) => {
 	}
 });
 
+/* ============================================================================
+ * Background Advancement System
+ * ============================================================================ */
+
+/**
+ * Grant items from an advancement entry to an actor
+ * @param {Actor} actor - The actor to grant items to
+ * @param {Item} background - The background item
+ * @param {Object} entry - The advancement entry
+ */
+async function grantAdvancementItems(actor, background, entry) {
+	// Check if already granted
+	const granted = actor.getFlag(MODULE_ID, "grantedAdvancements") || {};
+	const backgroundGrants = granted[background.id] || [];
+
+	if (backgroundGrants.includes(entry.id)) {
+		console.log(`${MODULE_ID} | Advancement ${entry.id} already granted to ${actor.name}, skipping`);
+		return;
+	}
+
+	// Load items from UUIDs (skip invalid silently with console.warn)
+	const itemsToCreate = [];
+	for (const itemRef of entry.items || []) {
+		try {
+			const doc = await fromUuid(itemRef.uuid);
+			if (!doc) {
+				console.warn(`${MODULE_ID} | Could not load item ${itemRef.uuid}, skipping`);
+				continue;
+			}
+			itemsToCreate.push(doc.toObject());
+		} catch (err) {
+			console.warn(`${MODULE_ID} | Error loading item ${itemRef.uuid}:`, err);
+			// Continue with other items
+		}
+	}
+
+	// Create items on actor
+	if (itemsToCreate.length > 0) {
+		await actor.createEmbeddedDocuments("Item", itemsToCreate);
+		const itemNames = itemsToCreate.map(i => i.name).join(", ");
+		ui.notifications.info(`${actor.name} gained: ${itemNames}`);
+		console.log(`${MODULE_ID} | Granted ${itemsToCreate.length} items to ${actor.name} from advancement ${entry.id}`);
+	} else {
+		console.log(`${MODULE_ID} | No valid items to grant from advancement ${entry.id}`);
+	}
+
+	// Mark as granted
+	backgroundGrants.push(entry.id);
+	granted[background.id] = backgroundGrants;
+	await actor.setFlag(MODULE_ID, "grantedAdvancements", granted);
+}
+
+/**
+ * Hook: Grant advancement items when Background is set on actor (Level 0)
+ * Shadowdark stores background as a UUID reference in system.background, not as an embedded item
+ */
+Hooks.on("updateActor", async (actor, changes, options, userId) => {
+	// Only process for the updating user
+	if (userId !== game.user.id) return;
+
+	// Check if background was set
+	if (!foundry.utils.hasProperty(changes, "system.background")) return;
+
+	const backgroundUuid = changes.system.background;
+	if (!backgroundUuid) return; // Background was removed
+
+	console.log(`${MODULE_ID} | Background set on actor "${actor.name}": ${backgroundUuid}`);
+
+	// Load the background item from UUID
+	const background = await fromUuid(backgroundUuid);
+	if (!background) {
+		console.warn(`${MODULE_ID} | Could not load background from UUID: ${backgroundUuid}`);
+		return;
+	}
+
+	console.log(`${MODULE_ID} | Loaded background: ${background.name}`);
+
+	const advancement = background.getFlag(MODULE_ID, "advancement") || [];
+	console.log(`${MODULE_ID} | Advancement data:`, advancement);
+
+	const immediateEntries = advancement.filter(e => e.level === 0);
+	console.log(`${MODULE_ID} | Found ${immediateEntries.length} level 0 advancement entries`);
+
+	if (immediateEntries.length === 0) {
+		console.log(`${MODULE_ID} | No level 0 entries to grant`);
+		return;
+	}
+
+	console.log(`${MODULE_ID} | Granting ${immediateEntries.length} immediate advancement entries from ${background.name} to ${actor.name}`);
+
+	// Grant items from all level 0 entries
+	for (const entry of immediateEntries) {
+		await grantAdvancementItems(actor, background, entry);
+	}
+});
+
+/**
+ * Hook: Grant advancement items when actor levels up
+ * This is a SEPARATE updateActor hook that handles level changes (not background changes)
+ */
+Hooks.on("updateActor", async (actor, changes, options, userId) => {
+	// Only the user who made the change should process this
+	if (userId !== game.user.id) return;
+
+	// Check if level changed (not background - that's handled by the other hook)
+	if (!foundry.utils.hasProperty(changes, "system.level.value")) return;
+
+	const newLevel = changes.system.level.value;
+	console.log(`${MODULE_ID} | Actor ${actor.name} level updated to ${newLevel}`);
+
+	// Get the actor's background UUID from system.background
+	const backgroundUuid = actor.system.background;
+	if (!backgroundUuid) {
+		console.log(`${MODULE_ID} | No background set for ${actor.name}, skipping advancement`);
+		return;
+	}
+
+	console.log(`${MODULE_ID} | Loading background from UUID: ${backgroundUuid}`);
+
+	// Load the background item from UUID
+	const background = await fromUuid(backgroundUuid);
+	if (!background) {
+		console.warn(`${MODULE_ID} | Could not load background from UUID: ${backgroundUuid}`);
+		return;
+	}
+
+	console.log(`${MODULE_ID} | Found Background: ${background.name}`);
+
+	// Get advancement entries for this level
+	const advancement = background.getFlag(MODULE_ID, "advancement") || [];
+	console.log(`${MODULE_ID} | Background has ${advancement.length} total advancement entries`);
+
+	const levelEntries = advancement.filter(e => e.level === newLevel);
+
+	if (levelEntries.length === 0) {
+		console.log(`${MODULE_ID} | No advancement entries for level ${newLevel} in ${background.name}`);
+		return;
+	}
+
+	console.log(`${MODULE_ID} | Found ${levelEntries.length} advancement entries for level ${newLevel}`);
+
+	// Grant items from all matching entries
+	// The grantAdvancementItems function has its own duplicate checking
+	for (const entry of levelEntries) {
+		await grantAdvancementItems(actor, background, entry);
+	}
+});
+
 // Inject Freya's Omen reroll button
 Hooks.on("renderChatMessage", (message, html, data) => {
 	const flags = message.flags?.shadowdark;
@@ -13968,6 +14108,206 @@ Hooks.on("updateItem", (item, changes, options, userId) => {
 		console.warn(`${MODULE_ID} | Could not re-render items sidebar`, err);
 	}
 });
+
+
+// ============================================
+// FLEXIBLE AMMUNITION SELECTION
+// ============================================
+Hooks.once("init", () => {
+	const originalRollAttack = shadowdark.documents.ActorSD.prototype.rollAttack;
+	shadowdark.documents.ActorSD.prototype.rollAttack = async function (itemId, options = {}) {
+		if (options?._sdxAmmoSelected) return originalRollAttack.call(this, itemId, options);
+
+		const item = this.items.get(itemId);
+		if (item && item.type === "Weapon" && item.system.type === "ranged" && item.usesAmmunition) {
+			const ammoItem = await AmmunitionSelector.select(this, item);
+
+			if (ammoItem) {
+				options._sdxAmmoSelected = true;
+				// Temporarily override availableAmmunition to return the selected item
+				const originalAvailableAmmunition = item.availableAmmunition;
+				item.availableAmmunition = function () {
+					return [ammoItem];
+				};
+
+				try {
+					// Temporarily monkeypatch item.rollItem to inject bonuses
+					const originalRollItem = item.rollItem;
+					item.rollItem = function (parts, data, options) {
+						if (!data._sdxAmmoBonusesApplied) {
+							const ammoHitBonus = String(ammoItem.getFlag(MODULE_ID, "ammoHitBonus") || "").trim();
+							const ammoDamageBonus = String(ammoItem.getFlag(MODULE_ID, "ammoDamageBonus") || "").trim();
+
+							const damageMultiplier = Math.max(
+								parseInt(data.item?.system?.bonuses?.damageMultiplier || 0, 10),
+								parseInt(data.actor?.system?.bonuses?.damageMultiplier || 0, 10),
+								1
+							);
+
+							// Inject hit bonus formula
+							if (ammoHitBonus) {
+								let h = ammoHitBonus;
+								if (h.startsWith("+")) h = h.substring(1).trim();
+								if (h) {
+									// Normalize d... to 1d... for parseInt check in _digestParts
+									if (h.toLowerCase().startsWith("d")) h = "1" + h;
+
+									if (!parts.includes("@ammoHitBonus")) {
+										parts.push("@ammoHitBonus");
+										data.ammoHitBonus = h;
+									}
+								}
+							}
+
+							// Inject damage bonus formula
+							if (ammoDamageBonus) {
+								let d = ammoDamageBonus;
+								if (d.startsWith("+")) d = d.substring(1).trim();
+								if (d) {
+									// Normalize d... to 1d...
+									if (d.toLowerCase().startsWith("d")) d = "1" + d;
+
+									let bonusValue = d;
+									if (!d.toLowerCase().includes("d")) {
+										// It's a number, apply multiplier
+										bonusValue = parseInt(d, 10) * damageMultiplier;
+									} else if (damageMultiplier > 1) {
+										// It's a formula, wrap and multiply
+										bonusValue = `(${d}) * ${damageMultiplier}`;
+									}
+
+									if (!data.damageParts.includes("@ammoDamageBonus")) {
+										data.damageParts.push("@ammoDamageBonus");
+										data.ammoDamageBonus = bonusValue;
+									}
+								}
+							}
+							data._sdxAmmoBonusesApplied = true;
+						}
+						return originalRollItem.call(this, parts, data, options);
+					};
+
+					// Call original rollAttack - it will follow the chain and call our patched rollItem
+					return await originalRollAttack.call(this, itemId, options);
+				} finally {
+					// CLEANUP: Restore original methods after the roll sequence
+					item.availableAmmunition = originalAvailableAmmunition;
+					if (typeof originalRollItem === 'function') {
+						item.rollItem = originalRollItem;
+					}
+				}
+			} else {
+				// User cancelled or no ammo available
+				return ui.notifications.warn(game.i18n.localize("SHADOWDARK.item.errors.no_available_ammunition"));
+			}
+		}
+
+		return originalRollAttack.call(this, itemId, options);
+	};
+
+	// Also patch ammunitionItems to return all ammunition when key is provided, 
+	// but prioritized by key match. This helps the weapon sheet dropdown.
+	const originalAmmunitionItems = shadowdark.documents.ActorSD.prototype.ammunitionItems;
+	shadowdark.documents.ActorSD.prototype.ammunitionItems = function (key) {
+		const allAmmo = this.items.filter(i => i.system.isAmmunition && i.system.quantity > 0);
+
+		if (key) {
+			allAmmo.sort((a, b) => {
+				const aIsPreferred = a.name.slugify() === key;
+				const bIsPreferred = b.name.slugify() === key;
+				if (aIsPreferred && !bIsPreferred) return -1;
+				if (!aIsPreferred && bIsPreferred) return 1;
+				return a.name.localeCompare(b.name);
+			});
+		}
+
+		return allAmmo;
+	};
+
+	// Simplify usesAmmunition to include all ranged weapons
+	Object.defineProperty(shadowdark.documents.ItemSD.prototype, "usesAmmunition", {
+		get: function () {
+			return (game.settings.get("shadowdark", "autoConsumeAmmunition")
+				&& this.isOwned
+				&& this.actor.type === "Player"
+				&& this.type === "Weapon"
+				&& this.system.type === "ranged"
+			);
+		},
+		configurable: true
+	});
+
+	// Enhance ammunition compendium to include world items
+	const originalAmmunitionCompendium = shadowdark.compendiums.ammunition;
+	shadowdark.compendiums.ammunition = async function (filterSources = true) {
+		const compendiumAmmo = await originalAmmunitionCompendium.call(this, filterSources);
+		const worldAmmo = game.items.filter(i => i.system.isAmmunition);
+		if (worldAmmo.length > 0) {
+			return shadowdark.utils.combineCollection(compendiumAmmo, worldAmmo);
+		}
+		return compendiumAmmo;
+	};
+
+	// Enhance weapon sheet to include actor's inventory ammunition in the dropdown
+	const originalGetWeaponSheetData = shadowdark.sheets.ItemSheetSD.prototype.getSheetDataForWeaponItem;
+	shadowdark.sheets.ItemSheetSD.prototype.getSheetDataForWeaponItem = async function (context) {
+		await originalGetWeaponSheetData.call(this, context);
+
+		const actor = context.item.actor;
+		if (actor) {
+			const actorAmmo = actor.items.filter(i => i.system.isAmmunition && i.system.quantity > 0);
+			for (const ammo of actorAmmo) {
+				const slug = ammo.name.slugify();
+				if (!context.ammunition[slug]) {
+					context.ammunition[slug] = ammo.name;
+				}
+			}
+		}
+	};
+});
+
+// ============================================
+// AMMUNITION BONUS UI INJECTION
+// ============================================
+function injectAmmunitionBonuses(app, html) {
+	const item = app?.item;
+	if (item?.type !== "Basic") return;
+	if (!item.system.isAmmunition) return;
+
+	// De-dupe on re-render
+	html.find(".sdx-ammunition-bonuses").remove();
+
+	const hitBonus = item.getFlag(MODULE_ID, "ammoHitBonus") || "";
+	const damageBonus = item.getFlag(MODULE_ID, "ammoDamageBonus") || "";
+
+	const bonusesHtml = `
+		<div class="sdx-ammunition-bonuses">
+			<div class="SD-box">
+				<div class="header light">
+					<label>${game.i18n.localize("SHADOWDARK_EXTRAS.ammunition.bonuses.label")}</label>
+				</div>
+				<div class="content">
+					<div class="SD-grid center">
+						<div class="sdx-bonus-field">
+							<label class="sdx-field-label">${game.i18n.localize("SHADOWDARK_EXTRAS.ammunition.bonuses.hit")}</label>
+							<input type="text" name="flags.${MODULE_ID}.ammoHitBonus" value="${hitBonus}" placeholder="+0">
+						</div>
+						<div class="sdx-bonus-field">
+							<label class="sdx-field-label">${game.i18n.localize("SHADOWDARK_EXTRAS.ammunition.bonuses.damage")}</label>
+							<input type="text" name="flags.${MODULE_ID}.ammoDamageBonus" value="${damageBonus}" placeholder="+0">
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	`;
+
+	// Inject at the bottom of the Details tab
+	const detailsTab = html.find('.tab[data-tab="tab-details"]');
+	if (detailsTab.length) {
+		detailsTab.append(bonusesHtml);
+	}
+}
 
 // ============================================
 // ABILITY ADVANTAGE PREDEFINED EFFECTS

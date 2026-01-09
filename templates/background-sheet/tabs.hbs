@@ -1,0 +1,9 @@
+{{!-- Tabs Navigation --}}
+<nav class="background-sheet-tabs" data-group="primary">
+    {{#each tabs}}
+    <a class="tab-item {{cssClass}}" data-tab="{{id}}" data-tooltip="{{localize label}}">
+        <i class="{{icon}}"></i>
+        <span>{{localize label}}</span>
+    </a>
+    {{/each}}
+</nav>

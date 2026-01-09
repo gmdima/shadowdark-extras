@@ -1,0 +1,18 @@
+<div class="sdx-ammunition-selector">
+    <p>{{localize "SHADOWDARK_EXTRAS.ammunition.selector.prompt"}}</p>
+    <div class="form-group">
+        <label>{{localize "SHADOWDARK.item.type.ammunition"}}</label>
+        <div class="sdx-ammunition-list">
+            {{#each ammunition}}
+            <div class="sdx-ammunition-option">
+                <input type="radio" name="ammunition" id="ammo-{{_id}}" value="{{_id}}" {{#if @first}}checked{{/if}}>
+                <label for="ammo-{{_id}}">
+                    <img src="{{img}}" width="32" height="32" style="border: none;">
+                    <span class="name">{{name}}</span>
+                    <span class="quantity">({{system.quantity}})</span>
+                </label>
+            </div>
+            {{/each}}
+        </div>
+    </div>
+</div>

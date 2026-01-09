@@ -1,0 +1,105 @@
+{
+  "effects": [],
+  "folder": "jfG97uGcUjlOwTes",
+  "img": "icons/weapons/crossbows/crossbow-purple.webp",
+  "name": "Crossbow",
+  "system": {
+    "description": "",
+    "source": {
+      "title": "core-rules"
+    },
+    "broken": false,
+    "canBeEquipped": true,
+    "cost": {
+      "cp": 0,
+      "gp": 8,
+      "sp": 0
+    },
+    "equipped": true,
+    "isAmmunition": false,
+    "isPhysical": true,
+    "magicItem": false,
+    "quantity": 1,
+    "slots": {
+      "free_carry": 0,
+      "per_slot": 1,
+      "slots_used": 1
+    },
+    "stashed": false,
+    "ammoClass": "crossbow-bolts",
+    "baseWeapon": "",
+    "bonuses": {
+      "attackBonus": 0,
+      "critical": {
+        "failureThreshold": 1,
+        "multiplier": 2,
+        "successThreshold": 20
+      },
+      "damageBonus": 0,
+      "damageMultiplier": 1
+    },
+    "damage": {
+      "numDice": 1,
+      "oneHanded": "",
+      "twoHanded": "d6",
+      "bonus": 0
+    },
+    "properties": [
+      "Compendium.shadowdark.properties.Item.HyqHR9AhIDkm4La9",
+      "Compendium.shadowdark.properties.Item.b6Gm2ULKj2qyy2xJ"
+    ],
+    "range": "far",
+    "type": "ranged",
+    "weaponMastery": false,
+    "attackBonus": 0,
+    "predefinedEffects": ""
+  },
+  "type": "Weapon",
+  "_stats": {
+    "coreVersion": "13.348",
+    "systemId": "shadowdark",
+    "systemVersion": "3.6.1",
+    "createdTime": 1767980376566,
+    "modifiedTime": 1767980376592,
+    "lastModifiedBy": "lDQovrTY32fJwPBR",
+    "exportSource": {
+      "worldId": "bbb",
+      "uuid": "Item.Zfyli85Z7KxKdo3J",
+      "coreVersion": "13.348",
+      "systemId": "shadowdark",
+      "systemVersion": "3.6.1"
+    }
+  },
+  "flags": {
+    "shadowdark-extras": {
+      "baseDamageType": "standard",
+      "weaponBonus": {
+        "enabled": true,
+        "hitBonuses": [],
+        "damageBonuses": [
+          {
+            "formula": "",
+            "label": "drow poison",
+            "damageType": "poison",
+            "exclusive": false,
+            "prompt": false,
+            "requirements": []
+          }
+        ],
+        "damageBonus": "",
+        "criticalExtraDice": "",
+        "criticalExtraDamage": "",
+        "requirements": [],
+        "effects": [],
+        "itemMacro": {
+          "enabled": false,
+          "runAsGm": false,
+          "triggers": []
+        }
+      }
+    }
+  },
+  "ownership": {
+    "default": 0
+  }
+}

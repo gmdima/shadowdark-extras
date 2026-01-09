@@ -1,5 +1,26 @@
 # Shadowdark Extras - Release Notes
 
+## [4.18] - 2026-01-09
+
+### New Features
+- **Ammunition & Weapon Bonuses**:
+    - **Ammunition Bonuses**: Added "Bonus Hit" and "Bonus Damage" fields to ammunition items.
+    - **Formula Support**: Support for both static numbers (e.g. +1) and dice formulas (e.g. 1d4) in ammunition bonuses.
+    - **Correct Timing**: Fixed an issue where bonus dice would roll prematurely; they now roll correctly when the attack is committed.
+    - **Clean UI**: Redesigned the Ammunition Bonus interface on item sheets for a better, integrated look.
+    - **Dice So Nice Support**: Ammunition bonus dice formulas now correctly trigger 3D die animations.
+    - **Weapon Bonus Fix**: Resolved a conflict that caused weapon hit bonuses to evaluate too early.
+
+## [4.17] - 2026-01-09
+
+### New Features
+- **Flexible Ammunition Selection**: Overhauled the ammunition system to allow dynamic selection during ranged attacks.
+    - **Ammunition Selection Dialog**: Automatically prompts players to choose from all available ammunition in their inventory when making a ranged attack.
+    - **Smart Prioritization**: Dynamically sorts the weapon's "Preferred" ammunition to the top while allowing selection of any valid ammunition item.
+    - **Expanded Weapon Dropdown**: The weapon sheet's "Ammunition" selection now includes custom ammunition from the world inventory and the actor's personal inventory.
+    - **Auto-Selection**: If only one type of valid ammunition is available, the system skips the dialog and uses it automatically to speed up play.
+    - **Universal Support**: Weapons with no pre-configured ammunition class can now be used with any item marked as `isAmmunition: true` in the character's inventory.
+
 ## [4.16] - 2026-01-09
 
 ### New Features

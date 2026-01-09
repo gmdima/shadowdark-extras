@@ -690,6 +690,85 @@
     object-fit: cover;
 }
 
+/* ============================================
+   AMMUNITION SELECTOR DIALOG
+   ============================================ */
+
+.sdx-ammunition-selector {
+    padding: 10px;
+}
+
+.sdx-ammunition-selector p {
+    margin-bottom: 15px;
+    font-size: 14px;
+}
+
+.sdx-ammunition-selector .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.sdx-ammunition-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-height: 300px;
+    overflow-y: auto;
+    padding-right: 5px;
+}
+
+.sdx-ammunition-option {
+    position: relative;
+}
+
+.sdx-ammunition-option input[type="radio"] {
+    display: none;
+}
+
+.sdx-ammunition-option label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px;
+    background: #1a1a1a;
+    border: 1px solid #333;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.sdx-ammunition-option label:hover {
+    background: #2a2a2a;
+    border-color: #666;
+}
+
+.sdx-ammunition-option input[type="radio"]:checked+label {
+    background: #2d5a27;
+    border-color: #4a8a37;
+    box-shadow: 0 0 8px rgba(74, 138, 55, 0.4);
+}
+
+.sdx-ammunition-option label img {
+    border-radius: 4px;
+    background: #000;
+}
+
+.sdx-ammunition-option .name {
+    flex: 1;
+    font-weight: bold;
+    color: #e0e0e0;
+}
+
+.sdx-ammunition-option .quantity {
+    font-size: 0.9em;
+    color: #888;
+}
+
+.sdx-ammunition-option input[type="radio"]:checked+label .quantity {
+    color: #cfc;
+}
+
 /* Party header with custom background */
 .shadowdark-extras-party .party-header.sdx-custom-party-header {
     background: transparent !important;
@@ -4102,8 +4181,15 @@ li.entry.sdx-sidebar-unidentified {
 }
 
 @keyframes sdx-light-flicker {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.85; }
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.85;
+    }
 }
 
 /* Input and select styling */
@@ -8014,9 +8100,7 @@ section[data-tab="tab-notes"].sdx-journal-active>div:not(.sdx-journal-notes) {
     margin-bottom: 12px;
 }
 
-.sdx-bonus-field:last-child {
-    margin-bottom: 0;
-}
+
 
 .sdx-bonus-field label {
     display: block;
@@ -16660,4 +16744,52 @@ body.sdx-dark-mode .sdx-carousing-toggle-btn i {
 /* Ensure the sheet itself allows overflow if needed, although mostly absolute child should be visible if parent is relative */
 .shadowdark.sheet.actor .window-content {
     overflow: visible !important;
+}
+
+
+/* ============================================ */
+/* AMMUNITION BONUS UI                          */
+/* ============================================ */
+.sdx-ammunition-bonuses {
+    margin-top: 10px;
+}
+
+.sdx-ammunition-bonuses .SD-box {
+    border: 2px solid var(--primary, #000);
+}
+
+.sdx-ammunition-bonuses .SD-grid {
+    padding: 10px;
+}
+
+.sdx-bonus-field {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.sdx-field-label {
+    font-family: var(--font-header, "JSL Blackletter");
+    font-size: 1.2em;
+    border-bottom: 2px solid black;
+    width: 100%;
+    text-align: center;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+}
+
+.sdx-bonus-field input[type="text"] {
+    text-align: center;
+    font-weight: bold;
+    border: 1px solid #aaa;
+    border-radius: 4px;
+    height: 32px;
+    background: rgba(255, 255, 255, 0.6);
+    width: 100%;
+}
+
+.sdx-bonus-field input[type="text"]:focus {
+    border-color: var(--primary, #000);
+    background: rgba(255, 255, 255, 0.9);
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
 }
