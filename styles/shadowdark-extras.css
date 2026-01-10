@@ -16800,3 +16800,108 @@ body.sdx-dark-mode .sdx-carousing-toggle-btn i {
     background: rgba(255, 255, 255, 0.9);
     box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
 }
+
+/* ---------------------------------------------------------------
+   SOURCE REQUIREMENTS FOR ACTIVE EFFECTS
+   --------------------------------------------------------------- */
+
+.sdx-source-requirement {
+    margin: 10px 0;
+    padding: 10px;
+    background: rgba(0, 0, 0, 0.05);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 4px;
+}
+
+.sdx-source-requirement input[type="text"]:focus {
+    outline: none;
+    border-color: var(--color-border-highlight-alt, #ff6400);
+    box-shadow: 0 0 5px rgba(255, 100, 0, 0.3);
+}
+
+.sdx-source-requirement .hint {
+    font-size: 11px;
+    color: var(--color-text-dark-secondary, #4b4a44);
+    margin: 4px 0 0 0;
+    font-style: italic;
+}
+
+/* Source Requirement Examples Collapsible Box */
+.sdx-requirement-examples {
+    margin-top: 10px;
+    border: 1px solid rgba(0, 0, 0, 0.15);
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.5);
+}
+
+.sdx-requirement-examples summary {
+    cursor: pointer;
+    padding: 8px 10px;
+    font-weight: bold;
+    font-size: 12px;
+    color: var(--color-text-dark-primary, #191813);
+    background: rgba(0, 0, 0, 0.05);
+    border-radius: 3px;
+    user-select: none;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.sdx-requirement-examples summary:hover {
+    background: rgba(0, 0, 0, 0.1);
+}
+
+.sdx-requirement-examples summary i {
+    color: var(--color-border-highlight-alt, #ff6400);
+}
+
+.sdx-requirement-examples .examples-content {
+    padding: 10px 12px;
+    font-size: 11px;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.sdx-requirement-examples .examples-content p {
+    margin: 8px 0 4px 0;
+    color: var(--color-text-dark-primary, #191813);
+}
+
+.sdx-requirement-examples .examples-content p:first-child {
+    margin-top: 0;
+}
+
+.sdx-requirement-examples .examples-content strong {
+    color: var(--color-text-dark-primary, #191813);
+}
+
+.sdx-requirement-examples .examples-content ul {
+    margin: 4px 0 8px 20px;
+    padding: 0;
+    list-style-type: disc;
+}
+
+.sdx-requirement-examples .examples-content li {
+    margin: 3px 0;
+    color: var(--color-text-dark-secondary, #4b4a44);
+}
+
+.sdx-requirement-examples .examples-content code {
+    font-family: 'Roboto Mono', 'Courier New', monospace;
+    font-size: 10px;
+    background: rgba(0, 0, 0, 0.1);
+    padding: 2px 5px;
+    border-radius: 3px;
+    color: var(--color-text-dark-primary, #191813);
+    font-weight: 600;
+}
+
+.sdx-requirement-examples .examples-content .notes {
+    margin-top: 12px;
+    padding: 8px;
+    background: rgba(255, 200, 100, 0.15);
+    border-left: 3px solid var(--color-border-highlight-alt, #ff6400);
+    border-radius: 3px;
+    font-style: italic;
+}

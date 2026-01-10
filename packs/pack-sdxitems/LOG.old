@@ -1,16 +1,9 @@
-2026/01/10-04:51:16.139 119e0 Recovering log #331
-2026/01/10-04:51:16.139 119e0 Level-0 table #333: started
-2026/01/10-04:51:16.144 119e0 Level-0 table #333: 20362 bytes OK
-2026/01/10-04:51:16.154 119e0 Delete type=0 #331
-2026/01/10-04:51:16.154 119e0 Delete type=3 #330
-2026/01/10-14:36:16.397 2a04 Level-0 table #336: started
-2026/01/10-14:36:16.397 2a04 Level-0 table #336: 0 bytes OK
-2026/01/10-14:36:16.401 2a04 Delete type=0 #334
-2026/01/10-14:36:16.405 2a04 Manual compaction at level-0 from '!folders!F3AKMIJQch1KV4FP' @ 72057594037927935 : 1 .. '!items.effects!zqCuFAr8GhvpF3x2.EjglH7c4lr0267Hu' @ 0 : 0; will stop at '!items!n6UBUWK0xtGxKarO' @ 753 : 1
-2026/01/10-14:36:16.405 2a04 Compacting 1@0 + 1@1 files
-2026/01/10-14:36:16.442 2a04 Generated table #337@0: 204 keys, 134897 bytes
-2026/01/10-14:36:16.443 2a04 Compacted 1@0 + 1@1 files => 134897 bytes
-2026/01/10-14:36:16.447 2a04 compacted to: files[ 0 1 0 0 0 0 0 ]
-2026/01/10-14:36:16.447 2a04 Delete type=2 #315
-2026/01/10-14:36:16.447 2a04 Delete type=2 #333
-2026/01/10-14:36:16.452 2a04 Manual compaction at level-0 from '!items!n6UBUWK0xtGxKarO' @ 753 : 1 .. '!items.effects!zqCuFAr8GhvpF3x2.EjglH7c4lr0267Hu' @ 0 : 0; will stop at (end)
+2026/01/10-16:40:08.766 f06c Log #325: 0 ops saved to Table #340 OK
+2026/01/10-16:40:08.766 f06c Archiving C:\Users\gmdim\AppData\Local\FoundryVTT\Data\modules\shadowdark-extras\packs\pack-sdxitems/000325.log: OK
+2026/01/10-16:40:08.766 f06c Log #339: 0 ops saved to Table #341 OK
+2026/01/10-16:40:08.767 f06c Archiving C:\Users\gmdim\AppData\Local\FoundryVTT\Data\modules\shadowdark-extras\packs\pack-sdxitems/000339.log: OK
+2026/01/10-16:40:08.767 f06c Table #315: 202 entries OK
+2026/01/10-16:40:08.768 f06c Table #337: 204 entries OK
+2026/01/10-16:40:08.772 f06c Archiving C:\Users\gmdim\AppData\Local\FoundryVTT\Data\modules\shadowdark-extras\packs\pack-sdxitems/MANIFEST-000324: OK
+2026/01/10-16:40:08.773 f06c Archiving C:\Users\gmdim\AppData\Local\FoundryVTT\Data\modules\shadowdark-extras\packs\pack-sdxitems/MANIFEST-000338: OK
+2026/01/10-16:40:08.780 f06c **** Repaired leveldb C:\Users\gmdim\AppData\Local\FoundryVTT\Data\modules\shadowdark-extras\packs\pack-sdxitems; recovered 2 files; 265789 bytes. Some data may have been lost. ****

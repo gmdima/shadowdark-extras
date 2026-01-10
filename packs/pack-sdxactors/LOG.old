@@ -1,7 +1,8 @@
-2026/01/10-04:51:16.158 10298 Recovering log #298
-2026/01/10-04:51:16.168 10298 Delete type=0 #298
-2026/01/10-04:51:16.168 10298 Delete type=3 #297
-2026/01/10-14:36:16.447 2a04 Level-0 table #302: started
-2026/01/10-14:36:16.447 2a04 Level-0 table #302: 0 bytes OK
-2026/01/10-14:36:16.452 2a04 Delete type=0 #300
-2026/01/10-14:36:16.457 2a04 Manual compaction at level-0 from '!actors!X2leBdJeqwKWrTlE' @ 72057594037927935 : 1 .. '!actors!X2leBdJeqwKWrTlE' @ 0 : 0; will stop at (end)
+2026/01/10-16:40:08.807 f06c Log #292: 0 ops saved to Table #305 OK
+2026/01/10-16:40:08.808 f06c Archiving C:\Users\gmdim\AppData\Local\FoundryVTT\Data\modules\shadowdark-extras\packs\pack-sdxactors/000292.log: OK
+2026/01/10-16:40:08.808 f06c Log #304: 0 ops saved to Table #306 OK
+2026/01/10-16:40:08.808 f06c Archiving C:\Users\gmdim\AppData\Local\FoundryVTT\Data\modules\shadowdark-extras\packs\pack-sdxactors/000304.log: OK
+2026/01/10-16:40:08.808 f06c Table #270: 1 entries OK
+2026/01/10-16:40:08.813 f06c Archiving C:\Users\gmdim\AppData\Local\FoundryVTT\Data\modules\shadowdark-extras\packs\pack-sdxactors/MANIFEST-000291: OK
+2026/01/10-16:40:08.814 f06c Archiving C:\Users\gmdim\AppData\Local\FoundryVTT\Data\modules\shadowdark-extras\packs\pack-sdxactors/MANIFEST-000303: OK
+2026/01/10-16:40:08.821 f06c **** Repaired leveldb C:\Users\gmdim\AppData\Local\FoundryVTT\Data\modules\shadowdark-extras\packs\pack-sdxactors; recovered 1 files; 1644 bytes. Some data may have been lost. ****

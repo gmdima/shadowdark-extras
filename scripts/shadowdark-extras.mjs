@@ -17956,3 +17956,609 @@ Hooks.once("ready", () => {
 	console.log(`${MODULE_ID} | Alignment-based spell filtering initialized`);
 });
 
+// ===================================================================
+// SOURCE REQUIREMENTS FOR ACTIVE EFFECTS
+// ===================================================================
+
+/**
+ * Safely evaluates a source requirement expression
+ * @param {string} requirement - JavaScript expression to evaluate
+ * @param {Actor} actor - The actor being evaluated
+ * @param {Token} token - The token being evaluated (if available)
+ * @returns {Promise<boolean>} - Whether the requirement is met
+ */
+async function evaluateSourceRequirement(requirement, actor, token = null) {
+	if (!requirement || requirement.trim() === "") return true;
+
+	try {
+		// Resolve Compendium UUIDs to get actual names/keys
+		let ancestryName = "";
+		let className = "";
+		let backgroundName = "";
+
+		// Resolve ancestry
+		if (actor?.system?.ancestry) {
+			try {
+				const ancestryDoc = await fromUuid(actor.system.ancestry);
+				if (ancestryDoc) {
+					ancestryName = ancestryDoc.name?.toLowerCase() ?? "";
+				}
+			} catch (e) {
+				console.warn(`${MODULE_ID} | Could not resolve ancestry UUID`);
+			}
+		}
+
+		// Resolve class
+		if (actor?.system?.class) {
+			try {
+				const classDoc = await fromUuid(actor.system.class);
+				if (classDoc) {
+					className = classDoc.name?.toLowerCase() ?? "";
+				}
+			} catch (e) {
+				console.warn(`${MODULE_ID} | Could not resolve class UUID`);
+			}
+		}
+
+		// Resolve background
+		if (actor?.system?.background) {
+			try {
+				const backgroundDoc = await fromUuid(actor.system.background);
+				if (backgroundDoc) {
+					backgroundName = backgroundDoc.name?.toLowerCase() ?? "";
+				}
+			} catch (e) {
+				console.warn(`${MODULE_ID} | Could not resolve background UUID`);
+			}
+		}
+
+		// Create a safe evaluation context
+		const context = {
+			actor: actor,
+			token: token,
+			// Add commonly used shortcuts
+			level: actor?.system?.level?.value ?? 0,
+			attributes: actor?.system?.attributes ?? {},
+			abilities: actor?.system?.abilities ?? {},
+			// Add shortcuts with resolved names (lowercase for easy matching)
+			ancestry: ancestryName,
+			charClass: className,
+			background: backgroundName,
+			alignment: (actor?.system?.alignment ?? "").toLowerCase(),
+		};
+
+		console.log(`${MODULE_ID} | Evaluating requirement: "${requirement}"`);
+		console.log(`${MODULE_ID} | Actor: ${actor.name} (Level ${context.level})`);
+		console.log(`${MODULE_ID} | Resolved names - ancestry: "${context.ancestry}", class: "${context.charClass}", background: "${context.background}", alignment: "${context.alignment}"`);
+
+		// Use Function constructor for safer evaluation than eval
+		const fn = new Function(...Object.keys(context), `return ${requirement};`);
+		const result = fn(...Object.values(context));
+
+		console.log(`${MODULE_ID} | Requirement "${requirement}" evaluated to: ${result}`);
+
+		return Boolean(result);
+	} catch (error) {
+		console.error(`${MODULE_ID} | Error evaluating source requirement "${requirement}":`, error);
+		return false;
+	}
+}
+
+/**
+ * Hook to add Source Requirement field to Active Effect config
+ */
+Hooks.on("renderActiveEffectConfig", (app, html, data) => {
+	// Try multiple ways to get the effect - app.object might be undefined for new effects
+	const effect = app.object || app.document || data.effect;
+
+	// Guard: ensure effect exists
+	if (!effect) {
+		console.warn(`${MODULE_ID} | renderActiveEffectConfig: Could not find effect document`);
+		return;
+	}
+
+	const currentRequirement = effect.getFlag?.(MODULE_ID, "sourceRequirement") || "";
+	// Escape HTML entities for safe insertion into HTML attribute
+	const escapedRequirement = currentRequirement.replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+
+	// Ensure html is a jQuery object
+	const $html = html instanceof jQuery ? html : $(html);
+
+	// Find the Status Conditions section - it's a div.form-group.statuses
+	const statusConditions = $html.find('.form-group.statuses');
+
+	// Build the HTML for the source requirement field
+	const fieldHtml = `
+		<div class="form-group sdx-source-requirement">
+			<label>${game.i18n.localize("SHADOWDARK_EXTRAS.effects.sourceRequirement")}</label>
+			<div class="form-fields">
+				<input type="text" name="flags.${MODULE_ID}.sourceRequirement" value="${escapedRequirement}"
+					placeholder="e.g., level > 3"
+					title="${game.i18n.localize("SHADOWDARK_EXTRAS.effects.sourceRequirementHint")}"/>
+			</div>
+			<p class="hint">${game.i18n.localize("SHADOWDARK_EXTRAS.effects.sourceRequirementHint")}</p>
+			<details class="sdx-requirement-examples">
+				<summary><i class="fas fa-info-circle"></i> Valid Requirement Examples</summary>
+				<div class="examples-content">
+					<p><strong>Level Requirements:</strong></p>
+					<ul>
+						<li><code>level > 3</code> - Character level greater than 3</li>
+						<li><code>level >= 5</code> - Character level 5 or higher</li>
+						<li><code>level === 1</code> - Exactly level 1</li>
+					</ul>
+
+					<p><strong>Hit Points Requirements:</strong></p>
+					<ul>
+						<li><code>actor.system.attributes.hp.value > 10</code> - Current HP greater than 10</li>
+						<li><code>actor.system.attributes.hp.value >= actor.system.attributes.hp.max / 2</code> - At least half HP</li>
+						<li><code>actor.system.attributes.hp.value < 5</code> - Bloodied (less than 5 HP)</li>
+						<li><code>actor.system.attributes.hp.max >= 20</code> - Maximum HP 20 or higher</li>
+					</ul>
+
+					<p><strong>Attribute Requirements:</strong></p>
+					<ul>
+						<li><code>attributes.str.value >= 14</code> - Strength 14 or higher</li>
+						<li><code>attributes.dex.value > 12</code> - Dexterity greater than 12</li>
+						<li><code>attributes.con.value >= 16</code> - Constitution 16 or higher</li>
+					</ul>
+
+					<p><strong>Ability Modifier Requirements:</strong></p>
+					<ul>
+						<li><code>abilities.str.mod >= 2</code> - Strength modifier +2 or higher</li>
+						<li><code>abilities.dex.mod > 0</code> - Positive Dexterity modifier</li>
+						<li><code>abilities.int.mod >= 3</code> - Intelligence modifier +3 or higher</li>
+					</ul>
+
+					<p><strong>Ancestry Requirements:</strong></p>
+					<ul>
+						<li><code>ancestry === "elf"</code> - Is an elf</li>
+						<li><code>ancestry === "dwarf"</code> - Is a dwarf</li>
+						<li><code>ancestry === "halfling"</code> - Is a halfling</li>
+						<li><code>ancestry === "human"</code> - Is a human</li>
+						<li><code>ancestry.includes("goblin")</code> - Name includes "goblin" (for variations)</li>
+					</ul>
+
+					<p><strong>Class Requirements:</strong></p>
+					<ul>
+						<li><code>charClass === "fighter"</code> - Is a fighter</li>
+						<li><code>charClass === "wizard"</code> - Is a wizard</li>
+						<li><code>charClass === "cleric"</code> - Is a cleric</li>
+						<li><code>charClass === "thief"</code> - Is a thief</li>
+						<li><code>charClass.includes("ranger")</code> - Class name includes "ranger" (for variations)</li>
+					</ul>
+
+					<p><strong>Background Requirements:</strong></p>
+					<ul>
+						<li><code>background === "urchin"</code> - Urchin background</li>
+						<li><code>background === "merchant"</code> - Merchant background</li>
+						<li><code>background.includes("soldier")</code> - Background includes "soldier"</li>
+					</ul>
+
+					<p><strong>Alignment Requirements:</strong></p>
+					<ul>
+						<li><code>alignment === "lawful"</code> - Lawful alignment</li>
+						<li><code>alignment === "neutral"</code> - Neutral alignment</li>
+						<li><code>alignment === "chaotic"</code> - Chaotic alignment</li>
+					</ul>
+
+					<p><strong>Item Ownership Requirements:</strong></p>
+					<ul>
+						<li><code>actor.items.some(i => i.name === "Sword of Light")</code> - Has "Sword of Light"</li>
+						<li><code>actor.items.some(i => i.name.includes("Sword"))</code> - Has any item with "Sword" in name</li>
+						<li><code>actor.items.some(i => i.type === "Weapon" && i.name.includes("Magic"))</code> - Has magic weapon</li>
+						<li><code>actor.items.some(i => i.type === "Armor" && i.system.equipped)</code> - Has equipped armor</li>
+						<li><code>actor.items.filter(i => i.type === "Spell").length >= 3</code> - Has 3 or more spells</li>
+					</ul>
+
+					<p><strong>Combined Requirements (AND/OR):</strong></p>
+					<ul>
+						<li><code>level >= 5 && abilities.str.mod >= 2</code> - Level 5+ AND Str +2+</li>
+						<li><code>attributes.str.value >= 16 || attributes.dex.value >= 16</code> - Str 16+ OR Dex 16+</li>
+						<li><code>level > 3 && charClass === "wizard"</code> - Level 3+ wizard</li>
+						<li><code>actor.items.some(i => i.name === "Holy Symbol") && charClass === "cleric"</code> - Cleric with holy symbol</li>
+						<li><code>ancestry === "elf" && abilities.int.mod > 0</code> - Elf with positive Int modifier</li>
+						<li><code>alignment === "lawful" && charClass === "cleric"</code> - Lawful cleric</li>
+					</ul>
+
+					<p><strong>Token Requirements (if token exists):</strong></p>
+					<ul>
+						<li><code>token?.elevation > 0</code> - Token is elevated</li>
+						<li><code>token?.disposition === 1</code> - Friendly token</li>
+					</ul>
+
+					<p class="notes"><strong>Available Variables:</strong> <code>actor</code>, <code>token</code>, <code>level</code>, <code>attributes</code>, <code>abilities</code>, <code>ancestry</code>, <code>charClass</code>, <code>background</code>, <code>alignment</code><br><br><strong>Note:</strong> <code>ancestry</code>, <code>charClass</code>, <code>background</code>, and <code>alignment</code> are automatically resolved from Compendium UUIDs to lowercase names (e.g., "wizard", "elf", "chaotic").</p>
+				</div>
+			</details>
+		</div>
+	`;
+
+	// Insert after Status Conditions if found, otherwise at the end of the details tab
+	if (statusConditions.length > 0) {
+		statusConditions.after(fieldHtml);
+	} else {
+		// Fallback: insert at the end of the details tab
+		const detailsTab = $html.find('section[data-tab="details"]');
+		if (detailsTab.length > 0) {
+			detailsTab.append(fieldHtml);
+		}
+	}
+
+	// Intercept form submission to save the source requirement
+	const form = $html.closest('form');
+	if (form.length > 0) {
+		// Store the original submit method
+		const originalSubmit = form[0].onsubmit;
+
+		form.on('submit', async (event) => {
+			// Get the requirement value
+			const requirementInput = $html.find(`input[name="flags.${MODULE_ID}.sourceRequirement"]`);
+			if (requirementInput.length > 0) {
+				const newRequirement = requirementInput.val()?.trim() || "";
+				console.log(`${MODULE_ID} | Form submitting, will save requirement: "${newRequirement}"`);
+
+				// Store it in a temp variable on the effect to be picked up by preUpdate hook
+				effect._pendingSourceRequirement = newRequirement;
+			}
+		});
+	}
+
+	// Adjust app height to accommodate new field
+	app.setPosition({ height: "auto" });
+});
+
+/**
+ * Hook to save the source requirement when effect is updated
+ */
+Hooks.on("preUpdateActiveEffect", (effect, changes, options, userId) => {
+	console.log(`${MODULE_ID} | preUpdateActiveEffect fired for effect: ${effect.name}`);
+
+	// Check if there's a pending source requirement from the form
+	if (effect._pendingSourceRequirement !== undefined) {
+		console.log(`${MODULE_ID} | Found pending requirement: "${effect._pendingSourceRequirement}"`);
+
+		// Merge the requirement into the changes
+		if (!changes.flags) changes.flags = {};
+		if (!changes.flags[MODULE_ID]) changes.flags[MODULE_ID] = {};
+		changes.flags[MODULE_ID].sourceRequirement = effect._pendingSourceRequirement;
+
+		// Clean up the temp variable
+		delete effect._pendingSourceRequirement;
+
+		console.log(`${MODULE_ID} | Merged requirement into update: "${changes.flags[MODULE_ID].sourceRequirement}"`);
+	}
+
+	// Check if there's a flags update with our source requirement
+	if (changes.flags?.[MODULE_ID]?.sourceRequirement !== undefined) {
+		console.log(`${MODULE_ID} | preUpdateActiveEffect: Saving requirement "${changes.flags[MODULE_ID].sourceRequirement}"`);
+	}
+});
+
+/**
+ * Hook to check requirements after effect is updated
+ */
+Hooks.on("updateActiveEffect", async (effect, changes, options, userId) => {
+	console.log(`${MODULE_ID} | updateActiveEffect hook fired for effect: ${effect.name}`);
+	console.log(`${MODULE_ID} | Effect parent type: ${effect.parent?.constructor?.name}`);
+	console.log(`${MODULE_ID} | Effect saved requirement: "${effect.getFlag(MODULE_ID, "sourceRequirement")}"`);
+
+	if (userId !== game.user.id) return;
+
+	// If user manually toggled the disabled state, handle one-directional override
+	if (changes.disabled !== undefined && !options.byRequirementSystem) {
+		const requirement = effect.getFlag(MODULE_ID, "sourceRequirement");
+		if (requirement && requirement.trim() !== "") {
+			// Get the actor to evaluate requirements
+			const parent = effect.parent;
+			const actor = (parent instanceof Item) ? parent.parent : parent;
+
+			if (actor && actor instanceof Actor) {
+				const token = actor.token?.object || actor.getActiveTokens()[0];
+				const requirementMet = await evaluateSourceRequirement(requirement, actor, token);
+
+				// Only allow manual override when DISABLING an effect that meets requirements
+				if (requirementMet && changes.disabled === true) {
+					console.log(`${MODULE_ID} | User manually disabled effect "${effect.name}" (requirements met), setting manual override`);
+					await effect.setFlag(MODULE_ID, "manualOverride", true);
+				} else if (!requirementMet && changes.disabled === false) {
+					// Requirements not met, user trying to enable - block it
+					console.log(`${MODULE_ID} | Cannot enable effect "${effect.name}" - requirements not met: ${requirement}`);
+					ui.notifications.warn(game.i18n.format("SHADOWDARK_EXTRAS.effects.requirementNotMet", {
+						name: effect.name,
+						requirement: requirement
+					}));
+					// Prevent the enable by re-disabling
+					setTimeout(() => {
+						effect.update({ disabled: true }, { byRequirementSystem: true });
+					}, 0);
+				}
+			}
+		}
+	}
+
+	// If the source requirement was updated, check it immediately
+	if (changes.flags?.[MODULE_ID]?.sourceRequirement !== undefined) {
+		const parent = effect.parent;
+		console.log(`${MODULE_ID} | Source requirement was updated to: "${changes.flags[MODULE_ID].sourceRequirement}"`);
+
+		// Clear manual override when requirement changes
+		if (effect.getFlag(MODULE_ID, "manualOverride") !== undefined) {
+			await effect.unsetFlag(MODULE_ID, "manualOverride");
+		}
+
+		// Check if parent is an item (meaning this is a transferred effect)
+		if (parent && parent instanceof Item) {
+			console.log(`${MODULE_ID} | Effect is on an Item, checking the item's actor`);
+			const actor = parent.parent;
+			if (actor && actor instanceof Actor) {
+				console.log(`${MODULE_ID} | Checking requirements on actor: ${actor.name}`);
+
+				// Add a delay to ensure transferred effects are updated
+				setTimeout(async () => {
+					await checkEffectRequirements(actor);
+				}, 100);
+			}
+		} else if (parent && parent instanceof Actor) {
+			console.log(`${MODULE_ID} | Effect is directly on an Actor`);
+			await checkEffectRequirements(parent);
+		}
+	}
+});
+
+/**
+ * Check and update effect disabled state based on requirements
+ */
+async function checkEffectRequirements(actor) {
+	console.log(`${MODULE_ID} | checkEffectRequirements called for actor: ${actor.name}`);
+	console.log(`${MODULE_ID} | Total effects on actor: ${actor.effects.size}`);
+	console.log(`${MODULE_ID} | Total items on actor: ${actor.items.size}`);
+
+	// Debug: log all effects and their flags
+	for (const effect of actor.effects) {
+		const requirement = effect.getFlag(MODULE_ID, "sourceRequirement");
+		const origin = effect.origin || "Unknown";
+		const isTransferred = effect.transfer;
+		console.log(`${MODULE_ID} | Effect "${effect.name}" (origin: ${origin}, transferred: ${isTransferred}) - requirement: "${requirement}" - flags:`, effect.flags);
+	}
+
+	const effectsToCheck = [];
+
+	// Check effects directly on the actor
+	for (const effect of actor.effects) {
+		let requirement = effect.getFlag(MODULE_ID, "sourceRequirement");
+		let sourceEffect = effect;
+
+		// If this is a transferred effect and it doesn't have a requirement, check the source item
+		if (!requirement && effect.origin) {
+			try {
+				// Parse the origin to get the source document
+				const originDoc = await fromUuid(effect.origin);
+				if (originDoc && originDoc instanceof ActiveEffect) {
+					requirement = originDoc.getFlag(MODULE_ID, "sourceRequirement");
+					sourceEffect = originDoc;
+					console.log(`${MODULE_ID} | Effect "${effect.name}" is transferred, checking source effect for requirement: "${requirement}"`);
+				}
+			} catch (err) {
+				console.log(`${MODULE_ID} | Could not resolve origin for effect "${effect.name}"`);
+			}
+		}
+
+		if (requirement && requirement.trim() !== "") {
+			effectsToCheck.push({ effect, sourceEffect, requirement });
+		}
+	}
+
+	// Also check effects on items owned by the actor
+	console.log(`${MODULE_ID} | Checking effects on actor's items...`);
+	for (const item of actor.items) {
+		for (const effect of item.effects) {
+			const requirement = effect.getFlag(MODULE_ID, "sourceRequirement");
+			if (requirement && requirement.trim() !== "") {
+				console.log(`${MODULE_ID} | Found effect "${effect.name}" on item "${item.name}" with requirement: "${requirement}"`);
+				// For item effects, we need to check if they transfer
+				if (effect.transfer) {
+					effectsToCheck.push({ effect: effect, sourceEffect: effect, requirement });
+				}
+			}
+		}
+	}
+
+	console.log(`${MODULE_ID} | Found ${effectsToCheck.length} effects with requirements`);
+
+	if (effectsToCheck.length === 0) return;
+
+	const token = actor.token?.object || actor.getActiveTokens()[0];
+
+	for (const { effect, sourceEffect, requirement } of effectsToCheck) {
+		console.log(`${MODULE_ID} | Checking effect "${effect.name}" (currently disabled: ${sourceEffect.disabled})`);
+
+		// Check for manual override
+		const manualOverride = sourceEffect.getFlag(MODULE_ID, "manualOverride");
+		if (manualOverride !== undefined && manualOverride !== null) {
+			console.log(`${MODULE_ID} | Effect "${effect.name}" has manual override (disabled: ${manualOverride}), skipping automatic requirement check`);
+			continue;
+		}
+
+		const requirementMet = await evaluateSourceRequirement(requirement, actor, token);
+
+		// Toggle the SOURCE effect's disabled state (this will propagate to transferred effects)
+		// Use the byRequirementSystem option to distinguish from manual changes
+		if (requirementMet && sourceEffect.disabled) {
+			console.log(`${MODULE_ID} | ENABLING effect "${effect.name}" - requirement met: ${requirement}`);
+			await sourceEffect.update({ disabled: false }, { byRequirementSystem: true });
+		} else if (!requirementMet && !sourceEffect.disabled) {
+			console.log(`${MODULE_ID} | DISABLING effect "${effect.name}" - requirement not met: ${requirement}`);
+			await sourceEffect.update({ disabled: true }, { byRequirementSystem: true });
+		} else {
+			console.log(`${MODULE_ID} | Effect "${effect.name}" already in correct state (disabled: ${sourceEffect.disabled}, requirement met: ${requirementMet})`);
+		}
+	}
+}
+
+/**
+ * Hook to check requirements when effect is created
+ */
+Hooks.on("createActiveEffect", async (effect, options, userId) => {
+	console.log(`${MODULE_ID} | createActiveEffect hook fired for effect: ${effect.name}`);
+
+	if (userId !== game.user.id) {
+		console.log(`${MODULE_ID} | Skipping - not our user (userId: ${userId}, game.user.id: ${game.user.id})`);
+		return;
+	}
+
+	const requirement = effect.getFlag(MODULE_ID, "sourceRequirement");
+	console.log(`${MODULE_ID} | Effect requirement: "${requirement}"`);
+
+	if (!requirement || requirement.trim() === "") {
+		console.log(`${MODULE_ID} | No requirement set for this effect`);
+		return;
+	}
+
+	const actor = effect.parent;
+	if (!actor || !(actor instanceof Actor)) {
+		console.log(`${MODULE_ID} | No valid actor parent found`);
+		return;
+	}
+
+	const token = actor.token?.object || actor.getActiveTokens()[0];
+	const requirementMet = await evaluateSourceRequirement(requirement, actor, token);
+
+	if (!requirementMet && !effect.disabled) {
+		console.log(`${MODULE_ID} | DISABLING newly created effect "${effect.name}" - requirement not met: ${requirement}`);
+		await effect.update({ disabled: true }, { byRequirementSystem: true });
+	} else {
+		console.log(`${MODULE_ID} | Effect "${effect.name}" - requirementMet: ${requirementMet}, already disabled: ${effect.disabled}`);
+	}
+});
+
+/**
+ * Hook to check requirements when actor is prepared
+ */
+Hooks.on("prepareActorData", async (actor) => {
+	// Check requirements synchronously by just checking the disabled state
+	const effectsWithRequirements = actor.effects.filter(e =>
+		e.getFlag(MODULE_ID, "sourceRequirement")
+	);
+
+	if (effectsWithRequirements.length === 0) return;
+
+	console.log(`${MODULE_ID} | prepareActorData hook - Actor: ${actor.name}, Effects with requirements: ${effectsWithRequirements.length}`);
+
+	const token = actor.token?.object || actor.getActiveTokens()[0];
+
+	for (const effect of effectsWithRequirements) {
+		const requirement = effect.getFlag(MODULE_ID, "sourceRequirement");
+		const requirementMet = await evaluateSourceRequirement(requirement, actor, token);
+
+		// If requirement not met and effect is not disabled, we need to update it
+		// But we can't do async updates here, so we'll just log it
+		// Check for manual override
+		const manualOverride = effect.getFlag(MODULE_ID, "manualOverride");
+		if (manualOverride !== undefined && manualOverride !== null) {
+			console.log(`${MODULE_ID} | [prepareActorData] Effect "${effect.name}" has manual override, skipping`);
+			continue;
+		}
+
+		if (!requirementMet && !effect.disabled) {
+			console.log(`${MODULE_ID} | [prepareActorData] Effect "${effect.name}" should be disabled - requirement not met: ${requirement}`);
+			// Queue an update for next tick
+			setTimeout(() => {
+				if (!effect.disabled) {
+					console.log(`${MODULE_ID} | [setTimeout] DISABLING effect "${effect.name}"`);
+					effect.update({ disabled: true }, { byRequirementSystem: true });
+				}
+			}, 0);
+		} else if (requirementMet && effect.disabled) {
+			console.log(`${MODULE_ID} | [prepareActorData] Effect "${effect.name}" should be enabled - requirement met: ${requirement}`);
+			// Queue an update for next tick
+			setTimeout(() => {
+				if (effect.disabled) {
+					console.log(`${MODULE_ID} | [setTimeout] ENABLING effect "${effect.name}"`);
+					effect.update({ disabled: false }, { byRequirementSystem: true });
+				}
+			}, 0);
+		} else {
+			console.log(`${MODULE_ID} | [prepareActorData] Effect "${effect.name}" already in correct state (disabled: ${effect.disabled}, req met: ${requirementMet})`);
+		}
+	}
+});
+
+/**
+ * Hook to update effects when actor data changes (e.g., level up)
+ * This re-evaluates effects to see if requirements are now met or unmet
+ */
+Hooks.on("updateActor", async (actor, changes, options, userId) => {
+	console.log(`${MODULE_ID} | updateActor hook fired for actor: ${actor.name}`);
+
+	// Only process on the user who made the update
+	if (userId !== game.user.id) {
+		console.log(`${MODULE_ID} | Skipping - not our user`);
+		return;
+	}
+
+	await checkEffectRequirements(actor);
+});
+
+/**
+ * Hook to check requirements when actor sheet is rendered
+ * This ensures requirements are enforced when viewing the sheet
+ */
+Hooks.on("renderActorSheet", async (app, html, data) => {
+	const actor = app.actor;
+	console.log(`${MODULE_ID} | renderActorSheet hook fired for actor: ${actor?.name}`);
+
+	if (!actor) return;
+
+	// Check requirements after a short delay to ensure data is fully prepared
+	setTimeout(async () => {
+		console.log(`${MODULE_ID} | [renderActorSheet setTimeout] Checking requirements for ${actor.name}`);
+		await checkEffectRequirements(actor);
+	}, 100);
+});
+
+/**
+ * Hook to check requirements when an item is added to an actor
+ * This ensures transferred items have their effect requirements checked on the new actor
+ */
+Hooks.on("createItem", async (item, options, userId) => {
+	console.log(`${MODULE_ID} | createItem hook fired for item: ${item.name}`);
+
+	if (userId !== game.user.id) return;
+
+	// Check if this item belongs to an actor
+	const actor = item.parent;
+	if (!actor || !(actor instanceof Actor)) {
+		console.log(`${MODULE_ID} | Item not owned by an actor, skipping`);
+		return;
+	}
+
+	// Check if this item has any effects with requirements
+	const effectsWithRequirements = item.effects.filter(e => {
+		const requirement = e.getFlag(MODULE_ID, "sourceRequirement");
+		return requirement && requirement.trim() !== "";
+	});
+
+	if (effectsWithRequirements.length === 0) {
+		console.log(`${MODULE_ID} | Item has no effects with requirements, skipping`);
+		return;
+	}
+
+	console.log(`${MODULE_ID} | Item "${item.name}" has ${effectsWithRequirements.length} effect(s) with requirements, checking requirements for new owner: ${actor.name}`);
+
+	// Clear manual override flags on transferred item effects
+	// The override was for the previous actor, not this new owner
+	for (const effect of effectsWithRequirements) {
+		const hasOverride = effect.getFlag(MODULE_ID, "manualOverride");
+		if (hasOverride !== undefined && hasOverride !== null) {
+			console.log(`${MODULE_ID} | Clearing manual override flag on transferred effect "${effect.name}"`);
+			await effect.unsetFlag(MODULE_ID, "manualOverride");
+		}
+	}
+
+	// Check requirements after a delay to ensure transferred effects are fully created
+	setTimeout(async () => {
+		await checkEffectRequirements(actor);
+	}, 100);
+});
+
+console.log(`${MODULE_ID} | Source Requirements for Active Effects initialized`);
+
