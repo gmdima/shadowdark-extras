@@ -132,6 +132,8 @@ Spawn creatures when the spell is cast:
 ##### Item Giving
 Grant items to the caster on successful cast (e.g., conjured weapons).
 
+##### Alignment for Spells
+
 ##### Item Macro Integration
 Execute Item Macro scripts with configurable triggers:
 - On cast, on success, on critical, on failure, on critical failure
