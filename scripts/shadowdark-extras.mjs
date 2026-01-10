@@ -16552,6 +16552,13 @@ Hooks.on("updateItem", async (item, changes, options, userId) => {
 				}
 			}
 		}
+
+		// Check if any effects on this item require equipped status
+		// Trigger requirement checks to enable/disable effects based on equipped status
+		if (actor instanceof Actor) {
+			console.log(`${MODULE_ID} | Item "${item.name}" equipped status changed to ${nowEquipped}, checking effect requirements`);
+			await checkEffectRequirements(actor);
+		}
 	}
 });
 
@@ -17967,7 +17974,27 @@ Hooks.once("ready", () => {
  * @param {Token} token - The token being evaluated (if available)
  * @returns {Promise<boolean>} - Whether the requirement is met
  */
-async function evaluateSourceRequirement(requirement, actor, token = null) {
+async function evaluateSourceRequirement(requirement, actor, token = null, sourceEffect = null) {
+	// Check if the effect requires the parent item to be equipped
+	if (sourceEffect) {
+		const requireEquipped = sourceEffect.getFlag(MODULE_ID, "requireEquipped");
+		if (requireEquipped) {
+			// Check if the effect's parent is an Item
+			const parentItem = sourceEffect.parent;
+			if (parentItem && parentItem instanceof Item) {
+				// Check if the item has an equipped property
+				const isEquipped = parentItem.system?.equipped;
+				console.log(`${MODULE_ID} | Effect "${sourceEffect.name}" requires equipped. Item "${parentItem.name}" equipped: ${isEquipped}`);
+
+				// If not equipped, the requirement is not met
+				if (!isEquipped) {
+					console.log(`${MODULE_ID} | Effect "${sourceEffect.name}" requirement NOT MET - item not equipped`);
+					return false;
+				}
+			}
+		}
+	}
+
 	if (!requirement || requirement.trim() === "") return true;
 
 	try {
@@ -18061,11 +18088,23 @@ Hooks.on("renderActiveEffectConfig", (app, html, data) => {
 	// Escape HTML entities for safe insertion into HTML attribute
 	const escapedRequirement = currentRequirement.replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 
+	// Get the requireEquipped flag
+	const requireEquipped = effect.getFlag?.(MODULE_ID, "requireEquipped") || false;
+
 	// Ensure html is a jQuery object
 	const $html = html instanceof jQuery ? html : $(html);
 
 	// Find the Status Conditions section - it's a div.form-group.statuses
 	const statusConditions = $html.find('.form-group.statuses');
+
+	// Build the HTML for the require equipped checkbox
+	const requireEquippedHtml = `
+		<div class="form-group sdx-require-equipped">
+			<label>Must be Equipped</label>
+			<input type="checkbox" name="flags.${MODULE_ID}.requireEquipped" ${requireEquipped ? 'checked' : ''}/>
+			<p class="hint">If checked, this Effect will be applied to any Actor that owns this Effect's parent Item only if the Item is equipped.</p>
+		</div>
+	`;
 
 	// Build the HTML for the source requirement field
 	const fieldHtml = `
@@ -18174,12 +18213,12 @@ Hooks.on("renderActiveEffectConfig", (app, html, data) => {
 
 	// Insert after Status Conditions if found, otherwise at the end of the details tab
 	if (statusConditions.length > 0) {
-		statusConditions.after(fieldHtml);
+		statusConditions.after(requireEquippedHtml + fieldHtml);
 	} else {
 		// Fallback: insert at the end of the details tab
 		const detailsTab = $html.find('section[data-tab="details"]');
 		if (detailsTab.length > 0) {
-			detailsTab.append(fieldHtml);
+			detailsTab.append(requireEquippedHtml + fieldHtml);
 		}
 	}
 
@@ -18198,6 +18237,16 @@ Hooks.on("renderActiveEffectConfig", (app, html, data) => {
 
 				// Store it in a temp variable on the effect to be picked up by preUpdate hook
 				effect._pendingSourceRequirement = newRequirement;
+			}
+
+			// Get the requireEquipped checkbox value
+			const requireEquippedInput = $html.find(`input[name="flags.${MODULE_ID}.requireEquipped"]`);
+			if (requireEquippedInput.length > 0) {
+				const newRequireEquipped = requireEquippedInput.is(':checked');
+				console.log(`${MODULE_ID} | Form submitting, will save requireEquipped: ${newRequireEquipped}`);
+
+				// Store it in a temp variable on the effect to be picked up by preUpdate hook
+				effect._pendingRequireEquipped = newRequireEquipped;
 			}
 		});
 	}
@@ -18227,9 +18276,29 @@ Hooks.on("preUpdateActiveEffect", (effect, changes, options, userId) => {
 		console.log(`${MODULE_ID} | Merged requirement into update: "${changes.flags[MODULE_ID].sourceRequirement}"`);
 	}
 
+	// Check if there's a pending requireEquipped from the form
+	if (effect._pendingRequireEquipped !== undefined) {
+		console.log(`${MODULE_ID} | Found pending requireEquipped: ${effect._pendingRequireEquipped}`);
+
+		// Merge the requireEquipped into the changes
+		if (!changes.flags) changes.flags = {};
+		if (!changes.flags[MODULE_ID]) changes.flags[MODULE_ID] = {};
+		changes.flags[MODULE_ID].requireEquipped = effect._pendingRequireEquipped;
+
+		// Clean up the temp variable
+		delete effect._pendingRequireEquipped;
+
+		console.log(`${MODULE_ID} | Merged requireEquipped into update: ${changes.flags[MODULE_ID].requireEquipped}`);
+	}
+
 	// Check if there's a flags update with our source requirement
 	if (changes.flags?.[MODULE_ID]?.sourceRequirement !== undefined) {
 		console.log(`${MODULE_ID} | preUpdateActiveEffect: Saving requirement "${changes.flags[MODULE_ID].sourceRequirement}"`);
+	}
+
+	// Check if there's a flags update with our requireEquipped
+	if (changes.flags?.[MODULE_ID]?.requireEquipped !== undefined) {
+		console.log(`${MODULE_ID} | preUpdateActiveEffect: Saving requireEquipped ${changes.flags[MODULE_ID].requireEquipped}`);
 	}
 });
 
@@ -18253,7 +18322,7 @@ Hooks.on("updateActiveEffect", async (effect, changes, options, userId) => {
 
 			if (actor && actor instanceof Actor) {
 				const token = actor.token?.object || actor.getActiveTokens()[0];
-				const requirementMet = await evaluateSourceRequirement(requirement, actor, token);
+				const requirementMet = await evaluateSourceRequirement(requirement, actor, token, effect);
 
 				// Only allow manual override when DISABLING an effect that meets requirements
 				if (requirementMet && changes.disabled === true) {
@@ -18302,6 +18371,34 @@ Hooks.on("updateActiveEffect", async (effect, changes, options, userId) => {
 			await checkEffectRequirements(parent);
 		}
 	}
+
+	// If the requireEquipped flag was updated, check it immediately
+	if (changes.flags?.[MODULE_ID]?.requireEquipped !== undefined) {
+		const parent = effect.parent;
+		console.log(`${MODULE_ID} | requireEquipped was updated to: ${changes.flags[MODULE_ID].requireEquipped}`);
+
+		// Clear manual override when requireEquipped changes
+		if (effect.getFlag(MODULE_ID, "manualOverride") !== undefined) {
+			await effect.unsetFlag(MODULE_ID, "manualOverride");
+		}
+
+		// Check if parent is an item (meaning this is a transferred effect)
+		if (parent && parent instanceof Item) {
+			console.log(`${MODULE_ID} | Effect is on an Item, checking the item's actor`);
+			const actor = parent.parent;
+			if (actor && actor instanceof Actor) {
+				console.log(`${MODULE_ID} | Checking requirements on actor: ${actor.name}`);
+
+				// Add a delay to ensure transferred effects are updated
+				setTimeout(async () => {
+					await checkEffectRequirements(actor);
+				}, 100);
+			}
+		} else if (parent && parent instanceof Actor) {
+			console.log(`${MODULE_ID} | Effect is directly on an Actor`);
+			await checkEffectRequirements(parent);
+		}
+	}
 });
 
 /**
@@ -18325,24 +18422,27 @@ async function checkEffectRequirements(actor) {
 	// Check effects directly on the actor
 	for (const effect of actor.effects) {
 		let requirement = effect.getFlag(MODULE_ID, "sourceRequirement");
+		let requireEquipped = effect.getFlag(MODULE_ID, "requireEquipped");
 		let sourceEffect = effect;
 
 		// If this is a transferred effect and it doesn't have a requirement, check the source item
-		if (!requirement && effect.origin) {
+		if ((!requirement && !requireEquipped) && effect.origin) {
 			try {
 				// Parse the origin to get the source document
 				const originDoc = await fromUuid(effect.origin);
 				if (originDoc && originDoc instanceof ActiveEffect) {
 					requirement = originDoc.getFlag(MODULE_ID, "sourceRequirement");
+					requireEquipped = originDoc.getFlag(MODULE_ID, "requireEquipped");
 					sourceEffect = originDoc;
-					console.log(`${MODULE_ID} | Effect "${effect.name}" is transferred, checking source effect for requirement: "${requirement}"`);
+					console.log(`${MODULE_ID} | Effect "${effect.name}" is transferred, checking source effect for requirement: "${requirement}", requireEquipped: ${requireEquipped}`);
 				}
 			} catch (err) {
 				console.log(`${MODULE_ID} | Could not resolve origin for effect "${effect.name}"`);
 			}
 		}
 
-		if (requirement && requirement.trim() !== "") {
+		// Add to check list if it has a requirement or requireEquipped
+		if ((requirement && requirement.trim() !== "") || requireEquipped) {
 			effectsToCheck.push({ effect, sourceEffect, requirement });
 		}
 	}
@@ -18352,8 +18452,9 @@ async function checkEffectRequirements(actor) {
 	for (const item of actor.items) {
 		for (const effect of item.effects) {
 			const requirement = effect.getFlag(MODULE_ID, "sourceRequirement");
-			if (requirement && requirement.trim() !== "") {
-				console.log(`${MODULE_ID} | Found effect "${effect.name}" on item "${item.name}" with requirement: "${requirement}"`);
+			const requireEquipped = effect.getFlag(MODULE_ID, "requireEquipped");
+			if ((requirement && requirement.trim() !== "") || requireEquipped) {
+				console.log(`${MODULE_ID} | Found effect "${effect.name}" on item "${item.name}" with requirement: "${requirement}", requireEquipped: ${requireEquipped}`);
 				// For item effects, we need to check if they transfer
 				if (effect.transfer) {
 					effectsToCheck.push({ effect: effect, sourceEffect: effect, requirement });
@@ -18378,7 +18479,7 @@ async function checkEffectRequirements(actor) {
 			continue;
 		}
 
-		const requirementMet = await evaluateSourceRequirement(requirement, actor, token);
+		const requirementMet = await evaluateSourceRequirement(requirement, actor, token, sourceEffect);
 
 		// Toggle the SOURCE effect's disabled state (this will propagate to transferred effects)
 		// Use the byRequirementSystem option to distinguish from manual changes
@@ -18406,10 +18507,11 @@ Hooks.on("createActiveEffect", async (effect, options, userId) => {
 	}
 
 	const requirement = effect.getFlag(MODULE_ID, "sourceRequirement");
-	console.log(`${MODULE_ID} | Effect requirement: "${requirement}"`);
+	const requireEquipped = effect.getFlag(MODULE_ID, "requireEquipped");
+	console.log(`${MODULE_ID} | Effect requirement: "${requirement}", requireEquipped: ${requireEquipped}`);
 
-	if (!requirement || requirement.trim() === "") {
-		console.log(`${MODULE_ID} | No requirement set for this effect`);
+	if ((!requirement || requirement.trim() === "") && !requireEquipped) {
+		console.log(`${MODULE_ID} | No requirement or requireEquipped set for this effect`);
 		return;
 	}
 
@@ -18420,7 +18522,7 @@ Hooks.on("createActiveEffect", async (effect, options, userId) => {
 	}
 
 	const token = actor.token?.object || actor.getActiveTokens()[0];
-	const requirementMet = await evaluateSourceRequirement(requirement, actor, token);
+	const requirementMet = await evaluateSourceRequirement(requirement, actor, token, effect);
 
 	if (!requirementMet && !effect.disabled) {
 		console.log(`${MODULE_ID} | DISABLING newly created effect "${effect.name}" - requirement not met: ${requirement}`);
@@ -18436,18 +18538,18 @@ Hooks.on("createActiveEffect", async (effect, options, userId) => {
 Hooks.on("prepareActorData", async (actor) => {
 	// Check requirements synchronously by just checking the disabled state
 	const effectsWithRequirements = actor.effects.filter(e =>
-		e.getFlag(MODULE_ID, "sourceRequirement")
+		e.getFlag(MODULE_ID, "sourceRequirement") || e.getFlag(MODULE_ID, "requireEquipped")
 	);
 
 	if (effectsWithRequirements.length === 0) return;
 
-	console.log(`${MODULE_ID} | prepareActorData hook - Actor: ${actor.name}, Effects with requirements: ${effectsWithRequirements.length}`);
+	console.log(`${MODULE_ID} | prepareActorData hook - Actor: ${actor.name}, Effects with requirements or requireEquipped: ${effectsWithRequirements.length}`);
 
 	const token = actor.token?.object || actor.getActiveTokens()[0];
 
 	for (const effect of effectsWithRequirements) {
 		const requirement = effect.getFlag(MODULE_ID, "sourceRequirement");
-		const requirementMet = await evaluateSourceRequirement(requirement, actor, token);
+		const requirementMet = await evaluateSourceRequirement(requirement, actor, token, effect);
 
 		// If requirement not met and effect is not disabled, we need to update it
 		// But we can't do async updates here, so we'll just log it

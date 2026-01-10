@@ -1,9 +1,7 @@
-2026/01/10-16:40:08.766 f06c Log #325: 0 ops saved to Table #340 OK
-2026/01/10-16:40:08.766 f06c Archiving C:\Users\gmdim\AppData\Local\FoundryVTT\Data\modules\shadowdark-extras\packs\pack-sdxitems/000325.log: OK
-2026/01/10-16:40:08.766 f06c Log #339: 0 ops saved to Table #341 OK
-2026/01/10-16:40:08.767 f06c Archiving C:\Users\gmdim\AppData\Local\FoundryVTT\Data\modules\shadowdark-extras\packs\pack-sdxitems/000339.log: OK
-2026/01/10-16:40:08.767 f06c Table #315: 202 entries OK
-2026/01/10-16:40:08.768 f06c Table #337: 204 entries OK
-2026/01/10-16:40:08.772 f06c Archiving C:\Users\gmdim\AppData\Local\FoundryVTT\Data\modules\shadowdark-extras\packs\pack-sdxitems/MANIFEST-000324: OK
-2026/01/10-16:40:08.773 f06c Archiving C:\Users\gmdim\AppData\Local\FoundryVTT\Data\modules\shadowdark-extras\packs\pack-sdxitems/MANIFEST-000338: OK
-2026/01/10-16:40:08.780 f06c **** Repaired leveldb C:\Users\gmdim\AppData\Local\FoundryVTT\Data\modules\shadowdark-extras\packs\pack-sdxitems; recovered 2 files; 265789 bytes. Some data may have been lost. ****
+2026/01/10-16:40:08.796 f06c Delete type=3 #1
+2026/01/10-19:20:52.592 10524 Compacting 2@0 + 0@1 files
+2026/01/10-19:20:52.635 10524 Generated table #344@0: 204 keys, 134897 bytes
+2026/01/10-19:20:52.635 10524 Compacted 2@0 + 0@1 files => 134897 bytes
+2026/01/10-19:20:52.639 10524 compacted to: files[ 0 1 0 0 0 0 0 ]
+2026/01/10-19:20:52.639 10524 Delete type=2 #315
+2026/01/10-19:20:52.639 10524 Delete type=2 #337
