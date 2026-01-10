@@ -1,0 +1,342 @@
+/**
+ * Background Sheet Styles - AppV2
+ * Minimal layout styles - Foundry handles theming automatically
+ */
+
+/* ============================================
+   Header Layout
+   ============================================ */
+
+.background-sheet-header {
+    display: flex;
+    gap: 16px;
+    padding: 12px;
+    border-bottom: 1px solid var(--color-border-light);
+}
+
+.background-sheet-header .header-left {
+    flex: 0 0 auto;
+}
+
+.background-sheet-header .header-right {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.background-sheet-header .item-image {
+    width: 64px;
+    height: 64px;
+    border-radius: 4px;
+    cursor: pointer;
+    border: 1px solid var(--color-border-dark);
+}
+
+.background-sheet-header .item-image:hover {
+    opacity: 0.8;
+}
+
+.background-sheet-header .item-name {
+    font-size: 1.4rem;
+    font-weight: bold;
+    border: none;
+    background: transparent;
+    padding: 4px 0;
+}
+
+.background-sheet-header .item-type-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.85rem;
+    opacity: 0.7;
+    width: fit-content;
+}
+
+/* ============================================
+   Tabs Navigation
+   ============================================ */
+.background-sheet-tabs {
+    display: flex;
+    border-bottom: 1px solid var(--color-border-light);
+}
+
+.background-sheet-tabs .tab-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 16px;
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+    opacity: 0.7;
+    transition: opacity 0.2s;
+}
+
+.background-sheet-tabs .tab-item:hover {
+    opacity: 1;
+}
+
+.background-sheet-tabs .tab-item.active {
+    opacity: 1;
+    border-bottom-color: var(--color-border-highlight);
+}
+
+/* ============================================
+   Tab Content
+   ============================================ */
+.background-sheet .tab-content {
+    display: none;
+    padding: 12px;
+    overflow-y: auto;
+}
+
+.background-sheet .tab-content.active {
+    display: block;
+}
+
+/* ============================================
+   Fieldsets
+   ============================================ */
+.background-fieldset {
+    border: 1px solid var(--color-border-light);
+    border-radius: 4px;
+    padding: 12px;
+    margin-bottom: 12px;
+}
+
+.background-fieldset legend {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 12px;
+    font-weight: 600;
+    font-family: var(--font-primary);
+    text-transform: uppercase;
+    font-size: 0.9rem;
+    letter-spacing: 0.5px;
+    color: var(--color-text-light-1);
+}
+
+.background-fieldset legend i {
+    font-size: 0.8rem;
+    opacity: 0.8;
+}
+
+.background-fieldset .hint {
+    font-size: 0.85rem;
+    font-style: italic;
+    opacity: 0.7;
+    margin-bottom: 12px;
+}
+
+/* ============================================
+   Source Selector
+   ============================================ */
+.source-fieldset .form-group {
+    margin-bottom: 0;
+}
+
+.source-select {
+    width: 100%;
+    padding: 6px 10px;
+    border: 1px solid var(--color-border-light);
+    border-radius: 4px;
+}
+
+/* ============================================
+   Description Editor
+   ============================================ */
+.description-fieldset .editor-wrapper {
+    margin-top: 8px;
+}
+
+.background-sheet .prosemirror .editor-container {
+    min-height: 150px;
+}
+
+.background-sheet .prosemirror .editor-content {
+    background: rgba(0, 0, 0, 0.1);
+    padding: 8px;
+    border-radius: 4px;
+}
+
+/* ============================================
+   Advancement Controls
+   ============================================ */
+.advancement-controls {
+    margin-bottom: 12px;
+}
+
+.add-entry-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 12px;
+    border: 1px solid var(--color-border-light);
+    border-radius: 4px;
+    background: rgba(0, 128, 0, 0.2);
+    cursor: pointer;
+    font-weight: 500;
+}
+
+.add-entry-btn:hover {
+    background: rgba(0, 128, 0, 0.3);
+}
+
+/* ============================================
+   Advancement Entries
+   ============================================ */
+.advancement-entries {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.advancement-entry {
+    border: 1px solid var(--color-border-light);
+    border-radius: 6px;
+    padding: 12px;
+    background: rgba(0, 0, 0, 0.1);
+}
+
+.entry-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--color-border-light);
+}
+
+.entry-level {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.entry-level label {
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.entry-level select {
+    padding: 4px 8px;
+    border: 1px solid var(--color-border-light);
+    border-radius: 4px;
+    background: rgba(0, 0, 0, 0.2);
+}
+
+.delete-entry-btn {
+    padding: 6px 10px;
+    border: 1px solid var(--color-border-light);
+    border-radius: 4px;
+    background: rgba(128, 0, 0, 0.2);
+    cursor: pointer;
+    color: var(--color-text-light-1);
+}
+
+.delete-entry-btn:hover {
+    background: rgba(128, 0, 0, 0.4);
+}
+
+/* ============================================
+   Advancement Item Drop Zone
+   ============================================ */
+.advancement-item-drop {
+    min-height: 80px;
+    border: 2px dashed var(--color-border-light);
+    border-radius: 4px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 16px;
+    margin-bottom: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.advancement-item-drop:hover {
+    border-color: var(--color-border-highlight);
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.advancement-item-drop.drag-over {
+    border-color: var(--color-border-highlight);
+    background: var(--color-bg);
+}
+
+.advancement-item-drop i {
+    font-size: 1.5rem;
+    opacity: 0.5;
+}
+
+.advancement-item-drop p {
+    margin: 0;
+    font-size: 0.9rem;
+    opacity: 0.7;
+    text-align: center;
+}
+
+/* ============================================
+   Advancement Items List
+   ============================================ */
+.advancement-items-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.advancement-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px;
+    border: 1px solid var(--color-border-light);
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.advancement-item .item-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 4px;
+    border: 1px solid var(--color-border-dark);
+}
+
+.advancement-item .item-name {
+    flex: 1;
+    font-weight: 500;
+}
+
+.remove-item-btn {
+    padding: 4px 8px;
+    border: 1px solid var(--color-border-light);
+    border-radius: 4px;
+    background: rgba(128, 0, 0, 0.2);
+    cursor: pointer;
+    color: var(--color-text-light-1);
+}
+
+.remove-item-btn:hover {
+    background: rgba(128, 0, 0, 0.4);
+}
+
+/* ============================================
+   Hints and Empty States
+   ============================================ */
+.no-items-hint,
+.no-entries-hint {
+    padding: 16px;
+    text-align: center;
+    font-style: italic;
+    opacity: 0.6;
+}
+
+.no-items-hint i,
+.no-entries-hint i {
+    margin-right: 6px;
+}

@@ -1,0 +1,54 @@
+<section class="sdx-journal-notes">
+	{{!-- Page List Sidebar --}}
+	<div class="sdx-journal-sidebar">
+		<div class="sdx-journal-pages-list">
+			{{#each pages}}
+			<div class="sdx-journal-page-item {{#if this.active}}active{{/if}}" data-page-id="{{this.id}}">
+				<span class="sdx-page-number">{{add @index 1}}.</span>
+				<span class="sdx-page-title" title="{{this.name}}">{{this.name}}</span>
+				{{#if ../editable}}
+				<button type="button" class="sdx-page-delete" data-action="delete-page" data-page-id="{{this.id}}" title="{{localize 'SHADOWDARK_EXTRAS.journal.delete_page'}}">
+					<i class="fas fa-times"></i>
+				</button>
+				{{/if}}
+			</div>
+			{{/each}}
+		</div>
+		{{#if editable}}
+		<button type="button" class="sdx-journal-add-page" data-action="add-page">
+			<i class="fas fa-file-plus"></i>
+			{{localize "SHADOWDARK_EXTRAS.journal.add_page"}}
+		</button>
+		{{/if}}
+	</div>
+
+	{{!-- Page Content Area --}}
+	<div class="sdx-journal-content">
+		{{#if activePage}}
+		<div class="sdx-journal-page-header">
+			<h2 class="sdx-journal-page-title">
+				{{#if editable}}
+				<input type="text" class="sdx-page-title-input" value="{{activePage.name}}" data-page-id="{{activePage.id}}" placeholder="{{localize 'SHADOWDARK_EXTRAS.journal.page_title_placeholder'}}" />
+				{{else}}
+				{{activePage.name}}
+				{{/if}}
+			</h2>
+			{{#if editable}}
+			<button type="button" class="sdx-journal-edit-btn" data-action="edit-page" data-page-id="{{activePage.id}}" title="{{localize 'SHADOWDARK_EXTRAS.journal.edit_page'}}">
+				<i class="fas fa-edit"></i>
+			</button>
+			{{/if}}
+		</div>
+		<div class="sdx-journal-page-content" data-page-id="{{activePage.id}}">
+			{{{activePageContent}}}
+		</div>
+		{{else}}
+		<div class="sdx-journal-empty">
+			<p>{{localize "SHADOWDARK_EXTRAS.journal.no_pages"}}</p>
+			{{#if editable}}
+			<p>{{localize "SHADOWDARK_EXTRAS.journal.add_page_hint"}}</p>
+			{{/if}}
+		</div>
+		{{/if}}
+	</div>
+</section>

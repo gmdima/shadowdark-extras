@@ -1,0 +1,59 @@
+{{!-- Staff Spell Configuration Dialog --}}
+<div class="staff-spell-config">
+    <fieldset class="staff-spell-fieldset">
+        <legend><i class="fas fa-wand-magic-sparkles"></i> Attached Spells</legend>
+        <p class="hint">Drag and drop spell items here. These spells will be available when the staff is equipped.</p>
+
+        {{!-- Drop Zone --}}
+        <div class="staff-spell-drop">
+            <i class="fas fa-download"></i>
+            <p>Drop Spell Items Here</p>
+        </div>
+
+        {{!-- Spells List --}}
+        {{#if hasSpells}}
+        <div class="staff-spells-list">
+            {{#each spells}}
+            <div class="staff-spell-item">
+                <img src="{{img}}" alt="{{name}}" class="spell-icon" />
+                <span class="spell-name">{{name}}</span>
+                <div class="spell-uses-input">
+                    <label for="spell-max-uses-{{uuid}}">Max Uses:</label>
+                    <input
+                        type="number"
+                        id="spell-max-uses-{{uuid}}"
+                        class="spell-max-uses"
+                        data-spell-uuid="{{uuid}}"
+                        value="{{maxUses}}"
+                        placeholder="∞"
+                        min="0"
+                        title="Leave empty for unlimited uses"
+                    />
+                    {{#if maxUses}}
+                    <span class="spell-current-uses">{{currentUses}}/{{maxUses}}</span>
+                    <button type="button" class="restore-uses-btn" data-action="restoreUses" data-spell-uuid="{{uuid}}" data-tooltip="Restore uses to maximum">
+                        <i class="fas fa-redo"></i>
+                    </button>
+                    {{/if}}
+                </div>
+                <button type="button" class="remove-spell-btn" data-action="removeSpell" data-spell-uuid="{{uuid}}" data-tooltip="Remove spell">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            {{/each}}
+        </div>
+        {{else}}
+        <div class="no-spells-hint">
+            <i class="fas fa-info-circle"></i> No spells attached yet
+        </div>
+        {{/if}}
+
+        {{!-- Destroy at Zero Setting --}}
+        <div class="form-group" style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #999;">
+            <label style="display: flex; align-items: flex-start; gap: 0.5rem;">
+                <input type="checkbox" id="destroy-at-zero" {{#if destroyAtZero}}checked{{/if}} style="margin-top: 0.2rem;">
+                <span style="color: #ccc;">Destroy weapon when all spells are depleted The weapon will be deleted when all attached spells reach 0 uses</span>
+            </label>
+        </div>
+    </fieldset>
+</div>

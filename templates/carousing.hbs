@@ -1,0 +1,180 @@
+<section class="tab tab-carousing" data-tab="tab-carousing">
+    <div class="sdx-carousing-content">
+        <h2 class="sdx-carousing-title">
+            <i class="fas fa-beer"></i>
+            {{localize "SHADOWDARK_EXTRAS.carousing.title"}}
+            <span class="sdx-carousing-mode-badge">{{#if isExpandedMode}}Expanded{{else}}Original{{/if}}</span>
+        </h2>
+
+        {{#if isGM}}
+        {{!-- GM Controls --}}
+        <div class="sdx-carousing-gm-controls">
+            <div class="sdx-carousing-table-select">
+                <label>{{localize "SHADOWDARK_EXTRAS.carousing.select_table"}}:</label>
+                {{#if hasCustomTables}}
+                <select data-action="select-table">
+                    {{#each customTables}}
+                    <option value="{{this.id}}" {{#if this.selected}}selected{{/if}}>{{this.name}}</option>
+                    {{/each}}
+                </select>
+                {{else}}
+                <div class="sdx-carousing-no-tables">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    {{localize "SHADOWDARK_EXTRAS.carousing.no_tables_found"}}
+                </div>
+                {{/if}}
+            </div>
+
+            <div class="sdx-carousing-tier-select">
+                <label>{{localize "SHADOWDARK_EXTRAS.carousing.select_tier"}}:</label>
+                <select data-action="select-tier">
+                    <option value="">-- {{localize "SHADOWDARK_EXTRAS.carousing.choose_tier"}} --</option>
+                    {{#each tierOptions}}
+                    <option value="{{this.index}}" {{#if this.selected}}selected{{/if}}>{{this.label}}</option>
+                    {{/each}}
+                </select>
+            </div>
+
+            {{#if (gt participantCount 0)}}
+            <div class="sdx-carousing-gm-status">
+                <span>{{localize "SHADOWDARK_EXTRAS.carousing.participants"}}: {{participantCount}}</span>
+                {{#if allConfirmed}}
+                <span class="sdx-carousing-status-ok"><i class="fas fa-check-circle"></i> {{localize
+                    "SHADOWDARK_EXTRAS.carousing.all_confirmed"}}</span>
+                {{else}}
+                <span class="sdx-carousing-status-waiting"><i class="fas fa-hourglass-half"></i> {{localize
+                    "SHADOWDARK_EXTRAS.carousing.waiting_confirmations"}}</span>
+                {{/if}}
+            </div>
+            {{/if}}
+
+            <div class="sdx-carousing-gm-buttons">
+                <button type="button" class="sdx-carousing-roll-btn" data-action="roll-carousing" {{#unless
+                    canRoll}}disabled{{/unless}}>
+                    <i class="fas fa-dice-d20"></i>
+                </button>
+                <button type="button" class="sdx-carousing-reset-btn" data-action="reset-carousing">
+                    <i class="fas fa-undo"></i> {{localize "SHADOWDARK_EXTRAS.carousing.reset"}}
+                </button>
+            </div>
+        </div>
+        {{/if}}
+
+        {{#if hasSelectedTier}}
+        {{#if selectedTierDescription}}
+        <div class="sdx-carousing-description-box">
+            <p>"{{selectedTierDescription}}"</p>
+        </div>
+        {{/if}}
+
+        <div class="sdx-carousing-cost-info">
+            <i class="fas fa-coins"></i>
+            {{localize "SHADOWDARK_EXTRAS.carousing.cost_per_player"}}: <strong>{{selectedTierCost}} GP</strong>
+        </div>
+        {{/if}}
+
+        {{#if hasPlayers}}
+        <div class="sdx-carousing-players">
+            <div class="sdx-carousing-dropboxes">
+                {{#each onlinePlayers}}
+                <div class="sdx-carousing-dropbox {{#if this.hasDrop}}has-drop{{/if}} {{#if this.isCurrentUser}}is-current-user{{/if}} {{#if this.isConfirmed}}is-confirmed{{/if}}"
+                    data-user-id="{{this.id}}">
+                    {{#if this.hasDrop}}
+                    <div class="sdx-carousing-dropbox-content" data-user-id="{{this.id}}">
+                        {{!-- Portrait fills the card --}}
+                        <img class="sdx-carousing-dropped-portrait" src="{{this.droppedActorImg}}"
+                            alt="{{this.droppedActorName}}" />
+
+                        {{!-- Actor name overlaid on portrait --}}
+                        <span class="sdx-carousing-dropped-name">{{this.droppedActorName}}</span>
+
+                        {{!-- Result overlay --}}
+                        {{#if this.result}}
+                        <div class="sdx-carousing-result-badge">
+                            <span class="sdx-carousing-roll-result">{{this.result.roll}}</span>
+                            <span class="sdx-carousing-xp-result">+{{this.result.xp}} XP</span>
+                        </div>
+                        {{/if}}
+                    </div>
+
+                    {{!-- New details box below the portrait --}}
+                    <div class="sdx-carousing-player-details">
+                        <div class="sdx-carousing-detail-header">
+                            <span
+                                class="sdx-carousing-detail-gp {{#if ../hasSelectedTier}}{{#if this.canAfford}}can-afford{{else}}cannot-afford{{/if}}{{/if}}">
+                                <i class="fas fa-coins"></i> {{this.actorGp}} GP
+                            </span>
+                            <span class="sdx-carousing-detail-bonus"
+                                title="{{localize 'SHADOWDARK_EXTRAS.carousing.total_bonus_hint'}}">
+                                <i class="fas fa-dice-d20"></i>
+                                {{#if ../hasSelectedTier}}
+                                +{{this.totalBonus}}
+                                {{else}}
+                                +{{this.renown}}
+                                {{/if}}
+                            </span>
+                        </div>
+
+                        {{#if ../hasSelectedTier}}
+                        {{#if this.isCurrentUser}}
+                        {{#unless this.result}}
+                        {{#if this.canAfford}}
+                        {{#if this.isConfirmed}}
+                        <button type="button" class="sdx-carousing-confirm-btn confirmed"
+                            data-action="unconfirm-carousing" data-user-id="{{this.id}}">
+                            <i class="fas fa-check"></i> {{localize "SHADOWDARK_EXTRAS.carousing.confirmed"}}
+                        </button>
+                        {{else}}
+                        <button type="button" class="sdx-carousing-confirm-btn" data-action="confirm-carousing"
+                            data-user-id="{{this.id}}">
+                            {{localize "SHADOWDARK_EXTRAS.carousing.accept_pay"}}
+                        </button>
+                        {{/if}}
+                        {{/if}}
+                        {{/unless}}
+                        {{/if}}
+                        {{/if}}
+                    </div>
+                    {{else}}
+                    {{!-- Empty dropbox state (placeholder icons) --}}
+                    <div class="sdx-carousing-dropbox-content sdx-carousing-dropbox-placeholder"
+                        data-user-id="{{this.id}}">
+                        {{#if this.isCurrentUser}}
+                        <i class="fas fa-hand-point-down"></i>
+                        <span class="sdx-carousing-drop-hint">{{localize
+                            "SHADOWDARK_EXTRAS.carousing.drop_actor_here"}}</span>
+                        {{else}}
+                        <i class="fas fa-hourglass-half"></i>
+                        <span class="sdx-carousing-drop-hint">{{localize "SHADOWDARK_EXTRAS.carousing.waiting"}}</span>
+                        {{/if}}
+                    </div>
+                    {{/if}}
+
+                    {{!-- Player name overlay at bottom --}}
+                    <div class="sdx-carousing-dropbox-header">
+                        <span class="sdx-carousing-player-name">
+                            {{this.name}}
+                            {{#if this.isConfirmed}}
+                            <i class="fas fa-check-circle sdx-carousing-confirmed-badge"></i>
+                            {{/if}}
+                        </span>
+                    </div>
+                </div>
+                {{/each}}
+            </div>
+        </div>
+        {{else}}
+        <div class="sdx-carousing-no-players">
+            <i class="fas fa-user-slash fa-3x"></i>
+            <p>{{localize "SHADOWDARK_EXTRAS.carousing.no_players"}}</p>
+        </div>
+        {{/if}}
+
+        {{!-- Session complete message --}}
+        {{#if (eq phase "complete")}}
+        <div class="sdx-carousing-phase-complete">
+            <p><i class="fas fa-check-circle"></i> {{localize "SHADOWDARK_EXTRAS.carousing.session_complete"}}</p>
+        </div>
+        {{/if}}
+    </div>
+</section>

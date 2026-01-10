@@ -1,0 +1,286 @@
+<form class="sdx-inventory-styles-form sdx-theme-editor" autocomplete="off">
+	<!-- Header with master toggle and actions -->
+	<div class="sdx-editor-header">
+		<div class="sdx-master-toggle">
+			<label class="sdx-switch">
+				<input type="checkbox" name="enabled" {{#if enabled}}checked{{/if}} />
+				<span class="sdx-slider"></span>
+			</label>
+			<span class="sdx-toggle-text">{{localize "SHADOWDARK_EXTRAS.inventory_styles.enable_styling"}}</span>
+		</div>
+		<div class="sdx-header-actions">
+			<button type="button" class="sdx-btn sdx-btn-icon sdx-presets-btn" data-tooltip="Theme Presets">
+				<i class="fas fa-palette"></i>
+			</button>
+			<button type="button" class="sdx-btn sdx-btn-icon sdx-export-btn" data-tooltip="Export Theme">
+				<i class="fas fa-download"></i>
+			</button>
+			<button type="button" class="sdx-btn sdx-btn-icon sdx-import-btn" data-tooltip="Import Theme">
+				<i class="fas fa-upload"></i>
+			</button>
+			<button type="button" class="sdx-btn sdx-btn-icon sdx-reset-styles" data-tooltip="Reset to Defaults">
+				<i class="fas fa-undo"></i>
+			</button>
+		</div>
+	</div>
+
+	<!-- Presets Panel (hidden by default) -->
+	<div class="sdx-presets-panel" style="display: none;">
+		<h3><i class="fas fa-palette"></i> Quick Presets</h3>
+		<div class="sdx-presets-grid">
+			<button type="button" class="sdx-preset-card" data-preset="default">
+				<div class="sdx-preset-preview sdx-preset-default"></div>
+				<span>Default</span>
+			</button>
+			<button type="button" class="sdx-preset-card" data-preset="dark">
+				<div class="sdx-preset-preview sdx-preset-dark"></div>
+				<span>Dark Mode</span>
+			</button>
+			<button type="button" class="sdx-preset-card" data-preset="vibrant">
+				<div class="sdx-preset-preview sdx-preset-vibrant"></div>
+				<span>Vibrant</span>
+			</button>
+			<button type="button" class="sdx-preset-card" data-preset="parchment">
+				<div class="sdx-preset-preview sdx-preset-parchment"></div>
+				<span>Parchment</span>
+			</button>
+			<button type="button" class="sdx-preset-card" data-preset="neon">
+				<div class="sdx-preset-preview sdx-preset-neon"></div>
+				<span>Neon</span>
+			</button>
+			<button type="button" class="sdx-preset-card" data-preset="minimal">
+				<div class="sdx-preset-preview sdx-preset-minimal"></div>
+				<span>Minimal</span>
+			</button>
+		</div>
+	</div>
+
+	<!-- Main Editor Area -->
+	<div class="sdx-editor-main">
+		<!-- Category Tabs -->
+		<div class="sdx-category-tabs">
+			{{#each categories}}
+			<button type="button" class="sdx-tab {{#if @first}}active{{/if}}" data-category="{{key}}">
+				<span class="sdx-tab-indicator" style="background: {{backgroundColor}};"></span>
+				<span class="sdx-tab-label">{{label}}</span>
+				{{#if enabled}}<i class="fas fa-check sdx-tab-enabled"></i>{{/if}}
+			</button>
+			{{/each}}
+		</div>
+
+		<!-- Category Editor Panels -->
+		<div class="sdx-editor-panels">
+			{{#each categories}}
+			<div class="sdx-panel {{#if @first}}active{{/if}}" data-category="{{key}}">
+				<!-- Panel Header -->
+				<div class="sdx-panel-header">
+					<label class="sdx-switch sdx-switch-sm">
+						<input type="checkbox" name="categories.{{key}}.enabled" {{#if enabled}}checked{{/if}} />
+						<span class="sdx-slider"></span>
+					</label>
+					<h3>{{label}}</h3>
+					{{#if isSpecial}}<span class="sdx-badge">Special</span>{{/if}}
+					<div class="sdx-priority-control">
+						<label>Priority</label>
+						<input type="range" class="sdx-range" name="categories.{{key}}.priority" value="{{priority}}" min="0" max="100" />
+						<span class="sdx-range-value">{{priority}}</span>
+					</div>
+				</div>
+
+				<!-- Live Preview -->
+				<div class="sdx-live-preview-section">
+					<div class="sdx-live-preview" data-category="{{key}}">
+						<div class="sdx-preview-item">
+							<div class="sdx-preview-icon">⚔️</div>
+							<span class="sdx-preview-name">Enchanted Longsword</span>
+							<span class="sdx-preview-qty">1</span>
+							<span class="sdx-preview-slots">2</span>
+						</div>
+						<div class="sdx-preview-details">
+							<p><b>Type</b> <em>Melee Weapon</em></p>
+							<p><b>Damage</b> <em>1d8</em></p>
+							<div class="sdx-preview-tags">
+								<span class="sdx-preview-tag">Magical</span>
+								<span class="sdx-preview-tag">+1</span>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<!-- Style Controls -->
+				<div class="sdx-style-controls">
+					<!-- Background Section -->
+					<div class="sdx-control-section">
+						<h4><i class="fas fa-fill-drip"></i> Background</h4>
+						<div class="sdx-control-grid">
+							<div class="sdx-control-item">
+								<label>Color</label>
+								<div class="sdx-color-input">
+									<input type="color" data-edit="categories.{{key}}.backgroundColor" value="{{backgroundColor}}" />
+									<input type="text" name="categories.{{key}}.backgroundColor" value="{{backgroundColor}}" class="sdx-color-text" />
+								</div>
+							</div>
+							<div class="sdx-control-item sdx-control-checkbox">
+								<label class="sdx-switch sdx-switch-sm">
+									<input type="checkbox" name="categories.{{key}}.useGradient" class="sdx-gradient-toggle" {{#if useGradient}}checked{{/if}} />
+									<span class="sdx-slider"></span>
+								</label>
+								<span>Gradient</span>
+							</div>
+							<div class="sdx-control-item sdx-gradient-controls">
+								<label>Fade To</label>
+								<div class="sdx-color-input">
+									<input type="color" data-edit="categories.{{key}}.gradientEndColor" value="{{gradientEndColorPicker}}" />
+									<input type="text" name="categories.{{key}}.gradientEndColor" value="{{gradientEndColor}}" class="sdx-color-text" placeholder="transparent" />
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<!-- Text Section -->
+					<div class="sdx-control-section">
+						<h4><i class="fas fa-font"></i> Item Text</h4>
+						<div class="sdx-control-grid">
+							<div class="sdx-control-item">
+								<label>Color</label>
+								<div class="sdx-color-input">
+									<input type="color" data-edit="categories.{{key}}.textColor" value="{{textColor}}" />
+									<input type="text" name="categories.{{key}}.textColor" value="{{textColor}}" class="sdx-color-text" />
+								</div>
+							</div>
+							<div class="sdx-control-item sdx-shadow-builder">
+								<label>Shadow</label>
+								<button type="button" class="sdx-btn sdx-shadow-toggle" data-target="textShadow">
+									<i class="fas fa-magic"></i> Edit Shadow
+								</button>
+								<input type="hidden" name="categories.{{key}}.textShadow" value="{{textShadow}}" class="sdx-shadow-value" data-shadow-type="textShadow" />
+							</div>
+						</div>
+						<!-- Shadow Builder Popup -->
+						<div class="sdx-shadow-popup" data-shadow-type="textShadow" style="display: none;">
+							<div class="sdx-shadow-controls">
+								<div class="sdx-shadow-row">
+									<label>X Offset</label>
+									<input type="range" class="sdx-range sdx-shadow-x" min="-10" max="10" value="1" />
+									<span class="sdx-range-value">1px</span>
+								</div>
+								<div class="sdx-shadow-row">
+									<label>Y Offset</label>
+									<input type="range" class="sdx-range sdx-shadow-y" min="-10" max="10" value="1" />
+									<span class="sdx-range-value">1px</span>
+								</div>
+								<div class="sdx-shadow-row">
+									<label>Blur</label>
+									<input type="range" class="sdx-range sdx-shadow-blur" min="0" max="20" value="2" />
+									<span class="sdx-range-value">2px</span>
+								</div>
+								<div class="sdx-shadow-row">
+									<label>Color</label>
+									<input type="color" class="sdx-shadow-color" value="#000000" />
+								</div>
+								<div class="sdx-shadow-preview-row">
+									<span class="sdx-shadow-preview-text">Preview</span>
+								</div>
+								<div class="sdx-shadow-actions">
+									<button type="button" class="sdx-btn sdx-btn-danger sdx-shadow-remove">
+										<i class="fas fa-times"></i> Remove Shadow
+									</button>
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<!-- Description Text Section -->
+					<div class="sdx-control-section">
+						<h4><i class="fas fa-align-left"></i> Description Text</h4>
+						<div class="sdx-control-grid">
+							<div class="sdx-control-item">
+								<label>Color</label>
+								<div class="sdx-color-input">
+									<input type="color" data-edit="categories.{{key}}.descriptionTextColor" value="{{descriptionTextColor}}" />
+									<input type="text" name="categories.{{key}}.descriptionTextColor" value="{{descriptionTextColor}}" class="sdx-color-text" placeholder="(inherit)" />
+								</div>
+							</div>
+							<div class="sdx-control-item sdx-shadow-builder">
+								<label>Shadow</label>
+								<button type="button" class="sdx-btn sdx-shadow-toggle" data-target="descriptionTextShadow">
+									<i class="fas fa-magic"></i> Edit Shadow
+								</button>
+								<input type="hidden" name="categories.{{key}}.descriptionTextShadow" value="{{descriptionTextShadow}}" class="sdx-shadow-value" data-shadow-type="descriptionTextShadow" />
+							</div>
+						</div>
+						<!-- Shadow Builder Popup for Description -->
+						<div class="sdx-shadow-popup" data-shadow-type="descriptionTextShadow" style="display: none;">
+							<div class="sdx-shadow-controls">
+								<div class="sdx-shadow-row">
+									<label>X Offset</label>
+									<input type="range" class="sdx-range sdx-shadow-x" min="-10" max="10" value="1" />
+									<span class="sdx-range-value">1px</span>
+								</div>
+								<div class="sdx-shadow-row">
+									<label>Y Offset</label>
+									<input type="range" class="sdx-range sdx-shadow-y" min="-10" max="10" value="1" />
+									<span class="sdx-range-value">1px</span>
+								</div>
+								<div class="sdx-shadow-row">
+									<label>Blur</label>
+									<input type="range" class="sdx-range sdx-shadow-blur" min="0" max="20" value="2" />
+									<span class="sdx-range-value">2px</span>
+								</div>
+								<div class="sdx-shadow-row">
+									<label>Color</label>
+									<input type="color" class="sdx-shadow-color" value="#000000" />
+								</div>
+								<div class="sdx-shadow-preview-row">
+									<span class="sdx-shadow-preview-text">Preview</span>
+								</div>
+								<div class="sdx-shadow-actions">
+									<button type="button" class="sdx-btn sdx-btn-danger sdx-shadow-remove">
+										<i class="fas fa-times"></i> Remove Shadow
+									</button>
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<!-- Border Section -->
+					<div class="sdx-control-section">
+						<h4><i class="fas fa-border-left"></i> Left Border</h4>
+						<div class="sdx-control-grid sdx-border-builder">
+							<div class="sdx-control-item">
+								<label>Width</label>
+								<input type="range" class="sdx-range sdx-border-width" min="0" max="10" value="3" />
+								<span class="sdx-range-value">3px</span>
+							</div>
+							<div class="sdx-control-item">
+								<label>Style</label>
+								<select class="sdx-border-style">
+									<option value="solid">Solid</option>
+									<option value="dashed">Dashed</option>
+									<option value="dotted">Dotted</option>
+									<option value="double">Double</option>
+									<option value="groove">Groove</option>
+									<option value="ridge">Ridge</option>
+								</select>
+							</div>
+							<div class="sdx-control-item">
+								<label>Color</label>
+								<input type="color" class="sdx-border-color" value="#9b59b6" />
+							</div>
+							<input type="hidden" name="categories.{{key}}.borderLeft" value="{{borderLeft}}" class="sdx-border-value" />
+						</div>
+					</div>
+				</div>
+			</div>
+			{{/each}}
+		</div>
+	</div>
+
+	<!-- Footer -->
+	<footer class="sdx-editor-footer">
+		<button type="submit" class="sdx-btn sdx-btn-primary sdx-btn-lg">
+			<i class="fas fa-save"></i>
+			{{localize "SHADOWDARK_EXTRAS.inventory_styles.save"}}
+		</button>
+	</footer>
+</form>

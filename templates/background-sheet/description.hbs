@@ -1,0 +1,33 @@
+{{!-- Description Tab --}}
+<section class="tab-content {{#if tab.active}}active{{/if}}" data-tab="description">
+
+    {{!-- Source --}}
+    <fieldset class="background-fieldset source-fieldset">
+        <legend><i class="fas fa-book"></i> {{localize "SHADOWDARK_EXTRAS.backgroundSheet.sourceLabel"}}</legend>
+        <div class="form-group">
+            <select name="system.source.title" class="source-select">
+                <option value="">{{localize "SHADOWDARK_EXTRAS.backgroundSheet.sourceNone"}}</option>
+                {{#each sources}}
+                <option value="{{uuid}}" {{#if (eq ../system.source.title uuid)}}selected{{/if}}>{{localize name}}
+                </option>
+                {{/each}}
+            </select>
+        </div>
+    </fieldset>
+
+    {{!-- Description --}}
+    <fieldset class="background-fieldset description-fieldset">
+        <legend><i class="fas fa-scroll"></i> {{localize "SHADOWDARK_EXTRAS.backgroundSheet.descriptionLabel"}}</legend>
+        <div class="editor-wrapper">
+            {{#if isEditable}}
+            <prose-mirror name="system.description" value="{{source.system.description}}" document-uuid="{{item.uuid}}"
+                class="sized" compact>{{{enrichedDescription}}}</prose-mirror>
+            {{else}}
+            <div class="editor editor-content">
+                {{{enrichedDescription}}}
+            </div>
+            {{/if}}
+        </div>
+    </fieldset>
+
+</section>

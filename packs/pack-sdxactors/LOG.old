@@ -1,0 +1,7 @@
+2026/01/10-04:51:16.158 10298 Recovering log #298
+2026/01/10-04:51:16.168 10298 Delete type=0 #298
+2026/01/10-04:51:16.168 10298 Delete type=3 #297
+2026/01/10-14:36:16.447 2a04 Level-0 table #302: started
+2026/01/10-14:36:16.447 2a04 Level-0 table #302: 0 bytes OK
+2026/01/10-14:36:16.452 2a04 Delete type=0 #300
+2026/01/10-14:36:16.457 2a04 Manual compaction at level-0 from '!actors!X2leBdJeqwKWrTlE' @ 72057594037927935 : 1 .. '!actors!X2leBdJeqwKWrTlE' @ 0 : 0; will stop at (end)

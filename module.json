@@ -1,0 +1,140 @@
+{
+  "id": "shadowdark-extras",
+  "title": "Shadowdark Extras",
+  "version": "4.19",
+  "compatibility": {
+    "minimum": "13",
+    "verified": "13"
+  },
+  "description": "<p>Adds extra features to the Shadowdark RPG system: Party management sheet, Renown tracking for players, additional light sources (Candle), and Inventory tab for NPCs.</p>",
+  "authors": [
+    {
+      "name": "DmKal",
+      "flags": {}
+    }
+  ],
+  "relationships": {
+    "systems": [
+      {
+        "id": "shadowdark",
+        "type": "system",
+        "compatibility": {
+          "minimum": "3.0.0"
+        }
+      }
+    ],
+    "requires": [
+      {
+        "id": "item-piles",
+        "type": "module",
+        "compatibility": {}
+      },
+      {
+        "id": "shadowdark-item-piles",
+        "type": "module",
+        "compatibility": {}
+      },
+      {
+        "id": "socketlib",
+        "type": "module",
+        "compatibility": {}
+      },
+      {
+        "id": "lib-wrapper",
+        "type": "module",
+        "compatibility": {}
+      },
+      {
+        "id": "sequencer",
+        "type": "module",
+        "compatibility": {}
+      },
+      {
+        "id": "portal-lib",
+        "type": "module",
+        "compatibility": {}
+      },
+      {
+        "id": "tokenmagic",
+        "type": "module",
+        "compatibility": {}
+      },
+      {
+        "id": "itemacro",
+        "type": "module",
+        "compatibility": {}
+      }
+    ],
+    "recommends": [
+      {
+        "id": "JB2A_DnD5e",
+        "type": "module",
+        "compatibility": {}
+      }
+    ]
+  },
+  "socket": true,
+  "esmodules": [
+    "scripts/shadowdark-extras.mjs",
+    "scripts/SheetEditorConfig.mjs",
+    "scripts/SpellMacrosSD.mjs"
+  ],
+  "styles": [
+    {
+      "src": "styles/shadowdark-extras.css"
+    },
+    {
+      "src": "styles/sdx-rolls-sd.css"
+    },
+    {
+      "src": "styles/token-toolbar.css"
+    },
+    {
+      "src": "styles/dark-mode.css"
+    },
+    {
+      "src": "styles/potion-sheet.css"
+    },
+    {
+      "src": "styles/background-sheet.css"
+    },
+    {
+      "src": "styles/staff-spell-manager.css"
+    }
+  ],
+  "languages": [
+    {
+      "lang": "en",
+      "name": "English",
+      "path": "i18n/en.json",
+      "flags": {}
+    }
+  ],
+  "manifest": "https://github.com/gmdima/shadowdark-extras/releases/latest/download/module.json",
+  "download": "https://github.com/gmdima/shadowdark-extras/releases/download/4.19/module.zip",
+  "packs": [
+    {
+      "name": "pack-sdxitems",
+      "label": "sdxitems",
+      "path": "packs/pack-sdxitems",
+      "type": "Item",
+      "system": "shadowdark",
+      "ownership": {
+        "PLAYER": "OBSERVER",
+        "ASSISTANT": "OWNER"
+      }
+    },
+    {
+      "name": "pack-sdxactors",
+      "label": "sdxactors",
+      "path": "packs/pack-sdxactors",
+      "type": "Actor",
+      "system": "shadowdark",
+      "ownership": {
+        "PLAYER": "OBSERVER",
+        "ASSISTANT": "OWNER"
+      }
+    }
+  ],
+  "flags": {}
+}

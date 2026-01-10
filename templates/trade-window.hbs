@@ -1,0 +1,183 @@
+<div class="trade-window-container" data-trade-id="{{tradeId}}">
+	<div class="trade-panels">
+		<!-- Local Player (Left) -->
+		<div class="trade-panel trade-local">
+			<div class="trade-header">
+				<img src="{{localActor.img}}" alt="{{localActor.name}}" class="trade-portrait"/>
+				<h3 class="trade-name">{{localActor.name}}</h3>
+				<span class="trade-you">{{localize "SHADOWDARK_EXTRAS.trade.you"}}</span>
+			</div>
+			
+			<div class="trade-status {{#if localLocked}}locked{{/if}}">
+				{{#if localLocked}}
+					<i class="fas fa-lock"></i>
+					{{localize "SHADOWDARK_EXTRAS.trade.offer_locked_label"}}
+				{{else}}
+					<i class="fas fa-lock-open"></i>
+					{{localize "SHADOWDARK_EXTRAS.trade.editing"}}
+				{{/if}}
+			</div>
+			
+			<div class="trade-items {{#if localLocked}}locked{{/if}}" data-drop-zone="local">
+				{{#each localItems}}
+				<div class="trade-item" data-item-id="{{this._id}}" draggable="true">
+					<img src="{{this.img}}" alt="{{this.name}}" class="item-image"/>
+					<div class="item-info">
+						<span class="item-name">{{this.name}}</span>
+						{{#if this.system.quantity}}
+						<span class="item-qty">x{{this.system.quantity}}</span>
+						{{/if}}
+					</div>
+					{{#unless ../localLocked}}
+					<button type="button" class="remove-item" data-action="removeItem" title="{{localize 'SHADOWDARK_EXTRAS.trade.remove_item'}}">
+						<i class="fas fa-times"></i>
+					</button>
+					{{/unless}}
+				</div>
+				{{else}}
+				<div class="trade-empty">
+					{{#if localLocked}}
+						{{localize "SHADOWDARK_EXTRAS.trade.no_items_offered"}}
+					{{else}}
+						{{localize "SHADOWDARK_EXTRAS.trade.drag_items_here"}}
+					{{/if}}
+				</div>
+				{{/each}}
+			</div>
+			
+			<div class="trade-coins {{#if localLocked}}locked{{/if}}">
+				<div class="trade-coins-label">{{localize "SHADOWDARK_EXTRAS.trade.coins_offered"}}</div>
+				<div class="trade-coins-row">
+					<div class="trade-coin">
+						<input type="number" class="trade-coin-input" data-coin-type="gp" 
+							value="{{localCoins.gp}}" min="0" max="{{localActorCoins.gp}}"
+							{{#if localLocked}}disabled{{/if}}/>
+						<span class="trade-coin-label">GP</span>
+					</div>
+					<div class="trade-coin">
+						<input type="number" class="trade-coin-input" data-coin-type="sp" 
+							value="{{localCoins.sp}}" min="0" max="{{localActorCoins.sp}}"
+							{{#if localLocked}}disabled{{/if}}/>
+						<span class="trade-coin-label">SP</span>
+					</div>
+					<div class="trade-coin">
+						<input type="number" class="trade-coin-input" data-coin-type="cp" 
+							value="{{localCoins.cp}}" min="0" max="{{localActorCoins.cp}}"
+							{{#if localLocked}}disabled{{/if}}/>
+						<span class="trade-coin-label">CP</span>
+					</div>
+				</div>
+			</div>
+			
+			<div class="trade-value">
+				<i class="fas fa-coins"></i>
+				<span>{{localTotalGp}} {{localize "SHADOWDARK_EXTRAS.trade.gp"}}</span>
+			</div>
+			
+			{{#if localAccepted}}
+			<div class="trade-accepted">
+				<i class="fas fa-check-circle"></i>
+				{{localize "SHADOWDARK_EXTRAS.trade.accepted_label"}}
+			</div>
+			{{/if}}
+		</div>
+		
+		<!-- Trade Arrow -->
+		<div class="trade-arrow">
+			<i class="fas fa-exchange-alt"></i>
+		</div>
+		
+		<!-- Remote Player (Right) -->
+		<div class="trade-panel trade-remote">
+			<div class="trade-header">
+				<img src="{{remoteActor.img}}" alt="{{remoteActor.name}}" class="trade-portrait"/>
+				<h3 class="trade-name">{{remoteActor.name}}</h3>
+			</div>
+			
+			<div class="trade-status {{#if remoteLocked}}locked{{/if}}">
+				{{#if remoteLocked}}
+					<i class="fas fa-lock"></i>
+					{{localize "SHADOWDARK_EXTRAS.trade.offer_locked_label"}}
+				{{else}}
+					<i class="fas fa-lock-open"></i>
+					{{localize "SHADOWDARK_EXTRAS.trade.editing"}}
+				{{/if}}
+			</div>
+			
+			<div class="trade-items remote-items">
+				{{#each remoteItems}}
+				<div class="trade-item remote" data-item-id="{{this._id}}">
+					<img src="{{this.img}}" alt="{{this.name}}" class="item-image"/>
+					<div class="item-info">
+						<span class="item-name">{{this.name}}</span>
+						{{#if this.system.quantity}}
+						<span class="item-qty">x{{this.system.quantity}}</span>
+						{{/if}}
+					</div>
+				</div>
+				{{else}}
+				<div class="trade-empty">
+					{{#if remoteLocked}}
+						{{localize "SHADOWDARK_EXTRAS.trade.no_items_offered"}}
+					{{else}}
+						{{localize "SHADOWDARK_EXTRAS.trade.waiting_for_items"}}
+					{{/if}}
+				</div>
+				{{/each}}
+			</div>
+			
+			<div class="trade-coins remote-coins">
+				<div class="trade-coins-label">{{localize "SHADOWDARK_EXTRAS.trade.coins_offered"}}</div>
+				<div class="trade-coins-row">
+					<div class="trade-coin">
+						<span class="trade-coin-value">{{remoteCoins.gp}}</span>
+						<span class="trade-coin-label">GP</span>
+					</div>
+					<div class="trade-coin">
+						<span class="trade-coin-value">{{remoteCoins.sp}}</span>
+						<span class="trade-coin-label">SP</span>
+					</div>
+					<div class="trade-coin">
+						<span class="trade-coin-value">{{remoteCoins.cp}}</span>
+						<span class="trade-coin-label">CP</span>
+					</div>
+				</div>
+			</div>
+			
+			<div class="trade-value">
+				<i class="fas fa-coins"></i>
+				<span>{{remoteTotalGp}} {{localize "SHADOWDARK_EXTRAS.trade.gp"}}</span>
+			</div>
+			
+			{{#if remoteAccepted}}
+			<div class="trade-accepted">
+				<i class="fas fa-check-circle"></i>
+				{{localize "SHADOWDARK_EXTRAS.trade.accepted_label"}}
+			</div>
+			{{/if}}
+		</div>
+	</div>
+	
+	<!-- Action Buttons -->
+	<div class="trade-actions">
+		<button type="button" class="trade-btn lock-btn {{#if localLocked}}locked{{/if}}" data-action="lockOffer">
+			{{#if localLocked}}
+				<i class="fas fa-lock-open"></i>
+				{{localize "SHADOWDARK_EXTRAS.trade.edit_offer"}}
+			{{else}}
+				<i class="fas fa-lock"></i>
+				{{localize "SHADOWDARK_EXTRAS.trade.lock_offer"}}
+			{{/if}}
+		</button>
+		
+		<button type="button" class="trade-btn accept-btn" data-action="acceptTrade" {{#unless canAccept}}disabled{{/unless}}>
+			<i class="fas fa-check"></i>
+			{{localize "SHADOWDARK_EXTRAS.trade.accept_trade"}}
+		</button>
+		
+		<button type="button" class="trade-btn cancel-btn" data-action="cancelTrade">
+			<i class="fas fa-times"></i>
+			{{localize "SHADOWDARK_EXTRAS.trade.cancel_trade"}}
+		</button>
+	</div>
+</div>

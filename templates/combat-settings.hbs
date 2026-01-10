@@ -1,0 +1,211 @@
+<form class="sdx-combat-settings-form">
+	<div class="sdx-settings-section">
+		<h3><i class="fas fa-heart-broken"></i> Damage Card Settings</h3>
+		<p class="sdx-settings-hint">Configure the enhanced damage card that appears after rolling damage</p>
+
+		<div class="sdx-setting-item">
+			<div class="sdx-setting-header">
+				<label for="showDamageCard">
+					<input type="checkbox" name="showDamageCard" id="showDamageCard" {{checked
+						settings.showDamageCard}} />
+					<strong>Show Damage Card</strong>
+				</label>
+			</div>
+			<p class="sdx-setting-hint">Display an enhanced damage card with target selection and damage application
+				options</p>
+		</div>
+
+		<div class="sdx-setting-item">
+			<div class="sdx-setting-header">
+				<label for="showForPlayers">
+					<input type="checkbox" name="showForPlayers" id="showForPlayers" {{checked
+						settings.showForPlayers}} />
+					<strong>Show Damage Card for Players</strong>
+				</label>
+			</div>
+			<p class="sdx-setting-hint">If enabled, players will see the damage card. If disabled, only GMs will see it.
+			</p>
+		</div>
+
+		<div class="sdx-setting-item">
+			<div class="sdx-setting-header">
+				<label for="scrollingCombatText">
+					<input type="checkbox" name="scrollingCombatText" id="scrollingCombatText" {{checked
+						settings.scrollingCombatText}} />
+					<strong>{{localize "SHADOWDARK_EXTRAS.combat.scrolling_text.name"}}</strong>
+				</label>
+			</div>
+			<p class="sdx-setting-hint">{{localize "SHADOWDARK_EXTRAS.combat.scrolling_text.hint"}}</p>
+		</div>
+
+		<div class="sdx-setting-item">
+			<div class="sdx-setting-header">
+				<label for="hideItemDescription">
+					<input type="checkbox" name="hideItemDescription" id="hideItemDescription" {{checked
+						settings.hideItemDescription}} />
+					<strong>Hide Item Description</strong>
+				</label>
+			</div>
+			<p class="sdx-setting-hint">Hide weapon/spell description text from chat cards</p>
+		</div>
+
+		<div class="sdx-setting-item">
+			<div class="sdx-setting-header">
+				<label for="requireTargetForAttack">
+					<strong>Require Target for Attack</strong>
+				</label>
+				<select name="requireTargetForAttack" id="requireTargetForAttack">
+					<option value="none" {{#if (eq settings.requireTargetForAttack "none" )}}selected{{/if}}>None - No
+						check</option>
+					<option value="warn" {{#if (eq settings.requireTargetForAttack "warn" )}}selected{{/if}}>Warn - Show
+						warning but allow attack</option>
+					<option value="block" {{#if (eq settings.requireTargetForAttack "block" )}}selected{{/if}}>Block -
+						Prevent attack without target</option>
+				</select>
+			</div>
+			<p class="sdx-setting-hint">Require the player to target a token before making a weapon attack</p>
+		</div>
+
+		<div class="sdx-setting-item">
+			<div class="sdx-setting-header">
+				<label for="checkWeaponRange">
+					<strong>Check Weapon Range</strong>
+				</label>
+				<select name="checkWeaponRange" id="checkWeaponRange">
+					<option value="none" {{#if (eq settings.checkWeaponRange "none" )}}selected{{/if}}>None - No check
+					</option>
+					<option value="warn" {{#if (eq settings.checkWeaponRange "warn" )}}selected{{/if}}>Warn - Show
+						warning if out of range</option>
+					<option value="block" {{#if (eq settings.checkWeaponRange "block" )}}selected{{/if}}>Block - Prevent
+						attack if out of range</option>
+				</select>
+			</div>
+			<p class="sdx-setting-hint">Check if the target is within the weapon's range (Close=5ft, Near=30ft,
+				Far=unlimited)</p>
+		</div>
+
+		<div class="sdx-setting-item">
+			<div class="sdx-setting-header">
+				<label for="untargetAtEndOfTurn">
+					<strong>Un-target at End of Turn</strong>
+				</label>
+				<select name="untargetAtEndOfTurn" id="untargetAtEndOfTurn">
+					<option value="none" {{#if (eq settings.untargetAtEndOfTurn "none" )}}selected{{/if}}>None - Keep
+						all targets</option>
+					<option value="dead" {{#if (eq settings.untargetAtEndOfTurn "dead" )}}selected{{/if}}>Un-target dead
+						after roll</option>
+					<option value="all" {{#if (eq settings.untargetAtEndOfTurn "all" )}}selected{{/if}}>Un-target all at
+						end of turn</option>
+				</select>
+			</div>
+			<p class="sdx-setting-hint">At the end of your turn, choose which targets to automatically un-target</p>
+		</div>
+
+		<div class="sdx-subsettings" data-parent="showDamageCard">
+			<div class="sdx-setting-item">
+				<div class="sdx-setting-header">
+					<label for="showTargets">
+						<input type="checkbox" name="damageCard.showTargets" id="showTargets" {{checked
+							settings.damageCard.showTargets}} />
+						<strong>Show Targets</strong>
+					</label>
+				</div>
+				<p class="sdx-setting-hint">Display targeted tokens in the damage card</p>
+			</div>
+
+			<div class="sdx-setting-item">
+				<div class="sdx-setting-header">
+					<label for="showMultipliers">
+						<input type="checkbox" name="damageCard.showMultipliers" id="showMultipliers" {{checked
+							settings.damageCard.showMultipliers}} />
+						<strong>Show Damage Multipliers</strong>
+					</label>
+				</div>
+				<p class="sdx-setting-hint">Display buttons to apply damage multipliers (resistance, vulnerability,
+					etc.)</p>
+			</div>
+
+			<div class="sdx-setting-item">
+				<div class="sdx-setting-header">
+					<label for="showApplyButton">
+						<input type="checkbox" name="damageCard.showApplyButton" id="showApplyButton" {{checked
+							settings.damageCard.showApplyButton}} />
+						<strong>Show Apply Button</strong>
+					</label>
+				</div>
+				<p class="sdx-setting-hint">Display a button to apply damage to targets</p>
+			</div>
+
+			<div class="sdx-setting-item">
+				<div class="sdx-setting-header">
+					<label for="autoApplyDamage">
+						<input type="checkbox" name="damageCard.autoApplyDamage" id="autoApplyDamage" {{checked
+							settings.damageCard.autoApplyDamage}} />
+						<strong>Auto-Apply Damage</strong>
+					</label>
+				</div>
+				<p class="sdx-setting-hint">Automatically apply damage to targets when a successful attack is rolled</p>
+			</div>
+
+			<div class="sdx-setting-item">
+				<div class="sdx-setting-header">
+					<label for="autoApplyConditions">
+						<input type="checkbox" name="damageCard.autoApplyConditions" id="autoApplyConditions" {{checked
+							settings.damageCard.autoApplyConditions}} />
+						<strong>Auto-Apply Conditions</strong>
+					</label>
+				</div>
+				<p class="sdx-setting-hint">Automatically apply conditions/effects to targets when a successful spell is
+					cast</p>
+			</div>
+
+			<div class="sdx-setting-item">
+				<h4>Damage Multipliers</h4>
+				<p class="sdx-setting-hint">Configure which damage multiplier buttons appear on the card</p>
+				<div class="sdx-multiplier-config">
+					{{#each settings.damageCard.damageMultipliers}}
+					<div class="sdx-multiplier-item">
+						<input type="checkbox" name="damageCard.damageMultipliers.{{@index}}.enabled"
+							id="mult-{{@index}}" {{checked this.enabled}} />
+						<label for="mult-{{@index}}">
+							<span class="sdx-mult-label">{{this.label}}</span>
+							<span class="sdx-mult-value">({{this.value}}×)</span>
+						</label>
+						<input type="hidden" name="damageCard.damageMultipliers.{{@index}}.value"
+							value="{{this.value}}" />
+						<input type="hidden" name="damageCard.damageMultipliers.{{@index}}.label"
+							value="{{this.label}}" />
+					</div>
+					{{/each}}
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<footer class="sheet-footer flexrow">
+		<button type="submit" name="submit">
+			<i class="fas fa-save"></i> Save Settings
+		</button>
+		<button type="button" name="reset">
+			<i class="fas fa-undo"></i> Reset to Defaults
+		</button>
+	</footer>
+</form>
+
+<script>
+	// Toggle subsettings visibility based on parent checkbox
+	const parentCheckbox = document.getElementById('showDamageCard');
+	const subsettings = document.querySelector('[data-parent="showDamageCard"]');
+
+	function toggleSubsettings() {
+		if (subsettings) {
+			subsettings.style.opacity = parentCheckbox.checked ? '1' : '0.5';
+			subsettings.style.pointerEvents = parentCheckbox.checked ? 'auto' : 'none';
+		}
+	}
+
+	if (parentCheckbox && subsettings) {
+		parentCheckbox.addEventListener('change', toggleSubsettings);
+		toggleSubsettings();
+	}
+</script>
