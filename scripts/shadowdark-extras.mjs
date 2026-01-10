@@ -1001,7 +1001,7 @@ function setupUnidentifiedItemNameWrapper() {
 		return; // Setting not registered yet
 	}
 
-	console.log(`${MODULE_ID} | Setting up unidentified item name wrapper`);
+	// console.log(`${MODULE_ID} | Setting up unidentified item name wrapper`);
 
 	// Get the Item class
 	const ItemClass = CONFIG.Item.documentClass;
@@ -1034,7 +1034,7 @@ function setupUnidentifiedItemNameWrapper() {
 			enumerable: originalDescriptor.enumerable
 		});
 
-		console.log(`${MODULE_ID} | Successfully wrapped Item.name getter`);
+		// console.log(`${MODULE_ID} | Successfully wrapped Item.name getter`);
 	} else {
 		// Foundry v13 DataModel pattern - define a new getter
 		// The name is typically accessed via this._source.name or this.system.name
@@ -1057,7 +1057,7 @@ function setupUnidentifiedItemNameWrapper() {
 			enumerable: true
 		});
 
-		console.log(`${MODULE_ID} | Successfully defined Item.name getter (DataModel pattern)`);
+		// console.log(`${MODULE_ID} | Successfully defined Item.name getter (DataModel pattern)`);
 	}
 }
 
@@ -1072,7 +1072,7 @@ function wrapBuildWeaponDisplayForUnidentified() {
 		return; // Setting not registered yet
 	}
 
-	console.log(`${MODULE_ID} | Wrapping ActorSD.buildWeaponDisplay for unidentified items`);
+	// console.log(`${MODULE_ID} | Wrapping ActorSD.buildWeaponDisplay for unidentified items`);
 
 	if (!globalThis.shadowdark?.documents?.ActorSD) {
 		console.warn(`${MODULE_ID} | ActorSD not found, cannot wrap buildWeaponDisplay`);
@@ -1123,7 +1123,7 @@ function setupItemPilesUnidentifiedHooks() {
 		return;
 	}
 
-	console.log(`${MODULE_ID} | Setting up item-piles unidentified item hooks`);
+	// console.log(`${MODULE_ID} | Setting up item-piles unidentified item hooks`);
 
 	// Default masked name fallback
 	const getDefaultMaskedName = () => game.i18n.localize("SHADOWDARK_EXTRAS.item.unidentified.label");
@@ -1320,7 +1320,7 @@ function setupItemPilesUnidentifiedHooks() {
 					...currentSimilarities,
 					`flags.${MODULE_ID}.unidentified`
 				]);
-				console.log(`${MODULE_ID} | Added unidentified flag to item-piles similarities`);
+				// console.log(`${MODULE_ID} | Added unidentified flag to item-piles similarities`);
 			}
 		} catch (err) {
 			console.warn(`${MODULE_ID} | Could not add unidentified flag to item-piles similarities`, err);
@@ -1398,7 +1398,7 @@ function setupItemPilesUnidentifiedHooks() {
 				Hooks.on("item-piles-renderMerchantItem", patchFromRenderHook);
 				Hooks.on("item-piles-renderVaultGridItem", patchFromRenderHook);
 
-				console.log(`${MODULE_ID} | Enhanced item-piles name patching installed`);
+				// console.log(`${MODULE_ID} | Enhanced item-piles name patching installed`);
 			} catch (err) {
 				console.warn(`${MODULE_ID} | Could not install enhanced item-piles name patching`, err);
 			}
@@ -2853,7 +2853,7 @@ function maskUnidentifiedItemSheet(app, html) {
 	if (game.user?.isGM) return; // GM sees real names
 	if (!isUnidentified(item)) return;
 
-	console.log(`${MODULE_ID} | Masking unidentified item sheet for: ${item.name}`);
+	// console.log(`${MODULE_ID} | Masking unidentified item sheet for: ${item.name}`);
 
 	const maskedName = getUnidentifiedName(item);
 
@@ -3521,7 +3521,7 @@ function applySheetDecorationStyles() {
 
 	document.head.appendChild(style);
 
-	console.log(`${MODULE_ID} | Applied sheet decoration styles`);
+	// console.log(`${MODULE_ID} | Applied sheet decoration styles`);
 }
 
 function registerSettings() {
@@ -4346,14 +4346,14 @@ async function injectJournalNotes(app, html, actor) {
 	// Use the app's element directly - more reliable than the html parameter
 	const sheetElement = app.element;
 	if (!sheetElement || sheetElement.length === 0) {
-		console.log("SDX Journal: Sheet element not found");
+		// console.log("SDX Journal: Sheet element not found");
 		return;
 	}
 
 	// Find the notes tab - it's a section with class "tab-notes" and data-tab="tab-notes"
 	const notesTab = sheetElement.find('section.tab-notes[data-tab="tab-notes"]');
 	if (notesTab.length === 0) {
-		console.log("SDX Journal: Notes tab section not found");
+		// console.log("SDX Journal: Notes tab section not found");
 		return;
 	}
 
@@ -4608,7 +4608,7 @@ async function openJournalPageEditor(actor, pageId, sheetApp) {
 									view.dispatch(tr);
 									view.focus();
 
-									console.log("SDX Journal: Inserted via ProseMirror transaction");
+									// console.log("SDX Journal: Inserted via ProseMirror transaction");
 									return;
 								} catch (err) {
 									console.warn("SDX Journal: ProseMirror insertion failed:", err);
@@ -4620,7 +4620,7 @@ async function openJournalPageEditor(actor, pageId, sheetApp) {
 					// Simply append to the end of the HTML content
 					const sourceBtn = form.querySelector('button[data-action="source-code"]');
 					if (sourceBtn) {
-						console.log("SDX Journal: Inserting snippet at end");
+						// console.log("SDX Journal: Inserting snippet at end");
 						sourceBtn.click();
 
 						// Wait for source mode to activate, then insert at end
@@ -4875,7 +4875,7 @@ async function injectConditionsToggles(app, html, actor) {
 		const sdxDocs = await sdxItemsPack.getDocuments();
 		const sdxConditions = sdxDocs.filter(doc => doc.type === "Effect" && doc.name.startsWith("Condition:"));
 		conditions.push(...sdxConditions);
-		console.log(`${MODULE_ID} | Loaded ${sdxConditions.length} conditions from shadowdark-extras`);
+		// console.log(`${MODULE_ID} | Loaded ${sdxConditions.length} conditions from shadowdark-extras`);
 	}
 
 	// Then add shadowdark conditions (but don't duplicate)
@@ -4886,7 +4886,7 @@ async function injectConditionsToggles(app, html, actor) {
 		const existingNames = new Set(conditions.map(c => c.name));
 		const uniqueShadowdarkConditions = shadowdarkConditions.filter(c => !existingNames.has(c.name));
 		conditions.push(...uniqueShadowdarkConditions);
-		console.log(`${MODULE_ID} | Loaded ${uniqueShadowdarkConditions.length} unique conditions from shadowdark (${shadowdarkConditions.length} total)`);
+		// console.log(`${MODULE_ID} | Loaded ${uniqueShadowdarkConditions.length} unique conditions from shadowdark (${shadowdarkConditions.length} total)`);
 	}
 
 	if (!conditions || conditions.length === 0) {
@@ -5050,7 +5050,7 @@ function groupConditionsByBaseName(conditions) {
  * Show a submenu to select condition variant
  */
 function showConditionSubmenu($toggle, variants, actor, conditionItems) {
-	console.log(`${MODULE_ID} | showConditionSubmenu called`, {
+	// console.log(`${MODULE_ID} | showConditionSubmenu called`, {
 		toggle: $toggle[0],
 		variants: variants,
 		variantsLength: variants?.length,
@@ -5169,7 +5169,7 @@ async function addConditionToActor(actor, conditionUuid) {
 		});
 
 		if (existingItem) {
-			console.log(`${MODULE_ID} | Condition ${condition.name} already exists as item`);
+			// console.log(`${MODULE_ID} | Condition ${condition.name} already exists as item`);
 			return;
 		}
 
@@ -6058,7 +6058,7 @@ async function injectEnhancedHeader(app, html, actor) {
 					avatarFilename: actor.img
 				};
 				window.Tokenizer.launch(options, (response) => {
-					console.log("shadowdark-extras | Tokenizer response:", response);
+					// console.log("shadowdark-extras | Tokenizer response:", response);
 					ui.notifications.success(`Tokenizer completed for ${actor.name}!`);
 				});
 			} else {
@@ -6579,7 +6579,7 @@ function injectPartyHeaderCustomization(app, html, actor) {
 					avatarFilename: actor.img
 				};
 				window.Tokenizer.launch(options, (response) => {
-					console.log("shadowdark-extras | Tokenizer response:", response);
+					// console.log("shadowdark-extras | Tokenizer response:", response);
 					ui.notifications.success(`Tokenizer completed for ${actor.name}!`);
 				});
 			} else {
@@ -6931,12 +6931,12 @@ function calculateNpcCoinSlots(coins) {
  * @param {Actor} actor - The NPC actor
  */
 function injectNpcCreatureType(app, html, actor) {
-	console.log(`${MODULE_ID} | injectNpcCreatureType called for ${actor.name}`);
+	// console.log(`${MODULE_ID} | injectNpcCreatureType called for ${actor.name}`);
 
 	// Check if feature is enabled
 	try {
 		const enabled = game.settings.get(MODULE_ID, "enableNpcCreatureType");
-		console.log(`${MODULE_ID} | enableNpcCreatureType setting: ${enabled}`);
+		// console.log(`${MODULE_ID} | enableNpcCreatureType setting: ${enabled}`);
 		if (!enabled) return;
 	} catch (e) {
 		console.warn(`${MODULE_ID} | Setting enableNpcCreatureType not registered or failed`, e);
@@ -6950,7 +6950,7 @@ function injectNpcCreatureType(app, html, actor) {
 	const $html = html instanceof HTMLElement ? $(html) : html;
 	const currentType = actor.getFlag(MODULE_ID, "creatureType") || "";
 
-	console.log(`${MODULE_ID} | Current creature type: "${currentType}"`);
+	// console.log(`${MODULE_ID} | Current creature type: "${currentType}"`);
 
 	// Build the options HTML using dynamic creature types
 	const creatureTypes = getCreatureTypes();
@@ -6976,20 +6976,20 @@ function injectNpcCreatureType(app, html, actor) {
 
 	// Find the attacks box (first SD-box in grid-1-columns on the right side)
 	const $gridRight = $html.find('.grid-1-columns');
-	console.log(`${MODULE_ID} | Found ${$gridRight.length} elements with .grid-1-columns`);
+	// console.log(`${MODULE_ID} | Found ${$gridRight.length} elements with .grid-1-columns`);
 
 	const $attacksBox = $gridRight.find('.SD-box').first();
-	console.log(`${MODULE_ID} | Found ${$attacksBox.length} potential attack boxes`);
+	// console.log(`${MODULE_ID} | Found ${$attacksBox.length} potential attack boxes`);
 
 	if ($attacksBox.length) {
 		// Insert before the attacks box
 		$attacksBox.before(creatureTypeHtml);
-		console.log(`${MODULE_ID} | Injected creature type box`);
+		// console.log(`${MODULE_ID} | Injected creature type box`);
 
 		// Attach change handler
 		$html.find('.sdx-creature-type-select').on('change', async function (e) {
 			const newType = $(this).val();
-			console.log(`${MODULE_ID} | Changing creature type to: ${newType}`);
+			// console.log(`${MODULE_ID} | Changing creature type to: ${newType}`);
 			await actor.setFlag(MODULE_ID, "creatureType", newType);
 			ui.notifications.info(game.i18n.format("SHADOWDARK_EXTRAS.npc.creature_type.updated", {
 				name: actor.name,
@@ -7002,7 +7002,7 @@ function injectNpcCreatureType(app, html, actor) {
 		const $anyBox = $html.find('.SD-box').first();
 		if ($anyBox.length) {
 			$anyBox.before(creatureTypeHtml);
-			console.log(`${MODULE_ID} | Injected creature type box using fallback`);
+			// console.log(`${MODULE_ID} | Injected creature type box using fallback`);
 		}
 	}
 }
@@ -7210,7 +7210,7 @@ function patchToggleItemDetailsForUnidentified() {
 		listObj.toggleClass("expanded");
 	};
 
-	console.log(`${MODULE_ID} | Patched toggleItemDetails for unidentified items`);
+	// console.log(`${MODULE_ID} | Patched toggleItemDetails for unidentified items`);
 }
 
 /**
@@ -7265,7 +7265,7 @@ function patchLightSourceTrackerForParty() {
 		});
 	};
 
-	console.log(`${MODULE_ID} | Patched Light Source Tracker to include Party actors`);
+	// console.log(`${MODULE_ID} | Patched Light Source Tracker to include Party actors`);
 }
 
 /**
@@ -7298,7 +7298,7 @@ function registerPartySheet() {
 		return originalGetSheetClass.call(this);
 	};
 
-	console.log(`${MODULE_ID} | Party sheet registered`);
+	// console.log(`${MODULE_ID} | Party sheet registered`);
 }
 
 /**
@@ -7312,7 +7312,7 @@ function registerPotionSheet() {
 		label: "Shadowdark Extras: Potion Sheet"
 	});
 
-	console.log(`${MODULE_ID} | Potion sheet registered`);
+	// console.log(`${MODULE_ID} | Potion sheet registered`);
 }
 
 /**
@@ -7326,7 +7326,7 @@ function registerBackgroundSheet() {
 		label: "Shadowdark Extras: Background Sheet"
 	});
 
-	console.log(`${MODULE_ID} | Background sheet registered`);
+	// console.log(`${MODULE_ID} | Background sheet registered`);
 }
 
 /**
@@ -7397,11 +7397,11 @@ function addPartyOptionToSelect(html) {
 	const npcOption = typeSelect.find('option[value="NPC"]');
 	if (npcOption.length > 0) {
 		npcOption.after(`<option value="Party">${game.i18n.localize("SHADOWDARK_EXTRAS.party.name")}</option>`);
-		console.log(`${MODULE_ID} | Added Party option to actor type select`);
+		// console.log(`${MODULE_ID} | Added Party option to actor type select`);
 	} else {
 		// Fallback: append to the end
 		typeSelect.append(`<option value="Party">${game.i18n.localize("SHADOWDARK_EXTRAS.party.name")}</option>`);
-		console.log(`${MODULE_ID} | Added Party option to actor type select (appended)`);
+		// console.log(`${MODULE_ID} | Added Party option to actor type select (appended)`);
 	}
 
 	// Also intercept form submission to convert Party to NPC before it's sent
@@ -7482,7 +7482,7 @@ function wrapActorCreate() {
 		return originalCreate.call(this, Array.isArray(data) ? createData : createData[0], options);
 	};
 
-	console.log(`${MODULE_ID} | Wrapped Actor.create to handle Party type`);
+	// console.log(`${MODULE_ID} | Wrapped Actor.create to handle Party type`);
 }
 
 /**
@@ -7595,7 +7595,7 @@ async function transferItemToPlayer(sourceActor, item, targetActorId) {
 		: item.name;
 
 	try {
-		console.log(`${MODULE_ID} | Transferring ${item.name} from ${sourceActor.name} to ${targetActor.name}`);
+		// console.log(`${MODULE_ID} | Transferring ${item.name} from ${sourceActor.name} to ${targetActor.name}`);
 
 		// Use Item Piles API to transfer the item
 		const result = await game.itempiles.API.transferItems(
@@ -7657,7 +7657,7 @@ async function transferCoinsToPlayer(sourceActor, coins, targetActorId) {
 	}
 
 	try {
-		console.log(`${MODULE_ID} | Transferring coins from ${sourceActor.name} to ${targetActor.name}:`, coins);
+		// console.log(`${MODULE_ID} | Transferring coins from ${sourceActor.name} to ${targetActor.name}:`, coins);
 
 		// Build attributes for Item Piles transferAttributes API
 		const attributes = {};
@@ -8157,7 +8157,7 @@ function patchPlayerSheetForTransfers() {
 
 // Initialize when Foundry is ready
 Hooks.once("init", () => {
-	console.log(`${MODULE_ID} | Initializing Shadowdark Extras`);
+	// console.log(`${MODULE_ID} | Initializing Shadowdark Extras`);
 
 	// Initialize Automated Animations integration
 	initAutoAnimationsIntegration();
@@ -8241,7 +8241,7 @@ Hooks.once("ready", async () => {
 		return;
 	}
 
-	console.log(`${MODULE_ID} | Setting up Shadowdark Extras`);
+	// console.log(`${MODULE_ID} | Setting up Shadowdark Extras`);
 
 	registerSettings();
 	applySheetDecorationStyles();
@@ -8260,7 +8260,7 @@ Hooks.once("ready", async () => {
 	// Setup combat socket for damage application (requires socketlib)
 	if (typeof socketlib !== "undefined") {
 		setupCombatSocket();
-		console.log(`${MODULE_ID} | Combat socket initialized`);
+		// console.log(`${MODULE_ID} | Combat socket initialized`);
 	} else {
 		console.warn(`${MODULE_ID} | socketlib not found, damage application may not work for non-GMs`);
 	}
@@ -8268,13 +8268,13 @@ Hooks.once("ready", async () => {
 	// Initialize Focus Spell Tracker if enabled
 	if (game.settings.get(MODULE_ID, "enableFocusTracker")) {
 		initFocusSpellTracker();
-		console.log(`${MODULE_ID} | Focus Spell Tracker initialized`);
+		// console.log(`${MODULE_ID} | Focus Spell Tracker initialized`);
 	}
 
 	// Setup wand uses blocking (prevent casting depleted wands)
 	if (game.settings.get(MODULE_ID, "enableWandUses")) {
 		setupWandUsesBlocker();
-		console.log(`${MODULE_ID} | Wand Uses Blocker initialized`);
+		// console.log(`${MODULE_ID} | Wand Uses Blocker initialized`);
 	}
 
 	// Setup scrolling combat text (floating damage/healing numbers)
@@ -8291,11 +8291,11 @@ Hooks.once("ready", async () => {
 
 	// Initialize Template Effects System (damage/effects for tokens in templates)
 	initTemplateEffects();
-	console.log(`${MODULE_ID} | Template Effects System initialized`);
+	// console.log(`${MODULE_ID} | Template Effects System initialized`);
 
 	// Initialize Aura Effects System (token-attached effects that follow bearer)
 	initAuraEffects();
-	console.log(`${MODULE_ID} | Aura Effects System initialized`);
+	// console.log(`${MODULE_ID} | Aura Effects System initialized`);
 
 	patchLightSourceTrackerForParty();
 	patchToggleItemDetailsForUnidentified();
@@ -8336,7 +8336,7 @@ Hooks.once("ready", async () => {
 				await this.actor.updateEmbeddedDocuments("Item", [dataUpdate]);
 				await this.actor.toggleLight?.(active, item.id);
 			};
-			console.log(`${MODULE_ID} | Patched NpcSheetSD with _toggleLightSource method`);
+			// console.log(`${MODULE_ID} | Patched NpcSheetSD with _toggleLightSource method`);
 		}
 	}
 
@@ -8344,7 +8344,7 @@ Hooks.once("ready", async () => {
 	if (globalThis.shadowdark?.documents?.ActorSD) {
 		const ActorSD = globalThis.shadowdark.documents.ActorSD;
 		const RollSD = CONFIG.DiceSD;
-		console.log(`${MODULE_ID} | Monkey-patching ActorSD methods and DiceSD`);
+		// console.log(`${MODULE_ID} | Monkey-patching ActorSD methods and DiceSD`);
 		const original_learnSpell = ActorSD.prototype._learnSpell;
 
 		ActorSD.prototype._learnSpell = async function (item) {
@@ -8362,7 +8362,7 @@ Hooks.once("ready", async () => {
 			return result;
 		};
 
-		console.log(`${MODULE_ID} | Wrapped ActorSD._learnSpell to preserve spell damage flags`);
+		// console.log(`${MODULE_ID} | Wrapped ActorSD._learnSpell to preserve spell damage flags`);
 	}
 
 	// Wrap ItemSD.rollItem to inject weapon hit bonuses
@@ -8402,7 +8402,7 @@ Hooks.once("ready", async () => {
 								timestamp: Date.now()
 							});
 
-							console.log(`${MODULE_ID} | Injected weapon hit bonus formula: ${h}`, hitBonusResult.hitBonusParts);
+							// console.log(`${MODULE_ID} | Injected weapon hit bonus formula: ${h}`, hitBonusResult.hitBonusParts);
 						}
 					}
 				} catch (err) {
@@ -8414,7 +8414,7 @@ Hooks.once("ready", async () => {
 			return original_rollItem.call(this, parts, data, options);
 		};
 
-		console.log(`${MODULE_ID} | Wrapped ItemSD.rollItem to inject weapon hit bonuses`);
+		// console.log(`${MODULE_ID} | Wrapped ItemSD.rollItem to inject weapon hit bonuses`);
 	}
 
 	// Ensure trade journal exists (GM only creates it)
@@ -8462,28 +8462,28 @@ Hooks.on("preCreateItem", (item, data, options, userId) => {
 					item.updateSource({
 						[`flags.${MODULE_ID}.spellDamage`]: foundry.utils.duplicate(sourceScroll.flags[MODULE_ID].spellDamage)
 					});
-					console.log(`${MODULE_ID} | Preserved spell damage flags when learning from scroll:`, sourceScroll.name);
+					// console.log(`${MODULE_ID} | Preserved spell damage flags when learning from scroll:`, sourceScroll.name);
 				}
 				// Preserve targeting configuration from the scroll
 				if (sourceScroll.flags?.[MODULE_ID]?.targeting) {
 					item.updateSource({
 						[`flags.${MODULE_ID}.targeting`]: foundry.utils.duplicate(sourceScroll.flags[MODULE_ID].targeting)
 					});
-					console.log(`${MODULE_ID} | Preserved targeting flags when learning from scroll:`, sourceScroll.name);
+					// console.log(`${MODULE_ID} | Preserved targeting flags when learning from scroll:`, sourceScroll.name);
 				}
 				// Preserve template effects configuration from the scroll
 				if (sourceScroll.flags?.[MODULE_ID]?.templateEffects) {
 					item.updateSource({
 						[`flags.${MODULE_ID}.templateEffects`]: foundry.utils.duplicate(sourceScroll.flags[MODULE_ID].templateEffects)
 					});
-					console.log(`${MODULE_ID} | Preserved templateEffects flags when learning from scroll:`, sourceScroll.name);
+					// console.log(`${MODULE_ID} | Preserved templateEffects flags when learning from scroll:`, sourceScroll.name);
 				}
 				// Preserve aura effects configuration from the scroll
 				if (sourceScroll.flags?.[MODULE_ID]?.auraEffects) {
 					item.updateSource({
 						[`flags.${MODULE_ID}.auraEffects`]: foundry.utils.duplicate(sourceScroll.flags[MODULE_ID].auraEffects)
 					});
-					console.log(`${MODULE_ID} | Preserved auraEffects flags when learning from scroll:`, sourceScroll.name);
+					// console.log(`${MODULE_ID} | Preserved auraEffects flags when learning from scroll:`, sourceScroll.name);
 				}
 			}
 		}
@@ -8494,7 +8494,7 @@ Hooks.on("preCreateItem", (item, data, options, userId) => {
 		item.updateSource({
 			[`flags.${MODULE_ID}.itemMacro`]: foundry.utils.duplicate(data.flags[MODULE_ID].itemMacro)
 		});
-		console.log(`${MODULE_ID} | Preserved itemMacro flags on item creation:`, item.name);
+		// console.log(`${MODULE_ID} | Preserved itemMacro flags on item creation:`, item.name);
 	}
 
 	// Preserve Targeting configuration flags
@@ -8502,7 +8502,7 @@ Hooks.on("preCreateItem", (item, data, options, userId) => {
 		item.updateSource({
 			[`flags.${MODULE_ID}.targeting`]: foundry.utils.duplicate(data.flags[MODULE_ID].targeting)
 		});
-		console.log(`${MODULE_ID} | Preserved targeting flags on item creation:`, item.name);
+		// console.log(`${MODULE_ID} | Preserved targeting flags on item creation:`, item.name);
 	}
 
 	// Preserve Template Effects configuration flags
@@ -8510,7 +8510,7 @@ Hooks.on("preCreateItem", (item, data, options, userId) => {
 		item.updateSource({
 			[`flags.${MODULE_ID}.templateEffects`]: foundry.utils.duplicate(data.flags[MODULE_ID].templateEffects)
 		});
-		console.log(`${MODULE_ID} | Preserved templateEffects flags on item creation:`, item.name);
+		// console.log(`${MODULE_ID} | Preserved templateEffects flags on item creation:`, item.name);
 	}
 
 	// Preserve Aura Effects configuration flags
@@ -8518,7 +8518,7 @@ Hooks.on("preCreateItem", (item, data, options, userId) => {
 		item.updateSource({
 			[`flags.${MODULE_ID}.auraEffects`]: foundry.utils.duplicate(data.flags[MODULE_ID].auraEffects)
 		});
-		console.log(`${MODULE_ID} | Preserved auraEffects flags on item creation:`, item.name);
+		// console.log(`${MODULE_ID} | Preserved auraEffects flags on item creation:`, item.name);
 	}
 
 	// Preserve Item Macro module's macro data (itemacro module)
@@ -8526,7 +8526,7 @@ Hooks.on("preCreateItem", (item, data, options, userId) => {
 		item.updateSource({
 			"flags.itemacro.macro": foundry.utils.duplicate(data.flags.itemacro.macro)
 		});
-		console.log(`${MODULE_ID} | Preserved itemacro macro on item creation:`, item.name);
+		// console.log(`${MODULE_ID} | Preserved itemacro macro on item creation:`, item.name);
 	}
 });
 
@@ -8752,7 +8752,7 @@ function injectSpellAlignmentField(app, html) {
 	});
 
 	if (!$casterClassesBox.length) {
-		console.log(`${MODULE_ID} | Could not find Caster Classes box in spell sheet`);
+		// console.log(`${MODULE_ID} | Could not find Caster Classes box in spell sheet`);
 		return;
 	}
 
@@ -8793,7 +8793,7 @@ function injectSpellAlignmentField(app, html) {
 			$content.append(alignmentHtml);
 		}
 	} else {
-		console.log(`${MODULE_ID} | Could not find content area in Caster Classes box`);
+		// console.log(`${MODULE_ID} | Could not find content area in Caster Classes box`);
 		return;
 	}
 
@@ -8802,10 +8802,10 @@ function injectSpellAlignmentField(app, html) {
 		e.stopPropagation();
 		const newAlignment = $(this).val();
 		await item.setFlag(MODULE_ID, 'alignment', newAlignment);
-		console.log(`${MODULE_ID} | Set spell alignment to: ${newAlignment}`);
+		// console.log(`${MODULE_ID} | Set spell alignment to: ${newAlignment}`);
 	});
 
-	console.log(`${MODULE_ID} | Injected alignment field for spell: ${item.name}`);
+	// console.log(`${MODULE_ID} | Injected alignment field for spell: ${item.name}`);
 }
 
 /**
@@ -8823,7 +8823,7 @@ async function enhanceSpellSheet(app, html) {
 	const item = app.item;
 	if (!item || item.type !== "Spell") return;
 
-	console.log(`${MODULE_ID} | Enhancing spell sheet for`, item.name);
+	// console.log(`${MODULE_ID} | Enhancing spell sheet for`, item.name);
 
 	// Remove any existing damage/heal boxes to prevent duplicates
 	html.find('.sdx-spell-damage-box').remove();
@@ -8969,7 +8969,7 @@ async function enhanceSpellSheet(app, html) {
 		const $detailsLink = $tabs.find('a[data-tab="tab-details"]');
 		if ($detailsLink.length) {
 			$detailsLink.after(activityTabLink);
-			console.log(`${MODULE_ID} | Activity tab link added to navigation`);
+			// console.log(`${MODULE_ID} | Activity tab link added to navigation`);
 		} else {
 			console.warn(`${MODULE_ID} | Could not find Details tab link`);
 		}
@@ -8979,7 +8979,7 @@ async function enhanceSpellSheet(app, html) {
 		const $detailsTab = html.find('section.tab-details[data-tab="tab-details"]');
 		if ($detailsTab.length) {
 			$detailsTab.after(activityTabContent);
-			console.log(`${MODULE_ID} | Activity tab content created`);
+			// console.log(`${MODULE_ID} | Activity tab content created`);
 		} else {
 			console.warn(`${MODULE_ID} | Could not find Details tab content`);
 		}
@@ -9016,7 +9016,7 @@ async function enhanceSpellSheet(app, html) {
 		return;
 	}
 
-	console.log(`${MODULE_ID} | Activity tab found/created`);
+	// console.log(`${MODULE_ID} | Activity tab found/created`);
 
 	// Build list of current effects from stored UUIDs
 	let effectsListHtml = '';
@@ -9041,7 +9041,7 @@ async function enhanceSpellSheet(app, html) {
 	});
 
 	if (effectsArray && effectsArray.length > 0) {
-		console.log(`${MODULE_ID} | Loading ${effectsArray.length} effects from UUIDs:`, effectsArray);
+		// console.log(`${MODULE_ID} | Loading ${effectsArray.length} effects from UUIDs:`, effectsArray);
 
 		// Load all effects in parallel and wait for them all
 		const effectPromises = effectsArray.map(effect => fromUuid(effect.uuid || effect));
@@ -9100,7 +9100,7 @@ async function enhanceSpellSheet(app, html) {
 			}
 		}
 
-		console.log(`${MODULE_ID} | Loaded effects HTML, length:`, effectsListHtml.length);
+		// console.log(`${MODULE_ID} | Loaded effects HTML, length:`, effectsListHtml.length);
 	}
 
 	// Build summons list HTML
@@ -9168,7 +9168,7 @@ async function enhanceSpellSheet(app, html) {
 	});
 
 	if (criticalEffectsArray && criticalEffectsArray.length > 0) {
-		console.log(`${MODULE_ID} | Loading ${criticalEffectsArray.length} critical effects from UUIDs:`, criticalEffectsArray);
+		// console.log(`${MODULE_ID} | Loading ${criticalEffectsArray.length} critical effects from UUIDs:`, criticalEffectsArray);
 
 		const critEffectPromises = criticalEffectsArray.map(effect => fromUuid(effect.uuid || effect));
 		const critEffectDocs = await Promise.all(critEffectPromises);
@@ -9194,7 +9194,7 @@ async function enhanceSpellSheet(app, html) {
 			}
 		}
 
-		console.log(`${MODULE_ID} | Loaded critical effects HTML, length:`, criticalEffectsListHtml.length);
+		// console.log(`${MODULE_ID} | Loaded critical effects HTML, length:`, criticalEffectsListHtml.length);
 	}
 
 	// Build the damage/heal UI HTML using template (now includes summoning)
@@ -9202,7 +9202,7 @@ async function enhanceSpellSheet(app, html) {
 
 	// Insert into Activity tab
 	$activityTab.append(damageHealHtml);
-	console.log(`${MODULE_ID} | Damage/Heal box inserted into Activity tab`);
+	// console.log(`${MODULE_ID} | Damage/Heal box inserted into Activity tab`);
 
 	// Prevent auto-submission of form inputs in Activity tab to avoid unwanted re-renders
 	$activityTab.find('input, select, textarea').on('change', function (e) {
@@ -9238,7 +9238,7 @@ async function enhanceSpellSheet(app, html) {
 
 			// Update without re-rendering
 			item.update(updateData, { render: false }).then(() => {
-				console.log(`${MODULE_ID} | Updated ${fieldName}:`, value);
+				// console.log(`${MODULE_ID} | Updated ${fieldName}:`, value);
 			}).catch(err => {
 				console.error(`${MODULE_ID} | Failed to update ${fieldName}:`, err);
 			});
@@ -9394,7 +9394,7 @@ async function enhanceSpellSheet(app, html) {
 		const updateData = {};
 		updateData[`flags.${MODULE_ID}.spellDamage.effects`] = effects;
 		item.update(updateData, { render: false }).then(() => {
-			console.log(`${MODULE_ID} | Saved spell effects:`, effects);
+			// console.log(`${MODULE_ID} | Saved spell effects:`, effects);
 		}).catch(err => {
 			console.error(`${MODULE_ID} | Failed to save spell effects:`, err);
 		});
@@ -9562,7 +9562,7 @@ async function enhanceSpellSheet(app, html) {
 		const updateData = {};
 		updateData[`flags.${MODULE_ID}.spellDamage.criticalEffects`] = effects;
 		item.update(updateData, { render: false }).then(() => {
-			console.log(`${MODULE_ID} | Saved spell critical effects:`, effects);
+			// console.log(`${MODULE_ID} | Saved spell critical effects:`, effects);
 		}).catch(err => {
 			console.error(`${MODULE_ID} | Failed to save spell critical effects:`, err);
 		});
@@ -9669,7 +9669,7 @@ async function enhanceSpellSheet(app, html) {
 		updateData[`flags.${MODULE_ID}.spellDamage.applyToTarget`] = applyToTargetValue;
 
 		item.update(updateData).then(() => {
-			console.log(`${MODULE_ID} | Saved applyToTarget:`, applyToTargetValue);
+			// console.log(`${MODULE_ID} | Saved applyToTarget:`, applyToTargetValue);
 		}).catch(err => {
 			console.error(`${MODULE_ID} | Failed to save applyToTarget:`, err);
 		});
@@ -9682,7 +9682,7 @@ async function enhanceSpellSheet(app, html) {
 		e.stopPropagation();
 		const enabled = $(this).prop('checked');
 
-		console.log(`${MODULE_ID} | Summoning toggle changed to:`, enabled);
+		// console.log(`${MODULE_ID} | Summoning toggle changed to:`, enabled);
 
 		if (enabled) {
 			// Disable other activities
@@ -9843,7 +9843,7 @@ async function enhanceSpellSheet(app, html) {
 		const updateData = {};
 		updateData[`flags.${MODULE_ID}.summoning.profiles`] = profiles;
 		item.update(updateData, { render: false }).then(() => {
-			console.log(`${MODULE_ID} | Saved summon profiles:`, profiles);
+			// console.log(`${MODULE_ID} | Saved summon profiles:`, profiles);
 		}).catch(err => {
 			console.error(`${MODULE_ID} | Failed to save summon profiles:`, err);
 		});
@@ -9856,7 +9856,7 @@ async function enhanceSpellSheet(app, html) {
 		const updateData = {};
 		updateData[`flags.${MODULE_ID}.itemGive.enabled`] = enabled;
 		item.update(updateData, { render: false }).then(() => {
-			console.log(`${MODULE_ID} | Item give enabled state saved:`, enabled);
+			// console.log(`${MODULE_ID} | Item give enabled state saved:`, enabled);
 		});
 	});
 
@@ -9963,7 +9963,7 @@ async function enhanceSpellSheet(app, html) {
 		const updateData = {};
 		updateData[`flags.${MODULE_ID}.itemGive.profiles`] = profiles;
 		item.update(updateData, { render: false }).then(() => {
-			console.log(`${MODULE_ID} | Saved item give profiles:`, profiles);
+			// console.log(`${MODULE_ID} | Saved item give profiles:`, profiles);
 		}).catch(err => {
 			console.error(`${MODULE_ID} | Failed to save item give profiles:`, err);
 		});
@@ -9978,7 +9978,7 @@ async function enhanceSpellSheet(app, html) {
 		const updateData = {};
 		updateData[`flags.${MODULE_ID}.itemMacro.runAsGm`] = runAsGm;
 		item.update(updateData, { render: false }).then(() => {
-			console.log(`${MODULE_ID} | Saved itemMacro.runAsGm:`, runAsGm);
+			// console.log(`${MODULE_ID} | Saved itemMacro.runAsGm:`, runAsGm);
 		}).catch(err => {
 			console.error(`${MODULE_ID} | Failed to save itemMacro.runAsGm:`, err);
 		});
@@ -9995,7 +9995,7 @@ async function enhanceSpellSheet(app, html) {
 		const updateData = {};
 		updateData[`flags.${MODULE_ID}.itemMacro.triggers`] = triggers;
 		item.update(updateData, { render: false }).then(() => {
-			console.log(`${MODULE_ID} | Saved itemMacro.triggers:`, triggers);
+			// console.log(`${MODULE_ID} | Saved itemMacro.triggers:`, triggers);
 		}).catch(err => {
 			console.error(`${MODULE_ID} | Failed to save itemMacro.triggers:`, err);
 		});
@@ -10007,7 +10007,7 @@ async function enhanceSpellSheet(app, html) {
 	// Setup UI listeners for targeting and aura effects
 	activateTemplateTargetingListeners(html[0], MODULE_ID);
 
-	console.log(`${MODULE_ID} | Spell sheet enhanced for`, item.name);
+	// console.log(`${MODULE_ID} | Spell sheet enhanced for`, item.name);
 }
 
 /**
@@ -10025,7 +10025,7 @@ async function enhancePotionSheet(app, html) {
 	const item = app.item;
 	if (!item || item.type !== "Potion") return;
 
-	console.log(`${MODULE_ID} | Enhancing potion sheet for`, item.name);
+	// console.log(`${MODULE_ID} | Enhancing potion sheet for`, item.name);
 
 	// Remove any existing damage/heal boxes to prevent duplicates
 	html.find('.sdx-spell-damage-box').remove();
@@ -10133,7 +10133,7 @@ async function enhancePotionSheet(app, html) {
 		const $detailsLink = $tabs.find('a[data-tab="tab-details"]');
 		if ($detailsLink.length) {
 			$detailsLink.after(activityTabLink);
-			console.log(`${MODULE_ID} | Activity tab link added to navigation`);
+			// console.log(`${MODULE_ID} | Activity tab link added to navigation`);
 		} else {
 			console.warn(`${MODULE_ID} | Could not find Details tab link`);
 		}
@@ -10143,7 +10143,7 @@ async function enhancePotionSheet(app, html) {
 		const $detailsTab = html.find('section.tab-details[data-tab="tab-details"]');
 		if ($detailsTab.length) {
 			$detailsTab.after(activityTabContent);
-			console.log(`${MODULE_ID} | Activity tab content created`);
+			// console.log(`${MODULE_ID} | Activity tab content created`);
 		} else {
 			console.warn(`${MODULE_ID} | Could not find Details tab content`);
 		}
@@ -10180,7 +10180,7 @@ async function enhancePotionSheet(app, html) {
 		return;
 	}
 
-	console.log(`${MODULE_ID} | Activity tab found/created`);
+	// console.log(`${MODULE_ID} | Activity tab found/created`);
 
 	// Build list of current effects from stored UUIDs
 	let effectsListHtml = '';
@@ -10205,7 +10205,7 @@ async function enhancePotionSheet(app, html) {
 	});
 
 	if (effectsArray && effectsArray.length > 0) {
-		console.log(`${MODULE_ID} | Loading ${effectsArray.length} effects from UUIDs:`, effectsArray);
+		// console.log(`${MODULE_ID} | Loading ${effectsArray.length} effects from UUIDs:`, effectsArray);
 
 		// Load all effects in parallel and wait for them all
 		const effectPromises = effectsArray.map(effect => fromUuid(effect.uuid || effect));
@@ -10264,7 +10264,7 @@ async function enhancePotionSheet(app, html) {
 			}
 		}
 
-		console.log(`${MODULE_ID} | Loaded effects HTML, length:`, effectsListHtml.length);
+		// console.log(`${MODULE_ID} | Loaded effects HTML, length:`, effectsListHtml.length);
 	}
 
 	// Build summons list HTML
@@ -10314,7 +10314,7 @@ async function enhancePotionSheet(app, html) {
 
 	// Insert into Activity tab
 	$activityTab.append(damageHealHtml);
-	console.log(`${MODULE_ID} | Damage/Heal box inserted into Activity tab`);
+	// console.log(`${MODULE_ID} | Damage/Heal box inserted into Activity tab`);
 
 	// Prevent auto-submission of form inputs in Activity tab to avoid unwanted re-renders
 	$activityTab.find('input, select, textarea').on('change', function (e) {
@@ -10349,7 +10349,7 @@ async function enhancePotionSheet(app, html) {
 
 			// Update without re-rendering
 			item.update(updateData, { render: false }).then(() => {
-				console.log(`${MODULE_ID} | Updated ${fieldName}:`, value);
+				// console.log(`${MODULE_ID} | Updated ${fieldName}:`, value);
 			}).catch(err => {
 				console.error(`${MODULE_ID} | Failed to update ${fieldName}:`, err);
 			});
@@ -10419,7 +10419,7 @@ async function enhancePotionSheet(app, html) {
 		const updateData = {};
 		updateData[`flags.${MODULE_ID}.spellDamage.effects`] = effects;
 		item.update(updateData).then(() => {
-			console.log(`${MODULE_ID} | Saved potion effects:`, effects);
+			// console.log(`${MODULE_ID} | Saved potion effects:`, effects);
 		}).catch(err => {
 			console.error(`${MODULE_ID} | Failed to save potion effects:`, err);
 		});
@@ -10524,7 +10524,7 @@ async function enhancePotionSheet(app, html) {
 		updateData[`flags.${MODULE_ID}.spellDamage.effectsApplyToTarget`] = effectsApplyToTargetValue;
 
 		item.update(updateData).then(() => {
-			console.log(`${MODULE_ID} | Saved effectsApplyToTarget:`, effectsApplyToTargetValue);
+			// console.log(`${MODULE_ID} | Saved effectsApplyToTarget:`, effectsApplyToTargetValue);
 		}).catch(err => {
 			console.error(`${MODULE_ID} | Failed to save effectsApplyToTarget:`, err);
 		});
@@ -10537,7 +10537,7 @@ async function enhancePotionSheet(app, html) {
 		const updateData = {};
 		updateData[`flags.${MODULE_ID}.summoning.enabled`] = enabled;
 		item.update(updateData, { render: false }).then(() => {
-			console.log(`${MODULE_ID} | Summoning enabled state saved:`, enabled);
+			// console.log(`${MODULE_ID} | Summoning enabled state saved:`, enabled);
 		});
 	});
 
@@ -10663,7 +10663,7 @@ async function enhancePotionSheet(app, html) {
 		const updateData = {};
 		updateData[`flags.${MODULE_ID}.summoning.profiles`] = profiles;
 		item.update(updateData, { render: false }).then(() => {
-			console.log(`${MODULE_ID} | Saved summon profiles:`, profiles);
+			// console.log(`${MODULE_ID} | Saved summon profiles:`, profiles);
 		}).catch(err => {
 			console.error(`${MODULE_ID} | Failed to save summon profiles:`, err);
 		});
@@ -10676,7 +10676,7 @@ async function enhancePotionSheet(app, html) {
 		const updateData = {};
 		updateData[`flags.${MODULE_ID}.itemGive.enabled`] = enabled;
 		item.update(updateData, { render: false }).then(() => {
-			console.log(`${MODULE_ID} | Item give enabled state saved:`, enabled);
+			// console.log(`${MODULE_ID} | Item give enabled state saved:`, enabled);
 		});
 	});
 
@@ -10783,7 +10783,7 @@ async function enhancePotionSheet(app, html) {
 		const updateData = {};
 		updateData[`flags.${MODULE_ID}.itemGive.profiles`] = profiles;
 		item.update(updateData, { render: false }).then(() => {
-			console.log(`${MODULE_ID} | Saved item give profiles:`, profiles);
+			// console.log(`${MODULE_ID} | Saved item give profiles:`, profiles);
 		}).catch(err => {
 			console.error(`${MODULE_ID} | Failed to save item give profiles:`, err);
 		});
@@ -10798,7 +10798,7 @@ async function enhancePotionSheet(app, html) {
 		const updateData = {};
 		updateData[`flags.${MODULE_ID}.itemMacro.runAsGm`] = runAsGm;
 		item.update(updateData, { render: false }).then(() => {
-			console.log(`${MODULE_ID} | Saved itemMacro.runAsGm:`, runAsGm);
+			// console.log(`${MODULE_ID} | Saved itemMacro.runAsGm:`, runAsGm);
 		}).catch(err => {
 			console.error(`${MODULE_ID} | Failed to save itemMacro.runAsGm:`, err);
 		});
@@ -10814,7 +10814,7 @@ async function enhancePotionSheet(app, html) {
 		const updateData = {};
 		updateData[`flags.${MODULE_ID}.itemMacro.triggers`] = triggers;
 		item.update(updateData, { render: false }).then(() => {
-			console.log(`${MODULE_ID} | Saved itemMacro.triggers:`, triggers);
+			// console.log(`${MODULE_ID} | Saved itemMacro.triggers:`, triggers);
 		}).catch(err => {
 			console.error(`${MODULE_ID} | Failed to save itemMacro.triggers:`, err);
 		});
@@ -10826,7 +10826,7 @@ async function enhancePotionSheet(app, html) {
 	// Setup UI listeners for targeting and aura effects
 	activateTemplateTargetingListeners(html[0], MODULE_ID);
 
-	console.log(`${MODULE_ID} | Potion sheet enhanced for`, item.name);
+	// console.log(`${MODULE_ID} | Potion sheet enhanced for`, item.name);
 }
 
 /**
@@ -10844,10 +10844,10 @@ async function enhanceScrollSheet(app, html) {
 	const item = app.item;
 	if (!item || item.type !== "Scroll") return;
 
-	console.log(`${MODULE_ID} | Enhancing scroll sheet for`, item.name);
+	// console.log(`${MODULE_ID} | Enhancing scroll sheet for`, item.name);
 
 	// Debug: Log all flags
-	console.log(`${MODULE_ID} | Scroll flags:`, item.flags?.[MODULE_ID]);
+	// console.log(`${MODULE_ID} | Scroll flags:`, item.flags?.[MODULE_ID]);
 
 	// Remove any existing damage/heal boxes to prevent duplicates
 	html.find('.sdx-spell-damage-box').remove();
@@ -10993,7 +10993,7 @@ async function enhanceScrollSheet(app, html) {
 		const $detailsLink = $tabs.find('a[data-tab="tab-details"]');
 		if ($detailsLink.length) {
 			$detailsLink.after(activityTabLink);
-			console.log(`${MODULE_ID} | Activity tab link added to navigation`);
+			// console.log(`${MODULE_ID} | Activity tab link added to navigation`);
 		} else {
 			console.warn(`${MODULE_ID} | Could not find Details tab link`);
 		}
@@ -11003,7 +11003,7 @@ async function enhanceScrollSheet(app, html) {
 		const $detailsTab = html.find('section.tab-details[data-tab="tab-details"]');
 		if ($detailsTab.length) {
 			$detailsTab.after(activityTabContent);
-			console.log(`${MODULE_ID} | Activity tab content created`);
+			// console.log(`${MODULE_ID} | Activity tab content created`);
 		} else {
 			console.warn(`${MODULE_ID} | Could not find Details tab content`);
 		}
@@ -11040,7 +11040,7 @@ async function enhanceScrollSheet(app, html) {
 		return;
 	}
 
-	console.log(`${MODULE_ID} | Activity tab found/created`);
+	// console.log(`${MODULE_ID} | Activity tab found/created`);
 
 	// Build list of current effects from stored UUIDs
 	let effectsListHtml = '';
@@ -11065,7 +11065,7 @@ async function enhanceScrollSheet(app, html) {
 	});
 
 	if (effectsArray && effectsArray.length > 0) {
-		console.log(`${MODULE_ID} | Loading ${effectsArray.length} effects from UUIDs:`, effectsArray);
+		// console.log(`${MODULE_ID} | Loading ${effectsArray.length} effects from UUIDs:`, effectsArray);
 
 		// Load all effects in parallel and wait for them all
 		const effectPromises = effectsArray.map(effect => fromUuid(effect.uuid || effect));
@@ -11124,7 +11124,7 @@ async function enhanceScrollSheet(app, html) {
 			}
 		}
 
-		console.log(`${MODULE_ID} | Loaded effects HTML, length:`, effectsListHtml.length);
+		// console.log(`${MODULE_ID} | Loaded effects HTML, length:`, effectsListHtml.length);
 	}
 
 	// Build summons list HTML
@@ -11174,7 +11174,7 @@ async function enhanceScrollSheet(app, html) {
 
 	// Insert into Activity tab
 	$activityTab.append(damageHealHtml);
-	console.log(`${MODULE_ID} | Damage/Heal box inserted into Activity tab`);
+	// console.log(`${MODULE_ID} | Damage/Heal box inserted into Activity tab`);
 
 	// Prevent auto-submission of form inputs in Activity tab to avoid unwanted re-renders
 	$activityTab.find('input, select, textarea').on('change', function (e) {
@@ -11209,7 +11209,7 @@ async function enhanceScrollSheet(app, html) {
 
 			// Update without re-rendering
 			item.update(updateData, { render: false }).then(() => {
-				console.log(`${MODULE_ID} | Updated ${fieldName}:`, value);
+				// console.log(`${MODULE_ID} | Updated ${fieldName}:`, value);
 			}).catch(err => {
 				console.error(`${MODULE_ID} | Failed to update ${fieldName}:`, err);
 			});
@@ -11461,7 +11461,7 @@ async function enhanceScrollSheet(app, html) {
 		const updateData = {};
 		updateData[`flags.${MODULE_ID}.summoning.enabled`] = enabled;
 		item.update(updateData, { render: false }).then(() => {
-			console.log(`${MODULE_ID} | Summoning enabled state saved:`, enabled);
+			// console.log(`${MODULE_ID} | Summoning enabled state saved:`, enabled);
 		});
 	});
 
@@ -11587,7 +11587,7 @@ async function enhanceScrollSheet(app, html) {
 		const updateData = {};
 		updateData[`flags.${MODULE_ID}.summoning.profiles`] = profiles;
 		item.update(updateData, { render: false }).then(() => {
-			console.log(`${MODULE_ID} | Saved summon profiles:`, profiles);
+			// console.log(`${MODULE_ID} | Saved summon profiles:`, profiles);
 		}).catch(err => {
 			console.error(`${MODULE_ID} | Failed to save summon profiles:`, err);
 		});
@@ -11600,7 +11600,7 @@ async function enhanceScrollSheet(app, html) {
 		const updateData = {};
 		updateData[`flags.${MODULE_ID}.itemGive.enabled`] = enabled;
 		item.update(updateData, { render: false }).then(() => {
-			console.log(`${MODULE_ID} | Item give enabled state saved:`, enabled);
+			// console.log(`${MODULE_ID} | Item give enabled state saved:`, enabled);
 		});
 	});
 
@@ -11707,7 +11707,7 @@ async function enhanceScrollSheet(app, html) {
 		const updateData = {};
 		updateData[`flags.${MODULE_ID}.itemGive.profiles`] = profiles;
 		item.update(updateData, { render: false }).then(() => {
-			console.log(`${MODULE_ID} | Saved item give profiles:`, profiles);
+			// console.log(`${MODULE_ID} | Saved item give profiles:`, profiles);
 		}).catch(err => {
 			console.error(`${MODULE_ID} | Failed to save item give profiles:`, err);
 		});
@@ -11722,7 +11722,7 @@ async function enhanceScrollSheet(app, html) {
 		const updateData = {};
 		updateData[`flags.${MODULE_ID}.itemMacro.runAsGm`] = runAsGm;
 		item.update(updateData, { render: false }).then(() => {
-			console.log(`${MODULE_ID} | Saved itemMacro.runAsGm:`, runAsGm);
+			// console.log(`${MODULE_ID} | Saved itemMacro.runAsGm:`, runAsGm);
 		}).catch(err => {
 			console.error(`${MODULE_ID} | Failed to save itemMacro.runAsGm:`, err);
 		});
@@ -11738,7 +11738,7 @@ async function enhanceScrollSheet(app, html) {
 		const updateData = {};
 		updateData[`flags.${MODULE_ID}.itemMacro.triggers`] = triggers;
 		item.update(updateData, { render: false }).then(() => {
-			console.log(`${MODULE_ID} | Saved itemMacro.triggers:`, triggers);
+			// console.log(`${MODULE_ID} | Saved itemMacro.triggers:`, triggers);
 		}).catch(err => {
 			console.error(`${MODULE_ID} | Failed to save itemMacro.triggers:`, err);
 		});
@@ -11750,7 +11750,7 @@ async function enhanceScrollSheet(app, html) {
 	// Setup UI listeners for targeting and aura effects
 	activateTemplateTargetingListeners(html[0], MODULE_ID);
 
-	console.log(`${MODULE_ID} | Scroll sheet enhanced for`, item.name);
+	// console.log(`${MODULE_ID} | Scroll sheet enhanced for`, item.name);
 }
 
 /**
@@ -11829,7 +11829,7 @@ function injectWandUsesUI(html, item) {
 		});
 	});
 
-	console.log(`${MODULE_ID} | Wand uses UI injected for`, item.name);
+	// console.log(`${MODULE_ID} | Wand uses UI injected for`, item.name);
 }
 
 /**
@@ -11865,7 +11865,7 @@ function setupWandUsesBlocker() {
 		return originalCastSpell.call(this, itemId, options);
 	};
 
-	console.log(`${MODULE_ID} | Wrapped castSpell for wand uses blocking`);
+	// console.log(`${MODULE_ID} | Wrapped castSpell for wand uses blocking`);
 }
 
 /**
@@ -11876,7 +11876,7 @@ async function enhanceWandSheet(app, html) {
 	const item = app.item;
 	if (!item || item.type !== "Wand") return;
 
-	console.log(`${MODULE_ID} | Enhancing wand sheet for`, item.name);
+	// console.log(`${MODULE_ID} | Enhancing wand sheet for`, item.name);
 
 	// ═══════════════════════════════════════════════════════════════
 	// WAND USES TRACKING UI
@@ -12043,7 +12043,7 @@ async function enhanceWandSheet(app, html) {
 		const $detailsLink = $tabs.find('a[data-tab="tab-details"]');
 		if ($detailsLink.length) {
 			$detailsLink.after(activityTabLink);
-			console.log(`${MODULE_ID} | Activity tab link added to navigation`);
+			// console.log(`${MODULE_ID} | Activity tab link added to navigation`);
 		} else {
 			console.warn(`${MODULE_ID} | Could not find Details tab link`);
 		}
@@ -12053,7 +12053,7 @@ async function enhanceWandSheet(app, html) {
 		const $detailsTab = html.find('section.tab-details[data-tab="tab-details"]');
 		if ($detailsTab.length) {
 			$detailsTab.after(activityTabContent);
-			console.log(`${MODULE_ID} | Activity tab content created`);
+			// console.log(`${MODULE_ID} | Activity tab content created`);
 		} else {
 			console.warn(`${MODULE_ID} | Could not find Details tab content`);
 		}
@@ -12090,7 +12090,7 @@ async function enhanceWandSheet(app, html) {
 		return;
 	}
 
-	console.log(`${MODULE_ID} | Activity tab found/created`);
+	// console.log(`${MODULE_ID} | Activity tab found/created`);
 
 	let effectsListHtml = '';
 	let effectsArray = flags.effects || [];
@@ -12212,7 +12212,7 @@ async function enhanceWandSheet(app, html) {
 
 	// Insert into Activity tab
 	$activityTab.append(damageHealHtml);
-	console.log(`${MODULE_ID} | Damage/Heal box inserted into Activity tab`);
+	// console.log(`${MODULE_ID} | Damage/Heal box inserted into Activity tab`);
 
 	// Prevent auto-submission of form inputs in Activity tab to avoid unwanted re-renders
 	$activityTab.find('input, select, textarea').on('change', function (e) {
@@ -12247,7 +12247,7 @@ async function enhanceWandSheet(app, html) {
 
 			// Update without re-rendering
 			item.update(updateData, { render: false }).then(() => {
-				console.log(`${MODULE_ID} | Updated ${fieldName}:`, value);
+				// console.log(`${MODULE_ID} | Updated ${fieldName}:`, value);
 			}).catch(err => {
 				console.error(`${MODULE_ID} | Failed to update ${fieldName}:`, err);
 			});
@@ -12497,7 +12497,7 @@ async function enhanceWandSheet(app, html) {
 		const updateData = {};
 		updateData[`flags.${MODULE_ID}.summoning.enabled`] = enabled;
 		item.update(updateData, { render: false }).then(() => {
-			console.log(`${MODULE_ID} | Summoning enabled state saved:`, enabled);
+			// console.log(`${MODULE_ID} | Summoning enabled state saved:`, enabled);
 		});
 	});
 
@@ -12623,7 +12623,7 @@ async function enhanceWandSheet(app, html) {
 		const updateData = {};
 		updateData[`flags.${MODULE_ID}.summoning.profiles`] = profiles;
 		item.update(updateData, { render: false }).then(() => {
-			console.log(`${MODULE_ID} | Saved summon profiles:`, profiles);
+			// console.log(`${MODULE_ID} | Saved summon profiles:`, profiles);
 		}).catch(err => {
 			console.error(`${MODULE_ID} | Failed to save summon profiles:`, err);
 		});
@@ -12636,7 +12636,7 @@ async function enhanceWandSheet(app, html) {
 		const updateData = {};
 		updateData[`flags.${MODULE_ID}.itemGive.enabled`] = enabled;
 		item.update(updateData, { render: false }).then(() => {
-			console.log(`${MODULE_ID} | Item give enabled state saved:`, enabled);
+			// console.log(`${MODULE_ID} | Item give enabled state saved:`, enabled);
 		});
 	});
 
@@ -12743,7 +12743,7 @@ async function enhanceWandSheet(app, html) {
 		const updateData = {};
 		updateData[`flags.${MODULE_ID}.itemGive.profiles`] = profiles;
 		item.update(updateData, { render: false }).then(() => {
-			console.log(`${MODULE_ID} | Saved item give profiles:`, profiles);
+			// console.log(`${MODULE_ID} | Saved item give profiles:`, profiles);
 		}).catch(err => {
 			console.error(`${MODULE_ID} | Failed to save item give profiles:`, err);
 		});
@@ -12758,7 +12758,7 @@ async function enhanceWandSheet(app, html) {
 		const updateData = {};
 		updateData[`flags.${MODULE_ID}.itemMacro.runAsGm`] = runAsGm;
 		item.update(updateData, { render: false }).then(() => {
-			console.log(`${MODULE_ID} | Saved itemMacro.runAsGm:`, runAsGm);
+			// console.log(`${MODULE_ID} | Saved itemMacro.runAsGm:`, runAsGm);
 		}).catch(err => {
 			console.error(`${MODULE_ID} | Failed to save itemMacro.runAsGm:`, err);
 		});
@@ -12774,7 +12774,7 @@ async function enhanceWandSheet(app, html) {
 		const updateData = {};
 		updateData[`flags.${MODULE_ID}.itemMacro.triggers`] = triggers;
 		item.update(updateData, { render: false }).then(() => {
-			console.log(`${MODULE_ID} | Saved itemMacro.triggers:`, triggers);
+			// console.log(`${MODULE_ID} | Saved itemMacro.triggers:`, triggers);
 		}).catch(err => {
 			console.error(`${MODULE_ID} | Failed to save itemMacro.triggers:`, err);
 		});
@@ -12786,7 +12786,7 @@ async function enhanceWandSheet(app, html) {
 	// Setup UI listeners for targeting and aura effects
 	activateTemplateTargetingListeners(html[0], MODULE_ID);
 
-	console.log(`${MODULE_ID} | Wand sheet enhanced for`, item.name);
+	// console.log(`${MODULE_ID} | Wand sheet enhanced for`, item.name);
 }
 
 /**
@@ -12802,14 +12802,14 @@ function injectWeaponDamageTypeDropdown(app, html, item) {
 	// Find the SD-grid content area within the Weapon box
 	const $weaponGrid = html.find('.SD-box .content.SD-grid').first();
 	if (!$weaponGrid.length) {
-		console.log(`${MODULE_ID} | Could not find SD-grid in weapon sheet`);
+		// console.log(`${MODULE_ID} | Could not find SD-grid in weapon sheet`);
 		return;
 	}
 
 	// Find the Type select to insert after it
 	const $typeSelect = $weaponGrid.find('select[name="system.type"]');
 	if (!$typeSelect.length) {
-		console.log(`${MODULE_ID} | Could not find Type select in weapon sheet`);
+		// console.log(`${MODULE_ID} | Could not find Type select in weapon sheet`);
 		return;
 	}
 
@@ -12850,10 +12850,10 @@ function injectWeaponDamageTypeDropdown(app, html, item) {
 	$damageSelect.on('change', async function () {
 		const newType = $(this).val();
 		await item.setFlag(MODULE_ID, 'baseDamageType', newType);
-		console.log(`${MODULE_ID} | Set weapon base damage type to: ${newType}`);
+		// console.log(`${MODULE_ID} | Set weapon base damage type to: ${newType}`);
 	});
 
-	console.log(`${MODULE_ID} | Injected damage type dropdown for weapon: ${item.name}`);
+	// console.log(`${MODULE_ID} | Injected damage type dropdown for weapon: ${item.name}`);
 }
 
 /**
@@ -12869,7 +12869,7 @@ function injectStaffSpellButton(app, html, item) {
 	// Find the header with class "light" (ITEM PROPERTIES header)
 	const $headerLight = html.find('.SD-box .header.light').first();
 	if (!$headerLight.length) {
-		console.log(`${MODULE_ID} | Could not find header.light in weapon sheet`);
+		// console.log(`${MODULE_ID} | Could not find header.light in weapon sheet`);
 		return;
 	}
 
@@ -12895,7 +12895,7 @@ function injectStaffSpellButton(app, html, item) {
 	// Insert button after the header light
 	$headerLight.after($button);
 
-	console.log(`${MODULE_ID} | Injected weapon spell button for weapon: ${item.name}`);
+	// console.log(`${MODULE_ID} | Injected weapon spell button for weapon: ${item.name}`);
 }
 
 /**
@@ -13370,7 +13370,7 @@ async function injectStaffSpellsUI(sheet, html, data) {
 		}
 	});
 
-	console.log(`${MODULE_ID} | Injected ${staffSpells.length} weapon spells for actor: ${actor.name}`);
+	// console.log(`${MODULE_ID} | Injected ${staffSpells.length} weapon spells for actor: ${actor.name}`);
 }
 
 /**
@@ -13478,7 +13478,7 @@ function patchCanUseMagicItems() {
 		return hasWands || hasScrolls || hasWeaponSpells;
 	}, "WRAPPER");
 
-	console.log(`${MODULE_ID} | Patched canUseMagicItems() to detect wands, scrolls, and weapon spells`);
+	// console.log(`${MODULE_ID} | Patched canUseMagicItems() to detect wands, scrolls, and weapon spells`);
 }
 
 // Re-render weapon sheet when staff spells are updated
@@ -13692,7 +13692,7 @@ Hooks.on("preCreateChatMessage", (message, data, options, userId) => {
 			message.updateSource({
 				"flags.shadowdark-extras.targetIds": targetIds
 			});
-			console.log(`${MODULE_ID} | Stored ${targetIds.length} targets in message flags:`, targetIds);
+			// console.log(`${MODULE_ID} | Stored ${targetIds.length} targets in message flags:`, targetIds);
 
 			// Mirror Image Automation
 			// If this is an attack roll targeting someone with Mirror Image duplicates
@@ -13806,7 +13806,7 @@ Hooks.on("preCreateChatMessage", (message, data, options, userId) => {
 					"flags.shadowdark-extras.itemConfig": itemConfig
 				});
 
-				console.log(`${MODULE_ID} | Stored item config for ${item.name}:`, itemConfig);
+				// console.log(`${MODULE_ID} | Stored item config for ${item.name}:`, itemConfig);
 			}
 		}
 
@@ -13817,7 +13817,7 @@ Hooks.on("preCreateChatMessage", (message, data, options, userId) => {
 		const speakerActorId = message.speaker?.actor;
 
 		// Debug: log the regex matches
-		console.log(`${MODULE_ID} | preCreateChatMessage regex matches:`, {
+		// console.log(`${MODULE_ID} | preCreateChatMessage regex matches:`, {
 			actorIdMatch: actorIdMatch ? actorIdMatch[1] : null,
 			itemIdMatch: itemIdMatch ? itemIdMatch[1] : null
 		});
@@ -13831,10 +13831,10 @@ Hooks.on("preCreateChatMessage", (message, data, options, userId) => {
 		}
 
 		// Debug: log the content to see what attributes are used
-		console.log(`${MODULE_ID} | preCreateChatMessage content snippet:`, content.substring(0, 500));
+		// console.log(`${MODULE_ID} | preCreateChatMessage content snippet:`, content.substring(0, 500));
 
 		// Debug: log what we have
-		console.log(`${MODULE_ID} | preCreateChatMessage - checking for hit bonus:`, {
+		// console.log(`${MODULE_ID} | preCreateChatMessage - checking for hit bonus:`, {
 			speakerActorId,
 			sdItemId,
 			pendingKeys: Array.from(_pendingHitBonusInfo.keys())
@@ -13842,7 +13842,7 @@ Hooks.on("preCreateChatMessage", (message, data, options, userId) => {
 
 		if (speakerActorId && sdItemId) {
 			const hitBonusKey = `${speakerActorId}-${sdItemId}`;
-			console.log(`${MODULE_ID} | Looking for hit bonus key: ${hitBonusKey}`);
+			// console.log(`${MODULE_ID} | Looking for hit bonus key: ${hitBonusKey}`);
 			const hitBonusInfo = _pendingHitBonusInfo.get(hitBonusKey);
 
 			if (hitBonusInfo) {
@@ -13857,7 +13857,7 @@ Hooks.on("preCreateChatMessage", (message, data, options, userId) => {
 						parts: hitBonusInfo.parts
 					}
 				});
-				console.log(`${MODULE_ID} | Stored hit bonus info in message:`, hitBonusInfo);
+				// console.log(`${MODULE_ID} | Stored hit bonus info in message:`, hitBonusInfo);
 
 				// Clean up the pending info
 				_pendingHitBonusInfo.delete(hitBonusKey);
@@ -13879,7 +13879,7 @@ Hooks.on("preCreateChatMessage", (message, data, options, userId) => {
 							parts: hitBonusInfo.parts
 						}
 					});
-					console.log(`${MODULE_ID} | Stored hit bonus info in message (from HTML):`, hitBonusInfo);
+					// console.log(`${MODULE_ID} | Stored hit bonus info in message (from HTML):`, hitBonusInfo);
 				}
 				_pendingHitBonusInfo.delete(hitBonusKey);
 			}
@@ -13924,7 +13924,7 @@ async function processWeaponBonuses(message, html) {
 	// First, check if we have hit bonus info to display - this should happen
 	// regardless of other conditions since it was pre-calculated
 	const hitBonusInfo = message.flags?.[MODULE_ID]?.hitBonus;
-	console.log(`${MODULE_ID} | processWeaponBonuses - hitBonusInfo:`, hitBonusInfo);
+	// console.log(`${MODULE_ID} | processWeaponBonuses - hitBonusInfo:`, hitBonusInfo);
 	if (hitBonusInfo) {
 		await injectHitBonusDisplay(html, hitBonusInfo);
 	}
@@ -14039,25 +14039,25 @@ Hooks.once("ready", () => {
 			// Preserve spell damage configuration flags
 			if (spell.flags?.[MODULE_ID]?.spellDamage) {
 				itemData.flags[MODULE_ID].spellDamage = foundry.utils.duplicate(spell.flags[MODULE_ID].spellDamage);
-				console.log(`${MODULE_ID} | Preserved spell damage flags for ${spell.name} -> ${itemData.name}`, itemData.flags[MODULE_ID].spellDamage);
+				// console.log(`${MODULE_ID} | Preserved spell damage flags for ${spell.name} -> ${itemData.name}`, itemData.flags[MODULE_ID].spellDamage);
 			}
 
 			// Preserve Targeting configuration flags
 			if (spell.flags?.[MODULE_ID]?.targeting) {
 				itemData.flags[MODULE_ID].targeting = foundry.utils.duplicate(spell.flags[MODULE_ID].targeting);
-				console.log(`${MODULE_ID} | Preserved targeting flags for ${spell.name} -> ${itemData.name}`, itemData.flags[MODULE_ID].targeting);
+				// console.log(`${MODULE_ID} | Preserved targeting flags for ${spell.name} -> ${itemData.name}`, itemData.flags[MODULE_ID].targeting);
 			}
 
 			// Preserve summoning configuration flags
 			if (spell.flags?.[MODULE_ID]?.summoning) {
 				itemData.flags[MODULE_ID].summoning = foundry.utils.duplicate(spell.flags[MODULE_ID].summoning);
-				console.log(`${MODULE_ID} | Preserved summoning flags for ${spell.name} -> ${itemData.name}`, itemData.flags[MODULE_ID].summoning);
+				// console.log(`${MODULE_ID} | Preserved summoning flags for ${spell.name} -> ${itemData.name}`, itemData.flags[MODULE_ID].summoning);
 			}
 
 			// Preserve item give configuration flags
 			if (spell.flags?.[MODULE_ID]?.itemGive) {
 				itemData.flags[MODULE_ID].itemGive = foundry.utils.duplicate(spell.flags[MODULE_ID].itemGive);
-				console.log(`${MODULE_ID} | Preserved item give flags for ${spell.name} -> ${itemData.name}`, itemData.flags[MODULE_ID].itemGive);
+				// console.log(`${MODULE_ID} | Preserved item give flags for ${spell.name} -> ${itemData.name}`, itemData.flags[MODULE_ID].itemGive);
 			}
 
 			// Preserve unidentified flags
@@ -14069,32 +14069,32 @@ Hooks.once("ready", () => {
 			// Preserve Item Macro trigger configuration flags
 			if (spell.flags?.[MODULE_ID]?.itemMacro) {
 				itemData.flags[MODULE_ID].itemMacro = foundry.utils.duplicate(spell.flags[MODULE_ID].itemMacro);
-				console.log(`${MODULE_ID} | Preserved itemMacro flags for ${spell.name} -> ${itemData.name}`, itemData.flags[MODULE_ID].itemMacro);
+				// console.log(`${MODULE_ID} | Preserved itemMacro flags for ${spell.name} -> ${itemData.name}`, itemData.flags[MODULE_ID].itemMacro);
 			}
 
 			// Preserve Template Effects configuration flags
 			if (spell.flags?.[MODULE_ID]?.templateEffects) {
 				itemData.flags[MODULE_ID].templateEffects = foundry.utils.duplicate(spell.flags[MODULE_ID].templateEffects);
-				console.log(`${MODULE_ID} | Preserved templateEffects flags for ${spell.name} -> ${itemData.name}`, itemData.flags[MODULE_ID].templateEffects);
+				// console.log(`${MODULE_ID} | Preserved templateEffects flags for ${spell.name} -> ${itemData.name}`, itemData.flags[MODULE_ID].templateEffects);
 			}
 
 			// Preserve Aura Effects configuration flags
 			if (spell.flags?.[MODULE_ID]?.auraEffects) {
 				itemData.flags[MODULE_ID].auraEffects = foundry.utils.duplicate(spell.flags[MODULE_ID].auraEffects);
-				console.log(`${MODULE_ID} | Preserved auraEffects flags for ${spell.name} -> ${itemData.name}`, itemData.flags[MODULE_ID].auraEffects);
+				// console.log(`${MODULE_ID} | Preserved auraEffects flags for ${spell.name} -> ${itemData.name}`, itemData.flags[MODULE_ID].auraEffects);
 			}
 
 			// Preserve Item Macro module's macro data (itemacro module)
 			if (spell.flags?.itemacro?.macro) {
 				itemData.flags.itemacro = itemData.flags.itemacro || {};
 				itemData.flags.itemacro.macro = foundry.utils.duplicate(spell.flags.itemacro.macro);
-				console.log(`${MODULE_ID} | Preserved itemacro macro for ${spell.name} -> ${itemData.name}`);
+				// console.log(`${MODULE_ID} | Preserved itemacro macro for ${spell.name} -> ${itemData.name}`);
 			}
 
 			return itemData;
 		};
 
-		console.log(`${MODULE_ID} | Wrapped shadowdark.utils.createItemFromSpell to preserve spell flags`);
+		// console.log(`${MODULE_ID} | Wrapped shadowdark.utils.createItemFromSpell to preserve spell flags`);
 	}
 });
 
@@ -14396,7 +14396,7 @@ async function grantAdvancementItems(actor, background, entry) {
 	const backgroundGrants = granted[background.id] || [];
 
 	if (backgroundGrants.includes(entry.id)) {
-		console.log(`${MODULE_ID} | Advancement ${entry.id} already granted to ${actor.name}, skipping`);
+		// console.log(`${MODULE_ID} | Advancement ${entry.id} already granted to ${actor.name}, skipping`);
 		return;
 	}
 
@@ -14421,9 +14421,9 @@ async function grantAdvancementItems(actor, background, entry) {
 		await actor.createEmbeddedDocuments("Item", itemsToCreate);
 		const itemNames = itemsToCreate.map(i => i.name).join(", ");
 		ui.notifications.info(`${actor.name} gained: ${itemNames}`);
-		console.log(`${MODULE_ID} | Granted ${itemsToCreate.length} items to ${actor.name} from advancement ${entry.id}`);
+		// console.log(`${MODULE_ID} | Granted ${itemsToCreate.length} items to ${actor.name} from advancement ${entry.id}`);
 	} else {
-		console.log(`${MODULE_ID} | No valid items to grant from advancement ${entry.id}`);
+		// console.log(`${MODULE_ID} | No valid items to grant from advancement ${entry.id}`);
 	}
 
 	// Mark as granted
@@ -14446,7 +14446,7 @@ Hooks.on("updateActor", async (actor, changes, options, userId) => {
 	const backgroundUuid = changes.system.background;
 	if (!backgroundUuid) return; // Background was removed
 
-	console.log(`${MODULE_ID} | Background set on actor "${actor.name}": ${backgroundUuid}`);
+	// console.log(`${MODULE_ID} | Background set on actor "${actor.name}": ${backgroundUuid}`);
 
 	// Load the background item from UUID
 	const background = await fromUuid(backgroundUuid);
@@ -14455,20 +14455,20 @@ Hooks.on("updateActor", async (actor, changes, options, userId) => {
 		return;
 	}
 
-	console.log(`${MODULE_ID} | Loaded background: ${background.name}`);
+	// console.log(`${MODULE_ID} | Loaded background: ${background.name}`);
 
 	const advancement = background.getFlag(MODULE_ID, "advancement") || [];
-	console.log(`${MODULE_ID} | Advancement data:`, advancement);
+	// console.log(`${MODULE_ID} | Advancement data:`, advancement);
 
 	const immediateEntries = advancement.filter(e => e.level === 0);
-	console.log(`${MODULE_ID} | Found ${immediateEntries.length} level 0 advancement entries`);
+	// console.log(`${MODULE_ID} | Found ${immediateEntries.length} level 0 advancement entries`);
 
 	if (immediateEntries.length === 0) {
-		console.log(`${MODULE_ID} | No level 0 entries to grant`);
+		// console.log(`${MODULE_ID} | No level 0 entries to grant`);
 		return;
 	}
 
-	console.log(`${MODULE_ID} | Granting ${immediateEntries.length} immediate advancement entries from ${background.name} to ${actor.name}`);
+	// console.log(`${MODULE_ID} | Granting ${immediateEntries.length} immediate advancement entries from ${background.name} to ${actor.name}`);
 
 	// Grant items from all level 0 entries
 	for (const entry of immediateEntries) {
@@ -14488,16 +14488,16 @@ Hooks.on("updateActor", async (actor, changes, options, userId) => {
 	if (!foundry.utils.hasProperty(changes, "system.level.value")) return;
 
 	const newLevel = changes.system.level.value;
-	console.log(`${MODULE_ID} | Actor ${actor.name} level updated to ${newLevel}`);
+	// console.log(`${MODULE_ID} | Actor ${actor.name} level updated to ${newLevel}`);
 
 	// Get the actor's background UUID from system.background
 	const backgroundUuid = actor.system.background;
 	if (!backgroundUuid) {
-		console.log(`${MODULE_ID} | No background set for ${actor.name}, skipping advancement`);
+		// console.log(`${MODULE_ID} | No background set for ${actor.name}, skipping advancement`);
 		return;
 	}
 
-	console.log(`${MODULE_ID} | Loading background from UUID: ${backgroundUuid}`);
+	// console.log(`${MODULE_ID} | Loading background from UUID: ${backgroundUuid}`);
 
 	// Load the background item from UUID
 	const background = await fromUuid(backgroundUuid);
@@ -14506,20 +14506,20 @@ Hooks.on("updateActor", async (actor, changes, options, userId) => {
 		return;
 	}
 
-	console.log(`${MODULE_ID} | Found Background: ${background.name}`);
+	// console.log(`${MODULE_ID} | Found Background: ${background.name}`);
 
 	// Get advancement entries for this level
 	const advancement = background.getFlag(MODULE_ID, "advancement") || [];
-	console.log(`${MODULE_ID} | Background has ${advancement.length} total advancement entries`);
+	// console.log(`${MODULE_ID} | Background has ${advancement.length} total advancement entries`);
 
 	const levelEntries = advancement.filter(e => e.level === newLevel);
 
 	if (levelEntries.length === 0) {
-		console.log(`${MODULE_ID} | No advancement entries for level ${newLevel} in ${background.name}`);
+		// console.log(`${MODULE_ID} | No advancement entries for level ${newLevel} in ${background.name}`);
 		return;
 	}
 
-	console.log(`${MODULE_ID} | Found ${levelEntries.length} advancement entries for level ${newLevel}`);
+	// console.log(`${MODULE_ID} | Found ${levelEntries.length} advancement entries for level ${newLevel}`);
 
 	// Grant items from all matching entries
 	// The grantAdvancementItems function has its own duplicate checking
@@ -14531,12 +14531,12 @@ Hooks.on("updateActor", async (actor, changes, options, userId) => {
 // Inject Freya's Omen reroll button
 Hooks.on("renderChatMessage", (message, html, data) => {
 	const flags = message.flags?.shadowdark;
-	console.log(`${MODULE_ID} | Checking Freya's Omen for message ${message.id}`, flags);
+	// console.log(`${MODULE_ID} | Checking Freya's Omen for message ${message.id}`, flags);
 	if (!flags?.isRoll) return;
 
 	// Check if it's a critical failure on a spell
 	const isCriticalFailure = flags.critical === "failure";
-	console.log(`${MODULE_ID} | isCriticalFailure: ${isCriticalFailure}`);
+	// console.log(`${MODULE_ID} | isCriticalFailure: ${isCriticalFailure}`);
 
 	if (isCriticalFailure) {
 		// Check if it looks like a spell
@@ -14559,18 +14559,18 @@ Hooks.on("renderChatMessage", (message, html, data) => {
 		if (!actor && message.actor) actor = message.actor;
 
 		if (!actor) {
-			console.log(`${MODULE_ID} | No actor found for Freya's Omen check`);
+			// console.log(`${MODULE_ID} | No actor found for Freya's Omen check`);
 			return;
 		}
 
 		const hasFreyasOmen = actor.getFlag(MODULE_ID, "freyasOmen");
-		console.log(`${MODULE_ID} | Actor ${actor.name} has Freya's Omen: ${hasFreyasOmen}`);
+		// console.log(`${MODULE_ID} | Actor ${actor.name} has Freya's Omen: ${hasFreyasOmen}`);
 
 		if (hasFreyasOmen) {
 			// Check if item was a spell. 
 			// We can try to get the item from data-item-id
 			const itemId = html.find(".item-card").data("item-id");
-			console.log(`${MODULE_ID} | Item ID from card: ${itemId}`);
+			// console.log(`${MODULE_ID} | Item ID from card: ${itemId}`);
 
 			if (!itemId) return;
 			const item = actor.items.get(itemId);
@@ -14586,7 +14586,7 @@ Hooks.on("renderChatMessage", (message, html, data) => {
 				ev.stopPropagation();
 				// Reroll the item
 				if (item) {
-					console.log(`${MODULE_ID} | Rerrolling spell: ${item.name}`);
+					// console.log(`${MODULE_ID} | Rerrolling spell: ${item.name}`);
 
 					// Reconstruct roll data for a spell roll
 					// Based on system logic (which isn't exposed directly for us to reuse easily)
@@ -14714,7 +14714,7 @@ Hooks.on("updateActiveEffect", (effect, changes, options, userId) => {
  * @param {Collection|Map|Array} items - The items to check for unidentified status
  */
 function markUnidentifiedItemsInDirectory(html, items) {
-	console.log(`${MODULE_ID} | markUnidentifiedItemsInDirectory START`, {
+	// console.log(`${MODULE_ID} | markUnidentifiedItemsInDirectory START`, {
 		isGM: game.user?.isGM,
 		html,
 		items,
@@ -14723,7 +14723,7 @@ function markUnidentifiedItemsInDirectory(html, items) {
 
 	// Only show for GM
 	if (!game.user?.isGM) {
-		console.log(`${MODULE_ID} | Skipping - not GM`);
+		// console.log(`${MODULE_ID} | Skipping - not GM`);
 		return;
 	}
 
@@ -14734,25 +14734,25 @@ function markUnidentifiedItemsInDirectory(html, items) {
 		// Check if the setting exists first
 		if (game.settings.settings.has(settingKey)) {
 			const unidentifiedEnabled = game.settings.get(MODULE_ID, "enableUnidentified");
-			console.log(`${MODULE_ID} | enableUnidentified setting:`, unidentifiedEnabled);
+			// console.log(`${MODULE_ID} | enableUnidentified setting:`, unidentifiedEnabled);
 			if (!unidentifiedEnabled) {
-				console.log(`${MODULE_ID} | Skipping - unidentified items not enabled`);
+				// console.log(`${MODULE_ID} | Skipping - unidentified items not enabled`);
 				return;
 			}
 		} else {
 			// Setting not registered yet - we'll allow it since we know it will be enabled
 			// (if not enabled, it will be fixed on next re-render after settings load)
-			console.log(`${MODULE_ID} | Setting not registered yet, proceeding anyway`);
+			// console.log(`${MODULE_ID} | Setting not registered yet, proceeding anyway`);
 		}
 	} catch (e) {
 		// If any error, log but proceed anyway
-		console.log(`${MODULE_ID} | Error checking setting, proceeding anyway`, e);
+		// console.log(`${MODULE_ID} | Error checking setting, proceeding anyway`, e);
 	}
 
 	// Handle both plain DOM element and jQuery object (for compatibility)
 	const element = html instanceof HTMLElement ? html : html[0] || html;
 
-	console.log(`${MODULE_ID} | markUnidentifiedItemsInDirectory called`, {
+	// console.log(`${MODULE_ID} | markUnidentifiedItemsInDirectory called`, {
 		htmlType: typeof html,
 		isHTMLElement: html instanceof HTMLElement,
 		element,
@@ -14779,14 +14779,14 @@ function markUnidentifiedItemsInDirectory(html, items) {
 		directoryItems = element.querySelectorAll("[data-entry-id]");
 	}
 
-	console.log(`${MODULE_ID} | Found ${directoryItems.length} directory items`);
+	// console.log(`${MODULE_ID} | Found ${directoryItems.length} directory items`);
 
 	let unidentifiedCount = 0;
 	directoryItems.forEach(li => {
 		// Get the entry ID from data attributes (V13 uses data-entry-id)
 		const entryId = li.dataset?.entryId || li.dataset?.documentId || li.getAttribute("data-entry-id") || li.getAttribute("data-document-id");
 		if (!entryId) {
-			console.log(`${MODULE_ID} | li has no entry ID:`, li.outerHTML?.substring(0, 200));
+			// console.log(`${MODULE_ID} | li has no entry ID:`, li.outerHTML?.substring(0, 200));
 			return;
 		}
 
@@ -14804,7 +14804,7 @@ function markUnidentifiedItemsInDirectory(html, items) {
 		}
 
 		if (!item) {
-			console.log(`${MODULE_ID} | Item not found for ID: ${entryId}`);
+			// console.log(`${MODULE_ID} | Item not found for ID: ${entryId}`);
 			return;
 		}
 
@@ -14814,7 +14814,7 @@ function markUnidentifiedItemsInDirectory(html, items) {
 
 		if (!itemIsUnidentified) return;
 
-		console.log(`${MODULE_ID} | Found unidentified item: ${item.name || item._id}`);
+		// console.log(`${MODULE_ID} | Found unidentified item: ${item.name || item._id}`);
 		unidentifiedCount++;
 
 		// Add the unidentified class to the list item
@@ -14831,13 +14831,13 @@ function markUnidentifiedItemsInDirectory(html, items) {
 		}
 	});
 
-	console.log(`${MODULE_ID} | Marked ${unidentifiedCount} unidentified items`);
+	// console.log(`${MODULE_ID} | Marked ${unidentifiedCount} unidentified items`);
 }
 
 // Hook into the Items sidebar directory rendering - try multiple hook names for V13 compatibility
 Hooks.on("renderItemDirectory", (app, html, data) => {
 	try {
-		console.log(`${MODULE_ID} | renderItemDirectory hook fired`, { app, html });
+		// console.log(`${MODULE_ID} | renderItemDirectory hook fired`, { app, html });
 		// Get items from the directory - in v13, app.collection contains the documents
 		const items = app.collection || app.documents || game.items;
 		markUnidentifiedItemsInDirectory(html, items);
@@ -14851,7 +14851,7 @@ Hooks.on("renderDocumentDirectory", (app, html, data) => {
 	try {
 		// Only process if this is an Item directory
 		if (app.constructor?.documentName !== "Item" && app.collection?.documentName !== "Item") return;
-		console.log(`${MODULE_ID} | renderDocumentDirectory hook fired for Items`, { app, html });
+		// console.log(`${MODULE_ID} | renderDocumentDirectory hook fired for Items`, { app, html });
 		const items = app.collection || app.documents || game.items;
 		markUnidentifiedItemsInDirectory(html, items);
 	} catch (err) {
@@ -14865,7 +14865,7 @@ Hooks.on("renderSidebarTab", (app, html, data) => {
 		// Only process if this is the items tab
 		const tabName = app.tabName || app.options?.id || app.id;
 		if (tabName !== "items" && app.constructor?.name !== "ItemDirectory") return;
-		console.log(`${MODULE_ID} | renderSidebarTab hook fired for items`, { app, html, tabName });
+		// console.log(`${MODULE_ID} | renderSidebarTab hook fired for items`, { app, html, tabName });
 		const items = app.collection || app.documents || game.items;
 		markUnidentifiedItemsInDirectory(html, items);
 	} catch (err) {
@@ -14876,7 +14876,7 @@ Hooks.on("renderSidebarTab", (app, html, data) => {
 // Hook into compendium rendering for Item compendiums
 Hooks.on("renderCompendium", async (app, html, data) => {
 	try {
-		console.log(`${MODULE_ID} | renderCompendium hook fired for`, app.collection?.documentName);
+		// console.log(`${MODULE_ID} | renderCompendium hook fired for`, app.collection?.documentName);
 		// Only process Item compendiums
 		if (app.collection?.documentName !== "Item") return;
 
@@ -15119,7 +15119,7 @@ Hooks.once("init", () => {
 		return;
 	}
 
-	console.log(`${MODULE_ID} | Adding ability advantage predefined effects`);
+	// console.log(`${MODULE_ID} | Adding ability advantage predefined effects`);
 
 	// Define ability advantage effects for each ability score
 	const abilityAdvantageEffects = {
@@ -15441,7 +15441,7 @@ Hooks.once("init", () => {
 	// Merge ability advantage effects into the system's predefined effects
 	Object.assign(CONFIG.SHADOWDARK.PREDEFINED_EFFECTS, abilityAdvantageEffects);
 
-	console.log(`${MODULE_ID} | Added ${Object.keys(abilityAdvantageEffects).length} extra advantage, resistance/immunity/vulnerability effects`);
+	// console.log(`${MODULE_ID} | Added ${Object.keys(abilityAdvantageEffects).length} extra advantage, resistance/immunity/vulnerability effects`);
 
 	// ============================================
 	// SPELL DISADVANTAGE HANDLER PATCH
@@ -15478,7 +15478,7 @@ Hooks.once("init", () => {
 		return originalModifyEffectChangesWithInput.call(this, item, effect, key);
 	};
 
-	console.log(`${MODULE_ID} | Patched effects system for spellDisadvantage support`);
+	// console.log(`${MODULE_ID} | Patched effects system for spellDisadvantage support`);
 });
 
 // ============================================
@@ -15496,7 +15496,7 @@ Hooks.once("ready", () => {
 		return;
 	}
 
-	console.log(`${MODULE_ID} | Applying consolidated ActorSD and RollSD patches`);
+	// console.log(`${MODULE_ID} | Applying consolidated ActorSD and RollSD patches`);
 
 	// ============================================
 	// SILENCED EFFECT - PREVENT SPELL CASTING
@@ -15609,7 +15609,7 @@ Hooks.once("ready", () => {
 
 		if (overlapsX && overlapsY) {
 			// Tokens are overlapping or adjacent
-			console.log(`${MODULE_ID} | Edge distance calc: tokens overlap/adjacent, distance = 0`);
+			// console.log(`${MODULE_ID} | Edge distance calc: tokens overlap/adjacent, distance = 0`);
 			return 0;
 		}
 
@@ -15617,7 +15617,7 @@ Hooks.once("ready", () => {
 		const path = canvas.grid.measurePath([{ x: p1x, y: p1y }, { x: p2x, y: p2y }]);
 		const result = path.distance;
 
-		console.log(`${MODULE_ID} | Edge distance calc:`, {
+		// console.log(`${MODULE_ID} | Edge distance calc:`, {
 			token1: token1.name,
 			token2: token2.name,
 			p1: { x: p1x, y: p1y },
@@ -15697,7 +15697,7 @@ Hooks.once("ready", () => {
 							// Convert to traditional D&D distance for display (add 5 ft for target's space)
 							const displayDistance = distance + 5;
 
-							console.log(`${MODULE_ID} | Range check: ${itemName} (${rangeLabel}) vs target at ${distance.toFixed(1)} ft edge-to-edge (${displayDistance.toFixed(0)} ft display)`);
+							// console.log(`${MODULE_ID} | Range check: ${itemName} (${rangeLabel}) vs target at ${distance.toFixed(1)} ft edge-to-edge (${displayDistance.toFixed(0)} ft display)`);
 
 							if (distance > maxRange) {
 								if (checkRange === "block") {
@@ -15719,7 +15719,7 @@ Hooks.once("ready", () => {
 					}
 				}
 			} catch (err) {
-				console.log(`${MODULE_ID} | Range check error:`, err);
+				// console.log(`${MODULE_ID} | Range check error:`, err);
 				// Settings not available yet, continue normally
 			}
 
@@ -15823,7 +15823,7 @@ Hooks.once("ready", () => {
 
 	// 4. Override RollDialog to add disadvantage highlights and promptable bonuses
 	if (CONFIG.DiceSD?.RollDialog) {
-		console.log(`${MODULE_ID} | Overriding CONFIG.DiceSD.RollDialog for highlights and promptable bonuses`);
+		// console.log(`${MODULE_ID} | Overriding CONFIG.DiceSD.RollDialog for highlights and promptable bonuses`);
 		CONFIG.DiceSD.RollDialog = async function (parts, data, options = {}) {
 			if (options.skipPrompt) {
 				return await this.Roll(parts, data, false, options.adv ?? 0, options);
@@ -15844,7 +15844,7 @@ Hooks.once("ready", () => {
 			const weaponItem = data.item || options.item;
 			const actor = data.actor;
 
-			console.log(`${MODULE_ID} | RollDialog - checking for prompt bonuses:`, {
+			// console.log(`${MODULE_ID} | RollDialog - checking for prompt bonuses:`, {
 				hasWeaponItem: !!weaponItem,
 				weaponType: weaponItem?.type,
 				hasActor: !!actor,
@@ -15859,7 +15859,7 @@ Hooks.once("ready", () => {
 				promptableHitBonuses = getPromptableHitBonuses(weaponItem, actor, targetActor);
 				promptableDamageBonuses = getPromptableDamageBonuses(weaponItem, actor, targetActor);
 
-				console.log(`${MODULE_ID} | Promptable bonuses found:`, {
+				// console.log(`${MODULE_ID} | Promptable bonuses found:`, {
 					hitBonuses: promptableHitBonuses,
 					damageBonuses: promptableDamageBonuses
 				});
@@ -16030,7 +16030,7 @@ Hooks.once("ready", () => {
 								dialogContent.appendChild(promptContainer);
 							}
 
-							console.log(`${MODULE_ID} | Injected prompt bonuses via custom toggles`);
+							// console.log(`${MODULE_ID} | Injected prompt bonuses via custom toggles`);
 						}
 					}
 				},
@@ -16082,7 +16082,7 @@ Hooks.once("ready", () => {
 						if (!parts.includes("@sdxPromptHitBonus")) {
 							parts.push("@sdxPromptHitBonus");
 						}
-						console.log(`${MODULE_ID} | Applied prompted hit bonuses: ${combinedFormula} = ${roll.total}`);
+						// console.log(`${MODULE_ID} | Applied prompted hit bonuses: ${combinedFormula} = ${roll.total}`);
 					} catch (err) {
 						console.warn(`${MODULE_ID} | Failed to evaluate prompted hit bonus: ${combinedFormula}`, err);
 					}
@@ -16110,7 +16110,7 @@ Hooks.once("ready", () => {
 						window._sdxSelectedPromptDamageBonuses = new Map();
 					}
 					window._sdxSelectedPromptDamageBonuses.set(weaponItem.id, selectedDamageBonuses);
-					console.log(`${MODULE_ID} | Stored prompted damage bonuses for weapon ${weaponItem.id}:`, selectedDamageBonuses);
+					// console.log(`${MODULE_ID} | Stored prompted damage bonuses for weapon ${weaponItem.id}:`, selectedDamageBonuses);
 				}
 			}
 
@@ -16130,7 +16130,7 @@ Hooks.once("ready", () => {
 				const originalUpdate = data.item.update;
 				data.item.update = async function (updates, options = {}) {
 					if (updates["system.lost"]) {
-						console.log(`${MODULE_ID} | Freya's Omen prevented spell loss for ${data.item.name}`);
+						// console.log(`${MODULE_ID} | Freya's Omen prevented spell loss for ${data.item.name}`);
 						delete updates["system.lost"];
 						if (foundry.utils.isEmpty(updates)) return;
 					}
@@ -16142,7 +16142,7 @@ Hooks.once("ready", () => {
 		};
 	}
 
-	console.log(`${MODULE_ID} | Consolidated ActorSD and RollSD patches applied`);
+	// console.log(`${MODULE_ID} | Consolidated ActorSD and RollSD patches applied`);
 });
 
 // ============================================
@@ -16188,7 +16188,7 @@ Hooks.on("preCreateChatMessage", async (message) => {
 	}
 
 	if (isAttack || isSpell || isSpellCast) {
-		console.log(`${MODULE_ID} | ${actor.name} attacks/casts while invisible - breaking invisibility`);
+		// console.log(`${MODULE_ID} | ${actor.name} attacks/casts while invisible - breaking invisibility`);
 
 		// Find and disable the invisibility effect
 		const effect = actor.effects.find(e =>
@@ -16220,30 +16220,30 @@ Hooks.on("updateActiveEffect", async (effect, changes, options, userId) => {
 	const isInvisibilityEffect = effect.changes.some(c => c.key === `flags.${MODULE_ID}.invisibility`);
 	if (!isInvisibilityEffect) return;
 
-	console.log(`${MODULE_ID} | Invisibility effect updated:`, { disabled: effect.disabled, changes });
+	// console.log(`${MODULE_ID} | Invisibility effect updated:`, { disabled: effect.disabled, changes });
 
 	// If effect was disabled, restore visibility
 	if (changes.disabled === true) {
-		console.log(`${MODULE_ID} | Restoring visibility (effect disabled)`);
+		// console.log(`${MODULE_ID} | Restoring visibility (effect disabled)`);
 		// Effect.parent is the Item (Condition), we need the Actor that owns the item
 		const item = effect.parent;
 		const actor = item?.parent; // Item's parent is the Actor
 		if (actor) {
-			console.log(`${MODULE_ID} | Character Actor:`, { id: actor.id, name: actor.name, type: actor.type });
+			// console.log(`${MODULE_ID} | Character Actor:`, { id: actor.id, name: actor.name, type: actor.type });
 			// Find all token documents for this actor across all scenes
 			const tokens = [];
 			for (const scene of game.scenes) {
-				console.log(`${MODULE_ID} | Checking scene: ${scene.name}, tokens: ${scene.tokens.size}`);
+				// console.log(`${MODULE_ID} | Checking scene: ${scene.name}, tokens: ${scene.tokens.size}`);
 				const sceneTokens = scene.tokens.filter(t => {
 					const match = t.actorId === actor.id || t.actor?.id === actor.id;
 					if (t.actor?.name === actor.name) {
-						console.log(`${MODULE_ID} | Token found:`, { tokenId: t.id, actorId: t.actorId, tokenActorId: t.actor?.id, match });
+						// console.log(`${MODULE_ID} | Token found:`, { tokenId: t.id, actorId: t.actorId, tokenActorId: t.actor?.id, match });
 					}
 					return match;
 				});
 				tokens.push(...sceneTokens);
 			}
-			console.log(`${MODULE_ID} | Found ${tokens.length} token documents to restore visibility`);
+			// console.log(`${MODULE_ID} | Found ${tokens.length} token documents to restore visibility`);
 			for (const tokenDoc of tokens) {
 				await tokenDoc.update({ hidden: false });
 			}
@@ -16261,14 +16261,14 @@ Hooks.on("deleteActiveEffect", async (effect, options, userId) => {
 	const item = effect.parent;
 	const actor = item?.parent; // Item's parent is the Actor
 	if (actor) {
-		console.log(`${MODULE_ID} | Invisibility effect deleted, restoring visibility`);
+		// console.log(`${MODULE_ID} | Invisibility effect deleted, restoring visibility`);
 		// Find all token documents for this actor across all scenes
 		const tokens = [];
 		for (const scene of game.scenes) {
 			const sceneTokens = scene.tokens.filter(t => t.actorId === actor.id);
 			tokens.push(...sceneTokens);
 		}
-		console.log(`${MODULE_ID} | Found ${tokens.length} token documents to restore visibility`);
+		// console.log(`${MODULE_ID} | Found ${tokens.length} token documents to restore visibility`);
 		for (const tokenDoc of tokens) {
 			await tokenDoc.update({ hidden: false });
 		}
@@ -16283,25 +16283,25 @@ Hooks.on("deleteItem", async (item, options, userId) => {
 	);
 	if (!hasInvisibilityEffect) return;
 
-	console.log(`${MODULE_ID} | Condition with invisibility effect deleted, restoring visibility`);
+	// console.log(`${MODULE_ID} | Condition with invisibility effect deleted, restoring visibility`);
 	// Item's parent is the Actor
 	const actor = item.parent;
 	if (actor) {
-		console.log(`${MODULE_ID} | Character Actor:`, { id: actor.id, name: actor.name, type: actor.type });
+		// console.log(`${MODULE_ID} | Character Actor:`, { id: actor.id, name: actor.name, type: actor.type });
 		// Find all token documents for this actor across all scenes
 		const tokens = [];
 		for (const scene of game.scenes) {
 			const sceneTokens = scene.tokens.filter(t => t.actorId === actor.id);
 			tokens.push(...sceneTokens);
 		}
-		console.log(`${MODULE_ID} | Found ${tokens.length} token documents to restore visibility`);
+		// console.log(`${MODULE_ID} | Found ${tokens.length} token documents to restore visibility`);
 		for (const tokenDoc of tokens) {
 			await tokenDoc.update({ hidden: false });
 		}
 	}
 });
 
-console.log(`${MODULE_ID} | Invisibility effect enabled with auto-disable on attack/spell`);
+// console.log(`${MODULE_ID} | Invisibility effect enabled with auto-disable on attack/spell`);
 
 
 
@@ -16341,7 +16341,7 @@ Hooks.once("ready", () => {
 			await macro.execute(context);
 		});
 
-		console.log(`${MODULE_ID} | Socketlib integration enabled for macro execution`);
+		// console.log(`${MODULE_ID} | Socketlib integration enabled for macro execution`);
 	}
 });
 
@@ -16379,12 +16379,12 @@ async function executeMacroFromEffect(actor, macroValue, currentTrigger, options
 
 	// Check permissions - only execute if user owns the actor or is GM
 	if (!actor.isOwner && !game.user.isGM) {
-		console.log(`${MODULE_ID} | User does not have permission to execute macro for actor ${actor.name}`);
+		// console.log(`${MODULE_ID} | User does not have permission to execute macro for actor ${actor.name}`);
 		return;
 	}
 
 	try {
-		console.log(`${MODULE_ID} | Executing macro "${macroName}" for actor ${actor.name} on trigger "${currentTrigger}"`);
+		// console.log(`${MODULE_ID} | Executing macro "${macroName}" for actor ${actor.name} on trigger "${currentTrigger}"`);
 
 		// Get the actor's token (if available on canvas)
 		const token = actor.token || canvas.tokens?.placeables.find(t => t.actor?.id === actor.id);
@@ -16410,7 +16410,7 @@ async function executeMacroFromEffect(actor, macroValue, currentTrigger, options
 			};
 
 			// Execute macro as GM via socketlib
-			console.log(`${MODULE_ID} | Executing macro via GM (socketlib)`);
+			// console.log(`${MODULE_ID} | Executing macro via GM (socketlib)`);
 			await macroExecuteSocket.executeAsGM("executeMacroAsGM", macro.id, contextData);
 		} else {
 			// Execute locally (either user is GM or socketlib not available)
@@ -16556,7 +16556,7 @@ Hooks.on("updateItem", async (item, changes, options, userId) => {
 		// Check if any effects on this item require equipped status
 		// Trigger requirement checks to enable/disable effects based on equipped status
 		if (actor instanceof Actor) {
-			console.log(`${MODULE_ID} | Item "${item.name}" equipped status changed to ${nowEquipped}, checking effect requirements`);
+			// console.log(`${MODULE_ID} | Item "${item.name}" equipped status changed to ${nowEquipped}, checking effect requirements`);
 			await checkEffectRequirements(actor);
 		}
 	}
@@ -16576,13 +16576,13 @@ Hooks.on("updateItem", async (item, changes, options, userId) => {
 async function executeWeaponItemMacro(weapon, actor, trigger, context = {}) {
 	// Check if Item Macro module is available
 	if (!game.modules.get("itemacro")?.active) {
-		console.log(`${MODULE_ID} | Item Macro module not active, skipping weapon macro execution`);
+		// console.log(`${MODULE_ID} | Item Macro module not active, skipping weapon macro execution`);
 		return;
 	}
 
 	// Check if the weapon has a macro using Item Macro's API
 	if (typeof weapon.hasMacro !== "function" || !weapon.hasMacro()) {
-		console.log(`${MODULE_ID} | No Item Macro attached to weapon ${weapon.name}`);
+		// console.log(`${MODULE_ID} | No Item Macro attached to weapon ${weapon.name}`);
 		return;
 	}
 
@@ -16592,7 +16592,7 @@ async function executeWeaponItemMacro(weapon, actor, trigger, context = {}) {
 
 	// Verify the trigger is enabled
 	if (!macroConfig.triggers.includes(trigger)) {
-		console.log(`${MODULE_ID} | Trigger ${trigger} not enabled for weapon ${weapon.name}`);
+		// console.log(`${MODULE_ID} | Trigger ${trigger} not enabled for weapon ${weapon.name}`);
 		return;
 	}
 
@@ -16635,7 +16635,7 @@ async function executeWeaponItemMacro(weapon, actor, trigger, context = {}) {
 	};
 
 	try {
-		console.log(`${MODULE_ID} | Executing weapon Item Macro for ${weapon.name} on trigger "${trigger}"`, scope);
+		// console.log(`${MODULE_ID} | Executing weapon Item Macro for ${weapon.name} on trigger "${trigger}"`, scope);
 
 		// Check if we need to run as GM
 		if (macroConfig.runAsGm && !game.user.isGM && macroExecuteSocket) {
@@ -16654,12 +16654,12 @@ async function executeWeaponItemMacro(weapon, actor, trigger, context = {}) {
 				rollDataJson: scope.rollData ? JSON.stringify(scope.rollData) : null
 			};
 
-			console.log(`${MODULE_ID} | Executing weapon Item Macro via GM (socketlib)`);
+			// console.log(`${MODULE_ID} | Executing weapon Item Macro via GM (socketlib)`);
 			await macroExecuteSocket.executeAsGM("executeWeaponItemMacroAsGM", serializedContext);
 		} else {
 			// Execute the macro locally using Item Macro's API
 			// The executeMacro method is added to Item.prototype by the itemacro module
-			console.log(`${MODULE_ID} | Executing weapon Item Macro locally using weapon.executeMacro()`);
+			// console.log(`${MODULE_ID} | Executing weapon Item Macro locally using weapon.executeMacro()`);
 			await weapon.executeMacro(scope);
 		}
 	} catch (error) {
@@ -16704,7 +16704,7 @@ Hooks.once("ready", () => {
 			try {
 				// Use Item Macro's API
 				if (typeof weapon.executeMacro === "function") {
-					console.log(`${MODULE_ID} | GM executing weapon Item Macro using weapon.executeMacro()`);
+					// console.log(`${MODULE_ID} | GM executing weapon Item Macro using weapon.executeMacro()`);
 					await weapon.executeMacro(scope);
 				} else {
 					console.error(`${MODULE_ID} | weapon.executeMacro is not available on GM client`);
@@ -16714,7 +16714,7 @@ Hooks.once("ready", () => {
 			}
 		});
 
-		console.log(`${MODULE_ID} | Registered weapon Item Macro GM execution handler`);
+		// console.log(`${MODULE_ID} | Registered weapon Item Macro GM execution handler`);
 	}
 });
 
@@ -16752,11 +16752,11 @@ async function executeSpellItemMacro(spellItem, actor, trigger, context = {}) {
 
 	// Check if the item has a macro attached
 	if (typeof spellItem.hasMacro !== "function" || !spellItem.hasMacro()) {
-		console.log(`${MODULE_ID} | Spell ${spellItem.name} has triggers configured but no Item Macro attached`);
+		// console.log(`${MODULE_ID} | Spell ${spellItem.name} has triggers configured but no Item Macro attached`);
 		return;
 	}
 
-	console.log(`${MODULE_ID} | Executing spell Item Macro for ${spellItem.name}, trigger: ${trigger}`);
+	// console.log(`${MODULE_ID} | Executing spell Item Macro for ${spellItem.name}, trigger: ${trigger}`);
 
 	// Get the caster's token
 	const token = canvas.tokens?.placeables?.find(t => t.actor?.id === actor.id) || null;
@@ -16802,7 +16802,7 @@ async function executeSpellItemMacro(spellItem, actor, trigger, context = {}) {
 			rollDataJson: context.rollData ? JSON.stringify(context.rollData) : null
 		};
 
-		console.log(`${MODULE_ID} | Sending spell Item Macro to GM for execution`);
+		// console.log(`${MODULE_ID} | Sending spell Item Macro to GM for execution`);
 		if (macroExecuteSocket) {
 			await macroExecuteSocket.executeAsGM("executeSpellItemMacroAsGM", serializedContext);
 		}
@@ -16813,7 +16813,7 @@ async function executeSpellItemMacro(spellItem, actor, trigger, context = {}) {
 	try {
 		if (typeof spellItem.executeMacro === "function") {
 			await spellItem.executeMacro(scope);
-			console.log(`${MODULE_ID} | Spell Item Macro executed successfully`);
+			// console.log(`${MODULE_ID} | Spell Item Macro executed successfully`);
 		} else {
 			console.warn(`${MODULE_ID} | spellItem.executeMacro is not available`);
 		}
@@ -16856,7 +16856,7 @@ Hooks.once("socketlib.ready", () => {
 
 			try {
 				if (typeof spellItem.executeMacro === "function") {
-					console.log(`${MODULE_ID} | GM executing spell Item Macro using spellItem.executeMacro()`);
+					// console.log(`${MODULE_ID} | GM executing spell Item Macro using spellItem.executeMacro()`);
 					await spellItem.executeMacro(scope);
 				} else {
 					console.error(`${MODULE_ID} | spellItem.executeMacro is not available on GM client`);
@@ -16866,7 +16866,7 @@ Hooks.once("socketlib.ready", () => {
 			}
 		});
 
-		console.log(`${MODULE_ID} | Registered spell Item Macro GM execution handler`);
+		// console.log(`${MODULE_ID} | Registered spell Item Macro GM execution handler`);
 	}
 });
 
@@ -16971,7 +16971,7 @@ Hooks.on("renderChatMessage", async (message, html, data) => {
 	const flags = message.flags;
 
 	// Debug logging for troubleshooting
-	console.log(`${MODULE_ID} | [DEBUG] Item Macro hook - checking message:`, {
+	// console.log(`${MODULE_ID} | [DEBUG] Item Macro hook - checking message:`, {
 		hasDiceTotal,
 		hasD20Roll,
 		shadowdarkRolls: flags?.shadowdark?.rolls,
@@ -16999,7 +16999,7 @@ Hooks.on("renderChatMessage", async (message, html, data) => {
 				const config = getWeaponItemMacroConfig(actorItem);
 				if (config.enabled && config.triggers.length > 0) {
 					item = actorItem;
-					console.log(`${MODULE_ID} | [DEBUG] Found weapon from content: ${item.name}`);
+					// console.log(`${MODULE_ID} | [DEBUG] Found weapon from content: ${item.name}`);
 					break;
 				}
 			}
@@ -17011,7 +17011,7 @@ Hooks.on("renderChatMessage", async (message, html, data) => {
 	// Get the macro config
 	const macroConfig = getWeaponItemMacroConfig(item);
 	if (!macroConfig.enabled || macroConfig.triggers.length === 0) {
-		console.log(`${MODULE_ID} | [DEBUG] Weapon ${item.name} has no enabled triggers`);
+		// console.log(`${MODULE_ID} | [DEBUG] Weapon ${item.name} has no enabled triggers`);
 		return;
 	}
 
@@ -17019,7 +17019,7 @@ Hooks.on("renderChatMessage", async (message, html, data) => {
 	const flavor = message.flavor?.toLowerCase() || "";
 	const isAttackMessage = flavor.includes("attack roll");
 
-	console.log(`${MODULE_ID} | [DEBUG] Attack detection for ${item.name}:`, {
+	// console.log(`${MODULE_ID} | [DEBUG] Attack detection for ${item.name}:`, {
 		isAttackMessage,
 		hasDiceTotal,
 		hasD20Roll,
@@ -17028,7 +17028,7 @@ Hooks.on("renderChatMessage", async (message, html, data) => {
 
 	// Skip if this doesn't look like an attack with dice
 	if (!isAttackMessage && !hasDiceTotal && !hasD20Roll) {
-		console.log(`${MODULE_ID} | [DEBUG] Skipping - not an attack message with dice`);
+		// console.log(`${MODULE_ID} | [DEBUG] Skipping - not an attack message with dice`);
 		return;
 	}
 
@@ -17036,14 +17036,14 @@ Hooks.on("renderChatMessage", async (message, html, data) => {
 	const shadowdarkRolls = flags?.shadowdark?.rolls;
 	const mainRoll = shadowdarkRolls?.main;
 
-	console.log(`${MODULE_ID} | [DEBUG] Shadowdark roll data:`, {
+	// console.log(`${MODULE_ID} | [DEBUG] Shadowdark roll data:`, {
 		mainRoll,
 		success: mainRoll?.success,
 		critical: mainRoll?.critical
 	});
 
 	if (!mainRoll) {
-		console.log(`${MODULE_ID} | [DEBUG] No main roll in shadowdark flags`);
+		// console.log(`${MODULE_ID} | [DEBUG] No main roll in shadowdark flags`);
 		return;
 	}
 
@@ -17053,7 +17053,7 @@ Hooks.on("renderChatMessage", async (message, html, data) => {
 	const isHit = mainRoll.success === true && !isCriticalMiss;
 	const isMiss = mainRoll.success === false || isCriticalMiss;
 
-	console.log(`${MODULE_ID} | [DEBUG] Roll analysis:`, {
+	// console.log(`${MODULE_ID} | [DEBUG] Roll analysis:`, {
 		isCritical,
 		isCriticalMiss,
 		isHit,
@@ -17087,21 +17087,21 @@ Hooks.on("renderChatMessage", async (message, html, data) => {
 		triggersToFire.push("onMiss");
 	}
 
-	console.log(`${MODULE_ID} | [DEBUG] Triggers to fire:`, triggersToFire);
+	// console.log(`${MODULE_ID} | [DEBUG] Triggers to fire:`, triggersToFire);
 
 	// Execute all applicable triggers
 	for (const trigger of triggersToFire) {
-		console.log(`${MODULE_ID} | [DEBUG] Firing trigger: ${trigger}`);
+		// console.log(`${MODULE_ID} | [DEBUG] Firing trigger: ${trigger}`);
 		await executeWeaponItemMacro(item, actor, trigger, context);
 	}
 });
 
 // DEBUG: Ultra simple test hook - remove after debugging
 Hooks.on("createChatMessage", (message) => {
-	console.log(`${MODULE_ID} | [SIMPLE DEBUG] Any chat message created:`, message?.content?.substring(0, 50));
+	// console.log(`${MODULE_ID} | [SIMPLE DEBUG] Any chat message created:`, message?.content?.substring(0, 50));
 });
 
-console.log(`${MODULE_ID} | Module loaded - weapon item macro hooks registered`);
+// console.log(`${MODULE_ID} | Module loaded - weapon item macro hooks registered`);
 
 // ============================================
 // SDX TEMPLATES API
@@ -17136,7 +17136,7 @@ foundry.canvas.placeables.MeasuredTemplate.getRectShape = function (distance, di
 	shape.height = size;
 	return shape;
 };
-console.log(`${MODULE_ID} | Square template rotation fix applied`);
+// console.log(`${MODULE_ID} | Square template rotation fix applied`);
 
 /**
  * SDX.templates - Template placement and targeting API
@@ -17615,7 +17615,7 @@ SDX.templates = {
 	}
 };
 
-console.log(`${MODULE_ID} | SDX.templates API loaded`);
+// console.log(`${MODULE_ID} | SDX.templates API loaded`);
 
 // ============================================
 // MODULE API
@@ -17629,7 +17629,7 @@ Hooks.on("setup", () => {
 			startDurationSpell: startDurationSpell,
 			registerSpellModification: registerSpellModification
 		};
-		console.log(`${MODULE_ID} | Module API registered`);
+		// console.log(`${MODULE_ID} | Module API registered`);
 	}
 });
 
@@ -17845,17 +17845,17 @@ Hooks.once("ready", () => {
 	shadowdark.apps.SpellBookSD.prototype.getData = async function () {
 		const data = await originalGetData.call(this);
 
-		console.log(`${MODULE_ID} | SpellBook getData called`);
-		console.log(`${MODULE_ID} | Actor alignment:`, this.alignment);
-		console.log(`${MODULE_ID} | Has spellList:`, !!data.spellList);
+		// console.log(`${MODULE_ID} | SpellBook getData called`);
+		// console.log(`${MODULE_ID} | Actor alignment:`, this.alignment);
+		// console.log(`${MODULE_ID} | Has spellList:`, !!data.spellList);
 
 		// Filter spells by alignment if alignment is set
 		if (this.alignment && data.spellList) {
-			console.log(`${MODULE_ID} | Filtering spells by alignment: ${this.alignment}`);
+			// console.log(`${MODULE_ID} | Filtering spells by alignment: ${this.alignment}`);
 
 			for (const tier in data.spellList) {
 				const originalCount = data.spellList[tier].length;
-				console.log(`${MODULE_ID} | Tier ${tier} - Original spell count:`, originalCount);
+				// console.log(`${MODULE_ID} | Tier ${tier} - Original spell count:`, originalCount);
 
 				// We need to load full spell documents to get flags
 				// Compendium index doesn't include flags
@@ -17870,7 +17870,7 @@ Hooks.once("ready", () => {
 				// Log first spell to see structure
 				if (spellsWithFlags.length > 0) {
 					const sample = spellsWithFlags[0];
-					console.log(`${MODULE_ID} | Sample spell from tier ${tier} (after loading):`, {
+					// console.log(`${MODULE_ID} | Sample spell from tier ${tier} (after loading):`, {
 						name: sample.name,
 						uuid: sample.uuid,
 						hasFlags: !!sample.flags,
@@ -17887,17 +17887,17 @@ Hooks.once("ready", () => {
 
 					// Log filtering decisions for spells with alignment
 					if (spellAlignment) {
-						console.log(`${MODULE_ID} | Spell "${spell.name}" has alignment "${spellAlignment}", actor is "${this.alignment}" - ${shouldShow ? 'SHOW' : 'HIDE'}`);
+						// console.log(`${MODULE_ID} | Spell "${spell.name}" has alignment "${spellAlignment}", actor is "${this.alignment}" - ${shouldShow ? 'SHOW' : 'HIDE'}`);
 					}
 
 					return shouldShow;
 				});
 
 				const filteredCount = data.spellList[tier].length;
-				console.log(`${MODULE_ID} | Tier ${tier} - Filtered spell count:`, filteredCount, `(removed ${originalCount - filteredCount})`);
+				// console.log(`${MODULE_ID} | Tier ${tier} - Filtered spell count:`, filteredCount, `(removed ${originalCount - filteredCount})`);
 			}
 		} else {
-			console.log(`${MODULE_ID} | No filtering applied - alignment: "${this.alignment}", has spellList: ${!!data.spellList}`);
+			// console.log(`${MODULE_ID} | No filtering applied - alignment: "${this.alignment}", has spellList: ${!!data.spellList}`);
 		}
 
 		return data;
@@ -17911,12 +17911,12 @@ Hooks.once("ready", () => {
 		const actorAlignment = this.system.alignment || '';
 
 
-		console.log(`${MODULE_ID} | Opening spellbook for actor: ${this.name}`);
-		console.log(`${MODULE_ID} | Actor alignment: "${actorAlignment}"`);
-		console.log(`${MODULE_ID} | Spellcaster classes:`, playerSpellcasterClasses.map(c => c.name));
+		// console.log(`${MODULE_ID} | Opening spellbook for actor: ${this.name}`);
+		// console.log(`${MODULE_ID} | Actor alignment: "${actorAlignment}"`);
+		// console.log(`${MODULE_ID} | Spellcaster classes:`, playerSpellcasterClasses.map(c => c.name));
 
 		const openChosenSpellbook = classUuid => {
-			console.log(`${MODULE_ID} | Creating SpellBookSD with alignment: "${actorAlignment}"`);
+			// console.log(`${MODULE_ID} | Creating SpellBookSD with alignment: "${actorAlignment}"`);
 			const app = new shadowdark.apps.SpellBookSD(
 				classUuid,
 				this.id
@@ -17960,7 +17960,7 @@ Hooks.once("ready", () => {
 		}
 	};
 
-	console.log(`${MODULE_ID} | Alignment-based spell filtering initialized`);
+	// console.log(`${MODULE_ID} | Alignment-based spell filtering initialized`);
 });
 
 // ===================================================================
@@ -17984,11 +17984,11 @@ async function evaluateSourceRequirement(requirement, actor, token = null, sourc
 			if (parentItem && parentItem instanceof Item) {
 				// Check if the item has an equipped property
 				const isEquipped = parentItem.system?.equipped;
-				console.log(`${MODULE_ID} | Effect "${sourceEffect.name}" requires equipped. Item "${parentItem.name}" equipped: ${isEquipped}`);
+				// console.log(`${MODULE_ID} | Effect "${sourceEffect.name}" requires equipped. Item "${parentItem.name}" equipped: ${isEquipped}`);
 
 				// If not equipped, the requirement is not met
 				if (!isEquipped) {
-					console.log(`${MODULE_ID} | Effect "${sourceEffect.name}" requirement NOT MET - item not equipped`);
+					// console.log(`${MODULE_ID} | Effect "${sourceEffect.name}" requirement NOT MET - item not equipped`);
 					return false;
 				}
 			}
@@ -18054,15 +18054,15 @@ async function evaluateSourceRequirement(requirement, actor, token = null, sourc
 			alignment: (actor?.system?.alignment ?? "").toLowerCase(),
 		};
 
-		console.log(`${MODULE_ID} | Evaluating requirement: "${requirement}"`);
-		console.log(`${MODULE_ID} | Actor: ${actor.name} (Level ${context.level})`);
-		console.log(`${MODULE_ID} | Resolved names - ancestry: "${context.ancestry}", class: "${context.charClass}", background: "${context.background}", alignment: "${context.alignment}"`);
+		// console.log(`${MODULE_ID} | Evaluating requirement: "${requirement}"`);
+		// console.log(`${MODULE_ID} | Actor: ${actor.name} (Level ${context.level})`);
+		// console.log(`${MODULE_ID} | Resolved names - ancestry: "${context.ancestry}", class: "${context.charClass}", background: "${context.background}", alignment: "${context.alignment}"`);
 
 		// Use Function constructor for safer evaluation than eval
 		const fn = new Function(...Object.keys(context), `return ${requirement};`);
 		const result = fn(...Object.values(context));
 
-		console.log(`${MODULE_ID} | Requirement "${requirement}" evaluated to: ${result}`);
+		// console.log(`${MODULE_ID} | Requirement "${requirement}" evaluated to: ${result}`);
 
 		return Boolean(result);
 	} catch (error) {
@@ -18233,7 +18233,7 @@ Hooks.on("renderActiveEffectConfig", (app, html, data) => {
 			const requirementInput = $html.find(`input[name="flags.${MODULE_ID}.sourceRequirement"]`);
 			if (requirementInput.length > 0) {
 				const newRequirement = requirementInput.val()?.trim() || "";
-				console.log(`${MODULE_ID} | Form submitting, will save requirement: "${newRequirement}"`);
+				// console.log(`${MODULE_ID} | Form submitting, will save requirement: "${newRequirement}"`);
 
 				// Store it in a temp variable on the effect to be picked up by preUpdate hook
 				effect._pendingSourceRequirement = newRequirement;
@@ -18243,7 +18243,7 @@ Hooks.on("renderActiveEffectConfig", (app, html, data) => {
 			const requireEquippedInput = $html.find(`input[name="flags.${MODULE_ID}.requireEquipped"]`);
 			if (requireEquippedInput.length > 0) {
 				const newRequireEquipped = requireEquippedInput.is(':checked');
-				console.log(`${MODULE_ID} | Form submitting, will save requireEquipped: ${newRequireEquipped}`);
+				// console.log(`${MODULE_ID} | Form submitting, will save requireEquipped: ${newRequireEquipped}`);
 
 				// Store it in a temp variable on the effect to be picked up by preUpdate hook
 				effect._pendingRequireEquipped = newRequireEquipped;
@@ -18259,11 +18259,11 @@ Hooks.on("renderActiveEffectConfig", (app, html, data) => {
  * Hook to save the source requirement when effect is updated
  */
 Hooks.on("preUpdateActiveEffect", (effect, changes, options, userId) => {
-	console.log(`${MODULE_ID} | preUpdateActiveEffect fired for effect: ${effect.name}`);
+	// console.log(`${MODULE_ID} | preUpdateActiveEffect fired for effect: ${effect.name}`);
 
 	// Check if there's a pending source requirement from the form
 	if (effect._pendingSourceRequirement !== undefined) {
-		console.log(`${MODULE_ID} | Found pending requirement: "${effect._pendingSourceRequirement}"`);
+		// console.log(`${MODULE_ID} | Found pending requirement: "${effect._pendingSourceRequirement}"`);
 
 		// Merge the requirement into the changes
 		if (!changes.flags) changes.flags = {};
@@ -18273,12 +18273,12 @@ Hooks.on("preUpdateActiveEffect", (effect, changes, options, userId) => {
 		// Clean up the temp variable
 		delete effect._pendingSourceRequirement;
 
-		console.log(`${MODULE_ID} | Merged requirement into update: "${changes.flags[MODULE_ID].sourceRequirement}"`);
+		// console.log(`${MODULE_ID} | Merged requirement into update: "${changes.flags[MODULE_ID].sourceRequirement}"`);
 	}
 
 	// Check if there's a pending requireEquipped from the form
 	if (effect._pendingRequireEquipped !== undefined) {
-		console.log(`${MODULE_ID} | Found pending requireEquipped: ${effect._pendingRequireEquipped}`);
+		// console.log(`${MODULE_ID} | Found pending requireEquipped: ${effect._pendingRequireEquipped}`);
 
 		// Merge the requireEquipped into the changes
 		if (!changes.flags) changes.flags = {};
@@ -18288,17 +18288,17 @@ Hooks.on("preUpdateActiveEffect", (effect, changes, options, userId) => {
 		// Clean up the temp variable
 		delete effect._pendingRequireEquipped;
 
-		console.log(`${MODULE_ID} | Merged requireEquipped into update: ${changes.flags[MODULE_ID].requireEquipped}`);
+		// console.log(`${MODULE_ID} | Merged requireEquipped into update: ${changes.flags[MODULE_ID].requireEquipped}`);
 	}
 
 	// Check if there's a flags update with our source requirement
 	if (changes.flags?.[MODULE_ID]?.sourceRequirement !== undefined) {
-		console.log(`${MODULE_ID} | preUpdateActiveEffect: Saving requirement "${changes.flags[MODULE_ID].sourceRequirement}"`);
+		// console.log(`${MODULE_ID} | preUpdateActiveEffect: Saving requirement "${changes.flags[MODULE_ID].sourceRequirement}"`);
 	}
 
 	// Check if there's a flags update with our requireEquipped
 	if (changes.flags?.[MODULE_ID]?.requireEquipped !== undefined) {
-		console.log(`${MODULE_ID} | preUpdateActiveEffect: Saving requireEquipped ${changes.flags[MODULE_ID].requireEquipped}`);
+		// console.log(`${MODULE_ID} | preUpdateActiveEffect: Saving requireEquipped ${changes.flags[MODULE_ID].requireEquipped}`);
 	}
 });
 
@@ -18306,9 +18306,9 @@ Hooks.on("preUpdateActiveEffect", (effect, changes, options, userId) => {
  * Hook to check requirements after effect is updated
  */
 Hooks.on("updateActiveEffect", async (effect, changes, options, userId) => {
-	console.log(`${MODULE_ID} | updateActiveEffect hook fired for effect: ${effect.name}`);
-	console.log(`${MODULE_ID} | Effect parent type: ${effect.parent?.constructor?.name}`);
-	console.log(`${MODULE_ID} | Effect saved requirement: "${effect.getFlag(MODULE_ID, "sourceRequirement")}"`);
+	// console.log(`${MODULE_ID} | updateActiveEffect hook fired for effect: ${effect.name}`);
+	// console.log(`${MODULE_ID} | Effect parent type: ${effect.parent?.constructor?.name}`);
+	// console.log(`${MODULE_ID} | Effect saved requirement: "${effect.getFlag(MODULE_ID, "sourceRequirement")}"`);
 
 	if (userId !== game.user.id) return;
 
@@ -18326,11 +18326,11 @@ Hooks.on("updateActiveEffect", async (effect, changes, options, userId) => {
 
 				// Only allow manual override when DISABLING an effect that meets requirements
 				if (requirementMet && changes.disabled === true) {
-					console.log(`${MODULE_ID} | User manually disabled effect "${effect.name}" (requirements met), setting manual override`);
+					// console.log(`${MODULE_ID} | User manually disabled effect "${effect.name}" (requirements met), setting manual override`);
 					await effect.setFlag(MODULE_ID, "manualOverride", true);
 				} else if (!requirementMet && changes.disabled === false) {
 					// Requirements not met, user trying to enable - block it
-					console.log(`${MODULE_ID} | Cannot enable effect "${effect.name}" - requirements not met: ${requirement}`);
+					// console.log(`${MODULE_ID} | Cannot enable effect "${effect.name}" - requirements not met: ${requirement}`);
 					ui.notifications.warn(game.i18n.format("SHADOWDARK_EXTRAS.effects.requirementNotMet", {
 						name: effect.name,
 						requirement: requirement
@@ -18347,7 +18347,7 @@ Hooks.on("updateActiveEffect", async (effect, changes, options, userId) => {
 	// If the source requirement was updated, check it immediately
 	if (changes.flags?.[MODULE_ID]?.sourceRequirement !== undefined) {
 		const parent = effect.parent;
-		console.log(`${MODULE_ID} | Source requirement was updated to: "${changes.flags[MODULE_ID].sourceRequirement}"`);
+		// console.log(`${MODULE_ID} | Source requirement was updated to: "${changes.flags[MODULE_ID].sourceRequirement}"`);
 
 		// Clear manual override when requirement changes
 		if (effect.getFlag(MODULE_ID, "manualOverride") !== undefined) {
@@ -18356,10 +18356,10 @@ Hooks.on("updateActiveEffect", async (effect, changes, options, userId) => {
 
 		// Check if parent is an item (meaning this is a transferred effect)
 		if (parent && parent instanceof Item) {
-			console.log(`${MODULE_ID} | Effect is on an Item, checking the item's actor`);
+			// console.log(`${MODULE_ID} | Effect is on an Item, checking the item's actor`);
 			const actor = parent.parent;
 			if (actor && actor instanceof Actor) {
-				console.log(`${MODULE_ID} | Checking requirements on actor: ${actor.name}`);
+				// console.log(`${MODULE_ID} | Checking requirements on actor: ${actor.name}`);
 
 				// Add a delay to ensure transferred effects are updated
 				setTimeout(async () => {
@@ -18367,7 +18367,7 @@ Hooks.on("updateActiveEffect", async (effect, changes, options, userId) => {
 				}, 100);
 			}
 		} else if (parent && parent instanceof Actor) {
-			console.log(`${MODULE_ID} | Effect is directly on an Actor`);
+			// console.log(`${MODULE_ID} | Effect is directly on an Actor`);
 			await checkEffectRequirements(parent);
 		}
 	}
@@ -18375,7 +18375,7 @@ Hooks.on("updateActiveEffect", async (effect, changes, options, userId) => {
 	// If the requireEquipped flag was updated, check it immediately
 	if (changes.flags?.[MODULE_ID]?.requireEquipped !== undefined) {
 		const parent = effect.parent;
-		console.log(`${MODULE_ID} | requireEquipped was updated to: ${changes.flags[MODULE_ID].requireEquipped}`);
+		// console.log(`${MODULE_ID} | requireEquipped was updated to: ${changes.flags[MODULE_ID].requireEquipped}`);
 
 		// Clear manual override when requireEquipped changes
 		if (effect.getFlag(MODULE_ID, "manualOverride") !== undefined) {
@@ -18384,10 +18384,10 @@ Hooks.on("updateActiveEffect", async (effect, changes, options, userId) => {
 
 		// Check if parent is an item (meaning this is a transferred effect)
 		if (parent && parent instanceof Item) {
-			console.log(`${MODULE_ID} | Effect is on an Item, checking the item's actor`);
+			// console.log(`${MODULE_ID} | Effect is on an Item, checking the item's actor`);
 			const actor = parent.parent;
 			if (actor && actor instanceof Actor) {
-				console.log(`${MODULE_ID} | Checking requirements on actor: ${actor.name}`);
+				// console.log(`${MODULE_ID} | Checking requirements on actor: ${actor.name}`);
 
 				// Add a delay to ensure transferred effects are updated
 				setTimeout(async () => {
@@ -18395,7 +18395,7 @@ Hooks.on("updateActiveEffect", async (effect, changes, options, userId) => {
 				}, 100);
 			}
 		} else if (parent && parent instanceof Actor) {
-			console.log(`${MODULE_ID} | Effect is directly on an Actor`);
+			// console.log(`${MODULE_ID} | Effect is directly on an Actor`);
 			await checkEffectRequirements(parent);
 		}
 	}
@@ -18405,16 +18405,16 @@ Hooks.on("updateActiveEffect", async (effect, changes, options, userId) => {
  * Check and update effect disabled state based on requirements
  */
 async function checkEffectRequirements(actor) {
-	console.log(`${MODULE_ID} | checkEffectRequirements called for actor: ${actor.name}`);
-	console.log(`${MODULE_ID} | Total effects on actor: ${actor.effects.size}`);
-	console.log(`${MODULE_ID} | Total items on actor: ${actor.items.size}`);
+	// console.log(`${MODULE_ID} | checkEffectRequirements called for actor: ${actor.name}`);
+	// console.log(`${MODULE_ID} | Total effects on actor: ${actor.effects.size}`);
+	// console.log(`${MODULE_ID} | Total items on actor: ${actor.items.size}`);
 
 	// Debug: log all effects and their flags
 	for (const effect of actor.effects) {
 		const requirement = effect.getFlag(MODULE_ID, "sourceRequirement");
 		const origin = effect.origin || "Unknown";
 		const isTransferred = effect.transfer;
-		console.log(`${MODULE_ID} | Effect "${effect.name}" (origin: ${origin}, transferred: ${isTransferred}) - requirement: "${requirement}" - flags:`, effect.flags);
+		// console.log(`${MODULE_ID} | Effect "${effect.name}" (origin: ${origin}, transferred: ${isTransferred}) - requirement: "${requirement}" - flags:`, effect.flags);
 	}
 
 	const effectsToCheck = [];
@@ -18434,10 +18434,10 @@ async function checkEffectRequirements(actor) {
 					requirement = originDoc.getFlag(MODULE_ID, "sourceRequirement");
 					requireEquipped = originDoc.getFlag(MODULE_ID, "requireEquipped");
 					sourceEffect = originDoc;
-					console.log(`${MODULE_ID} | Effect "${effect.name}" is transferred, checking source effect for requirement: "${requirement}", requireEquipped: ${requireEquipped}`);
+					// console.log(`${MODULE_ID} | Effect "${effect.name}" is transferred, checking source effect for requirement: "${requirement}", requireEquipped: ${requireEquipped}`);
 				}
 			} catch (err) {
-				console.log(`${MODULE_ID} | Could not resolve origin for effect "${effect.name}"`);
+				// console.log(`${MODULE_ID} | Could not resolve origin for effect "${effect.name}"`);
 			}
 		}
 
@@ -18448,13 +18448,13 @@ async function checkEffectRequirements(actor) {
 	}
 
 	// Also check effects on items owned by the actor
-	console.log(`${MODULE_ID} | Checking effects on actor's items...`);
+	// console.log(`${MODULE_ID} | Checking effects on actor's items...`);
 	for (const item of actor.items) {
 		for (const effect of item.effects) {
 			const requirement = effect.getFlag(MODULE_ID, "sourceRequirement");
 			const requireEquipped = effect.getFlag(MODULE_ID, "requireEquipped");
 			if ((requirement && requirement.trim() !== "") || requireEquipped) {
-				console.log(`${MODULE_ID} | Found effect "${effect.name}" on item "${item.name}" with requirement: "${requirement}", requireEquipped: ${requireEquipped}`);
+				// console.log(`${MODULE_ID} | Found effect "${effect.name}" on item "${item.name}" with requirement: "${requirement}", requireEquipped: ${requireEquipped}`);
 				// For item effects, we need to check if they transfer
 				if (effect.transfer) {
 					effectsToCheck.push({ effect: effect, sourceEffect: effect, requirement });
@@ -18463,19 +18463,19 @@ async function checkEffectRequirements(actor) {
 		}
 	}
 
-	console.log(`${MODULE_ID} | Found ${effectsToCheck.length} effects with requirements`);
+	// console.log(`${MODULE_ID} | Found ${effectsToCheck.length} effects with requirements`);
 
 	if (effectsToCheck.length === 0) return;
 
 	const token = actor.token?.object || actor.getActiveTokens()[0];
 
 	for (const { effect, sourceEffect, requirement } of effectsToCheck) {
-		console.log(`${MODULE_ID} | Checking effect "${effect.name}" (currently disabled: ${sourceEffect.disabled})`);
+		// console.log(`${MODULE_ID} | Checking effect "${effect.name}" (currently disabled: ${sourceEffect.disabled})`);
 
 		// Check for manual override
 		const manualOverride = sourceEffect.getFlag(MODULE_ID, "manualOverride");
 		if (manualOverride !== undefined && manualOverride !== null) {
-			console.log(`${MODULE_ID} | Effect "${effect.name}" has manual override (disabled: ${manualOverride}), skipping automatic requirement check`);
+			// console.log(`${MODULE_ID} | Effect "${effect.name}" has manual override (disabled: ${manualOverride}), skipping automatic requirement check`);
 			continue;
 		}
 
@@ -18484,13 +18484,13 @@ async function checkEffectRequirements(actor) {
 		// Toggle the SOURCE effect's disabled state (this will propagate to transferred effects)
 		// Use the byRequirementSystem option to distinguish from manual changes
 		if (requirementMet && sourceEffect.disabled) {
-			console.log(`${MODULE_ID} | ENABLING effect "${effect.name}" - requirement met: ${requirement}`);
+			// console.log(`${MODULE_ID} | ENABLING effect "${effect.name}" - requirement met: ${requirement}`);
 			await sourceEffect.update({ disabled: false }, { byRequirementSystem: true });
 		} else if (!requirementMet && !sourceEffect.disabled) {
-			console.log(`${MODULE_ID} | DISABLING effect "${effect.name}" - requirement not met: ${requirement}`);
+			// console.log(`${MODULE_ID} | DISABLING effect "${effect.name}" - requirement not met: ${requirement}`);
 			await sourceEffect.update({ disabled: true }, { byRequirementSystem: true });
 		} else {
-			console.log(`${MODULE_ID} | Effect "${effect.name}" already in correct state (disabled: ${sourceEffect.disabled}, requirement met: ${requirementMet})`);
+			// console.log(`${MODULE_ID} | Effect "${effect.name}" already in correct state (disabled: ${sourceEffect.disabled}, requirement met: ${requirementMet})`);
 		}
 	}
 }
@@ -18499,25 +18499,25 @@ async function checkEffectRequirements(actor) {
  * Hook to check requirements when effect is created
  */
 Hooks.on("createActiveEffect", async (effect, options, userId) => {
-	console.log(`${MODULE_ID} | createActiveEffect hook fired for effect: ${effect.name}`);
+	// console.log(`${MODULE_ID} | createActiveEffect hook fired for effect: ${effect.name}`);
 
 	if (userId !== game.user.id) {
-		console.log(`${MODULE_ID} | Skipping - not our user (userId: ${userId}, game.user.id: ${game.user.id})`);
+		// console.log(`${MODULE_ID} | Skipping - not our user (userId: ${userId}, game.user.id: ${game.user.id})`);
 		return;
 	}
 
 	const requirement = effect.getFlag(MODULE_ID, "sourceRequirement");
 	const requireEquipped = effect.getFlag(MODULE_ID, "requireEquipped");
-	console.log(`${MODULE_ID} | Effect requirement: "${requirement}", requireEquipped: ${requireEquipped}`);
+	// console.log(`${MODULE_ID} | Effect requirement: "${requirement}", requireEquipped: ${requireEquipped}`);
 
 	if ((!requirement || requirement.trim() === "") && !requireEquipped) {
-		console.log(`${MODULE_ID} | No requirement or requireEquipped set for this effect`);
+		// console.log(`${MODULE_ID} | No requirement or requireEquipped set for this effect`);
 		return;
 	}
 
 	const actor = effect.parent;
 	if (!actor || !(actor instanceof Actor)) {
-		console.log(`${MODULE_ID} | No valid actor parent found`);
+		// console.log(`${MODULE_ID} | No valid actor parent found`);
 		return;
 	}
 
@@ -18525,10 +18525,10 @@ Hooks.on("createActiveEffect", async (effect, options, userId) => {
 	const requirementMet = await evaluateSourceRequirement(requirement, actor, token, effect);
 
 	if (!requirementMet && !effect.disabled) {
-		console.log(`${MODULE_ID} | DISABLING newly created effect "${effect.name}" - requirement not met: ${requirement}`);
+		// console.log(`${MODULE_ID} | DISABLING newly created effect "${effect.name}" - requirement not met: ${requirement}`);
 		await effect.update({ disabled: true }, { byRequirementSystem: true });
 	} else {
-		console.log(`${MODULE_ID} | Effect "${effect.name}" - requirementMet: ${requirementMet}, already disabled: ${effect.disabled}`);
+		// console.log(`${MODULE_ID} | Effect "${effect.name}" - requirementMet: ${requirementMet}, already disabled: ${effect.disabled}`);
 	}
 });
 
@@ -18543,7 +18543,7 @@ Hooks.on("prepareActorData", async (actor) => {
 
 	if (effectsWithRequirements.length === 0) return;
 
-	console.log(`${MODULE_ID} | prepareActorData hook - Actor: ${actor.name}, Effects with requirements or requireEquipped: ${effectsWithRequirements.length}`);
+	// console.log(`${MODULE_ID} | prepareActorData hook - Actor: ${actor.name}, Effects with requirements or requireEquipped: ${effectsWithRequirements.length}`);
 
 	const token = actor.token?.object || actor.getActiveTokens()[0];
 
@@ -18556,30 +18556,30 @@ Hooks.on("prepareActorData", async (actor) => {
 		// Check for manual override
 		const manualOverride = effect.getFlag(MODULE_ID, "manualOverride");
 		if (manualOverride !== undefined && manualOverride !== null) {
-			console.log(`${MODULE_ID} | [prepareActorData] Effect "${effect.name}" has manual override, skipping`);
+			// console.log(`${MODULE_ID} | [prepareActorData] Effect "${effect.name}" has manual override, skipping`);
 			continue;
 		}
 
 		if (!requirementMet && !effect.disabled) {
-			console.log(`${MODULE_ID} | [prepareActorData] Effect "${effect.name}" should be disabled - requirement not met: ${requirement}`);
+			// console.log(`${MODULE_ID} | [prepareActorData] Effect "${effect.name}" should be disabled - requirement not met: ${requirement}`);
 			// Queue an update for next tick
 			setTimeout(() => {
 				if (!effect.disabled) {
-					console.log(`${MODULE_ID} | [setTimeout] DISABLING effect "${effect.name}"`);
+					// console.log(`${MODULE_ID} | [setTimeout] DISABLING effect "${effect.name}"`);
 					effect.update({ disabled: true }, { byRequirementSystem: true });
 				}
 			}, 0);
 		} else if (requirementMet && effect.disabled) {
-			console.log(`${MODULE_ID} | [prepareActorData] Effect "${effect.name}" should be enabled - requirement met: ${requirement}`);
+			// console.log(`${MODULE_ID} | [prepareActorData] Effect "${effect.name}" should be enabled - requirement met: ${requirement}`);
 			// Queue an update for next tick
 			setTimeout(() => {
 				if (effect.disabled) {
-					console.log(`${MODULE_ID} | [setTimeout] ENABLING effect "${effect.name}"`);
+					// console.log(`${MODULE_ID} | [setTimeout] ENABLING effect "${effect.name}"`);
 					effect.update({ disabled: false }, { byRequirementSystem: true });
 				}
 			}, 0);
 		} else {
-			console.log(`${MODULE_ID} | [prepareActorData] Effect "${effect.name}" already in correct state (disabled: ${effect.disabled}, req met: ${requirementMet})`);
+			// console.log(`${MODULE_ID} | [prepareActorData] Effect "${effect.name}" already in correct state (disabled: ${effect.disabled}, req met: ${requirementMet})`);
 		}
 	}
 });
@@ -18589,11 +18589,11 @@ Hooks.on("prepareActorData", async (actor) => {
  * This re-evaluates effects to see if requirements are now met or unmet
  */
 Hooks.on("updateActor", async (actor, changes, options, userId) => {
-	console.log(`${MODULE_ID} | updateActor hook fired for actor: ${actor.name}`);
+	// console.log(`${MODULE_ID} | updateActor hook fired for actor: ${actor.name}`);
 
 	// Only process on the user who made the update
 	if (userId !== game.user.id) {
-		console.log(`${MODULE_ID} | Skipping - not our user`);
+		// console.log(`${MODULE_ID} | Skipping - not our user`);
 		return;
 	}
 
@@ -18606,13 +18606,13 @@ Hooks.on("updateActor", async (actor, changes, options, userId) => {
  */
 Hooks.on("renderActorSheet", async (app, html, data) => {
 	const actor = app.actor;
-	console.log(`${MODULE_ID} | renderActorSheet hook fired for actor: ${actor?.name}`);
+	// console.log(`${MODULE_ID} | renderActorSheet hook fired for actor: ${actor?.name}`);
 
 	if (!actor) return;
 
 	// Check requirements after a short delay to ensure data is fully prepared
 	setTimeout(async () => {
-		console.log(`${MODULE_ID} | [renderActorSheet setTimeout] Checking requirements for ${actor.name}`);
+		// console.log(`${MODULE_ID} | [renderActorSheet setTimeout] Checking requirements for ${actor.name}`);
 		await checkEffectRequirements(actor);
 	}, 100);
 });
@@ -18622,14 +18622,14 @@ Hooks.on("renderActorSheet", async (app, html, data) => {
  * This ensures transferred items have their effect requirements checked on the new actor
  */
 Hooks.on("createItem", async (item, options, userId) => {
-	console.log(`${MODULE_ID} | createItem hook fired for item: ${item.name}`);
+	// console.log(`${MODULE_ID} | createItem hook fired for item: ${item.name}`);
 
 	if (userId !== game.user.id) return;
 
 	// Check if this item belongs to an actor
 	const actor = item.parent;
 	if (!actor || !(actor instanceof Actor)) {
-		console.log(`${MODULE_ID} | Item not owned by an actor, skipping`);
+		// console.log(`${MODULE_ID} | Item not owned by an actor, skipping`);
 		return;
 	}
 
@@ -18640,18 +18640,18 @@ Hooks.on("createItem", async (item, options, userId) => {
 	});
 
 	if (effectsWithRequirements.length === 0) {
-		console.log(`${MODULE_ID} | Item has no effects with requirements, skipping`);
+		// console.log(`${MODULE_ID} | Item has no effects with requirements, skipping`);
 		return;
 	}
 
-	console.log(`${MODULE_ID} | Item "${item.name}" has ${effectsWithRequirements.length} effect(s) with requirements, checking requirements for new owner: ${actor.name}`);
+	// console.log(`${MODULE_ID} | Item "${item.name}" has ${effectsWithRequirements.length} effect(s) with requirements, checking requirements for new owner: ${actor.name}`);
 
 	// Clear manual override flags on transferred item effects
 	// The override was for the previous actor, not this new owner
 	for (const effect of effectsWithRequirements) {
 		const hasOverride = effect.getFlag(MODULE_ID, "manualOverride");
 		if (hasOverride !== undefined && hasOverride !== null) {
-			console.log(`${MODULE_ID} | Clearing manual override flag on transferred effect "${effect.name}"`);
+			// console.log(`${MODULE_ID} | Clearing manual override flag on transferred effect "${effect.name}"`);
 			await effect.unsetFlag(MODULE_ID, "manualOverride");
 		}
 	}
@@ -18662,5 +18662,5 @@ Hooks.on("createItem", async (item, options, userId) => {
 	}, 100);
 });
 
-console.log(`${MODULE_ID} | Source Requirements for Active Effects initialized`);
+// console.log(`${MODULE_ID} | Source Requirements for Active Effects initialized`);
 
