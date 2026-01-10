@@ -1,0 +1,92 @@
+<details class="sdx-requirement-examples" open="">
+				<summary style=""><i class="fas fa-info-circle"></i> Valid Requirement Examples</summary>
+				<div class="examples-content">
+					<p><strong>Level Requirements:</strong></p>
+					<ul>
+						<li><code>level &gt; 3</code> - Character level greater than 3</li>
+						<li><code>level &gt;= 5</code> - Character level 5 or higher</li>
+						<li><code>level === 1</code> - Exactly level 1</li>
+					</ul>
+
+					<p><strong>Hit Points Requirements:</strong></p>
+					<ul>
+						<li><code>actor.system.attributes.hp.value &gt; 10</code> - Current HP greater than 10</li>
+						<li><code>actor.system.attributes.hp.value &gt;= actor.system.attributes.hp.max / 2</code> - At least half HP</li>
+						<li><code>actor.system.attributes.hp.value &lt; 5</code> - Bloodied (less than 5 HP)</li>
+						<li><code>actor.system.attributes.hp.max &gt;= 20</code> - Maximum HP 20 or higher</li>
+					</ul>
+
+					<p><strong>Attribute Requirements:</strong></p>
+					<ul>
+						<li><code>attributes.str.value &gt;= 14</code> - Strength 14 or higher</li>
+						<li><code>attributes.dex.value &gt; 12</code> - Dexterity greater than 12</li>
+						<li><code>attributes.con.value &gt;= 16</code> - Constitution 16 or higher</li>
+					</ul>
+
+					<p><strong>Ability Modifier Requirements:</strong></p>
+					<ul>
+						<li><code>abilities.str.mod &gt;= 2</code> - Strength modifier +2 or higher</li>
+						<li><code>abilities.dex.mod &gt; 0</code> - Positive Dexterity modifier</li>
+						<li><code>abilities.int.mod &gt;= 3</code> - Intelligence modifier +3 or higher</li>
+					</ul>
+
+					<p><strong>Ancestry Requirements:</strong></p>
+					<ul>
+						<li><code>ancestry === "elf"</code> - Is an elf</li>
+						<li><code>ancestry === "dwarf"</code> - Is a dwarf</li>
+						<li><code>ancestry === "halfling"</code> - Is a halfling</li>
+						<li><code>ancestry === "human"</code> - Is a human</li>
+						<li><code>ancestry.includes("goblin")</code> - Name includes "goblin" (for variations)</li>
+					</ul>
+
+					<p><strong>Class Requirements:</strong></p>
+					<ul>
+						<li><code>charClass === "fighter"</code> - Is a fighter</li>
+						<li><code>charClass === "wizard"</code> - Is a wizard</li>
+						<li><code>charClass === "cleric"</code> - Is a cleric</li>
+						<li><code>charClass === "thief"</code> - Is a thief</li>
+						<li><code>charClass.includes("ranger")</code> - Class name includes "ranger" (for variations)</li>
+					</ul>
+
+					<p><strong>Background Requirements:</strong></p>
+					<ul>
+						<li><code>background === "urchin"</code> - Urchin background</li>
+						<li><code>background === "merchant"</code> - Merchant background</li>
+						<li><code>background.includes("soldier")</code> - Background includes "soldier"</li>
+					</ul>
+
+					<p><strong>Alignment Requirements:</strong></p>
+					<ul>
+						<li><code>alignment === "lawful"</code> - Lawful alignment</li>
+						<li><code>alignment === "neutral"</code> - Neutral alignment</li>
+						<li><code>alignment === "chaotic"</code> - Chaotic alignment</li>
+					</ul>
+
+					<p><strong>Item Ownership Requirements:</strong></p>
+					<ul>
+						<li><code>actor.items.some(i =&gt; i.name === "Sword of Light")</code> - Has "Sword of Light"</li>
+						<li><code>actor.items.some(i =&gt; i.name.includes("Sword"))</code> - Has any item with "Sword" in name</li>
+						<li><code>actor.items.some(i =&gt; i.type === "Weapon" &amp;&amp; i.name.includes("Magic"))</code> - Has magic weapon</li>
+						<li><code>actor.items.some(i =&gt; i.type === "Armor" &amp;&amp; i.system.equipped)</code> - Has equipped armor</li>
+						<li><code>actor.items.filter(i =&gt; i.type === "Spell").length &gt;= 3</code> - Has 3 or more spells</li>
+					</ul>
+
+					<p><strong>Combined Requirements (AND/OR):</strong></p>
+					<ul>
+						<li><code>level &gt;= 5 &amp;&amp; abilities.str.mod &gt;= 2</code> - Level 5+ AND Str +2+</li>
+						<li><code>attributes.str.value &gt;= 16 || attributes.dex.value &gt;= 16</code> - Str 16+ OR Dex 16+</li>
+						<li><code>level &gt; 3 &amp;&amp; charClass === "wizard"</code> - Level 3+ wizard</li>
+						<li><code>actor.items.some(i =&gt; i.name === "Holy Symbol") &amp;&amp; charClass === "cleric"</code> - Cleric with holy symbol</li>
+						<li><code>ancestry === "elf" &amp;&amp; abilities.int.mod &gt; 0</code> - Elf with positive Int modifier</li>
+						<li><code>alignment === "lawful" &amp;&amp; charClass === "cleric"</code> - Lawful cleric</li>
+					</ul>
+
+					<p><strong>Token Requirements (if token exists):</strong></p>
+					<ul>
+						<li><code>token?.elevation &gt; 0</code> - Token is elevated</li>
+						<li><code>token?.disposition === 1</code> - Friendly token</li>
+					</ul>
+
+					<p class="notes"><strong>Available Variables:</strong> <code>actor</code>, <code>token</code>, <code>level</code>, <code>attributes</code>, <code>abilities</code>, <code>ancestry</code>, <code>charClass</code>, <code>background</code>, <code>alignment</code><br><br><strong>Note:</strong> <code>ancestry</code>, <code>charClass</code>, <code>background</code>, and <code>alignment</code> are automatically resolved from Compendium UUIDs to lowercase names (e.g., "wizard", "elf", "chaotic").</p>
+				</div>
+			</details>
