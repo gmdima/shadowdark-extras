@@ -1,11 +1,26 @@
 /* Chat narration card wrapper - placeholder styling */
 /* User will provide exact CSS with border-image later */
+.shadowdark.sheet .tab-details.sdx-enhanced-details .SD-list .header .item-name,
+.shadowdark.sheet .tab-details.sdx-enhanced-details .SD-list .item .item-name {
+    color: rgba(255, 255, 255, 0.9) !important;
+    font-size: 15px;
+}
+
 body.sdx-dark-mode .sdx-narration-card {
     background: #000000;
     color: #ffffff;
     padding: 0;
     border-radius: 4px;
 
+}
+
+body.sdx-dark-mode .window-header {
+    border-bottom: 1px solid #362f37;
+}
+
+.shadowdark.sheet .tab-details.sdx-enhanced-details .SD-list .flex-100-px {
+    color: rgba(255, 255, 255, 0.9) !important;
+    font-size: 15px;
 }
 
 body.sdx-dark-mode .sdx-narration-card blockquote {
@@ -62,7 +77,7 @@ body.sdx-dark-mode .sheet.journal-entry .window-header {
 }
 
 body.sdx-dark-mode .window-header .window-title {
-    font-size: 21px;
+    font-size: 19px;
     padding-left: 10px;
 }
 

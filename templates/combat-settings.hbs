@@ -149,6 +149,17 @@
 
 			<div class="sdx-setting-item">
 				<div class="sdx-setting-header">
+					<label for="gmOnlyApplyDamage">
+						<input type="checkbox" name="damageCard.gmOnlyApplyDamage" id="gmOnlyApplyDamage" {{checked
+							settings.damageCard.gmOnlyApplyDamage}} />
+						<strong>GM Only Apply Damage</strong>
+					</label>
+				</div>
+				<p class="sdx-setting-hint">If enabled, only the GM can use the Apply Damage buttons</p>
+			</div>
+
+			<div class="sdx-setting-item">
+				<div class="sdx-setting-header">
 					<label for="autoApplyConditions">
 						<input type="checkbox" name="damageCard.autoApplyConditions" id="autoApplyConditions" {{checked
 							settings.damageCard.autoApplyConditions}} />

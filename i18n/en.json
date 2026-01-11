@@ -1,4 +1,5 @@
 {
+  "SHADOWDARK_EXTRAS.characterGenerator.rollFlavor": "Character Generator Roll",
   "SHADOWDARK_EXTRAS.macro.create_tooltip": "Create Macro",
   "SHADOWDARK_EXTRAS.macro.focus_choice_title": "Create Macro - Focus Spell",
   "SHADOWDARK_EXTRAS.macro.focus_choice_content": "<strong>{name}</strong> is a focus spell. What type of macro would you like to create?",

@@ -4796,7 +4796,7 @@ li.entry.sdx-sidebar-unidentified {
     letter-spacing: 0.5px;
     margin: 6px 4px 4px 4px;
     font-weight: bold;
-    font-family: "Modesto Condensed", "Roboto Condensed", sans-serif;
+    font-family: "Montserrat-medium", "Modesto Condensed", "Roboto Condensed", sans-serif;
 }
 
 .shadowdark.sheet .SD-header .sdx-header-settings-menu button {
@@ -5479,7 +5479,7 @@ li.entry.sdx-sidebar-unidentified {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    font-family: "Modesto Condensed", "Roboto Condensed", sans-serif;
+    font-family: "Montserrat-medium", "Modesto Condensed", "Roboto Condensed", sans-serif;
 }
 
 .sdx-page-delete {
@@ -5561,7 +5561,7 @@ li.entry.sdx-sidebar-unidentified {
 .sdx-journal-page-title {
     flex: 1;
     margin: 0;
-    font-family: "Modesto Condensed", "Roboto Condensed", sans-serif;
+    font-family: "Montserrat-medium", "Modesto Condensed", "Roboto Condensed", sans-serif;
     font-size: 20px;
     text-transform: uppercase;
     letter-spacing: 1px;
@@ -5574,7 +5574,7 @@ li.entry.sdx-sidebar-unidentified {
     border: 1px solid #555555;
     border-radius: 3px;
     color: #ffffff;
-    font-family: inherit;
+    font-family: "Montserrat-medium", "Modesto Condensed", "Roboto Condensed", sans-serif;
     font-size: inherit;
     text-transform: inherit;
     letter-spacing: inherit;
@@ -16104,7 +16104,7 @@ body:not(.game-master) .sdx-carousing-chat .sdx-player-only {
     align-items: center;
     gap: 6px;
     font-size: 1em;
-    font-family: "Modesto Condensed", serif;
+    font-family: "Montserrat-medium", "Modesto Condensed", serif;
     font-weight: bold;
     text-transform: uppercase;
     letter-spacing: 1px;
@@ -16129,7 +16129,7 @@ body:not(.game-master) .sdx-carousing-chat .sdx-player-only {
 
 .sdx-table-result-label {
     font-weight: bold;
-    font-family: "Modesto Condensed", serif;
+    font-family: "Montserrat-medium", "Modesto Condensed", serif;
     font-size: 1.2em;
     color: #000;
     text-transform: uppercase;
@@ -16864,9 +16864,283 @@ body:not(.game-master) .sdx-carousing-chat .sdx-player-only {
     font-size: 0.9em;
 }
 
+/* ============================================
+   WEAPON SPELL DIALOGS (Holy/Cleansing Weapon)
+   ============================================ */
+
+/* Base dialog container */
+.sdx-spell-weapon-dialog {
+    padding: 10px;
+}
+
+/* Header styling */
+.sdx-spell-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 15px;
+    font-size: 1.1em;
+    font-weight: 500;
+}
+
+.sdx-spell-header i {
+    font-size: 1.2em;
+    animation: sdx-sparkle 2s ease-in-out infinite;
+}
+
+/* Holy Weapon Theme - Divine Golden */
+.sdx-holyweapon-theme .sdx-spell-header {
+    color: #fbbf24;
+    text-shadow: 0 0 10px rgba(251, 191, 36, 0.5);
+}
+
+.sdx-holyweapon-theme .sdx-spell-header i {
+    color: #f59e0b;
+}
+
+.sdx-holyweapon-theme .sdx-spell-weapon-item:hover {
+    border-color: rgba(251, 191, 36, 0.5);
+    background: rgba(40, 35, 25, 0.9);
+    box-shadow: 0 4px 12px rgba(251, 191, 36, 0.2);
+}
+
+.sdx-holyweapon-theme .sdx-spell-weapon-item.selected {
+    border-color: #fbbf24;
+    background: rgba(50, 45, 30, 0.95);
+    box-shadow: 0 0 15px rgba(251, 191, 36, 0.4),
+        inset 0 0 20px rgba(251, 191, 36, 0.1);
+}
+
+/* Cleansing Weapon Theme - Fire/Flame */
+.sdx-cleansingweapon-theme .sdx-spell-header {
+    color: #f97316;
+    text-shadow: 0 0 10px rgba(249, 115, 22, 0.5);
+}
+
+.sdx-cleansingweapon-theme .sdx-spell-header i {
+    color: #ef4444;
+    animation: sdx-flame-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes sdx-flame-pulse {
+
+    0%,
+    100% {
+        opacity: 1;
+        transform: scale(1);
+        filter: brightness(1);
+    }
+
+    50% {
+        opacity: 0.8;
+        transform: scale(1.1);
+        filter: brightness(1.2);
+    }
+}
+
+.sdx-cleansingweapon-theme .sdx-spell-weapon-item:hover {
+    border-color: rgba(249, 115, 22, 0.5);
+    background: rgba(45, 30, 25, 0.9);
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
+}
+
+.sdx-cleansingweapon-theme .sdx-spell-weapon-item.selected {
+    border-color: #f97316;
+    background: rgba(50, 35, 30, 0.95);
+    box-shadow: 0 0 15px rgba(249, 115, 22, 0.4),
+        inset 0 0 20px rgba(239, 68, 68, 0.1);
+}
+
+/* Options section */
+.sdx-spell-options {
+    margin-bottom: 12px;
+    padding: 8px 12px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 6px;
+}
+
+.sdx-spell-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    font-size: 0.95em;
+    color: rgba(255, 255, 255, 0.85);
+}
+
+.sdx-spell-checkbox input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+}
+
+/* Weapon selection grid */
+.sdx-spell-weapon-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 12px;
+    max-height: 350px;
+    overflow-y: auto;
+    padding: 5px;
+}
+
+.sdx-spell-weapon-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 8px;
+    background: rgba(30, 30, 30, 0.9);
+    border: 2px solid rgba(100, 100, 100, 0.5);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.sdx-spell-weapon-img {
+    position: relative;
+    width: 64px;
+    height: 64px;
+    margin-bottom: 8px;
+    border-radius: 6px;
+    overflow: hidden;
+    background: rgba(0, 0, 0, 0.3);
+}
+
+.sdx-spell-weapon-img img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.sdx-weapon-badge {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    width: 18px;
+    height: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    font-size: 10px;
+}
+
+.sdx-weapon-badge.magical {
+    background: rgba(251, 191, 36, 0.9);
+    color: #1a1500;
+    box-shadow: 0 0 6px rgba(251, 191, 36, 0.6);
+}
+
+.sdx-weapon-badge.bonus {
+    background: rgba(59, 130, 246, 0.9);
+    color: #fff;
+    box-shadow: 0 0 6px rgba(59, 130, 246, 0.6);
+}
+
+.sdx-spell-weapon-name {
+    font-size: 11px;
+    text-align: center;
+    color: rgba(255, 255, 255, 0.85);
+    word-wrap: break-word;
+    max-width: 100%;
+}
+
+/* No items message */
+.sdx-spell-no-items {
+    grid-column: 1 / -1;
+    padding: 20px;
+    text-align: center;
+    color: rgba(255, 255, 255, 0.6);
+    font-style: italic;
+}
+
+.sdx-spell-no-items-hint {
+    font-size: 0.8em;
+    color: rgba(255, 255, 255, 0.5);
+    margin-top: 5px;
+}
+
+/* Description section */
+.sdx-spell-description {
+    margin-top: 15px;
+    padding: 10px 12px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 6px;
+    font-size: 0.9em;
+    color: rgba(255, 255, 255, 0.8);
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+}
+
+.sdx-spell-description i {
+    color: rgba(255, 255, 255, 0.5);
+    margin-top: 2px;
+}
+
+/* Chat Card Styling - Holy Weapon */
+.sdx-holyweapon-chat .card-header {
+    background: linear-gradient(135deg, rgba(251, 191, 36, 0.2), transparent);
+    border-bottom: 1px solid rgba(251, 191, 36, 0.3);
+}
+
+.sdx-holyweapon-chat .item-image {
+    max-width: 48px;
+    border-radius: 6px;
+    box-shadow: 0 0 10px rgba(251, 191, 36, 0.4);
+}
+
+.sdx-holyweapon-chat h3 {
+    color: #fbbf24;
+    margin: 0;
+}
+
+.sdx-holyweapon-chat h3 i {
+    margin-right: 6px;
+}
+
+.sdx-holyweapon-chat .spell-effect {
+    color: rgba(255, 255, 255, 0.8);
+    padding: 8px;
+    background: rgba(251, 191, 36, 0.1);
+    border-left: 3px solid rgba(251, 191, 36, 0.5);
+    border-radius: 4px;
+}
+
+/* Chat Card Styling - Cleansing Weapon */
+.sdx-cleansingweapon-chat .card-header {
+    background: linear-gradient(135deg, rgba(249, 115, 22, 0.2), transparent);
+    border-bottom: 1px solid rgba(249, 115, 22, 0.3);
+}
+
+.sdx-cleansingweapon-chat .item-image {
+    max-width: 48px;
+    border-radius: 6px;
+    box-shadow: 0 0 10px rgba(249, 115, 22, 0.4);
+}
+
+.sdx-cleansingweapon-chat h3 {
+    color: #f97316;
+    margin: 0;
+}
+
+.sdx-cleansingweapon-chat h3 i {
+    margin-right: 6px;
+    color: #ef4444;
+}
+
+.sdx-cleansingweapon-chat .spell-effect {
+    color: rgba(255, 255, 255, 0.8);
+    padding: 8px;
+    background: rgba(249, 115, 22, 0.1);
+    border-left: 3px solid rgba(249, 115, 22, 0.5);
+    border-radius: 4px;
+}
+
 /* ============================================ */
 /* CAROUSING BUTTON (Tongue Style) */
 /* ============================================ */
+
 
 .sdx-carousing-toggle-btn {
     position: absolute;
@@ -17120,4 +17394,132 @@ body.sdx-dark-mode .sdx-carousing-toggle-btn i {
 
 /* ============================================
    JOURNAL NARRATION - CHAT MESSAGE STYLING
-   ============================================ */
+   ============================================ *//* ============================================ */
+/* MEDKIT UI STYLES                             */
+/* ============================================ */
+
+.sdx-medkit-window .window-content {
+    background: #1a1a1a;
+    color: #e0e0e0;
+    padding: 0;
+}
+
+.sdx-medkit-content {
+    padding: 10px;
+}
+
+.sdx-medkit-header {
+    margin-bottom: 15px;
+    border-bottom: 1px solid #444;
+    padding-bottom: 10px;
+}
+
+.sdx-medkit-header .header-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.sdx-medkit-header h2 {
+    margin: 0;
+    border: none;
+}
+
+.sdx-medkit-section {
+    background: #2a2a2a;
+    border-radius: 5px;
+    padding: 10px;
+    margin-bottom: 15px;
+    border-left: 4px solid #555;
+}
+
+.sdx-medkit-section.warning {
+    border-left-color: #f39c12;
+}
+
+.sdx-medkit-section.success {
+    border-left-color: #2ecc71;
+}
+
+.sdx-medkit-section.info {
+    border-left-color: #3498db;
+}
+
+.sdx-medkit-section h3 {
+    margin-top: 0;
+    border-bottom: 1px solid #444;
+    padding-bottom: 5px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.sdx-medkit-section.warning h3 { color: #f39c12; }
+.sdx-medkit-section.success h3 { color: #2ecc71; }
+.sdx-medkit-section.info h3 { color: #3498db; }
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #444;
+    padding-bottom: 5px;
+    margin-bottom: 10px;
+}
+.section-header h3 {
+    border: none;
+    margin: 0;
+    padding: 0;
+}
+
+.sdx-medkit-list {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.sdx-medkit-item {
+    display: flex;
+    align-items: center;
+    background: #333;
+    padding: 5px;
+    border-radius: 4px;
+    gap: 10px;
+}
+
+.sdx-medkit-item img {
+    width: 32px;
+    height: 32px;
+    border: none;
+}
+
+.sdx-medkit-item-details {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.sdx-medkit-item-details .name {
+    font-weight: bold;
+}
+
+.sdx-medkit-item-details .source {
+    font-size: 0.8em;
+    color: #888;
+}
+
+.sdx-medkit-update-btn, .sdx-medkit-update-all-btn {
+    background: #444;
+    border: 1px solid #555;
+    color: #eee;
+    padding: 2px 8px;
+    cursor: pointer;
+    border-radius: 4px;
+}
+
+.sdx-medkit-update-btn:hover, .sdx-medkit-update-all-btn:hover {
+    background: #555;
+    color: white;
+}

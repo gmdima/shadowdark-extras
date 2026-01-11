@@ -50,6 +50,8 @@ import { initAppearanceSettings } from "./AppearanceSettingsSD.mjs";
 import AmmunitionSelector from "./AmmunitionSelector.mjs";
 import StaffSpellManager from "./StaffSpellManager.mjs";
 import { initJournalNarration } from "./JournalNarrationSD.mjs";
+import { initMedkit } from "./MedkitSD.mjs";
+import "./SpellMacrosSD.mjs";
 
 const MODULE_ID = "shadowdark-extras";
 const TRADE_JOURNAL_NAME = "__sdx_trade_sync__"; // Must match TradeWindowSD.mjs
@@ -67,6 +69,7 @@ const HIDDEN_JOURNAL_NAMES = [
 // JOURNAL NARRATION INITIALIZATION
 // ============================================
 initJournalNarration();
+initMedkit();
 
 // ============================================
 // INVENTORY STYLES APP
@@ -8498,6 +8501,134 @@ function patchPlayerSheetForTransfers() {
 }
 
 // ============================================
+// CHARACTER GENERATOR ROLL PATCH
+// ============================================
+
+/**
+ * Patch CharacterGeneratorSD to show dice rolls in chat
+ * So all players can see character generation results
+ */
+function patchCharacterGeneratorRolls() {
+	// Get the CharacterGeneratorSD class from the shadowdark namespace
+	const CharacterGeneratorSD = CONFIG.SHADOWDARK?.applications?.CharacterGeneratorSD
+		|| globalThis.shadowdark?.apps?.CharacterGeneratorSD
+		|| game.shadowdark?.apps?.CharacterGeneratorSD;
+
+	if (!CharacterGeneratorSD) {
+		console.warn(`${MODULE_ID} | CharacterGeneratorSD not found, skipping roll patch`);
+		return;
+	}
+
+	// Correct ability order: STR, DEX, CON, INT, WIS, CHA
+	const ABILITY_ORDER = ["str", "dex", "con", "int", "wis", "cha"];
+	const ABILITY_NAMES = {
+		str: "Strength",
+		dex: "Dexterity",
+		con: "Constitution",
+		int: "Intelligence",
+		wis: "Wisdom",
+		cha: "Charisma"
+	};
+
+	// Override _randomizeStats to use correct order and show per-ability rolls
+	// If no ability reaches 14+, all results are colored red
+	CharacterGeneratorSD.prototype._randomizeStats = async function () {
+		// Roll all abilities first (silently)
+		const rolls = {};
+		let hasHighStat = false;
+
+		for (const key of ABILITY_ORDER) {
+			const roll = await new Roll("3d6").evaluate();
+			rolls[key] = roll;
+			if (roll._total >= 14) hasHighStat = true;
+		}
+
+		// Collect message IDs if we need to update them
+		const messageIds = [];
+
+		// Send messages one at a time - ChatMessage with rolls array triggers DSN automatically
+		for (const key of ABILITY_ORDER) {
+			const roll = rolls[key];
+
+			// Create chat message - DSN hooks into this automatically
+			const messageData = {
+				speaker: ChatMessage.getSpeaker({ user: game.user }),
+				flavor: `<b>Character Generator</b> - ${ABILITY_NAMES[key]}`,
+				type: CONST.CHAT_MESSAGE_TYPES.ROLL,
+				rolls: [roll]
+			};
+
+			const message = await ChatMessage.create(messageData);
+			if (message) {
+				messageIds.push(message.id);
+			}
+
+			this.formData.actor.system.abilities[key].base = roll._total;
+		}
+
+		// If no high stat, update all messages to show red totals
+		if (!hasHighStat) {
+			// Small delay to let messages render
+			setTimeout(() => {
+				for (const msgId of messageIds) {
+					const msgElement = document.querySelector(`[data-message-id="${msgId}"] .dice-total`);
+					if (msgElement) {
+						msgElement.style.color = "#cc0000";
+						msgElement.style.fontWeight = "bold";
+					}
+				}
+			}, 100);
+		}
+
+		this._calculateModifiers();
+	};
+
+	// Override _randomizeGold to show gold roll
+	CharacterGeneratorSD.prototype._randomizeGold = async function () {
+		const roll = await new Roll("2d6").evaluate();
+		const startingGold = roll._total * 5;
+
+		// roll.toMessage triggers DSN automatically via Foundry hooks
+		await roll.toMessage({
+			speaker: ChatMessage.getSpeaker({ user: game.user }),
+			flavor: `<b>Character Generator</b> - Starting Gold (×5 = ${startingGold} GP)`
+		});
+
+		this.formData.actor.system.coins.gp = startingGold;
+	};
+
+	// Override _randomizeAlignment to show alignment roll
+	CharacterGeneratorSD.prototype._randomizeAlignment = async function () {
+		const roll = await new Roll("d6").evaluate();
+		let alignment;
+
+		switch (roll._total) {
+			case 1:
+			case 2:
+			case 3:
+				alignment = "lawful";
+				break;
+			case 4:
+			case 5:
+				alignment = "neutral";
+				break;
+			default:
+				alignment = "chaotic";
+		}
+
+		// roll.toMessage triggers DSN automatically via Foundry hooks
+		await roll.toMessage({
+			speaker: ChatMessage.getSpeaker({ user: game.user }),
+			flavor: `<b>Character Generator</b> - Alignment (${alignment.charAt(0).toUpperCase() + alignment.slice(1)})`
+		});
+
+		this.formData.actor.system.alignment = alignment;
+	};
+
+	console.log(`${MODULE_ID} | Patched CharacterGeneratorSD to show rolls in chat`);
+}
+
+// ============================================
 // HOOKS
 // ============================================
 
@@ -8507,6 +8638,9 @@ Hooks.once("init", () => {
 
 	// Initialize Automated Animations integration
 	initAutoAnimationsIntegration();
+
+	// Patch CharacterGeneratorSD to show rolls in chat
+	patchCharacterGeneratorRolls();
 
 	// Initialize SDX Rolls
 	initSDXROLLS();
@@ -14230,6 +14364,12 @@ Hooks.on("preCreateChatMessage", (message, data, options, userId) => {
 				_pendingHitBonusInfo.delete(hitBonusKey);
 			}
 		}
+
+		// Store current targets in flags for Item Macro use
+		if (game.user.targets.size > 0 && !message.flags[MODULE_ID]?.targetIds) {
+			const targetIds = Array.from(game.user.targets).map(t => t.id);
+			foundry.utils.setProperty(message._source, `flags.${MODULE_ID}.targetIds`, targetIds);
+		}
 	} catch (err) {
 		console.error(`${MODULE_ID} | Failed to store data in message`, err);
 	}
@@ -16686,6 +16826,10 @@ Hooks.once("ready", () => {
 	// Register socketlib socket if available
 	if (game.modules.get("socketlib")?.active) {
 		macroExecuteSocket = socketlib.registerModule(MODULE_ID);
+		// Expose socket to module
+		const module = game.modules.get(MODULE_ID);
+		if (module) module.socket = macroExecuteSocket;
+
 
 		// Register the GM execution handler
 		macroExecuteSocket.register("executeMacroAsGM", async (macroId, contextData) => {
@@ -16699,10 +16843,10 @@ Hooks.once("ready", () => {
 			// Reconstruct the context from the serialized data
 			const context = {
 				actor: game.actors.get(contextData.actorId),
-				token: contextData.tokenId ? canvas.tokens?.get(contextData.tokenId) : undefined,
+				token: contextData.tokenUuid ? (await fromUuid(contextData.tokenUuid))?.object : undefined,
 				trigger: contextData.trigger,
-				item: contextData.itemId ? game.items.get(contextData.itemId) || game.actors.get(contextData.actorId)?.items.get(contextData.itemId) : undefined,
-				effect: contextData.effectId ? game.actors.get(contextData.actorId)?.effects.get(contextData.effectId) : undefined,
+				item: contextData.itemUuid ? await fromUuid(contextData.itemUuid) : undefined,
+				effect: contextData.effectUuid ? await fromUuid(contextData.effectUuid) : undefined,
 			};
 
 			// Execute the macro as GM
@@ -17159,15 +17303,16 @@ async function executeSpellItemMacro(spellItem, actor, trigger, context = {}) {
 		const serializedContext = {
 			actorId: actor.id,
 			itemId: spellItem.id,
-			tokenId: token?.id,
-			targetIds: targets.map(t => t.id),
+			tokenUuid: token?.document?.uuid,
+			targetUuids: targets.map(t => t.document.uuid),
 			trigger,
 			isSuccess: context.isSuccess,
 			isFailure: context.isFailure,
 			isCritical: context.isCritical,
 			isCriticalFail: context.isCriticalFail,
 			rollResult: context.rollResult,
-			rollDataJson: context.rollData ? JSON.stringify(context.rollData) : null
+			rollDataJson: context.rollData ? JSON.stringify(context.rollData) : null,
+			originatingUserId: game.user.id  // Track who initiated the spell for dialog routing
 		};
 
 		//console.log(`${MODULE_ID} | Sending spell Item Macro to GM for execution`);
@@ -17192,7 +17337,7 @@ async function executeSpellItemMacro(spellItem, actor, trigger, context = {}) {
 }
 
 // Register socket handler for GM execution of spell Item Macros
-Hooks.once("socketlib.ready", () => {
+Hooks.once("ready", () => {
 	if (macroExecuteSocket) {
 		macroExecuteSocket.register("executeSpellItemMacroAsGM", async (serializedContext) => {
 			const actor = game.actors.get(serializedContext.actorId);
@@ -17201,8 +17346,17 @@ Hooks.once("socketlib.ready", () => {
 			const spellItem = actor.items.get(serializedContext.itemId);
 			if (!spellItem) return;
 
-			const token = serializedContext.tokenId ? canvas.tokens?.get(serializedContext.tokenId) : null;
-			const targets = serializedContext.targetIds?.map(id => canvas.tokens?.get(id)).filter(Boolean) || [];
+			// Resolve token and targets from UUIDs to ensure cross-scene support
+			const tokenDoc = serializedContext.tokenUuid ? await fromUuid(serializedContext.tokenUuid) : null;
+			const token = tokenDoc?.object || null;
+
+			const targets = [];
+			if (serializedContext.targetUuids) {
+				for (const uuid of serializedContext.targetUuids) {
+					const tDoc = await fromUuid(uuid);
+					if (tDoc?.object) targets.push(tDoc.object);
+				}
+			}
 
 			const scope = {
 				actor,
@@ -17219,12 +17373,14 @@ Hooks.once("socketlib.ready", () => {
 				rollResult: serializedContext.rollResult,
 				rollData: serializedContext.rollDataJson ? JSON.parse(serializedContext.rollDataJson) : null,
 				speaker: ChatMessage.getSpeaker({ actor }),
-				flags: spellItem.flags?.[MODULE_ID] || {}
+				flags: spellItem.flags?.[MODULE_ID] || {},
+				originatingUserId: serializedContext.originatingUserId  // For dialog routing back to player
 			};
 
 			try {
 				if (typeof spellItem.executeMacro === "function") {
-					//console.log(`${MODULE_ID} | GM executing spell Item Macro using spellItem.executeMacro()`);
+					// DEBUG: Log scope to find ReferenceError cause
+					// console.log(`${MODULE_ID} | GM executing macro with scope:`, scope);
 					await spellItem.executeMacro(scope);
 				} else {
 					console.error(`${MODULE_ID} | spellItem.executeMacro is not available on GM client`);
@@ -17235,6 +17391,110 @@ Hooks.once("socketlib.ready", () => {
 		});
 
 		//console.log(`${MODULE_ID} | Registered spell Item Macro GM execution handler`);
+	}
+});
+
+// Register socket handlers for Spell API functions
+Hooks.once("ready", () => {
+	// Note: macroExecuteSocket is defined in the closure above, but we need to access it.
+	// However, since it was defined in a previous ready hook, it might not be available here if this hook runs before that one completes?
+	// Actually, hooks run sequentially. But macroExecuteSocket is let-scoped in the file, so it IS available.
+
+	if (game.modules.get("socketlib")?.active && macroExecuteSocket) {
+		macroExecuteSocket.register("applyHolyWeaponAsGM", async (weaponUuid, casterUuid, itemUuid, targetActorUuid, targetTokenUuid) => {
+			// Items return the document directly from fromUuid, not a wrapper
+			const weapon = await fromUuid(weaponUuid);
+			const casterActor = await fromUuid(casterUuid);
+			const casterItem = await fromUuid(itemUuid);
+			const targetActor = await fromUuid(targetActorUuid);
+			const targetTokenDoc = targetTokenUuid ? await fromUuid(targetTokenUuid) : null;
+			const targetToken = targetTokenDoc?.object || null;
+
+			if (weapon && casterActor && casterItem && targetActor) {
+				const module = game.modules.get(MODULE_ID);
+				if (module?.api?.applyHolyWeapon) {
+					await module.api.applyHolyWeapon(weapon, casterActor, casterItem, targetActor, targetToken);
+				}
+			}
+		});
+
+		macroExecuteSocket.register("applyCleansingWeaponAsGM", async (weaponUuid, casterUuid, itemUuid, targetActorUuid, targetTokenUuid) => {
+			// Items return the document directly from fromUuid, not a wrapper
+			const weapon = await fromUuid(weaponUuid);
+			const casterActor = await fromUuid(casterUuid);
+			const casterItem = await fromUuid(itemUuid);
+			const targetActor = await fromUuid(targetActorUuid);
+			const targetTokenDoc = targetTokenUuid ? await fromUuid(targetTokenUuid) : null;
+			const targetToken = targetTokenDoc?.object || null;
+
+			if (weapon && casterActor && casterItem && targetActor) {
+				const module = game.modules.get(MODULE_ID);
+				if (module?.api?.applyCleansingWeapon) {
+					await module.api.applyCleansingWeapon(weapon, casterActor, casterItem, targetActor, targetToken);
+				}
+			}
+		});
+
+		macroExecuteSocket.register("identifyItemAsGM", async (itemUuid, identifySpellUuid, maskedName, originatingUserId) => {
+			const item = await fromUuid(itemUuid);
+			if (!item) return;
+
+			// Remove unidentified flags (GM has permission)
+			await item.unsetFlag(MODULE_ID, "unidentified");
+			await item.unsetFlag(MODULE_ID, "unidentifiedName");
+
+			// Post chat message (visible to all)
+			const chatContent = `
+				<div class="shadowdark chat-card sdx-identify-chat">
+					<header class="card-header flexrow">
+						<img class="item-image" src="${item.img}" alt="${item.name}"/>
+						<div class="header-text">
+							<h3><i class="fas fa-sparkles"></i> ${game.i18n.localize("SHADOWDARK_EXTRAS.identify.revealed")}</h3>
+						</div>
+					</header>
+					<div class="card-content">
+						<p class="reveal-text">
+							<em>${maskedName}</em> ${game.i18n.localize("SHADOWDARK_EXTRAS.identify.isActually")}
+						</p>
+						<p class="item-name"><strong>${item.name}</strong></p>
+						${item.system?.description ? `<div class="item-description">${item.system.description}</div>` : ""}
+					</div>
+				</div>
+			`;
+
+			await ChatMessage.create({
+				content: chatContent,
+				speaker: ChatMessage.getSpeaker({ actor: item.actor }),
+				type: CONST.CHAT_MESSAGE_STYLES.OTHER
+			});
+
+			// Route reveal dialog back to the originating player
+			if (originatingUserId && originatingUserId !== game.user.id) {
+				await macroExecuteSocket.executeAsUser("showItemRevealForUser", originatingUserId, {
+					itemUuid: item.uuid,
+					maskedName: maskedName
+				});
+			} else {
+				// GM is casting, show locally
+				const module = game.modules.get(MODULE_ID);
+				if (module?.api?.showItemReveal) {
+					await module.api.showItemReveal(item, maskedName);
+				}
+			}
+
+			ui.notifications.info(game.i18n.format("SHADOWDARK_EXTRAS.identify.success", { name: item.name }));
+		});
+
+		// Handler: Show item reveal dialog on player's client
+		macroExecuteSocket.register("showItemRevealForUser", async ({ itemUuid, maskedName }) => {
+			const item = await fromUuid(itemUuid);
+			if (!item) return;
+
+			const module = game.modules.get(MODULE_ID);
+			if (module?.api?.showItemReveal) {
+				await module.api.showItemReveal(item, maskedName);
+			}
+		});
 	}
 });
 

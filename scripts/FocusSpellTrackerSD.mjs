@@ -513,15 +513,45 @@ async function revertSpellModifications(spellId, casterId) {
 			// Apply the reversion
 			try {
 				console.log(`shadowdark-extras | Applying reversion to ${item.name} on ${actor.name}:`, updates);
-				await item.update(updates);
+
+				// Check if we have permission to update the item
+				if (item.isOwner || game.user.isGM) {
+					await item.update(updates);
+				} else {
+					// Route through GM socket
+					const socket = getSocket();
+					if (socket) {
+						await socket.executeAsGM("revertItemModificationAsGM", {
+							itemUuid: item.uuid,
+							updates: updates
+						});
+					} else {
+						console.warn(`shadowdark-extras | Cannot revert ${item.name}: No GM connected or socket unavailable.`);
+						continue;
+					}
+				}
 				console.log(`shadowdark-extras | Reverted ${item.name} on ${actor.name}`, updates);
 
-				// Remove the modification entries from the item
+				// Calculate remaining mods for cleanup
 				const remainingMods = mods.filter(m => !(m.spellId === spellId && m.casterId === casterId));
-				if (remainingMods.length > 0) {
-					await item.setFlag(MODULE_ID, SPELL_MODIFICATIONS_FLAG, remainingMods);
+
+				// Remove the modification entries from the item
+				// This also needs permission check
+				if (item.isOwner || game.user.isGM) {
+					if (remainingMods.length > 0) {
+						await item.setFlag(MODULE_ID, SPELL_MODIFICATIONS_FLAG, remainingMods);
+					} else {
+						await item.unsetFlag(MODULE_ID, SPELL_MODIFICATIONS_FLAG);
+					}
 				} else {
-					await item.unsetFlag(MODULE_ID, SPELL_MODIFICATIONS_FLAG);
+					const socket = getSocket();
+					if (socket) {
+						await socket.executeAsGM("updateItemFlagsAsGM", {
+							itemUuid: item.uuid,
+							flagPath: SPELL_MODIFICATIONS_FLAG,
+							flagValue: remainingMods.length > 0 ? remainingMods : null
+						});
+					}
 				}
 
 				revertedItems.push({ item, actor, modEntry });

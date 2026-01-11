@@ -913,6 +913,107 @@ export function setupCombatSocket() {
 		ui.notifications.info(game.i18n.format("SHADOWDARK_EXTRAS.trade.declined_by", { player: targetActorName }));
 	});
 
+	// --- Spell Dialog Socket Handlers ---
+	// These allow the GM to route dialog display back to the originating player
+	// when executing macros with runAsGm enabled
+
+	// Handler: Show Holy Weapon dialog on player's client
+	socketlibSocket.register("showHolyWeaponDialogForUser", async ({ casterActorId, casterItemId, targetActorId, targetTokenId }) => {
+		const casterActor = game.actors.get(casterActorId);
+		const casterItem = casterActor?.items.get(casterItemId);
+		const targetActor = game.actors.get(targetActorId);
+		const targetToken = targetTokenId ? canvas.tokens?.get(targetTokenId) : null;
+
+		if (!casterActor || !casterItem || !targetActor) {
+			console.warn(`${MODULE_ID} | showHolyWeaponDialogForUser: Missing data`);
+			return;
+		}
+
+		const sdxModule = game.modules.get(MODULE_ID);
+		if (sdxModule?.api?.showHolyWeaponDialog) {
+			await sdxModule.api.showHolyWeaponDialog(casterActor, casterItem, targetActor, targetToken);
+		}
+	});
+
+	// Handler: Show Identify dialog on player's client
+	socketlibSocket.register("showIdentifyDialogForUser", async ({ targetActorId, unidentifiedItemIds, identifySpellId, casterActorId }) => {
+		const casterActor = game.actors.get(casterActorId);
+		const targetActor = game.actors.get(targetActorId);
+		const identifySpell = casterActor?.items.get(identifySpellId);
+		const unidentifiedItems = unidentifiedItemIds?.map(id => targetActor?.items.get(id)).filter(Boolean) || [];
+
+		if (!targetActor || unidentifiedItems.length === 0 || !identifySpell) {
+			console.warn(`${MODULE_ID} | showIdentifyDialogForUser: Missing data`);
+			return;
+		}
+
+		const sdxModule = game.modules.get(MODULE_ID);
+		if (sdxModule?.api?.showIdentifyDialog) {
+			await sdxModule.api.showIdentifyDialog(targetActor, unidentifiedItems, identifySpell);
+		}
+	});
+
+	// Handler: Show Cleansing Weapon dialog on player's client
+	socketlibSocket.register("showCleansingWeaponDialogForUser", async ({ casterActorId, casterItemId, targetActorId, targetTokenId }) => {
+		const casterActor = game.actors.get(casterActorId);
+		const casterItem = casterActor?.items.get(casterItemId);
+		const targetActor = game.actors.get(targetActorId);
+		const targetToken = targetTokenId ? canvas.tokens?.get(targetTokenId) : null;
+
+		if (!casterActor || !casterItem || !targetActor) {
+			console.warn(`${MODULE_ID} | showCleansingWeaponDialogForUser: Missing data`);
+			return;
+		}
+
+		const sdxModule = game.modules.get(MODULE_ID);
+		if (sdxModule?.api?.showCleansingWeaponDialog) {
+			await sdxModule.api.showCleansingWeaponDialog(casterActor, casterItem, targetActor, targetToken);
+		}
+	});
+
+	// --- Spell Modification Reversion Socket Handlers ---
+	// These handle reverting spell modifications when the player doesn't own the target item
+
+	// Handler: Revert item modifications (when spell ends)
+	socketlibSocket.register("revertItemModificationAsGM", async ({ itemUuid, updates }) => {
+		const item = await fromUuid(itemUuid);
+		if (!item) {
+			console.warn(`${MODULE_ID} | revertItemModificationAsGM: Item not found: ${itemUuid}`);
+			return false;
+		}
+
+		try {
+			await item.update(updates);
+			console.log(`${MODULE_ID} | GM reverted item ${item.name}:`, updates);
+			return true;
+		} catch (err) {
+			console.error(`${MODULE_ID} | GM failed to revert item ${item.name}:`, err);
+			return false;
+		}
+	});
+
+	// Handler: Update item flags (for cleaning up modification tracking)
+	socketlibSocket.register("updateItemFlagsAsGM", async ({ itemUuid, flagPath, flagValue }) => {
+		const item = await fromUuid(itemUuid);
+		if (!item) {
+			console.warn(`${MODULE_ID} | updateItemFlagsAsGM: Item not found: ${itemUuid}`);
+			return false;
+		}
+
+		try {
+			if (flagValue === null) {
+				await item.unsetFlag(MODULE_ID, flagPath);
+			} else {
+				await item.setFlag(MODULE_ID, flagPath, flagValue);
+			}
+			console.log(`${MODULE_ID} | GM updated item flags for ${item.name}`);
+			return true;
+		} catch (err) {
+			console.error(`${MODULE_ID} | GM failed to update item flags for ${item.name}:`, err);
+			return false;
+		}
+	});
+
 }
 
 /**
@@ -991,7 +1092,8 @@ export const DEFAULT_COMBAT_SETTINGS = {
 			{ value: 0.5, label: "½", enabled: true },
 			{ value: 1, label: "1", enabled: true },
 			{ value: 2, label: "2", enabled: true }
-		]
+		],
+		gmOnlyApplyDamage: false
 	}
 };
 
@@ -4255,6 +4357,13 @@ function attachDamageCardListeners(html, messageId) {
 		e.stopPropagation();
 
 		const $btn = $(this);
+
+		// Check for GM-only restriction
+		const settings = game.settings.get(MODULE_ID, "combatSettings");
+		if (settings.damageCard?.gmOnlyApplyDamage && !game.user.isGM) {
+			ui.notifications.warn("The GM has disabled Apply Damage. Ask him/her why! Worried you might cheat? Probably!");
+			return;
+		}
 
 		// Prevent duplicate applications
 		if ($btn.data('applying')) {
