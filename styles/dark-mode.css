@@ -1,14 +1,240 @@
+/* Chat narration card wrapper - placeholder styling */
+/* User will provide exact CSS with border-image later */
+body.sdx-dark-mode .sdx-narration-card {
+    background: #000000;
+    color: #ffffff;
+    padding: 0;
+    border-radius: 4px;
+
+}
+
+body.sdx-dark-mode .sdx-narration-card blockquote {
+    font-family: 'Old Newspaper Font' !important;
+    font-weight: normal;
+    text-align: center;
+    text-transform: none;
+    position: relative;
+    margin: 9px 0;
+    padding: 8px;
+    padding-bottom: 5px;
+    background: #1a1a1a;
+    color: #f0f0f0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    font-family: 'Old Newspaper Font' !important;
+    border: var(--sdx-box-border-width) solid transparent !important;
+    border-image: var(--sdx-box-border) var(--sdx-box-border-image-slice) fill !important;
+    border-image-repeat: stretch !important;
+    border-image-width: var(--sdx-box-border-image-width) !important;
+
+}
+
+
+body.sdx-dark-mode .sdx-narration-card blockquote p {
+    color: #ffffff;
+    border: none;
+    font-size: 17px;
+    margin: 0;
+    font-style: normal;
+    box-shadow: none;
+}
+
+body.sdx-dark-mode .sdx-narration-card blockquote h4,
+body.sdx-dark-mode .sdx-narration-card blockquote h5,
+body.sdx-dark-mode .sdx-narration-card blockquote h6 {
+    color: #c9aa58;
+}
+
+/* ============================================
+   JOURNAL ENTRY PAGE STYLING (Shadowdark)
+   ============================================ */
+body.sdx-dark-mode .sheet.journal-entry:not(.minimized, .minimizing, .maximizing) {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    font-family: 'Old Newspaper Font' !important;
+    border: var(--sdx-box-border-width) solid transparent !important;
+    border-image: var(--sdx-journal-border) var(--sdx-journal-border-image-slice) fill !important;
+    border-image-repeat: var(--sdx-journal-border-image-repeat) !important;
+    border-image-width: var(--sdx-journal-border-image-width) !important;
+    border-image-outset: var(--sdx-journal-border-image-outset, 0px) !important;
+}
+
+body.sdx-dark-mode .sheet.journal-entry .window-header {
+    background: #222020c4;
+}
+
+body.sdx-dark-mode .window-header .window-title {
+    font-size: 21px;
+    padding-left: 10px;
+}
+
+body.sdx-dark-mode .sheet.journal-entry.application .journal-sidebar {
+    background: #222020c4;
+}
+
+/* Journal content background */
+body.sdx-dark-mode .sheet.journal-entry .journal-entry-content {
+    background: none;
+    background-color: #222020c4;
+    color: rgb(255 255 255);
+}
+
+/* Journal header input styling */
+body.sdx-dark-mode .sheet.journal-entry .journal-header input[type=text] {
+    background: none;
+    color: #c4c4c4;
+    border: none;
+    border-radius: 0;
+    font-family: 'Old Newspaper Font';
+}
+
+/* Journal page H1 headers with border-image frame */
+body.sdx-dark-mode .ProseMirror h1,
+body.sdx-dark-mode .sheet.journal-entry .journal-entry-page h1 {
+    font-size: 3em;
+    font-weight: normal;
+    text-align: center;
+    text-transform: none;
+    position: relative;
+    margin: 9px 0;
+    padding: 8px;
+    padding-bottom: 5px;
+    background: #1a1a1a;
+    color: #f0f0f0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    font-family: 'Old Newspaper Font' !important;
+    border: var(--sdx-box-border-width) solid transparent !important;
+    border-image: var(--sdx-box-border) var(--sdx-box-border-image-slice) fill !important;
+    border-image-repeat: stretch !important;
+    border-image-width: var(--sdx-box-border-image-width) !important;
+}
+
+
+
+/* Journal page H2-H6 headers */
+body.sdx-dark-mode .ProseMirror h2,
+body.sdx-dark-mode .ProseMirror h3,
+body.sdx-dark-mode .ProseMirror h4,
+body.sdx-dark-mode .ProseMirror h5,
+body.sdx-dark-mode .ProseMirror h6,
+body.sdx-dark-mode .sheet.journal-entry .journal-entry-page h2,
+body.sdx-dark-mode .sheet.journal-entry .journal-entry-page h3,
+body.sdx-dark-mode .sheet.journal-entry .journal-entry-page h4,
+body.sdx-dark-mode .sheet.journal-entry .journal-entry-page h5,
+body.sdx-dark-mode .sheet.journal-entry .journal-entry-page h6 {
+    font-family: 'Old Newspaper Font' !important;
+    color: #d7d7d7 !important;
+}
+
+/* --- Journal Entry Page Fantasy Tables (mirroring .sdx-journal-page-content table) --- */
+body.sdx-dark-mode .ProseMirror table,
+body.sdx-dark-mode .sheet.journal-entry .journal-entry-page table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 16px 0;
+    background: linear-gradient(180deg, rgba(40, 35, 30, 0.8) 0%, rgba(30, 25, 20, 0.9) 100%);
+    border: 2px solid rgba(201, 170, 88, 0.4);
+    border-radius: 6px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+body.sdx-dark-mode .ProseMirror table thead tr,
+body.sdx-dark-mode .ProseMirror table tr:first-child,
+body.sdx-dark-mode .sheet.journal-entry .journal-entry-page table thead tr,
+body.sdx-dark-mode .sheet.journal-entry .journal-entry-page table tr:first-child {
+    background: linear-gradient(180deg, rgba(80, 65, 40, 0.9) 0%, rgba(60, 50, 35, 0.9) 100%);
+}
+
+body.sdx-dark-mode .ProseMirror table thead th,
+body.sdx-dark-mode .sheet.journal-entry .journal-entry-page table thead td,
+body.sdx-dark-mode .sheet.journal-entry .journal-entry-page table tr:first-child th,
+body.sdx-dark-mode .sheet.journal-entry .journal-entry-page table tr:first-child td {
+    padding: 10px 12px;
+    text-align: center !important;
+    font-family: 'Old Newspaper Font', 'Modesto Condensed', serif !important;
+    font-size: 16px;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #ffffff !important;
+    border-bottom: 2px solid rgba(201, 170, 88, 0.5);
+}
+
+body.sdx-dark-mode .ProseMirror table td,
+body.sdx-dark-mode .sheet.journal-entry .journal-entry-page table td {
+    padding: 8px 12px;
+    color: #e0dcd4 !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    font-family: 'Old Newspaper Font', 'Modesto Condensed', serif !important;
+}
+
+body.sdx-dark-mode .ProseMirror table tbody tr:nth-child(even),
+body.sdx-dark-mode .sheet.journal-entry .journal-entry-page table tbody tr:nth-child(even) {
+    background: rgba(255, 255, 255, 0.03) !important;
+}
+
+/* Override any conflicting tr background styles */
+body.sdx-dark-mode .ProseMirror table tbody tr,
+body.sdx-dark-mode .sheet.journal-entry .journal-entry-page table tbody tr {
+    background: transparent;
+}
+
+/* ============================================
+   JOURNAL NARRATION - BLOCKQUOTE STYLING (Dark Mode)
+   ============================================ */
+
+/* Styled blockquotes in journal pages with border-image frame */
+body.sdx-dark-mode .journal-page-content blockquote {
+    font-weight: normal;
+    text-align: center;
+    text-transform: none;
+    position: relative;
+    margin: 9px 0;
+    padding: 8px;
+    padding-bottom: 10px;
+    background: #1a1a1a;
+    color: #f0f0f0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    font-family: 'Old Newspaper Font' !important;
+    border: var(--sdx-box-border-width) solid transparent !important;
+    border-image: var(--sdx-box-border) var(--sdx-box-border-image-slice) fill !important;
+    border-image-repeat: stretch !important;
+    border-image-width: var(--sdx-box-border-image-width) !important;
+}
+
+body.sdx-dark-mode .journal-page-content blockquote h4,
+body.sdx-dark-mode .journal-page-content blockquote h5,
+body.sdx-dark-mode .journal-page-content blockquote h6 {
+    color: #c9aa58;
+    margin-top: 0;
+}
+
+body.sdx-dark-mode .journal-page-content blockquote p {
+    margin: 0.5em 0;
+}
+
 /* ============================================
    DARK MODE INTEGRATION (Based on Lights Out Theme)
    ============================================ */
-#sidebar-content #chat {
-    background-color: var(--lights-out-color-background-primary);
+
+/* Sidebar styling scoped to dark mode */
+body.sdx-dark-mode #sidebar-content #chat {
+    background-color: rgb(17 17 17);
     width: 95%;
 }
 
-#sidebar-tabs>menu {
+body.sdx-dark-mode #sidebar-tabs>menu {
     margin-right: -10px;
     gap: 4px;
+}
+
+body.sdx-dark-mode #sidebar-tabs {
+    flex: none;
+    padding: 16px 16px 17px 7px;
+    border: none;
+    line-height: 1;
+    background: rgb(17 17 17);
+    border-radius: 0px 0px 0px 15px;
+    margin-right: -3px;
 }
 
 body.sdx-dark-mode {
@@ -36,6 +262,20 @@ body.sdx-dark-mode {
 
     --font-body: "Montserrat-Medium", sans-serif;
     --font-header: "Old Newspaper Font", sans-serif;
+}
+
+body.sdx-dark-mode .sidebar-tab {
+    box-shadow: none;
+    background: rgb(17 17 17);
+}
+
+body.sdx-dark-mode .settings-sidebar .info .title {
+    margin: 0;
+    font-size: var(--font-size-32);
+    text-align: center;
+    letter-spacing: -0.3px;
+    font-family: 'JSL Blackletter';
+    font-weight: normal;
 }
 
 /* Chat Styles scoped to Dark Mode */

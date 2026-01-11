@@ -49,6 +49,7 @@ import { initTokenToolbar, registerTokenToolbarSettings } from "./TokenToolbarSD
 import { initAppearanceSettings } from "./AppearanceSettingsSD.mjs";
 import AmmunitionSelector from "./AmmunitionSelector.mjs";
 import StaffSpellManager from "./StaffSpellManager.mjs";
+import { initJournalNarration } from "./JournalNarrationSD.mjs";
 
 const MODULE_ID = "shadowdark-extras";
 const TRADE_JOURNAL_NAME = "__sdx_trade_sync__"; // Must match TradeWindowSD.mjs
@@ -61,6 +62,11 @@ const HIDDEN_JOURNAL_NAMES = [
 	CAROUSING_JOURNAL_NAME,
 	CAROUSING_TABLES_JOURNAL_NAME
 ];
+
+// ============================================
+// JOURNAL NARRATION INITIALIZATION
+// ============================================
+initJournalNarration();
 
 // ============================================
 // INVENTORY STYLES APP
@@ -3441,7 +3447,9 @@ function applySheetDecorationStyles() {
 	let borderImageWidth, borderImageSlice, borderTransparencyWidth;
 	let borderImageOutset, borderImageRepeat, borderBackgroundColor;
 	let boxBorder, boxBorderImageWidth, boxBorderImageSlice, boxBorderTransparencyWidth;
+	let journalBorder, journalBorderImageWidth, journalBorderImageSlice, journalBorderImageOutset, journalBorderImageRepeat;
 	let abilityModColor, levelValueColor, acValueColor, initModColor, luckValueColor;
+	let tabGradientStart, tabGradientEnd;
 	try {
 		sheetBorder = game.settings.get(MODULE_ID, "sheetBorderStyle") || "panel-border-004.png";
 		abilityPanel = game.settings.get(MODULE_ID, "abilityPanelStyle") || "panel-013.png";
@@ -3457,11 +3465,18 @@ function applySheetDecorationStyles() {
 		boxBorderImageWidth = game.settings.get(MODULE_ID, "sdBoxBorderWidth") ?? 16;
 		boxBorderImageSlice = game.settings.get(MODULE_ID, "sdBoxBorderSlice") ?? 12;
 		boxBorderTransparencyWidth = game.settings.get(MODULE_ID, "sdBoxBorderTransparencyWidth") ?? 10;
+		journalBorder = game.settings.get(MODULE_ID, "journalBorderStyle") || "panel-border-004.png";
+		journalBorderImageWidth = game.settings.get(MODULE_ID, "journalBorderImageWidth") ?? 16;
+		journalBorderImageSlice = game.settings.get(MODULE_ID, "journalBorderImageSlice") ?? 12;
+		journalBorderImageOutset = game.settings.get(MODULE_ID, "journalBorderImageOutset") ?? 0;
+		journalBorderImageRepeat = game.settings.get(MODULE_ID, "journalBorderImageRepeat") || "repeat";
 		abilityModColor = game.settings.get(MODULE_ID, "abilityModColor") || "#000000";
 		levelValueColor = game.settings.get(MODULE_ID, "levelValueColor") || "#000000";
 		acValueColor = game.settings.get(MODULE_ID, "acValueColor") || "#000000";
 		initModColor = game.settings.get(MODULE_ID, "initModColor") || "#000000";
 		luckValueColor = game.settings.get(MODULE_ID, "luckValueColor") || "#000000";
+		tabGradientStart = game.settings.get(MODULE_ID, "tabGradientStart") || "#000000";
+		tabGradientEnd = game.settings.get(MODULE_ID, "tabGradientEnd") || "#2f2b2b";
 	} catch {
 		// Settings not registered yet, use defaults
 		sheetBorder = "panel-border-004.png";
@@ -3478,11 +3493,18 @@ function applySheetDecorationStyles() {
 		boxBorderImageWidth = 16;
 		boxBorderImageSlice = 12;
 		boxBorderTransparencyWidth = 10;
+		journalBorder = "panel-border-004.png";
+		journalBorderImageWidth = 16;
+		journalBorderImageSlice = 12;
+		journalBorderImageOutset = 0;
+		journalBorderImageRepeat = "repeat";
 		abilityModColor = "#000000";
 		levelValueColor = "#000000";
 		acValueColor = "#000000";
 		initModColor = "#000000";
 		luckValueColor = "#000000";
+		tabGradientStart = "#000000";
+		tabGradientEnd = "#2f2b2b";
 	}
 
 	// Build paths - use absolute paths from Foundry root to avoid relative path issues
@@ -3491,6 +3513,7 @@ function applySheetDecorationStyles() {
 	const acPanelPath = `/modules/${MODULE_ID}/art/PNG/Default/Transparent center/${acPanel}`;
 	const statPanelPath = `/modules/${MODULE_ID}/art/PNG/Default/Transparent center/${statPanel}`;
 	const boxBorderPath = `/modules/${MODULE_ID}/art/PNG/Default/Border/${boxBorder}`;
+	const journalBorderPath = `/modules/${MODULE_ID}/art/PNG/Default/Border/${journalBorder}`;
 
 	// Create style element with CSS custom properties
 	const style = document.createElement('style');
@@ -3511,11 +3534,18 @@ function applySheetDecorationStyles() {
 			--sdx-box-border-image-width: ${boxBorderImageWidth}px;
 			--sdx-box-border-image-slice: ${boxBorderImageSlice};
 			--sdx-box-border-width: ${boxBorderTransparencyWidth}px;
+			--sdx-journal-border: url('${journalBorderPath}');
+			--sdx-journal-border-image-width: ${journalBorderImageWidth}px;
+			--sdx-journal-border-image-slice: ${journalBorderImageSlice};
+			--sdx-journal-border-image-outset: ${journalBorderImageOutset}px;
+			--sdx-journal-border-image-repeat: ${journalBorderImageRepeat};
 			--sdx-ability-mod-color: ${abilityModColor};
 			--sdx-level-value-color: ${levelValueColor};
 			--sdx-ac-value-color: ${acValueColor};
 			--sdx-init-mod-color: ${initModColor};
 			--sdx-luck-value-color: ${luckValueColor};
+			--sdx-tab-gradient-start: ${tabGradientStart};
+			--sdx-tab-gradient-end: ${tabGradientEnd};
 		}
 	`;
 
@@ -3822,6 +3852,52 @@ function registerSettings() {
 		onChange: () => applySheetDecorationStyles()
 	});
 
+	// Journal Border Settings
+	game.settings.register(MODULE_ID, "journalBorderStyle", {
+		name: "Journal Border Style",
+		scope: "world",
+		config: false,
+		default: "panel-border-004.png",
+		type: String,
+		onChange: () => applySheetDecorationStyles()
+	});
+
+	game.settings.register(MODULE_ID, "journalBorderImageWidth", {
+		name: "Journal Border Image Width",
+		scope: "world",
+		config: false,
+		default: 16,
+		type: Number,
+		onChange: () => applySheetDecorationStyles()
+	});
+
+	game.settings.register(MODULE_ID, "journalBorderImageSlice", {
+		name: "Journal Border Image Slice",
+		scope: "world",
+		config: false,
+		default: 12,
+		type: Number,
+		onChange: () => applySheetDecorationStyles()
+	});
+
+	game.settings.register(MODULE_ID, "journalBorderImageOutset", {
+		name: "Journal Border Image Outset",
+		scope: "world",
+		config: false,
+		default: 0,
+		type: Number,
+		onChange: () => applySheetDecorationStyles()
+	});
+
+	game.settings.register(MODULE_ID, "journalBorderImageRepeat", {
+		name: "Journal Border Image Repeat",
+		scope: "world",
+		config: false,
+		default: "repeat",
+		type: String,
+		onChange: () => applySheetDecorationStyles()
+	});
+
 	game.settings.register(MODULE_ID, "abilityModColor", {
 		name: "Ability Modifier Color",
 		scope: "world",
@@ -3863,6 +3939,25 @@ function registerSettings() {
 		scope: "world",
 		config: false,
 		default: "#000000",
+		type: String,
+		onChange: () => applySheetDecorationStyles()
+	});
+
+	// Tab background gradient settings
+	game.settings.register(MODULE_ID, "tabGradientStart", {
+		name: "Tab Gradient Start Color",
+		scope: "world",
+		config: false,
+		default: "#000000",
+		type: String,
+		onChange: () => applySheetDecorationStyles()
+	});
+
+	game.settings.register(MODULE_ID, "tabGradientEnd", {
+		name: "Tab Gradient End Color",
+		scope: "world",
+		config: false,
+		default: "#2f2b2b",
 		type: String,
 		onChange: () => applySheetDecorationStyles()
 	});

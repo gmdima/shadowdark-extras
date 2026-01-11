@@ -1,5 +1,24 @@
 # Shadowdark Extras - Release Notes
 
+## [4.19] - 2026-01-11
+
+### New Features
+- **Journal Border Settings**: Separate border customization for journal entries in the Sheet Style Editor
+    - **Journal Border Style**: Choose a different border image for journal entries vs player sheets
+    - **Journal Frame Tweaking**: Customize border width, image slice, outset, and repeat mode independently
+    - Journal entries now use dedicated CSS variables (`--sdx-journal-border-*`) for complete styling independence
+- **Tab Background Gradient**: New customizable gradient for all enhanced sheet tabs
+    - Single setting controls gradient for Details, Abilities, Talents, Spells, Inventory, and Effects tabs
+    - Choose start (top) and end (bottom) colors in the Sheet Style Editor
+- **Journal Narration Cards**: GM-only feature to send blockquote content to chat as styled narration cards
+    - Adds a "Send to Chat" button to blockquotes in journal pages
+    - Creates beautifully styled narration cards in chat
+    - Enable/disable via module settings
+
+### Improvements
+- **Dark Mode CSS Scoping**: All dark mode CSS is now properly scoped to only apply when dark mode is active
+- **Conditions Modal Styling**: Updated conditions modal to use journal border styling and improved fonts
+
 ## [4.18] - 2026-01-09
 
 ### New Features

@@ -176,6 +176,84 @@
         </div>
     </div>
 
+    {{!-- Journal Border Style --}}
+    <div class="sheet-editor-category" data-category="journal-border">
+        <div class="sheet-editor-category-header">
+            <div class="category-title">
+                <i class="fas fa-chevron-right category-toggle"></i>
+                <i class="fas fa-book category-icon"></i>
+                <span>{{localize "SHADOWDARK_EXTRAS.sheetEditor.journalBorder"}}</span>
+                <span class="category-count">({{borderImages.length}})</span>
+            </div>
+            <div class="current-selection">
+                <img class="current-journal-border-img" src="{{journalBorderPath}}" alt="Current">
+            </div>
+        </div>
+        <div class="sheet-editor-grid" style="display: none;">
+            <input type="text" class="sheet-editor-filter"
+                placeholder="{{localize 'SHADOWDARK_EXTRAS.sheetEditor.search'}}">
+            <div class="sheet-editor-thumbs">
+                {{#each borderImages}}
+                <div class="sheet-editor-thumb {{#if (eq this.filename ../journalBorderStyle)}}selected{{/if}}"
+                    data-setting="journalBorderStyle" data-filename="{{this.filename}}" data-path="{{this.path}}"
+                    data-name="{{this.name}}">
+                    <img src="{{this.path}}" alt="{{this.name}}">
+                    <span class="thumb-label">{{this.name}}</span>
+                </div>
+                {{/each}}
+            </div>
+        </div>
+    </div>
+
+    {{!-- Journal Frame Tweaking --}}
+    <div class="sheet-editor-category" data-category="journal-frame">
+        <div class="sheet-editor-category-header">
+            <div class="category-title">
+                <i class="fas fa-chevron-right category-toggle"></i>
+                <i class="fas fa-expand-arrows-alt category-icon"></i>
+                <span>{{localize "SHADOWDARK_EXTRAS.sheetEditor.journalFrameTweaking"}}</span>
+            </div>
+        </div>
+        <div class="sheet-editor-grid frame-controls" style="display: none;">
+            <div class="header-control-group">
+                <label>{{localize "SHADOWDARK_EXTRAS.sheetEditor.journalBorderImageWidth"}}</label>
+                <div class="control-input">
+                    <input type="number" data-setting="journalBorderImageWidth" value="{{journalBorderImageWidth}}"
+                        min="1" max="200">
+                </div>
+            </div>
+            <div class="header-control-group">
+                <label>{{localize "SHADOWDARK_EXTRAS.sheetEditor.journalBorderImageSlice"}}</label>
+                <div class="control-input">
+                    <input type="number" data-setting="journalBorderImageSlice" value="{{journalBorderImageSlice}}"
+                        min="1" max="200">
+                </div>
+            </div>
+            <div class="header-control-group">
+                <label>{{localize "SHADOWDARK_EXTRAS.sheetEditor.journalBorderImageOutset"}}</label>
+                <div class="control-input">
+                    <input type="number" data-setting="journalBorderImageOutset" value="{{journalBorderImageOutset}}"
+                        min="0" max="50">
+                </div>
+            </div>
+            <div class="header-control-group">
+                <label>{{localize "SHADOWDARK_EXTRAS.sheetEditor.journalBorderImageRepeat"}}</label>
+                <div class="control-input">
+                    <select data-setting="journalBorderImageRepeat">
+                        <option value="stretch" {{#if (eq journalBorderImageRepeat "stretch" )}}selected{{/if}}>Stretch
+                        </option>
+                        <option value="repeat" {{#if (eq journalBorderImageRepeat "repeat" )}}selected{{/if}}>Repeat
+                        </option>
+                        <option value="round" {{#if (eq journalBorderImageRepeat "round" )}}selected{{/if}}>Round
+                        </option>
+                        <option value="space" {{#if (eq journalBorderImageRepeat "space" )}}selected{{/if}}>Space
+                        </option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+
     {{!-- Ability Panel Style --}}
     <div class="sheet-editor-category" data-category="ability">
         <div class="sheet-editor-category-header">
@@ -310,6 +388,35 @@
                 <div class="control-input">
                     <input type="color" data-setting="luckValueColor" value="{{luckValueColor}}">
                     <input type="text" data-setting="luckValueColor" value="{{luckValueColor}}" placeholder="#000000"
+                        class="color-text-input">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{!-- Tab Background Gradient --}}
+    <div class="sheet-editor-category" data-category="tab-gradient">
+        <div class="sheet-editor-category-header">
+            <div class="category-title">
+                <i class="fas fa-chevron-right category-toggle"></i>
+                <i class="fas fa-fill category-icon"></i>
+                <span>{{localize "SHADOWDARK_EXTRAS.sheetEditor.tabGradient"}}</span>
+            </div>
+        </div>
+        <div class="sheet-editor-grid frame-controls" style="display: none;">
+            <div class="header-control-group">
+                <label>{{localize "SHADOWDARK_EXTRAS.sheetEditor.tabGradientStart"}}</label>
+                <div class="control-input">
+                    <input type="color" data-setting="tabGradientStart" value="{{tabGradientStart}}">
+                    <input type="text" data-setting="tabGradientStart" value="{{tabGradientStart}}"
+                        placeholder="#000000" class="color-text-input">
+                </div>
+            </div>
+            <div class="header-control-group">
+                <label>{{localize "SHADOWDARK_EXTRAS.sheetEditor.tabGradientEnd"}}</label>
+                <div class="control-input">
+                    <input type="color" data-setting="tabGradientEnd" value="{{tabGradientEnd}}">
+                    <input type="text" data-setting="tabGradientEnd" value="{{tabGradientEnd}}" placeholder="#2f2b2b"
                         class="color-text-input">
                 </div>
             </div>

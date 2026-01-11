@@ -25,11 +25,20 @@ const DEFAULTS = {
     sdBoxBorderWidth: 16,
     sdBoxBorderSlice: 12,
     sdBoxBorderTransparencyWidth: 10,
+    // Journal border settings
+    journalBorderStyle: "panel-border-004.png",
+    journalBorderImageWidth: 16,
+    journalBorderImageSlice: 12,
+    journalBorderImageOutset: 0,
+    journalBorderImageRepeat: "repeat",
     abilityModColor: "#000000",
     levelValueColor: "#000000",
     acValueColor: "#000000",
     initModColor: "#000000",
-    luckValueColor: "#000000"
+    luckValueColor: "#000000",
+    // Tab background gradient settings
+    tabGradientStart: "#000000",
+    tabGradientEnd: "#2f2b2b"
 };
 
 /**
@@ -134,6 +143,7 @@ export default class SheetEditorConfig extends HandlebarsApplicationMixin(Applic
         context.acPath = `/${basePath}/Transparent center/${this._previewState.acPanelStyle}`;
         context.statPath = `/${basePath}/Transparent center/${this._previewState.statPanelStyle}`;
         context.boxBorderPath = `/${basePath}/Border/${this._previewState.sdBoxBorderStyle}`;
+        context.journalBorderPath = `/${basePath}/Border/${this._previewState.journalBorderStyle}`;
 
         context.defaults = DEFAULTS;
 
@@ -319,6 +329,9 @@ export default class SheetEditorConfig extends HandlebarsApplicationMixin(Applic
         const currentBoxBorderImg = html.querySelector('.current-box-border-img');
         if (currentBoxBorderImg) currentBoxBorderImg.src = `${basePath}/Border/${this._previewState.sdBoxBorderStyle}`;
 
+        const currentJournalBorderImg = html.querySelector('.current-journal-border-img');
+        if (currentJournalBorderImg) currentJournalBorderImg.src = `${basePath}/Border/${this._previewState.journalBorderStyle}`;
+
         // Also apply to actual player sheets (live preview)
         this._applyLiveStyles();
     }
@@ -335,6 +348,7 @@ export default class SheetEditorConfig extends HandlebarsApplicationMixin(Applic
         const acPanelPath = `${basePath}/Transparent center/${this._previewState.acPanelStyle}`;
         const statPanelPath = `${basePath}/Transparent center/${this._previewState.statPanelStyle}`;
         const boxBorderPath = `${basePath}/Border/${this._previewState.sdBoxBorderStyle}`;
+        const journalBorderPath = `${basePath}/Border/${this._previewState.journalBorderStyle}`;
 
         // Inject/update the live preview style element
         let liveStyle = document.getElementById('sdx-decoration-styles-preview');
@@ -360,11 +374,18 @@ export default class SheetEditorConfig extends HandlebarsApplicationMixin(Applic
                 --sdx-box-border-image-width: ${this._previewState.sdBoxBorderWidth}px;
                 --sdx-box-border-image-slice: ${this._previewState.sdBoxBorderSlice};
                 --sdx-box-border-width: ${this._previewState.sdBoxBorderTransparencyWidth}px;
+                --sdx-journal-border: url('${journalBorderPath}');
+                --sdx-journal-border-image-width: ${this._previewState.journalBorderImageWidth}px;
+                --sdx-journal-border-image-slice: ${this._previewState.journalBorderImageSlice};
+                --sdx-journal-border-image-outset: ${this._previewState.journalBorderImageOutset}px;
+                --sdx-journal-border-image-repeat: ${this._previewState.journalBorderImageRepeat};
                 --sdx-ability-mod-color: ${this._previewState.abilityModColor || '#000000'};
                 --sdx-level-value-color: ${this._previewState.levelValueColor || '#000000'};
                 --sdx-ac-value-color: ${this._previewState.acValueColor || '#000000'};
                 --sdx-init-mod-color: ${this._previewState.initModColor || '#000000'};
                 --sdx-luck-value-color: ${this._previewState.luckValueColor || '#000000'};
+                --sdx-tab-gradient-start: ${this._previewState.tabGradientStart || '#000000'};
+                --sdx-tab-gradient-end: ${this._previewState.tabGradientEnd || '#2f2b2b'};
             }
         `;
     }

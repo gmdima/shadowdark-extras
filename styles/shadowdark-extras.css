@@ -413,6 +413,10 @@
     align-items: center;
 }
 
+.SD-list .item-name {
+    font-family: 'Montserrat-medium', 'Modesto Condensed', serif !important;
+}
+
 .sdx-container-box .sdx-container-list .item-image,
 .sdx-container-box .sdx-container-list .item-name {
     cursor: pointer;
@@ -1583,6 +1587,7 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    font-family: 'Montserrat-medium', 'Modesto Condensed', serif !important;
 }
 
 .sdx-container-list .quantity {
@@ -3104,7 +3109,7 @@ li.entry.sdx-sidebar-unidentified {
 }
 
 .shadowdark.sheet .tab-details.sdx-enhanced-details {
-    background: linear-gradient(180deg, #000000 0%, #2f2b2b 100%) !important;
+    background: linear-gradient(180deg, var(--sdx-tab-gradient-start, #000000) 0%, var(--sdx-tab-gradient-end, #2f2b2b) 100%) !important;
     padding: 16px;
     min-height: 100%;
     position: relative;
@@ -3245,7 +3250,7 @@ li.entry.sdx-sidebar-unidentified {
     border-radius: 0px;
     padding: 4px 10px;
     color: rgba(255, 255, 255, 0.9) !important;
-    font-family: 'Modesto Condensed', 'Palatino Linotype', serif;
+    font-family: 'Montserrat-medium', 'Modesto Condensed', 'Palatino Linotype', serif;
 }
 
 .shadowdark.sheet .tab-details.sdx-enhanced-details .SD-box .content select option {
@@ -3387,14 +3392,14 @@ li.entry.sdx-sidebar-unidentified {
 /* Boons list styling */
 .shadowdark.sheet .tab-details.sdx-enhanced-details .SD-list {
     background: transparent !important;
-    font-family: 'Modesto Condensed', 'Palatino Linotype', serif;
+    font-family: 'Montserrat-medium', 'Modesto Condensed', 'Palatino Linotype', serif;
     font-size: 16px;
 }
 
 .shadowdark.sheet .tab-details.sdx-enhanced-details .SD-list .header,
 .shadowdark.sheet .tab-details.sdx-enhanced-details .SD-list .item {
     color: rgba(255, 255, 255, 0.9) !important;
-    font-family: 'Modesto Condensed', 'Palatino Linotype', serif;
+    font-family: 'Montserrat-medium', 'Modesto Condensed', 'Palatino Linotype', serif;
     font-size: 16px;
 }
 
@@ -3425,7 +3430,7 @@ li.entry.sdx-sidebar-unidentified {
 }
 
 .shadowdark.sheet .tab-abilities.sdx-enhanced-abilities {
-    background: linear-gradient(180deg, #000000 0%, #2f2b2b 100%) !important;
+    background: linear-gradient(180deg, var(--sdx-tab-gradient-start, #000000) 0%, var(--sdx-tab-gradient-end, #2f2b2b) 100%) !important;
     padding: 16px;
     min-height: 100%;
     position: relative;
@@ -3587,7 +3592,7 @@ li.entry.sdx-sidebar-unidentified {
 }
 
 .shadowdark.sheet .tab-talents.sdx-enhanced-talents {
-    background: linear-gradient(180deg, #000000 0%, #2f2b2b 100%) !important;
+    background: linear-gradient(180deg, var(--sdx-tab-gradient-start, #000000) 0%, var(--sdx-tab-gradient-end, #2f2b2b) 100%) !important;
     padding: 16px;
     min-height: 100%;
     position: relative;
@@ -3814,7 +3819,7 @@ li.entry.sdx-sidebar-unidentified {
 }
 
 .shadowdark.sheet .tab-spells.sdx-enhanced-spells {
-    background: linear-gradient(180deg, #000000 0%, #2f2b2b 100%) !important;
+    background: linear-gradient(180deg, var(--sdx-tab-gradient-start, #000000) 0%, var(--sdx-tab-gradient-end, #2f2b2b) 100%) !important;
     padding: 16px;
     min-height: 100%;
     position: relative;
@@ -4013,7 +4018,7 @@ li.entry.sdx-sidebar-unidentified {
 }
 
 .shadowdark.sheet .tab-inventory.sdx-enhanced-inventory {
-    background: linear-gradient(180deg, #000000 0%, #2f2b2b 100%) !important;
+    background: linear-gradient(180deg, var(--sdx-tab-gradient-start, #000000) 0%, var(--sdx-tab-gradient-end, #2f2b2b) 100%) !important;
     padding: 16px;
     min-height: 100%;
     position: relative;
@@ -4217,7 +4222,7 @@ li.entry.sdx-sidebar-unidentified {
 }
 
 .shadowdark.sheet .tab-effects.sdx-enhanced-effects {
-    background: linear-gradient(180deg, #000000 0%, #2f2b2b 100%) !important;
+    background: linear-gradient(180deg, var(--sdx-tab-gradient-start, #000000) 0%, var(--sdx-tab-gradient-end, #2f2b2b) 100%) !important;
     padding: 16px;
     min-height: 100%;
     position: relative;
@@ -5253,7 +5258,7 @@ li.entry.sdx-sidebar-unidentified {
     width: 44px;
     cursor: pointer;
     transition: all 0.2s ease;
-    font-family: 'Modesto Condensed', 'Palatino Linotype', serif;
+    font-family: 'Montserrat-medium', 'Modesto Condensed', 'Palatino Linotype', serif;
     position: relative;
     gap: 2px;
 }
@@ -5328,7 +5333,7 @@ li.entry.sdx-sidebar-unidentified {
     text-align: center;
     font-size: 18px;
     font-weight: bold;
-    font-family: 'Modesto Condensed', 'Palatino Linotype', serif;
+    font-family: 'Montserrat-medium', 'Modesto Condensed', 'Palatino Linotype', serif;
     color: #c8b48c;
     background: rgba(0, 0, 0, 0.5);
     border: 1px solid #c8b48c;
@@ -5373,7 +5378,7 @@ li.entry.sdx-sidebar-unidentified {
     font-size: 16px;
     font-weight: bold;
     line-height: 1;
-    font-family: 'Modesto Condensed', 'Palatino Linotype', serif;
+    font-family: 'Montserrat-medium', 'Modesto Condensed', 'Palatino Linotype', serif;
     width: 36px;
     height: 36px;
     display: flex;
@@ -5387,7 +5392,7 @@ li.entry.sdx-sidebar-unidentified {
     letter-spacing: 0.7px;
     color: rgba(255, 255, 255, 0.85);
     text-transform: uppercase;
-    font-family: 'Modesto Condensed', 'Palatino Linotype', serif;
+    font-family: 'Montserrat-medium', 'Modesto Condensed', 'Palatino Linotype', serif;
     order: -1;
     /* Put label above */
 }
@@ -5906,7 +5911,7 @@ section[data-tab="tab-notes"].sdx-journal-active>div:not(.sdx-journal-notes) {
     margin: 0 0 8px 0;
     padding: 0 0 6px 0;
     border-bottom: 1px solid rgba(0, 0, 0, 0.4);
-    font-family: 'Modesto Condensed', 'Palatino Linotype', serif;
+    font-family: 'Montserrat-medium', 'Modesto Condensed', 'Palatino Linotype', serif;
     font-size: 13px;
     font-weight: bold;
     color: rgb(255 255 255 / 70%);
@@ -5965,7 +5970,7 @@ section[data-tab="tab-notes"].sdx-journal-active>div:not(.sdx-journal-notes) {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    font-family: 'Modesto Condensed', 'Palatino Linotype', serif;
+    font-family: 'Montserrat-medium', 'Modesto Condensed', 'Palatino Linotype', serif;
 }
 
 .sdx-condition-toggle.has-variants .fa-caret-down {
@@ -6031,7 +6036,7 @@ section[data-tab="tab-notes"].sdx-journal-active>div:not(.sdx-journal-notes) {
     cursor: pointer;
     transition: background 0.15s ease;
     font-size: 14px;
-    font-family: 'Modesto Condensed', 'Palatino Linotype', serif;
+    font-family: 'Montserrat-medium', 'Modesto Condensed', 'Palatino Linotype', serif;
     color: rgba(0, 0, 0, 0.85);
     border-bottom: 1px solid rgba(0, 0, 0, 0.1);
 }
@@ -6061,7 +6066,7 @@ section[data-tab="tab-notes"].sdx-journal-active>div:not(.sdx-journal-notes) {
     border: 1px solid rgba(100, 90, 70, 0.4);
     border-radius: 4px;
     cursor: pointer;
-    font-family: 'Modesto Condensed', 'Palatino Linotype', serif;
+    font-family: 'Montserrat-medium', 'Modesto Condensed', 'Palatino Linotype', serif;
     font-size: 16px;
     font-weight: 600;
     color: #fff;
@@ -6115,7 +6120,6 @@ section[data-tab="tab-notes"].sdx-journal-active>div:not(.sdx-journal-notes) {
     position: relative;
     z-index: 2;
     background: linear-gradient(180deg, rgba(20, 20, 20, 0.95) 0%, rgba(10, 10, 10, 0.9) 100%);
-    border: 2px solid rgba(100, 90, 70, 0.6);
     border-radius: 8px;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.8);
     width: 90%;
@@ -6123,6 +6127,12 @@ section[data-tab="tab-notes"].sdx-journal-active>div:not(.sdx-journal-notes) {
     max-height: 80vh;
     display: flex;
     flex-direction: column;
+    border: var(--sdx-box-border-width) solid transparent !important;
+    border-image: var(--sdx-journal-border) var(--sdx-journal-border-image-slice) fill !important;
+    border-image-repeat: var(--sdx-journal-border-image-repeat) !important;
+    border-image-width: var(--sdx-journal-border-image-width) !important;
+    border-image-outset: var(--sdx-journal-border-image-outset, 0px) !important;
+
 }
 
 .sdx-conditions-modal-header {
@@ -6136,7 +6146,7 @@ section[data-tab="tab-notes"].sdx-journal-active>div:not(.sdx-journal-notes) {
 
 .sdx-conditions-modal-header h2 {
     margin: 0;
-    font-family: 'Modesto Condensed', 'Palatino Linotype', serif;
+    font-family: "Old Newspaper Font", serif;
     font-size: 20px;
     font-weight: bold;
     color: rgb(255 255 255 / 80%);
@@ -6171,7 +6181,7 @@ section[data-tab="tab-notes"].sdx-journal-active>div:not(.sdx-journal-notes) {
     background: rgba(255, 255, 255, 0.95);
     border: 1px solid rgba(100, 90, 70, 0.4);
     border-radius: 4px;
-    font-family: 'Modesto Condensed', 'Palatino Linotype', serif;
+    font-family: 'Montserrat-medium', 'Modesto Condensed', 'Palatino Linotype', serif;
     font-size: 16px;
     color: rgba(0, 0, 0, 0.9);
 }
@@ -6198,13 +6208,16 @@ section[data-tab="tab-notes"].sdx-journal-active>div:not(.sdx-journal-notes) {
 .sdx-conditions-modal-grid .sdx-condition-toggle {
     min-height: 40px;
     height: auto;
+    font-family: 'Montserrat-medium', 'Modesto Condensed', 'Palatino Linotype', serif;
 }
 
 .sdx-conditions-modal-grid .sdx-condition-toggle .sdx-condition-name {
     white-space: normal;
     overflow: visible;
+    font-size: 12px !important;
     text-overflow: unset;
     word-break: break-word;
+    font-family: 'Montserrat-medium', 'Modesto Condensed', 'Palatino Linotype', serif;
     line-height: 1.2;
 }
 
@@ -6221,7 +6234,7 @@ section[data-tab="tab-notes"].sdx-journal-active>div:not(.sdx-journal-notes) {
     font-size: 15px;
     line-height: 1.5;
     color: rgba(0, 0, 0, 0.9);
-    font-family: 'Modesto Condensed', 'Palatino Linotype', serif;
+    font-family: 'Montserrat-medium', 'Modesto Condensed', 'Palatino Linotype', serif;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.3);
     z-index: 10000;
     pointer-events: auto;
@@ -6669,7 +6682,7 @@ section[data-tab="tab-notes"].sdx-journal-active>div:not(.sdx-journal-notes) {
 
 .sdx-conditions-toggles.sdx-theme-5e .sdx-conditions-header {
     color: #444;
-    font-family: 'Modesto Condensed', serif;
+    font-family: 'Montserrat-medium', 'Modesto Condensed', serif;
 }
 
 .sdx-conditions-toggles.sdx-theme-5e .sdx-condition-toggle {
@@ -14575,7 +14588,7 @@ body:not(.game-master) .sdx-carousing-chat .sdx-player-only {
 }
 
 .sdx-journal-page-content h3 {
-    font-family: 'Modesto Condensed', 'Palatino Linotype', serif;
+    font-family: 'Montserrat-medium', 'Modesto Condensed', 'Palatino Linotype', serif;
     font-size: 18px;
     font-weight: bold;
     color: #e0c98a !important;
@@ -14586,7 +14599,7 @@ body:not(.game-master) .sdx-carousing-chat .sdx-player-only {
 .sdx-journal-page-content h4,
 .sdx-journal-page-content h5,
 .sdx-journal-page-content h6 {
-    font-family: 'Modesto Condensed', 'Palatino Linotype', serif;
+    font-family: 'Montserrat-medium', 'Modesto Condensed', 'Palatino Linotype', serif;
     font-size: 16px;
     font-weight: bold;
     color: #e8d5a0 !important;
@@ -14668,7 +14681,7 @@ body:not(.game-master) .sdx-carousing-chat .sdx-player-only {
     left: -24px;
     color: #c9aa58;
     font-weight: bold;
-    font-family: 'Modesto Condensed', serif;
+    font-family: 'Montserrat-medium', 'Modesto Condensed', serif;
 }
 
 /* --- Decorative Horizontal Rules --- */
@@ -15309,7 +15322,7 @@ body:not(.game-master) .sdx-carousing-chat .sdx-player-only {
 
 .sdx-journal-editor-dialog .sdx-editor-preview h3,
 .ProseMirror h3 {
-    font-family: 'Modesto Condensed', serif !important;
+    font-family: 'Montserrat-medium', 'Modesto Condensed', serif !important;
     color: #e0c98a !important;
     text-align: left !important;
 }
@@ -15320,7 +15333,7 @@ body:not(.game-master) .sdx-carousing-chat .sdx-player-only {
 .ProseMirror h4,
 .ProseMirror h5,
 .ProseMirror h6 {
-    font-family: 'Modesto Condensed', serif !important;
+    font-family: 'Montserrat-medium', 'Modesto Condensed', serif !important;
     color: #e8d5a0 !important;
     text-align: left !important;
 }
@@ -15762,6 +15775,7 @@ body:not(.game-master) .sdx-carousing-chat .sdx-player-only {
 .sdx-npc-special-attack {
     margin-bottom: 6px;
     line-height: 1.5;
+    color: black;
 }
 
 .sdx-npc-attack:last-child,
@@ -15799,6 +15813,7 @@ body:not(.game-master) .sdx-carousing-chat .sdx-player-only {
 .sdx-npc-feature {
     margin-bottom: 6px;
     line-height: 1.5;
+    color: black;
 }
 
 .sdx-npc-feature:last-child {
@@ -17059,3 +17074,50 @@ body.sdx-dark-mode .sdx-carousing-toggle-btn i {
     border-radius: 3px;
     font-style: italic;
 }
+
+
+/* Narration button toolbar wrapper */
+.sdx-journal-buttons-wrapper {
+    position: absolute;
+    bottom: 8px;
+    right: 8px;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.sdx-journal-buttons-container {
+    display: flex;
+    gap: 6px;
+}
+
+/* Narration button styling */
+.sdx-journal-narration-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    background: #2a2a2a;
+    color: #c9aa58;
+    border: 1px solid #444;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 14px;
+}
+
+.sdx-journal-narration-button:hover {
+    background: #3a3a3a;
+    color: #f0d890;
+    border-color: #c9aa58;
+    box-shadow: 0 0 8px rgba(201, 170, 88, 0.3);
+}
+
+.sdx-journal-narration-button:active {
+    transform: scale(0.95);
+}
+
+/* ============================================
+   JOURNAL NARRATION - CHAT MESSAGE STYLING
+   ============================================ */
