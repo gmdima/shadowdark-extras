@@ -3662,6 +3662,25 @@ async function spawnSummonedCreatures(casterActor, item, profiles, summoningConf
 					// Use the helper function for persistent storage
 					await trackSummonedTokensForExpiry(sceneId, tokenIds, expiryRound, item?.name || 'Unknown Spell');
 
+					// Also add to duration tracker if trackDuration is enabled
+					const spellDamageConfig = item?.flags?.[MODULE_ID]?.spellDamage || {};
+					if (spellDamageConfig.trackDuration) {
+						try {
+							const trackerConfig = {
+								perTurnTrigger: spellDamageConfig.perTurnTrigger || "start",
+								perTurnDamage: spellDamageConfig.perTurnDamage || "",
+								reapplyEffects: spellDamageConfig.reapplyEffects || false,
+								damageType: spellDamageConfig.damageType || "",
+								effects: spellDamageConfig.effects || [],
+								templateId: null,
+								summonedTokenIds: tokenIds
+							};
+
+							await startDurationSpell(casterActor, item, tokenIds, trackerConfig);
+						} catch (err) {
+							console.warn("shadowdark-extras | Failed to start duration tracking for summoning spell:", err);
+						}
+					}
 				}
 			}
 

@@ -362,6 +362,7 @@ export async function startDurationSpell(caster, spell, targetTokenIds = [], spe
 		casterId: caster.id,
 		casterName: caster.name,
 		templateId: spellConfig.templateId || null, // Link to the specific template
+		summonedTokenIds: spellConfig.summonedTokenIds || [], // Track summoned tokens for cleanup
 		startRound: currentRound,
 		expiryRound: expiryRound,
 		durationValue: durationValue,
@@ -750,6 +751,40 @@ export async function endDurationSpell(casterId, instanceId, reason = "expired")
 		}
 	} catch (err) {
 		console.warn(`shadowdark-extras | Failed to delete templates for ended spell:`, err);
+	}
+
+	// Delete summoned tokens if this spell had any
+	if (durationEntry.summonedTokenIds && durationEntry.summonedTokenIds.length > 0) {
+		try {
+			const scene = canvas.scene;
+			if (scene && game.user.isGM) {
+				const tokensToDelete = durationEntry.summonedTokenIds.filter(tokenId => {
+					return scene.tokens.get(tokenId) !== undefined;
+				});
+
+				if (tokensToDelete.length > 0) {
+					await scene.deleteEmbeddedDocuments("Token", tokensToDelete);
+					console.log(`shadowdark-extras | Deleted ${tokensToDelete.length} summoned token(s) for ended spell ${durationEntry.spellName}`);
+				}
+
+				// Also remove from expiry tracking
+				const expiryList = scene.getFlag(MODULE_ID, 'summonedTokensExpiry') || [];
+				const updatedExpiryList = expiryList.filter(entry => {
+					// Remove entries that match this spell's tokens
+					const hasMatchingToken = entry.tokenIds?.some(tokenId =>
+						durationEntry.summonedTokenIds.includes(tokenId)
+					);
+					return !hasMatchingToken;
+				});
+
+				if (updatedExpiryList.length !== expiryList.length) {
+					await scene.setFlag(MODULE_ID, 'summonedTokensExpiry', updatedExpiryList);
+					console.log(`shadowdark-extras | Removed summoned tokens from expiry tracking`);
+				}
+			}
+		} catch (err) {
+			console.warn(`shadowdark-extras | Failed to delete summoned tokens for ended spell:`, err);
+		}
 	}
 
 	// Remove from tracking
