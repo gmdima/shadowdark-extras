@@ -6054,6 +6054,160 @@ section[data-tab="tab-notes"].sdx-journal-active>div:not(.sdx-journal-notes) {
     color: rgba(0, 0, 0, 0.7);
 }
 
+/* Add Condition Button */
+.sdx-add-condition-btn {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid rgba(100, 90, 70, 0.4);
+    border-radius: 4px;
+    cursor: pointer;
+    font-family: 'Modesto Condensed', 'Palatino Linotype', serif;
+    font-size: 16px;
+    font-weight: 600;
+    color: #fff;
+    transition: all 0.15s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+
+.sdx-add-condition-btn:hover {
+    background: #111;
+    border-color: rgba(100, 90, 70, 0.6);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.25);
+}
+
+.sdx-add-condition-btn:active {
+    transform: translateY(0);
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.sdx-add-condition-btn i {
+    font-size: 14px;
+}
+
+/* Conditions Modal */
+.sdx-conditions-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 100000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.sdx-conditions-modal-backdrop {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: 1;
+}
+
+.sdx-conditions-modal-content {
+    position: relative;
+    z-index: 2;
+    background: linear-gradient(180deg, rgba(20, 20, 20, 0.95) 0%, rgba(10, 10, 10, 0.9) 100%);
+    border: 2px solid rgba(100, 90, 70, 0.6);
+    border-radius: 8px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.8);
+    width: 90%;
+    max-width: 800px;
+    max-height: 80vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.sdx-conditions-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.4);
+    background: linear-gradient(180deg, rgba(30, 30, 30, 0.6) 0%, rgba(20, 20, 20, 0.4) 100%);
+}
+
+.sdx-conditions-modal-header h2 {
+    margin: 0;
+    font-family: 'Modesto Condensed', 'Palatino Linotype', serif;
+    font-size: 20px;
+    font-weight: bold;
+    color: rgb(255 255 255 / 80%);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.sdx-conditions-modal-close {
+    background: transparent;
+    border: none;
+    color: rgb(255 255 255 / 60%);
+    font-size: 20px;
+    cursor: pointer;
+    padding: 4px 8px;
+    transition: all 0.15s ease;
+    border-radius: 3px;
+}
+
+.sdx-conditions-modal-close:hover {
+    color: rgb(255 255 255 / 90%);
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.sdx-conditions-modal-search {
+    padding: 12px 16px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.3);
+}
+
+.sdx-conditions-search-input {
+    width: 100%;
+    padding: 8px 12px;
+    background: rgba(255, 255, 255, 0.95);
+    border: 1px solid rgba(100, 90, 70, 0.4);
+    border-radius: 4px;
+    font-family: 'Modesto Condensed', 'Palatino Linotype', serif;
+    font-size: 16px;
+    color: rgba(0, 0, 0, 0.9);
+}
+
+.sdx-conditions-search-input:focus {
+    outline: none;
+    border-color: rgba(100, 90, 70, 0.8);
+    box-shadow: 0 0 0 2px rgba(100, 90, 70, 0.2);
+}
+
+.sdx-conditions-modal-grid-container {
+    flex: 1;
+    overflow-y: auto;
+    padding: 12px;
+}
+
+.sdx-conditions-modal-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 6px;
+}
+
+/* Override condition toggle styles for modal - allow text wrapping */
+.sdx-conditions-modal-grid .sdx-condition-toggle {
+    min-height: 40px;
+    height: auto;
+}
+
+.sdx-conditions-modal-grid .sdx-condition-toggle .sdx-condition-name {
+    white-space: normal;
+    overflow: visible;
+    text-overflow: unset;
+    word-break: break-word;
+    line-height: 1.2;
+}
+
 /* Condition tooltips */
 .sdx-condition-tooltip {
     position: fixed;

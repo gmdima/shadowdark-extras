@@ -1,1 +1,7 @@
-2026/01/10-16:40:08.831 f06c Delete type=3 #1
+2026/01/11-00:08:20.057 abbc Recovering log #313
+2026/01/11-00:08:20.066 abbc Delete type=0 #313
+2026/01/11-00:08:20.066 abbc Delete type=3 #311
+2026/01/11-01:54:46.276 8b1c Level-0 table #319: started
+2026/01/11-01:54:46.276 8b1c Level-0 table #319: 0 bytes OK
+2026/01/11-01:54:46.280 8b1c Delete type=0 #317
+2026/01/11-01:54:46.290 8b1c Manual compaction at level-0 from '!actors!X2leBdJeqwKWrTlE' @ 72057594037927935 : 1 .. '!actors!X2leBdJeqwKWrTlE' @ 0 : 0; will stop at (end)
