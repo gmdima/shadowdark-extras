@@ -309,54 +309,63 @@ export function setupCombatSocket() {
 			const isDamage = data.damage > 0;
 
 			// If damageComponents is provided, process each component separately
-			if (data.damageComponents && data.damageComponents.length > 0 && isDamage) {
+			// Check if we should use the new component-based damage or legacy damage
+			if (((data.damageComponents && data.damageComponents.length > 0) || (data.baseDamage && data.baseDamage > 0)) && isDamage) {
 
-				for (const component of data.damageComponents) {
-					let componentDamage = component.amount || 0;
-					const componentType = (component.type || "standard").toLowerCase();
+				// 1. Process damage components
+				if (data.damageComponents && data.damageComponents.length > 0) {
+					for (const component of data.damageComponents) {
+						let componentDamage = component.amount || 0;
+						const componentType = (component.type || "standard").toLowerCase();
+						let isAbsorbed = false;
 
-					// Skip standard damage type (no resistance/immunity/vulnerability applies)
-					if (componentType !== "standard" && componentType !== "damage") {
-						// Check for immunity (0 damage for this component)
-						const isImmune = token.actor.getFlag("shadowdark-extras", `immunity.${componentType}`);
-						if (isImmune) {
-							componentDamage = 0;
-						} else {
-							// Check for resistance (half damage for this component)
-							const isResistant = token.actor.getFlag("shadowdark-extras", `resistance.${componentType}`);
-							if (isResistant) {
-								const originalDamage = componentDamage;
-								componentDamage = Math.floor(componentDamage / 2);
-							} else {
-								// Check for vulnerability (double damage for this component)
+						// Skip standard damage type (no resistance/immunity/vulnerability applies)
+						if (componentType !== "standard" && componentType !== "damage") {
+							// Check for absorption FIRST (value -1 = damage becomes healing)
+							const absorptionValue = token.actor.getFlag("shadowdark-extras", `absorption.${componentType}`);
+							if (absorptionValue === -1 || absorptionValue === true) {
+								componentDamage = -componentDamage; // Convert to healing
+								isAbsorbed = true;
+							} else if (absorptionValue === 1) {
+								componentDamage = componentDamage * 2; // Double damage
+								isAbsorbed = true;
+							}
+
+							// Check for immunity (0 damage for this component) - skip if absorbed
+							const isImmune = !isAbsorbed && token.actor.getFlag("shadowdark-extras", `immunity.${componentType}`);
+							if (isImmune) {
+								componentDamage = 0;
+							} else if (!isAbsorbed) {
+								// Check for resistance/vulnerability
+								const isResistant = token.actor.getFlag("shadowdark-extras", `resistance.${componentType}`);
 								const isVulnerable = token.actor.getFlag("shadowdark-extras", `vulnerability.${componentType}`);
-								if (isVulnerable) {
-									const originalDamage = componentDamage;
+
+								if (isResistant) {
+									componentDamage = Math.floor(componentDamage / 2);
+								} else if (isVulnerable) {
 									componentDamage = componentDamage * 2;
 								}
 							}
 						}
 
-						// Check for physical resistance/immunity/vulnerability (applies to bludgeoning, slashing, piercing)
-						if (["bludgeoning", "slashing", "piercing"].includes(componentType)) {
+						// Check for physical resistance/immunity/vulnerability
+						// Only check if not already absorbed
+						if (!isAbsorbed && ["bludgeoning", "slashing", "piercing"].includes(componentType)) {
 							const isPhysicalImmune = token.actor.getFlag("shadowdark-extras", "immunity.physical");
 							if (isPhysicalImmune) {
 								componentDamage = 0;
 							} else if (componentDamage > 0) {
 								const isPhysicalResistant = token.actor.getFlag("shadowdark-extras", "resistance.physical");
+								const isPhysicalVulnerable = token.actor.getFlag("shadowdark-extras", "vulnerability.physical");
+
 								if (isPhysicalResistant) {
-									const originalDamage = componentDamage;
 									componentDamage = Math.floor(componentDamage / 2);
-								} else {
-									const isPhysicalVulnerable = token.actor.getFlag("shadowdark-extras", "vulnerability.physical");
-									if (isPhysicalVulnerable) {
-										const originalDamage = componentDamage;
-										componentDamage = componentDamage * 2;
-									}
+								} else if (isPhysicalVulnerable) {
+									componentDamage = componentDamage * 2;
 								}
 							}
 
-							// Check for non-magical weapon resistance/immunity (only if weapon is not magical)
+							// Check for non-magical weapon resistance/immunity
 							if (componentDamage > 0 && !data.isMagicalWeapon) {
 								const isNonMagicImmune = token.actor.getFlag("shadowdark-extras", "immunity.nonmagic");
 								if (isNonMagicImmune) {
@@ -369,57 +378,61 @@ export function setupCombatSocket() {
 								}
 							}
 						}
-					}
 
-					finalDamage += componentDamage;
+						finalDamage += componentDamage;
+					}
 				}
 
-
-
-				// Process base damage with its type (uses baseDamageType from weapon flags)
+				// 2. Process base damage
 				if (data.baseDamage && data.baseDamage > 0) {
 					let baseDamage = data.baseDamage;
 					const baseType = (data.baseDamageType || "standard").toLowerCase();
+					let isAbsorbed = false;
 
 					// Apply resistance/immunity/vulnerability to base damage if not standard
 					if (baseType !== "standard" && baseType !== "damage") {
-						const isImmune = token.actor.getFlag("shadowdark-extras", `immunity.${baseType}`);
+						// Check for absorption FIRST
+						const absorptionValue = token.actor.getFlag("shadowdark-extras", `absorption.${baseType}`);
+						if (absorptionValue === -1 || absorptionValue === true) {
+							baseDamage = -baseDamage; // Convert to healing
+							isAbsorbed = true;
+						} else if (absorptionValue === 1) {
+							baseDamage = baseDamage * 2; // Double damage
+							isAbsorbed = true;
+						}
+
+						// Check for immunity - skip if absorbed
+						const isImmune = !isAbsorbed && token.actor.getFlag("shadowdark-extras", `immunity.${baseType}`);
 						if (isImmune) {
 							baseDamage = 0;
-						} else {
+						} else if (!isAbsorbed) {
 							const isResistant = token.actor.getFlag("shadowdark-extras", `resistance.${baseType}`);
+							const isVulnerable = token.actor.getFlag("shadowdark-extras", `vulnerability.${baseType}`);
+
 							if (isResistant) {
-								const originalDamage = baseDamage;
 								baseDamage = Math.floor(baseDamage / 2);
-							} else {
-								const isVulnerable = token.actor.getFlag("shadowdark-extras", `vulnerability.${baseType}`);
-								if (isVulnerable) {
-									const originalDamage = baseDamage;
-									baseDamage = baseDamage * 2;
-								}
+							} else if (isVulnerable) {
+								baseDamage = baseDamage * 2;
 							}
 						}
 
-						// Check for physical resistance/immunity/vulnerability (applies to bludgeoning, slashing, piercing)
-						if (["bludgeoning", "slashing", "piercing"].includes(baseType) && baseDamage > 0) {
+						// Check for physical resistance/immunity/vulnerability
+						if (!isAbsorbed && ["bludgeoning", "slashing", "piercing"].includes(baseType)) {
 							const isPhysicalImmune = token.actor.getFlag("shadowdark-extras", "immunity.physical");
 							if (isPhysicalImmune) {
 								baseDamage = 0;
-							} else {
+							} else if (baseDamage > 0) {
 								const isPhysicalResistant = token.actor.getFlag("shadowdark-extras", "resistance.physical");
+								const isPhysicalVulnerable = token.actor.getFlag("shadowdark-extras", "vulnerability.physical");
+
 								if (isPhysicalResistant) {
-									const originalDamage = baseDamage;
 									baseDamage = Math.floor(baseDamage / 2);
-								} else {
-									const isPhysicalVulnerable = token.actor.getFlag("shadowdark-extras", "vulnerability.physical");
-									if (isPhysicalVulnerable) {
-										const originalDamage = baseDamage;
-										baseDamage = baseDamage * 2;
-									}
+								} else if (isPhysicalVulnerable) {
+									baseDamage = baseDamage * 2;
 								}
 							}
 
-							// Check for non-magical weapon resistance/immunity (only if weapon is not magical)
+							// Check for non-magical weapon resistance/immunity
 							if (baseDamage > 0 && !data.isMagicalWeapon) {
 								const isNonMagicImmune = token.actor.getFlag("shadowdark-extras", "immunity.nonmagic");
 								if (isNonMagicImmune) {
@@ -437,39 +450,46 @@ export function setupCombatSocket() {
 					finalDamage += baseDamage;
 				}
 
-				// Glassbones (double damage) - applies after resistance/immunity
+				// 3. Final global modifiers (like Glassbones)
 				if (hasGlassbones && finalDamage > 0) {
-					const originalDamage = finalDamage;
 					finalDamage = finalDamage * 2;
 				}
+
 			} else {
 				// Legacy behavior: single damage value with single type
-				// Use baseDamageType if provided (weapon base damage type), otherwise fall back to damageType
 				finalDamage = data.damage;
 				const effectiveDamageType = (data.baseDamageType || data.damageType || "standard").toLowerCase();
 
 				if (isDamage && effectiveDamageType && effectiveDamageType !== "standard" && effectiveDamageType !== "damage") {
+					// Check for absorption FIRST
+					const absorptionValue = token.actor.getFlag("shadowdark-extras", `absorption.${effectiveDamageType}`);
+					let isAbsorbed = false;
+					if (absorptionValue === -1 || absorptionValue === true) {
+						finalDamage = -finalDamage; // Convert to healing
+						isAbsorbed = true;
+					} else if (absorptionValue === 1) {
+						finalDamage = finalDamage * 2; // Double damage
+						isAbsorbed = true;
+					}
 
-					// Check for immunity (0 damage)
-					const isImmune = token.actor.getFlag("shadowdark-extras", `immunity.${effectiveDamageType}`);
+					// Check for immunity - skip if absorbed
+					const isImmune = !isAbsorbed && token.actor.getFlag("shadowdark-extras", `immunity.${effectiveDamageType}`);
 					if (isImmune) {
 						finalDamage = 0;
-					} else {
-						// Check for resistance (half damage)
+					} else if (!isAbsorbed) {
+						// Check for resistance/vulnerability
 						const isResistant = token.actor.getFlag("shadowdark-extras", `resistance.${effectiveDamageType}`);
+						const isVulnerable = token.actor.getFlag("shadowdark-extras", `vulnerability.${effectiveDamageType}`);
+
 						if (isResistant) {
 							finalDamage = Math.floor(finalDamage / 2);
-						} else {
-							// Check for vulnerability (double damage)
-							const isVulnerable = token.actor.getFlag("shadowdark-extras", `vulnerability.${effectiveDamageType}`);
-							if (isVulnerable) {
-								finalDamage = finalDamage * 2;
-							}
+						} else if (isVulnerable) {
+							finalDamage = finalDamage * 2;
 						}
 					}
 
-					// Check for non-magical weapon resistance/immunity (physical damage from non-magical weapons)
-					if (finalDamage > 0 && ["bludgeoning", "slashing", "piercing"].includes(effectiveDamageType) && !data.isMagicalWeapon) {
+					// Check for non-magical weapon resistance/immunity
+					if (!isAbsorbed && finalDamage > 0 && ["bludgeoning", "slashing", "piercing"].includes(effectiveDamageType) && !data.isMagicalWeapon) {
 						const isNonMagicImmune = token.actor.getFlag("shadowdark-extras", "immunity.nonmagic");
 						if (isNonMagicImmune) {
 							finalDamage = 0;

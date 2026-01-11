@@ -1,6 +1,1 @@
-2026/01/11-02:52:13.897 25c0 Log #365: 0 ops saved to Table #366 OK
-2026/01/11-02:52:13.897 25c0 Archiving C:\Users\gmdim\AppData\Local\FoundryVTT\Data\modules\shadowdark-extras\packs\pack-sdxitems/000365.log: OK
-2026/01/11-02:52:13.898 25c0 Table #348: 206 entries OK
-2026/01/11-02:52:13.899 25c0 Table #357: 234 entries OK
-2026/01/11-02:52:13.903 25c0 Archiving C:\Users\gmdim\AppData\Local\FoundryVTT\Data\modules\shadowdark-extras\packs\pack-sdxitems/MANIFEST-000364: OK
-2026/01/11-02:52:13.908 25c0 **** Repaired leveldb C:\Users\gmdim\AppData\Local\FoundryVTT\Data\modules\shadowdark-extras\packs\pack-sdxitems; recovered 2 files; 282432 bytes. Some data may have been lost. ****
+2026/01/11-02:52:13.924 25c0 Delete type=3 #1
