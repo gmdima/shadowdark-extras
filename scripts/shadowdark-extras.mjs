@@ -51,6 +51,7 @@ import AmmunitionSelector from "./AmmunitionSelector.mjs";
 import StaffSpellManager from "./StaffSpellManager.mjs";
 import { initJournalNarration } from "./JournalNarrationSD.mjs";
 import { initMedkit } from "./MedkitSD.mjs";
+import { initMarchingMode } from "./MarchingModeSD.mjs";
 import "./SpellMacrosSD.mjs";
 
 const MODULE_ID = "shadowdark-extras";
@@ -5815,6 +5816,19 @@ function enhanceSpellsTab(app, html, actor) {
 	// Add enhanced class to the spells tab
 	$spellsTab.addClass('sdx-enhanced-spells');
 
+	// Find the "Spells From Items" banner to detect which items should NOT have action buttons
+	const $spellsFromItemsBanner = $spellsTab.find('.SD-banner').filter(function () {
+		return $(this).text().trim().includes('Spells From Items');
+	});
+
+	// Get all elements after the "Spells From Items" banner (these should not have action buttons)
+	const itemsFromWandsScrolls = new Set();
+	if ($spellsFromItemsBanner.length > 0) {
+		$spellsFromItemsBanner.nextAll().find('.item[data-item-id]').each(function () {
+			itemsFromWandsScrolls.add($(this).data('item-id'));
+		});
+	}
+
 	// Add action buttons to spell items
 	$spellsTab.find('.item[data-item-id]').each((i, item) => {
 		const $item = $(item);
@@ -5822,6 +5836,11 @@ function enhanceSpellsTab(app, html, actor) {
 
 		// Skip if buttons already added
 		if ($item.find('.sdx-spell-actions').length) return;
+
+		// Skip if this item is from a wand/scroll (comes after "Spells From Items" banner)
+		if (itemsFromWandsScrolls.has(itemId)) {
+			return;
+		}
 
 		// Find the item-name element
 		const $itemName = $item.find('.item-name');
@@ -8782,6 +8801,10 @@ Hooks.once("ready", async () => {
 	// Initialize Aura Effects System (token-attached effects that follow bearer)
 	initAuraEffects();
 	//console.log(`${MODULE_ID} | Aura Effects System initialized`);
+
+	// Initialize Marching Mode (GM-only token following system)
+	initMarchingMode();
+	//console.log(`${MODULE_ID} | Marching Mode initialized`);
 
 	patchLightSourceTrackerForParty();
 	patchToggleItemDetailsForUnidentified();

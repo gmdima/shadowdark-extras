@@ -17394,7 +17394,8 @@ body.sdx-dark-mode .sdx-carousing-toggle-btn i {
 
 /* ============================================
    JOURNAL NARRATION - CHAT MESSAGE STYLING
-   ============================================ *//* ============================================ */
+   ============================================ */
+/* ============================================ */
 /* MEDKIT UI STYLES                             */
 /* ============================================ */
 
@@ -17454,9 +17455,17 @@ body.sdx-dark-mode .sdx-carousing-toggle-btn i {
     gap: 8px;
 }
 
-.sdx-medkit-section.warning h3 { color: #f39c12; }
-.sdx-medkit-section.success h3 { color: #2ecc71; }
-.sdx-medkit-section.info h3 { color: #3498db; }
+.sdx-medkit-section.warning h3 {
+    color: #f39c12;
+}
+
+.sdx-medkit-section.success h3 {
+    color: #2ecc71;
+}
+
+.sdx-medkit-section.info h3 {
+    color: #3498db;
+}
 
 .section-header {
     display: flex;
@@ -17466,6 +17475,7 @@ body.sdx-dark-mode .sdx-carousing-toggle-btn i {
     padding-bottom: 5px;
     margin-bottom: 10px;
 }
+
 .section-header h3 {
     border: none;
     margin: 0;
@@ -17510,7 +17520,8 @@ body.sdx-dark-mode .sdx-carousing-toggle-btn i {
     color: #888;
 }
 
-.sdx-medkit-update-btn, .sdx-medkit-update-all-btn {
+.sdx-medkit-update-btn,
+.sdx-medkit-update-all-btn {
     background: #444;
     border: 1px solid #555;
     color: #eee;
@@ -17519,7 +17530,107 @@ body.sdx-dark-mode .sdx-carousing-toggle-btn i {
     border-radius: 4px;
 }
 
-.sdx-medkit-update-btn:hover, .sdx-medkit-update-all-btn:hover {
+.sdx-medkit-update-btn:hover,
+.sdx-medkit-update-all-btn:hover {
     background: #555;
     color: white;
+}
+
+/* ============================================
+   MARCHING MODE - SIDEBAR BUTTONS
+   ============================================ */
+.sdx-marching-btn-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.sdx-marching-leader-btn,
+.sdx-marching-mode-btn {
+    transition: color 0.2s ease, transform 0.1s ease;
+}
+
+.sdx-marching-leader-btn:hover,
+.sdx-marching-mode-btn:hover {
+    transform: scale(1.1);
+}
+
+.sdx-marching-leader-btn.active {
+    color: #ffd700 !important;
+}
+
+.sdx-marching-mode-btn.active {
+    color: #4CAF50 !important;
+}
+
+/* ============================================
+   MARCHING MODE - MOVEMENT MODE DIALOG
+   ============================================ */
+.sdx-movement-mode-dialog .window-content {
+    padding: 15px;
+    background: #0000004d;
+
+}
+
+.sdx-movement-mode-options {
+    display: flex;
+    align-items: flex-start;
+    gap: 15px;
+    padding: 7px;
+    border: 2px solid transparent;
+    border-radius: 8px;
+    background: rgba(0, 0, 0, 0.2);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin-bottom: 13px;
+}
+
+.sdx-movement-option {
+    display: flex;
+    align-items: flex-start;
+    gap: 15px;
+    padding: 15px;
+    border: 2px solid transparent;
+    border-radius: 8px;
+    background: rgba(0, 0, 0, 0.2);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.sdx-movement-option:hover {
+    background: rgba(0, 0, 0, 0.3);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.sdx-movement-option.selected {
+    background: rgba(76, 175, 80, 0.15);
+    border-color: #4CAF50;
+}
+
+.sdx-movement-option i {
+    font-size: 2em;
+    color: #c9aa58;
+    min-width: 40px;
+    text-align: center;
+}
+
+.sdx-movement-option.selected i {
+    color: #4CAF50;
+}
+
+.sdx-movement-option-content h3 {
+    margin: 0 0 8px 0;
+    font-size: 1.1em;
+    color: #fff;
+}
+
+.sdx-movement-option-content p {
+    margin: 0;
+    font-size: 0.9em;
+    color: #aaa;
+    line-height: 1.4;
+}
+
+.sdx-movement-option.selected .sdx-movement-option-content h3 {
+    color: #4CAF50;
 }
