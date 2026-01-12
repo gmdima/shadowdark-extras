@@ -7,6 +7,19 @@
 
     <div class="sdx-toolbar-top">
         <form class="sdx-toolbar-attrs">
+            {{!-- Focus Spell Icons (above attributes) --}}
+            {{#if focusSpells.length}}
+            <div class="sdx-toolbar-icons sdx-toolbar-focus-spells">
+                {{#each focusSpells}}
+                <div class="sdx-toolbar-icon sdx-toolbar-icon-spell" data-spell-id="{{spellId}}"
+                    data-actor-uuid="{{../uuid}}" data-spell-name="{{name}}" data-is-focus="true"
+                    data-tooltip="{{name}} (Focus)">
+                    <img src="{{img}}" alt="{{name}}" />
+                </div>
+                {{/each}}
+            </div>
+            {{/if}}
+
             <div class="sdx-toolbar-bar-wrapper">
                 {{#if isPlayer}}
                 <div class="sdx-toolbar-attr sdx-toolbar-attr-luck" data-uuid="{{uuid}}">
@@ -47,6 +60,22 @@
         </div>
 
         <div class="sdx-toolbar-health">
+            {{!-- Duration Spell Icons (above HP bar) --}}
+            {{#if durationSpells.length}}
+            <div class="sdx-toolbar-icons sdx-toolbar-duration-spells">
+                {{#each durationSpells}}
+                <div class="sdx-toolbar-icon sdx-toolbar-icon-spell" data-instance-id="{{instanceId}}"
+                    data-spell-id="{{spellId}}" data-actor-uuid="{{../uuid}}" data-spell-name="{{name}}"
+                    data-is-focus="false" data-tooltip="{{name}}{{#if durationLabel}} ({{durationLabel}}){{/if}}">
+                    <img src="{{img}}" alt="{{name}}" />
+                    {{#if duration}}
+                    <span class="sdx-toolbar-spell-duration">{{duration}}</span>
+                    {{/if}}
+                </div>
+                {{/each}}
+            </div>
+            {{/if}}
+
             <div class="sdx-toolbar-bar-wrapper">
                 <div class="sdx-toolbar-bar {{hp.status}}" style="width: {{hp.percent}}%"></div>
 

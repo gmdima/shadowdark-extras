@@ -12,6 +12,7 @@
  */
 
 import { TokenToolbarApp } from "./TokenToolbarApp.mjs";
+import { getActiveFocusSpells, getActiveDurationSpells, endFocusSpell, endDurationSpell } from "./FocusSpellTrackerSD.mjs";
 
 const MODULE_ID = "shadowdark-extras";
 
@@ -180,6 +181,10 @@ export async function getEntityData(entity) {
         equippedItems = getEquippedItems(actor);
     }
 
+    // Get active spell icons
+    const focusSpells = getFocusSpellIcons(actor);
+    const durationSpells = getDurationSpellIcons(actor);
+
     return {
         uuid: actor.uuid,
         actorId: actor.id,
@@ -200,6 +205,8 @@ export async function getEntityData(entity) {
         },
         activeEffects: activeEffects,
         equippedItems: equippedItems,
+        focusSpells: focusSpells,
+        durationSpells: durationSpells,
     };
 }
 
@@ -343,6 +350,56 @@ function getEquippedItems(actor) {
 }
 
 /**
+ * Get active focus spells for the actor
+ * @param {Actor} actor - The actor
+ * @returns {Array} Array of focus spell data objects
+ */
+function getFocusSpellIcons(actor) {
+    if (!actor) return [];
+
+    const focusSpells = getActiveFocusSpells(actor);
+    if (!focusSpells || focusSpells.length === 0) return [];
+
+    return focusSpells.map(spell => ({
+        spellId: spell.spellId,
+        name: spell.spellName || "Unknown Spell",
+        img: spell.spellImg || "icons/svg/mystery-man.svg",
+        isFocus: true,
+        // Focus spells don't have a fixed duration - shown until failed/dropped
+        duration: null
+    }));
+}
+
+/**
+ * Get active duration spells for the actor
+ * @param {Actor} actor - The actor
+ * @returns {Array} Array of duration spell data objects
+ */
+function getDurationSpellIcons(actor) {
+    if (!actor) return [];
+
+    const durationSpells = getActiveDurationSpells(actor);
+    if (!durationSpells || durationSpells.length === 0) return [];
+
+    const currentRound = game.combat?.round ?? 0;
+
+    return durationSpells.map(spell => {
+        // Calculate remaining rounds
+        const remaining = spell.expiryRound - currentRound;
+
+        return {
+            instanceId: spell.instanceId,
+            spellId: spell.spellId,
+            name: spell.spellName || "Unknown Spell",
+            img: spell.spellImg || "icons/svg/mystery-man.svg",
+            isFocus: false,
+            duration: remaining,
+            durationLabel: `${remaining} ${spell.durationType || 'rounds'}`
+        };
+    });
+}
+
+/**
  * Render the toolbar with current token data
  */
 async function renderToolbar() {
@@ -452,6 +509,48 @@ export async function handleHpChange(event) {
 
     // Blur the input
     input.blur();
+}
+
+/**
+ * End a focus spell from the toolbar
+ * @param {Event} event - Right-click event
+ */
+export async function terminateFocusSpell(event) {
+    const uuid = event.currentTarget.dataset.actorUuid;
+    const spellId = event.currentTarget.dataset.spellId;
+
+    if (!uuid || !spellId) return;
+
+    const actor = await fromUuid(uuid);
+    if (!actor) return;
+
+    // End the focus spell
+    await endFocusSpell(actor.id, spellId, "manual");
+
+    // Show notification
+    const spellName = event.currentTarget.dataset.spellName || "Focus Spell";
+    ui.notifications.info(`Ended focus: ${spellName}`);
+}
+
+/**
+ * End a duration spell from the toolbar
+ * @param {Event} event - Right-click event
+ */
+export async function terminateDurationSpell(event) {
+    const uuid = event.currentTarget.dataset.actorUuid;
+    const instanceId = event.currentTarget.dataset.instanceId;
+
+    if (!uuid || !instanceId) return;
+
+    const actor = await fromUuid(uuid);
+    if (!actor) return;
+
+    // End the duration spell
+    await endDurationSpell(actor.id, instanceId);
+
+    // Show notification
+    const spellName = event.currentTarget.dataset.spellName || "Duration Spell";
+    ui.notifications.info(`Ended duration: ${spellName}`);
 }
 
 /**

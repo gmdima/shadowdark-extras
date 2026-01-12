@@ -72,6 +72,10 @@ body.sdx-dark-mode .sheet.journal-entry:not(.minimized, .minimizing, .maximizing
     border-image-outset: var(--sdx-journal-border-image-outset, 0px) !important;
 }
 
+body.sdx-dark-mode .window-header a {
+    font-size: smaller;
+}
+
 body.sdx-dark-mode .sheet.journal-entry .window-header {
     background: #222020c4;
 }
@@ -79,6 +83,11 @@ body.sdx-dark-mode .sheet.journal-entry .window-header {
 body.sdx-dark-mode .window-header .window-title {
     font-size: 19px;
     padding-left: 10px;
+    font-family: 'Old Newspaper Font';
+}
+
+body.sdx-dark-mode .chat-message.whisper {
+    background: #6e6b6b !important;
 }
 
 body.sdx-dark-mode .sheet.journal-entry.application .journal-sidebar {
@@ -411,7 +420,7 @@ body.sdx-dark-mode .dice-roll .dice-total.failure {
 
 body.sdx-dark-mode .dice-roll .dice-result {
     background-color: var(--lights-out-color-chat-message-background-secondary);
-    padding: 2px 8px;
+    padding: 1px 1px;
 }
 
 body.sdx-dark-mode .dice-roll .dice-formula,

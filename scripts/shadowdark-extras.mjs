@@ -7580,6 +7580,9 @@ function patchLightSourceTrackerForParty() {
 		// Call the original method first
 		await originalGatherLightSources();
 
+		// Track if we added anything
+		let addedPartyActors = false;
+
 		// Now add Party actors with active light sources
 		const partyActors = game.actors.filter(actor => isPartyActor(actor));
 
@@ -7603,15 +7606,18 @@ function patchLightSourceTrackerForParty() {
 			// Only add if not already in the list
 			if (!this.monitoredLightSources.some(a => a._id === actorData._id)) {
 				this.monitoredLightSources.push(actorData);
+				addedPartyActors = true;
 			}
 		}
 
-		// Re-sort the list
-		this.monitoredLightSources.sort((a, b) => {
-			if (a.name < b.name) return -1;
-			if (a.name > b.name) return 1;
-			return 0;
-		});
+		// Only re-sort if we actually added party actors
+		if (addedPartyActors) {
+			this.monitoredLightSources.sort((a, b) => {
+				if (a.name < b.name) return -1;
+				if (a.name > b.name) return 1;
+				return 0;
+			});
+		}
 	};
 
 	//console.log(`${MODULE_ID} | Patched Light Source Tracker to include Party actors`);
@@ -11025,7 +11031,7 @@ async function enhancePotionSheet(app, html) {
 		e.preventDefault();
 		e.stopPropagation();
 		const { generateSummonProfileHTML } = await import(`./templates/SummoningConfig.mjs`);
-		const $list = $(this).closest('.sdx-summoning-content').find('.sdx-summon-list');
+		const $list = $(this).closest('.sdx-summoning-content').find('.sdx-summons-list');
 		const index = $list.find('.sdx-summon-profile').length;
 		const newProfile = {
 			creatureUuid: '',
@@ -11949,7 +11955,7 @@ async function enhanceScrollSheet(app, html) {
 		e.preventDefault();
 		e.stopPropagation();
 		const { generateSummonProfileHTML } = await import(`./templates/SummoningConfig.mjs`);
-		const $list = $(this).closest('.sdx-summoning-content').find('.sdx-summon-list');
+		const $list = $(this).closest('.sdx-summoning-content').find('.sdx-summons-list');
 		const index = $list.find('.sdx-summon-profile').length;
 		const newProfile = {
 			creatureUuid: '',
@@ -12985,7 +12991,7 @@ async function enhanceWandSheet(app, html) {
 		e.preventDefault();
 		e.stopPropagation();
 		const { generateSummonProfileHTML } = await import(`./templates/SummoningConfig.mjs`);
-		const $list = $(this).closest('.sdx-summoning-content').find('.sdx-summon-list');
+		const $list = $(this).closest('.sdx-summoning-content').find('.sdx-summons-list');
 		const index = $list.find('.sdx-summon-profile').length;
 		const newProfile = {
 			creatureUuid: '',

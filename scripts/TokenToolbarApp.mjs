@@ -6,7 +6,7 @@
  * Supports drag-to-reposition with position persistence.
  */
 
-import { openSheet, changeLuck, handleHpChange } from "./TokenToolbarSD.mjs";
+import { openSheet, changeLuck, handleHpChange, terminateFocusSpell, terminateDurationSpell } from "./TokenToolbarSD.mjs";
 
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
@@ -93,6 +93,8 @@ export class TokenToolbarApp extends HandlebarsApplicationMixin(ApplicationV2) {
             hp: this.tokenData.hp,
             activeEffects: this.tokenData.activeEffects || [],
             equippedItems: this.tokenData.equippedItems || [],
+            focusSpells: this.tokenData.focusSpells || [],
+            durationSpells: this.tokenData.durationSpells || [],
         };
     }
 
@@ -302,6 +304,23 @@ export class TokenToolbarApp extends HandlebarsApplicationMixin(ApplicationV2) {
 
                 // Show a brief notification
                 ui.notifications.info(`Removed: ${effectName}`);
+            });
+        });
+
+        // Right-click on spell icons to terminate them
+        toolbar.querySelectorAll(".sdx-toolbar-icon-spell").forEach(el => {
+            el.addEventListener("contextmenu", async (e) => {
+                e.preventDefault();
+
+                const isFocus = el.dataset.isFocus === "true";
+
+                if (isFocus) {
+                    // Terminate focus spell
+                    await terminateFocusSpell(e);
+                } else {
+                    // Terminate duration spell
+                    await terminateDurationSpell(e);
+                }
             });
         });
 

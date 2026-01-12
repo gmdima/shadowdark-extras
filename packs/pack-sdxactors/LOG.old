@@ -1,5 +1,1 @@
-2026/01/11-20:27:47.082 d56c Log #350: 0 ops saved to Table #351 OK
-2026/01/11-20:27:47.083 d56c Archiving C:\Users\gmdim\AppData\Local\FoundryVTT\Data\modules\shadowdark-extras\packs\pack-sdxactors/000350.log: OK
-2026/01/11-20:27:47.083 d56c Table #336: 1 entries OK
-2026/01/11-20:27:47.088 d56c Archiving C:\Users\gmdim\AppData\Local\FoundryVTT\Data\modules\shadowdark-extras\packs\pack-sdxactors/MANIFEST-000349: OK
-2026/01/11-20:27:47.093 d56c **** Repaired leveldb C:\Users\gmdim\AppData\Local\FoundryVTT\Data\modules\shadowdark-extras\packs\pack-sdxactors; recovered 1 files; 1759 bytes. Some data may have been lost. ****
+2026/01/11-20:27:47.105 d56c Delete type=3 #1

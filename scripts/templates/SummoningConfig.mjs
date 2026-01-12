@@ -27,7 +27,7 @@ export function generateSummoningConfigHTML(MODULE_ID, flags, summonsList, summo
 					</div>
 					
 					<!-- Add Profile Button -->
-					<button type="button" class="sdx-add-summon-btn">
+					<button type="button" class="sdx-add-summon-btn" data-action="addSummonProfile">
 						<i class="fas fa-plus"></i> Add Summon Profile
 					</button>
 					
@@ -92,8 +92,8 @@ export function generateSummonProfileHTML(profile, index) {
 				</div>
 				
 				<!-- Remove Button -->
-				<button type="button" class="sdx-remove-summon-btn" data-index="${index}" 
-				        title="Remove this summon profile">
+				<button type="button" class="sdx-remove-summon-btn" data-index="${index}"
+				        data-action="removeSummonProfile" title="Remove this summon profile">
 					<i class="fas fa-times"></i>
 				</button>
 			</div>

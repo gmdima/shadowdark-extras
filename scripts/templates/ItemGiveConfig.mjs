@@ -19,7 +19,7 @@ export function generateItemGiveConfigHTML(MODULE_ID, flags, itemsList, itemProf
 					<div class="sdx-item-give-list">
 						${itemsList || ''}
 					</div>
-					<button type="button" class="sdx-add-item-give-btn">
+					<button type="button" class="sdx-add-item-give-btn" data-action="addItemGiveProfile">
 						<i class="fas fa-plus"></i> Add Item to Give
 					</button>
 					<input type="hidden" name="flags.${MODULE_ID}.itemGive.profiles" class="sdx-item-give-data" value="${JSON.stringify(itemProfilesArray).replace(/"/g, '&quot;')}" />
@@ -50,8 +50,8 @@ export function generateItemGiveProfileHTML(profile, index) {
 					<label>Quantity</label>
 					<input type="text" class="sdx-item-give-quantity" value="${profile.quantity || '1'}" placeholder="1 or 1d4" title="Quantity or dice formula to roll" />
 				</div>
-				<button type="button" class="sdx-remove-item-give-btn" data-index="${index}" 
-				        title="Remove this item">
+				<button type="button" class="sdx-remove-item-give-btn" data-index="${index}"
+				        data-action="removeItemGiveProfile" title="Remove this item">
 					<i class="fas fa-times"></i>
 				</button>
 			</div>

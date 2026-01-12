@@ -372,3 +372,72 @@
 #sdx-token-toolbar .sdx-toolbar-effects {
     margin-top: 2px;
 }
+
+/* ============================================
+   Spell Icons (Focus & Duration)
+   ============================================ */
+
+/* Focus Spell Icons - Above Luck/AC, aligned left */
+#sdx-token-toolbar .sdx-toolbar-focus-spells {
+    display: flex;
+    gap: 3px;
+    justify-content: flex-start;
+    padding: 3px 4px;
+    flex-wrap: wrap;
+    max-width: 192px;
+    margin-bottom: 3px;
+}
+
+/* Duration Spell Icons - Above HP bar, aligned right */
+#sdx-token-toolbar .sdx-toolbar-duration-spells {
+    display: flex;
+    gap: 3px;
+    justify-content: flex-end;
+    padding: 3px 4px;
+    flex-wrap: wrap;
+    max-width: 192px;
+    margin-bottom: 3px;
+}
+
+/* Spell Icon Styling */
+#sdx-token-toolbar .sdx-toolbar-icon-spell {
+    width: 28px;
+    height: 28px;
+    border-radius: 3px;
+    overflow: visible;
+    cursor: pointer;
+    border: 1px solid #555;
+    background: #1a1a1a;
+    opacity: 0.6;
+    transition: opacity 0.2s ease, transform 0.15s ease, box-shadow 0.15s ease;
+    position: relative;
+}
+
+#sdx-token-toolbar .sdx-toolbar-icon-spell:hover {
+    opacity: 1;
+    transform: scale(1.15);
+    border-color: #888;
+    box-shadow: 0 0 8px rgba(255, 215, 0, 0.5);
+    z-index: 10;
+}
+
+/* Duration Counter Badge */
+#sdx-token-toolbar .sdx-toolbar-spell-duration {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    background: linear-gradient(180deg, #ba2524 0%, #861211 100%);
+    color: #fff;
+    font-size: 0.65em;
+    font-weight: bold;
+    border-radius: 50%;
+    width: 16px;
+    height: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #333;
+    box-shadow: 0 0 4px rgba(0, 0, 0, 0.8);
+    text-shadow: 0 0 3px rgba(0, 0, 0, 1);
+    pointer-events: none;
+}
