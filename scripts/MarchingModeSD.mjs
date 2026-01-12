@@ -13,6 +13,29 @@ let leaderTokenId = null;
 let leaderMovementPath = []; // Array of {x, y, gridPos} points
 let tokenFollowers = new Map(); // tokenId -> {marchPosition, moving}
 let processingCongaMovement = false;
+let scheduledTimeouts = new Set(); // Track pending timeouts for cleanup
+
+/**
+ * Schedule a timeout and track it for cleanup
+ */
+function scheduleTimeout(callback, delay) {
+    const id = setTimeout(() => {
+        scheduledTimeouts.delete(id);
+        callback();
+    }, delay);
+    scheduledTimeouts.add(id);
+    return id;
+}
+
+/**
+ * Clear all scheduled timeouts
+ */
+function clearScheduledTimeouts() {
+    for (const id of scheduledTimeouts) {
+        clearTimeout(id);
+    }
+    scheduledTimeouts.clear();
+}
 
 /**
  * Initialize Marching Mode
@@ -244,6 +267,7 @@ function setMovementMode(enabled) {
         ui.notifications.info("Free Movement enabled.");
         leaderMovementPath = [];
         tokenFollowers.clear();
+        clearScheduledTimeouts(); // Cancel any pending follower movements
     }
 
     updateButtonStates();
@@ -346,6 +370,10 @@ async function onUpdateToken(tokenDoc, changes, options, userId) {
 
     // Check if this is the leader moving
     if (tokenDoc.id === leaderTokenId) {
+        // Cancel any pending follower movements - this handles waypoint sequences
+        // Each waypoint triggers updateToken, so we cancel previous movements and schedule new ones
+        clearScheduledTimeouts();
+
         // Record the leader's movement path
         const startPosition = {
             x: tokenDoc._source.x,
@@ -375,8 +403,8 @@ async function onUpdateToken(tokenDoc, changes, options, userId) {
             calculateMarchingOrder(token);
         }
 
-        // Process follower movement after a short delay
-        setTimeout(() => {
+        // Process follower movement after a short delay using tracked timeout
+        scheduleTimeout(() => {
             if (leaderMovementPath.length >= 2) {
                 processCongaMovement();
             }
@@ -471,6 +499,12 @@ function processCongaMovement() {
     if (leaderMovementPath.length < 2) return;
     if (tokenFollowers.size === 0) return;
 
+    // Guard against overlapping processing (e.g., from rapid waypoint movements)
+    if (processingCongaMovement) {
+        console.log(`${MODULE_ID} | Skipping conga movement - already processing`);
+        return;
+    }
+
     // Set processing flag
     processingCongaMovement = true;
 
@@ -564,7 +598,7 @@ function processCongaMovement() {
 
         // After all tokens have moved one step, wait then move again
         Promise.all(promises).then(() => {
-            setTimeout(() => {
+            scheduleTimeout(() => {
                 moveAllTokensOneStep();
             }, 100);
         });
