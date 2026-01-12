@@ -57,6 +57,31 @@ export function initMarchingMode() {
     // Hook into token movement
     Hooks.on("preUpdateToken", onPreUpdateToken);
     Hooks.on("updateToken", onUpdateToken);
+
+    // Restore leader crown when canvas is ready
+    Hooks.on("canvasReady", restoreLeaderCrown);
+
+    // Clean up crown when token is deleted
+    Hooks.on("deleteToken", async (tokenDoc, options, userId) => {
+        if (tokenDoc.id === leaderTokenId) {
+            // Leader was deleted, clear leader
+            leaderTokenId = null;
+            updateButtonStates();
+        }
+    });
+
+    // Show crown on newly created tokens if they're the leader
+    Hooks.on("createToken", async (tokenDoc, options, userId) => {
+        // Small delay to ensure token is fully initialized
+        await new Promise(resolve => setTimeout(resolve, 100));
+
+        if (tokenDoc.id === leaderTokenId) {
+            const token = canvas.tokens.get(tokenDoc.id);
+            if (token) {
+                await showLeaderCrown(token);
+            }
+        }
+    });
 }
 
 /**
@@ -223,7 +248,7 @@ function showMovementModeDialog() {
         default: "apply",
         render: (html) => {
             // Make options clickable
-            html.find('.sdx-movement-option').on('click', function() {
+            html.find('.sdx-movement-option').on('click', function () {
                 html.find('.sdx-movement-option').removeClass('selected');
                 $(this).addClass('selected');
             });
@@ -237,12 +262,30 @@ function showMovementModeDialog() {
 /**
  * Set the party leader
  */
-function setLeader(tokenId) {
-    leaderTokenId = tokenId;
+async function setLeader(tokenId) {
+    const oldLeaderId = leaderTokenId;
 
-    if (tokenId) {
-        const token = canvas.tokens.get(tokenId);
-        ui.notifications.info(`Party leader set to: ${token?.name || 'Unknown'}`);
+    // Normalize tokenId (convert empty string to null)
+    const newLeaderId = tokenId || null;
+    leaderTokenId = newLeaderId;
+
+    // Always remove crown from old leader if there was one
+    if (oldLeaderId) {
+        const oldLeader = canvas.tokens.get(oldLeaderId);
+        if (oldLeader) {
+            await removeLeaderCrown(oldLeader);
+        }
+    }
+
+    // Add crown to new leader if one was selected
+    if (newLeaderId) {
+        const token = canvas.tokens.get(newLeaderId);
+        if (token) {
+            await showLeaderCrown(token);
+            ui.notifications.info(`Party leader set to: ${token.name}`);
+        } else {
+            ui.notifications.info(`Party leader set to: Unknown`);
+        }
     } else {
         ui.notifications.info("Party leader cleared.");
     }
@@ -606,6 +649,98 @@ function processCongaMovement() {
 
     // Start the movement
     moveAllTokensOneStep();
+}
+
+/**
+ * Get the effect name for a token's leader crown
+ */
+function getLeaderCrownEffectName(token) {
+    return `${MODULE_ID}-leader-crown-${token.id}`;
+}
+
+/**
+ * Show the leader crown on a token
+ */
+async function showLeaderCrown(token) {
+    // Check if Sequencer is available
+    if (typeof Sequencer === "undefined") {
+        console.warn(`${MODULE_ID} | Sequencer module required for leader crown visualization`);
+        return;
+    }
+
+    const effectName = getLeaderCrownEffectName(token);
+
+    // End any existing crown for this token
+    await Sequencer.EffectManager.endEffects({ name: effectName, object: token });
+
+    // Get token dimensions for positioning
+    const tokenWidth = token.document.width;
+
+    console.log(`${MODULE_ID} | Showing leader crown for ${token.name}`);
+
+    // Build the crown effect sequence
+    const seq = new Sequence();
+
+    seq.effect()
+        .name(effectName)
+        .file("modules/shadowdark-extras/assets/crown.svg") // Foundry built-in crown icon
+        .atLocation(token)
+        .attachTo(token, { bindRotation: false, local: true, bindVisibility: true })
+        .scaleToObject(0.35, { considerTokenScale: true })
+        .scaleIn(0, 300, { ease: "easeOutBack" })
+        .spriteOffset({
+            x: 0,  // Top-center
+            y: -tokenWidth * 0.45
+        }, { gridUnits: true })
+        .filter("Glow", {
+            distance: 8,
+            outerStrength: 3,
+            innerStrength: 1,
+            color: 0xFFD700, // Gold glow
+            quality: 0.2,
+            knockout: false
+        })
+        .loopProperty("sprite", "position.y", {
+            from: 0,
+            to: -0.03 * tokenWidth,
+            duration: 800,
+            ease: "easeInOutSine",
+            pingPong: true,
+            gridUnits: true
+        })
+        .persist()
+        .aboveLighting()
+        .zIndex(10);
+
+    await seq.play();
+    console.log(`${MODULE_ID} | Leader crown displayed for ${token.name}`);
+}
+
+/**
+ * Remove the leader crown from a token
+ */
+async function removeLeaderCrown(token) {
+    if (typeof Sequencer === "undefined") return;
+
+    const effectName = getLeaderCrownEffectName(token);
+    await Sequencer.EffectManager.endEffects({ name: effectName, object: token });
+    console.log(`${MODULE_ID} | Removed leader crown from ${token.name}`);
+}
+
+/**
+ * Restore leader crown on canvas ready
+ */
+async function restoreLeaderCrown() {
+    if (!leaderTokenId) return;
+    if (typeof Sequencer === "undefined") return;
+
+    // Small delay to ensure canvas is ready
+    await new Promise(resolve => setTimeout(resolve, 500));
+
+    const leaderToken = canvas.tokens.get(leaderTokenId);
+    if (leaderToken) {
+        await showLeaderCrown(leaderToken);
+    }
 }
 
 /**

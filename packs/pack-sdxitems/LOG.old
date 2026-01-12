@@ -1,7 +1,5 @@
-2026/01/12-14:41:27.033 d38c Recovering log #414
-2026/01/12-14:41:27.043 d38c Delete type=0 #414
-2026/01/12-14:41:27.043 d38c Delete type=3 #413
-2026/01/12-14:42:37.584 13c08 Level-0 table #418: started
-2026/01/12-14:42:37.584 13c08 Level-0 table #418: 0 bytes OK
-2026/01/12-14:42:37.587 13c08 Delete type=0 #416
-2026/01/12-14:42:37.592 13c08 Manual compaction at level-0 from '!folders!F3AKMIJQch1KV4FP' @ 72057594037927935 : 1 .. '!items.effects!zqCuFAr8GhvpF3x2.EjglH7c4lr0267Hu' @ 0 : 0; will stop at (end)
+2026/01/12-14:58:10.196 44a0 Log #420: 0 ops saved to Table #421 OK
+2026/01/12-14:58:10.197 44a0 Archiving C:\Users\gmdim\AppData\Local\FoundryVTT\Data\modules\shadowdark-extras\packs\pack-sdxitems/000420.log: OK
+2026/01/12-14:58:10.199 44a0 Table #400: 235 entries OK
+2026/01/12-14:58:10.204 44a0 Archiving C:\Users\gmdim\AppData\Local\FoundryVTT\Data\modules\shadowdark-extras\packs\pack-sdxitems/MANIFEST-000419: OK
+2026/01/12-14:58:10.209 44a0 **** Repaired leveldb C:\Users\gmdim\AppData\Local\FoundryVTT\Data\modules\shadowdark-extras\packs\pack-sdxitems; recovered 1 files; 145916 bytes. Some data may have been lost. ****
