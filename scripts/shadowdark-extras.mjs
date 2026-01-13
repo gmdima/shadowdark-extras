@@ -15549,16 +15549,7 @@ Hooks.once("init", () => {
 		configurable: true
 	});
 
-	// Enhance ammunition compendium to include world items
-	const originalAmmunitionCompendium = shadowdark.compendiums.ammunition;
-	shadowdark.compendiums.ammunition = async function (filterSources = true) {
-		const compendiumAmmo = await originalAmmunitionCompendium.call(this, filterSources);
-		const worldAmmo = game.items.filter(i => i.system.isAmmunition);
-		if (worldAmmo.length > 0) {
-			return shadowdark.utils.combineCollection(compendiumAmmo, worldAmmo);
-		}
-		return compendiumAmmo;
-	};
+
 
 	// Enhance weapon sheet to include actor's inventory ammunition in the dropdown
 	const originalGetWeaponSheetData = shadowdark.sheets.ItemSheetSD.prototype.getSheetDataForWeaponItem;
