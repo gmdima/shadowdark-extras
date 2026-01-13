@@ -22,6 +22,7 @@ A comprehensive enhancement module for [Shadowdark RPG](https://www.thearcanelib
 - **JB2A** (optional) - Animation assets for visual effects
 - **Automated Animations** (optional) - For attack/spell animations
 - **TokenMagic FX** (optional) - For template effects
+- **Item Macro** (required)
 
 ---
 
@@ -73,6 +74,8 @@ Track concentration-style spells with:
 - Automatic effect cleanup when focus is lost
 - Duration spell support with per-turn damage/healing
 
+#### Ammunition per user
+- Actors can choose ammunition custom made that are present on their sheet. 
 
 #### Spell Activity System
 A comprehensive spell configuration system accessed via the **Activity** tab on spell items. Configure every aspect of how spells behave:
