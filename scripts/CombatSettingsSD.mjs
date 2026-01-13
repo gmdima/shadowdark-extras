@@ -1078,6 +1078,7 @@ export const DEFAULT_COMBAT_SETTINGS = {
 	requireTargetForAttack: "none", // 'none' = no check, 'warn' = warn but proceed, 'block' = prevent attack
 	checkWeaponRange: "none", // 'none' = no check, 'warn' = warn but proceed, 'block' = prevent attack if out of range
 	untargetAtEndOfTurn: "dead", // 'none' = no untargeting, 'dead' = untarget dead tokens, 'all' = untarget all
+	hideDamageCardOnFailedAttack: false, // Don't show damage card when weapon attack fails
 	damageCard: {
 		showTargets: true,
 		showMultipliers: true,
@@ -1520,6 +1521,8 @@ export async function injectDamageCard(message, html, data) {
 	if (hideDamageCardFromPlayer) {
 	}
 
+	// Note: hideDamageCardOnFailedAttack check is done later after item type is known (around line 1610)
+
 	// Check if this is a Shadowdark weapon/attack card with damage OR a spell with damage configured
 	const hasWeaponCard = html.find('.chat-card').length > 0;
 	const hasDamageRoll = html.find('.dice-total').length > 0;
@@ -1587,6 +1590,17 @@ export async function injectDamageCard(message, html, data) {
 					}
 				}
 			};
+		}
+
+		// Check if this is a failed weapon attack - if setting is enabled, skip damage card
+		if (settings.hideDamageCardOnFailedAttack && item && item.type === "Weapon") {
+			// Check the attack success from the shadowdark flags
+			// The success flag is at the root level: message.flags.shadowdark.success
+			const attackSuccess = message.flags?.shadowdark?.success;
+			if (attackSuccess === false) {
+				// Weapon attack failed, skip damage card injection
+				return;
+			}
 		}
 
 		// Check if this is a spell or potion type item with damage configuration or effects

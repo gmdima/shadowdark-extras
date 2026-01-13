@@ -251,6 +251,36 @@ body.sdx-dark-mode #sidebar-tabs>menu {
     gap: 4px;
 }
 
+body.sdx-dark-mode #chat-notifications #chat-controls {
+    position: absolute;
+    inset: auto auto 0 calc(100% + 21px);
+}
+
+body.sdx-dark-mode .sdx-movement-option {
+    display: flex;
+    align-items: flex-start;
+    gap: 11px;
+    padding: 0px;
+    border: 2px solid transparent;
+    border-radius: 8px;
+    background: rgba(0, 0, 0, 0.2);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+body.sdx-dark-mode .sdx-movement-mode-dialog button {
+    width: 49%;
+    margin: 0 1px;
+    background: rgb(0 0 0 / 80%);
+    border: 1px solid #6a6857;
+    border-radius: 3px;
+    font-size: var(--font-size-14);
+    line-height: 28px;
+    font-family: var(--font-primary);
+    cursor: var(--cursor-pointer);
+    color: white;
+}
+
 body.sdx-dark-mode #sidebar-tabs {
     flex: none;
     padding: 16px 16px 17px 7px;
@@ -259,6 +289,9 @@ body.sdx-dark-mode #sidebar-tabs {
     background: rgb(17 17 17);
     border-radius: 0px 0px 0px 15px;
     margin-right: -3px;
+    height: 100%;
+    align-content: flex-start;
+    flex-wrap: wrap;
 }
 
 body.sdx-dark-mode {
@@ -412,6 +445,10 @@ body.sdx-dark-mode .dice-roll .dice-total.failure {
 
 body.sdx-dark-mode .dice-roll .dice-total.success {
     color: var(--lights-out-color-roll-success);
+}
+
+body.sdx-dark-mode #sidebar-content #chat .chat-scroll {
+    direction: ltr;
 }
 
 body.sdx-dark-mode .dice-roll .dice-total.failure {

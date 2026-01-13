@@ -8,6 +8,21 @@ import { getHpWaveColor, isHpWavesEnabled } from "./HpWavesSettingsSD.mjs";
 const MODULE_ID = "shadowdark-extras";
 
 /**
+ * Shadowdark Camping Tasks
+ * Each task: key, display name, required abilities, and whether campfire is needed
+ */
+const CAMPING_TASKS = [
+	{ key: "battenDown", name: "Batten Down", abilities: ["INT", "CON"], campfire: true },
+	{ key: "cook", name: "Cook", abilities: ["INT", "WIS"], campfire: true },
+	{ key: "craft", name: "Craft", abilities: ["DEX"], campfire: true },
+	{ key: "entertain", name: "Entertain", abilities: ["CHA"], campfire: true },
+	{ key: "firewood", name: "Firewood", abilities: ["STR", "CON"], campfire: false },
+	{ key: "hunt", name: "Hunt", abilities: ["STR", "DEX"], campfire: false },
+	{ key: "keepWatch", name: "Keep Watch", abilities: ["WIS"], campfire: true },
+	{ key: "predict", name: "Predict", abilities: ["INT", "WIS"], campfire: false }
+];
+
+/**
  * Party Actor Sheet
  * Extends the base ActorSheet to provide party management functionality
  */
@@ -27,11 +42,7 @@ export default class PartySheetSD extends ActorSheet {
 					initial: "tab-members",
 				},
 			],
-			dragDrop: [
-				{ dragSelector: ".member[data-uuid]", dropSelector: null },
-				{ dragSelector: ".member-portrait img", dropSelector: null },
-				{ dragSelector: ".item[data-uuid]", dropSelector: null }
-			],
+			dragDrop: [{ dragSelector: ".item-list .item, .member-list .member, .sdx-task-member", dropSelector: null }],
 		});
 	}
 
@@ -234,6 +245,10 @@ export default class PartySheetSD extends ActorSheet {
 			}
 		);
 
+		// Prepare camping tasks for Travel tab
+		context.useSDXRolls = this.actor.getFlag(MODULE_ID, "travelUseSDXRolls") ?? false;
+		context.campingTasks = await this._prepareCampingTasks(context.members);
+
 		return context;
 	}
 
@@ -391,14 +406,128 @@ export default class PartySheetSD extends ActorSheet {
 		return { totalHp, maxHp, avgAc, avgLevel };
 	}
 
+	/**
+	 * Prepare camping tasks data for the Travel tab
+	 * @param {Object[]} membersData - Prepared members data
+	 * @returns {Promise<Object[]>}
+	 */
+	async _prepareCampingTasks(membersData) {
+		const assignments = this.actor.getFlag(MODULE_ID, "travelAssignments") ?? {};
+		const dcs = this.actor.getFlag(MODULE_ID, "travelDCs") ?? {};
+		const selections = this.actor.getFlag(MODULE_ID, "travelSelections") ?? {};
+
+		return CAMPING_TASKS.map(task => {
+			const dc = dcs[task.key] ?? 12;
+			const assignedMemberIds = assignments[task.key] ?? [];
+			const assignedMembers = assignedMemberIds
+				.map(memberId => membersData.find(m => m.memberKey === memberId || m.id === memberId))
+				.filter(m => m !== undefined);
+
+			return {
+				key: task.key,
+				name: task.name,
+				abilities: task.abilities,
+				abilitiesText: task.abilities.join(" / "),
+				campfire: task.campfire,
+				dc,
+				assignedMembers: assignedMembers.map(m => {
+					const selectionIdx = selections[task.key]?.[m.memberKey] ?? 0;
+					const selectedAbility = task.abilities[selectionIdx] || task.abilities[0];
+					return {
+						...m,
+						isOwner: this._canUserMoveMember(m),
+						selectedAbility: selectedAbility.toUpperCase(),
+						selectionIdx
+					};
+				})
+			};
+		});
+	}
+
+	/**
+	 * Check if current user can move a member in travel assignments
+	 * @param {Object} memberData - Member data object
+	 * @returns {boolean}
+	 */
+	_canUserMoveMember(memberData) {
+		if (game.user.isGM) return true;
+		if (!memberData) return false;
+		// Check if user owns the actor
+		const actor = game.actors.get(memberData.id);
+		return actor?.isOwner ?? false;
+	}
+
+	/**
+	 * Get travel task assignments
+	 * @returns {Object}
+	 */
+	_getTravelAssignments() {
+		return this.actor.getFlag(MODULE_ID, "travelAssignments") ?? {};
+	}
+
+	/**
+	 * Set travel task assignments
+	 * @param {Object} assignments
+	 */
+	async _setTravelAssignments(assignments) {
+		await this.actor.setFlag(MODULE_ID, "travelAssignments", assignments);
+	}
+
+	/**
+	 * Assign a member to a camping task
+	 * @param {string} taskKey - The task key
+	 * @param {string} memberId - The member ID or key
+	 */
+	async _assignMemberToTask(taskKey, memberId) {
+		const assignments = { ...this._getTravelAssignments() };
+
+		// Remove from any existing task first
+		for (const key of Object.keys(assignments)) {
+			if (Array.isArray(assignments[key])) {
+				assignments[key] = assignments[key].filter(id => id !== memberId);
+			}
+		}
+
+		// Add to new task
+		if (!Array.isArray(assignments[taskKey])) {
+			assignments[taskKey] = [];
+		}
+		if (!assignments[taskKey].includes(memberId)) {
+			assignments[taskKey].push(memberId);
+		}
+
+		await this._setTravelAssignments(assignments);
+	}
+
+	/**
+	 * Remove a member from a camping task
+	 * @param {string} taskKey - The task key
+	 * @param {string} memberId - The member ID or key
+	 */
+	async _removeMemberFromTask(taskKey, memberId) {
+		const assignments = { ...this._getTravelAssignments() };
+		if (Array.isArray(assignments[taskKey])) {
+			assignments[taskKey] = assignments[taskKey].filter(id => id !== memberId);
+		}
+		await this._setTravelAssignments(assignments);
+	}
+
+	/**
+	 * Reset all travel assignments
+	 */
+	async _resetTravelAssignments() {
+		await this.actor.unsetFlag(MODULE_ID, "travelAssignments");
+	}
+
 	/** @inheritdoc */
 	_onDragStart(event) {
 		const target = event.currentTarget;
 
 		// Check if this is a member being dragged (for dropping on canvas to create token)
-		if (target.classList.contains("member") || target.closest(".member")) {
-			const memberEl = target.classList.contains("member") ? target : target.closest(".member");
+		if (target.classList.contains("member") || target.closest(".member") || target.classList.contains("sdx-task-member") || target.closest(".sdx-task-member")) {
+			const memberEl = target.closest(".member") || target.closest(".sdx-task-member");
 			const uuid = memberEl?.dataset?.uuid;
+
 			if (uuid) {
 				// Set drag data as Actor type so Foundry creates a token on canvas drop
 				const dragData = {
@@ -418,6 +547,40 @@ export default class PartySheetSD extends ActorSheet {
 	async _onDrop(event) {
 		const getDragEventData = foundry?.applications?.ux?.TextEditor?.implementation?.getDragEventData ?? TextEditor.getDragEventData;
 		const data = getDragEventData(event);
+
+		// Handle drop on travel task
+		const travelTarget = event.target.closest(".sdx-camping-task");
+		if (travelTarget && data?.type === "Actor") {
+			event.preventDefault(); // Stop propagation
+			const taskKey = travelTarget.dataset.taskKey;
+
+			if (!taskKey) return;
+
+			// Get the actor
+			const dropped = data.uuid ? await fromUuid(data.uuid) : game.actors.get(data.id);
+			if (!dropped) return;
+
+			// Check if actor is in party
+			// Use UUID for compendium actors, ID for world actors to match storage
+			const isCompendiumActor = dropped.uuid?.startsWith("Compendium.");
+			const memberKey = isCompendiumActor ? dropped.uuid : dropped.id;
+
+			if (!this.memberIds.includes(memberKey)) {
+				ui.notifications.warn(game.i18n.localize("SHADOWDARK_EXTRAS.party.travel.warn_not_member"));
+				return;
+			}
+
+			// Check ownership
+			if (!dropped.isOwner && !game.user.isGM) {
+				ui.notifications.warn(game.i18n.localize("SHADOWDARK_EXTRAS.party.travel.warn_not_owner"));
+				return;
+			}
+
+			// Assign to task
+			await this._assignMemberToTask(taskKey, memberKey);
+			return;
+		}
+
 		if (data?.type === "Actor") {
 			if (!this.actor.isOwner) return;
 			const dropped = data.uuid ? await fromUuid(data.uuid) : game.actors.get(data.id);
@@ -636,6 +799,16 @@ export default class PartySheetSD extends ActorSheet {
 
 		// Description editing
 		html.find("[data-action='edit-description']").click(this._onEditDescription.bind(this));
+
+		// Travel Tab interactions
+		html.find("[data-action='reset-travel']").click(this._onResetTravel.bind(this));
+		html.find("[data-action='remove-travel-member']").click(this._onRemoveTravelMember.bind(this));
+
+		// Travel Rolling
+		html.find("[data-action='toggle-travel-sdx']").click(this._onToggleSDXRolls.bind(this));
+		html.find(".sdx-task-dc").change(this._onChangeTravelDC.bind(this));
+		html.find(".sdx-task-header").click(this._onRollTravelTask.bind(this));
+		html.find(".sdx-task-member").contextmenu(this._onToggleTravelAbility.bind(this));
 	}
 
 	async _onSyncLights(event) {
@@ -1864,6 +2037,187 @@ export default class PartySheetSD extends ActorSheet {
 			},
 			default: "transfer"
 		}).render(true);
+	}
+
+	/**
+	 * Handle resetting all travel assignments
+	 * @param {Event} event
+	 */
+	async _onResetTravel(event) {
+		event.preventDefault();
+		if (!this.actor.isOwner) return;
+
+		const confirmed = await Dialog.confirm({
+			title: game.i18n.localize("SHADOWDARK_EXTRAS.party.travel.reset_title"),
+			content: game.i18n.localize("SHADOWDARK_EXTRAS.party.travel.reset_confirm"),
+			yes: () => true,
+			no: () => false,
+			defaultYes: false
+		});
+
+		if (confirmed) {
+			await this._resetTravelAssignments();
+		}
+	}
+
+	/**
+	 * Handle removing a member from a travel task
+	 * @param {Event} event
+	 */
+	async _onRemoveTravelMember(event) {
+		event.preventDefault();
+		event.stopPropagation();
+		const target = event.currentTarget;
+		const taskKey = target.dataset.taskKey;
+		const memberId = target.dataset.memberId;
+
+		if (taskKey && memberId) {
+			await this._removeMemberFromTask(taskKey, memberId);
+		} else {
+			console.warn("Shadowdark Extras | Missing taskKey or memberId for removal", taskKey, memberId);
+		}
+	}
+
+	/* -------------------------------------------- */
+	/*  Travel Tab Rolling Handlers                 */
+	/* -------------------------------------------- */
+
+	async _onToggleTravelAbility(event) {
+		event.preventDefault();
+		event.stopPropagation();
+		console.log("Shadowdark Extras | Toggle Ability: Right Click Detected");
+		const target = event.currentTarget;
+		const taskKey = target.dataset.taskKey;
+		const memberId = target.dataset.memberId;
+		console.log("Shadowdark Extras | Toggle Ability Data:", { taskKey, memberId });
+
+		if (!taskKey || !memberId) return;
+
+		// Get current selections
+		const selections = { ...(this.actor.getFlag(MODULE_ID, "travelSelections") ?? {}) };
+		if (!selections[taskKey]) selections[taskKey] = {};
+
+		const task = CAMPING_TASKS.find(t => t.key === taskKey);
+		if (!task || task.abilities.length < 2) return;
+
+		const currentIdx = selections[taskKey][memberId] ?? 0;
+		const nextIdx = (currentIdx + 1) % task.abilities.length;
+		selections[taskKey][memberId] = nextIdx;
+
+		console.log("Shadowdark Extras | New Selection Index:", nextIdx);
+		await this.actor.setFlag(MODULE_ID, "travelSelections", selections);
+	}
+
+	async _onChangeTravelDC(event) {
+		event.preventDefault();
+		const target = event.currentTarget;
+		const taskKey = target.dataset.taskKey;
+		const value = parseInt(target.value);
+
+		const dcs = { ...this.actor.getFlag(MODULE_ID, "travelDCs") ?? {} };
+		dcs[taskKey] = !isNaN(value) ? value : 12;
+
+		await this.actor.setFlag(MODULE_ID, "travelDCs", dcs);
+	}
+
+	async _onToggleSDXRolls(event) {
+		event.preventDefault();
+		const current = this.actor.getFlag(MODULE_ID, "travelUseSDXRolls") ?? false;
+		await this.actor.setFlag(MODULE_ID, "travelUseSDXRolls", !current);
+	}
+
+	async _onRollTravelTask(event) {
+		event.preventDefault();
+		const target = event.currentTarget;
+		const taskKey = target.dataset.taskKey;
+
+		const task = CAMPING_TASKS.find(t => t.key === taskKey);
+		if (!task) return;
+
+		const assignments = this.actor.getFlag(MODULE_ID, "travelAssignments") ?? {};
+		const assignedIds = assignments[taskKey] ?? [];
+		if (assignedIds.length === 0) return;
+
+		const dcs = this.actor.getFlag(MODULE_ID, "travelDCs") ?? {};
+		const dc = dcs[taskKey] ?? 12;
+
+		const selections = this.actor.getFlag(MODULE_ID, "travelSelections") ?? {};
+		const useSDXRolls = this.actor.getFlag(MODULE_ID, "travelUseSDXRolls") ?? false;
+
+		const members = await this.getMembers();
+		const actorsToRoll = assignedIds.map(id => members.find(m => m.id === id || m.uuid === id)).filter(m => m);
+
+		if (actorsToRoll.length === 0) return;
+
+		const rolls = [];
+		for (const actor of actorsToRoll) {
+			const isCompendium = actor.uuid.startsWith("Compendium.");
+			const memberKey = isCompendium ? actor.uuid : actor.id;
+
+			const selectionIdx = selections[taskKey]?.[memberKey] ?? 0;
+			const ability = task.abilities[selectionIdx] || task.abilities[0];
+			rolls.push({ actor, ability });
+		}
+
+		console.log("Shadowdark Extras | Rolling Task:", { taskKey, rolls, useSDXRolls });
+
+		if (useSDXRolls && globalThis.ui?.SdxRollsSD) {
+			const byAbility = {};
+			rolls.forEach(r => {
+				const ab = r.ability.toLowerCase();
+				if (!byAbility[ab]) byAbility[ab] = [];
+				byAbility[ab].push(r.actor.uuid);
+			});
+
+			for (const [ability, uuids] of Object.entries(byAbility)) {
+				const bannerImages = {
+					battenDown: "modules/shadowdark-extras/assets/travel/batten_down.png",
+					cook: "modules/shadowdark-extras/assets/travel/cook.png",
+					craft: "modules/shadowdark-extras/assets/travel/craft.png",
+					entertain: "modules/shadowdark-extras/assets/travel/entertain.png",
+					firewood: "modules/shadowdark-extras/assets/travel/firewood.png",
+					hunt: "modules/shadowdark-extras/assets/travel/hunt.png",
+					// keepWatch: "modules/shadowdark-extras/assets/travel/keep_watch.png", // Not generated yet
+					// predict: "modules/shadowdark-extras/assets/travel/predict.png"       // Not generated yet
+				};
+
+				const bannerImage = bannerImages[taskKey];
+				// Fallback to undefined so SDX uses default or none if missing
+
+				const data = {
+					actors: uuids,
+					contestants: [],
+					type: `stat.${ability}`,
+					contest: false,
+					options: {
+						DC: dc,
+						title: `${task.name}`,
+						bannerImage: bannerImage
+					}
+				};
+				console.log("Shadowdark Extras | SDX Banner Request:", { taskKey, bannerImage, data });
+				ui.SdxRollsSD.requestRoll(data);
+			}
+		} else {
+			for (const { actor, ability } of rolls) {
+				console.log("Shadowdark Extras | Rolling for Actor:", actor.name, "Ability:", ability);
+				const abilityId = ability.toLowerCase();
+				if (actor.rollAbility) {
+					try {
+						// Ensure ability is valid key for system
+						// Some systems might need capitalized? No, usually lowercase.
+						// Debug output
+						await actor.rollAbility(abilityId);
+					} catch (err) {
+						console.error("Shadowdark Extras | Error rolling ability:", err);
+						ui.notifications.error(`Error rolling ${abilityId} for ${actor.name}: ${err.message}`);
+					}
+				} else {
+					// Fallback for system differences if rollAbility doesn't exist
+					ui.notifications.warn("Cannot roll ability for actor type: " + actor.type);
+				}
+			}
+		}
 	}
 }
 

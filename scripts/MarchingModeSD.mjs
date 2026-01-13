@@ -255,6 +255,7 @@ function showMovementModeDialog() {
         }
     }, {
         width: 480,
+        height: 245,
         classes: ["sdx-movement-mode-dialog"]
     }).render(true);
 }

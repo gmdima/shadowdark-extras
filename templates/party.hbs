@@ -41,6 +41,11 @@
 			{{localize "SHADOWDARK_EXTRAS.party.tab.inventory"}}
 		</a>
 
+		<a class="navigation-tab" data-tab="tab-travel">
+			<i class="fas fa-campground"></i>
+			{{localize "SHADOWDARK_EXTRAS.party.tab.travel"}}
+		</a>
+
 		<a class="navigation-tab" data-tab="tab-description">
 			<i class="fas fa-book-open"></i>
 			{{localize "SHADOWDARK_EXTRAS.party.tab.description"}}
@@ -387,6 +392,71 @@
 						</div>
 					</div>
 				</div>
+			</div>
+		</div>
+
+		<!-- TRAVEL TAB -->
+		<div class="tab tab-travel" data-group="primary" data-tab="tab-travel">
+			<div class="sdx-travel-header">
+				<p class="sdx-travel-hint">{{localize "SHADOWDARK_EXTRAS.party.travel.hint"}}</p>
+				<div class="sdx-travel-actions">
+					<button type="button" class="sdx-travel-toggle-sdx {{#if useSDXRolls}}active{{/if}}"
+						data-action="toggle-travel-sdx" data-tooltip="Toggle SDX Rolls Animation">
+						<i class="fa-solid fa-dice-d20"></i>
+						<span>SDX</span>
+					</button>
+					{{#if owner}}
+					<button type="button" class="sdx-travel-reset" data-action="reset-travel">
+						<i class="fas fa-undo"></i>
+						{{localize "SHADOWDARK_EXTRAS.party.travel.reset"}}
+					</button>
+					{{/if}}
+				</div>
+			</div>
+
+			<div class="sdx-camping-grid">
+				{{#each campingTasks as |task|}}
+				<div class="sdx-camping-task SD-box" data-task-key="{{task.key}}" data-action="drop-travel">
+					<div class="sdx-task-header" data-task-key="{{task.key}}" data-tooltip="Click Header to Roll"
+						style="cursor: pointer;">
+						{{#if ../isGM}}
+						<div class="sdx-task-dc-control" data-tooltip="Target DC" onclick="event.stopPropagation()">
+							<span class="sdx-label-dc">DC</span>
+							<input type="number" class="sdx-task-dc" data-task-key="{{task.key}}" value="{{task.dc}}"
+								placeholder="12">
+						</div>
+						{{/if}}
+						<div class="sdx-task-info">
+							<span class="sdx-task-name">{{task.name}}</span>
+							<span class="sdx-task-abilities">{{task.abilitiesText}}</span>
+						</div>
+						{{#if task.campfire}}<i class="fas fa-fire sdx-campfire-indicator"
+							data-tooltip="{{localize 'SHADOWDARK_EXTRAS.party.travel.requires_campfire'}}"></i>{{/if}}
+					</div>
+					<div class="sdx-task-members" data-task-key="{{task.key}}">
+						{{#each task.assignedMembers as |member|}}
+						<div class="sdx-task-member" data-member-id="{{member.memberKey}}" data-uuid="{{member.uuid}}"
+							data-task-key="{{../key}}" draggable="{{member.isOwner}}"
+							data-tooltip="Right-click to toggle Ability">
+							<img src="{{member.img}}" alt="{{member.name}}" />
+							<span class="sdx-member-name">{{member.name}}</span>
+							<span class="sdx-member-ability-indicator">{{member.selectedAbility}}</span>
+							{{#if member.isOwner}}
+							<a class="sdx-remove-member" data-action="remove-travel-member" data-task-key="{{../key}}"
+								data-member-id="{{member.memberKey}}">
+								<i class="fas fa-times"></i>
+							</a>
+							{{/if}}
+						</div>
+						{{else}}
+						<div class="sdx-task-empty">
+							<i class="fas fa-user-plus"></i>
+							<span>{{localize "SHADOWDARK_EXTRAS.party.travel.drop_here"}}</span>
+						</div>
+						{{/each}}
+					</div>
+				</div>
+				{{/each}}
 			</div>
 		</div>
 

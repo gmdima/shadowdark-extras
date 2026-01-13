@@ -59,11 +59,11 @@ export class SdxRollSD extends Application {
         this.rollOptions.hideNames = this.rollOptions.hideNames;
         this.type = this.rollData.type;
         this.contest = this.rollData.contest;
-        
+
         // Set banner color from settings or options
         const bannerColor = this.rollOptions.color || getSDXROLLSSetting("bannerColor") || "#8b0000";
-        const bannerImage = getSDXROLLSSetting("bannerImage");
-        
+        const bannerImage = this.rollOptions.bannerImage || getSDXROLLSSetting("bannerImage");
+
         document.documentElement.style.setProperty("--sdx-banner-color", bannerColor);
         if (bannerImage) {
             // Ensure the path starts with / for absolute URL resolution
@@ -77,18 +77,18 @@ export class SdxRollSD extends Application {
     async getData() {
         const showDC = this.rollOptions.showDC || game.user.isGM;
         const introLabel = SdxRollSD.getRollLabel(
-            this.rollData.type, 
-            showDC ? this.rollData.options.DC : null, 
-            this.rollData.contest, 
+            this.rollData.type,
+            showDC ? this.rollData.options.DC : null,
+            this.rollData.contest,
             this.rollData.options
         );
         this._introLabel = introLabel;
-        return { 
-            introLabel, 
-            actors: this.actors, 
-            contestants: this.contestants, 
-            options: this.rollOptions, 
-            isGM: game.user.isGM 
+        return {
+            introLabel,
+            actors: this.actors,
+            contestants: this.contestants,
+            options: this.rollOptions,
+            isGM: game.user.isGM
         };
     }
 
@@ -96,31 +96,31 @@ export class SdxRollSD extends Application {
         super.activateListeners(html);
         html = html[0] ?? html;
         this.executeIntroAnimation(html);
-        
+
         html.querySelectorAll("span.adv, span.dis").forEach((span) => {
             span.addEventListener("click", this._onClickAdvDis.bind(this));
         });
-        
+
         html.querySelectorAll(".roll").forEach((roll) => {
             roll.addEventListener("click", this.roll.bind(this));
         });
-        
+
         if (this.rollOptions.allowReroll || game.user.isGM) {
             html.querySelectorAll(".result").forEach((roll) => {
                 roll.addEventListener("click", this.roll.bind(this));
             });
         }
-        
+
         html.querySelector(".end-sdx-roll").addEventListener("click", () => {
             SocketSD.endSdxRoll({ abort: true });
         });
-        
+
         html.querySelector(".end-sdx-roll-manual").addEventListener("click", (e) => {
             e.preventDefault();
             SocketSD.endSdxRoll({ button: true });
             e.currentTarget.classList.add("sdx-hidden-2");
         });
-        
+
         this.recoverState();
         this.setAdvDis();
     }
@@ -128,7 +128,7 @@ export class SdxRollSD extends Application {
     setAdvDis() {
         const rollSettings = this.rollOptions.rollSettings;
         if (!rollSettings?.length) return;
-        
+
         for (const rollSetting of rollSettings) {
             const uuid = rollSetting.uuid;
             const actorCard = this.element[0].querySelector(`.actor-card[data-uuid="${uuid}"]`);
@@ -175,10 +175,10 @@ export class SdxRollSD extends Application {
             });
         });
         await introTextPromise;
-        
+
         const actorCardsContainer = html.querySelector(".actor-cards");
         actorCardsContainer.classList.remove("sdx-hidden");
-        
+
         const actorCards = actorCardsContainer.querySelectorAll(".actor-card");
         const cardCount = actorCards.length;
         actorCards.forEach((card, index) => {
@@ -198,7 +198,7 @@ export class SdxRollSD extends Application {
         const actorCardsContainer = html.querySelector(".actor-cards");
         const actorCards = actorCardsContainer.querySelectorAll(".actor-card");
         const cardCount = actorCards.length;
-        
+
         actorCards.forEach((card, index) => {
             card.animate([{ transform: "translateX(0)" }, { transform: `translateX(100vw)` }], {
                 duration: 500,
@@ -207,7 +207,7 @@ export class SdxRollSD extends Application {
                 delay: (cardCount - index) * 100,
             });
         });
-        
+
         await SdxRollSD.wait(500 + cardCount * 100);
         actorCardsContainer.remove();
 
@@ -230,7 +230,7 @@ export class SdxRollSD extends Application {
             }
             await SdxRollSD.wait(3000);
         }
-        
+
         html.animate([{ opacity: 1 }, { opacity: 0 }], {
             duration: 500,
             easing: "ease-in-out",
@@ -246,12 +246,12 @@ export class SdxRollSD extends Application {
         const uuid = rollButton.closest(".actor-card").dataset.uuid;
         const adv = rollButton.closest(".roll-badge").querySelector("span.adv").classList.contains("active");
         const dis = rollButton.closest(".roll-badge").querySelector("span.dis").classList.contains("active");
-        
+
         SocketSD.toggleRollButton({ uuid, rolling: true });
-        
+
         const ff = adv || dis || !e.shiftKey;
         if (ff) e = null;
-        
+
         const actor = fromUuidSync(uuid);
         const isContestant = this.contestants.some((c) => c.uuid === uuid);
         const rollType = isContestant ? this.contest : this.type;
@@ -265,18 +265,18 @@ export class SdxRollSD extends Application {
         if (type === "stat") {
             // Get the stat modifier from the actor
             const statValue = actor.system.abilities?.[key]?.mod ?? 0;
-            
+
             // Build the roll formula
             let formula = "1d20";
             if (adv && !dis) formula = "2d20kh";
             else if (dis && !adv) formula = "2d20kl";
-            
+
             formula += ` + ${statValue}`;
-            
+
             const roll = new Roll(formula, actor.getRollData());
             await roll.evaluate();
             result = roll;
-            
+
         } else if (type === "custom") {
             // Custom formula roll
             const roll = new Roll(this.rollOptions.formula || "1d20", actor.getRollData());
@@ -291,29 +291,29 @@ export class SdxRollSD extends Application {
 
         result = Array.isArray(result) ? result[0] : result;
         const value = Math.round(result.total);
-        
+
         // Create the chat message
         const message = await result.toMessage(
-            { speaker: ChatMessage.getSpeaker({ actor }) }, 
+            { speaker: ChatMessage.getSpeaker({ actor }) },
             { rollMode, create: true }
         );
 
         if (!isBlind) await this.waitForMessageRender(message?.id);
 
         SocketSD.toggleRollButton({ uuid, rolling: false });
-        
+
         // Check for natural 20 or natural 1
         const die = result.dice[0];
         const isCritical = die && die.total === 20;
         const isFumble = die && die.total === 1;
 
-        SocketSD.updateSdxRoll({ 
-            uuid, 
-            value, 
-            isCritical, 
-            isFumble, 
-            rollData: result, 
-            messageId: message?.id 
+        SocketSD.updateSdxRoll({
+            uuid,
+            value,
+            isCritical,
+            isFumble,
+            rollData: result,
+            messageId: message?.id
         });
     }
 
@@ -376,7 +376,7 @@ export class SdxRollSD extends Application {
         this._results[data.uuid] = data.value;
         this._rolls[data.uuid] = data.rollData;
         if (data.messageId) this._messageIds.add(data.messageId);
-        
+
         const actorCard = this.element[0].querySelector(`.actor-card[data-uuid="${data.uuid}"]`);
         const resultEl = actorCard.querySelector(".result");
         resultEl.textContent = this.rollOptions.blindRoll && !game.user.isGM ? "?" : data.value;
@@ -385,13 +385,13 @@ export class SdxRollSD extends Application {
         if (data.isCritical) resultEl.classList.add("critical");
         if (data.isFumble) resultEl.classList.add("fumble");
         if (this.rollOptions.blindRoll) resultEl.classList.add("blind");
-        
+
         actorCard.animate([{ transform: "scale(1.0)" }, { transform: "scale(1.1)" }, { transform: "scale(1.0)" }], {
             duration: 500,
             easing: "cubic-bezier(0.22, 1, 0.36, 1)",
             fill: "forwards",
         });
-        
+
         const allActors = this.actors.concat(this.contestants);
         const allResults = allActors.every((actor) => Number.isNumeric(this._results[actor.uuid]));
         if (allResults) {
@@ -425,8 +425,8 @@ export class SdxRollSD extends Application {
             this.createChatRecap(null, null);
             return undefined;
         }
-        const dc = this.contestants.length 
-            ? this.contestants.reduce((acc, c) => acc + this._results[c.uuid], 0) / this.contestants.length 
+        const dc = this.contestants.length
+            ? this.contestants.reduce((acc, c) => acc + this._results[c.uuid], 0) / this.contestants.length
             : this.rollOptions.DC;
         let success;
         if (this.rollOptions.useAverage) {
@@ -452,7 +452,7 @@ export class SdxRollSD extends Application {
 
         const actorEntries = [];
         const contestantEntries = [];
-        
+
         for (const actor of this.actors) {
             const result = this._results[actor.uuid];
             const roll = this._rolls[actor.uuid];
@@ -464,7 +464,7 @@ export class SdxRollSD extends Application {
             };
             actorEntries.push(entry);
         }
-        
+
         for (const contestant of this.contestants) {
             const result = this._results[contestant.uuid];
             const roll = this._rolls[contestant.uuid];
@@ -519,10 +519,10 @@ export class SdxRollSD extends Application {
      */
     static getRollLabel(rollKey, dc, vs, options = {}) {
         if (options.customLabel) return options.customLabel;
-        
+
         const formula = options.formula;
         let rollName = "";
-        
+
         if (Number.isNumeric(dc) && !vs) {
             rollName = `DC ${dc} `;
         }
@@ -530,7 +530,7 @@ export class SdxRollSD extends Application {
         const getLabel = (rKey) => {
             const [type, key] = rKey.split(".");
             let label = "";
-            
+
             if (type === "stat") {
                 // Get the stat name from Shadowdark
                 const statLabels = {
@@ -543,7 +543,7 @@ export class SdxRollSD extends Application {
                 };
                 label += game.i18n.localize(statLabels[key] || key.toUpperCase());
             }
-            
+
             if (formula) {
                 label += formula;
             }
