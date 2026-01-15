@@ -6,6 +6,8 @@
  */
 
 const MODULE_ID = "shadowdark-extras";
+const SETTING_KEY_LEADER = "marchingModeLeader";
+const SETTING_KEY_ENABLED = "marchingModeEnabled";
 
 // Marching mode state
 let marchingModeEnabled = false;
@@ -14,6 +16,53 @@ let leaderMovementPath = []; // Array of {x, y, gridPos} points
 let tokenFollowers = new Map(); // tokenId -> {marchPosition, moving}
 let processingCongaMovement = false;
 let scheduledTimeouts = new Set(); // Track pending timeouts for cleanup
+
+/**
+ * Save marching mode state to settings
+ */
+async function saveMarchingState() {
+    if (!game.user.isGM) return;
+
+    await game.settings.set(MODULE_ID, SETTING_KEY_LEADER, leaderTokenId || "");
+    await game.settings.set(MODULE_ID, SETTING_KEY_ENABLED, marchingModeEnabled);
+    console.log(`${MODULE_ID} | Saved marching state: leader=${leaderTokenId}, enabled=${marchingModeEnabled}`);
+}
+
+/**
+ * Load marching mode state from settings
+ */
+function loadMarchingState() {
+    if (!game.user.isGM) return;
+
+    const savedLeader = game.settings.get(MODULE_ID, SETTING_KEY_LEADER);
+    const savedEnabled = game.settings.get(MODULE_ID, SETTING_KEY_ENABLED);
+
+    leaderTokenId = savedLeader || null;
+    marchingModeEnabled = savedEnabled || false;
+
+    console.log(`${MODULE_ID} | Loaded marching state: leader=${leaderTokenId}, enabled=${marchingModeEnabled}`);
+}
+
+/**
+ * Register game settings for marching mode
+ */
+function registerMarchingSettings() {
+    game.settings.register(MODULE_ID, SETTING_KEY_LEADER, {
+        name: "Marching Mode Leader",
+        scope: "world",
+        config: false,
+        type: String,
+        default: ""
+    });
+
+    game.settings.register(MODULE_ID, SETTING_KEY_ENABLED, {
+        name: "Marching Mode Enabled",
+        scope: "world",
+        config: false,
+        type: Boolean,
+        default: false
+    });
+}
 
 /**
  * Schedule a timeout and track it for cleanup
@@ -45,6 +94,12 @@ export function initMarchingMode() {
 
     console.log(`${MODULE_ID} | Initializing Marching Mode`);
 
+    // Register settings
+    registerMarchingSettings();
+
+    // Load saved state
+    loadMarchingState();
+
     // Register the renderSidebar hook
     Hooks.on("renderSidebar", onRenderSidebar);
 
@@ -65,8 +120,7 @@ export function initMarchingMode() {
     Hooks.on("deleteToken", async (tokenDoc, options, userId) => {
         if (tokenDoc.id === leaderTokenId) {
             // Leader was deleted, clear leader
-            leaderTokenId = null;
-            updateButtonStates();
+            await setLeader(null);
         }
     });
 
@@ -270,11 +324,29 @@ async function setLeader(tokenId) {
     const newLeaderId = tokenId || null;
     leaderTokenId = newLeaderId;
 
-    // Always remove crown from old leader if there was one
-    if (oldLeaderId) {
-        const oldLeader = canvas.tokens.get(oldLeaderId);
-        if (oldLeader) {
-            await removeLeaderCrown(oldLeader);
+    // Always remove ALL crowns first (handles refresh case where oldLeaderId is null but crowns persist)
+    await removeAllLeaderCrowns();
+
+    // Reset marching state when leader changes
+    if (oldLeaderId !== newLeaderId) {
+        // Clear the movement path
+        leaderMovementPath = [];
+
+        // Clear followers
+        tokenFollowers.clear();
+
+        // Cancel any pending movements
+        clearScheduledTimeouts();
+
+        // If marching mode is enabled and we have a new leader, recalculate marching order
+        if (marchingModeEnabled && newLeaderId) {
+            const newLeaderToken = canvas.tokens.get(newLeaderId);
+            if (newLeaderToken) {
+                // Small delay to ensure state is settled
+                await new Promise(resolve => setTimeout(resolve, 100));
+                calculateMarchingOrder(newLeaderToken);
+                console.log(`${MODULE_ID} | Recalculated marching order with new leader`);
+            }
         }
     }
 
@@ -291,13 +363,16 @@ async function setLeader(tokenId) {
         ui.notifications.info("Party leader cleared.");
     }
 
+    // Save state
+    await saveMarchingState();
+
     updateButtonStates();
 }
 
 /**
  * Set movement mode
  */
-function setMovementMode(enabled) {
+async function setMovementMode(enabled) {
     marchingModeEnabled = enabled;
 
     if (enabled) {
@@ -313,6 +388,9 @@ function setMovementMode(enabled) {
         tokenFollowers.clear();
         clearScheduledTimeouts(); // Cancel any pending follower movements
     }
+
+    // Save state
+    await saveMarchingState();
 
     updateButtonStates();
 
@@ -729,18 +807,42 @@ async function removeLeaderCrown(token) {
 }
 
 /**
+ * Remove all leader crowns from all tokens
+ */
+async function removeAllLeaderCrowns() {
+    if (typeof Sequencer === "undefined") return;
+
+    // Get all tokens on the canvas
+    const allTokens = canvas.tokens.placeables;
+
+    // Remove crown from each token
+    const promises = allTokens.map(token => {
+        const effectName = getLeaderCrownEffectName(token);
+        return Sequencer.EffectManager.endEffects({ name: effectName, object: token });
+    });
+
+    await Promise.all(promises);
+    console.log(`${MODULE_ID} | Removed all leader crowns`);
+}
+
+/**
  * Restore leader crown on canvas ready
  */
 async function restoreLeaderCrown() {
-    if (!leaderTokenId) return;
     if (typeof Sequencer === "undefined") return;
 
     // Small delay to ensure canvas is ready
     await new Promise(resolve => setTimeout(resolve, 500));
 
-    const leaderToken = canvas.tokens.get(leaderTokenId);
-    if (leaderToken) {
-        await showLeaderCrown(leaderToken);
+    // First, clean up any stale crowns that may have persisted from before refresh
+    await removeAllLeaderCrowns();
+
+    // Only restore if we have a leader
+    if (leaderTokenId) {
+        const leaderToken = canvas.tokens.get(leaderTokenId);
+        if (leaderToken) {
+            await showLeaderCrown(leaderToken);
+        }
     }
 }
 

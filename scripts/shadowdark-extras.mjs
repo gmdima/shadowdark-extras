@@ -56,6 +56,8 @@ import StaffSpellManager from "./StaffSpellManager.mjs";
 import { initJournalNarration } from "./JournalNarrationSD.mjs";
 import { initMedkit } from "./MedkitSD.mjs";
 import { initMarchingMode } from "./MarchingModeSD.mjs";
+import { SceneExporter } from "./SceneExporter.mjs";
+import { SceneImporter } from "./SceneImporter.mjs";
 import "./SpellMacrosSD.mjs";
 
 const MODULE_ID = "shadowdark-extras";
@@ -19931,4 +19933,50 @@ Hooks.once('ready', () => {
 
 	console.log("shadowdark-extras | Patched ActorSD.prototype.buildNpcAttackDisplays");
 });
+
+// ============================================
+// SCENE EXPORT CONTEXT MENU
+// ============================================
+
+/**
+ * Add "Export Scene as ZIP" option to scene context menu
+ */
+Hooks.on("getSceneContextOptions", (document, menuItems) => {
+	menuItems.push({
+		name: "Export Scene as ZIP",
+		icon: '<i class="fas fa-file-archive"></i>',
+		condition: () => game.user.isGM,
+		callback: async (li) => {
+			// In Foundry v13, li is an HTMLElement, not jQuery
+			const element = li instanceof HTMLElement ? li : li[0];
+			const sceneId = element?.dataset?.documentId || element?.dataset?.entryId;
+			if (!sceneId) {
+				ui.notifications.error("Could not determine scene ID");
+				return;
+			}
+
+			// Get the scene document
+			const scene = game.scenes.get(sceneId);
+			if (!scene) {
+				ui.notifications.error("Could not find scene");
+				return;
+			}
+
+			// Export the scene
+			await SceneExporter.exportScene(scene);
+		}
+	});
+
+	menuItems.push({
+		name: "Import Scene from ZIP",
+		icon: '<i class="fas fa-file-import"></i>',
+		condition: () => game.user.isGM,
+		callback: async () => {
+			await SceneImporter.promptImport();
+		}
+	});
+});
+
+console.log(`${MODULE_ID} | Scene export context menu registered`);
+
 

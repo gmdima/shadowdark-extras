@@ -74,6 +74,9 @@
     ]
   },
   "socket": true,
+  "scripts": [
+    "libs/jszip.min.js"
+  ],
   "esmodules": [
     "scripts/shadowdark-extras.mjs",
     "scripts/SheetEditorConfig.mjs",
