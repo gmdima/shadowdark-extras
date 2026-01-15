@@ -4,23 +4,18 @@
  */
 
 import { getHpWaveColor, isHpWavesEnabled } from "./HpWavesSettingsSD.mjs";
+import { getTravelActivities } from "./TravelActivitiesSettingsSD.mjs";
+import { getTravelSpeeds } from "./TravelSpeedsSettingsSD.mjs";
 
 const MODULE_ID = "shadowdark-extras";
 
 /**
- * Shadowdark Camping Tasks
- * Each task: key, display name, required abilities, and whether campfire is needed
+ * Get the configured camping/travel tasks
+ * @returns {Array} Array of task objects with key, name, abilities, campfire, and bannerImage
  */
-const CAMPING_TASKS = [
-	{ key: "battenDown", name: "Batten Down", abilities: ["INT", "CON"], campfire: true },
-	{ key: "cook", name: "Cook", abilities: ["INT", "WIS"], campfire: true },
-	{ key: "craft", name: "Craft", abilities: ["DEX"], campfire: true },
-	{ key: "entertain", name: "Entertain", abilities: ["CHA"], campfire: true },
-	{ key: "firewood", name: "Firewood", abilities: ["STR", "CON"], campfire: false },
-	{ key: "hunt", name: "Hunt", abilities: ["STR", "DEX"], campfire: false },
-	{ key: "keepWatch", name: "Keep Watch", abilities: ["WIS"], campfire: true },
-	{ key: "predict", name: "Predict", abilities: ["INT", "WIS"], campfire: false }
-];
+function getCampingTasks() {
+	return getTravelActivities();
+}
 
 /**
  * Party Actor Sheet
@@ -249,6 +244,13 @@ export default class PartySheetSD extends ActorSheet {
 		context.useSDXRolls = this.actor.getFlag(MODULE_ID, "travelUseSDXRolls") ?? false;
 		context.campingTasks = await this._prepareCampingTasks(context.members);
 
+		// Prepare travel speeds for Travel tab
+		const selectedSpeed = this.actor.getFlag(MODULE_ID, "travelSpeed") ?? "normal";
+		context.travelSpeeds = getTravelSpeeds().map(speed => ({
+			...speed,
+			selected: speed.key === selectedSpeed
+		}));
+
 		return context;
 	}
 
@@ -415,24 +417,28 @@ export default class PartySheetSD extends ActorSheet {
 		const assignments = this.actor.getFlag(MODULE_ID, "travelAssignments") ?? {};
 		const dcs = this.actor.getFlag(MODULE_ID, "travelDCs") ?? {};
 		const selections = this.actor.getFlag(MODULE_ID, "travelSelections") ?? {};
+		const campingTasks = getCampingTasks();
 
-		return CAMPING_TASKS.map(task => {
+		return campingTasks.map(task => {
 			const dc = dcs[task.key] ?? 12;
 			const assignedMemberIds = assignments[task.key] ?? [];
 			const assignedMembers = assignedMemberIds
 				.map(memberId => membersData.find(m => m.memberKey === memberId || m.id === memberId))
 				.filter(m => m !== undefined);
 
+			// Filter out empty strings from abilities
+			const abilities = (task.abilities || []).filter(ab => ab && ab.trim());
 			return {
 				key: task.key,
 				name: task.name,
-				abilities: task.abilities,
-				abilitiesText: task.abilities.join(" / "),
+				abilities: abilities,
+				abilitiesText: abilities.join(" / "),
 				campfire: task.campfire,
+				bannerImage: task.bannerImage || "",
 				dc,
 				assignedMembers: assignedMembers.map(m => {
 					const selectionIdx = selections[task.key]?.[m.memberKey] ?? 0;
-					const selectedAbility = task.abilities[selectionIdx] || task.abilities[0];
+					const selectedAbility = abilities[selectionIdx] || abilities[0] || "";
 					return {
 						...m,
 						isOwner: this._canUserMoveMember(m),
@@ -768,6 +774,8 @@ export default class PartySheetSD extends ActorSheet {
 		html.find("[data-action='reward-xp']").click(this._onRewardXp.bind(this));
 		html.find("[data-action='reward-coins']").click(this._onRewardCoins.bind(this));
 		html.find("[data-action='sync-lights']").click(this._onSyncLights.bind(this));
+		html.find("[data-action='roll-weather']").click(this._onRollWeather.bind(this));
+		html.find("[data-action='change-travel-speed']").change(this._onChangeTravelSpeed.bind(this));
 
 		// XP controls
 		html.find("[data-action='xp-increment']").click(this._onXpIncrement.bind(this));
@@ -2097,8 +2105,9 @@ export default class PartySheetSD extends ActorSheet {
 		const selections = { ...(this.actor.getFlag(MODULE_ID, "travelSelections") ?? {}) };
 		if (!selections[taskKey]) selections[taskKey] = {};
 
-		const task = CAMPING_TASKS.find(t => t.key === taskKey);
-		if (!task || task.abilities.length < 2) return;
+		const campingTasks = getCampingTasks();
+		const task = campingTasks.find(t => t.key === taskKey);
+		if (!task || !task.abilities || task.abilities.length < 2) return;
 
 		const currentIdx = selections[taskKey][memberId] ?? 0;
 		const nextIdx = (currentIdx + 1) % task.abilities.length;
@@ -2131,7 +2140,8 @@ export default class PartySheetSD extends ActorSheet {
 		const target = event.currentTarget;
 		const taskKey = target.dataset.taskKey;
 
-		const task = CAMPING_TASKS.find(t => t.key === taskKey);
+		const campingTasks = getCampingTasks();
+		const task = campingTasks.find(t => t.key === taskKey);
 		if (!task) return;
 
 		const assignments = this.actor.getFlag(MODULE_ID, "travelAssignments") ?? {};
@@ -2170,19 +2180,8 @@ export default class PartySheetSD extends ActorSheet {
 			});
 
 			for (const [ability, uuids] of Object.entries(byAbility)) {
-				const bannerImages = {
-					battenDown: "modules/shadowdark-extras/assets/travel/batten_down.png",
-					cook: "modules/shadowdark-extras/assets/travel/cook.png",
-					craft: "modules/shadowdark-extras/assets/travel/craft.png",
-					entertain: "modules/shadowdark-extras/assets/travel/entertain.png",
-					firewood: "modules/shadowdark-extras/assets/travel/firewood.png",
-					hunt: "modules/shadowdark-extras/assets/travel/hunt.png",
-					// keepWatch: "modules/shadowdark-extras/assets/travel/keep_watch.png", // Not generated yet
-					// predict: "modules/shadowdark-extras/assets/travel/predict.png"       // Not generated yet
-				};
-
-				const bannerImage = bannerImages[taskKey];
-				// Fallback to undefined so SDX uses default or none if missing
+				// Use banner image from configured task data
+				const bannerImage = task.bannerImage || undefined;
 
 				const data = {
 					actors: uuids,
@@ -2218,6 +2217,87 @@ export default class PartySheetSD extends ActorSheet {
 				}
 			}
 		}
+	}
+
+	/**
+	 * Handle rolling for weather
+	 * @param {Event} event 
+	 */
+	async _onRollWeather(event) {
+		event.preventDefault();
+
+		// Play dice sound if available
+		if (shadowdark.utils.diceSound) {
+			shadowdark.utils.diceSound();
+		}
+
+		// Roll 1d6
+		const roll = await new Roll("1d6").evaluate({ async: true });
+
+		// Determine outcome
+		const isBadWeather = roll.total === 1;
+
+		let content = "";
+		let flavor = "Weather Check";
+
+		if (isBadWeather) {
+			// Roll duration for bad weather (1d4 days)
+			const durationRoll = await new Roll("1d4").evaluate({ async: true });
+
+			content = `
+				<div class="shadowdark chat-card item-card" style="border: 1px solid #ff3333; border-radius: 4px; overflow: hidden; box-shadow: 0 0 10px rgba(255, 51, 51, 0.2);">
+					<div class="card-header" style="display: flex; flex-direction: column; gap: 8px; padding: 10px; background: rgba(255, 51, 51, 0.1);">
+						<div style="display: flex; align-items: center; gap: 10px;">
+							<img src="icons/magic/air/fog-gas-smoke-swirling-yellow.webp" title="Bad Weather" style="width: 36px; height: 36px; border: 1px solid #c9aa58; border-radius: 4px;"/>
+							<h3 style="margin: 0; color: #ff3333; font-family: 'Montserrat', sans-serif; font-size: 1.2em; text-shadow: 1px 1px 2px #000;">Bad Weather</h3>
+						</div>
+						<div style="display: block !important; padding: 5px 0;">
+							<p style="margin: 4px 0;"><strong>Storms!</strong></p>
+							<p style="margin: 4px 0;">Normal terrain is <strong>difficult</strong> for <strong>${durationRoll.total} days</strong> (rolled 1d4).</p>
+							<p style="margin: 4px 0; font-size: 0.9em;"><em>If in an extreme climate, terrain is impassible.</em></p>
+						</div>
+						<div cstyle="display: block !important; font-size: 0.85em; border-top: 1px solid rgba(255, 255, 255, 0.1); padding-top: 5px; color: #aaa;">
+							<span>Rolled 1 on 1d6</span>
+						</div>
+					</div>
+				</div>
+			`;
+		} else {
+			content = `
+				<div class="shadowdark chat-card item-card" style="border: 1px solid #c9aa58; border-radius: 4px; overflow: hidden; box-shadow: 0 0 10px rgba(201, 170, 88, 0.2);">
+					<div class="card-header" style="display: flex; flex-direction: column; gap: 8px; padding: 10px; background: rgba(201, 170, 88, 0.05);">
+						<div style="display: flex; align-items: center; gap: 10px;">
+							<img src="icons/magic/light/explosion-star-large-blue-yellow.webp" title="Good Weather" style="width: 36px; height: 36px; border: 1px solid #c9aa58; border-radius: 4px;"/>
+							<h3 style="margin: 0; color: #c9aa58; font-family: 'Montserrat', sans-serif; font-size: 1.2em; text-shadow: 1px 1px 2px #000;">Good Weather</h3>
+						</div>
+						<div style="display: block !important; padding: 5px 0;">
+							<p style="margin: 4px 0; color: #eee;">The weather is clear and favorable for travel.</p>
+						</div>
+						<div style="display: block !important; font-size: 0.85em; border-top: 1px solid rgba(255, 255, 255, 0.1); padding-top: 5px; color: #aaa;">
+							<span>Rolled ${roll.total} on 1d6</span>
+						</div>
+					</div>
+				</div>
+			`;
+		}
+
+		// Create chat message
+		ChatMessage.create({
+			user: game.user.id,
+			speaker: ChatMessage.getSpeaker({ actor: this.actor }),
+			content: content,
+			flavor: flavor
+		});
+	}
+
+	/**
+	 * Handle changing the travel speed
+	 * @param {Event} event
+	 */
+	async _onChangeTravelSpeed(event) {
+		event.preventDefault();
+		const speedKey = event.currentTarget.value;
+		await this.actor.setFlag(MODULE_ID, "travelSpeed", speedKey);
 	}
 }
 

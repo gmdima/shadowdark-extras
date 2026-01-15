@@ -44,6 +44,47 @@
     border-color: #777;
 }
 
+.sdx-travel-speed-selector {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 10px;
+    background: #333;
+    border: 1px solid #555;
+    border-radius: 4px;
+}
+
+.sdx-travel-speed-selector label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin: 0;
+    color: #e0e0e0;
+    font-size: 0.85em;
+    white-space: nowrap;
+}
+
+.sdx-travel-speed-selector select {
+    padding: 2px 6px;
+    background: #222;
+    color: #fff;
+    border: 1px solid #555;
+    border-radius: 3px;
+    font-size: 0.9em;
+    cursor: pointer;
+    min-width: 100px;
+}
+
+.sdx-travel-speed-selector select:hover:not(:disabled) {
+    background: #2a2a2a;
+    border-color: #777;
+}
+
+.sdx-travel-speed-selector select:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
 .sdx-camping-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
@@ -316,4 +357,449 @@
 
 .sdx-remove-member {
     margin-left: 0 !important;
+}
+
+/* ============================================
+   TRAVEL ACTIVITIES SETTINGS APP
+   ============================================ */
+
+.travel-activities-settings-app {
+    background: #1a1a1a;
+}
+
+.travel-activities-settings-app .window-content {
+    background: #1a1a1a;
+    padding: 10px;
+}
+
+.sdx-travel-activities-form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.sdx-travel-activities-form .notes {
+    margin: 0;
+    padding: 10px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 4px;
+    color: #aaa;
+    font-size: 0.9em;
+    display: none;
+}
+
+.sdx-activities-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-height: 500px;
+    overflow-y: auto;
+    padding-right: 5px;
+}
+
+.sdx-activity-row {
+    background: #2a2a2a;
+    border: 1px solid #444;
+    border-radius: 6px;
+}
+
+.travel-activities-settings-app .sdx-activity-row>* {
+    display: block !important;
+}
+
+.sdx-activity-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px;
+    background: #333;
+    border-bottom: 1px solid #444;
+}
+
+.sdx-activity-order {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.sdx-activity-order button {
+    width: 20px;
+    height: 16px;
+    padding: 0;
+    background: #444;
+    border: 1px solid #555;
+    border-radius: 3px;
+    color: #aaa;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.sdx-activity-order button:hover {
+    background: #555;
+    color: #fff;
+}
+
+.sdx-activity-order button i {
+    font-size: 0.7em;
+}
+
+.sdx-activity-name {
+    flex: 1;
+    background: #222;
+    border: 1px solid #555;
+    border-radius: 4px;
+    padding: 6px 10px;
+    color: #fff;
+    font-family: "Montserrat", sans-serif;
+    font-size: 1em;
+}
+
+.sdx-activity-name:focus {
+    border-color: #c9aa58;
+    outline: none;
+}
+
+.sdx-remove-activity {
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    background: #4a2a2a;
+    border: 1px solid #633;
+    border-radius: 4px;
+    color: #c66;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.sdx-remove-activity:hover {
+    background: #633;
+    color: #ff6b6b;
+}
+
+.sdx-activity-body {
+    padding: 10px;
+    display: flex !important;
+    flex-direction: column;
+    gap: 10px;
+    background: #222;
+}
+
+.sdx-activity-abilities label,
+.sdx-activity-banner label {
+    font-size: 0.85em;
+    color: #aaa;
+    margin-bottom: 4px;
+    display: block;
+}
+
+.sdx-abilities-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.sdx-ability-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    background: #333;
+    padding: 4px 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.85em;
+    color: #ccc;
+    border: 1px solid #444;
+    transition: all 0.2s;
+}
+
+.sdx-ability-checkbox:hover {
+    background: #444;
+    border-color: #555;
+}
+
+.sdx-ability-checkbox:has(input:checked) {
+    background: #3a3a2a;
+    border-color: #c9aa58;
+    color: #fff;
+}
+
+.sdx-ability-checkbox input {
+    margin: 0;
+}
+
+.sdx-activity-options {
+    display: flex;
+    gap: 15px;
+}
+
+.sdx-campfire-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    font-size: 0.9em;
+    color: #ccc;
+}
+
+.sdx-campfire-checkbox:has(input:checked) {
+    color: #ff5722;
+}
+
+.sdx-banner-input {
+    display: flex;
+    gap: 8px;
+}
+
+.sdx-banner-path {
+    flex: 1;
+    background: #222;
+    border: 1px solid #555;
+    border-radius: 4px;
+    padding: 6px 10px;
+    color: #fff;
+    font-size: 0.9em;
+}
+
+.sdx-banner-path:focus {
+    border-color: #c9aa58;
+    outline: none;
+}
+
+.sdx-file-picker {
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    background: #444;
+    border: 1px solid #555;
+    border-radius: 4px;
+    color: #aaa;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.sdx-file-picker:hover {
+    background: #555;
+    color: #fff;
+}
+
+.sdx-activities-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    padding: 10px 0;
+    border-top: 1px solid #333;
+}
+
+.sdx-activities-actions button {
+    padding: 8px 16px;
+    background: #333;
+    border: 1px solid #555;
+    border-radius: 4px;
+    color: #ccc;
+    cursor: pointer;
+    font-size: 0.9em;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.sdx-activities-actions button:hover {
+    background: #444;
+    color: #fff;
+}
+
+.sdx-add-activity {
+    background: #2a3a2a !important;
+    border-color: #4a6a4a !important;
+    color: #8c8 !important;
+}
+
+.sdx-add-activity:hover {
+    background: #3a4a3a !important;
+    color: #afa !important;
+}
+
+.sdx-reset-defaults {
+    background: #3a2a2a !important;
+    border-color: #6a4a4a !important;
+    color: #c88 !important;
+}
+
+.sdx-reset-defaults:hover {
+    background: #4a3a3a !important;
+    color: #faa !important;
+}
+
+.travel-activities-settings-app .sheet-footer {
+    padding: 10px;
+    background: #222;
+    border-top: 1px solid #444;
+    margin: 0 -10px -10px -10px;
+}
+
+.travel-activities-settings-app .sheet-footer button {
+    background: #c9aa58;
+    border: none;
+    color: #000;
+    padding: 8px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    width: 100%;
+}
+
+.travel-activities-settings-app .sheet-footer button:hover {
+    background: #dabb69;
+}
+
+/* ============================================
+   TRAVEL SPEEDS SETTINGS
+   ============================================ */
+
+.sdx-speeds-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-height: 400px;
+    overflow-y: auto;
+    padding-right: 5px;
+}
+
+.sdx-speed-row {
+    background: #2a2a2a;
+    border: 1px solid #444;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px;
+}
+
+.sdx-speed-order {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.sdx-speed-order button {
+    width: 20px;
+    height: 16px;
+    padding: 0;
+    background: #444;
+    border: 1px solid #555;
+    border-radius: 3px;
+    color: #aaa;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.sdx-speed-order button:hover {
+    background: #555;
+    color: #fff;
+}
+
+.sdx-speed-order button i {
+    font-size: 0.7em;
+}
+
+.sdx-speed-name {
+    flex: 1;
+    background: #222;
+    border: 1px solid #555;
+    border-radius: 4px;
+    padding: 6px 10px;
+    color: #fff;
+    font-family: "Montserrat", sans-serif;
+    font-size: 1em;
+}
+
+.sdx-speed-name:focus {
+    border-color: #c9aa58;
+    outline: none;
+}
+
+.sdx-remove-speed {
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    background: #4a2a2a;
+    border: 1px solid #633;
+    border-radius: 4px;
+    color: #c66;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.sdx-remove-speed:hover {
+    background: #633;
+    color: #ff6b6b;
+}
+
+.sdx-speeds-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    padding: 10px 0;
+    border-top: 1px solid #333;
+}
+
+.sdx-speeds-actions button {
+    padding: 8px 16px;
+    background: #333;
+    border: 1px solid #555;
+    border-radius: 4px;
+    color: #ccc;
+    cursor: pointer;
+    font-size: 0.9em;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.sdx-speeds-actions button:hover {
+    background: #444;
+    color: #fff;
+}
+
+.sdx-add-speed {
+    background: #2a3a2a !important;
+    border-color: #4a6a4a !important;
+    color: #8c8 !important;
+}
+
+.sdx-add-speed:hover {
+    background: #3a4a3a !important;
+    color: #afa !important;
+}
+
+.travel-speeds-settings-app .sheet-footer {
+    padding: 10px;
+    background: #222;
+    border-top: 1px solid #444;
+    margin: 0 -10px -10px -10px;
+}
+
+.travel-speeds-settings-app .sheet-footer button {
+    background: #c9aa58;
+    border: none;
+    color: #000;
+    padding: 8px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    width: 100%;
+}
+
+.travel-speeds-settings-app .sheet-footer button:hover {
+    background: #dabb69;
 }

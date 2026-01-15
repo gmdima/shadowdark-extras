@@ -1,6 +1,6 @@
 /**
- * Potion Item Sheet - AppV2
- * Modern redesigned potion sheet with consolidated tabs and better UX
+ * NPC Feature Item Sheet - AppV2
+ * Modern redesigned NPC Feature sheet with Activity, Description, and Macro tabs
  */
 
 const MODULE_ID = "shadowdark-extras";
@@ -8,16 +8,16 @@ const MODULE_ID = "shadowdark-extras";
 const { DocumentSheetV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
 /**
- * AppV2-based Item Sheet for Potion items
+ * AppV2-based Item Sheet for NPC Feature items
  */
-export default class PotionSheetSD extends HandlebarsApplicationMixin(DocumentSheetV2) {
+export default class NPCFeatureSheetSD extends HandlebarsApplicationMixin(DocumentSheetV2) {
     static DEFAULT_OPTIONS = {
         classes: ["shadowdark-extras", "potion-sheet"],
         tag: "form",
         window: {
             frame: true,
             positioned: true,
-            icon: "fas fa-flask",
+            icon: "fas fa-dragon",
             resizable: true,
             contentClasses: ["standard-form"]
         },
@@ -30,34 +30,31 @@ export default class PotionSheetSD extends HandlebarsApplicationMixin(DocumentSh
             closeOnSubmit: false
         },
         actions: {
-            removeEffect: PotionSheetSD.#onRemoveEffect,
-            removeCriticalEffect: PotionSheetSD.#onRemoveCriticalEffect,
-            addSummonProfile: PotionSheetSD.#onAddSummonProfile,
-            removeSummonProfile: PotionSheetSD.#onRemoveSummonProfile,
-            addItemGiveProfile: PotionSheetSD.#onAddItemGiveProfile,
-            removeItemGiveProfile: PotionSheetSD.#onRemoveItemGiveProfile,
-            itemMacro: PotionSheetSD.#onItemMacro
+            removeEffect: NPCFeatureSheetSD.#onRemoveEffect,
+            removeCriticalEffect: NPCFeatureSheetSD.#onRemoveCriticalEffect,
+            addSummonProfile: NPCFeatureSheetSD.#onAddSummonProfile,
+            removeSummonProfile: NPCFeatureSheetSD.#onRemoveSummonProfile,
+            addItemGiveProfile: NPCFeatureSheetSD.#onAddItemGiveProfile,
+            removeItemGiveProfile: NPCFeatureSheetSD.#onRemoveItemGiveProfile,
+            itemMacro: NPCFeatureSheetSD.#onItemMacro
         }
     };
 
     static PARTS = {
         header: {
-            template: `modules/${MODULE_ID}/templates/potion-sheet/header.hbs`
+            template: `modules/${MODULE_ID}/templates/npc-feature-sheet/header.hbs`
         },
         tabs: {
-            template: `modules/${MODULE_ID}/templates/potion-sheet/tabs.hbs`
-        },
-        details: {
-            template: `modules/${MODULE_ID}/templates/potion-sheet/details.hbs`
+            template: `modules/${MODULE_ID}/templates/npc-feature-sheet/tabs.hbs`
         },
         activity: {
-            template: `modules/${MODULE_ID}/templates/potion-sheet/activity.hbs`
+            template: `modules/${MODULE_ID}/templates/npc-feature-sheet/activity.hbs`
         },
         description: {
-            template: `modules/${MODULE_ID}/templates/potion-sheet/description.hbs`
+            template: `modules/${MODULE_ID}/templates/npc-feature-sheet/description.hbs`
         },
         macro: {
-            template: `modules/${MODULE_ID}/templates/potion-sheet/macro.hbs`
+            template: `modules/${MODULE_ID}/templates/npc-feature-sheet/macro.hbs`
         }
     };
 
@@ -65,7 +62,6 @@ export default class PotionSheetSD extends HandlebarsApplicationMixin(DocumentSh
      * Available tabs for the sheet
      */
     static TABS = {
-        details: { id: "details", group: "primary", label: "Details", icon: "fas fa-list" },
         activity: { id: "activity", group: "primary", label: "Activity", icon: "fas fa-bolt" },
         description: { id: "description", group: "primary", label: "Description", icon: "fas fa-book" },
         macro: { id: "macro", group: "primary", label: "Macro", icon: "fas fa-code" }
@@ -75,7 +71,7 @@ export default class PotionSheetSD extends HandlebarsApplicationMixin(DocumentSh
      * Track active tab
      */
     tabGroups = {
-        primary: "details"
+        primary: "activity"
     };
 
     /* -------------------------------------------- */
@@ -83,7 +79,7 @@ export default class PotionSheetSD extends HandlebarsApplicationMixin(DocumentSh
     /* -------------------------------------------- */
 
     get title() {
-        return `[Potion] ${this.document.name}`;
+        return `[NPC Feature] ${this.document.name}`;
     }
 
     get item() {
@@ -177,19 +173,8 @@ export default class PotionSheetSD extends HandlebarsApplicationMixin(DocumentSh
         // Load item give profiles
         context.itemGiveProfiles = context.sdxFlags.itemGive?.profiles || [];
 
-        // Unidentified settings from SDX
-        context.isUnidentified = item.getFlag(MODULE_ID, "unidentified") || false;
-        context.unidentifiedName = item.getFlag(MODULE_ID, "unidentifiedName") || "";
-        context.unidentifiedDescription = item.getFlag(MODULE_ID, "unidentifiedDescription") || "";
-
         // Enrich description
         context.enrichedDescription = await TextEditor.enrichHTML(item.system.description, {
-            secrets: item.isOwner,
-            async: true,
-            relativeTo: item
-        });
-
-        context.enrichedUnidentifiedDescription = await TextEditor.enrichHTML(context.unidentifiedDescription, {
             secrets: item.isOwner,
             async: true,
             relativeTo: item
@@ -256,18 +241,6 @@ export default class PotionSheetSD extends HandlebarsApplicationMixin(DocumentSh
             itemMacro: {
                 runAsGm: flags.itemMacro?.runAsGm ?? false,
                 executeOnUse: flags.itemMacro?.executeOnUse ?? (flags.itemMacro?.triggers?.includes?.("onCast") ?? true)
-            },
-
-            // Coating Poison
-            coatingPoison: {
-                enabled: flags.coatingPoison?.enabled ?? false,
-                formulaType: flags.coatingPoison?.formulaType ?? "basic",
-                numDice: flags.coatingPoison?.numDice ?? 1,
-                dieType: flags.coatingPoison?.dieType ?? "d6",
-                bonus: flags.coatingPoison?.bonus ?? 0,
-                formula: flags.coatingPoison?.formula ?? "",
-                tieredFormula: flags.coatingPoison?.tieredFormula ?? "",
-                usage: flags.coatingPoison?.usage ?? null
             }
         };
     }
@@ -305,7 +278,7 @@ export default class PotionSheetSD extends HandlebarsApplicationMixin(DocumentSh
      */
     _prepareTabs() {
         const tabs = {};
-        for (const [key, config] of Object.entries(PotionSheetSD.TABS)) {
+        for (const [key, config] of Object.entries(NPCFeatureSheetSD.TABS)) {
             tabs[key] = {
                 ...config,
                 active: this.tabGroups.primary === key,
@@ -644,35 +617,6 @@ export default class PotionSheetSD extends HandlebarsApplicationMixin(DocumentSh
         radios.forEach(radio => {
             radio.addEventListener("change", () => {
                 updateVisibility(radio.value);
-            });
-        });
-
-        // Coating Poison formula type radios
-        const cpRadios = html.querySelectorAll('input[name="flags.shadowdark-extras.coatingPoison.formulaType"]');
-        const cpSections = {
-            basic: html.querySelector(".coating-poison-basic"),
-            formula: html.querySelector(".coating-poison-formula"),
-            tiered: html.querySelector(".coating-poison-tiered")
-        };
-
-        const updateCPVisibility = (selected) => {
-            Object.entries(cpSections).forEach(([key, section]) => {
-                if (section) {
-                    section.style.display = key === selected ? "block" : "none";
-                }
-            });
-        };
-
-        // Initial state for coating poison
-        const cpChecked = html.querySelector('input[name="flags.shadowdark-extras.coatingPoison.formulaType"]:checked');
-        if (cpChecked) {
-            updateCPVisibility(cpChecked.value);
-        }
-
-        // Change handler for coating poison
-        cpRadios.forEach(radio => {
-            radio.addEventListener("change", () => {
-                updateCPVisibility(radio.value);
             });
         });
     }

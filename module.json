@@ -102,6 +102,9 @@
       "src": "styles/background-sheet.css"
     },
     {
+      "src": "styles/npc-attack-sheet.css"
+    },
+    {
       "src": "styles/staff-spell-manager.css"
     }
   ],

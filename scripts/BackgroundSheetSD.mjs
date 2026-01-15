@@ -55,8 +55,8 @@ export default class BackgroundSheetSD extends HandlebarsApplicationMixin(Docume
      * Available tabs for the sheet
      */
     static TABS = {
-        description: { id: "description", group: "primary", label: "SHADOWDARK_EXTRAS.backgroundSheet.tabs.description", icon: "fas fa-book" },
-        advancement: { id: "advancement", group: "primary", label: "SHADOWDARK_EXTRAS.backgroundSheet.tabs.advancement", icon: "fas fa-gift" }
+        description: { id: "description", group: "primary", label: "Description", icon: "fas fa-book" },
+        advancement: { id: "advancement", group: "primary", label: "Advancement", icon: "fas fa-gift" }
     };
 
     /**

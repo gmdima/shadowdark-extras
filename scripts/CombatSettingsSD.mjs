@@ -1568,8 +1568,25 @@ export async function injectDamageCard(message, html, data) {
 	// Get the item from the chat card if it exists
 	const cardData = html.find('.chat-card').data();
 	let itemType = null; // Track the item type
+
 	if (cardData?.actorId && cardData?.itemId) {
+
 		casterActor = game.actors.get(cardData.actorId);
+		if (!casterActor) {
+			// Try getting from speaker token
+			const speaker = message.speaker;
+			if (speaker.token) {
+				const token = canvas.tokens.get(speaker.token);
+				if (token && token.actor && token.actor.id === cardData.actorId) {
+					casterActor = token.actor;
+				}
+			}
+			// Fallback: search canvas tokens
+			if (!casterActor) {
+				const token = canvas.tokens.placeables.find(t => t.actor?.id === cardData.actorId);
+				if (token) casterActor = token.actor;
+			}
+		}
 		item = casterActor?.items.get(cardData.itemId);
 
 		// If item not found (consumed), try to get it from message flags
@@ -1604,8 +1621,9 @@ export async function injectDamageCard(message, html, data) {
 		}
 
 		// Check if this is a spell or potion type item with damage configuration or effects
-		if (item && ["Spell", "Scroll", "Wand", "NPC Spell", "Potion"].includes(item.type)) {
+		if (item && ["Spell", "Scroll", "Wand", "NPC Spell", "Potion", "NPC Feature"].includes(item.type)) {
 			itemType = item.type; // Store item type for later checks
+
 			spellDamageConfig = item.flags?.["shadowdark-extras"]?.spellDamage;
 			if (spellDamageConfig?.enabled) {
 				isSpellWithDamage = true;
@@ -2167,8 +2185,8 @@ export async function injectDamageCard(message, html, data) {
 
 	// For spells with damage configuration, calculate damage from the spell config
 	if (isSpellWithDamage && spellDamageConfig) {
-		// Check if the spell cast was successful (skip this check for potions, scrolls, and wands)
-		if (!["Potion", "Scroll", "Wand"].includes(itemType)) {
+		// Check if the spell cast was successful (skip this check for potions, scrolls, wands, and NPC Features)
+		if (!["Potion", "Scroll", "Wand", "NPC Feature"].includes(itemType)) {
 			const shadowdarkRolls = message.flags?.shadowdark?.rolls;
 			const mainRoll = shadowdarkRolls?.main;
 
@@ -2176,6 +2194,7 @@ export async function injectDamageCard(message, html, data) {
 				return;
 			}
 		}
+
 
 		damageType = spellDamageConfig.damageType || "damage";
 
@@ -2643,6 +2662,98 @@ export async function injectDamageCard(message, html, data) {
 				}
 			}
 		}
+	} else if (item?.type === "NPC Attack") {
+		// NPC Attack Extra Damage Handling
+		const extraDamagesFlag = item.getFlag(MODULE_ID, "extraDamages") || [];
+		const extraDamages = Array.isArray(extraDamagesFlag) ? extraDamagesFlag : Object.values(extraDamagesFlag);
+
+		// Check for synced results first
+		const syncedNpcResults = message.getFlag(MODULE_ID, "npcExtraDamage");
+		if (syncedNpcResults) {
+			weaponBonusDamage = syncedNpcResults;
+		} else if (isAuthor && extraDamages.length > 0) {
+			// Calculate extra damage
+			let totalBonus = 0;
+			let damageComponents = [];
+			let bonusRollResults = []; // To store dice for display/breakdown
+
+			for (const extra of extraDamages) {
+				if (!extra.formula) continue;
+				try {
+					// Use Shadowdark's RollSD if available, or simplified Roll
+					// We use standard Roll here since we just want the result
+					const roll = new Roll(extra.formula);
+					await roll.evaluate();
+
+					// Show 3D dice if enabled
+					if (game.dice3d) {
+						game.dice3d.showForRoll(roll, game.user, true);
+					}
+
+					totalBonus += roll.total;
+
+					const label = game.i18n.localize(`SHADOWDARK_EXTRAS.damage_type.${extra.damageType}`);
+
+					damageComponents.push({
+						formula: extra.formula,
+						amount: roll.total,
+						label: label,
+						type: extra.damageType
+					});
+
+					// Store dice results for breakdown
+					let diceSum = 0;
+					if (roll.dice.length > 0) {
+						for (const die of roll.dice) {
+							for (const result of die.results) {
+								if (!result.active) continue;
+								bonusRollResults.push({
+									value: result.result,
+									faces: die.faces,
+									isMax: result.result === die.faces,
+									isMin: result.result === 1,
+									label: label
+								});
+								diceSum += result.result;
+							}
+						}
+					}
+
+					// Add static modifier (difference between total and dice sum)
+					const staticMod = roll.total - diceSum;
+					if (staticMod !== 0) {
+						bonusRollResults.push({
+							value: staticMod,
+							faces: 0,
+							label: label
+						});
+					}
+
+				} catch (err) {
+					console.error("shadowdark-extras | Error rolling NPC extra damage:", err);
+				}
+			}
+
+			if (damageComponents.length > 0) {
+				const persistData = {
+					totalBonus,
+					damageComponents,
+					requirementsMet: true,
+					damageTypes: [], // NPC attacks rely on baseDamageType flag for the base
+					bonusRollResults,
+					criticalBonus: 0,
+					criticalFormula: "",
+					criticalRollResults: []
+				};
+
+				await message.setFlag(MODULE_ID, "npcExtraDamage", persistData);
+				return; // Allow re-render
+			}
+		}
+
+		if (weaponBonusDamage?.requirementsMet && weaponBonusDamage.totalBonus !== 0) {
+			totalDamage += weaponBonusDamage.totalBonus;
+		}
 	}
 
 	const hasWeaponBonuses = weaponBonusDamage && weaponBonusDamage.requirementsMet && (weaponBonusDamage.totalBonus !== 0 || (isCritical && weaponBonusDamage.criticalBonus !== 0));
@@ -2660,7 +2771,10 @@ export async function injectDamageCard(message, html, data) {
 
 
 	// Get base damage type (use item flag for weapons, damageType for spells/others)
-	const baseDamageType = item?.type === "Weapon" ? (item.getFlag?.(MODULE_ID, 'baseDamageType') || 'standard') : damageType;
+	// Get base damage type (use item flag for weapons/NPC attacks, damageType for spells/others)
+	const baseDamageType = (item?.type === "Weapon" || item?.type === "NPC Attack")
+		? (item.getFlag?.(MODULE_ID, 'baseDamageType') || 'physical')
+		: damageType;
 
 	// Check if this is a magical weapon attack
 	const isMagicalWeapon = item?.type === "Weapon" && item?.system?.magicItem === true;
@@ -3697,7 +3811,7 @@ function attachTargetEnableListeners($card) {
  * Spawn summoned creatures automatically when a spell is cast
  * @param {boolean} isCriticalSuccess - If true, duration will be doubled
  */
-async function spawnSummonedCreatures(casterActor, item, profiles, summoningConfig = {}, isCriticalSuccess = false) {
+export async function spawnSummonedCreatures(casterActor, item, profiles, summoningConfig = {}, isCriticalSuccess = false) {
 
 	try {
 		// Check if Portal library is available
@@ -3764,12 +3878,13 @@ async function spawnSummonedCreatures(casterActor, item, profiles, summoningConf
 			const tokenUpdates = creatures.map(token => {
 				const update = {
 					_id: token.id,
-					[`ownership.${game.user.id} `]: CONST.DOCUMENT_OWNERSHIP_LEVELS.OWNER
+					[`ownership.${game.user.id}`]: CONST.DOCUMENT_OWNERSHIP_LEVELS.OWNER
 				};
 
 				// For unlinked tokens, also update the actor ownership in actorData
 				if (!token.actorLink) {
-					update[`actorData.ownership.${game.user.id} `] = CONST.DOCUMENT_OWNERSHIP_LEVELS.OWNER;
+					update[`actorData.ownership.${game.user.id}`] = CONST.DOCUMENT_OWNERSHIP_LEVELS.OWNER;
+
 				}
 
 				return update;

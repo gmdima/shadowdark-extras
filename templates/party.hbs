@@ -398,8 +398,25 @@
 		<!-- TRAVEL TAB -->
 		<div class="tab tab-travel" data-group="primary" data-tab="tab-travel">
 			<div class="sdx-travel-header">
-				<p class="sdx-travel-hint">{{localize "SHADOWDARK_EXTRAS.party.travel.hint"}}</p>
-				<div class="sdx-travel-actions">
+				<div class="sdx-travel-actions toolbar">
+					<button type="button" class="sdx-travel-reset" data-action="roll-weather"
+						data-tooltip="Roll Weather (1d6)">
+						<i class="fas fa-cloud-sun"></i>
+						Weather
+					</button>
+
+					<div class="sdx-travel-speed-selector">
+						<label for="travel-speed">
+							<i class="fas fa-running"></i>
+							{{localize "SHADOWDARK_EXTRAS.party.travel.speed"}}:
+						</label>
+						<select id="travel-speed" name="travelSpeed" data-action="change-travel-speed" {{#unless owner}}disabled{{/unless}}>
+							{{#each travelSpeeds as |speed|}}
+							<option value="{{speed.key}}" {{#if speed.selected}}selected{{/if}}>{{speed.name}}</option>
+							{{/each}}
+						</select>
+					</div>
+
 					<button type="button" class="sdx-travel-toggle-sdx {{#if useSDXRolls}}active{{/if}}"
 						data-action="toggle-travel-sdx" data-tooltip="Toggle SDX Rolls Animation">
 						<i class="fa-solid fa-dice-d20"></i>

@@ -1,0 +1,68 @@
+<form class="sdx-travel-activities-form">
+	<div class="sdx-activities-list">
+		{{#each activities}}
+		<div class="sdx-activity-row" data-index="{{this.index}}">
+			<div class="sdx-activity-header">
+				<div class="sdx-activity-order">
+					<button type="button" class="sdx-move-up" data-tooltip="{{localize 'SHADOWDARK_EXTRAS.travel_activities.move_up'}}">
+						<i class="fas fa-chevron-up"></i>
+					</button>
+					<button type="button" class="sdx-move-down" data-tooltip="{{localize 'SHADOWDARK_EXTRAS.travel_activities.move_down'}}">
+						<i class="fas fa-chevron-down"></i>
+					</button>
+				</div>
+				<input type="hidden" name="activities.{{this.index}}.key" value="{{this.key}}">
+				<input type="text" name="activities.{{this.index}}.name"
+					placeholder="{{localize 'SHADOWDARK_EXTRAS.travel_activities.name_placeholder'}}"
+					value="{{this.name}}" class="sdx-activity-name"/>
+				<button type="button" class="sdx-remove-activity" data-tooltip="{{localize 'SHADOWDARK_EXTRAS.travel_activities.remove'}}">
+					<i class="fas fa-trash"></i>
+				</button>
+			</div>
+			<div class="sdx-activity-body">
+				<div class="sdx-activity-abilities">
+					<label>{{localize "SHADOWDARK_EXTRAS.travel_activities.abilities"}}:</label>
+					<div class="sdx-abilities-grid">
+						{{#each this.abilitiesSelected}}
+						<label class="sdx-ability-checkbox">
+							<input type="checkbox" name="activities.{{../index}}.abilities" value="{{this.value}}" {{#if this.selected}}checked{{/if}}>
+							{{this.label}}
+						</label>
+						{{/each}}
+					</div>
+				</div>
+				<div class="sdx-activity-options">
+					<label class="sdx-campfire-checkbox">
+						<input type="checkbox" name="activities.{{this.index}}.campfire" {{#if this.campfire}}checked{{/if}}>
+						{{localize "SHADOWDARK_EXTRAS.travel_activities.campfire"}}
+					</label>
+				</div>
+				<div class="sdx-activity-banner">
+					<label>{{localize "SHADOWDARK_EXTRAS.travel_activities.banner_image"}}:</label>
+					<div class="sdx-banner-input">
+						<input type="text" name="activities.{{this.index}}.bannerImage" value="{{this.bannerImage}}" class="sdx-banner-path"/>
+						<button type="button" class="sdx-file-picker" data-index="{{this.index}}" data-tooltip="{{localize 'SHADOWDARK_EXTRAS.travel_activities.browse'}}">
+							<i class="fas fa-file-image"></i>
+						</button>
+					</div>
+				</div>
+			</div>
+		</div>
+		{{/each}}
+	</div>
+
+	<div class="sdx-activities-actions">
+		<button type="button" class="sdx-add-activity">
+			<i class="fas fa-plus"></i> {{localize "SHADOWDARK_EXTRAS.travel_activities.add_activity"}}
+		</button>
+		<button type="button" class="sdx-reset-defaults">
+			<i class="fas fa-undo"></i> {{localize "SHADOWDARK_EXTRAS.travel_activities.reset_defaults"}}
+		</button>
+	</div>
+
+	<footer class="sheet-footer flexrow">
+		<button type="submit" name="submit">
+			<i class="fas fa-save"></i> {{localize "SHADOWDARK_EXTRAS.travel_activities.save"}}
+		</button>
+	</footer>
+</form>

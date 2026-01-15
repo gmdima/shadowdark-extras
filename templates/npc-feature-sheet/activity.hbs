@@ -1,0 +1,360 @@
+{{!-- Activity Tab --}}
+<section class="tab-content {{#if tab.active}}active{{/if}}" data-tab="activity">
+
+    {{!-- Damage/Healing Group --}}
+    <details class="potion-details-group" open>
+        <summary><i class="fas fa-heart-pulse"></i> Damage / Healing</summary>
+        <fieldset class="potion-fieldset collapsible-section">
+            <legend>
+                <label class="toggle-label">
+                    <input type="checkbox" name="flags.shadowdark-extras.spellDamage.enabled" class="section-toggle"
+                        {{#if sdxFlags.enabled}}checked{{/if}} />
+                    <i class="fas fa-plus-circle"></i> Enable Damage / Healing
+                </label>
+            </legend>
+            <div class="section-content" {{#unless sdxFlags.enabled}}style="display: none" {{/unless}}>
+
+                {{!-- Damage Type --}}
+                <div class="form-group">
+                    <label>Type</label>
+                    <select name="flags.shadowdark-extras.spellDamage.damageType">
+                        {{#each damageTypes}}
+                        <option value="{{value}}" {{#if (eq ../sdxFlags.damageType value)}}selected{{/if}}>{{label}}
+                        </option>
+                        {{/each}}
+                    </select>
+                </div>
+
+                {{!-- Formula Type Selection --}}
+                <div class="formula-type-group">
+                    <label class="formula-type-option">
+                        <input type="radio" name="flags.shadowdark-extras.spellDamage.formulaType" value="basic" {{#if
+                            (eq sdxFlags.formulaType "basic" )}}checked{{/if}} />
+                        <span>Basic</span>
+                    </label>
+                    <label class="formula-type-option">
+                        <input type="radio" name="flags.shadowdark-extras.spellDamage.formulaType" value="formula" {{#if
+                            (eq sdxFlags.formulaType "formula" )}}checked{{/if}} />
+                        <span>Formula</span>
+                    </label>
+                    <label class="formula-type-option">
+                        <input type="radio" name="flags.shadowdark-extras.spellDamage.formulaType" value="tiered" {{#if
+                            (eq sdxFlags.formulaType "tiered" )}}checked{{/if}} />
+                        <span>Tiered</span>
+                    </label>
+                </div>
+
+                {{!-- Basic Formula Section --}}
+                <div class="formula-section formula-basic" {{#unless (eq sdxFlags.formulaType "basic"
+                    )}}style="display: none" {{/unless}}>
+                    <div class="dice-formula-grid">
+                        <div class="form-group">
+                            <label>Number</label>
+                            <input type="number" name="flags.shadowdark-extras.spellDamage.numDice"
+                                value="{{sdxFlags.numDice}}" min="1" />
+                        </div>
+                        <div class="form-group">
+                            <label>Die</label>
+                            <select name="flags.shadowdark-extras.spellDamage.dieType">
+                                {{#each dieTypes}}
+                                <option value="{{value}}" {{#if (eq ../sdxFlags.dieType value)}}selected{{/if}}>
+                                    {{label}}
+                                </option>
+                                {{/each}}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Bonus</label>
+                            <input type="number" name="flags.shadowdark-extras.spellDamage.bonus"
+                                value="{{sdxFlags.bonus}}" />
+                        </div>
+                    </div>
+                    <div class="scaling-grid">
+                        <div class="form-group">
+                            <label>Scaling</label>
+                            <select name="flags.shadowdark-extras.spellDamage.scaling">
+                                {{#each scalingOptions}}
+                                <option value="{{value}}" {{#if (eq ../sdxFlags.scaling value)}}selected{{/if}}>
+                                    {{label}}
+                                </option>
+                                {{/each}}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Scaling Dice</label>
+                            <input type="number" name="flags.shadowdark-extras.spellDamage.scalingDice"
+                                value="{{sdxFlags.scalingDice}}" min="0" />
+                        </div>
+                    </div>
+                </div>
+
+                {{!-- Custom Formula Section --}}
+                <div class="formula-section formula-custom" {{#unless (eq sdxFlags.formulaType "formula"
+                    )}}style="display: none" {{/unless}}>
+                    <div class="form-group">
+                        <label>Formula <i class="fas fa-question-circle"
+                                data-tooltip="Variables: @level, @str, @dex, @con, @int, @wis, @cha, @hp, @ac"></i></label>
+                        <input type="text" name="flags.shadowdark-extras.spellDamage.formula"
+                            value="{{sdxFlags.formula}}" placeholder="e.g., (@level)d6 + @int" />
+                    </div>
+                </div>
+
+                {{!-- Tiered Formula Section --}}
+                <div class="formula-section formula-tiered" {{#unless (eq sdxFlags.formulaType "tiered"
+                    )}}style="display: none" {{/unless}}>
+                    <div class="form-group">
+                        <label>Tiered Formula <i class="fas fa-question-circle"
+                                data-tooltip="Format: level-range:formula, ..."></i></label>
+                        <input type="text" name="flags.shadowdark-extras.spellDamage.tieredFormula"
+                            value="{{sdxFlags.tieredFormula}}" placeholder="e.g., 1-3:1d6, 4-6:2d8, 7+:3d10" />
+                    </div>
+                </div>
+
+                {{!-- Requirement --}}
+                <div class="form-group">
+                    <label>Requirement <i class="fas fa-question-circle"
+                            data-tooltip="Condition that must be true for damage to apply"></i></label>
+                    <input type="text" name="flags.shadowdark-extras.spellDamage.damageRequirement"
+                        value="{{sdxFlags.damageRequirement}}" placeholder='e.g., @target.ancestry == "Undead"' />
+                </div>
+                <div class="form-group">
+                    <label>If Fails</label>
+                    <select name="flags.shadowdark-extras.spellDamage.damageRequirementFailAction">
+                        <option value="zero" {{#if (eq sdxFlags.damageRequirementFailAction "zero" )}}selected{{/if}}>
+                            Zero
+                            Damage</option>
+                        <option value="half" {{#if (eq sdxFlags.damageRequirementFailAction "half" )}}selected{{/if}}>
+                            Half
+                            Damage</option>
+                    </select>
+                </div>
+            </div>
+        </fieldset>
+    </details>
+
+
+    {{!-- Effects & Duration Group --}}
+    <details class="potion-details-group" open>
+        <summary><i class="fas fa-magic"></i> Effects & Duration</summary>
+
+        {{!-- Effects Section --}}
+        <fieldset class="potion-fieldset">
+            <legend><i class="fas fa-wand-sparkles"></i> Effects / Conditions</legend>
+
+            <div class="effects-container">
+                <div class="effects-column">
+                    <label class="effects-label">Apply on Use</label>
+                    <div class="effects-drop-area" data-tooltip="Drag and drop effects here">
+                        {{#if effectsList.length}}
+                        <div class="effects-list">
+                            {{#each effectsList}}
+                            <div class="effect-item" data-uuid="{{uuid}}">
+                                <img src="{{img}}" alt="{{name}}" />
+                                <span>{{name}}</span>
+                                <button type="button" class="remove-effect" data-action="removeEffect"
+                                    data-uuid="{{uuid}}">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                            {{/each}}
+                        </div>
+                        {{else}}
+                        <div class="effects-placeholder">
+                            <i class="fas fa-magic"></i>
+                            <span>Drop effects here</span>
+                        </div>
+                        {{/if}}
+                    </div>
+                </div>
+
+                <div class="effects-column">
+                    <label class="effects-label"><i class="fas fa-star"></i> Critical Only</label>
+                    <div class="effects-drop-area critical-effects"
+                        data-tooltip="Effects applied only on critical success">
+                        {{#if criticalEffectsList.length}}
+                        <div class="effects-list">
+                            {{#each criticalEffectsList}}
+                            <div class="effect-item" data-uuid="{{uuid}}">
+                                <img src="{{img}}" alt="{{name}}" />
+                                <span>{{name}}</span>
+                                <button type="button" class="remove-effect" data-action="removeCriticalEffect"
+                                    data-uuid="{{uuid}}">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                            {{/each}}
+                        </div>
+                        {{else}}
+                        <div class="effects-placeholder">
+                            <i class="fas fa-star"></i>
+                            <span>Optional</span>
+                        </div>
+                        {{/if}}
+                    </div>
+                </div>
+            </div>
+
+            <div class="effects-options">
+                <div class="form-group">
+                    <label>Effects Requirement</label>
+                    <input type="text" name="flags.shadowdark-extras.spellDamage.effectsRequirement"
+                        value="{{sdxFlags.effectsRequirement}}" placeholder="Leave empty to always apply" />
+                </div>
+                <div class="form-group inline-group">
+                    <label>Apply To</label>
+                    <label class="radio-label">
+                        <input type="radio" name="flags.shadowdark-extras.spellDamage.effectsApplyToTarget"
+                            value="false" {{#unless sdxFlags.effectsApplyToTarget}}checked{{/unless}} />
+                        <span>Self</span>
+                    </label>
+                    <label class="radio-label">
+                        <input type="radio" name="flags.shadowdark-extras.spellDamage.effectsApplyToTarget" value="true"
+                            {{#if sdxFlags.effectsApplyToTarget}}checked{{/if}} />
+                        <span>Target</span>
+                    </label>
+                </div>
+                <div class="form-group inline-group">
+                    <label>Selection Mode</label>
+                    <label class="radio-label">
+                        <input type="radio" name="flags.shadowdark-extras.spellDamage.effectSelectionMode" value="all"
+                            {{#if (eq sdxFlags.effectSelectionMode "all" )}}checked{{/if}} />
+                        <span>All</span>
+                    </label>
+                    <label class="radio-label">
+                        <input type="radio" name="flags.shadowdark-extras.spellDamage.effectSelectionMode"
+                            value="random" {{#if (eq sdxFlags.effectSelectionMode "random" )}}checked{{/if}} />
+                        <span>Random</span>
+                    </label>
+                    <label class="radio-label">
+                        <input type="radio" name="flags.shadowdark-extras.spellDamage.effectSelectionMode"
+                            value="prompt" {{#if (eq sdxFlags.effectSelectionMode "prompt" )}}checked{{/if}} />
+                        <span>Prompt</span>
+                    </label>
+                </div>
+            </div>
+        </fieldset>
+
+        {{!-- Duration Tracking --}}
+        <fieldset class="potion-fieldset collapsible-section">
+            <legend>
+                <label class="toggle-label">
+                    <input type="checkbox" name="flags.shadowdark-extras.spellDamage.trackDuration"
+                        class="section-toggle" {{#if sdxFlags.trackDuration}}checked{{/if}} />
+                    <i class="fas fa-clock"></i> Duration Tracking
+                </label>
+            </legend>
+            <div class="section-content" {{#unless sdxFlags.trackDuration}}style="display: none" {{/unless}}>
+                <div class="form-group">
+                    <label>Per-Turn Trigger</label>
+                    <select name="flags.shadowdark-extras.spellDamage.perTurnTrigger">
+                        <option value="start" {{#if (eq sdxFlags.perTurnTrigger "start" )}}selected{{/if}}>Start of Turn
+                        </option>
+                        <option value="end" {{#if (eq sdxFlags.perTurnTrigger "end" )}}selected{{/if}}>End of Turn
+                        </option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Per-Turn Damage</label>
+                    <input type="text" name="flags.shadowdark-extras.spellDamage.perTurnDamage"
+                        value="{{sdxFlags.perTurnDamage}}" placeholder="e.g., 2d6" />
+                </div>
+                <label class="checkbox-label">
+                    <input type="checkbox" name="flags.shadowdark-extras.spellDamage.reapplyEffects" {{#if
+                        sdxFlags.reapplyEffects}}checked{{/if}} />
+                    <span>Apply effects each turn</span>
+                </label>
+            </div>
+        </fieldset>
+    </details>
+
+    {{!-- Summoning Group --}}
+    <details class="potion-details-group" open>
+        <summary><i class="fas fa-dragon"></i> Summoning</summary>
+        <fieldset class="potion-fieldset collapsible-section">
+            <legend>
+                <label class="toggle-label">
+                    <input type="checkbox" name="flags.shadowdark-extras.summoning.enabled" class="section-toggle" {{#if
+                        sdxFlags.summoning.enabled}}checked{{/if}} />
+                    <i class="fas fa-plus-circle"></i> Enable Summoning
+                </label>
+            </legend>
+            <div class="section-content" {{#unless sdxFlags.summoning.enabled}}style="display: none" {{/unless}}>
+                <div class="summon-profiles">
+                    {{#each summonProfiles}}
+                    <div class="summon-profile" data-index="{{@index}}">
+                        <div class="summon-creature-drop" data-index="{{@index}}" data-tooltip="Drop an actor here">
+                            {{#if creatureName}}
+                            <img src="{{creatureImg}}" alt="{{creatureName}}" />
+                            <span>{{creatureName}}</span>
+                            {{else}}
+                            <i class="fas fa-user-plus"></i>
+                            <span>Drop creature</span>
+                            {{/if}}
+                        </div>
+                        <div class="summon-options">
+                            <input type="number" name="flags.shadowdark-extras.summoning.profiles.{{@index}}.count"
+                                value="{{count}}" min="1" placeholder="Count" />
+                            <input type="text" name="flags.shadowdark-extras.summoning.profiles.{{@index}}.displayName"
+                                value="{{displayName}}" placeholder="Display name" />
+                        </div>
+                        <button type="button" class="remove-summon" data-action="removeSummonProfile"
+                            data-index="{{@index}}">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                    {{/each}}
+                </div>
+                <button type="button" class="add-profile-btn" data-action="addSummonProfile">
+                    <i class="fas fa-plus"></i> Add Summon
+                </button>
+                <label class="checkbox-label">
+                    <input type="checkbox" name="flags.shadowdark-extras.summoning.deleteAtExpiry" {{#if
+                        sdxFlags.summoning.deleteAtExpiry}}checked{{/if}} />
+                    <span>Delete at expiry</span>
+                </label>
+            </div>
+        </fieldset>
+    </details>
+
+    {{!-- Give Item Group --}}
+    <details class="potion-details-group" open>
+        <summary><i class="fas fa-gift"></i> Give Item</summary>
+        <fieldset class="potion-fieldset collapsible-section">
+            <legend>
+                <label class="toggle-label">
+                    <input type="checkbox" name="flags.shadowdark-extras.itemGive.enabled" class="section-toggle" {{#if
+                        sdxFlags.itemGive.enabled}}checked{{/if}} />
+                    <i class="fas fa-plus-circle"></i> Enable Item Give
+                </label>
+            </legend>
+            <div class="section-content" {{#unless sdxFlags.itemGive.enabled}}style="display: none" {{/unless}}>
+                <div class="item-give-profiles">
+                    {{#each itemGiveProfiles}}
+                    <div class="item-give-profile" data-index="{{@index}}">
+                        <div class="item-give-drop" data-index="{{@index}}" data-tooltip="Drop an item here">
+                            {{#if itemName}}
+                            <img src="{{itemImg}}" alt="{{itemName}}" />
+                            <span>{{itemName}}</span>
+                            {{else}}
+                            <i class="fas fa-box"></i>
+                            <span>Drop item</span>
+                            {{/if}}
+                        </div>
+                        <div class="item-give-options">
+                            <input type="number" name="flags.shadowdark-extras.itemGive.profiles.{{@index}}.quantity"
+                                value="{{quantity}}" min="1" placeholder="Qty" />
+                        </div>
+                        <button type="button" class="remove-item-give" data-action="removeItemGiveProfile"
+                            data-index="{{@index}}">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                    {{/each}}
+                </div>
+                <button type="button" class="add-profile-btn" data-action="addItemGiveProfile">
+                    <i class="fas fa-plus"></i> Add Item
+                </button>
+            </div>
+        </fieldset>
+    </details>
+</section>

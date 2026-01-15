@@ -1,0 +1,301 @@
+/**
+ * NPC Attack Sheet Styles - AppV2
+ * Styling for the NPC Attack item sheet
+ */
+
+/* ============================================
+   Header Layout
+   ============================================ */
+
+.npc-attack-sheet-header {
+    display: flex;
+    gap: 16px;
+    padding: 12px;
+    border-bottom: 1px solid var(--color-border-light-tertiary);
+}
+
+.npc-attack-sheet-header .header-left {
+    flex-shrink: 0;
+}
+
+.npc-attack-sheet-header .header-right {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.npc-attack-sheet-header .item-image {
+    width: 64px;
+    height: 64px;
+    border-radius: 4px;
+    cursor: pointer;
+    object-fit: cover;
+    border: 1px solid var(--color-border-light-tertiary);
+}
+
+.npc-attack-sheet-header .item-image:hover {
+    border-color: var(--color-border-highlight);
+}
+
+.npc-attack-sheet-header .item-name {
+    font-size: 1.4rem;
+    font-weight: bold;
+    border: none;
+    background: transparent;
+    padding: 4px 0;
+    width: 100%;
+}
+
+.npc-attack-sheet-header .item-type-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.85rem;
+    opacity: 0.7;
+    width: fit-content;
+}
+
+/* ============================================
+   Tabs
+   ============================================ */
+
+.npc-attack-sheet .sheet-tabs {
+    border-bottom: 1px solid var(--color-border-light-tertiary);
+}
+
+.npc-attack-sheet .sheet-tabs .item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* ============================================
+   Tab Content
+   ============================================ */
+
+.npc-attack-sheet .tab-content {
+    display: none;
+    padding: 12px;
+    overflow-y: auto;
+}
+
+.npc-attack-sheet .tab-content.active {
+    display: block;
+}
+
+/* ============================================
+   Fieldsets
+   ============================================ */
+
+.npc-attack-sheet .npc-attack-fieldset {
+    border: 1px solid var(--color-border-light-tertiary);
+    border-radius: 6px;
+    padding: 12px;
+    margin-bottom: 12px;
+}
+
+.npc-attack-sheet .npc-attack-fieldset legend {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: bold;
+    font-size: 1rem;
+    padding: 0 8px;
+}
+
+.npc-attack-sheet .npc-attack-fieldset legend i {
+    opacity: 0.7;
+}
+
+.npc-attack-sheet .npc-attack-fieldset .add-extra-damage-btn {
+    margin-left: auto;
+    padding: 2px 8px;
+    background: var(--color-bg-option);
+    border: 1px solid var(--color-border-light-tertiary);
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: all 0.2s;
+}
+
+.npc-attack-sheet .npc-attack-fieldset .add-extra-damage-btn:hover {
+    background: var(--color-bg-btn-minor-active);
+    border-color: var(--color-border-highlight);
+}
+
+/* ============================================
+   Form Groups
+   ============================================ */
+
+.npc-attack-sheet .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.npc-attack-sheet .form-group label {
+    font-weight: 600;
+    font-size: 0.9rem;
+    opacity: 0.9;
+}
+
+.npc-attack-sheet .form-group input[type="text"],
+.npc-attack-sheet .form-group input[type="number"],
+.npc-attack-sheet .form-group select,
+.npc-attack-sheet .form-group textarea {
+    padding: 6px 10px;
+    border: 1px solid;
+    border-radius: 4px;
+}
+
+.npc-attack-sheet .form-group input[type="text"]:focus,
+.npc-attack-sheet .form-group input[type="number"]:focus,
+.npc-attack-sheet .form-group select:focus,
+.npc-attack-sheet .form-group textarea:focus {
+    border-color: var(--color-border-highlight);
+    outline: none;
+}
+
+.npc-attack-sheet .form-group.full-width {
+    grid-column: 1 / -1;
+}
+
+/* ============================================
+   Grid Layouts
+   ============================================ */
+
+.npc-attack-sheet .attack-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+}
+
+.npc-attack-sheet .base-damage-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.npc-attack-sheet .critical-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+}
+
+.npc-attack-sheet .cost-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+}
+
+.npc-attack-sheet .ranges-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+/* ============================================
+   Extra Damage List
+   ============================================ */
+
+.npc-attack-sheet .extra-damage-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.npc-attack-sheet .extra-damage-row {
+    display: grid;
+    grid-template-columns: 2fr 2fr auto;
+    gap: 8px;
+    align-items: end;
+    padding: 8px;
+    background: var(--color-bg-option);
+    border: 1px solid var(--color-border-light-tertiary);
+    border-radius: 4px;
+}
+
+.npc-attack-sheet .extra-damage-row:hover {
+    border-color: var(--color-border-light);
+}
+
+.npc-attack-sheet .extra-damage-row .form-group {
+    margin-bottom: 0;
+}
+
+.npc-attack-sheet .extra-damage-row .remove-extra-damage-btn {
+    padding: 6px 10px;
+    background: var(--color-bg-btn-minor);
+    border: 1px solid var(--color-border-light-tertiary);
+    border-radius: 4px;
+    cursor: pointer;
+    color: var(--color-text-light-2);
+    transition: all 0.2s;
+}
+
+.npc-attack-sheet .extra-damage-row .remove-extra-damage-btn:hover {
+    background: var(--color-bg-btn-minor-active);
+    border-color: var(--color-border-dark);
+    color: #ff6b6b;
+}
+
+.npc-attack-sheet .extra-damage-empty {
+    text-align: center;
+    padding: 20px;
+    color: var(--color-text-light-6);
+    font-style: italic;
+}
+
+/* ============================================
+   Checkbox Labels
+   ============================================ */
+
+.npc-attack-sheet .checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    user-select: none;
+}
+
+.npc-attack-sheet .checkbox-label input[type="checkbox"] {
+    cursor: pointer;
+}
+
+.npc-attack-sheet .checkbox-label:hover span {
+    opacity: 1;
+}
+
+/* ============================================
+   Description Editor
+   ============================================ */
+
+.npc-attack-sheet .editor {
+    min-height: 200px;
+}
+
+.npc-attack-sheet .description-content {
+    padding: 8px;
+    min-height: 150px;
+}
+
+/* ============================================
+   Responsive Adjustments
+   ============================================ */
+
+@media (max-width: 600px) {
+
+    .npc-attack-sheet .attack-stats-grid,
+    .npc-attack-sheet .critical-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .npc-attack-sheet .base-damage-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .npc-attack-sheet .extra-damage-row {
+        grid-template-columns: 1fr;
+    }
+}

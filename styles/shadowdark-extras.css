@@ -8827,11 +8827,14 @@ section[data-tab="tab-notes"].sdx-journal-active>div:not(.sdx-journal-notes) {
     font-family: var(--font-primary);
     font-size: 12px;
     color: #222;
+    height: 47px;
+    width: 340px;
 }
 
 .sdx-hit-bonus-display .sdx-hit-bonus-label {
     font-weight: bold;
     color: #000;
+    min-width: 125px !important;
 }
 
 .sdx-hit-bonus-display .sdx-hit-bonus-formula {
@@ -17631,6 +17634,21 @@ body.sdx-dark-mode .sdx-carousing-toggle-btn i {
     line-height: 1.4;
 }
 
+.shadowdark.welcome-message .card-content p,
+.shadowdark.roll-card .card-content p,
+.shadowdark.item-card .card-content p {
+    padding: 3px 0 3px 5px;
+}
+
 .sdx-movement-option.selected .sdx-movement-option-content h3 {
     color: #4CAF50;
+}
+
+/* ============================================
+   NPC FEATURE CHAT CARD FIX
+   ============================================ */
+
+/* Force card-content to display in item-card chat messages */
+.shadowdark.item-card .card-content {
+    display: block !important;
 }
