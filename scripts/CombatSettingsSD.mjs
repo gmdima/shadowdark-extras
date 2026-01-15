@@ -2411,12 +2411,28 @@ export async function injectDamageCard(message, html, data) {
 							finalFormula = doubleDiceInFormula(finalFormula);
 						}
 
-						const roll = new Roll(finalFormula, rollData);
-						await roll.evaluate();
+						let roll;
 
-						// Show 3D dice animation if Dice So Nice is available
-						if (game.dice3d) {
-							await game.dice3d.showForRoll(roll, game.user, true);
+						// Try to use existing roll from message if available (prevents double DSN and mismatched values)
+						if (message.rolls?.length > 0) {
+							// Sanitize formula for comparison (remove spaces)
+							const cleanFinal = finalFormula.replace(/\s/g, '');
+
+							// Find matching roll or default to the last one (usually damage in a multi-roll sequence)
+							roll = message.rolls.find(r => r.formula.replace(/\s/g, '') === cleanFinal) ||
+								message.rolls[message.rolls.length - 1];
+						}
+
+						if (roll) {
+							// Use existing roll
+						} else {
+							roll = new Roll(finalFormula, rollData);
+							await roll.evaluate();
+
+							// Show 3D dice animation if Dice So Nice is available
+							if (game.dice3d) {
+								await game.dice3d.showForRoll(roll, game.user, true);
+							}
 						}
 
 						totalDamage = roll.total;
