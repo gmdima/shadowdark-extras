@@ -5,9 +5,11 @@
 
 import PartySheetSD, { syncPartyTokenLight, getPartiesContainingActor } from "./PartySheetSD.mjs";
 import TradeWindowSD, { initializeTradeSocket, showTradeDialog, ensureTradeJournal } from "./TradeWindowSD.mjs";
-import { CombatSettingsApp, registerCombatSettings, injectDamageCard, setupCombatSocket, setupScrollingCombatText, setupSummonExpiryHook, trackSummonedTokensForExpiry } from "./CombatSettingsSD.mjs";
+import { CombatSettingsApp, registerCombatSettings, injectDamageCard, setupCombatSocket, setupScrollingCombatText, setupSummonExpiryHook, trackSummonedTokensForExpiry, spawnSummonedCreatures } from "./CombatSettingsSD.mjs";
 import { EffectsSettingsApp, registerEffectsSettings } from "./EffectsSettingsSD.mjs";
 import { HpWavesSettingsApp, registerHpWavesSettings, getHpWaveColor, isHpWavesEnabled } from "./HpWavesSettingsSD.mjs";
+import { TravelActivitiesSettingsApp, registerTravelActivitiesSettings, getTravelActivities } from "./TravelActivitiesSettingsSD.mjs";
+import { TravelSpeedsSettingsApp, registerTravelSpeedsSettings, getTravelSpeeds } from "./TravelSpeedsSettingsSD.mjs";
 import { generateSpellConfig, generatePotionConfig, generateScrollConfig, generateWandConfig } from "./templates/ItemTypeConfigs.mjs";
 import { activateTemplateTargetingListeners } from "./templates/TemplateTargetingConfig.mjs";
 import {
@@ -45,6 +47,8 @@ import { CreatureTypesApp, getCreatureTypes } from "./CreatureTypesApp.mjs";
 import SheetEditorConfig from "./SheetEditorConfig.mjs";
 import PotionSheetSD from "./PotionSheetSD.mjs";
 import BackgroundSheetSD from "./BackgroundSheetSD.mjs";
+import NPCAttackSheetSD from "./NPCAttackSheetSD.mjs";
+import NPCFeatureSheetSD from "./NPCFeatureSheetSD.mjs";
 import { initTokenToolbar, registerTokenToolbarSettings } from "./TokenToolbarSD.mjs";
 import { initAppearanceSettings } from "./AppearanceSettingsSD.mjs";
 import AmmunitionSelector from "./AmmunitionSelector.mjs";
@@ -1093,6 +1097,78 @@ function wrapBuildWeaponDisplayForUnidentified() {
 	const original = ActorSD.prototype.buildWeaponDisplay;
 
 	ActorSD.prototype.buildWeaponDisplay = async function (options) {
+		// --- SDX Enhancement: Inject Extra Damage/Types ---
+		const item = this.items.get(options.weaponId);
+		if (item) {
+			const sdxFlags = item.flags?.[MODULE_ID] || {};
+			const itemUnidentified = isUnidentified(item);
+			const showDetails = !itemUnidentified || game.user?.isGM;
+
+			if (showDetails) {
+				// 1. Base Damage Type
+				const baseDamageType = sdxFlags.baseDamageType;
+				if (baseDamageType && baseDamageType !== "physical") {
+					const typeLabel = game.i18n.localize(`SHADOWDARK_EXTRAS.damage_type.${baseDamageType}`);
+					options.baseDamage += ` [${typeLabel}]`;
+				}
+
+				// 2. Extra Damages (from Item Details)
+				const extraDamages = sdxFlags.extraDamages || [];
+				const extraParts = (Array.isArray(extraDamages) ? extraDamages : Object.values(extraDamages))
+					.filter(d => d.formula)
+					.map(d => {
+						const label = game.i18n.localize(`SHADOWDARK_EXTRAS.damage_type.${d.damageType}`);
+						return `${d.formula} [${label}]`;
+					});
+
+				// 3. Special Bonuses (from Bonuses tab)
+				const weaponBonusConfig = sdxFlags.weaponBonus;
+				const hitParts = [];
+				if (weaponBonusConfig?.enabled) {
+					// Damage Bonuses
+					if (weaponBonusConfig.damageBonuses) {
+						for (const bonus of weaponBonusConfig.damageBonuses) {
+							// Show if no requirements OR if it has a label (Phase 2)
+							const hasRequirements = bonus.requirements && bonus.requirements.length > 0;
+							if (bonus.formula && (!hasRequirements || bonus.label)) {
+								const typeLabel = bonus.damageType ? game.i18n.localize(`SHADOWDARK_EXTRAS.damage_type.${bonus.damageType}`) : "";
+								const typeSuffix = typeLabel ? ` [${typeLabel}]` : "";
+								const labelSuffix = bonus.label ? ` (${bonus.label})` : "";
+								extraParts.push(`${bonus.formula}${typeSuffix}${labelSuffix}`);
+							}
+						}
+					}
+
+					// Hit Bonuses (Phase 2 & 3)
+					if (weaponBonusConfig.hitBonuses) {
+						for (const bonus of weaponBonusConfig.hitBonuses) {
+							const hasRequirements = bonus.requirements && bonus.requirements.length > 0;
+							// Only show if labeled and has formula
+							if (bonus.formula && bonus.label) {
+								hitParts.push(`${bonus.formula} ${bonus.label}`);
+							}
+						}
+					}
+				}
+
+				// Final Layout Assembly (Phase 3)
+				if (hitParts.length > 0) {
+					const hitString = hitParts.join(", ");
+					options.baseDamage = `${hitString} | DMG: ${options.baseDamage}`;
+				}
+
+				if (extraParts.length > 0) {
+					const extraText = extraParts.join(" + ");
+					if (options.extraDamageDice) {
+						options.extraDamageDice += ` + ${extraText}`;
+					} else {
+						options.extraDamageDice = extraText;
+					}
+				}
+			}
+		}
+		// --------------------------------------------------
+
 		// Call the original function
 		const result = await original.call(this, options);
 
@@ -2095,8 +2171,9 @@ function injectUnidentifiedCheckbox(app, html) {
 
 	// Find the ITEM PROPERTIES box and add the checkbox there
 	const itemPropertiesBox = detailsTab.find('.SD-box').filter((_, box) => {
-		const header = $(box).find('.header label').first().text().trim().toUpperCase();
-		return header === 'ITEM PROPERTIES';
+		const header = $(box).find('.header label').first().text().trim();
+		const expectedHeader = game.i18n.localize('SHADOWDARK.item.properties.label');
+		return header === expectedHeader;
 	}).first();
 
 	const toggleHtml = `
@@ -3571,6 +3648,12 @@ function registerSettings() {
 
 	// HP Waves Settings Menu (registered via registerHpWavesSettings)
 	registerHpWavesSettings();
+
+	// Travel Activities Settings Menu (registered via registerTravelActivitiesSettings)
+	registerTravelActivitiesSettings();
+
+	// Travel Speeds Settings Menu (registered via registerTravelSpeedsSettings)
+	registerTravelSpeedsSettings();
 
 	// Inventory Styles data setting (hidden)
 	game.settings.register(MODULE_ID, "inventoryStyles", {
@@ -7066,8 +7149,8 @@ function injectAddCoinsButton(html, actor) {
 	// Find the coins box in the inventory sidebar
 	// The coins box has a header with label "COINS" and an empty span
 	const coinsBox = html.find('.tab-inventory .SD-box').filter((_, el) => {
-		const label = $(el).find('.header label').text().trim().toLowerCase();
-		return label.includes('coin');
+		const hasCoinsInput = $(el).find('input[name*="coins"]').length > 0;
+		return hasCoinsInput;
 	});
 
 	if (coinsBox.length === 0) return;
@@ -7701,6 +7784,34 @@ function registerBackgroundSheet() {
 	});
 
 	//console.log(`${MODULE_ID} | Background sheet registered`);
+}
+
+/**
+ * Register the AppV2 NPC Attack item sheet
+ */
+function registerNPCAttackSheet() {
+	// Register the NPC Attack sheet for NPC Attack type items
+	Items.registerSheet(MODULE_ID, NPCAttackSheetSD, {
+		types: ["NPC Attack"],
+		makeDefault: true,
+		label: "Shadowdark Extras: NPC Attack Sheet"
+	});
+
+	//console.log(`${MODULE_ID} | NPC Attack sheet registered`);
+}
+
+/**
+ * Register the AppV2 NPC Feature item sheet
+ */
+function registerNPCFeatureSheet() {
+	// Register the NPC Feature sheet for NPC Feature type items
+	Items.registerSheet(MODULE_ID, NPCFeatureSheetSD, {
+		types: ["NPC Feature"],
+		makeDefault: true,
+		label: "Shadowdark Extras: NPC Feature Sheet"
+	});
+
+	//console.log(`${MODULE_ID} | NPC Feature sheet registered`);
 }
 
 /**
@@ -8697,6 +8808,11 @@ Hooks.once("init", () => {
 		`modules/${MODULE_ID}/templates/background-sheet/tabs.hbs`,
 		`modules/${MODULE_ID}/templates/background-sheet/description.hbs`,
 		`modules/${MODULE_ID}/templates/background-sheet/advancement.hbs`,
+		`modules/${MODULE_ID}/templates/npc-attack-sheet/header.hbs`,
+		`modules/${MODULE_ID}/templates/npc-attack-sheet/tabs.hbs`,
+		`modules/${MODULE_ID}/templates/npc-attack-sheet/details.hbs`,
+		`modules/${MODULE_ID}/templates/npc-attack-sheet/description.hbs`,
+		`modules/${MODULE_ID}/templates/npc-attack-sheet/source.hbs`,
 		`modules/${MODULE_ID}/templates/staff-spell-config.hbs`
 	]);
 
@@ -8708,6 +8824,12 @@ Hooks.once("init", () => {
 
 	// Register the Background sheet
 	registerBackgroundSheet();
+
+	// Register the NPC Attack sheet
+	registerNPCAttackSheet();
+
+	// Register the NPC Feature sheet
+	registerNPCFeatureSheet();
 
 	// Wrap Actor.create to handle Party type conversion
 	wrapActorCreate();
@@ -17744,12 +17866,420 @@ Hooks.on("renderChatMessage", async (message, html, data) => {
 	}
 });
 
-// DEBUG: Ultra simple test hook - remove after debugging
-Hooks.on("createChatMessage", (message) => {
-	//console.log(`${MODULE_ID} | [SIMPLE DEBUG] Any chat message created:`, message?.content?.substring(0, 50));
+// ============================================
+// NPC FEATURE ITEM MACRO EXECUTION
+// ============================================
+
+/**
+ * Execute the item macro for an NPC Feature when used
+ * @param {Item} item - The NPC Feature item
+ * @param {Actor} actor - The actor using the item
+ * @param {Object} context - Additional context
+ */
+async function executeNPCFeatureItemMacro(item, actor, context = {}) {
+	// Check if Item Macro module is active
+	if (!game.modules.get("itemacro")?.active) return;
+
+	// Check if the item has a macro and if executeOnUse is enabled
+	const macroConfig = item.getFlag(MODULE_ID, "itemMacro") || {};
+	const executeOnUse = macroConfig.executeOnUse ?? true; // Default to true for backwards compatibility
+
+	if (!executeOnUse) {
+		//console.log(`${MODULE_ID} | NPC Feature macro execution disabled for ${item.name}`);
+		return;
+	}
+
+	// Check if the item has a macro using Item Macro's API
+	if (typeof item.hasMacro !== "function" || !item.hasMacro()) {
+		//console.log(`${MODULE_ID} | NPC Feature ${item.name} has no macro`);
+		return;
+	}
+
+	// Get selected token
+	const selectedTokens = canvas.tokens?.controlled || [];
+	const token = selectedTokens.find(t => t.actor?.id === actor.id) || null;
+
+	// Get targeted tokens
+	const targets = Array.from(game.user?.targets || []);
+
+	// Build scope for the macro
+	const scope = {
+		actor,
+		token,
+		item,
+		targets,
+		target: targets[0] || null,
+		targetActor: targets[0]?.actor || null,
+		speaker: ChatMessage.getSpeaker({ actor }),
+		flags: item.flags?.[MODULE_ID] || {},
+		...context
+	};
+
+	// If running as GM and we're not the GM, send via socket
+	if (macroConfig.runAsGm && !game.user.isGM) {
+		const serializedContext = {
+			actorId: actor.id,
+			itemId: item.id,
+			tokenUuid: token?.document?.uuid,
+			targetUuids: targets.map(t => t.document.uuid),
+			originatingUserId: game.user.id
+		};
+
+		//console.log(`${MODULE_ID} | Sending NPC Feature Item Macro to GM for execution`);
+		if (macroExecuteSocket) {
+			await macroExecuteSocket.executeAsGM("executeNPCFeatureMacroAsGM", serializedContext);
+		}
+		return;
+	}
+
+	// Execute the macro directly (bypassing Item Macro's validation which requires name)
+	try {
+		const macroCommand = item.getFlag("itemacro", "macro.command");
+		if (!macroCommand) {
+			console.warn(`${MODULE_ID} | NPC Feature ${item.name} has no macro command`);
+			return;
+		}
+
+		// Create and execute an async function with the scope variables
+		const AsyncFunction = Object.getPrototypeOf(async function () { }).constructor;
+		const macroFn = new AsyncFunction("actor", "token", "item", "targets", "target", "targetActor", "speaker", "flags",
+			macroCommand);
+
+		await macroFn.call(scope, scope.actor, scope.token, scope.item, scope.targets, scope.target, scope.targetActor, scope.speaker, scope.flags);
+		//console.log(`${MODULE_ID} | NPC Feature Item Macro executed successfully`);
+	} catch (error) {
+		console.error(`${MODULE_ID} | Error executing NPC Feature Item Macro:`, error);
+		ui.notifications.error("There was an error in your macro syntax. See the console (F12) for details");
+	}
+
+
+}
+
+// Register socket handler for GM execution of NPC Feature Item Macros
+Hooks.once("ready", () => {
+
+	if (macroExecuteSocket) {
+		macroExecuteSocket.register("executeNPCFeatureMacroAsGM", async (serializedContext) => {
+			const actor = game.actors.get(serializedContext.actorId);
+			if (!actor) return;
+
+			const item = actor.items.get(serializedContext.itemId);
+			if (!item) return;
+
+			// Resolve token and targets from UUIDs
+			const tokenDoc = serializedContext.tokenUuid ? await fromUuid(serializedContext.tokenUuid) : null;
+			const token = tokenDoc?.object || null;
+
+			const targets = [];
+			if (serializedContext.targetUuids) {
+				for (const uuid of serializedContext.targetUuids) {
+					const tDoc = await fromUuid(uuid);
+					if (tDoc?.object) targets.push(tDoc.object);
+				}
+			}
+
+			const scope = {
+				actor,
+				token,
+				item,
+				targets,
+				target: targets[0] || null,
+				targetActor: targets[0]?.actor || null,
+				speaker: ChatMessage.getSpeaker({ actor }),
+				flags: item.flags?.[MODULE_ID] || {},
+				originatingUserId: serializedContext.originatingUserId
+			};
+
+			try {
+				if (typeof item.executeMacro === "function") {
+					await item.executeMacro(scope);
+				} else {
+					console.error(`${MODULE_ID} | item.executeMacro is not available on GM client`);
+				}
+			} catch (error) {
+				console.error(`${MODULE_ID} | GM execution of NPC Feature Item Macro failed:`, error);
+			}
+		});
+
+		//console.log(`${MODULE_ID} | Registered NPC Feature Item Macro GM execution handler`);
+	}
 });
 
-//console.log(`${MODULE_ID} | Module loaded - weapon item macro hooks registered`);
+/**
+ * Process NPC Feature activities (damage, effects, summoning, item give)
+ * @param {Item} item - The NPC Feature item
+ * @param {Actor} actor - The actor using the item  
+ * @param {Token} token - The token using the item (optional)
+ */
+async function processNPCFeatureActivities(item, actor, token) {
+	const flags = item.flags?.[MODULE_ID] || {};
+	const spellDamage = flags.spellDamage || {};
+	const summoning = flags.summoning || {};
+	const itemGive = flags.itemGive || {};
+
+	// Get targets
+	const targets = Array.from(game.user?.targets || []);
+	const targetToken = targets[0] || null;
+	const targetActor = targetToken?.actor || null;
+
+	// 1. Process Damage/Healing
+	if (spellDamage.enabled) {
+		await processNPCFeatureDamage(item, actor, token, targetToken, targetActor, spellDamage);
+	}
+
+	// 2. Process Effects
+	const effects = spellDamage.effects || [];
+	if (effects.length > 0) {
+		await processNPCFeatureEffects(item, actor, token, targetToken, targetActor, spellDamage);
+	}
+
+	// 3. Process Summoning
+	if (summoning.enabled && summoning.profiles?.length > 0) {
+		await processNPCFeatureSummoning(item, actor, token, summoning);
+	}
+
+	// 4. Process Item Give
+	if (itemGive.enabled && itemGive.profiles?.length > 0) {
+		await processNPCFeatureItemGive(item, actor, token, targetToken, targetActor, itemGive);
+	}
+}
+
+/**
+ * Process damage/healing for NPC Feature
+ */
+async function processNPCFeatureDamage(item, actor, token, targetToken, targetActor, spellDamage) {
+	// Note: We always roll and show the chat card
+	// Target is only needed if auto-apply damage is enabled (handled elsewhere)
+
+	// Build the damage formula
+	let formula = "";
+	const formulaType = spellDamage.formulaType || "basic";
+
+	if (formulaType === "basic") {
+		const numDice = spellDamage.numDice || 1;
+		const dieType = spellDamage.dieType || "d6";
+		const bonus = parseInt(spellDamage.bonus) || 0;
+		formula = `${numDice}${dieType}`;
+		if (bonus !== 0) {
+			formula += bonus > 0 ? `+${bonus}` : `${bonus}`;
+		}
+	} else if (formulaType === "formula") {
+		formula = spellDamage.formula || "1d6";
+	} else if (formulaType === "tiered") {
+		// Parse tiered formula like "1-3:1d6, 4-6:2d8, 7+:3d10"
+		const level = actor.system?.level?.value || 1;
+		const tieredFormula = spellDamage.tieredFormula || "";
+		const tiers = tieredFormula.split(",").map(t => t.trim());
+
+		for (const tier of tiers) {
+			const [range, tierFormula] = tier.split(":").map(s => s.trim());
+			if (range.includes("-")) {
+				const [min, max] = range.split("-").map(n => parseInt(n));
+				if (level >= min && level <= max) {
+					formula = tierFormula;
+					break;
+				}
+			} else if (range.includes("+")) {
+				const min = parseInt(range.replace("+", ""));
+				if (level >= min) {
+					formula = tierFormula;
+					break;
+				}
+			}
+		}
+		if (!formula) formula = "1d6"; // Fallback
+	}
+
+	// Roll the damage
+	const roll = await new Roll(formula).evaluate();
+	const damageType = spellDamage.damageType || "";
+	const isHealing = damageType === "Healing";
+
+	// Create chat message for the roll
+	const flavor = isHealing
+		? `${item.name} heals for`
+		: `${item.name} deals${damageType ? " " + damageType : ""} damage`;
+
+	// Create chat card HTML with the required data attributes for injectDamageCard
+	const rollHtml = await roll.render();
+	const content = `
+		<div class="shadowdark chat-card item-card" data-actor-id="${actor.id}" data-item-id="${item.id}">
+			<header class="card-header flexrow">
+				<img src="${item.img}" data-tooltip="${item.name}"/>
+				<h3 class="item-name">${item.name}</h3>
+			</header>
+			<div class="card-content">
+				<h4 class="damage-roll-header">${flavor}</h4>
+				${rollHtml}
+			</div>
+		</div>
+	`;
+
+	// Create the chat message with roll data
+	await ChatMessage.create({
+		content: content,
+		speaker: ChatMessage.getSpeaker({ actor }),
+		rolls: [roll],
+		type: CONST.CHAT_MESSAGE_STYLES.OTHER,
+		flags: {
+			"shadowdark": {
+				itemId: item.uuid,
+				isHealing: isHealing,
+				rollType: "damage"
+			},
+			[MODULE_ID]: {
+				itemConfig: {
+					name: item.name,
+					type: item.type,
+					spellDamage: item.flags?.[MODULE_ID]?.spellDamage
+				}
+			}
+		}
+	});
+
+	// Note: Damage/healing is NOT auto-applied here
+
+	// Users can use chat card buttons or auto-apply settings to apply damage
+}
+
+
+/**
+ * Process effects for NPC Feature
+ */
+async function processNPCFeatureEffects(item, actor, token, targetToken, targetActor, spellDamage) {
+	const effectsApplyToSelf = spellDamage.effectsApplyToTarget === false || spellDamage.effectsApplyToTarget === "false";
+	const recipient = effectsApplyToSelf ? actor : targetActor;
+
+	if (!recipient) {
+		if (!effectsApplyToSelf) {
+			ui.notifications.warn("No target selected for effects");
+		}
+		return;
+	}
+
+	const effects = spellDamage.effects || [];
+	const selectionMode = spellDamage.effectSelectionMode || "all";
+
+	// Determine which effects to apply
+	let effectsToApply = [...effects];
+
+	if (selectionMode === "random" && effectsToApply.length > 1) {
+		const randomIndex = Math.floor(Math.random() * effectsToApply.length);
+		effectsToApply = [effectsToApply[randomIndex]];
+	} else if (selectionMode === "prompt" && effectsToApply.length > 1) {
+		// For now, just apply all - prompt could be added later
+		// effectsToApply = effectsToApply; 
+	}
+
+	// Apply each effect
+	for (const effectData of effectsToApply) {
+		const effectUuid = typeof effectData === "string" ? effectData : effectData.uuid;
+		if (!effectUuid) continue;
+
+		try {
+			const effectDoc = await fromUuid(effectUuid);
+			if (!effectDoc) continue;
+
+			// Create a copy of the effect for the recipient
+			const effectDataObj = effectDoc.toObject();
+			delete effectDataObj._id;
+
+			await recipient.createEmbeddedDocuments("Item", [effectDataObj]);
+			ui.notifications.info(`Applied ${effectDoc.name} to ${recipient.name}`);
+		} catch (err) {
+			console.error(`${MODULE_ID} | Failed to apply effect ${effectUuid}:`, err);
+		}
+	}
+}
+
+/**
+ * Process summoning for NPC Feature
+ */
+async function processNPCFeatureSummoning(item, actor, token, summoning) {
+	const profiles = summoning.profiles || [];
+	if (profiles.length === 0) return;
+
+	// Use the same summoning logic as spells (Portal library)
+	await spawnSummonedCreatures(actor, item, profiles, summoning, false);
+}
+
+/**
+ * Process item give for NPC Feature
+ */
+async function processNPCFeatureItemGive(item, actor, token, targetToken, targetActor, itemGive) {
+	const recipient = targetActor;
+
+	if (!recipient) {
+		ui.notifications.warn("No target selected to give items to");
+		return;
+	}
+
+	const profiles = itemGive.profiles || [];
+
+	for (const profile of profiles) {
+		if (!profile.itemUuid) continue;
+
+		try {
+			const itemDoc = await fromUuid(profile.itemUuid);
+			if (!itemDoc) continue;
+
+			const quantity = parseInt(profile.quantity) || 1;
+
+			// Create item data
+			const itemData = itemDoc.toObject();
+			delete itemData._id;
+
+			// Set quantity if applicable
+			if (itemData.system?.quantity !== undefined) {
+				itemData.system.quantity = quantity;
+			}
+
+			await recipient.createEmbeddedDocuments("Item", [itemData]);
+			ui.notifications.info(`Gave ${quantity}x ${itemDoc.name} to ${recipient.name}`);
+		} catch (err) {
+			console.error(`${MODULE_ID} | Failed to give item:`, err);
+		}
+	}
+}
+
+// Patch ItemSD.displayCard to execute macros and activities for NPC Features
+Hooks.once("ready", () => {
+	// Wait a short time to ensure the system is fully loaded
+	setTimeout(() => {
+		const itemDocClass = CONFIG.Item.documentClass;
+		if (!itemDocClass?.prototype?.displayCard) {
+			console.warn(`${MODULE_ID} | ItemSD.displayCard not found, cannot patch NPC Feature macro execution`);
+			return;
+		}
+
+		const originalDisplayCard = itemDocClass.prototype.displayCard;
+
+		itemDocClass.prototype.displayCard = async function (options = {}) {
+			// Call original method first
+			await originalDisplayCard.call(this, options);
+
+			// Only process NPC Features
+			if (this.type !== "NPC Feature") return;
+
+			// Get token for context
+			const selectedTokens = canvas.tokens?.controlled || [];
+			const token = selectedTokens.find(t => t.actor?.id === this.actor?.id) || null;
+
+			// Execute the macro first
+			await executeNPCFeatureItemMacro(this, this.actor, {});
+
+			// Then process activities
+			await processNPCFeatureActivities(this, this.actor, token);
+		};
+
+		console.log(`${MODULE_ID} | Patched ItemSD.displayCard for NPC Feature macro and activity execution`);
+
+	}, 100);
+});
+
+//console.log(`${MODULE_ID} | Module loaded - NPC Feature item macro hooks registered`);
+
+
 
 // ============================================
 // SDX TEMPLATES API
@@ -19311,4 +19841,94 @@ Hooks.on("createItem", async (item, options, userId) => {
 });
 
 //console.log(`${MODULE_ID} | Source Requirements for Active Effects initialized`);
+
+/* ------------------------------------------------ */
+/*  NPC Attack Display Patch                        */
+/* ------------------------------------------------ */
+Hooks.once('ready', () => {
+	// Monkey Patch ActorSD.prototype.buildNpcAttackDisplays to include SDX extra damage info
+	// This allows the NPC Sheet "Abilities" tab and "Attacks" list to show typed damage and extra components
+	const ActorSD = CONFIG.Actor.documentClass;
+
+	// Guard against re-patching or missing class
+	if (!ActorSD || !ActorSD.prototype.buildNpcAttackDisplays) {
+		console.warn("shadowdark-extras | Could not patch ActorSD.prototype.buildNpcAttackDisplays");
+		return;
+	}
+
+	const originalBuildNpcAttackDisplays = ActorSD.prototype.buildNpcAttackDisplays;
+
+	ActorSD.prototype.buildNpcAttackDisplays = async function (itemId) {
+		const item = this.getEmbeddedDocument("Item", itemId);
+
+		// If getting item fails, fallback to original ensuring failure consistency
+		if (!item) return originalBuildNpcAttackDisplays.call(this, itemId);
+
+		const attackOptions = {
+			attackType: item.system.attackType,
+			attackName: item.name,
+			// numAttacks: item.system.attack.num,
+			attackBonus: parseInt(item.system.bonuses.attackBonus, 10),
+			baseDamage: item.system.damage.value,
+			bonusDamage: parseInt(item.system.bonuses.damageBonus, 10),
+			itemId,
+			special: item.system.damage.special || "", // Default to empty string
+			ranges: item.system.ranges.map(s => game.i18n.localize(
+				CONFIG.SHADOWDARK.RANGES[s])).join("/"),
+		};
+
+		attackOptions.numAttacks =
+			await foundry.applications.ux.TextEditor.implementation.enrichHTML(
+				item.system.attack.num,
+				{
+					async: true,
+				}
+			);
+
+		// --- SDX Extra Damage Logic ---
+		const MODULE_ID = "shadowdark-extras";
+		const sdxFlags = item.flags?.[MODULE_ID] || {};
+
+		let extraText = "";
+
+		// Base Damage Type
+		if (sdxFlags.baseDamageType && sdxFlags.baseDamageType !== "physical") {
+			const typeLabel = game.i18n.localize(`SHADOWDARK_EXTRAS.damage_type.${sdxFlags.baseDamageType}`);
+			extraText += ` [${typeLabel}]`;
+		}
+
+		// Extra Damages
+		const extraDamagesFlag = sdxFlags.extraDamages || [];
+		const extraDamages = Array.isArray(extraDamagesFlag) ? extraDamagesFlag : Object.values(extraDamagesFlag);
+
+		if (extraDamages.length > 0) {
+			const parts = extraDamages
+				.filter(d => d.formula)
+				.map(d => {
+					const label = game.i18n.localize(`SHADOWDARK_EXTRAS.damage_type.${d.damageType}`);
+					return `${d.formula} [${label}]`;
+				});
+			if (parts.length > 0) {
+				extraText += ` + ${parts.join(" + ")}`;
+			}
+		}
+
+		if (extraText) {
+			// Append to special
+			if (attackOptions.special) {
+				attackOptions.special += extraText;
+			} else {
+				attackOptions.special = extraText;
+			}
+		}
+		// ------------------------------
+
+		return await foundry.applications.handlebars.renderTemplate(
+			"systems/shadowdark/templates/_partials/npc-attack.hbs",
+			attackOptions
+		);
+	};
+
+	console.log("shadowdark-extras | Patched ActorSD.prototype.buildNpcAttackDisplays");
+});
 
