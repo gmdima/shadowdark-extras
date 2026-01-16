@@ -1,6 +1,34 @@
 {{!-- Activity Tab --}}
 <section class="tab-content {{#if tab.active}}active{{/if}}" data-tab="activity">
 
+    {{!-- Spell Details (NPC Spell Only) --}}
+    {{#if isNPCSpell}}
+    <details class="potion-details-group" open>
+        <summary><i class="fas fa-book-open"></i> Spell Details</summary>
+        <fieldset class="potion-fieldset">
+            <div class="form-group">
+                <label>{{localize 'SHADOWDARK.item.spell_duration'}}</label>
+                <div class="duration-controls" style="flex: 1;">
+                    {{> items/_partials/duration
+                    base="system.duration"
+                    duration=system.duration
+                    type="spell"
+                    choices=spellDurations
+                    variableDuration=variableDuration
+                    }}
+                </div>
+            </div>
+            <div class="form-group">
+                <label>{{localize 'SHADOWDARK.item.spell_range'}}</label>
+                <select name="system.range">
+                    <option value="">&mdash;</option>
+                    {{selectOptions spellRanges selected=system.range localize=false}}
+                </select>
+            </div>
+        </fieldset>
+    </details>
+    {{/if}}
+
     {{!-- Damage/Healing Group --}}
     <details class="potion-details-group" open>
         <summary><i class="fas fa-heart-pulse"></i> Damage / Healing</summary>
@@ -13,6 +41,34 @@
                 </label>
             </legend>
             <div class="section-content" {{#unless sdxFlags.enabled}}style="display: none" {{/unless}}>
+
+                {{!-- Challenge Mode --}}
+                <div class="form-group">
+                    <label class="checkbox-label" style="font-weight: bold;">
+                        <input type="checkbox" name="flags.shadowdark-extras.spellDamage.challenge.enabled" {{#if
+                            sdxFlags.challenge.enabled}}checked{{/if}} />
+                        <span><i class="fas fa-dice-d20"></i> Challenge</span>
+                    </label>
+                </div>
+
+                <div class="challenge-settings" {{#unless sdxFlags.challenge.enabled}}style="display: none" {{/unless}}>
+                    <div class="dice-formula-grid">
+                        <div class="form-group">
+                            <label>Bonus <i class="fas fa-question-circle"
+                                    data-tooltip="Added to 1d20. e.g. 5, @str, @actor.abilities.str.mod"></i></label>
+                            <input type="text" name="flags.shadowdark-extras.spellDamage.challenge.bonus"
+                                value="{{sdxFlags.challenge.bonus}}" placeholder="0" />
+                        </div>
+                        <div class="form-group">
+                            <label>DC <i class="fas fa-question-circle"
+                                    data-tooltip="Target to beat. e.g. 15, @target.ac"></i></label>
+                            <input type="text" name="flags.shadowdark-extras.spellDamage.challenge.dc"
+                                value="{{sdxFlags.challenge.dc}}" placeholder="10" />
+                        </div>
+                    </div>
+                </div>
+
+                <hr>
 
                 {{!-- Damage Type --}}
                 <div class="form-group">
@@ -133,13 +189,16 @@
     </details>
 
 
-    {{!-- Effects & Duration Group --}}
+    {{!-- Effects Group --}}
     <details class="potion-details-group" open>
-        <summary><i class="fas fa-magic"></i> Effects & Duration</summary>
+        <summary><i class="fas fa-magic"></i> Effects</summary>
 
         {{!-- Effects Section --}}
         <fieldset class="potion-fieldset">
             <legend><i class="fas fa-wand-sparkles"></i> Effects / Conditions</legend>
+
+
+
 
             <div class="effects-container">
                 <div class="effects-column">
@@ -234,37 +293,7 @@
             </div>
         </fieldset>
 
-        {{!-- Duration Tracking --}}
-        <fieldset class="potion-fieldset collapsible-section">
-            <legend>
-                <label class="toggle-label">
-                    <input type="checkbox" name="flags.shadowdark-extras.spellDamage.trackDuration"
-                        class="section-toggle" {{#if sdxFlags.trackDuration}}checked{{/if}} />
-                    <i class="fas fa-clock"></i> Duration Tracking
-                </label>
-            </legend>
-            <div class="section-content" {{#unless sdxFlags.trackDuration}}style="display: none" {{/unless}}>
-                <div class="form-group">
-                    <label>Per-Turn Trigger</label>
-                    <select name="flags.shadowdark-extras.spellDamage.perTurnTrigger">
-                        <option value="start" {{#if (eq sdxFlags.perTurnTrigger "start" )}}selected{{/if}}>Start of Turn
-                        </option>
-                        <option value="end" {{#if (eq sdxFlags.perTurnTrigger "end" )}}selected{{/if}}>End of Turn
-                        </option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Per-Turn Damage</label>
-                    <input type="text" name="flags.shadowdark-extras.spellDamage.perTurnDamage"
-                        value="{{sdxFlags.perTurnDamage}}" placeholder="e.g., 2d6" />
-                </div>
-                <label class="checkbox-label">
-                    <input type="checkbox" name="flags.shadowdark-extras.spellDamage.reapplyEffects" {{#if
-                        sdxFlags.reapplyEffects}}checked{{/if}} />
-                    <span>Apply effects each turn</span>
-                </label>
-            </div>
-        </fieldset>
+
     </details>
 
     {{!-- Summoning Group --}}

@@ -6,7 +6,7 @@
     <div class="header-right">
         <input type="text" name="name" value="{{item.name}}" placeholder="Feature Name" class="item-name" />
         <div class="item-type-badge">
-            <i class="fas fa-dragon"></i> NPC Feature
+            <i class="fas fa-dragon"></i> {{#if isNPCSpell}}NPC Spell{{else}}NPC Feature{{/if}}
         </div>
     </div>
 </header>

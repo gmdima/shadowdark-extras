@@ -246,6 +246,14 @@ body.sdx-dark-mode #sidebar-content #chat {
     width: 95%;
 }
 
+body.sdx-dark-mode .chat-message .damage-roll-header {
+    font-family: var(--font-sans);
+    line-height: unset;
+    color: white !important;
+    font-size: 16px;
+    margin-left: 5px;
+}
+
 body.sdx-dark-mode #sidebar-tabs>menu {
     margin-right: -10px;
     gap: 4px;

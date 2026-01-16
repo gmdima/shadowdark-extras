@@ -7806,11 +7806,11 @@ function registerNPCAttackSheet() {
  * Register the AppV2 NPC Feature item sheet
  */
 function registerNPCFeatureSheet() {
-	// Register the NPC Feature sheet for NPC Feature type items
+	// Register the NPC Feature sheet for NPC Feature and NPC Spell type items
 	Items.registerSheet(MODULE_ID, NPCFeatureSheetSD, {
-		types: ["NPC Feature"],
+		types: ["NPC Feature", "NPC Spell"],
 		makeDefault: true,
-		label: "Shadowdark Extras: NPC Feature Sheet"
+		label: "Shadowdark Extras: NPC Feature/Spell Sheet"
 	});
 
 	//console.log(`${MODULE_ID} | NPC Feature sheet registered`);
@@ -18025,15 +18025,38 @@ async function processNPCFeatureActivities(item, actor, token) {
 	const targetActor = targetToken?.actor || null;
 
 	// 1. Process Damage/Healing
+	// 1. Process Damage/Healing
+	// If automatic damage card is enabled (CombatSettingsSD), we SKIP manual processing here
+	// to avoid double-rolling. injectDamageCard will pick up the Item Card and add the damage.
+	// We only keep this for legacy or if the module setting is disabled?
+	// For now, let's assume if it has spellDamage enabled, we rely on injectDamageCard
+	// BUT wait, injectDamageCard needs the flags. The item has flags.
+	// So we can just COMMENT OUT or conditionally skip this.
+
+	// Check if this item type is handled by injectDamageCard (NPC Feature, NPC Spell)
+	// And if damage is enabled.
 	if (spellDamage.enabled) {
-		await processNPCFeatureDamage(item, actor, token, targetToken, targetActor, spellDamage);
+		// Only run legacy processing if it's NOT likely to be picked up by injectDamageCard
+		// OR if we want to explicitly support the "Two Card" style (Description + Roll).
+		// The user wants "Healing" to work. injectDamageCard logic is superior (Challenge Mode etc).
+		// So we want injectDamageCard to win.
+		// If we skip this, we get NO second card. injectDamageCard MUST pick up the first card.
+		// The first card is the Item Card.
+
+		// Let's check if we should skip.
+		// For now, I will Comment it out for NPC Spell/Feature to rely on the new system.
+		// await processNPCFeatureDamage(item, actor, token, targetToken, targetActor, spellDamage);
+		console.log(`${MODULE_ID} | processNPCFeatureActivities | Skipping manual damage roll, relying on injectDamageCard`);
 	}
 
-	// 2. Process Effects
+	// 2. Process Effects - REMOVED
+	// We now handle effects via the chat card logic (injectDamageCard) to support Challenge Mode
+	/*
 	const effects = spellDamage.effects || [];
 	if (effects.length > 0) {
 		await processNPCFeatureEffects(item, actor, token, targetToken, targetActor, spellDamage);
 	}
+	*/
 
 	// 3. Process Summoning
 	if (summoning.enabled && summoning.profiles?.length > 0) {
@@ -18260,8 +18283,8 @@ Hooks.once("ready", () => {
 			// Call original method first
 			await originalDisplayCard.call(this, options);
 
-			// Only process NPC Features
-			if (this.type !== "NPC Feature") return;
+			// Only process NPC Features and NPC Spells
+			if (this.type !== "NPC Feature" && this.type !== "NPC Spell") return;
 
 			// Get token for context
 			const selectedTokens = canvas.tokens?.controlled || [];

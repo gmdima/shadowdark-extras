@@ -126,6 +126,16 @@ export default class NPCFeatureSheetSD extends HandlebarsApplicationMixin(Docume
 
         // Config
         context.config = CONFIG.SHADOWDARK;
+        context.isNPCSpell = item.type === "NPC Spell";
+
+        if (context.isNPCSpell) {
+            context.spellDurations = CONFIG.SHADOWDARK.SPELL_DURATIONS;
+            context.spellRanges = CONFIG.SHADOWDARK.SPELL_RANGES;
+
+            // Check if duration type requires a value input (rounds, minutes, hours, days, etc.)
+            const fixedDurations = ["instant", "focus", "permanent", "special"];
+            context.variableDuration = !fixedDurations.includes(item.system.duration?.type);
+        }
 
         // Sources for dropdown
         context.sources = await shadowdark.compendiums.sources();
@@ -218,11 +228,20 @@ export default class NPCFeatureSheetSD extends HandlebarsApplicationMixin(Docume
             effects: flags.spellDamage?.effects ?? [],
             criticalEffects: flags.spellDamage?.criticalEffects ?? [],
 
-            // Duration tracking
-            trackDuration: flags.spellDamage?.trackDuration ?? false,
-            perTurnTrigger: flags.spellDamage?.perTurnTrigger ?? "start",
-            perTurnDamage: flags.spellDamage?.perTurnDamage ?? "",
-            reapplyEffects: flags.spellDamage?.reapplyEffects ?? false,
+            // Challenge Mode (Damage)
+            challenge: {
+                enabled: flags.spellDamage?.challenge?.enabled ?? false,
+                bonus: flags.spellDamage?.challenge?.bonus ?? "",
+                dc: flags.spellDamage?.challenge?.dc ?? ""
+            },
+
+            // Effects Challenge Mode
+            effectsChallenge: {
+                enabled: flags.spellDamage?.effectsChallenge?.enabled ?? false,
+                bonus: flags.spellDamage?.effectsChallenge?.bonus ?? "",
+                dc: flags.spellDamage?.effectsChallenge?.dc ?? ""
+            },
+
 
             // Summoning
             summoning: {
