@@ -34,7 +34,7 @@ jobs:
 
       - name: Create Module Archive
         run: |
-          zip -r module.zip module.json README.md LICENSE i18n/ scripts/ styles/ templates/ packs/ assets/ art/
+          zip -r module.zip module.json README.md LICENSE i18n/ scripts/ styles/ templates/ packs/ assets/ art/ libs/
 
       - name: Update Release With Files
         id: create_version_release
