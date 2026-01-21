@@ -260,8 +260,56 @@ export default class NPCAttackSheetSD extends HandlebarsApplicationMixin(Documen
         // Setup change handlers for range checkboxes
         this._setupRangeHandlers(html);
 
+        // Setup change handlers for attack stats, base damage, and critical fields
+        this._setupStatFieldHandlers(html);
+
         // Setup ProseMirror save handler
         this._setupProseMirrorSaveHandler(html);
+    }
+
+    /**
+     * Setup change handlers for stat fields that need explicit saving
+     */
+    _setupStatFieldHandlers(html) {
+        // Attack stats fields
+        const statFields = [
+            { selector: "input[name='system.attack.num']", path: "system.attack.num" },
+            { selector: "input[name='system.bonuses.attackBonus']", path: "system.bonuses.attackBonus", isNumber: true },
+            { selector: "input[name='system.bonuses.damageBonus']", path: "system.bonuses.damageBonus", isNumber: true },
+            { selector: "input[name='system.damage.value']", path: "system.damage.value" },
+            { selector: "input[name='system.bonuses.critical.multiplier']", path: "system.bonuses.critical.multiplier", isNumber: true },
+            { selector: "input[name='system.bonuses.critical.successThreshold']", path: "system.bonuses.critical.successThreshold", isNumber: true },
+            { selector: "input[name='system.bonuses.critical.failureThreshold']", path: "system.bonuses.critical.failureThreshold", isNumber: true }
+        ];
+
+        for (const field of statFields) {
+            const input = html.querySelector(field.selector);
+            if (input) {
+                input.addEventListener("change", async (event) => {
+                    let value = event.target.value;
+                    if (field.isNumber) {
+                        value = parseInt(value) || 0;
+                    }
+                    await this.item.update({ [field.path]: value });
+                });
+            }
+        }
+
+        // Base damage type dropdown
+        const baseDamageTypeSelect = html.querySelector("select[name='flags.shadowdark-extras.baseDamageType']");
+        if (baseDamageTypeSelect) {
+            baseDamageTypeSelect.addEventListener("change", async (event) => {
+                await this.item.setFlag(MODULE_ID, "baseDamageType", event.target.value);
+            });
+        }
+
+        // Source select dropdown
+        const sourceSelect = html.querySelector("select[name='system.source.title']");
+        if (sourceSelect) {
+            sourceSelect.addEventListener("change", async (event) => {
+                await this.item.update({ "system.source.title": event.target.value });
+            });
+        }
     }
 
     /**
@@ -324,8 +372,12 @@ export default class NPCAttackSheetSD extends HandlebarsApplicationMixin(Documen
                 const field = match[2];
                 const value = event.target.value;
 
-                // Get current extra damages
-                const extraDamages = this.item.getFlag(MODULE_ID, "extraDamages") || [];
+                // Get current extra damages - ensure it's a proper array
+                // Foundry can return flag arrays as objects with numeric keys
+                let extraDamages = this.item.getFlag(MODULE_ID, "extraDamages") || [];
+                if (!Array.isArray(extraDamages)) {
+                    extraDamages = Object.values(extraDamages);
+                }
 
                 // Ensure the entry exists
                 if (!extraDamages[index]) {
@@ -373,7 +425,11 @@ export default class NPCAttackSheetSD extends HandlebarsApplicationMixin(Documen
      */
     static async #onAddExtraDamage(event, target) {
         const item = this.item;
-        const extraDamages = item.getFlag(MODULE_ID, "extraDamages") || [];
+        // Ensure it's a proper array - Foundry can return flag arrays as objects
+        let extraDamages = item.getFlag(MODULE_ID, "extraDamages") || [];
+        if (!Array.isArray(extraDamages)) {
+            extraDamages = Object.values(extraDamages);
+        }
 
         extraDamages.push({
             formula: "",
@@ -389,7 +445,11 @@ export default class NPCAttackSheetSD extends HandlebarsApplicationMixin(Documen
     static async #onRemoveExtraDamage(event, target) {
         const item = this.item;
         const index = parseInt(target.dataset.index);
-        const extraDamages = item.getFlag(MODULE_ID, "extraDamages") || [];
+        // Ensure it's a proper array - Foundry can return flag arrays as objects
+        let extraDamages = item.getFlag(MODULE_ID, "extraDamages") || [];
+        if (!Array.isArray(extraDamages)) {
+            extraDamages = Object.values(extraDamages);
+        }
 
         extraDamages.splice(index, 1);
 
@@ -420,6 +480,18 @@ export default class NPCAttackSheetSD extends HandlebarsApplicationMixin(Documen
         }
 
         return submitData;
+    }
+
+    /**
+     * Process the form submission and update the document
+     * @override
+     */
+    async _processSubmitData(event, form, submitData) {
+        // The parent class may not always call document.update() properly
+        // Explicitly update the document with the prepared submit data
+        if (submitData && Object.keys(submitData).length > 0) {
+            await this.document.update(submitData);
+        }
     }
 
 }

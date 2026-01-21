@@ -8193,6 +8193,21 @@ section[data-tab="tab-notes"].sdx-journal-active>div:not(.sdx-journal-notes) {
 .shadowdark.sheet.player .attack .rollable b,
 .shadowdark.sheet.npc .attack .rollable b {
     font-weight: bold !important;
+
+}
+
+.shadowdark.sheet.player .attack .rollable,
+.shadowdark.sheet.npc .attack .rollable {
+    margin-left: -25px;
+}
+
+.shadowdark.sheet.player .rollable i,
+.shadowdark.sheet.npc .rollable i {
+    font-size: 14px;
+    top: 5px;
+    left: -23px;
+    position: absolute;
+    visibility: hidden !important;
 }
 
 /* ============================================
@@ -17651,4 +17666,43 @@ body.sdx-dark-mode .sdx-carousing-toggle-btn i {
 /* Force card-content to display in item-card chat messages */
 .shadowdark.item-card .card-content {
     display: block !important;
+}
+
+/* ============================================
+   NPC SHEET ITEM IMAGES
+   ============================================ */
+
+/* Ensure NPC attack/special/feature item images display inline with text */
+.shadowdark.sheet.npc .SD-box .content .item.attack {
+    line-height: 1.4;
+}
+
+.shadowdark.sheet.npc .SD-box .content .item.attack a.rollable {
+    display: inline !important;
+}
+
+.shadowdark.sheet.npc .SD-box .content .item.attack a.rollable i.fas {
+    display: inline !important;
+    vertical-align: middle;
+}
+
+.shadowdark.sheet.npc .SD-box .content .item.attack .sdx-npc-item-img {
+    display: inline !important;
+    vertical-align: middle;
+    margin-right: 3px;
+}
+
+/* Player sheet weapon images */
+.shadowdark.sheet.player .SD-box .content .attack {
+    line-height: 1.4;
+}
+
+.shadowdark.sheet.player .SD-box .content .attack a.rollable {
+    display: inline !important;
+}
+
+.shadowdark.sheet.player .SD-box .content .attack .sdx-player-weapon-img {
+    display: inline !important;
+    vertical-align: middle;
+    margin-right: 3px;
 }

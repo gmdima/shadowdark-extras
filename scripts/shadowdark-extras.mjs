@@ -19871,7 +19871,7 @@ Hooks.on("createItem", async (item, options, userId) => {
 /*  NPC Attack Display Patch                        */
 /* ------------------------------------------------ */
 Hooks.once('ready', () => {
-	// Monkey Patch ActorSD.prototype.buildNpcAttackDisplays to include SDX extra damage info
+	// Monkey Patch ActorSD.prototype.buildNpcAttackDisplays to include SDX extra damage info and item image
 	// This allows the NPC Sheet "Abilities" tab and "Attacks" list to show typed damage and extra components
 	const ActorSD = CONFIG.Actor.documentClass;
 
@@ -19948,13 +19948,105 @@ Hooks.once('ready', () => {
 		}
 		// ------------------------------
 
-		return await foundry.applications.handlebars.renderTemplate(
+		const baseHtml = await foundry.applications.handlebars.renderTemplate(
 			"systems/shadowdark/templates/_partials/npc-attack.hbs",
 			attackOptions
 		);
+
+		// Add item image if available and not the default
+		const defaultIcon = "icons/svg/sword.svg";
+		if (item.img && item.img !== defaultIcon) {
+			const imgHtml = `<img src="${item.img}" alt="${item.name}" class="sdx-npc-item-img" style="width: 18px; height: 18px; vertical-align: text-bottom; margin-right: 2px; border: none; border-radius: 2px;" />`;
+			// Insert image inside the anchor, right after the icon <i> tag
+			return baseHtml.replace(/<i class="fas fa-dice-d20"><\/i>/, `<i class="fas fa-dice-d20"></i>${imgHtml}`);
+		}
+
+		return baseHtml;
 	};
 
 	console.log("shadowdark-extras | Patched ActorSD.prototype.buildNpcAttackDisplays");
+
+	// Also patch buildNpcSpecialDisplays to include item images
+	if (ActorSD.prototype.buildNpcSpecialDisplays) {
+		const originalBuildNpcSpecialDisplays = ActorSD.prototype.buildNpcSpecialDisplays;
+
+		ActorSD.prototype.buildNpcSpecialDisplays = async function (itemId) {
+			const item = this.getEmbeddedDocument("Item", itemId);
+
+			// If getting item fails, fallback to original
+			if (!item) return originalBuildNpcSpecialDisplays.call(this, itemId);
+
+			const baseHtml = await originalBuildNpcSpecialDisplays.call(this, itemId);
+
+			// Add item image if available and not the default
+			const defaultIcon = "icons/svg/explosion.svg";
+			if (item.img && item.img !== defaultIcon) {
+				const imgHtml = `<img src="${item.img}" alt="${item.name}" class="sdx-npc-item-img" style="width: 18px; height: 18px; vertical-align: text-bottom; margin-right: 2px; border: none; border-radius: 2px;" />`;
+				// Insert image inside the anchor, right after the icon <i> tag (could be dice-d20 or comment)
+				return baseHtml.replace(/<i class="fas (fa-dice-d20|fa-comment)"><\/i>/, `<i class="fas $1"></i>${imgHtml}`);
+			}
+
+			return baseHtml;
+		};
+
+		console.log("shadowdark-extras | Patched ActorSD.prototype.buildNpcSpecialDisplays");
+	}
+
+	// Also patch buildWeaponDisplay for player sheet weapon images
+	if (ActorSD.prototype.buildWeaponDisplay) {
+		const originalBuildWeaponDisplay = ActorSD.prototype.buildWeaponDisplay;
+
+		ActorSD.prototype.buildWeaponDisplay = async function (options) {
+			const baseHtml = await originalBuildWeaponDisplay.call(this, options);
+
+			// Get the weapon item to access its image
+			const item = this.getEmbeddedDocument("Item", options.weaponId);
+			if (!item) return baseHtml;
+
+			// Add item image if available and not the default
+			const defaultIcon = "icons/svg/sword.svg";
+			if (item.img && item.img !== defaultIcon) {
+				const imgHtml = `<img src="${item.img}" alt="${item.name}" class="sdx-player-weapon-img" style="width: 18px; height: 18px; vertical-align: middle; margin-right: 3px; border: none; border-radius: 2px;" />`;
+				// Prepend image to the weapon display
+				return imgHtml + baseHtml;
+			}
+
+			return baseHtml;
+		};
+
+		console.log("shadowdark-extras | Patched ActorSD.prototype.buildWeaponDisplay");
+	}
+});
+
+/**
+ * Hook to add item images to NPC Features on the Abilities tab
+ */
+Hooks.on("renderNpcSheetSD", (app, html, data) => {
+	const $html = html instanceof jQuery ? html : $(html);
+
+	// Find all feature items and add images
+	const featureItems = $html.find('.SD-box .content .item.attack[data-item-id]');
+	featureItems.each((_, el) => {
+		const $el = $(el);
+		const itemId = $el.data('item-id');
+		const item = app.actor.items.get(itemId);
+
+		if (!item) return;
+
+		// Check if this is actually a feature (not attack or special)
+		if (item.type !== "NPC Feature") return;
+
+		// Check if image is not the default
+		const defaultIcon = "icons/svg/book.svg";
+		if (item.img && item.img !== defaultIcon) {
+			// Find the anchor element and insert image after the icon
+			const anchor = $el.find('a.rollable');
+			if (anchor.length && !anchor.find('.sdx-npc-item-img').length) {
+				const imgHtml = `<img src="${item.img}" alt="${item.name}" class="sdx-npc-item-img" style="width: 18px; height: 18px; vertical-align: text-bottom; margin-right: 2px; border: none; border-radius: 2px;" />`;
+				anchor.find('i.fas').after(imgHtml);
+			}
+		}
+	});
 });
 
 // ============================================
