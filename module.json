@@ -109,6 +109,9 @@
     },
     {
       "src": "styles/staff-spell-manager.css"
+    },
+    {
+      "src": "styles/formation-spawner.css"
     }
   ],
   "languages": [

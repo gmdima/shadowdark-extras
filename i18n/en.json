@@ -961,5 +961,10 @@
   "SHADOWDARK_EXTRAS.settings.enable_journal_narration.hint": "Add a Narration button to blockquotes in journal pages that sends the content to chat (GM only)",
   "SHADOWDARK_EXTRAS.journal_narration.button_title": "Send to Chat",
   "SHADOWDARK_EXTRAS.journal_narration.speaker_alias": "Narration",
-  "SHADOWDARK_EXTRAS.settings.headers.journal": "Journal Features"
+  "SHADOWDARK_EXTRAS.settings.headers.journal": "Journal Features",
+  "SDX.formationSpawner.title": "Formation Spawner",
+  "SDX.formationSpawner.spawn": "Drag to spawn formation on canvas",
+  "SDX.formationSpawner.rotate": "Rotate",
+  "SDX.formationSpawner.gridSize": "Grid Size",
+  "SDX.formationSpawner.noLeader": "Place a party member in the center square first"
 }

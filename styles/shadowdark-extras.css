@@ -17706,3 +17706,30 @@ body.sdx-dark-mode .sdx-carousing-toggle-btn i {
     vertical-align: middle;
     margin-right: 3px;
 }
+
+/* ============================================
+   LIGHTS-OUT CAROUSEL DRAG HANDLE
+   ============================================ */
+
+/* Drag handle button styling */
+.lights-out-carousel .sdx-carousel-drag-btn {
+    cursor: grab;
+    opacity: 0.6;
+    transition: opacity 0.2s, box-shadow 0.2s;
+}
+
+.lights-out-carousel .sdx-carousel-drag-btn:hover {
+    opacity: 1;
+    box-shadow: 0 0 8px rgba(255, 255, 255, 0.4);
+}
+
+.lights-out-carousel .sdx-carousel-drag-btn.sdx-carousel-dragging {
+    cursor: grabbing !important;
+    opacity: 1;
+    box-shadow: 0 0 12px rgba(255, 255, 255, 0.6);
+}
+
+/* Ensure carousel is positioned correctly when draggable */
+#actorCarousel.lights-out-carousel {
+    position: fixed !important;
+}

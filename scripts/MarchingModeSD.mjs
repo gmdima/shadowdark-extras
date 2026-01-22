@@ -5,6 +5,8 @@
  * other tokens follow the leader's exact movement path.
  */
 
+import { FormationSpawnerSD, initFormationSpawner } from "./FormationSpawnerSD.mjs";
+
 const MODULE_ID = "shadowdark-extras";
 const SETTING_KEY_LEADER = "marchingModeLeader";
 const SETTING_KEY_ENABLED = "marchingModeEnabled";
@@ -96,6 +98,9 @@ export function initMarchingMode() {
 
     // Register settings
     registerMarchingSettings();
+
+    // Initialize Formation Spawner settings
+    initFormationSpawner();
 
     // Load saved state
     loadMarchingState();
@@ -189,13 +194,24 @@ function injectSidebarButtons($html) {
         </li>
     `);
 
+    // Create Formation Spawner button
+    const $formationBtn = $(`
+        <li class="sdx-marching-btn-container">
+            <button type="button" class="ui-control plain icon fa-solid fa-users-viewfinder sdx-formation-btn"
+                    data-tooltip="Formation Spawner" data-tooltip-direction="LEFT">
+            </button>
+        </li>
+    `);
+
     // Insert before settings
     $settingsBtn.before($leaderBtn);
     $settingsBtn.before($movementBtn);
+    $settingsBtn.before($formationBtn);
 
     // Add event handlers
     $leaderBtn.find("button").on("click", showLeaderDialog);
     $movementBtn.find("button").on("click", showMovementModeDialog);
+    $formationBtn.find("button").on("click", () => FormationSpawnerSD.show());
 
     // Update button states
     updateButtonStates();
