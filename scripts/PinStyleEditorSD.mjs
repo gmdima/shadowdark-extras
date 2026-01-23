@@ -4,6 +4,7 @@ const MODULE_ID = "shadowdark-extras";
  * We import style logic from JournalPinsSD to avoid circular dependencies
  */
 import { getPinStyle, JournalPinManager, JournalPinRenderer, DEFAULT_PIN_STYLE } from "./JournalPinsSD.mjs";
+import { IconPickerApp } from "./IconPickerSD.mjs";
 
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
@@ -48,17 +49,33 @@ export class PinStyleEditorApp extends HandlebarsApplicationMixin(ApplicationV2)
         let journalPages = null;
         let currentPageId = null;
         let journalId = null;
+        let currentJournalId = null;
+        let allJournals = null;
         let requiresVision = false;
+        let tooltipTitle = "";
+        let tooltipContent = "";
 
         if (this.pinId) {
             const pin = JournalPinManager.get(this.pinId);
             style = { ...DEFAULT_PIN_STYLE, ...getPinStyle(), ...(pin?.style || {}) };
 
+            // Load all journals for the dropdown
+            allJournals = game.journal.contents
+                .filter(j => j.pages.size > 0)
+                .sort((a, b) => a.name.localeCompare(b.name))
+                .map(j => ({
+                    id: j.id,
+                    name: j.name
+                }));
+
             // Load journal pages for individual pin editor
             if (pin?.journalId) {
                 journalId = pin.journalId;
+                currentJournalId = pin.journalId;
                 currentPageId = pin.pageId;
                 requiresVision = pin.requiresVision || false;
+                tooltipTitle = pin.tooltipTitle || "";
+                tooltipContent = pin.tooltipContent || "";
                 const journal = game.journal.get(pin.journalId);
                 if (journal) {
                     journalPages = journal.pages.contents
@@ -129,7 +146,11 @@ export class PinStyleEditorApp extends HandlebarsApplicationMixin(ApplicationV2)
             journalPages,
             currentPageId,
             journalId,
+            currentJournalId,
+            allJournals,
             requiresVision,
+            tooltipTitle,
+            tooltipContent,
             isGM: game.user?.isGM
         };
     }
@@ -172,16 +193,94 @@ export class PinStyleEditorApp extends HandlebarsApplicationMixin(ApplicationV2)
         const textSection = form.querySelector('.text-options');
         const iconSection = form.querySelector('.icon-options');
         const fontSection = form.querySelector('.font-options');
+        const symbolSection = form.querySelector('.symbol-options');
+        const customIconSection = form.querySelector('.custom-icon-options');
 
-        if (contentTypeSelect && textSection && iconSection && fontSection) {
+        if (contentTypeSelect && textSection && fontSection) {
             const updateVisibility = () => {
                 const type = contentTypeSelect.value;
+                console.log(`SDX Pin Editor | Content Type changed to: ${type}`);
+
+                // Toggle sections based on type
                 textSection.style.display = type === "text" ? "block" : "none";
-                iconSection.style.display = type === "icon" ? "block" : "none";
-                fontSection.style.display = type === "icon" ? "none" : "block";
+
+                if (symbolSection) {
+                    symbolSection.style.display = (type === "symbol" || type === "icon") ? "block" : "none";
+                }
+
+                if (customIconSection) {
+                    customIconSection.style.display = type === "customIcon" ? "block" : "none";
+                }
+
+                if (iconSection) {
+                    iconSection.style.display = (type === "icon") ? "block" : "none"; // Legacy
+                }
+
+                // Font options only for text and number
+                const isMedia = (type === "symbol" || type === "icon" || type === "customIcon");
+                fontSection.style.display = isMedia ? "none" : "block";
             };
             updateVisibility();
             contentTypeSelect.addEventListener("change", updateVisibility);
+        }
+
+        // Browse icons button - open icon picker modal
+        const browseIconsBtn = form.querySelector('[data-action="browse-icons"]');
+        if (browseIconsBtn) {
+            browseIconsBtn.addEventListener("click", async () => {
+                const selectedPath = await IconPickerApp.pick();
+                if (selectedPath) {
+                    // Update hidden input
+                    const pathInput = form.querySelector('[name="customIconPath"]');
+                    if (pathInput) pathInput.value = selectedPath;
+
+                    // Update preview image
+                    const previewContainer = form.querySelector('.selected-icon-preview');
+                    if (previewContainer) {
+                        previewContainer.innerHTML = `<img src="${selectedPath}" alt="Selected Icon" />`;
+                    }
+
+                    // Update the pin preview
+                    this._updatePreview();
+                }
+            });
+        }
+
+        // Show/hide border radius options based on shape selection
+        const shapeSelect = form.querySelector('[name="shape"]');
+        const borderRadiusSection = form.querySelector('.border-radius-options');
+        if (shapeSelect && borderRadiusSection) {
+            const updateBorderRadiusVisibility = () => {
+                borderRadiusSection.style.display = shapeSelect.value === "square" ? "flex" : "none";
+            };
+            updateBorderRadiusVisibility();
+            shapeSelect.addEventListener("change", updateBorderRadiusVisibility);
+        }
+
+        // Journal dropdown changes - update page options
+        const journalSelect = form.querySelector('[name="journalId"]');
+        const pageSelect = form.querySelector('[name="pageId"]');
+        if (journalSelect && pageSelect) {
+            journalSelect.addEventListener("change", () => {
+                const selectedJournalId = journalSelect.value;
+                const journal = game.journal.get(selectedJournalId);
+                if (journal) {
+                    // Clear existing options
+                    pageSelect.innerHTML = "";
+                    // Add new page options
+                    const sortedPages = journal.pages.contents.sort((a, b) => a.sort - b.sort);
+                    sortedPages.forEach(page => {
+                        const option = document.createElement("option");
+                        option.value = page.id;
+                        option.textContent = page.name;
+                        pageSelect.appendChild(option);
+                    });
+                    // Select first page by default
+                    if (sortedPages.length > 0) {
+                        pageSelect.value = sortedPages[0].id;
+                    }
+                }
+            });
         }
 
         // Initial preview
@@ -226,33 +325,56 @@ export class PinStyleEditorApp extends HandlebarsApplicationMixin(ApplicationV2)
 
 
             // Shape
+            // Reset clip-path and transform for non-hexagon/diamond shapes
+            previewPin.style.clipPath = "none";
+            const borderRadius = parseInt(style.borderRadius) || 4;
+
             switch (style.shape) {
                 case "circle":
                     previewPin.style.borderRadius = "50%";
                     previewPin.style.transform = "rotate(0deg)";
                     break;
                 case "square":
-                    previewPin.style.borderRadius = "4px";
+                    previewPin.style.borderRadius = `${borderRadius}px`;
                     previewPin.style.transform = "rotate(0deg)";
                     break;
                 case "diamond":
-                    previewPin.style.borderRadius = "4px";
+                    previewPin.style.borderRadius = `${borderRadius}px`;
                     previewPin.style.transform = "rotate(45deg)";
                     break;
                 case "hexagon":
-                    previewPin.style.borderRadius = "25%";
+                    previewPin.style.borderRadius = "0";
                     previewPin.style.transform = "rotate(0deg)";
+                    // Use clip-path for true hexagon shape
+                    previewPin.style.clipPath = "polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)";
                     break;
             }
 
-            // Content (number, icon, or text)
+            // Content (number, symbol, custom icon, or text)
             const content = previewPin.querySelector('.preview-content');
             if (content) {
-                const type = style.contentType || (style.showIcon ? "icon" : "number");
-                if (type === "icon") {
-                    content.innerHTML = `<i class="${style.iconClass}"></i>`;
+                const type = style.contentType || (style.showIcon ? "symbol" : "number");
+
+                if (type === "symbol" || type === "icon") {
+                    // FontAwesome icon (now Symbol)
+                    const symbolClass = style.symbolClass || style.iconClass || "fa-solid fa-book-open";
+                    content.innerHTML = `<i class="${symbolClass}"></i>`;
                     content.style.fontSize = `${size * 0.5}px`;
-                } else {
+                    content.style.color = style.symbolColor || "#ffffff";
+                }
+                else if (type === "customIcon") {
+                    // Custom SVG icon
+                    if (style.customIconPath) {
+                        content.innerHTML = `<img src="${style.customIconPath}" style="width: 70%; height: 70%; filter: invert(1);" />`;
+                    } else {
+                        content.innerHTML = `<i class="fa-solid fa-image"></i>`;
+                        content.style.fontSize = `${size * 0.5}px`;
+                    }
+                    content.style.color = style.iconColor || "#ffffff";
+                    // Note: Inverting SVG preview as a simple way to show on dark background, 
+                    // real PIXI rendering handles the color properly.
+                }
+                else {
                     if (type === "text") {
                         content.textContent = style.customText || "";
                     } else {
@@ -261,8 +383,8 @@ export class PinStyleEditorApp extends HandlebarsApplicationMixin(ApplicationV2)
                     content.style.fontSize = `${style.fontSize}px`;
                     content.style.fontFamily = style.fontFamily;
                     content.style.fontWeight = style.fontWeight;
+                    content.style.color = style.fontColor || "#ffffff";
                 }
-                content.style.color = style.fontColor;
                 content.style.transform = style.shape === "diamond" ? "rotate(-45deg)" : "none";
             }
         }
@@ -291,11 +413,19 @@ export class PinStyleEditorApp extends HandlebarsApplicationMixin(ApplicationV2)
             ringOpacity: parseFloat(form.querySelector('[name="ringOpacity"]')?.value) || 1.0,
             contentType: form.querySelector('[name="contentType"]')?.value || "number",
             customText: form.querySelector('[name="customText"]')?.value || "",
-            iconClass: form.querySelector('[name="iconClass"]')?.value || "fa-solid fa-book-open",
+            // Symbol (FontAwesome icons)
+            symbolClass: form.querySelector('[name="symbolClass"]')?.value || form.querySelector('[name="iconClass"]')?.value || "fa-solid fa-book-open",
+            symbolColor: form.querySelector('[name="symbolColor"]')?.value || "#ffffff",
+            // Custom Icon (SVG from assets)
+            customIconPath: form.querySelector('[name="customIconPath"]')?.value || "",
+            iconColor: form.querySelector('[name="iconColor"]')?.value || "#ffffff",
+            // Legacy support
+            iconClass: form.querySelector('[name="symbolClass"]')?.value || form.querySelector('[name="iconClass"]')?.value || "fa-solid fa-book-open",
             fontSize: parseInt(form.querySelector('[name="fontSize"]')?.value) || 14,
             fontFamily: form.querySelector('[name="fontFamily"]')?.value || "Arial",
             fontColor: form.querySelector('[name="fontColor"]')?.value || "#ffffff",
-            fontWeight: form.querySelector('[name="fontWeight"]')?.checked ? "bold" : "normal"
+            fontWeight: form.querySelector('[name="fontWeight"]')?.checked ? "bold" : "normal",
+            borderRadius: parseInt(form.querySelector('[name="borderRadius"]')?.value) || 4
         };
 
         // Add pageId if editing individual pin
@@ -308,6 +438,21 @@ export class PinStyleEditorApp extends HandlebarsApplicationMixin(ApplicationV2)
             const requiresVisionCheckbox = form.querySelector('[name="requiresVision"]');
             if (requiresVisionCheckbox) {
                 formData.requiresVision = requiresVisionCheckbox.checked;
+            }
+
+            const journalIdSelect = form.querySelector('[name="journalId"]');
+            if (journalIdSelect) {
+                formData.journalId = journalIdSelect.value || null;
+            }
+
+            const tooltipTitleInput = form.querySelector('[name="tooltipTitle"]');
+            if (tooltipTitleInput) {
+                formData.tooltipTitle = tooltipTitleInput.value || "";
+            }
+
+            const tooltipContentInput = form.querySelector('[name="tooltipContent"]');
+            if (tooltipContentInput) {
+                formData.tooltipContent = tooltipContentInput.value || "";
             }
         }
 
@@ -338,6 +483,22 @@ export class PinStyleEditorApp extends HandlebarsApplicationMixin(ApplicationV2)
                     delete style.requiresVision;
                 }
 
+                if (style.journalId !== undefined) {
+                    updateData.journalId = style.journalId;
+                    delete style.journalId;
+                }
+
+                if (style.tooltipTitle !== undefined) {
+                    updateData.tooltipTitle = style.tooltipTitle;
+                    delete style.tooltipTitle;
+                }
+
+                if (style.tooltipContent !== undefined) {
+                    updateData.tooltipContent = style.tooltipContent;
+                    delete style.tooltipContent;
+                }
+
+                console.log("SDX Pin Style Editor | Saving pin update:", { pinId, updateData });
                 await JournalPinManager.update(pinId, updateData);
                 ui.notifications.info(game.i18n.localize("SDX.pinStyleEditor.savedIndividual"));
             } else {

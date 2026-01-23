@@ -118,6 +118,9 @@
     },
     {
       "src": "styles/pin-style-editor.css"
+    },
+    {
+      "src": "styles/icon-picker.css"
     }
   ],
   "languages": [

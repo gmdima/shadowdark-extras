@@ -1,0 +1,63 @@
+<div class="sdx-icon-picker">
+    <!-- Header with search and filter -->
+    <header class="picker-header">
+        <div class="search-box">
+            <i class="fa-solid fa-search"></i>
+            <input type="text" name="search" value="{{searchTerm}}"
+                placeholder="{{localize 'SDX.iconPicker.searchPlaceholder'}}" autocomplete="off" />
+        </div>
+
+        <div class="category-filter">
+            <label>{{localize "SDX.iconPicker.category"}}</label>
+            <select name="category">
+                <option value="all" {{#unless selectedCategory}}selected{{/unless}} {{#if (eq selectedCategory "all"
+                    )}}selected{{/if}}>
+                    {{localize "SDX.iconPicker.allCategories"}}
+                </option>
+                {{#each categories}}
+                <option value="{{this.id}}" {{#if this.selected}}selected{{/if}}>
+                    {{this.name}}
+                </option>
+                {{/each}}
+            </select>
+        </div>
+
+        <div class="result-count">
+            {{localize "SDX.iconPicker.showing"}} {{totalIcons}} {{localize "SDX.iconPicker.icons"}}
+        </div>
+
+        <button type="button" class="cancel-btn" data-action="cancel">
+            <i class="fa-solid fa-times"></i> {{localize "SHADOWDARK_EXTRAS.common.close"}}
+        </button>
+    </header>
+
+    <!-- Icon Grid -->
+    <div class="icon-grid">
+        {{#each icons}}
+        <div class="icon-item" data-path="{{this.path}}" title="{{this.name}}">
+            <img src="{{this.path}}" alt="{{this.name}}" loading="lazy" />
+            <span class="icon-name">{{this.name}}</span>
+        </div>
+        {{else}}
+        <div class="no-icons">
+            <i class="fa-solid fa-search"></i>
+            <p>{{localize "SDX.iconPicker.noResults"}}</p>
+        </div>
+        {{/each}}
+    </div>
+
+    <!-- Pagination -->
+    {{#if showPagination}}
+    <footer class="picker-footer">
+        <button type="button" data-action="prev-page" {{#unless hasPrevPage}}disabled{{/unless}}>
+            <i class="fa-solid fa-chevron-left"></i> {{localize "SDX.iconPicker.prev"}}
+        </button>
+        <span class="page-info">
+            {{localize "SDX.iconPicker.page"}} {{currentPage}} / {{totalPages}}
+        </span>
+        <button type="button" data-action="next-page" {{#unless hasNextPage}}disabled{{/unless}}>
+            {{localize "SDX.iconPicker.next"}} <i class="fa-solid fa-chevron-right"></i>
+        </button>
+    </footer>
+    {{/if}}
+</div>

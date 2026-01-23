@@ -184,9 +184,12 @@ class JournalPinManager {
         if (patch.label !== undefined) updated.label = patch.label;
         if (patch.size !== undefined) updated.size = patch.size;
         if (patch.pageId !== undefined) updated.pageId = patch.pageId;
+        if (patch.journalId !== undefined) updated.journalId = patch.journalId;
         if (patch.style) updated.style = { ...updated.style, ...patch.style };
         if (patch.gmOnly !== undefined) updated.gmOnly = patch.gmOnly;
         if (patch.requiresVision !== undefined) updated.requiresVision = patch.requiresVision;
+        if (patch.tooltipTitle !== undefined) updated.tooltipTitle = patch.tooltipTitle;
+        if (patch.tooltipContent !== undefined) updated.tooltipContent = patch.tooltipContent;
 
         const next = [...pins];
         next[idx] = updated;
@@ -429,11 +432,16 @@ class JournalPinGraphics extends PIXI.Container {
         this._hasDragged = false;
         this._dragOffset = { x: 0, y: 0 };
         this._dragStartPos = { x: 0, y: 0 };
+
+        // Set initial position synchronously to prevent race conditions
+        this.position.set(this.pinData.x, this.pinData.y);
+
         this._init();
     }
 
     async _init() {
         await this._build();
+        if (this.destroyed) return;
         this._setupEventListeners();
     }
 
@@ -463,6 +471,7 @@ class JournalPinGraphics extends PIXI.Container {
     }
 
     async _build() {
+        if (this.destroyed) return;
         this.removeChildren();
 
         // Get global style settings
@@ -510,7 +519,8 @@ class JournalPinGraphics extends PIXI.Container {
                 this._circle.drawCircle(0, 0, radius);
                 break;
             case "square":
-                this._circle.drawRoundedRect(-radius, -radius, size, size, 4);
+                const cornerRadius = style.borderRadius ?? 4;
+                this._circle.drawRoundedRect(-radius, -radius, size, size, cornerRadius);
                 break;
             case "diamond":
                 const half = radius;
@@ -540,22 +550,42 @@ class JournalPinGraphics extends PIXI.Container {
 
         // Draw custom stroke if not solid
         if (ringStyle !== "solid") {
-            this._drawStyledStroke(this._circle, shape, radius, size, ringWidth, ringColorNum, ringOpacity, ringStyle);
+            const cornerRadius = style.borderRadius ?? 4;
+            this._drawStyledStroke(this._circle, shape, radius, size, ringWidth, ringColorNum, ringOpacity, ringStyle, cornerRadius);
         }
 
-        // Add content: number, icon, or custom text
-        const contentType = style.contentType || (style.showIcon ? "icon" : "number");
-        const fontColor = style.fontColor || "#ffffff";
-        const fontColorNum = typeof fontColor === "string" && fontColor.startsWith("#")
-            ? parseInt(fontColor.slice(1), 16)
-            : 0xFFFFFF;
+        // Add content: number, symbol, custom icon, or custom text
+        const contentType = style.contentType || (style.showIcon ? "symbol" : "number");
 
-        if (contentType === "icon") {
-            // Show icon
-            const iconClass = style.iconClass || "fa-solid fa-book-open";
-            await this._addIcon(iconClass, radius, fontColorNum);
+        if (contentType === "symbol" || contentType === "icon") {
+            // FontAwesome icon (renamed to symbol)
+            const iconClass = style.symbolClass || style.iconClass || "fa-solid fa-book-open";
+            const symbolColor = style.symbolColor || style.fontColor || "#ffffff";
+            const symbolColorNum = typeof symbolColor === "string" && symbolColor.startsWith("#")
+                ? parseInt(symbolColor.slice(1), 16)
+                : 0xFFFFFF;
+
+            await this._addIcon(iconClass, radius, symbolColorNum);
+            if (this.destroyed) return;
+        }
+        else if (contentType === "customIcon") {
+            // Custom SVG icon from assets
+            const iconPath = style.customIconPath;
+            if (iconPath) {
+                const iconColor = style.iconColor || "#ffffff";
+                const iconColorNum = typeof iconColor === "string" && iconColor.startsWith("#")
+                    ? parseInt(iconColor.slice(1), 16)
+                    : 0xFFFFFF;
+                await this._addSvgIcon(iconPath, radius, iconColorNum);
+                if (this.destroyed) return;
+            }
         } else {
             // Show text (page number or custom)
+            const fontColor = style.fontColor || "#ffffff";
+            const fontColorNum = typeof fontColor === "string" && fontColor.startsWith("#")
+                ? parseInt(fontColor.slice(1), 16)
+                : 0xFFFFFF;
+
             let textValue = "";
             if (contentType === "text") {
                 textValue = style.customText || "";
@@ -588,8 +618,6 @@ class JournalPinGraphics extends PIXI.Container {
             }
         }
 
-        this.position.set(this.pinData.x, this.pinData.y);
-
         // Hit area based on shape
         if (shape === "circle") {
             this.hitArea = new PIXI.Circle(0, 0, radius);
@@ -610,11 +638,11 @@ class JournalPinGraphics extends PIXI.Container {
 
         console.log(`SDX Journal Pins | Pin built - interactive:${this.interactive}, eventMode:${this.eventMode}, cursor:${this.cursor}`);
     }
-
     /**
      * Draw a dashed or dotted stroke manually since PIXI.Graphics doesn't support them natively
+     * @param {number} cornerRadius - Border radius for square shapes
      */
-    _drawStyledStroke(graphics, shape, radius, size, width, color, opacity, style) {
+    _drawStyledStroke(graphics, shape, radius, size, width, color, opacity, style, cornerRadius = 4) {
         graphics.lineStyle(width, color, opacity);
 
         const isDotted = style === "dotted";
@@ -645,8 +673,87 @@ class JournalPinGraphics extends PIXI.Container {
                     graphics.moveTo(Math.cos(startAngle + stepAngle) * radius, Math.sin(startAngle + stepAngle) * radius);
                 }
             }
+        } else if (shape === "square" && cornerRadius > 0) {
+            // Rounded square - draw edges with corner arcs
+            const cr = Math.min(cornerRadius, radius); // Clamp corner radius
+            const innerRadius = radius - cr;
+
+            // Build path segments: straight edges + corner arcs
+            // Corners are at: top-right, bottom-right, bottom-left, top-left
+            const segments = [];
+
+            // Top edge (left to right)
+            segments.push({ type: "line", x1: -innerRadius, y1: -radius, x2: innerRadius, y2: -radius });
+            // Top-right corner arc
+            segments.push({ type: "arc", cx: innerRadius, cy: -innerRadius, r: cr, startAngle: -Math.PI / 2, endAngle: 0 });
+            // Right edge (top to bottom)
+            segments.push({ type: "line", x1: radius, y1: -innerRadius, x2: radius, y2: innerRadius });
+            // Bottom-right corner arc
+            segments.push({ type: "arc", cx: innerRadius, cy: innerRadius, r: cr, startAngle: 0, endAngle: Math.PI / 2 });
+            // Bottom edge (right to left)
+            segments.push({ type: "line", x1: innerRadius, y1: radius, x2: -innerRadius, y2: radius });
+            // Bottom-left corner arc
+            segments.push({ type: "arc", cx: -innerRadius, cy: innerRadius, r: cr, startAngle: Math.PI / 2, endAngle: Math.PI });
+            // Left edge (bottom to top)
+            segments.push({ type: "line", x1: -radius, y1: innerRadius, x2: -radius, y2: -innerRadius });
+            // Top-left corner arc
+            segments.push({ type: "arc", cx: -innerRadius, cy: -innerRadius, r: cr, startAngle: Math.PI, endAngle: 3 * Math.PI / 2 });
+
+            // Draw dashed/dotted pattern along the path
+            for (const seg of segments) {
+                if (seg.type === "line") {
+                    const dx = seg.x2 - seg.x1;
+                    const dy = seg.y2 - seg.y1;
+                    const len = Math.sqrt(dx * dx + dy * dy);
+                    const nx = dx / len;
+                    const ny = dy / len;
+
+                    let dist = 0;
+                    while (dist < len) {
+                        const segLen = Math.min(dashLen, len - dist);
+                        const sx = seg.x1 + nx * dist;
+                        const sy = seg.y1 + ny * dist;
+
+                        if (isDotted) {
+                            graphics.lineStyle(0);
+                            graphics.beginFill(color, opacity);
+                            graphics.drawCircle(sx, sy, width / 2);
+                            graphics.endFill();
+                        } else {
+                            graphics.lineStyle(width, color, opacity);
+                            graphics.moveTo(sx, sy);
+                            graphics.lineTo(sx + nx * segLen, sy + ny * segLen);
+                        }
+                        dist += dashLen + gapLen;
+                    }
+                } else if (seg.type === "arc") {
+                    const arcLen = seg.r * Math.abs(seg.endAngle - seg.startAngle);
+                    const numDashes = Math.max(1, Math.floor(arcLen / (dashLen + gapLen)));
+                    const angleStep = (seg.endAngle - seg.startAngle) / numDashes;
+                    const dashAngle = (dashLen / arcLen) * (seg.endAngle - seg.startAngle);
+
+                    for (let i = 0; i < numDashes; i++) {
+                        const startAngle = seg.startAngle + i * angleStep;
+                        if (isDotted) {
+                            const x = seg.cx + Math.cos(startAngle) * seg.r;
+                            const y = seg.cy + Math.sin(startAngle) * seg.r;
+                            graphics.lineStyle(0);
+                            graphics.beginFill(color, opacity);
+                            graphics.drawCircle(x, y, width / 2);
+                            graphics.endFill();
+                        } else {
+                            graphics.lineStyle(width, color, opacity);
+                            graphics.arc(seg.cx, seg.cy, seg.r, startAngle, Math.min(startAngle + dashAngle, seg.endAngle));
+                            if (i < numDashes - 1) {
+                                const nextAngle = seg.startAngle + (i + 1) * angleStep;
+                                graphics.moveTo(seg.cx + Math.cos(nextAngle) * seg.r, seg.cy + Math.sin(nextAngle) * seg.r);
+                            }
+                        }
+                    }
+                }
+            }
         } else {
-            // Polygon shapes (square, diamond, hexagon)
+            // Polygon shapes (non-rounded square, diamond, hexagon)
             // For simplicity, we'll draw straight lines with patterns
             const points = [];
             if (shape === "square") {
@@ -681,6 +788,7 @@ class JournalPinGraphics extends PIXI.Container {
                         graphics.drawCircle(sx, sy, width / 2);
                         graphics.endFill();
                     } else {
+                        graphics.lineStyle(width, color, opacity);
                         graphics.moveTo(sx, sy);
                         graphics.lineTo(sx + nx * segLen, sy + ny * segLen);
                     }
@@ -707,6 +815,10 @@ class JournalPinGraphics extends PIXI.Container {
         document.body.appendChild(tempDiv);
 
         await new Promise(r => setTimeout(r, 50));
+        if (this.destroyed) {
+            if (tempDiv.parentNode) document.body.removeChild(tempDiv);
+            return;
+        }
 
         const iconElement = tempDiv.querySelector("i");
         if (iconElement) {
@@ -738,6 +850,55 @@ class JournalPinGraphics extends PIXI.Container {
         this.addChild(this._icon);
     }
 
+    async _addSvgIcon(iconPath, radius, color) {
+        // Custom SVGs usually need to be a bit bigger to fill the pin
+        const size = radius * 1.3;
+        try {
+            // Fetch SVG text
+            const response = await fetch(iconPath);
+            let svgText = await response.text();
+            if (this.destroyed) return;
+
+            // Replace colors in SVG text - simple heuristic to colorize monochrome SVGs
+            const colorHex = "#" + color.toString(16).padStart(6, "0");
+
+            // Replace existing fill/stroke attributes or add to root if missing
+            if (svgText.includes('fill=')) {
+                svgText = svgText.replace(/fill="[^"]*"/g, `fill="${colorHex}"`);
+            } else {
+                svgText = svgText.replace('<svg ', `<svg fill="${colorHex}" `);
+            }
+
+            if (svgText.includes('stroke=')) {
+                svgText = svgText.replace(/stroke="[^"]*"/g, `stroke="${colorHex}"`);
+            }
+
+            // Convert to base64 data URI
+            const svgBase64 = "data:image/svg+xml;base64," + btoa(svgText);
+
+            // Load as texture using Foundry's standard helper
+            const texture = await loadTexture(svgBase64);
+            if (this.destroyed) return;
+
+            this._icon = new PIXI.Sprite(texture);
+            this._icon.width = size;
+            this._icon.height = size;
+            this._icon.anchor.set(0.5);
+            this._icon.position.set(0, 0);
+
+            // Handle rotation for diamond shape
+            const globalStyle = getPinStyle();
+            const style = { ...globalStyle, ...(this.pinData.style || {}) };
+            if (style.shape === "diamond") {
+                this._icon.rotation = -Math.PI / 4;
+            }
+
+            this.addChild(this._icon);
+        } catch (err) {
+            console.error(`SDX Journal Pins | Failed to load custom SVG: ${iconPath}`, err);
+        }
+    }
+
     async _addVisionIndicator(radius) {
         const iconClass = "fa-solid fa-eye";
         const iconSize = radius * 0.8;
@@ -757,6 +918,10 @@ class JournalPinGraphics extends PIXI.Container {
         document.body.appendChild(tempDiv);
 
         await new Promise(r => setTimeout(r, 50));
+        if (this.destroyed) {
+            if (tempDiv.parentNode) document.body.removeChild(tempDiv);
+            return;
+        }
 
         const iconElement = tempDiv.querySelector("i");
         if (iconElement) {
@@ -1033,9 +1198,18 @@ class JournalPinTooltip {
         let content = "";
         let title = page.name;
 
+        // Use custom tooltip title if provided
+        if (pinData.tooltipTitle) {
+            title = pinData.tooltipTitle;
+        }
+
         // For content, we need at least OBSERVER permission on the PAGE to see text
         const canSeeContent = game.user?.isGM || page.testUserPermission(game.user, "OBSERVER");
-        if (canSeeContent && page.text?.content) {
+
+        // Use custom tooltip content if provided, otherwise use page content
+        if (pinData.tooltipContent) {
+            content = pinData.tooltipContent;
+        } else if (canSeeContent && page.text?.content) {
             const temp = document.createElement("div");
             temp.innerHTML = page.text.content;
             content = temp.textContent?.substring(0, 200) || "";

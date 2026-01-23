@@ -154,6 +154,39 @@
     border-color: #c9aa58;
 }
 
+/* Text Inputs */
+.sdx-pin-style-editor input[type="text"],
+.sdx-pin-style-editor textarea {
+    flex: 1;
+    background: rgba(0, 0, 0, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+    padding: 6px 10px;
+    color: #f0f0f0;
+    font-size: 12px;
+    font-family: 'Montserrat-medium', sans-serif;
+}
+
+.sdx-pin-style-editor input[type="text"]:focus,
+.sdx-pin-style-editor textarea:focus {
+    outline: none;
+    border-color: #c9aa58;
+}
+
+.sdx-pin-style-editor textarea {
+    resize: vertical;
+    min-height: 60px;
+}
+
+.sdx-pin-style-editor .tooltip-content-group {
+    flex-direction: column;
+    align-items: stretch;
+}
+
+.sdx-pin-style-editor .tooltip-content-group label {
+    margin-bottom: 6px;
+}
+
 /* Color Inputs */
 .sdx-pin-style-editor .color-group {
     flex-direction: row;
