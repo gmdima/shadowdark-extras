@@ -1,0 +1,99 @@
+/* ================================================
+   SDX Journal Pins - Canvas Pin Styles
+   ================================================ */
+
+/* Context Menu - Dark theme with border-image frame */
+.sdx-journal-pin-context-menu {
+    background: #000000;
+    border: var(--sdx-box-border-width, 8px) solid transparent;
+    border-image: var(--sdx-box-border) var(--sdx-box-border-image-slice, 40) fill;
+    border-image-repeat: stretch;
+    border-image-width: var(--sdx-box-border-image-width, 40px);
+    padding: 8px;
+    min-width: 160px;
+    font-family: 'Montserrat-medium', serif;
+}
+
+.sdx-journal-pin-menu-item {
+    padding: 8px 14px;
+    cursor: pointer;
+    color: #f0f0f0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-radius: 4px;
+    transition: background-color 0.15s ease;
+    font-size: 14px;
+}
+
+.sdx-journal-pin-menu-item:hover {
+    background-color: rgba(201, 170, 88, 0.3);
+}
+
+.sdx-journal-pin-menu-item i {
+    width: 16px;
+    text-align: center;
+    color: #c9aa58;
+}
+
+.sdx-journal-pin-menu-item:hover i {
+    color: #fff;
+}
+
+/* Tooltip - Dark theme with border-image frame (like player sheet) */
+.sdx-journal-pin-tooltip {
+    position: fixed;
+    z-index: 10001;
+    background: #000000;
+    border: var(--sdx-box-border-width, 8px) solid transparent;
+    border-image: var(--sdx-box-border) var(--sdx-box-border-image-slice, 40) fill;
+    border-image-repeat: stretch;
+    border-image-width: var(--sdx-box-border-image-width, 40px);
+    padding: 12px 16px;
+    max-width: 320px;
+    font-family: 'Montserrat-medium', serif;
+    pointer-events: none;
+    animation: sdx-pin-tooltip-fade-in 0.2s ease;
+}
+
+@keyframes sdx-pin-tooltip-fade-in {
+    from {
+        opacity: 0;
+        transform: translateY(5px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.sdx-journal-pin-tooltip-title {
+    font-family: 'Old Newspaper Font', serif;
+    font-size: 17px;
+    font-weight: normal;
+    color: #f0f0f0;
+    margin-bottom: 8px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    text-shadow: 1px 1px 2px #000;
+}
+
+.sdx-journal-pin-tooltip-content {
+    font-size: 13px;
+    color: #d0d0d0;
+    line-height: 1.6;
+    max-height: 150px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+
+    .sdx-journal-pin-context-menu,
+    .sdx-journal-pin-tooltip {
+        border: 2px solid #fff !important;
+        border-image: none !important;
+    }
+}

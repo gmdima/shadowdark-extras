@@ -1,0 +1,192 @@
+<form class="sdx-pin-style-editor">
+    <!-- Preview Section -->
+    <section class="editor-section preview-section">
+        <h3><i class="fa-solid fa-eye"></i> {{localize "SDX.pinStyleEditor.preview"}}</h3>
+        <div class="pin-preview-canvas">
+            <div class="preview-pin" style="border-style: solid;">
+                <span class="preview-content">3</span>
+            </div>
+        </div>
+    </section>
+
+    {{#if journalPages}}
+    <!-- Journal Page Selection (Individual Pin Only) -->
+    <section class="editor-section">
+        <h3><i class="fa-solid fa-book"></i> {{localize "SDX.pinStyleEditor.journalPage"}}</h3>
+
+        <div class="form-group">
+            <label>{{localize "SDX.pinStyleEditor.selectPage"}}</label>
+            <select name="pageId">
+                {{#each journalPages}}
+                <option value="{{this.id}}" {{#if (eq this.id ../currentPageId)}}selected{{/if}}>
+                    {{this.name}}
+                </option>
+                {{/each}}
+            </select>
+        </div>
+    </section>
+    {{/if}}
+
+    {{#if journalPages}}
+    <!-- Vision Requirement (Individual Pin Only) -->
+    <section class="editor-section">
+        <h3><i class="fa-solid fa-eye"></i> Visibility</h3>
+
+        <div class="form-group checkbox-group">
+            <label>
+                <input type="checkbox" name="requiresVision" {{#if requiresVision}}checked{{/if}} />
+                {{localize "SDX.pinStyleEditor.requiresVision"}}
+            </label>
+            <p class="hint">{{localize "SDX.pinStyleEditor.requiresVisionHint"}}</p>
+        </div>
+    </section>
+    {{/if}}
+
+    <!-- Shape & Size -->
+    <section class="editor-section">
+        <h3><i class="fa-solid fa-shapes"></i> {{localize "SDX.pinStyleEditor.shapeSize"}}</h3>
+
+        <div class="form-group">
+            <label>{{localize "SDX.pinStyleEditor.shape"}}</label>
+            <select name="shape">
+                {{#each shapes}}
+                <option value="{{this.value}}" {{#if (eq this.value ../style.shape)}}selected{{/if}}>{{this.label}}
+                </option>
+                {{/each}}
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>{{localize "SDX.pinStyleEditor.size"}} <span data-for="size">{{style.size}}</span>px</label>
+            <input type="range" name="size" min="16" max="128" value="{{style.size}}" />
+        </div>
+
+        <div class="form-group">
+            <label>{{localize "SDX.pinStyleEditor.ringWidth"}} <span
+                    data-for="ringWidth">{{style.ringWidth}}</span>px</label>
+            <input type="range" name="ringWidth" min="1" max="8" value="{{style.ringWidth}}" />
+        </div>
+
+        <div class="form-group">
+            <label>{{localize "SDX.pinStyleEditor.ringStyle"}}</label>
+            <select name="ringStyle">
+                {{#each ringStyles}}
+                <option value="{{this.value}}" {{#if (eq this.value ../style.ringStyle)}}selected{{/if}}>{{this.label}}
+                </option>
+                {{/each}}
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>{{localize "SDX.pinStyleEditor.opacity"}} <span data-for="opacity">{{style.opacity}}</span></label>
+            <input type="range" name="opacity" min="0.3" max="1" step="0.1" value="{{style.opacity}}" />
+        </div>
+
+        <div class="form-group">
+            <label>{{localize "SDX.pinStyleEditor.fillOpacity"}} <span
+                    data-for="fillOpacity">{{style.fillOpacity}}</span></label>
+            <input type="range" name="fillOpacity" min="0" max="1" step="0.1" value="{{style.fillOpacity}}" />
+        </div>
+
+        <div class="form-group">
+            <label>{{localize "SDX.pinStyleEditor.ringOpacity"}} <span
+                    data-for="ringOpacity">{{style.ringOpacity}}</span></label>
+            <input type="range" name="ringOpacity" min="0" max="1" step="0.1" value="{{style.ringOpacity}}" />
+        </div>
+    </section>
+
+    <!-- Colors -->
+    <section class="editor-section">
+        <h3><i class="fa-solid fa-palette"></i> {{localize "SDX.pinStyleEditor.colors"}}</h3>
+
+        <div class="form-group color-group">
+            <label>{{localize "SDX.pinStyleEditor.ringColor"}}</label>
+            <input type="color" name="ringColor" value="{{style.ringColor}}" />
+        </div>
+
+        <div class="form-group color-group">
+            <label>{{localize "SDX.pinStyleEditor.fillColor"}}</label>
+            <input type="color" name="fillColor" value="{{style.fillColor}}" />
+        </div>
+    </section>
+
+    <!-- Content Type -->
+    <section class="editor-section">
+        <h3><i class="fa-solid fa-font"></i> {{localize "SDX.pinStyleEditor.content"}}</h3>
+
+        <div class="form-group">
+            <label>{{localize "SDX.pinStyleEditor.contentType"}}</label>
+            <select name="contentType">
+                <option value="number" {{#if (eq style.contentType "number" )}}selected{{/if}}>
+                    {{localize "SDX.pinStyleEditor.contentTypeNumber"}}</option>
+                <option value="icon" {{#if (eq style.contentType "icon" )}}selected{{/if}}>
+                    {{localize "SDX.pinStyleEditor.contentTypeIcon"}}</option>
+                <option value="text" {{#if (eq style.contentType "text" )}}selected{{/if}}>
+                    {{localize "SDX.pinStyleEditor.contentTypeText"}}</option>
+            </select>
+        </div>
+
+        <!-- Text Option: Custom Text -->
+        <div class="text-options" style="{{#unless (eq style.contentType 'text')}}display: none;{{/unless}}">
+            <div class="form-group">
+                <label>{{localize "SDX.pinStyleEditor.customText"}}</label>
+                <input type="text" name="customText" value="{{style.customText}}" placeholder="e.g. A, B, 10..." />
+            </div>
+        </div>
+
+        <!-- Icon Options (shown when contentType is icon) -->
+        <div class="icon-options" style="{{#unless (eq style.contentType 'icon')}}display: none;{{/unless}}">
+            <div class="form-group">
+                <label>{{localize "SDX.pinStyleEditor.iconType"}}</label>
+                <select name="iconClass">
+                    {{#each iconOptions}}
+                    <option value="{{this.value}}" {{#if (eq this.value ../style.iconClass)}}selected{{/if}}>
+                        {{this.label}}
+                    </option>
+                    {{/each}}
+                </select>
+            </div>
+        </div>
+
+        <!-- Font Options (shown when contentType is NOT icon) -->
+        <div class="font-options" style="{{#if (eq style.contentType 'icon')}}display: none;{{/if}}">
+            <div class="form-group">
+                <label>{{localize "SDX.pinStyleEditor.fontFamily"}}</label>
+                <select name="fontFamily">
+                    {{#each fontFamilies}}
+                    <option value="{{this.value}}" {{#if (eq this.value ../style.fontFamily)}}selected{{/if}}>
+                        {{this.label}}</option>
+                    {{/each}}
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>{{localize "SDX.pinStyleEditor.fontSize"}} <span
+                        data-for="fontSize">{{style.fontSize}}</span>px</label>
+                <input type="range" name="fontSize" min="8" max="120" value="{{style.fontSize}}" />
+            </div>
+
+            <div class="form-group color-group">
+                <label>{{localize "SDX.pinStyleEditor.fontColor"}}</label>
+                <input type="color" name="fontColor" value="{{style.fontColor}}" />
+            </div>
+
+            <div class="form-group checkbox-group">
+                <label>
+                    <input type="checkbox" name="fontWeight" {{#if (eq style.fontWeight "bold" )}}checked{{/if}} />
+                    {{localize "SDX.pinStyleEditor.fontBold"}}
+                </label>
+            </div>
+        </div>
+    </section>
+
+    <!-- Buttons -->
+    <footer class="editor-buttons">
+        <button type="button" class="btn-reset" data-action="reset">
+            <i class="fa-solid fa-rotate-left"></i> {{localize "SDX.pinStyleEditor.reset"}}
+        </button>
+        <button type="button" class="btn-save" data-action="save">
+            <i class="fa-solid fa-save"></i> {{localize "SDX.pinStyleEditor.save"}}
+        </button>
+    </footer>
+</form>

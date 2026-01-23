@@ -58,6 +58,8 @@ import { initMedkit } from "./MedkitSD.mjs";
 import { initMarchingMode } from "./MarchingModeSD.mjs";
 import { SceneExporter } from "./SceneExporter.mjs";
 import { SceneImporter } from "./SceneImporter.mjs";
+import { initJournalPins } from "./JournalPinsSD.mjs";
+import { registerPinStyleSettings } from "./PinStyleEditorSD.mjs";
 import "./SpellMacrosSD.mjs";
 
 const MODULE_ID = "shadowdark-extras";
@@ -77,6 +79,7 @@ const HIDDEN_JOURNAL_NAMES = [
 // ============================================
 initJournalNarration();
 initMedkit();
+initJournalPins();
 
 // ============================================
 // INVENTORY STYLES APP
@@ -4314,6 +4317,12 @@ function registerSettings() {
 
 	// Token Toolbar settings
 	registerTokenToolbarSettings();
+
+	// 11. PIN STYLE EDITOR
+	// ═══════════════════════════════════════════════════════════════
+
+	// Pin Style Editor settings
+	registerPinStyleSettings();
 }
 
 /**
@@ -8835,6 +8844,11 @@ Hooks.once("init", () => {
 
 	// Wrap Actor.create to handle Party type conversion
 	wrapActorCreate();
+
+	// Initialize settings and early styles
+	registerSettings();
+	applySheetDecorationStyles();
+	setupSettingsOrganization();
 });
 
 // Hide internal trade journal from the sidebar (Foundry v13 compatible)
@@ -8872,9 +8886,6 @@ Hooks.once("ready", async () => {
 
 	//console.log(`${MODULE_ID} | Setting up Shadowdark Extras`);
 
-	registerSettings();
-	applySheetDecorationStyles();
-	setupSettingsOrganization();
 	extendLightSources();
 	patchLightSourceMappings();
 	extendActorCreationDialog();

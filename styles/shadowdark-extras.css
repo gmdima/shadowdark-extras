@@ -1,4 +1,7 @@
 /* Shadowdark Extras Module Styles */
+#scene-controls {
+    flex: 1 !important;
+}
 
 /* ============================================
    TRADE CHAT MESSAGE STYLES

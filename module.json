@@ -112,6 +112,12 @@
     },
     {
       "src": "styles/formation-spawner.css"
+    },
+    {
+      "src": "styles/journal-pins.css"
+    },
+    {
+      "src": "styles/pin-style-editor.css"
     }
   ],
   "languages": [
