@@ -37,7 +37,7 @@ export default class PartySheetSD extends ActorSheet {
 					initial: "tab-members",
 				},
 			],
-			dragDrop: [{ dragSelector: ".item-list .item, .member-list .member, .sdx-task-member", dropSelector: null }],
+			dragDrop: [{ dragSelector: ".item-list .item, .member, .sdx-task-member", dropSelector: null }],
 		});
 	}
 
@@ -209,7 +209,10 @@ export default class PartySheetSD extends ActorSheet {
 		context.isGM = game.user.isGM;
 
 		// Get party members data
-		context.members = await this._prepareMembers();
+		const memberData = await this._prepareMembers();
+		context.members = memberData.all;
+		context.players = memberData.players;
+		context.npcs = memberData.npcs;
 		context.memberCount = context.members.length;
 
 		// Get party stats (aggregated)
@@ -261,6 +264,8 @@ export default class PartySheetSD extends ActorSheet {
 	async _prepareMembers() {
 		const members = await this.getMembers();
 		const memberData = [];
+		const players = [];
+		const npcs = [];
 
 		for (const member of members) {
 			if (!member) continue;
@@ -337,9 +342,11 @@ export default class PartySheetSD extends ActorSheet {
 			};
 
 			memberData.push(data);
+			if (isNPC) npcs.push(data);
+			else players.push(data);
 		}
 
-		return memberData;
+		return { all: memberData, players, npcs };
 	}
 
 	/**
@@ -599,8 +606,35 @@ export default class PartySheetSD extends ActorSheet {
 			const isCompendiumActor = dropped.uuid?.startsWith("Compendium.");
 			const memberKey = isCompendiumActor ? dropped.uuid : dropped.id;
 
+			// Check if already a member - handle reordering
+			if (this.memberIds.includes(memberKey)) {
+				const targetMemberEl = event.target.closest(".member");
+				if (targetMemberEl) {
+					const targetKey = targetMemberEl.dataset.memberId;
+					if (targetKey && targetKey !== memberKey) {
+						await this._reorderMember(memberKey, targetKey);
+					}
+				}
+				return;
+			}
+
 			const next = Array.from(new Set([...this.memberIds, memberKey]));
-			await this.actor.setFlag(MODULE_ID, "members", next);
+
+			// Enforce sorting on add (Players first)
+			// We need to fetch all members to sort them
+			const currentMembers = await this.getMembers();
+			const newMember = dropped;
+			const allMembers = [...currentMembers, newMember];
+
+			allMembers.sort((a, b) => {
+				if (a.type === "Player" && b.type === "NPC") return -1;
+				if (a.type === "NPC" && b.type === "Player") return 1;
+				return 0;
+			});
+
+			const nextIds = allMembers.map(m => m.uuid?.startsWith("Compendium.") ? m.uuid : m.id);
+
+			await this.actor.setFlag(MODULE_ID, "members", nextIds);
 			if (dropped.type === "NPC") {
 				const counts = this._getNpcSpawnCounts();
 				// Use the same key for NPC spawn counts
@@ -610,6 +644,42 @@ export default class PartySheetSD extends ActorSheet {
 		}
 
 		return super._onDrop(event);
+	}
+
+	/**
+	 * Reorder a member in the list
+	 * @param {string} sourceKey 
+	 * @param {string} targetKey 
+	 */
+	async _reorderMember(sourceKey, targetKey) {
+		const members = await this.getMembers();
+		const sourceIndex = members.findIndex(m => (m.uuid === sourceKey || m.id === sourceKey));
+		if (sourceIndex === -1) return;
+
+		const sourceMember = members[sourceIndex];
+
+		// Remove source
+		members.splice(sourceIndex, 1);
+
+		// Find target index in the array without source
+		// We need to check uuid or id
+		const targetIndex = members.findIndex(m => (m.uuid === targetKey || m.id === targetKey));
+
+		if (targetIndex !== -1) {
+			members.splice(targetIndex, 0, sourceMember);
+		} else {
+			members.push(sourceMember);
+		}
+
+		// Enforce Player -> NPC sorting
+		members.sort((a, b) => {
+			if (a.type === "Player" && b.type === "NPC") return -1;
+			if (a.type === "NPC" && b.type === "Player") return 1;
+			return 0;
+		});
+
+		const nextIds = members.map(m => m.uuid?.startsWith("Compendium.") ? m.uuid : m.id);
+		await this.actor.setFlag(MODULE_ID, "members", nextIds);
 	}
 
 	/**
@@ -2199,20 +2269,18 @@ export default class PartySheetSD extends ActorSheet {
 			}
 		} else {
 			for (const { actor, ability } of rolls) {
-				console.log("Shadowdark Extras | Rolling for Actor:", actor.name, "Ability:", ability);
 				const abilityId = ability.toLowerCase();
 				if (actor.rollAbility) {
 					try {
-						// Ensure ability is valid key for system
-						// Some systems might need capitalized? No, usually lowercase.
-						// Debug output
-						await actor.rollAbility(abilityId);
+						const abilityLabel = game.i18n.localize(CONFIG.SHADOWDARK.ABILITIES_LONG[abilityId]);
+						await actor.rollAbility(abilityId, {
+							target: dc,
+							title: `${task.name} Check - ${abilityLabel}`
+						});
 					} catch (err) {
 						console.error("Shadowdark Extras | Error rolling ability:", err);
-						ui.notifications.error(`Error rolling ${abilityId} for ${actor.name}: ${err.message}`);
 					}
 				} else {
-					// Fallback for system differences if rollAbility doesn't exist
 					ui.notifications.warn("Cannot roll ability for actor type: " + actor.type);
 				}
 			}

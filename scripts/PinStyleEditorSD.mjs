@@ -137,12 +137,22 @@ export class PinStyleEditorApp extends HandlebarsApplicationMixin(ApplicationV2)
             { value: "fa-solid fa-house", label: "House" }
         ];
 
+        // Generate list of border styles (0-36)
+        const borderStyles = [];
+        for (let i = 0; i < 37; i++) {
+            borderStyles.push({
+                value: i,
+                label: `Style ${i + 1}`
+            });
+        }
+
         return {
             style,
             fontFamilies,
             shapes,
             ringStyles,
             iconOptions,
+            borderStyles,
             journalPages,
             currentPageId,
             journalId,
@@ -244,6 +254,42 @@ export class PinStyleEditorApp extends HandlebarsApplicationMixin(ApplicationV2)
                     this._updatePreview();
                 }
             });
+        }
+
+        // Generic File Picker buttons
+        const filePickerBtns = form.querySelectorAll('.file-picker-btn');
+        filePickerBtns.forEach(btn => {
+            btn.addEventListener('click', (ev) => {
+                const targetName = btn.dataset.target;
+                const currentInput = form.querySelector(`[name="${targetName}"]`);
+
+                new FilePicker({
+                    type: "image",
+                    callback: (path) => {
+                        if (currentInput) {
+                            currentInput.value = path;
+                            // Trigger preview update
+                            this._updatePreview();
+                        }
+                    }
+                }).browse(currentInput ? currentInput.value : "");
+            });
+        });
+
+        // Show/hide label background options
+        const labelBgSelect = form.querySelector('[name="labelBackground"]');
+        const labelBgOptions = form.querySelector('.label-bg-options');
+        const labelImageOptions = form.querySelector('.label-image-options');
+
+        if (labelBgSelect) {
+            const updateLabelBgVisibility = () => {
+                const val = labelBgSelect.value;
+                if (labelBgOptions) labelBgOptions.style.display = val === "solid" ? "block" : "none";
+                if (labelImageOptions) labelImageOptions.style.display = val === "image" ? "block" : "none";
+            };
+            // Initial state set by handle bars, but helpful to ensure
+            labelBgSelect.addEventListener("change", updateLabelBgVisibility);
+            updateLabelBgVisibility();
         }
 
         // Show/hide border radius options based on shape selection
@@ -408,9 +454,9 @@ export class PinStyleEditorApp extends HandlebarsApplicationMixin(ApplicationV2)
             fillColor: form.querySelector('[name="fillColor"]')?.value || "#000000",
             ringWidth: parseInt(form.querySelector('[name="ringWidth"]')?.value) || 3,
             ringStyle: form.querySelector('[name="ringStyle"]')?.value || "solid",
-            opacity: parseFloat(form.querySelector('[name="opacity"]')?.value) || 1.0,
-            fillOpacity: parseFloat(form.querySelector('[name="fillOpacity"]')?.value) || 1.0,
-            ringOpacity: parseFloat(form.querySelector('[name="ringOpacity"]')?.value) || 1.0,
+            opacity: parseFloat(form.querySelector('[name="opacity"]')?.value) ?? 1.0,
+            fillOpacity: parseFloat(form.querySelector('[name="fillOpacity"]')?.value) ?? 1.0,
+            ringOpacity: parseFloat(form.querySelector('[name="ringOpacity"]')?.value) ?? 1.0,
             contentType: form.querySelector('[name="contentType"]')?.value || "number",
             customText: form.querySelector('[name="customText"]')?.value || "",
             // Symbol (FontAwesome icons)
@@ -425,8 +471,43 @@ export class PinStyleEditorApp extends HandlebarsApplicationMixin(ApplicationV2)
             fontFamily: form.querySelector('[name="fontFamily"]')?.value || "Arial",
             fontColor: form.querySelector('[name="fontColor"]')?.value || "#ffffff",
             fontWeight: form.querySelector('[name="fontWeight"]')?.checked ? "bold" : "normal",
-            borderRadius: parseInt(form.querySelector('[name="borderRadius"]')?.value) || 4
+            borderRadius: parseInt(form.querySelector('[name="borderRadius"]')?.value) || 4,
+            // Label Settings
+            labelText: form.querySelector('[name="labelText"]')?.value || "",
+            labelShowOnHover: form.querySelector('[name="labelShowOnHover"]')?.checked || false,
+            labelFontFamily: form.querySelector('[name="labelFontFamily"]')?.value || "Arial",
+            labelFontSize: parseInt(form.querySelector('[name="labelFontSize"]')?.value) || 16,
+            labelColor: form.querySelector('[name="labelColor"]')?.value || "#ffffff",
+            labelStroke: form.querySelector('[name="labelStroke"]')?.value || "#000000",
+            labelStrokeThickness: parseInt(form.querySelector('[name="labelStrokeThickness"]')?.value) || 0,
+            labelBold: form.querySelector('[name="labelBold"]')?.checked || false,
+            labelItalic: form.querySelector('[name="labelItalic"]')?.checked || false,
+            labelBackground: form.querySelector('[name="labelBackground"]')?.value || "none",
+            labelBackgroundColor: form.querySelector('[name="labelBackgroundColor"]')?.value || "#000000",
+            labelBorderColor: form.querySelector('[name="labelBorderColor"]')?.value || "#ffffff",
+            labelBold: form.querySelector('[name="labelBold"]')?.checked || false,
+            labelItalic: form.querySelector('[name="labelItalic"]')?.checked || false,
+            labelBackground: form.querySelector('[name="labelBackground"]')?.value || "none",
+            labelBorderColor: form.querySelector('[name="labelBorderColor"]')?.value || "#ffffff",
+            labelBorderWidth: parseInt(form.querySelector('[name="labelBorderWidth"]')?.value) || 0,
+            labelBorderRadius: parseInt(form.querySelector('[name="labelBorderRadius"]')?.value) || 4,
+            labelBorderWidth: parseInt(form.querySelector('[name="labelBorderWidth"]')?.value) || 0,
+            labelBorderRadius: parseInt(form.querySelector('[name="labelBorderRadius"]')?.value) || 4,
+            labelBorderImageIndex: parseInt(form.querySelector('[name="labelBorderImageIndex"]')?.value) || 0,
+            labelBorderImagePath: form.querySelector('[name="labelBorderImagePath"]')?.value || "",
+            labelAnchor: form.querySelector('[name="labelAnchor"]')?.value || "bottom",
+            hideTooltip: form.querySelector('[name="hideTooltip"]')?.checked || false
         };
+
+        // Handle conditional Background Color and Opacity inputs due to split UI
+        if (formData.labelBackground === "image") {
+            formData.labelBackgroundColor = form.querySelector('[name="labelImageBackgroundColor"]')?.value || "#000000";
+            formData.labelBackgroundOpacity = parseFloat(form.querySelector('[name="labelImageBackgroundOpacity"]')?.value) ?? 0.8;
+        } else {
+            // Default/Solid inputs
+            formData.labelBackgroundColor = form.querySelector('[name="labelBackgroundColor"]')?.value || "#000000";
+            formData.labelBackgroundOpacity = parseFloat(form.querySelector('[name="labelBackgroundOpacity"]')?.value) ?? 0.8;
+        }
 
         // Add pageId if editing individual pin
         if (this.pinId) {
@@ -496,6 +577,11 @@ export class PinStyleEditorApp extends HandlebarsApplicationMixin(ApplicationV2)
                 if (style.tooltipContent !== undefined) {
                     updateData.tooltipContent = style.tooltipContent;
                     delete style.tooltipContent;
+                }
+
+                if (style.hideTooltip !== undefined) {
+                    updateData.hideTooltip = style.hideTooltip;
+                    delete style.hideTooltip;
                 }
 
                 console.log("SDX Pin Style Editor | Saving pin update:", { pinId, updateData });

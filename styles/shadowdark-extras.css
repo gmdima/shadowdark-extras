@@ -17736,3 +17736,45 @@ body.sdx-dark-mode .sdx-carousing-toggle-btn i {
 #actorCarousel.lights-out-carousel {
     position: fixed !important;
 }
+
+/* ============================================
+   PARTY SHEET SEPARATOR
+   ============================================ */
+.party-separator {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+    margin: 20px 0;
+    opacity: 0.8;
+    width: 100%;
+}
+
+.party-separator hr {
+    flex: 1;
+    border: none;
+    border-bottom: 2px solid var(--party-border, #333);
+    margin: 0;
+}
+
+.party-separator span {
+    color: var(--party-text-muted, #888);
+    font-size: 1.2em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.party-separator span i {
+    font-size: 1.2em;
+    color: var(--party-accent, #c9aa58);
+}
+
+/* Draggable members */
+.shadowdark-extras-party .member {
+    cursor: grab;
+}
+
+.shadowdark-extras-party .member:active {
+    cursor: grabbing;
+}

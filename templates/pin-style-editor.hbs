@@ -69,6 +69,14 @@
             <textarea name="tooltipContent" rows="3"
                 placeholder="{{localize 'SDX.pinStyleEditor.tooltipContentPlaceholder'}}">{{tooltipContent}}</textarea>
         </div>
+
+        <div class="form-group checkbox-group">
+            <label>
+                <input type="checkbox" name="hideTooltip" {{#if hideTooltip}}checked{{/if}} />
+                Hide Hover Tooltip
+            </label>
+            <p class="hint">Disables the tooltip popup for this pin.</p>
+        </div>
     </section>
     {{/if}}
 
@@ -249,6 +257,158 @@
                     <input type="checkbox" name="fontWeight" {{#if (eq style.fontWeight "bold" )}}checked{{/if}} />
                     {{localize "SDX.pinStyleEditor.fontBold"}}
                 </label>
+            </div>
+        </div>
+    </section>
+
+    <!-- Label Settings -->
+    <section class="editor-section">
+        <h3><i class="fa-solid fa-tag"></i> Label</h3>
+
+        <div class="form-group">
+            <label>Label Text</label>
+            <input type="text" name="labelText" value="{{style.labelText}}" placeholder="Optional hover label..." />
+        </div>
+
+        <div class="form-group checkbox-group">
+            <label>
+                <input type="checkbox" name="labelShowOnHover" {{#if style.labelShowOnHover}}checked{{/if}} />
+                Show only on hover
+            </label>
+        </div>
+
+        <div class="form-group">
+            <label>Label Position</label>
+            <select name="labelAnchor">
+                <option value="top" {{#if (eq style.labelAnchor "top" )}}selected{{/if}}>Top</option>
+                <option value="bottom" {{#if (eq style.labelAnchor "bottom" )}}selected{{/if}}>Bottom</option>
+                <option value="left" {{#if (eq style.labelAnchor "left" )}}selected{{/if}}>Left</option>
+                <option value="right" {{#if (eq style.labelAnchor "right" )}}selected{{/if}}>Right</option>
+                <option value="center" {{#if (eq style.labelAnchor "center" )}}selected{{/if}}>Center</option>
+            </select>
+        </div>
+
+        <!-- Label Styling -->
+        <div class="label-styling-options">
+            <div class="form-group">
+                <label>Font Family</label>
+                <select name="labelFontFamily">
+                    {{#each fontFamilies}}
+                    <option value="{{this.value}}" {{#if (eq this.value ../style.labelFontFamily)}}selected{{/if}}>
+                        {{this.label}}</option>
+                    {{/each}}
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Font Size <span data-for="labelFontSize">{{style.labelFontSize}}</span>px</label>
+                <input type="range" name="labelFontSize" min="8" max="64" value="{{style.labelFontSize}}" />
+            </div>
+
+            <div class="form-group color-group">
+                <label>Text Color</label>
+                <input type="color" name="labelColor" value="{{style.labelColor}}" />
+            </div>
+
+            <div class="form-group color-group">
+                <label>Text Outline</label>
+                <input type="color" name="labelStroke" value="{{style.labelStroke}}" />
+            </div>
+            <div class="form-group">
+                <label>Outline Width <span
+                        data-for="labelStrokeThickness">{{style.labelStrokeThickness}}</span>px</label>
+                <input type="range" name="labelStrokeThickness" min="0" max="10"
+                    value="{{style.labelStrokeThickness}}" />
+            </div>
+
+            <div class="form-group checkbox-group">
+                <label>
+                    <input type="checkbox" name="labelBold" {{#if style.labelBold}}checked{{/if}} />
+                    Bold
+                </label>
+                <label style="margin-left: 10px;">
+                    <input type="checkbox" name="labelItalic" {{#if style.labelItalic}}checked{{/if}} />
+                    Italic
+                </label>
+            </div>
+
+            <div class="form-group">
+                <label>Background</label>
+                <select name="labelBackground">
+                    <option value="none" {{#if (eq style.labelBackground "none" )}}selected{{/if}}>None</option>
+                    <option value="solid" {{#if (eq style.labelBackground "solid" )}}selected{{/if}}>Solid Color
+                    </option>
+                    <option value="image" {{#if (eq style.labelBackground "image" )}}selected{{/if}}>Image Border
+                    </option>
+                </select>
+            </div>
+
+            <!-- Image Border Options -->
+            <div class="label-image-options"
+                style="{{#unless (eq style.labelBackground 'image')}}display: none;{{/unless}}">
+                <div class="form-group">
+                    <label>Border Style</label>
+                    <select name="labelBorderImageIndex" style="font-family: monospace;">
+                        {{#each borderStyles}}
+                        <option value="{{this.value}}" {{#if (eq this.value
+                            ../style.labelBorderImageIndex)}}selected{{/if}}>
+                            {{this.label}}
+                        </option>
+                        {{/each}}
+                    </select>
+                </div>
+                <div class="form-group color-group">
+                    <label>BG Color</label>
+                    <input type="color" name="labelImageBackgroundColor" value="{{style.labelBackgroundColor}}" />
+                </div>
+                <div class="form-group">
+                    <label>Opacity <span
+                            data-for="labelImageBackgroundOpacity">{{style.labelBackgroundOpacity}}</span></label>
+                    <input type="range" name="labelImageBackgroundOpacity" min="0" max="1" step="0.1"
+                        value="{{style.labelBackgroundOpacity}}" />
+                </div>
+
+                <div class="form-group">
+                    <label>Custom Border Path</label>
+                    <div class="form-fields" style="display: flex; gap: 5px;">
+                        <input type="text" name="labelBorderImagePath" value="{{style.labelBorderImagePath}}"
+                            placeholder="path/to/image.png" />
+                        <button type="button" class="file-picker-btn" data-target="labelBorderImagePath"
+                            title="Browse Files" style="flex: 0 0 32px;">
+                            <i class="fa-solid fa-file-import"></i>
+                        </button>
+                    </div>
+                    <p class="hint" style="font-size: 0.8em; color: #888;">Overrides the numbered style selection above.
+                    </p>
+                </div>
+
+            </div>
+
+            <!-- Solid Background Options -->
+            <div class="label-bg-options"
+                style="{{#unless (eq style.labelBackground 'solid')}}display: none;{{/unless}}">
+                <div class="form-group color-group">
+                    <label>BG Color</label>
+                    <input type="color" name="labelBackgroundColor" value="{{style.labelBackgroundColor}}" />
+                </div>
+                <div class="form-group color-group">
+                    <label>Border Color</label>
+                    <input type="color" name="labelBorderColor" value="{{style.labelBorderColor}}" />
+                </div>
+                <div class="form-group">
+                    <label>Opacity <span
+                            data-for="labelBackgroundOpacity">{{style.labelBackgroundOpacity}}</span></label>
+                    <input type="range" name="labelBackgroundOpacity" min="0" max="1" step="0.1"
+                        value="{{style.labelBackgroundOpacity}}" />
+                </div>
+                <div class="form-group">
+                    <label>Border Width <span data-for="labelBorderWidth">{{style.labelBorderWidth}}</span>px</label>
+                    <input type="range" name="labelBorderWidth" min="0" max="10" value="{{style.labelBorderWidth}}" />
+                </div>
+                <div class="form-group">
+                    <label>Corner Radius <span data-for="labelBorderRadius">{{style.labelBorderRadius}}</span>px</label>
+                    <input type="range" name="labelBorderRadius" min="0" max="20" value="{{style.labelBorderRadius}}" />
+                </div>
             </div>
         </div>
     </section>

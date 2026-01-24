@@ -83,122 +83,257 @@
 
 			{{#if members.length}}
 			<div class="members-list">
-				{{#each members as |member|}}
-				<div class="member" data-uuid="{{member.uuid}}" data-member-id="{{member.memberKey}}">
-					<div class="member-portrait">
-						<img src="{{member.img}}" alt="{{member.name}}" data-action="open-member" />
-						{{!-- HP Wave Animation Overlay --}}
-						{{#if member.hpWavesEnabled}}
-						<div class="hp-wave-container {{member.hpWaveClass}}"
-							style="--hp-translate: {{member.hpWaveTranslate}}%; --hp-wave-color: {{member.hpWaveColor}};">
-							<svg class="hp-waves" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 100"
-								preserveAspectRatio="none">
-								<path class="wave-path"
-									d="M0 5 C 100 0, 200 10, 300 5 C 400 0, 500 10, 600 5 V 100 H 0 Z" />
-								<path class="wave-path"
-									d="M0 10 C 100 15, 200 5, 300 10 C 400 15, 500 5, 600 10 V 100 H 0 Z" />
-								<path class="wave-path"
-									d="M0 15 C 100 10, 200 20, 300 15 C 400 10, 500 20, 600 15 V 100 H 0 Z" />
-								<path class="wave-path"
-									d="M0 20 C 100 25, 200 15, 300 20 C 400 25, 500 15, 600 20 V 100 H 0 Z" />
-							</svg>
+				{{#if players.length}}
+				<div class="players-list">
+					{{#each players as |member|}}
+					<div class="member" data-uuid="{{member.uuid}}" data-member-id="{{member.memberKey}}">
+						<div class="member-portrait">
+							<img src="{{member.img}}" alt="{{member.name}}" data-action="open-member" />
+							{{!-- HP Wave Animation Overlay --}}
+							{{#if member.hpWavesEnabled}}
+							<div class="hp-wave-container {{member.hpWaveClass}}"
+								style="--hp-translate: {{member.hpWaveTranslate}}%; --hp-wave-color: {{member.hpWaveColor}};">
+								<svg class="hp-waves" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 100"
+									preserveAspectRatio="none">
+									<path class="wave-path"
+										d="M0 5 C 100 0, 200 10, 300 5 C 400 0, 500 10, 600 5 V 100 H 0 Z" />
+									<path class="wave-path"
+										d="M0 10 C 100 15, 200 5, 300 10 C 400 15, 500 5, 600 10 V 100 H 0 Z" />
+									<path class="wave-path"
+										d="M0 15 C 100 10, 200 20, 300 15 C 400 10, 500 20, 600 15 V 100 H 0 Z" />
+									<path class="wave-path"
+										d="M0 20 C 100 25, 200 15, 300 20 C 400 25, 500 15, 600 20 V 100 H 0 Z" />
+								</svg>
+							</div>
+							{{/if}}
+							{{#if member.isNPC}}
+							{{#if ../owner}}
+							<div class="npc-count" data-tooltip="Spawn count">
+								<a class="npc-count-btn" data-action="npc-count-decrement"
+									data-member-id="{{member.memberKey}}"><i class="fas fa-minus"></i></a>
+								<input class="npc-count-input" type="text" value="{{member.spawnFormula}}"
+									data-action="npc-count-change" data-member-id="{{member.memberKey}}" />
+								<a class="npc-count-btn" data-action="npc-count-increment"
+									data-member-id="{{member.memberKey}}"><i class="fas fa-plus"></i></a>
+							</div>
+							{{/if}}
+							{{/if}}
+							{{#if ../owner}}
+							<a class="remove-member" data-action="remove-member"
+								data-tooltip="{{localize 'SHADOWDARK_EXTRAS.party.remove_member'}}">
+								<i class="fas fa-times"></i>
+							</a>
+							{{/if}}
 						</div>
-						{{/if}}
-						{{#if member.isNPC}}
-						{{#if ../owner}}
-						<div class="npc-count" data-tooltip="Spawn count">
-							<a class="npc-count-btn" data-action="npc-count-decrement"
-								data-member-id="{{member.memberKey}}"><i class="fas fa-minus"></i></a>
-							<input class="npc-count-input" type="text" value="{{member.spawnFormula}}"
-								data-action="npc-count-change" data-member-id="{{member.memberKey}}" />
-							<a class="npc-count-btn" data-action="npc-count-increment"
-								data-member-id="{{member.memberKey}}"><i class="fas fa-plus"></i></a>
-						</div>
-						{{/if}}
-						{{/if}}
-						{{#if ../owner}}
-						<a class="remove-member" data-action="remove-member"
-							data-tooltip="{{localize 'SHADOWDARK_EXTRAS.party.remove_member'}}">
-							<i class="fas fa-times"></i>
-						</a>
-						{{/if}}
-					</div>
-					<div class="member-info">
-						<div class="member-header">
-							<a class="member-name" data-action="open-member">{{member.name}}</a>
-							<span class="member-class">{{member.className}}</span>
-						</div>
-						<div class="member-stats">
-							<div class="stat hp">
-								<span class="label">HP</span>
-								<span class="value">{{member.hp.value}} / {{member.hp.max}}</span>
-								<div class="hp-bar">
-									<div class="hp-fill" style="width: {{member.hpPercent}}%"></div>
+						<div class="member-info">
+							<div class="member-header">
+								<a class="member-name" data-action="open-member">{{member.name}}</a>
+								<span class="member-class">{{member.className}}</span>
+							</div>
+							<div class="member-stats">
+								<div class="stat hp">
+									<span class="label">HP</span>
+									<span class="value">{{member.hp.value}} / {{member.hp.max}}</span>
+									<div class="hp-bar">
+										<div class="hp-fill" style="width: {{member.hpPercent}}%"></div>
+									</div>
+								</div>
+								<div class="stat ac">
+									<span class="label">AC</span>
+									<span class="value">{{member.ac}}</span>
+								</div>
+								{{#unless member.isNPC}}
+								<div class="stat level">
+									<span class="label">LVL</span>
+									<span class="value">{{member.level}}</span>
+								</div>
+								<div class="stat slots" data-tooltip="{{localize 'SHADOWDARK.inventory.slots'}}">
+									<span class="label">SLOTS</span>
+									<span class="value">{{member.slots.used}}/{{member.slots.max}}</span>
+								</div>
+								<div class="stat xp">
+									<span class="label">XP</span>
+									{{#if ../owner}}
+									<a class="xp-control" data-action="xp-decrement"
+										data-member-id="{{member.memberKey}}"><i class="fas fa-minus"></i></a>
+									{{/if}}
+									<span class="value">{{member.xp.current}}/{{member.xp.next}}</span>
+									{{#if ../owner}}
+									<a class="xp-control" data-action="xp-increment"
+										data-member-id="{{member.memberKey}}"><i class="fas fa-plus"></i></a>
+									{{/if}}
+								</div>
+								{{/unless}}
+							</div>
+							<div class="member-abilities">
+								<div class="ability" data-tooltip="{{localize 'SHADOWDARK.ability.str.long'}}">
+									<span class="label">STR</span>
+									<span class="mod">{{numberSigned member.abilities.str}}</span>
+								</div>
+								<div class="ability" data-tooltip="{{localize 'SHADOWDARK.ability.dex.long'}}">
+									<span class="label">DEX</span>
+									<span class="mod">{{numberSigned member.abilities.dex}}</span>
+								</div>
+								<div class="ability" data-tooltip="{{localize 'SHADOWDARK.ability.con.long'}}">
+									<span class="label">CON</span>
+									<span class="mod">{{numberSigned member.abilities.con}}</span>
+								</div>
+								<div class="ability" data-tooltip="{{localize 'SHADOWDARK.ability.int.long'}}">
+									<span class="label">INT</span>
+									<span class="mod">{{numberSigned member.abilities.int}}</span>
+								</div>
+								<div class="ability" data-tooltip="{{localize 'SHADOWDARK.ability.wis.long'}}">
+									<span class="label">WIS</span>
+									<span class="mod">{{numberSigned member.abilities.wis}}</span>
+								</div>
+								<div class="ability" data-tooltip="{{localize 'SHADOWDARK.ability.cha.long'}}">
+									<span class="label">CHA</span>
+									<span class="mod">{{numberSigned member.abilities.cha}}</span>
 								</div>
 							</div>
-							<div class="stat ac">
-								<span class="label">AC</span>
-								<span class="value">{{member.ac}}</span>
-							</div>
-							{{#unless member.isNPC}}
-							<div class="stat level">
-								<span class="label">LVL</span>
-								<span class="value">{{member.level}}</span>
-							</div>
-							<div class="stat slots" data-tooltip="{{localize 'SHADOWDARK.inventory.slots'}}">
-								<span class="label">SLOTS</span>
-								<span class="value">{{member.slots.used}}/{{member.slots.max}}</span>
-							</div>
-							<div class="stat xp">
-								<span class="label">XP</span>
-								{{#if ../owner}}
-								<a class="xp-control" data-action="xp-decrement"
-									data-member-id="{{member.memberKey}}"><i class="fas fa-minus"></i></a>
-								{{/if}}
-								<span class="value">{{member.xp.current}}/{{member.xp.next}}</span>
-								{{#if ../owner}}
-								<a class="xp-control" data-action="xp-increment"
-									data-member-id="{{member.memberKey}}"><i class="fas fa-plus"></i></a>
-								{{/if}}
-							</div>
-							{{/unless}}
 						</div>
-						<div class="member-abilities">
-							<div class="ability" data-tooltip="{{localize 'SHADOWDARK.ability.str.long'}}">
-								<span class="label">STR</span>
-								<span class="mod">{{numberSigned member.abilities.str}}</span>
+						<div class="member-effects {{#unless member.effects.length}}empty{{/unless}}">
+							{{#each member.effects as |effect|}}
+							<div class="effect-icon" data-tooltip="{{effect.name}}">
+								<img src="{{effect.img}}" alt="{{effect.name}}" />
 							</div>
-							<div class="ability" data-tooltip="{{localize 'SHADOWDARK.ability.dex.long'}}">
-								<span class="label">DEX</span>
-								<span class="mod">{{numberSigned member.abilities.dex}}</span>
-							</div>
-							<div class="ability" data-tooltip="{{localize 'SHADOWDARK.ability.con.long'}}">
-								<span class="label">CON</span>
-								<span class="mod">{{numberSigned member.abilities.con}}</span>
-							</div>
-							<div class="ability" data-tooltip="{{localize 'SHADOWDARK.ability.int.long'}}">
-								<span class="label">INT</span>
-								<span class="mod">{{numberSigned member.abilities.int}}</span>
-							</div>
-							<div class="ability" data-tooltip="{{localize 'SHADOWDARK.ability.wis.long'}}">
-								<span class="label">WIS</span>
-								<span class="mod">{{numberSigned member.abilities.wis}}</span>
-							</div>
-							<div class="ability" data-tooltip="{{localize 'SHADOWDARK.ability.cha.long'}}">
-								<span class="label">CHA</span>
-								<span class="mod">{{numberSigned member.abilities.cha}}</span>
-							</div>
+							{{/each}}
 						</div>
 					</div>
-					<div class="member-effects {{#unless member.effects.length}}empty{{/unless}}">
-						{{#each member.effects as |effect|}}
-						<div class="effect-icon" data-tooltip="{{effect.name}}">
-							<img src="{{effect.img}}" alt="{{effect.name}}" />
-						</div>
-						{{/each}}
-					</div>
+					{{/each}}
 				</div>
-				{{/each}}
+				{{/if}}
+
+				{{#if players.length}}
+				{{#if npcs.length}}
+				<div class="party-separator">
+					<hr>
+					<span><i class="fas fa-skull"></i></span>
+					<hr>
+				</div>
+				{{/if}}
+				{{/if}}
+
+				{{#if npcs.length}}
+				<div class="npcs-list">
+					{{#each npcs as |member|}}
+					<div class="member" data-uuid="{{member.uuid}}" data-member-id="{{member.memberKey}}">
+						<div class="member-portrait">
+							<img src="{{member.img}}" alt="{{member.name}}" data-action="open-member" />
+							{{!-- HP Wave Animation Overlay --}}
+							{{#if member.hpWavesEnabled}}
+							<div class="hp-wave-container {{member.hpWaveClass}}"
+								style="--hp-translate: {{member.hpWaveTranslate}}%; --hp-wave-color: {{member.hpWaveColor}};">
+								<svg class="hp-waves" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 100"
+									preserveAspectRatio="none">
+									<path class="wave-path"
+										d="M0 5 C 100 0, 200 10, 300 5 C 400 0, 500 10, 600 5 V 100 H 0 Z" />
+									<path class="wave-path"
+										d="M0 10 C 100 15, 200 5, 300 10 C 400 15, 500 5, 600 10 V 100 H 0 Z" />
+									<path class="wave-path"
+										d="M0 15 C 100 10, 200 20, 300 15 C 400 10, 500 20, 600 15 V 100 H 0 Z" />
+									<path class="wave-path"
+										d="M0 20 C 100 25, 200 15, 300 20 C 400 25, 500 15, 600 20 V 100 H 0 Z" />
+								</svg>
+							</div>
+							{{/if}}
+							{{#if member.isNPC}}
+							{{#if ../owner}}
+							<div class="npc-count" data-tooltip="Spawn count">
+								<a class="npc-count-btn" data-action="npc-count-decrement"
+									data-member-id="{{member.memberKey}}"><i class="fas fa-minus"></i></a>
+								<input class="npc-count-input" type="text" value="{{member.spawnFormula}}"
+									data-action="npc-count-change" data-member-id="{{member.memberKey}}" />
+								<a class="npc-count-btn" data-action="npc-count-increment"
+									data-member-id="{{member.memberKey}}"><i class="fas fa-plus"></i></a>
+							</div>
+							{{/if}}
+							{{/if}}
+							{{#if ../owner}}
+							<a class="remove-member" data-action="remove-member"
+								data-tooltip="{{localize 'SHADOWDARK_EXTRAS.party.remove_member'}}">
+								<i class="fas fa-times"></i>
+							</a>
+							{{/if}}
+						</div>
+						<div class="member-info">
+							<div class="member-header">
+								<a class="member-name" data-action="open-member">{{member.name}}</a>
+								<span class="member-class">{{member.className}}</span>
+							</div>
+							<div class="member-stats">
+								<div class="stat hp">
+									<span class="label">HP</span>
+									<span class="value">{{member.hp.value}} / {{member.hp.max}}</span>
+									<div class="hp-bar">
+										<div class="hp-fill" style="width: {{member.hpPercent}}%"></div>
+									</div>
+								</div>
+								<div class="stat ac">
+									<span class="label">AC</span>
+									<span class="value">{{member.ac}}</span>
+								</div>
+								{{#unless member.isNPC}}
+								<div class="stat level">
+									<span class="label">LVL</span>
+									<span class="value">{{member.level}}</span>
+								</div>
+								<div class="stat slots" data-tooltip="{{localize 'SHADOWDARK.inventory.slots'}}">
+									<span class="label">SLOTS</span>
+									<span class="value">{{member.slots.used}}/{{member.slots.max}}</span>
+								</div>
+								<div class="stat xp">
+									<span class="label">XP</span>
+									{{#if ../owner}}
+									<a class="xp-control" data-action="xp-decrement"
+										data-member-id="{{member.memberKey}}"><i class="fas fa-minus"></i></a>
+									{{/if}}
+									<span class="value">{{member.xp.current}}/{{member.xp.next}}</span>
+									{{#if ../owner}}
+									<a class="xp-control" data-action="xp-increment"
+										data-member-id="{{member.memberKey}}"><i class="fas fa-plus"></i></a>
+									{{/if}}
+								</div>
+								{{/unless}}
+							</div>
+							<div class="member-abilities">
+								<div class="ability" data-tooltip="{{localize 'SHADOWDARK.ability.str.long'}}">
+									<span class="label">STR</span>
+									<span class="mod">{{numberSigned member.abilities.str}}</span>
+								</div>
+								<div class="ability" data-tooltip="{{localize 'SHADOWDARK.ability.dex.long'}}">
+									<span class="label">DEX</span>
+									<span class="mod">{{numberSigned member.abilities.dex}}</span>
+								</div>
+								<div class="ability" data-tooltip="{{localize 'SHADOWDARK.ability.con.long'}}">
+									<span class="label">CON</span>
+									<span class="mod">{{numberSigned member.abilities.con}}</span>
+								</div>
+								<div class="ability" data-tooltip="{{localize 'SHADOWDARK.ability.int.long'}}">
+									<span class="label">INT</span>
+									<span class="mod">{{numberSigned member.abilities.int}}</span>
+								</div>
+								<div class="ability" data-tooltip="{{localize 'SHADOWDARK.ability.wis.long'}}">
+									<span class="label">WIS</span>
+									<span class="mod">{{numberSigned member.abilities.wis}}</span>
+								</div>
+								<div class="ability" data-tooltip="{{localize 'SHADOWDARK.ability.cha.long'}}">
+									<span class="label">CHA</span>
+									<span class="mod">{{numberSigned member.abilities.cha}}</span>
+								</div>
+							</div>
+						</div>
+						<div class="member-effects {{#unless member.effects.length}}empty{{/unless}}">
+							{{#each member.effects as |effect|}}
+							<div class="effect-icon" data-tooltip="{{effect.name}}">
+								<img src="{{effect.img}}" alt="{{effect.name}}" />
+							</div>
+							{{/each}}
+						</div>
+					</div>
+					{{/each}}
+				</div>
+				{{/if}}
 			</div>
 			{{else}}
 			<div class="members-empty">
@@ -410,7 +545,8 @@
 							<i class="fas fa-running"></i>
 							{{localize "SHADOWDARK_EXTRAS.party.travel.speed"}}:
 						</label>
-						<select id="travel-speed" name="travelSpeed" data-action="change-travel-speed" {{#unless owner}}disabled{{/unless}}>
+						<select id="travel-speed" name="travelSpeed" data-action="change-travel-speed" {{#unless
+							owner}}disabled{{/unless}}>
 							{{#each travelSpeeds as |speed|}}
 							<option value="{{speed.key}}" {{#if speed.selected}}selected{{/if}}>{{speed.name}}</option>
 							{{/each}}

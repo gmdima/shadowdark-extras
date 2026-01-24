@@ -30,7 +30,27 @@ const DEFAULT_PIN_STYLE = {
     fontSize: 14,
     fontFamily: "Arial",
     fontColor: "#ffffff",
-    fontWeight: "bold"
+    fontWeight: "bold",
+    // Label settings
+    labelText: "",
+    labelShowOnHover: true,
+    labelFontFamily: "Arial",
+    labelFontSize: 16,
+    labelColor: "#ffffff",
+    labelStroke: "#000000",
+    labelStrokeThickness: 4,
+    labelBackground: "none", // "none", "solid", "playerSheet"
+    labelBackgroundColor: "#000000",
+    labelBackgroundOpacity: 0.8,
+    labelBorderColor: "#ffffff",
+    labelBorderWidth: 2,
+    labelBorderRadius: 4,
+    labelBold: false,
+    labelItalic: false,
+    labelBorderImageIndex: 0, // 0-31
+    labelBorderImagePath: "", // Custom path overrides index
+    labelAnchor: "bottom", // "top", "bottom", "left", "right", "center"
+    hideTooltip: false
 };
 
 /**
@@ -618,6 +638,148 @@ class JournalPinGraphics extends PIXI.Container {
             }
         }
 
+        // ===================================
+        // ADD OPTIONAL HOVER LABEL
+        // ===================================
+        if (style.labelText) {
+            this._labelContainer = new PIXI.Container();
+
+            // Create text
+            const labelText = new PIXI.Text(style.labelText, {
+                fontFamily: style.labelFontFamily || "Arial",
+                fontSize: style.labelFontSize || 16,
+                fill: style.labelColor || "#ffffff",
+                stroke: style.labelStroke || "#000000",
+                strokeThickness: style.labelStrokeThickness ?? 4,
+                fontWeight: style.labelBold ? "bold" : "normal",
+                fontStyle: style.labelItalic ? "italic" : "normal",
+                align: "center"
+            });
+
+            // Background
+            const padX = 8;
+            const padY = 4;
+            let bg;
+            let bgColorGraphic;
+
+            if (style.labelBackground === "image") {
+                try {
+                    let path;
+
+                    // Check for custom image path first
+                    if (style.labelBorderImagePath && typeof style.labelBorderImagePath === "string" && style.labelBorderImagePath.trim() !== "") {
+                        path = style.labelBorderImagePath.trim();
+                    } else {
+                        // Load the numbered border image (0-31)
+                        // Ensure index is valid integer 0-31
+                        let idx = parseInt(style.labelBorderImageIndex);
+                        if (isNaN(idx) || idx < 0) idx = 0;
+                        if (idx > 36) idx = 36;
+
+                        const filename = `panel-border-${String(idx).padStart(3, "0")}.png`;
+                        path = `modules/shadowdark-extras/art/PNG/Default/Border/${filename}`;
+                    }
+
+                    const tex = await loadTexture(path);
+                    if (tex) {
+                        // Assume typical 15px corner slice for these assets
+                        bg = new PIXI.NineSlicePlane(tex, 15, 15, 15, 15);
+                        bg.width = labelText.width + (padX * 4);
+                        bg.height = labelText.height + (padY * 4);
+
+                        // Create optional background color behind the image
+                        const colorVal = style.labelBackgroundColor;
+                        // Check if opacity is > 0
+                        if (style.labelBackgroundOpacity > 0) {
+                            bgColorGraphic = new PIXI.Graphics();
+                            const bgColor = typeof Color !== "undefined" ? Color.from(colorVal || "#000000") : (colorVal || "#000000");
+                            bgColorGraphic.beginFill(bgColor, style.labelBackgroundOpacity);
+
+                            // Fill slightly smaller than the full border to fit inside
+                            // For a complex border, a simple rect is often best "behind" it.
+                            bgColorGraphic.drawRect(0, 0, bg.width, bg.height);
+                            bgColorGraphic.endFill();
+                        }
+                    }
+                } catch (e) {
+                    console.error("SDX Journal Pins | Failed to load label background", e);
+                }
+            } else if (style.labelBackground === "solid") {
+                bg = new PIXI.Graphics();
+                const bgColor = typeof Color !== "undefined" ? Color.from(style.labelBackgroundColor || "#000000") : (style.labelBackgroundColor || "#000000");
+                const borderColor = typeof Color !== "undefined" ? Color.from(style.labelBorderColor || "#ffffff") : (style.labelBorderColor || "#ffffff");
+
+                bg.beginFill(bgColor, style.labelBackgroundOpacity ?? 0.8);
+                if ((style.labelBorderWidth ?? 0) > 0) {
+                    bg.lineStyle(style.labelBorderWidth, borderColor, 1);
+                }
+                bg.drawRoundedRect(0, 0, labelText.width + (padX * 2), labelText.height + (padY * 2), style.labelBorderRadius || 4);
+                bg.endFill();
+            }
+
+            // Assemble container
+            if (bg) {
+                const w = bg.width;
+                const h = bg.height;
+                const pivotX = w / 2;
+                const pivotY = h / 2;
+
+                // Add color layer first (behind)
+                if (bgColorGraphic) {
+                    bgColorGraphic.pivot.set(pivotX, pivotY);
+                    bgColorGraphic.position.set(0, 0);
+                    this._labelContainer.addChild(bgColorGraphic);
+                }
+
+                // Add border/frame
+                if (bg instanceof PIXI.Graphics) bg.pivot.set(pivotX, pivotY);
+                else bg.pivot.set(pivotX, pivotY);
+                bg.position.set(0, 0);
+                this._labelContainer.addChild(bg);
+            }
+
+            // Center text
+            labelText.anchor.set(0.5, 0.5);
+            labelText.position.set(0, 0);
+            this._labelContainer.addChild(labelText);
+
+            // Position container relative to pin
+            const bgW = bg ? bg.width : labelText.width;
+            const bgH = bg ? bg.height : labelText.height;
+            const pinRadius = style.size / 2;
+            const padding = 5;
+
+            let posX = 0;
+            let posY = 0;
+
+            switch (style.labelAnchor) {
+                case "top":
+                    posY = -pinRadius - (bgH / 2) - padding;
+                    break;
+                case "left":
+                    posX = -pinRadius - (bgW / 2) - padding;
+                    break;
+                case "right":
+                    posX = pinRadius + (bgW / 2) + padding;
+                    break;
+                case "center":
+                    posX = 0;
+                    posY = 0;
+                    break;
+                case "bottom":
+                default:
+                    posY = pinRadius + (bgH / 2) + padding;
+                    break;
+            }
+
+            this._labelContainer.position.set(posX, posY);
+
+            // Initial Visibility
+            this._labelContainer.visible = !style.labelShowOnHover;
+
+            this.addChild(this._labelContainer);
+        }
+
         // Hit area based on shape
         if (shape === "circle") {
             this.hitArea = new PIXI.Circle(0, 0, radius);
@@ -989,11 +1151,19 @@ class JournalPinGraphics extends PIXI.Container {
     }
 
     _onPointerEnter(event) {
-        JournalPinTooltip.show(this.pinData, event);
+        if (!this.pinData.style?.hideTooltip) {
+            JournalPinTooltip.show(this.pinData, event);
+        }
+        if (this._labelContainer && this.pinData.style?.labelShowOnHover) {
+            this._labelContainer.visible = true;
+        }
     }
 
     _onPointerLeave(event) {
         JournalPinTooltip.hide();
+        if (this._labelContainer && this.pinData.style?.labelShowOnHover) {
+            this._labelContainer.visible = false;
+        }
     }
 
     _onPointerDown(event) {
