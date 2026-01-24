@@ -60,7 +60,9 @@ import { SceneExporter } from "./SceneExporter.mjs";
 import { SceneImporter } from "./SceneImporter.mjs";
 import { initJournalPins } from "./JournalPinsSD.mjs";
 import { registerPinStyleSettings } from "./PinStyleEditorSD.mjs";
+import SheetLockManager from "./SheetLockManager.mjs";
 import "./SpellMacrosSD.mjs";
+import { initMysteriousCasting } from "./MysteriousCasting.mjs";
 
 const MODULE_ID = "shadowdark-extras";
 const TRADE_JOURNAL_NAME = "__sdx_trade_sync__"; // Must match TradeWindowSD.mjs
@@ -80,6 +82,10 @@ const HIDDEN_JOURNAL_NAMES = [
 initJournalNarration();
 initMedkit();
 initJournalPins();
+Hooks.once("init", () => {
+	initMysteriousCasting();
+	SheetLockManager.init();
+});
 
 // ============================================
 // INVENTORY STYLES APP

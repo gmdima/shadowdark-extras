@@ -97,3 +97,127 @@
         border-image: none !important;
     }
 }
+
+/* Pin List Application */
+.pin-list-app .window-content {
+    padding: 0;
+    color: #000;
+    display: flex;
+    flex-direction: column;
+}
+
+.pin-list-app form {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.pin-list-app .form-group {
+    padding: 10px;
+    background: rgba(0, 0, 0, 0.05);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    flex: 0 0 auto;
+    /* Do not grow */
+}
+
+.pin-list-app .notes {
+    font-size: 13px;
+    margin: 0;
+    text-align: center;
+    color: #444;
+}
+
+.pin-list-container {
+    padding: 10px;
+    flex: 1;
+    /* Take remaining space */
+    overflow-y: auto;
+    height: auto;
+    /* Allow flex to control height */
+}
+
+.sdx-pin-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.pin-entry {
+    background: rgba(255, 255, 255, 0.5);
+    border: 1px solid rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
+    margin-bottom: 5px;
+    padding: 8px;
+    align-items: center;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.pin-entry:hover {
+    background: rgba(255, 255, 255, 0.8);
+    border-color: rgba(0, 0, 0, 0.4);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.pin-icon {
+    flex: 0 0 32px;
+    text-align: center;
+    font-size: 18px;
+    color: #444;
+}
+
+.pin-info {
+    flex: 1;
+    padding-left: 10px;
+    line-height: 1.2;
+}
+
+.pin-name {
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.pin-page-name {
+    font-size: 11px;
+    color: #666;
+    margin-top: 2px;
+}
+
+.pin-controls {
+    flex: 0 0 24px;
+    text-align: center;
+}
+
+.pin-control {
+    color: #666;
+    font-size: 14px;
+}
+
+.pin-control:hover {
+    color: #000;
+    text-shadow: 0 0 2px rgba(255, 255, 255, 0.8);
+}
+
+/* Dark mode overrides if needed */
+.dark-mode .pin-list-app .window-content {
+    background: #2e2e2e;
+    color: #e0e0e0;
+}
+
+.dark-mode .pin-entry {
+    background: rgba(0, 0, 0, 0.3);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+.dark-mode .pin-entry:hover {
+    background: rgba(0, 0, 0, 0.5);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+.dark-mode .pin-name {
+    color: #f0f0f0;
+}
+
+.dark-mode .pin-page-name {
+    color: #aaa;
+}

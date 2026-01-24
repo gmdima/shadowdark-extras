@@ -76,6 +76,9 @@ export class FormationSpawnerSD extends FormApplication {
         // Load or create formation data
         await this._loadFormation();
 
+        // Refresh pool to ensure validity (removes deleted actors)
+        await this.refreshPool();
+
         // Get party members for the pool
         context.pool = this.formation.pool;
         context.gridHtml = this._generateGrid();
@@ -535,9 +538,20 @@ export class FormationSpawnerSD extends FormApplication {
             }
         }
 
-        // Remove actors that no longer exist
+        // Remove actors that no longer exist from pool
         const validUuids = new Set(partyActors.map(a => a.uuid));
         this.formation.pool = this.formation.pool.filter(p => validUuids.has(p.uuid));
+
+        // Also clean up the grid (remove invalid actors)
+        for (let r = 0; r < this.gridSize; r++) {
+            for (let c = 0; c < this.gridSize; c++) {
+                const cell = this.formation.grid[r]?.[c];
+                if (cell?.uuid && !validUuids.has(cell.uuid)) {
+                    // Actor no longer exists, clear cell
+                    this.formation.grid[r][c] = { uuid: null, img: null, name: null };
+                }
+            }
+        }
 
         await this._saveFormation();
     }

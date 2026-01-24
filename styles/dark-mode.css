@@ -496,3 +496,8 @@ body.sdx-dark-mode .shadowdark.light-source-card .card-header img {
     border: 1px solid var(--lights-out-color-foreground-secondary);
     border-radius: 50%;
 }
+
+/* Check Request Header */
+body.sdx-dark-mode .message-content .shadowdark .content h3 {
+    color: var(--lights-out-color-foreground-secondary);
+}

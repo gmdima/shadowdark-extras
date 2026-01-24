@@ -121,6 +121,9 @@
     },
     {
       "src": "styles/icon-picker.css"
+    },
+    {
+      "src": "styles/sheet-locking.css"
     }
   ],
   "languages": [

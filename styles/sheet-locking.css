@@ -1,0 +1,168 @@
+/* Sheet Locking Styles */
+
+/* Lock Toggle Button in Header */
+.sdx-sheet-lock-toggle {
+    flex: 0 0 20px;
+    margin-right: 5px;
+    color: var(--color-text-dark-secondary);
+    cursor: pointer;
+    transition: color 0.2s;
+    line-height: normal;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.sdx-sheet-lock-toggle:hover {
+    color: var(--color-text-dark-primary);
+    text-shadow: 0 0 5px var(--color-shadow-primary);
+}
+
+.sdx-sheet-lock-toggle.locked {
+    color: #ff4d4d !important;
+    /* Red for locked */
+}
+
+.sdx-sheet-lock-toggle.unlocked {
+    color: #55ff55 !important;
+    /* Green for unlocked (open lock) */
+    opacity: 0.5;
+}
+
+.sdx-sheet-lock-toggle.unlocked:hover {
+    opacity: 1;
+}
+
+
+/* Visual Indication of Locked Fields */
+
+/* Helper class added to the sheet form when locked */
+.sdx-sheet-locked .locked-field {
+    pointer-events: none !important;
+    filter: grayscale(100%) opacity(0.7);
+    position: relative;
+}
+
+/* Specific Field Targeting - based on data-attributes or classes commonly used in system */
+
+/* XP */
+.sdx-sheet-locked.lock-xp .xp-tracker input,
+.sdx-sheet-locked.lock-xp [name="system.level.xp"] {
+    pointer-events: none;
+    color: #888;
+}
+
+/* Coins */
+.sdx-sheet-locked.lock-coins .inventory-coins input,
+.sdx-sheet-locked.lock-coins [name="system.coins.gp"],
+.sdx-sheet-locked.lock-coins [name="system.coins.sp"],
+.sdx-sheet-locked.lock-coins [name="system.coins.cp"] {
+    pointer-events: none;
+    color: #888;
+}
+
+/* Gems */
+.sdx-sheet-locked.lock-gems [name="system.gems"] {
+    pointer-events: none;
+    color: #888;
+}
+
+/* HP */
+.sdx-sheet-locked.lock-hp [name="system.attributes.hp.value"],
+.sdx-sheet-locked.lock-hp [name="system.attributes.hp.max"] {
+    pointer-events: none;
+    color: #888;
+}
+
+/* Stats */
+.sdx-sheet-locked.lock-stats .ability-score input {
+    pointer-events: none;
+    color: #888;
+}
+
+/* Luck */
+.sdx-sheet-locked.lock-luck [name="system.luck.available"],
+.sdx-sheet-locked.lock-luck .sdx-luck-container {
+    pointer-events: none !important;
+    opacity: 0.5;
+    cursor: default !important;
+}
+
+
+
+/* Item Controls Hiding (General) */
+.sdx-sheet-locked.lock-inventory .item-control,
+.sdx-sheet-locked.lock-inventory .item-create {
+    display: none !important;
+}
+
+/* Specific Locking for Bio/Class/Ancestry - hiding the edit pencil */
+/* Assuming standard system structure where headers have edit controls */
+.sdx-sheet-locked.lock-class [data-item-id] .item-control,
+.sdx-sheet-locked.lock-class .class-item .item-control {
+    display: none !important;
+}
+
+.sdx-sheet-locked.lock-ancestry .ancestry-item .item-control,
+.sdx-sheet-locked.lock-ancestry [data-item-id] .item-edit {
+    display: none !important;
+}
+
+.sdx-sheet-locked.lock-background .background-item .item-control {
+    display: none !important;
+}
+
+/* Attributes Editing (Pencil icons next to headers) */
+.sdx-sheet-locked.lock-hp .hp-header .item-control {
+    display: none !important;
+}
+
+.sdx-sheet-locked.lock-stats .abilities-header .item-control {
+    display: none !important;
+}
+
+.sdx-sheet-locked.lock-deity .deity-input input {
+    pointer-events: none;
+    opacity: 0.7;
+}
+
+/* Spells */
+.sdx-sheet-locked.lock-spells .spell-list .item-control,
+.sdx-sheet-locked.lock-spells .spell-list .item-create {
+    display: none !important;
+}
+
+
+/* Talents */
+.sdx-sheet-locked.lock-talents .talent-list .item-control,
+.sdx-sheet-locked.lock-talents .talent-list .item-create {
+    display: none !important;
+}
+
+/* ====================================
+   Extra Buttons Hiding
+   ==================================== */
+
+/* Coins Add Button (Shadowdark Extras) */
+.sdx-sheet-locked.lock-coins .inventory-coins .sdx-add-coins-btn,
+.sdx-sheet-locked.lock-coins .sdx-add-coins-btn {
+    display: none !important;
+}
+
+/* Gem Bag Button (Shadowdark Extras) */
+.sdx-sheet-locked.lock-gems [data-action="open-gem-bag"] {
+    display: none !important;
+}
+
+/* Inventory Create Buttons */
+.sdx-sheet-locked.lock-inventory [data-action="create-item"],
+.sdx-sheet-locked.lock-inventory [data-action="create-treasure"],
+.sdx-sheet-locked.lock-inventory .item-create {
+    display: none !important;
+}
+
+/* Active Effects Add Condition */
+.sdx-sheet-locked.lock-activeEffects .sdx-add-condition-btn,
+.sdx-sheet-locked.lock-activeEffects [data-action="effect-create"] {
+    display: none !important;
+}

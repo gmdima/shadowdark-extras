@@ -6,6 +6,8 @@
  */
 
 import { FormationSpawnerSD, initFormationSpawner } from "./FormationSpawnerSD.mjs";
+import { PinPlacer } from "./JournalPinsSD.mjs";
+import { PinListApp } from "./PinListApp.mjs";
 
 const MODULE_ID = "shadowdark-extras";
 const SETTING_KEY_LEADER = "marchingModeLeader";
@@ -203,15 +205,48 @@ function injectSidebarButtons($html) {
         </li>
     `);
 
+    // Create Add Pin button
+    const $addPinBtn = $(`
+        <li class="sdx-marching-btn-container">
+            <button type="button" class="ui-control plain icon fa-solid fa-map-pin sdx-add-pin-btn"
+                    data-tooltip="Add Journal Pin" data-tooltip-direction="LEFT">
+            </button>
+        </li>
+    `);
+
     // Insert before settings
     $settingsBtn.before($leaderBtn);
     $settingsBtn.before($movementBtn);
     $settingsBtn.before($formationBtn);
+    $settingsBtn.before($addPinBtn);
 
     // Add event handlers
     $leaderBtn.find("button").on("click", showLeaderDialog);
     $movementBtn.find("button").on("click", showMovementModeDialog);
     $formationBtn.find("button").on("click", () => FormationSpawnerSD.show());
+
+    // SDX Pins - Menu Dialog
+    $addPinBtn.find("button").on("click", () => {
+        new Dialog({
+            title: "SDX Pins",
+            content: "<p>Select an action:</p>",
+            buttons: {
+                add: {
+                    icon: '<i class="fas fa-map-pin"></i>',
+                    label: "Add Pin",
+                    callback: () => PinPlacer.activate()
+                },
+                list: {
+                    icon: '<i class="fas fa-list"></i>',
+                    label: "Pin List",
+                    callback: () => PinListApp.show()
+                }
+            },
+            default: "add"
+        }, {
+            width: 300
+        }).render(true);
+    });
 
     // Update button states
     updateButtonStates();

@@ -54,6 +54,7 @@ export class PinStyleEditorApp extends HandlebarsApplicationMixin(ApplicationV2)
         let requiresVision = false;
         let tooltipTitle = "";
         let tooltipContent = "";
+        let hideTooltip = false;
 
         if (this.pinId) {
             const pin = JournalPinManager.get(this.pinId);
@@ -68,14 +69,21 @@ export class PinStyleEditorApp extends HandlebarsApplicationMixin(ApplicationV2)
                     name: j.name
                 }));
 
+            // Add "None" option
+            allJournals.unshift({ id: "", name: "- None -" });
+
+            // Load pin-specific settings (independent of journal linkage)
+            requiresVision = pin.requiresVision || false;
+            tooltipTitle = pin.tooltipTitle || "";
+            tooltipContent = pin.tooltipContent || "";
+            hideTooltip = pin.hideTooltip || false;
+
             // Load journal pages for individual pin editor
             if (pin?.journalId) {
                 journalId = pin.journalId;
                 currentJournalId = pin.journalId;
                 currentPageId = pin.pageId;
-                requiresVision = pin.requiresVision || false;
-                tooltipTitle = pin.tooltipTitle || "";
-                tooltipContent = pin.tooltipContent || "";
+
                 const journal = game.journal.get(pin.journalId);
                 if (journal) {
                     journalPages = journal.pages.contents
@@ -84,6 +92,7 @@ export class PinStyleEditorApp extends HandlebarsApplicationMixin(ApplicationV2)
                             id: page.id,
                             name: page.name
                         }));
+
                 }
             }
         } else {
@@ -161,6 +170,7 @@ export class PinStyleEditorApp extends HandlebarsApplicationMixin(ApplicationV2)
             requiresVision,
             tooltipTitle,
             tooltipContent,
+            hideTooltip,
             isGM: game.user?.isGM
         };
     }
@@ -565,7 +575,7 @@ export class PinStyleEditorApp extends HandlebarsApplicationMixin(ApplicationV2)
                 }
 
                 if (style.journalId !== undefined) {
-                    updateData.journalId = style.journalId;
+                    updateData.journalId = style.journalId || null;
                     delete style.journalId;
                 }
 

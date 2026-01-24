@@ -168,7 +168,8 @@ class JournalPinManager {
         };
 
         if (!pin.journalId) {
-            throw new Error("journalId is required");
+            // Allow unlinked pins
+            pin.journalId = null;
         }
 
         const pins = this._getScenePins(scene);
@@ -210,6 +211,7 @@ class JournalPinManager {
         if (patch.requiresVision !== undefined) updated.requiresVision = patch.requiresVision;
         if (patch.tooltipTitle !== undefined) updated.tooltipTitle = patch.tooltipTitle;
         if (patch.tooltipContent !== undefined) updated.tooltipContent = patch.tooltipContent;
+        if (patch.hideTooltip !== undefined) updated.hideTooltip = patch.hideTooltip;
 
         const next = [...pins];
         next[idx] = updated;
@@ -248,10 +250,100 @@ class JournalPinManager {
         return pin ? foundry.utils.deepClone(pin) : null;
     }
 
+    static _styleClipboard = null;
+
+    static copyStyle(pinData) {
+        if (!pinData || !pinData.style) return;
+        const style = foundry.utils.deepClone(pinData.style);
+
+        // Exclude content-specific fields
+        delete style.labelText;
+        delete style.customText;
+        delete style.tooltipTitle;
+        delete style.tooltipContent;
+        // Keep hideTooltip as it's a preference, but maybe user wants to copy it? 
+        // Plan said: "Delete labelText and customText". 
+        // User said: "dont copy things like journal, page, custom tooltips, label text".
+
+        this._styleClipboard = style;
+        ui.notifications.info("Pin style copied to clipboard.");
+    }
+
+    static async pasteStyle(targetPinId) {
+        if (!this._styleClipboard) {
+            ui.notifications.warn("No style in clipboard.");
+            return;
+        }
+
+        const style = foundry.utils.deepClone(this._styleClipboard);
+        await this.update(targetPinId, { style });
+        ui.notifications.info("Pin style pasted.");
+    }
+
+    static hasCopiedStyle() {
+        return !!this._styleClipboard;
+    }
+
     static list(options = {}) {
         const scene = this._getScene(options.sceneId);
         return this._getScenePins(scene).map(p => foundry.utils.deepClone(p));
     }
+}
+
+/**
+ * Helper to place pins via click
+ */
+export class PinPlacer {
+    static active = false;
+    static _cursor = "crosshair";
+
+    static activate() {
+        if (this.active) return;
+        this.active = true;
+
+        // Change cursor
+        document.body.style.cursor = this._cursor;
+
+        // Add listeners
+        canvas.stage.on("mousedown", this._onClick);
+        canvas.stage.on("rightdown", this._onRightClick);
+
+        ui.notifications.info("Click on the canvas to place a pin. Right-click to cancel.");
+    }
+
+    static deactivate() {
+        if (!this.active) return;
+        this.active = false;
+
+        // Restore cursor
+        document.body.style.cursor = "";
+
+        // Remove listeners
+        canvas.stage.off("mousedown", this._onClick);
+        canvas.stage.off("rightdown", this._onRightClick);
+    }
+
+    static _onClick = async (event) => {
+        if (!PinPlacer.active) return;
+
+        const pos = event.data.getLocalPosition(canvas.stage);
+
+        // Create the pin
+        await JournalPinManager.create({
+            x: Math.round(pos.x),
+            y: Math.round(pos.y),
+            journalId: null,
+            label: "New Pin"
+        });
+
+        PinPlacer.deactivate();
+    };
+
+    static _onRightClick = (event) => {
+        if (!PinPlacer.active) return;
+        PinPlacer.deactivate();
+        ui.notifications.info("Pin placement cancelled.");
+    };
 }
 
 // ================================================================
@@ -490,9 +582,11 @@ class JournalPinGraphics extends PIXI.Container {
         }
     }
 
+
     async _build() {
         if (this.destroyed) return;
-        this.removeChildren();
+        // Don't remove children yet, wait until new content is ready
+
 
         // Get global style settings
         const globalStyle = getPinStyle();
@@ -522,7 +616,10 @@ class JournalPinGraphics extends PIXI.Container {
         const fillColorNum = parseInt(fillColor.slice(1), 16);
         const ringColorNum = parseInt(ringColor.slice(1), 16);
 
-        this._circle = new PIXI.Graphics();
+        const container = new PIXI.Container();
+
+        const circle = new PIXI.Graphics();
+        this._circle = circle; // Keep reference if needed
 
         const shape = style.shape || "circle";
         this._circle.beginFill(fillColorNum, fillOpacity);
@@ -566,7 +663,8 @@ class JournalPinGraphics extends PIXI.Container {
         }
 
         this._circle.endFill();
-        this.addChild(this._circle);
+        container.addChild(this._circle);
+
 
         // Draw custom stroke if not solid
         if (ringStyle !== "solid") {
@@ -585,7 +683,8 @@ class JournalPinGraphics extends PIXI.Container {
                 ? parseInt(symbolColor.slice(1), 16)
                 : 0xFFFFFF;
 
-            await this._addIcon(iconClass, radius, symbolColorNum);
+            await this._addIcon(container, iconClass, radius, symbolColorNum);
+            // Check if destroyed during await
             if (this.destroyed) return;
         }
         else if (contentType === "customIcon") {
@@ -596,7 +695,7 @@ class JournalPinGraphics extends PIXI.Container {
                 const iconColorNum = typeof iconColor === "string" && iconColor.startsWith("#")
                     ? parseInt(iconColor.slice(1), 16)
                     : 0xFFFFFF;
-                await this._addSvgIcon(iconPath, radius, iconColorNum);
+                await this._addSvgIcon(container, iconPath, radius, iconColorNum);
                 if (this.destroyed) return;
             }
         } else {
@@ -619,24 +718,28 @@ class JournalPinGraphics extends PIXI.Container {
                 const fontFamily = style.fontFamily || "Arial";
                 const fontWeight = style.fontWeight || "bold";
 
-                this._label = new PIXI.Text(textValue, {
+                const label = new PIXI.Text(textValue, {
                     fontFamily: fontFamily,
                     fontSize: fontSize,
                     fontWeight: fontWeight,
                     fill: fontColorNum,
                     align: "center"
                 });
-                this._label.anchor.set(0.5, 0.5);
-                this._label.position.set(0, 0);
+                label.anchor.set(0.5, 0.5);
+                label.position.set(0, 0);
 
                 // For diamond shape, we need to rotate the text back
                 if (shape === "diamond") {
-                    this._label.rotation = -Math.PI / 4;
+                    label.rotation = -Math.PI / 4;
                 }
 
-                this.addChild(this._label);
+                container.addChild(label);
             }
         }
+
+        // Everything is ready, SWAP children to avoid flicker
+        this.removeChildren();
+        this.addChild(container);
 
         // ===================================
         // ADD OPTIONAL HOVER LABEL
@@ -795,7 +898,7 @@ class JournalPinGraphics extends PIXI.Container {
 
         // Add status indicators for GM
         if (game.user?.isGM && this.pinData.requiresVision) {
-            await this._addVisionIndicator(radius);
+            await this._addVisionIndicator(container, radius);
         }
 
         console.log(`SDX Journal Pins | Pin built - interactive:${this.interactive}, eventMode:${this.eventMode}, cursor:${this.cursor}`);
@@ -960,7 +1063,7 @@ class JournalPinGraphics extends PIXI.Container {
         }
     }
 
-    async _addIcon(iconClass, radius, color) {
+    async _addIcon(container, iconClass, radius, color) {
         // Create icon using a canvas
         const iconSize = radius * 1.2;
         const canvas = document.createElement("canvas");
@@ -1009,10 +1112,10 @@ class JournalPinGraphics extends PIXI.Container {
         this._icon = new PIXI.Sprite(texture);
         this._icon.anchor.set(0.5);
         this._icon.position.set(0, 0);
-        this.addChild(this._icon);
+        container.addChild(this._icon);
     }
 
-    async _addSvgIcon(iconPath, radius, color) {
+    async _addSvgIcon(container, iconPath, radius, color) {
         // Custom SVGs usually need to be a bit bigger to fill the pin
         const size = radius * 1.3;
         try {
@@ -1055,13 +1158,13 @@ class JournalPinGraphics extends PIXI.Container {
                 this._icon.rotation = -Math.PI / 4;
             }
 
-            this.addChild(this._icon);
+            container.addChild(this._icon);
         } catch (err) {
             console.error(`SDX Journal Pins | Failed to load custom SVG: ${iconPath}`, err);
         }
     }
 
-    async _addVisionIndicator(radius) {
+    async _addVisionIndicator(container, radius) {
         const iconClass = "fa-solid fa-eye";
         const iconSize = radius * 0.8;
         const color = 0xFFFFFF;
@@ -1122,10 +1225,16 @@ class JournalPinGraphics extends PIXI.Container {
             Math.sin(angle) * dist
         );
 
-        this.addChild(indicator);
+        container.addChild(indicator);
     }
 
     async update(newData) {
+        // Optimization: If data hasn't changed, don't rebuild
+        // This prevents flickering/disappearing icons during token movement hooks
+        if (foundry.utils.objectsEqual(this.pinData, newData)) {
+            return;
+        }
+
         this._removeEventListeners();
         this.pinData = foundry.utils.deepClone(newData);
         await this._build();
@@ -1151,10 +1260,14 @@ class JournalPinGraphics extends PIXI.Container {
     }
 
     _onPointerEnter(event) {
-        if (!this.pinData.style?.hideTooltip) {
+        // Normalize hideTooltip from multiple sources
+        const style = this.pinData.style || {};
+        const hideTooltip = this.pinData.hideTooltip || style.hideTooltip || false;
+
+        if (!hideTooltip) {
             JournalPinTooltip.show(this.pinData, event);
         }
-        if (this._labelContainer && this.pinData.style?.labelShowOnHover) {
+        if (this._labelContainer && style.labelShowOnHover) {
             this._labelContainer.visible = true;
         }
     }
@@ -1171,6 +1284,9 @@ class JournalPinGraphics extends PIXI.Container {
         const button = originalEvent.button ?? 0;
 
         if (button === 0) {
+            // Prevent Foundry from starting a selection marquee
+            event.stopPropagation();
+
             this._isDragging = true;
             this._hasDragged = false;
             const local = this.parent.toLocal(event.global);
@@ -1180,6 +1296,7 @@ class JournalPinGraphics extends PIXI.Container {
             this._dragStartPos.y = this.position.y;
             JournalPinTooltip.hide();
         } else if (button === 2) {
+            event.stopPropagation();
             this._showContextMenu(event);
         }
     }
@@ -1187,6 +1304,7 @@ class JournalPinGraphics extends PIXI.Container {
     _onPointerMove(event) {
         if (!this._isDragging) return;
 
+        event.stopPropagation();
         const local = this.parent.toLocal(event.global);
         const newX = local.x + this._dragOffset.x;
         const newY = local.y + this._dragOffset.y;
@@ -1204,26 +1322,27 @@ class JournalPinGraphics extends PIXI.Container {
     }
 
     async _onPointerUp(event) {
-        if (!this._isDragging) return;
+        if (this._isDragging) {
+            event.stopPropagation();
 
-        this._isDragging = false;
-
-        if (!this._hasDragged) {
-            this._openJournal();
-            return;
-        }
-
-        const newX = Math.round(this.position.x);
-        const newY = Math.round(this.position.y);
-
-        if (newX !== this.pinData.x || newY !== this.pinData.y) {
-            try {
-                await JournalPinManager.update(this.pinData.id, { x: newX, y: newY });
-            } catch (err) {
-                console.error("SDX Journal Pins | Error updating pin position:", err);
-                this.position.set(this.pinData.x, this.pinData.y);
+            if (this._hasDragged) {
+                // Save position
+                try {
+                    await JournalPinManager.update(this.pinData.id, {
+                        x: Math.round(this.position.x),
+                        y: Math.round(this.position.y)
+                    });
+                } catch (err) {
+                    console.error("SDX Journal Pins | Error updating pin position:", err);
+                    this.position.set(this.pinData.x, this.pinData.y);
+                }
+            } else {
+                this._openJournal();
             }
         }
+
+        this._isDragging = false;
+        this._hasDragged = false;
     }
 
     _openJournal() {
@@ -1265,6 +1384,20 @@ class JournalPinGraphics extends PIXI.Container {
         ];
 
         if (game.user?.isGM) {
+            menuItems.push({
+                name: "Copy Style",
+                icon: '<i class="fa-solid fa-copy"></i>',
+                callback: () => JournalPinManager.copyStyle(this.pinData)
+            });
+
+            if (JournalPinManager.hasCopiedStyle()) {
+                menuItems.push({
+                    name: "Paste Style",
+                    icon: '<i class="fa-solid fa-paste"></i>',
+                    callback: async () => await JournalPinManager.pasteStyle(this.pinData.id)
+                });
+            }
+
             // Toggle visibility option
             const isGmOnly = this.pinData.gmOnly ?? false;
             menuItems.push({
@@ -1345,28 +1478,33 @@ class JournalPinTooltip {
         this.hide();
 
         const journal = game.journal.get(pinData.journalId);
-        if (!journal) return;
-
-        // Get the page first
         let page = null;
-        if (pinData.pageId) {
-            page = journal.pages.get(pinData.pageId);
-        } else {
-            page = journal.pages.contents[0];
+        let hasAccess = true;
+
+        if (journal) {
+            // Get the page first
+            if (pinData.pageId) {
+                page = journal.pages.get(pinData.pageId);
+            } else {
+                page = journal.pages.contents[0];
+            }
+
+            if (page) {
+                // Check if user has at least LIMITED permission on the PAGE
+                hasAccess = game.user?.isGM || page.testUserPermission(game.user, "LIMITED");
+            }
         }
 
-        if (!page) return;
-
-        // Check if user has at least LIMITED permission on the PAGE (not journal)
-        // PERMISSION_LEVELS: NONE = 0, LIMITED = 1, OBSERVER = 2, OWNER = 3
-        const hasAccess = game.user?.isGM || page.testUserPermission(game.user, "LIMITED");
         if (!hasAccess) {
-            console.log("SDX Journal Pins | User has no permission to view tooltip for page", page.name);
+            console.log("SDX Journal Pins | User has no permission to view tooltip");
             return;
         }
 
+        // If no journal/page and no custom text, nothing to show
+        if (!page && !pinData.tooltipTitle && !pinData.tooltipContent) return;
+
         let content = "";
-        let title = page.name;
+        let title = page?.name || "Unlinked Pin";
 
         // Use custom tooltip title if provided
         if (pinData.tooltipTitle) {
@@ -1374,17 +1512,22 @@ class JournalPinTooltip {
         }
 
         // For content, we need at least OBSERVER permission on the PAGE to see text
-        const canSeeContent = game.user?.isGM || page.testUserPermission(game.user, "OBSERVER");
+        // If no page, we rely on custom content (always visible if pin is visible)
+        const canSeeContent = !page || game.user?.isGM || page.testUserPermission(game.user, "OBSERVER");
 
         // Use custom tooltip content if provided, otherwise use page content
         if (pinData.tooltipContent) {
             content = pinData.tooltipContent;
-        } else if (canSeeContent && page.text?.content) {
+        } else if (canSeeContent && page?.text?.content) {
             const temp = document.createElement("div");
             temp.innerHTML = page.text.content;
             content = temp.textContent?.substring(0, 200) || "";
             if (content.length >= 200) content += "...";
         }
+
+        // If no content and title is generic "Unlinked Pin" (and no custom title), maybe don't show?
+        // But we might want to just show the title.
+
 
         this._element = document.createElement("div");
         this._element.id = "sdx-journal-pin-tooltip";
@@ -1481,27 +1624,35 @@ class JournalPinRenderer {
     }
 
     static loadScenePins(sceneId, pins) {
-        this.clear();
-
         if (!this._container) {
             console.warn("SDX Journal Pins | Container not initialized");
             return;
         }
 
+        // If no pins, clear all
         if (!pins || pins.length === 0) {
-            console.log("SDX Journal Pins | No pins to load for scene", sceneId);
+            this.clear();
+            console.log("SDX Journal Pins | Cleared all pins for scene", sceneId);
             return;
         }
 
-        // Filter pins based on visibility
-        const visiblePins = pins.filter(pin => checkPinVisibility(pin));
-        console.log(`SDX Journal Pins | ${visiblePins.length}/${pins.length} pins visible to current user`);
+        // Filter valid/visible pins
+        const incomingPins = pins.filter(pin => checkPinVisibility(pin));
+        const incomingIds = new Set(incomingPins.map(p => p.id));
 
-        for (const pinData of visiblePins) {
-            this._addPinGraphics(pinData);
+        // 1. Remove pins that are no longer present or visible
+        for (const [id, graphics] of this._pins.entries()) {
+            if (!incomingIds.has(id)) {
+                this.removePin(id);
+            }
         }
 
-        console.log(`SDX Journal Pins | Loaded ${visiblePins.length} pins for scene ${sceneId}`);
+        // 2. Add or Update pins
+        for (const pinData of incomingPins) {
+            this.updatePin(pinData); // updatePin handles adding if missing
+        }
+
+        console.log(`SDX Journal Pins | Loaded ${incomingPins.length} pins for scene ${sceneId}`);
     }
 
     static _addPinGraphics(pinData) {
@@ -1734,12 +1885,14 @@ function initJournalPins() {
     });
 
     // Refresh pins when sight/vision changes
-    Hooks.on("sightRefresh", () => {
+    // Refresh pins when sight/vision changes
+    // Debounce to prevent flickering during animation
+    Hooks.on("sightRefresh", foundry.utils.debounce(() => {
         if (canvas?.scene) {
             const pins = JournalPinManager.list({ sceneId: canvas.scene.id });
             JournalPinRenderer.loadScenePins(canvas.scene.id, pins);
         }
-    });
+    }, 100));
 
     // Ensure style is correct after all settings are loaded (Foundry refresh/init)
     Hooks.once("ready", () => {
