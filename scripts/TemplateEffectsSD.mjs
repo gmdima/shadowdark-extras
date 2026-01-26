@@ -28,9 +28,19 @@ export function initTemplateEffects() {
     Hooks.on("preUpdateToken", (tokenDoc, changes, options, userId) => {
         // Store previous position before update
         if (changes.x !== undefined || changes.y !== undefined) {
+            // ALWAYS calculate from doc data to ensure we get the pre-update state
+            // Do NOT use tokenDoc.object.center as it might be previewing the move
+            const gridSize = tokenDoc.parent?.grid?.size || canvas.grid.size || 100;
+            const center = {
+                x: tokenDoc.x + (tokenDoc.width * gridSize) / 2,
+                y: tokenDoc.y + (tokenDoc.height * gridSize) / 2
+            };
+
+            console.log(`shadowdark-extras | preUpdateToken: Storing pos for ${tokenDoc.name} (${tokenDoc.id}):`, center);
+
             _previousTokenPositions.set(tokenDoc.id, {
-                x: tokenDoc.x,
-                y: tokenDoc.y
+                x: center.x,
+                y: center.y
             });
         }
     });
@@ -42,10 +52,11 @@ export function initTemplateEffects() {
         // Only run on GM client to prevent duplicate processing
         if (!game.user.isGM) return;
 
-        await processTokenMovement(tokenDoc);
+        console.log(`shadowdark-extras | updateToken: Processing movement for ${tokenDoc.name} (${tokenDoc.id})`);
+        await processTokenMovement(tokenDoc, changes);
     });
 
-    // Hook for template creation - store initial contained tokens
+    // Hook for template creation - store initial contained tokens AND trigger onEnter
     Hooks.on("createMeasuredTemplate", async (templateDoc, options, userId) => {
         if (!game.user.isGM) return;
 
@@ -56,6 +67,16 @@ export function initTemplateEffects() {
         if (tokens.length > 0) {
             await templateDoc.setFlag(MODULE_ID, 'containedTokens', tokens.map(t => t.id));
             console.log(`shadowdark-extras | Template created with ${tokens.length} tokens inside`);
+
+            // Trigger onEnter effects if enabled
+            // SKIP if already triggered manually (to avoid duplicate effects)
+            const config = templateDoc.flags?.[MODULE_ID]?.templateEffects;
+            if (config?.enabled && config.triggers?.onEnter && !config.initialEnterTriggered) {
+                console.log(`shadowdark-extras | Triggering onEnter effects for new template ${config.spellName || 'template'}`);
+                for (const token of tokens) {
+                    await applyTemplateEffect(templateDoc, token, 'enter');
+                }
+            }
         }
     });
 
@@ -311,10 +332,13 @@ export async function processTemplateTurnEffects(tokenDoc, trigger) {
 /**
  * Process token movement for enter/leave detection
  * @param {TokenDocument} tokenDoc - The token that moved
+ * @param {Object} changes - The changes from the update (for accurate new coordinates)
  */
-async function processTokenMovement(tokenDoc) {
+async function processTokenMovement(tokenDoc, changes) {
     const previousPos = _previousTokenPositions.get(tokenDoc.id);
     _previousTokenPositions.delete(tokenDoc.id);
+
+    console.log(`shadowdark-extras | processTokenMovement: Previous pos found?`, previousPos);
 
     if (!previousPos) return;
 
@@ -322,14 +346,37 @@ async function processTokenMovement(tokenDoc) {
     if (!token) return;
 
     // Get templates at old and new positions
-    const oldTemplates = getTemplatesAtPosition(previousPos.x, previousPos.y, tokenDoc.parent);
-    const newTemplates = getTemplatesContainingToken(token);
+
+    // Calculate new center using changes if available (prioritize over tokenDoc which might be stale)
+    const gridSize = tokenDoc.parent?.grid?.size || canvas.grid.size || 100;
+
+    const newX = changes?.x ?? tokenDoc.x;
+    const newY = changes?.y ?? tokenDoc.y;
+
+    const newCenter = {
+        x: newX + (tokenDoc.width * gridSize) / 2,
+        y: newY + (tokenDoc.height * gridSize) / 2
+    };
+
+    console.log(`shadowdark-extras | processTokenMovement: Coords - Old: ${previousPos.x},${previousPos.y} -> New: ${newCenter.x},${newCenter.y}`);
+
+    // Use the stored center point for the old position check
+    const oldTemplates = getTemplatesContainingPoint(previousPos.x, previousPos.y, tokenDoc.parent);
+
+    // Use the calculated new center for the new position check (avoids stale token.center)
+    const newTemplates = getTemplatesContainingPoint(newCenter.x, newCenter.y, tokenDoc.parent);
+
+    console.log(`shadowdark-extras | processTokenMovement: Old templates: ${oldTemplates.length}, New templates: ${newTemplates.length}`);
+    if (oldTemplates.length > 0) console.log('shadowdark-extras | Old IDs:', oldTemplates.map(t => t.id));
+    if (newTemplates.length > 0) console.log('shadowdark-extras | New IDs:', newTemplates.map(t => t.id));
 
     // Find entered templates
     const enteredTemplates = newTemplates.filter(t => !oldTemplates.some(ot => ot.id === t.id));
 
     // Find left templates  
     const leftTemplates = oldTemplates.filter(t => !newTemplates.some(nt => nt.id === t.id));
+
+    console.log(`shadowdark-extras | processTokenMovement: Entered: ${enteredTemplates.length}, Left: ${leftTemplates.length}`);
 
     // Process entered templates
     for (const templateDoc of enteredTemplates) {
@@ -355,6 +402,9 @@ async function processTokenMovement(tokenDoc) {
 
         if (config.triggers?.onLeave) {
             console.log(`shadowdark-extras | Token ${token.name} left template ${config.spellName || 'template'}`);
+            // Apply effects (damage, etc.) configured for the template
+            await applyTemplateEffect(templateDoc, token, 'leave');
+            // Remove lingering effects (conditions)
             await removeTemplateEffects(templateDoc, token);
         }
 
@@ -369,9 +419,10 @@ async function processTokenMovement(tokenDoc) {
  * Respects the autoApplyDamage combat setting
  * @param {MeasuredTemplateDocument} templateDoc - The template
  * @param {Token} token - The token to affect
+ * @param {Token} token - The token to affect
  * @param {string} trigger - The trigger type ('enter', 'turnStart', 'turnEnd')
  */
-async function applyTemplateEffect(templateDoc, token, trigger) {
+export async function applyTemplateEffect(templateDoc, token, trigger) {
     const config = templateDoc.flags?.[MODULE_ID]?.templateEffects;
     if (!config) return;
 
@@ -396,6 +447,14 @@ async function applyTemplateEffect(templateDoc, token, trigger) {
     // If auto-apply is OFF, create interactive card
     if (!autoApplyDamage) {
         await createInteractiveTemplateCard(templateDoc, token, trigger, config);
+
+        // Even in interactive mode, if there is NO save, we should apply effects (conditions) immediately
+        // Otherwise they are never applied because the card doesn't check for them currently
+        // ONLY valid for 'enter' trigger (don't re-apply on leave)
+        if (config.effects?.length > 0 && !config.save?.enabled && trigger === 'enter') {
+            console.log(`shadowdark-extras | Interactive mode + No save (Enter): Auto-applying effects for ${config.spellName}`);
+            await applyTemplateConditions(templateDoc, token, config.effects);
+        }
 
         // Still run item macro even in interactive mode
         console.log(`shadowdark-extras | Macro check (interactive): runItemMacro=${config.runItemMacro}, spellId=${config.spellId}`);
@@ -474,6 +533,7 @@ async function createInteractiveTemplateCard(templateDoc, token, trigger, config
 
     const triggerText = {
         enter: "entered",
+        leave: "left",
         turnStart: "started turn in",
         turnEnd: "ended turn in"
     }[trigger] || trigger;
@@ -863,30 +923,240 @@ async function runTemplateItemMacro(templateDoc, token, trigger, config) {
  * Apply condition effects from template
  */
 async function applyTemplateConditions(templateDoc, token, effectUuids) {
-    const actor = token.actor;
-    if (!actor) return;
-
-    for (const effectUuid of effectUuids) {
+    // Handle edge case where effectUuids is a JSON-encoded string (incorrectly stored flag)
+    if (typeof effectUuids === 'string') {
         try {
-            const effectDoc = await fromUuid(effectUuid);
-            if (!effectDoc) continue;
+            if (effectUuids.trim().startsWith('[') || effectUuids.trim().startsWith('{')) {
+                const parsed = JSON.parse(effectUuids);
+                // Recursively call with the parsed data
+                await applyTemplateConditions(templateDoc, token, Array.isArray(parsed) ? parsed : [parsed]);
+                return;
+            }
+        } catch (e) {
+            console.warn("shadowdark-extras | Failed to parse stringified effectUuids:", e);
+        }
+    }
 
+    console.log(`shadowdark-extras | applyTemplateConditions: Called with ${effectUuids?.length} UUIDs for ${token.name}`);
+
+    if (!effectUuids || effectUuids.length === 0) {
+        console.warn("shadowdark-extras | applyTemplateConditions: No effect UUIDs provided");
+        return;
+    }
+
+    const actor = token.actor;
+    if (!actor) {
+        console.warn("shadowdark-extras | applyTemplateConditions: No actor found for token");
+        return;
+    }
+
+    for (const effectRef of effectUuids) {
+        try {
+            console.log(`shadowdark-extras | applyTemplateConditions: Processing effect ref`, typeof effectRef);
+
+            let effectData;
+            let effectName;
+
+            if (typeof effectRef === 'string') {
+                const effectDoc = await fromUuid(effectRef);
+                if (!effectDoc) {
+                    console.warn(`shadowdark-extras | applyTemplateConditions: Could not find effect for UUID ${effectRef}`);
+                    continue;
+                }
+                effectData = effectDoc.toObject();
+                effectName = effectDoc.name;
+            } else if (typeof effectRef === 'object') {
+                if (effectRef.uuid && typeof effectRef.uuid === 'string' && !effectRef.changes && !effectRef.effects) {
+                    console.log(`shadowdark-extras | applyTemplateConditions: Found UUID wrapper object, resolving ${effectRef.uuid}`);
+                    const effectDoc = await fromUuid(effectRef.uuid);
+                    if (!effectDoc) {
+                        console.warn(`shadowdark-extras | applyTemplateConditions: Could not find effect for UUID ${effectRef.uuid}`);
+                        continue;
+                    }
+                    effectData = effectDoc.toObject();
+                    effectName = effectDoc.name;
+                } else if (typeof effectRef.toObject === 'function') {
+                    effectData = effectRef.toObject();
+                    effectName = effectRef.name;
+                } else {
+                    effectData = foundry.utils.deepClone(effectRef);
+                    effectName = effectData.name || "Effect";
+                }
+            } else {
+                console.warn(`shadowdark-extras | applyTemplateConditions: Invalid effect reference type: ${typeof effectRef}`);
+                continue;
+            }
+
+            if (!effectName && effectData.label) effectName = effectData.label;
+            if (!effectName) effectName = "Template Effect";
+            effectData.name = effectName;
+
+            if (!effectData.type) {
+                if (effectData.changes || effectData.duration) {
+                    console.log("shadowdark-extras | applyTemplateConditions: Detected ActiveEffect data. Wrapping in Item...");
+                    const aeData = foundry.utils.deepClone(effectData);
+                    aeData.name = aeData.name || aeData.label || effectName;
+                    effectData = {
+                        name: effectName,
+                        type: "Effect",
+                        img: aeData.icon || "icons/svg/aura.svg",
+                        effects: [aeData]
+                    };
+                } else {
+                    console.warn("shadowdark-extras | applyTemplateConditions: Missing type on effect data, forcing 'Effect'");
+                    effectData.type = "Effect";
+                }
+            }
             // Check if actor already has this effect from this template
+            // ALSO check if actor has this effect from the original Spell (Focus Tracker application)
+            // We check the CASTER's flags because Focus Tracker effects might not have origin set
+            const config = templateDoc.flags?.[MODULE_ID]?.templateEffects;
+            let focusEffectId = null;
+
+            if (config?.casterActorId && config?.spellId) {
+                const caster = game.actors.get(config.casterActorId);
+                if (caster) {
+                    // Check Focus Spells
+                    const activeFocus = caster.getFlag(MODULE_ID, "activeFocusSpells") || [];
+                    const focusEntry = activeFocus.find(f => f.spellId === config.spellId);
+                    if (focusEntry) {
+                        const targetEntry = focusEntry.targetEffects?.find(te =>
+                            te.targetActorId === actor.id || te.targetTokenId === token.id
+                        );
+                        if (targetEntry) focusEffectId = targetEntry.effectItemId;
+                    }
+
+                    // Check Duration Spells (e.g. Web)
+                    if (!focusEffectId) {
+                        const activeDuration = caster.getFlag(MODULE_ID, "activeDurationSpells") || [];
+                        const durationEntry = activeDuration.find(d => d.spellId === config.spellId);
+                        if (durationEntry) {
+                            const targetEntry = durationEntry.targetEffects?.find(te =>
+                                te.targetActorId === actor.id || te.targetTokenId === token.id
+                            );
+                            if (targetEntry) focusEffectId = targetEntry.effectItemId;
+                        }
+                    }
+                }
+            }
+
             const existingEffect = actor.items.find(i =>
                 i.type === "Effect" &&
-                i.flags?.[MODULE_ID]?.templateOrigin === templateDoc.id
+                (
+                    i.getFlag(MODULE_ID, "templateOrigin") === templateDoc.id ||
+                    (focusEffectId && i.id === focusEffectId)
+                )
             );
 
-            if (existingEffect) continue; // Don't stack
-
-            // Create the effect
-            const effectData = effectDoc.toObject();
+            if (existingEffect) {
+                console.log(`shadowdark-extras | applyTemplateConditions: Effect already exists (Template or Focus Tracker), skipping`);
+                continue; // Don't stack
+            }
             effectData.flags = effectData.flags || {};
             effectData.flags[MODULE_ID] = effectData.flags[MODULE_ID] || {};
             effectData.flags[MODULE_ID].templateOrigin = templateDoc.id;
+            effectData.origin = templateDoc.uuid;
 
-            await actor.createEmbeddedDocuments("Item", [effectData]);
-            console.log(`shadowdark-extras | Applied effect ${effectDoc.name} to ${token.name}`);
+            console.log(`shadowdark-extras | applyTemplateConditions: Setting templateOrigin flag to ${templateDoc.id} for new effect`);
+
+            // -------------------------------------------------------------
+            // REQUIREMENT CHECK
+            // -------------------------------------------------------------
+
+            console.log("shadowdark-extras | debug: inspecting effectData", JSON.stringify(effectData, null, 2));
+
+            // Shadowdark effects often have a system.requirements field (e.g., "@target.level < 3")
+            // We must evaluate this against the target actor.
+            // Requirement is stored on the template flags (copied from Spell config)
+            const requirements = templateDoc.flags?.[MODULE_ID]?.templateEffects?.effectsRequirement;
+
+            if (requirements && typeof requirements === 'string' && requirements.trim().length > 0) {
+                try {
+                    // Replace @target. references with actor data
+                    // We use Roll.safeEval or a simple Function evaluation with restricted scope
+                    // For safety and simplicity, we'll try to use Foundry's Roll parser if possible, 
+                    // or simple string substitution for common properties.
+
+                    // Prepare data object
+                    const rollData = actor.getRollData();
+                    const targetData = rollData; // In alias context, @target is the actor
+
+                    // Replace @target. with just target. prop for eval, or replace with values
+                    // Let's use Roll.replaceFormulaData logic if available, or manual replacement
+                    // Shadowdark system uses @target syntax.
+
+                    // Simple regex replacement for common properties to raw values
+                    let evalString = requirements;
+
+                    // Helper to resolve dot notation
+                    const resolveProp = (obj, path) => path.split('.').reduce((o, i) => o?.[i], obj);
+
+                    // Replace @target.path
+                    evalString = evalString.replace(/@target\.([\w\.]+)/g, (match, path) => {
+                        let val = resolveProp(targetData, path);
+                        // Handle Shadowdark's data structure where some stats are objects with a .value property
+                        if (val !== null && typeof val === 'object' && val.value !== undefined) {
+                            val = val.value;
+                        }
+                        return val !== undefined ? val : 0;
+                    });
+
+                    // Replace @level treated as target level
+                    evalString = evalString.replace(/@level/g, (match) => {
+                        return targetData.level?.value ?? targetData.level ?? 0;
+                    });
+
+                    // Evaluate
+                    const result = Roll.safeEval(evalString);
+
+                    if (!result) {
+                        console.log(`shadowdark-extras | Requirement not met for ${effectName} on ${token.name}. Req: "${requirements}" -> "${evalString}"`);
+                        ui.notifications.info(`${actor.name} resists ${effectName} (Requirement not met)`);
+                        continue; // Skip application
+                    }
+
+                    console.log(`shadowdark-extras | Requirement met for ${effectName}: "${requirements}" -> ${result}`);
+
+                } catch (err) {
+                    console.warn(`shadowdark-extras | Error evaluating requirement "${requirements}":`, err);
+                    // On error, do we fail safe or permissive? Usually permissive unless critical.
+                    // But for "Level < 3", error likely means bad syntax. Let's allow it to be safe? 
+                    // Or fail? Let's log and proceed for now, blocking only on definite false.
+                }
+            }
+
+            console.log(`shadowdark-extras | applyTemplateConditions: Creating effect ${effectName} on ${token.name} with origin ${templateDoc.id}`);
+            const createdEffects = await actor.createEmbeddedDocuments("Item", [effectData]);
+            console.log(`shadowdark-extras | Applied effect ${effectName} to ${token.name}`);
+
+            // Link to Focus Tracker if applicable (Ensures UI counter updates when re-entering template)
+            if (config?.casterActorId && config?.spellId && createdEffects.length > 0) {
+                const newEffectId = createdEffects[0].id;
+                const caster = game.actors.get(config.casterActorId);
+                if (caster) {
+                    // We must fetch fresh flags to avoid overwriting recent changes
+                    const activeFocus = caster.getFlag(MODULE_ID, "activeFocusSpells") || [];
+                    const focusEntry = activeFocus.find(f => f.spellId === config.spellId);
+
+                    if (focusEntry) {
+                        // Avoid duplicates in the list
+                        const isAlreadyLinked = focusEntry.targetEffects.some(te => te.effectItemId === newEffectId);
+                        if (!isAlreadyLinked) {
+                            focusEntry.targetEffects.push({
+                                targetActorId: actor.id,
+                                targetTokenId: token.id,
+                                effectItemId: newEffectId,
+                                targetName: token.name || actor.name
+                            });
+                            await caster.setFlag(MODULE_ID, "activeFocusSpells", activeFocus);
+                            // Refresh sheet to show updated count
+                            if (caster.sheet?.rendered) caster.sheet.render(false);
+                            console.log(`shadowdark-extras | Linked re-applied effect ${newEffectId} to focus spell ${config.spellId}`);
+                        }
+                    }
+                }
+            }
+
         } catch (err) {
             console.error(`shadowdark-extras | Error applying effect:`, err);
         }
@@ -900,11 +1170,48 @@ async function removeTemplateEffects(templateDoc, token) {
     const actor = token.actor;
     if (!actor) return;
 
-    // Find effects from this template
+    // Get Focus Tracker effect ID from Caster's flags
+    const config = templateDoc.flags?.[MODULE_ID]?.templateEffects;
+    let focusEffectId = null;
+
+    if (config?.casterActorId && config?.spellId) {
+        const caster = game.actors.get(config.casterActorId);
+        if (caster) {
+            // Check Focus Spells
+            const activeFocus = caster.getFlag(MODULE_ID, "activeFocusSpells") || [];
+            const focusEntry = activeFocus.find(f => f.spellId === config.spellId);
+            if (focusEntry) {
+                const targetEntry = focusEntry.targetEffects?.find(te =>
+                    te.targetActorId === actor.id || te.targetTokenId === token.id
+                );
+                if (targetEntry) focusEffectId = targetEntry.effectItemId;
+            }
+
+            // Check Duration Spells (e.g. Web)
+            if (!focusEffectId) {
+                const activeDuration = caster.getFlag(MODULE_ID, "activeDurationSpells") || [];
+                const durationEntry = activeDuration.find(d => d.spellId === config.spellId);
+                if (durationEntry) {
+                    const targetEntry = durationEntry.targetEffects?.find(te =>
+                        te.targetActorId === actor.id || te.targetTokenId === token.id
+                    );
+                    if (targetEntry) focusEffectId = targetEntry.effectItemId;
+                }
+            }
+        }
+    }
+
+    // Find effects from this template OR from the original spell (Focus Tracker)
     const effectsToRemove = actor.items.filter(i =>
         i.type === "Effect" &&
-        i.flags?.[MODULE_ID]?.templateOrigin === templateDoc.id
+        (
+            i.getFlag(MODULE_ID, "templateOrigin") === templateDoc.id ||
+            i.origin === templateDoc.uuid ||
+            (focusEffectId && i.id === focusEffectId)
+        )
     );
+
+    console.log(`shadowdark-extras | removeTemplateEffects: Found ${effectsToRemove.length} effects to remove from ${token.name}`);
 
     if (effectsToRemove.length > 0) {
         const ids = effectsToRemove.map(e => e.id);
@@ -922,6 +1229,7 @@ async function createTemplateEffectMessage(templateDoc, token, trigger, result) 
 
     const triggerText = {
         enter: "entered",
+        leave: "left",
         turnStart: "started turn in",
         turnEnd: "ended turn in"
     }[trigger] || trigger;
@@ -1058,29 +1366,25 @@ export function getTemplatesContainingToken(token) {
     return templates;
 }
 
+
 /**
- * Get templates at a specific position
- * @param {number} x - X coordinate
- * @param {number} y - Y coordinate
+ * Get templates containing a specific point
+ * @param {number} x - X coordinate (center)
+ * @param {number} y - Y coordinate (center)
  * @param {Scene} scene - The scene to check
  * @returns {MeasuredTemplateDocument[]} Array of template documents
  */
-function getTemplatesAtPosition(x, y, scene) {
+function getTemplatesContainingPoint(x, y, scene) {
     if (!scene) return [];
 
     const templates = [];
-    const gridSize = scene.grid.size || 100;
-
-    // Calculate center of grid square
-    const centerX = x + gridSize / 2;
-    const centerY = y + gridSize / 2;
 
     for (const templateDoc of scene.templates) {
         const template = templateDoc.object;
         if (!template?.shape) continue;
 
-        const localX = centerX - template.x;
-        const localY = centerY - template.y;
+        const localX = x - template.x;
+        const localY = y - template.y;
 
         if (template.shape.contains(localX, localY)) {
             templates.push(templateDoc);
@@ -1129,7 +1433,9 @@ export async function setupTemplateEffectFlags(templateDoc, config) {
         effects: config.effects || [],
         excludeCaster: config.excludeCaster || false,
         runItemMacro: config.runItemMacro || false,
-        spellId: config.spellId || null
+        spellId: config.spellId || null,
+        initialEnterTriggered: config.initialEnterTriggered || false,
+        effectsRequirement: config.effectsRequirement || ""
     });
 
     // Store initial contained tokens

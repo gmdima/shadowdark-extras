@@ -941,6 +941,332 @@ export async function applyCleansingWeapon(weapon, casterActor, casterItem, targ
 
 
 // ============================================
+// WRATH SPELL
+// ============================================
+
+/**
+ * Show the Wrath spell selection dialog
+ * Displays all available weapons on the caster (Self) in a grid with images
+ * 
+ * @param {Actor} casterActor - The actor casting the spell and targeting self
+ * @param {Item} casterItem - The Wrath spell item
+ * @param {string} originatingUserId - Optional: The user who initiated this (for GM routing)
+ */
+export async function showWrathWeaponDialog(casterActor, casterItem, originatingUserId = null) {
+    // Target is always self
+    const targetActor = casterActor;
+    // For Wrath, we track duration on the Caster
+    // But typically duration tracking links to a token. 
+    // We'll try to find the caster's token.
+    const targetToken = casterActor.token || casterActor.getActiveTokens()[0];
+
+    // Check if we need to route this dialog to the originating user
+    if (originatingUserId && game.user.isGM && originatingUserId !== game.user.id) {
+        const sdxModule = game.modules.get(MODULE_ID);
+        if (sdxModule?.socket) {
+            await sdxModule.socket.executeAsUser("showWrathWeaponDialogForUser", originatingUserId, {
+                casterActorId: casterActor.id,
+                casterItemId: casterItem.id,
+                targetActorId: targetActor.id,
+                targetTokenId: targetToken?.id
+            });
+            return;
+        }
+    }
+
+    const allWeapons = targetActor.items.filter(item => item.type === "Weapon");
+    if (allWeapons.length === 0) {
+        ui.notifications.warn(`${targetActor.name} has no weapons!`);
+        return;
+    }
+
+    // Build dialog content with checkboxes
+    const buildWeaponGrid = (includeMagical, includeWithBonuses) => {
+        const filteredWeapons = allWeapons.filter(weapon => {
+            const bonusData = weapon.getFlag(MODULE_ID, "weaponBonus");
+            const hasExistingBonuses = bonusData?.enabled;
+            const isMagical = weapon.system?.magicItem || false;
+
+            // 1. Always exclude if it already has THIS spell's bonus
+            const hasWrathBonus = hasExistingBonuses && (
+                bonusData?.hitBonuses?.some(b => b.label === "Wrath") ||
+                bonusData?.damageBonuses?.some(b => b.label === "Wrath")
+            );
+            if (hasWrathBonus) return false;
+
+            // 2. If it has OTHER bonuses, check includeWithBonuses
+            if (hasExistingBonuses) return includeWithBonuses;
+
+            // 3. If it's magical (but no temporary bonuses), check includeMagical
+            if (isMagical) return includeMagical;
+
+            // 4. Otherwise it's a normal weapon
+            return true;
+        });
+
+        if (filteredWeapons.length === 0) {
+            return `<div class="sdx-spell-no-items">
+                No available weapons.
+                <div class="sdx-spell-no-items-hint">Try adjusting the filters above.</div>
+            </div>`;
+        }
+
+        return filteredWeapons.map(weapon => {
+            const img = weapon.img || "icons/svg/sword.svg";
+            const bonusData = weapon.getFlag(MODULE_ID, "weaponBonus");
+            const hasExistingBonuses = bonusData?.enabled;
+            const isMagical = weapon.system?.magicItem || false;
+
+            // Check for unidentified status
+            const isUnidentifiedItem = isUnidentified(weapon);
+            const displayName = isUnidentifiedItem ? getUnidentifiedName(weapon) : weapon.name;
+
+            let badge = "";
+            if (hasExistingBonuses) {
+                badge = `<span class="sdx-weapon-badge bonus" title="Has existing bonuses"><i class="fas fa-plus-circle"></i></span>`;
+            } else if (isMagical && !isUnidentifiedItem) {
+                badge = `<span class="sdx-weapon-badge magical" title="Magic Item"><i class="fas fa-sparkles"></i></span>`;
+            }
+
+            return `
+                <div class="sdx-spell-weapon-item" data-weapon-id="${weapon.id}">
+                    <div class="sdx-spell-weapon-img">
+                        <img src="${img}" alt="${displayName}">
+                        ${badge}
+                    </div>
+                    <div class="sdx-spell-weapon-name">${displayName}</div>
+                </div>
+            `;
+        }).join("");
+    };
+
+    const content = `
+        <div class="sdx-spell-weapon-dialog sdx-cleansingweapon-theme">
+            <div class="sdx-spell-header">
+                <i class="fas fa-gavel"></i>
+                <span>Choose a weapon to empower with Wrath</span>
+            </div>
+            <div class="sdx-spell-options">
+                <label class="sdx-spell-checkbox">
+                    <input type="checkbox" name="includeMagical" />
+                    <span>Include Magical Weapons</span>
+                </label>
+                <label class="sdx-spell-checkbox">
+                    <input type="checkbox" name="includeWithBonuses" />
+                    <span>Include with Bonuses</span>
+                </label>
+            </div>
+            <div class="sdx-spell-weapon-grid">
+                ${buildWeaponGrid(false, false)}
+            </div>
+            <div class="sdx-spell-description">
+                 <i class="fas fa-info-circle"></i>
+                 The weapon becomes magical, gains <strong>+2 to hit</strong> and deals <strong>+1d8 physical damage</strong>.
+            </div>
+            <input type="hidden" name="selectedWeaponId" value="">
+        </div>
+    `;
+
+    // Use specific CSS class for styling if needed, or reuse generic one
+    // We can inject a style block or rely on existing styles
+    // sdx-wrath-theme can be targeted for colors (e.g. red/crimson)
+
+    const dialog = new foundry.applications.api.DialogV2({
+        window: {
+            title: "Wrath",
+            icon: "fas fa-gavel"
+        },
+        content: content,
+        buttons: [
+            {
+                action: "cancel",
+                label: "Cancel",
+                icon: "fas fa-times"
+            },
+            {
+                action: "empower",
+                label: "Empower Weapon",
+                icon: "fas fa-gavel",
+                default: true,
+                callback: async (event, button, dialogApp) => {
+                    const selectedId = dialogApp.element.querySelector("input[name='selectedWeaponId']")?.value;
+                    if (!selectedId) {
+                        ui.notifications.warn("Please select a weapon to empower.");
+                        return false;
+                    }
+                    const selectedWeapon = targetActor.items.get(selectedId);
+                    if (selectedWeapon) {
+                        await applyWrathWeapon(selectedWeapon, casterActor, casterItem, targetActor, targetToken);
+                    }
+                    return true;
+                }
+            }
+        ],
+        position: {
+            width: 500,
+            height: "auto"
+        }
+    });
+
+    dialog.addEventListener("render", (event) => {
+        const dialogElement = dialog.element;
+        const grid = dialogElement.querySelector(".sdx-spell-weapon-grid");
+        const hiddenInput = dialogElement.querySelector("input[name='selectedWeaponId']");
+        const checkboxMagical = dialogElement.querySelector("input[name='includeMagical']");
+        const checkboxBonuses = dialogElement.querySelector("input[name='includeWithBonuses']");
+
+        const setupItemSelection = () => {
+            const items = dialogElement.querySelectorAll(".sdx-spell-weapon-item");
+            items.forEach(itemEl => {
+                itemEl.addEventListener("click", (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    items.forEach(i => i.classList.remove("selected"));
+                    itemEl.classList.add("selected");
+                    if (hiddenInput) {
+                        hiddenInput.value = itemEl.dataset.weaponId;
+                    }
+                });
+            });
+        };
+
+        const updateGrid = () => {
+            grid.innerHTML = buildWeaponGrid(checkboxMagical.checked, checkboxBonuses.checked);
+            hiddenInput.value = "";
+            setupItemSelection();
+        };
+
+        setupItemSelection();
+
+        checkboxMagical?.addEventListener("change", updateGrid);
+        checkboxBonuses?.addEventListener("change", updateGrid);
+    });
+
+    await dialog.render(true);
+}
+
+/**
+ * Apply the Wrath effect to a weapon
+ * 
+ * @param {Item} weapon - The weapon to empower
+ * @param {Actor} casterActor - The caster (and target)
+ * @param {Item} casterItem - The spell item
+ * @param {Actor} targetActor - The target owner of the weapon (same as caster)
+ * @param {Token} targetToken - The target token
+ */
+export async function applyWrathWeapon(weapon, casterActor, casterItem, targetActor, targetToken) {
+    const sdxModule = game.modules.get(MODULE_ID);
+    if (!sdxModule?.api) {
+        ui.notifications.warn("Module API not available");
+        return;
+    }
+
+    if (!weapon.isOwner && !game.user.isGM) {
+        if (sdxModule.socket) {
+            await sdxModule.socket.executeAsGM(
+                "applyWrathWeaponAsGM",
+                weapon.uuid,
+                casterActor.uuid,
+                casterItem.uuid,
+                targetActor.uuid,
+                targetToken?.document?.uuid
+            );
+            return;
+        } else {
+            ui.notifications.warn("Cannot empower weapon: No GM connected or socket unavailable.");
+            return;
+        }
+    }
+
+    const existingBonus = weapon.getFlag(MODULE_ID, "weaponBonus") || {};
+
+    const wrathWeaponBonus = {
+        enabled: true,
+        hitBonuses: [
+            ...(existingBonus.hitBonuses || []),
+            { formula: "2", label: "Wrath", exclusive: false, requirements: [] }
+        ],
+        damageBonuses: [
+            ...(existingBonus.damageBonuses || []),
+            { formula: "1d8", label: "Wrath", damageType: "physical", exclusive: false, requirements: [] }
+        ],
+        damageBonus: existingBonus.damageBonus || "",
+        criticalExtraDice: existingBonus.criticalExtraDice || "",
+        criticalExtraDamage: existingBonus.criticalExtraDamage || "",
+        requirements: existingBonus.requirements || [],
+        effects: existingBonus.effects || [],
+        itemMacro: existingBonus.itemMacro || { enabled: false, runAsGm: false, triggers: [] }
+    };
+
+    const changes = {
+        "system.magicItem": true,
+        [`flags.${MODULE_ID}.weaponBonus`]: wrathWeaponBonus
+    };
+
+    await sdxModule.api.registerSpellModification(casterActor, casterItem, weapon, changes, {
+        icon: "fas fa-gavel",
+        endMessage: "The wrath fades from <strong>{weapon}</strong> on <strong>{actor}</strong>."
+    });
+
+    await weapon.update(changes);
+
+    if (targetToken) {
+        // Check if duration tracking is already active for this spell (system might have started it)
+        const activeDuration = sdxModule.api.getActiveDurationSpells ? sdxModule.api.getActiveDurationSpells(casterActor) : [];
+        const isTracking = activeDuration.some(d => d.spellId === casterItem.id);
+
+        if (!isTracking) {
+            await sdxModule.api.startDurationSpell(casterActor, casterItem, [targetToken.id], {});
+        }
+    }
+
+    // Sequencer animation
+    try {
+        if (game.modules.get("sequencer")?.active) {
+            const token = targetActor.getActiveTokens()?.[0];
+            if (token) {
+                new Sequence()
+                    .effect()
+                    .atLocation(token)
+                    .file("jb2a.fire_bolt.orange")
+                    .scale(0.5)
+                    .fadeIn(200)
+                    .fadeOut(400)
+                    .spriteOffset({ x: 0, y: -20 })
+                    .play();
+            }
+        }
+    } catch (e) {
+        console.log(`${MODULE_ID} | Sequencer animation not available: ${e.message}`);
+    }
+
+    const isUnidentifiedItem = isUnidentified(weapon);
+    const displayName = isUnidentifiedItem ? getUnidentifiedName(weapon) : weapon.name;
+
+    ui.notifications.info(`${displayName} is empowered with Wrath!`);
+
+    const duration = casterItem.system?.duration?.value || "?";
+    await ChatMessage.create({
+        speaker: ChatMessage.getSpeaker({ actor: casterActor }),
+        content: `
+            <div class="shadowdark chat-card sdx-wrath-chat">
+                <header class="card-header flexrow">
+                    <img class="item-image" src="${weapon.img}" alt="${displayName}"/>
+                    <div class="header-text">
+                        <h3><i class="fas fa-gavel"></i> Wrath</h3>
+                    </div>
+                </header>
+                <div class="card-content">
+                    <p><strong>${casterActor.name}</strong> empowers their <strong>${displayName}</strong> with Wrath!</p>
+                    <p class="spell-effect"><em>The weapon becomes magical, gains +2 to hit, and deals +1d8 physical damage for ${duration} rounds.</em></p>
+                </div>
+            </div>
+        `
+    });
+}
+
+
+// ============================================
 // API REGISTRATION
 // ============================================
 // Register API functions immediately when module loads
@@ -960,6 +1286,9 @@ Hooks.once("ready", () => {
         // Cleansing Weapon spell
         module.api.showCleansingWeaponDialog = showCleansingWeaponDialog;
         module.api.applyCleansingWeapon = applyCleansingWeapon;
+        // Wrath spell
+        module.api.showWrathWeaponDialog = showWrathWeaponDialog;
+        module.api.applyWrathWeapon = applyWrathWeapon;
         console.log(`${MODULE_ID} | Spell Macros API registered`);
     }
 });

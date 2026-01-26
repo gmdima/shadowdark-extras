@@ -5,7 +5,7 @@
 
 import { getWeaponBonuses, getWeaponEffectsToApply, evaluateRequirements, calculateWeaponBonusDamage, decrementDamageBonusUsage } from "./WeaponBonusConfig.mjs";
 import { startDurationSpell, linkEffectToDurationSpell, linkEffectToFocusSpell, linkTargetToFocusSpell, startFocusSpellIfNeeded, getActiveDurationSpells, endFocusSpell } from "./FocusSpellTrackerSD.mjs";
-import { setupTemplateEffectFlags } from "./TemplateEffectsSD.mjs";
+import { setupTemplateEffectFlags, applyTemplateEffect, getTokensInTemplate } from "./TemplateEffectsSD.mjs";
 import { createAuraOnActor } from "./AuraEffectsSD.mjs";
 
 const MODULE_ID = "shadowdark-extras";
@@ -734,7 +734,7 @@ export function setupCombatSocket() {
 		return true;
 	});
 
-	socketlibSocket.register("applyEffectToTarget", async ({ targetActorId, targetTokenId, effectUuid, casterId, spellId }) => {
+	socketlibSocket.register("applyEffectToTarget", async ({ targetActorId, targetTokenId, effectUuid, casterId, spellId, templateId }) => {
 		let targetActor = null;
 
 		// Try to get the actor from the token first (for unlinked tokens)
@@ -763,6 +763,14 @@ export function setupCombatSocket() {
 			}
 
 			const effectItemData = effectDoc.toObject();
+
+			// Apply template origin if provided
+			if (templateId) {
+				effectItemData.flags = effectItemData.flags || {};
+				effectItemData.flags[MODULE_ID] = effectItemData.flags[MODULE_ID] || {};
+				effectItemData.flags[MODULE_ID].templateOrigin = templateId;
+			}
+
 			const createdItems = await targetActor.createEmbeddedDocuments("Item", [effectItemData]);
 
 			if (createdItems.length > 0) {
@@ -982,6 +990,24 @@ export function setupCombatSocket() {
 		const sdxModule = game.modules.get(MODULE_ID);
 		if (sdxModule?.api?.showCleansingWeaponDialog) {
 			await sdxModule.api.showCleansingWeaponDialog(casterActor, casterItem, targetActor, targetToken);
+		}
+	});
+
+	// Handler: Show Wrath dialog on player's client
+	socketlibSocket.register("showWrathWeaponDialogForUser", async ({ casterActorId, casterItemId, targetActorId, targetTokenId }) => {
+		const casterActor = game.actors.get(casterActorId);
+		const casterItem = casterActor?.items.get(casterItemId);
+		const targetActor = game.actors.get(targetActorId);
+		const targetToken = targetTokenId ? canvas.tokens?.get(targetTokenId) : null;
+
+		if (!casterActor || !casterItem || !targetActor) {
+			console.warn(`${MODULE_ID} | showWrathWeaponDialogForUser: Missing data`);
+			return;
+		}
+
+		const sdxModule = game.modules.get(MODULE_ID);
+		if (sdxModule?.api?.showWrathWeaponDialog) {
+			await sdxModule.api.showWrathWeaponDialog(casterActor, casterItem, targetActor);
 		}
 	});
 
@@ -1588,7 +1614,7 @@ export async function injectDamageCard(message, html, data) {
 		// Priority 1: Try getting from speaker token (for unlinked tokens)
 		const speaker = message.speaker;
 		if (speaker.token) {
-			const token = canvas.tokens.get(speaker.token);
+			const token = canvas.tokens?.get(speaker.token);
 			// Verify this token matches the actor ID in the card (or the card actor ID is the base ID and token wraps it)
 			if (token && token.actor) {
 				// If cardData.actorId matches either the token's synthetic ID or its base ID, use the token actor
@@ -1605,7 +1631,7 @@ export async function injectDamageCard(message, html, data) {
 
 		// Priority 3: Search canvas tokens for matching actor ID
 		if (!casterActor) {
-			const token = canvas.tokens.placeables.find(t => t.actor?.id === cardData.actorId);
+			const token = canvas.tokens?.placeables.find(t => t.actor?.id === cardData.actorId);
 			if (token) casterActor = token.actor;
 		}
 
@@ -1829,7 +1855,8 @@ export async function injectDamageCard(message, html, data) {
 	const targetingConfig = item?.flags?.[MODULE_ID]?.targeting;
 	let useTemplateTargeting = targetingConfig?.mode === 'template' &&
 		message.author.id === game.user.id && // Only for the caster
-		!_templatePlacedMessages.has(messageKey); // Use in-memory check instead of flags
+		!_templatePlacedMessages.has(messageKey) && // Use in-memory check
+		!message.flags?.[MODULE_ID]?.templatePlaced; // AND persistent check
 
 	// For spells that require success rolls, only show template if spell succeeded
 	// Note: Potions and Scrolls don't have successful roll requirements (they always succeed when used)
@@ -1843,6 +1870,9 @@ export async function injectDamageCard(message, html, data) {
 	}
 
 	if (useTemplateTargeting) {
+		// Mark as placed immediately to prevent re-runs (especially on reload)
+		await message.setFlag(MODULE_ID, "templatePlaced", true);
+		_templatePlacedMessages.add(messageKey);
 
 		// Get template settings
 		const templateSettings = targetingConfig.template || {};
@@ -1879,6 +1909,12 @@ export async function injectDamageCard(message, html, data) {
 			autoDelete = deleteSeconds * 1000;
 		}
 
+		// Force disable auto-delete for Focus spells - they persist until focus is lost
+		if (item?.system?.duration?.type === 'focus') {
+			autoDelete = null;
+			expiryRounds = null;
+		}
+
 		try {
 			// Use SDX.templates API if available
 			if (typeof SDX !== 'undefined' && SDX.templates) {
@@ -1887,7 +1923,7 @@ export async function injectDamageCard(message, html, data) {
 				if (placement === 'centered') {
 					// Auto-center on caster's token
 					const casterTokenId = speaker?.token;
-					const casterToken = canvas.tokens.get(casterTokenId);
+					const casterToken = canvas.tokens?.get(casterTokenId);
 					if (casterToken) {
 						// Place template centered on caster
 						result = await SDX.templates.placeAndTarget({
@@ -1906,7 +1942,7 @@ export async function injectDamageCard(message, html, data) {
 				} else if (placement === 'caster') {
 					// Originate from caster - origin locked to caster, user controls direction
 					const casterTokenId = speaker?.token;
-					const casterToken = canvas.tokens.get(casterTokenId);
+					const casterToken = canvas.tokens?.get(casterTokenId);
 					if (casterToken) {
 						result = await SDX.templates.placeAndTarget({
 							type: templateType,
@@ -1951,7 +1987,7 @@ export async function injectDamageCard(message, html, data) {
 				}
 
 				if (result && result.tokens) {
-					targets = result.tokens.map(t => canvas.tokens.get(t.id)).filter(t => t);
+					targets = result.tokens.map(t => canvas.tokens?.get(t.id)).filter(t => t);
 
 					// Filter out caster if excludeCaster is enabled
 					if (excludeCaster && speaker?.token) {
@@ -1961,6 +1997,9 @@ export async function injectDamageCard(message, html, data) {
 					// Apply template effects configuration if enabled
 					const templateEffectsConfig = item?.flags?.[MODULE_ID]?.templateEffects;
 					if (result.template && templateEffectsConfig?.enabled) {
+						// Get spell damage config to access effectsRequirement
+						const spellDamageConfig = item?.flags?.[MODULE_ID]?.spellDamage;
+
 						await setupTemplateEffectFlags(result.template, {
 							enabled: true,
 							spellName: item.name,
@@ -2009,8 +2048,48 @@ export async function injectDamageCard(message, html, data) {
 								(spellDamageConfig?.effects || []) : [],
 							excludeCaster: excludeCaster,
 							runItemMacro: templateEffectsConfig.runItemMacro || false,
-							spellId: item.id
+							spellId: item.id,
+							initialEnterTriggered: false, // Let the hook handle this naturally to avoid duplicates/race conditions
+							effectsRequirement: spellDamageConfig?.effectsRequirement || "" // Persist requirement for On Enter checks
 						});
+
+						// Manual "On Enter" Trigger removed to prevent duplicates with the createMeasuredTemplate hook.
+						// The improved origin tracking in TemplateEffectsSD.mjs ensures reliable application/removal.
+
+						// Trigger Automated Animations for the template
+						// AA often fires too early (on chat message) before template exists.
+						// We manually trigger it here on the placed template.
+						if (game.modules.get("autoanimations")?.active && window.AutomatedAnimations) {
+							const casterForAnim = canvas.tokens.get(casterTokenId);
+							console.log("shadowdark-extras | Attempting manual AA trigger", { caster: casterForAnim, template: result.template, item: item });
+							if (casterForAnim) {
+								try {
+									// AA usually expects (source, targets, data)
+									// We pass the template as the target
+									// NOTE: Some versions of AA use playAnimation(source, targets, data)
+									// where targets is an Array.
+									await window.AutomatedAnimations.playAnimation(casterForAnim, [result.template], { item: item });
+									console.log("shadowdark-extras | Manual AA trigger fired");
+								} catch (err) {
+									console.error("shadowdark-extras | Manual AA trigger failed:", err);
+								}
+							}
+						}
+					}
+					// Check for manual AA trigger if template effects were NOT enabled but template exists
+					else if (result.template) {
+						if (game.modules.get("autoanimations")?.active && window.AutomatedAnimations) {
+							const casterForAnim = canvas.tokens.get(casterTokenId);
+							console.log("shadowdark-extras | Attempting manual AA trigger (no template effects)", { caster: casterForAnim, template: result.template, item: item });
+							if (casterForAnim) {
+								try {
+									await window.AutomatedAnimations.playAnimation(casterForAnim, [result.template], { item: item });
+									console.log("shadowdark-extras | Manual AA trigger fired");
+								} catch (err) {
+									console.error("shadowdark-extras | Manual AA trigger failed:", err);
+								}
+							}
+						}
 					}
 
 					// Note: Aura effects are now applied after target gathering (see below)
@@ -2049,7 +2128,7 @@ export async function injectDamageCard(message, html, data) {
 	} else if (storedTargetIds && storedTargetIds.length > 0) {
 		// Use the stored targets from when the message was created
 		targets = storedTargetIds
-			.map(id => canvas.tokens.get(id))
+			.map(id => canvas.tokens?.get(id))
 			.filter(t => t); // Filter out any tokens that no longer exist
 	} else {
 		// Fallback to current user's targets (backward compatibility)
@@ -2294,6 +2373,7 @@ export async function injectDamageCard(message, html, data) {
 			window._lastSpellRollBreakdown = null;
 			window._perTargetDamage = null;
 			window._damageRequirement = null;
+			window._lastSpellRoll = null;
 
 			// Formula Selection
 			let formula = '';
@@ -2305,6 +2385,13 @@ export async function injectDamageCard(message, html, data) {
 			// Mark as calculating
 			if (isAuthor) {
 				window._sdx_calculatingMessages.add(message.id);
+				// CRITICAL FIX: Ensure no stale data from previous rolls persists if we are calculating fresh
+				window._lastSpellRollBreakdown = null;
+				window._perTargetDamage = null;
+				window._damageRequirement = null;
+				window._lastSpellRoll = null;
+				window._latestChallengeResults = null;
+				window._latestEffectsChallengeResults = null;
 			}
 
 			try {
@@ -3750,12 +3837,6 @@ async function buildDamageCardHtml(actor, targets, totalDamage, damageType, allE
 	}
 
 	const allChallengeHtml = challengeHtml + effectsChallengeHtml;
-
-	/* REMOVED: Appending challenge to breakdown
-	// Append to roll breakdown or start new if empty
-	// We now return it separately
-	rollBreakdownHtml = rollBreakdownHtml + challengeHtml + effectsChallengeHtml;
-	*/
 
 
 	// Build targets HTML

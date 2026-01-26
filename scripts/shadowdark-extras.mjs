@@ -32,7 +32,7 @@ import { initWeaponAnimations } from "./WeaponAnimationSD.mjs";
 import { initLevelUpAnimations } from "./LevelUpAnimationSD.mjs";
 import { openWeaponAnimationConfig } from "./WeaponAnimationConfig.mjs";
 import { initSDXROLLS, setupSDXROLLSSockets, injectSdxRollButton } from "./sdx-rolls/SdxRollsSD.mjs";
-import { initFocusSpellTracker, endFocusSpell, linkEffectToFocusSpell, getActiveFocusSpells, isFocusingOnSpell, startDurationSpell, endDurationSpell, registerSpellModification } from "./FocusSpellTrackerSD.mjs";
+import { initFocusSpellTracker, endFocusSpell, linkEffectToFocusSpell, getActiveFocusSpells, isFocusingOnSpell, startDurationSpell, endDurationSpell, registerSpellModification, getActiveDurationSpells } from "./FocusSpellTrackerSD.mjs";
 import { initCarousing, injectCarousingButton, ensureCarousingJournal, ensureCarousingTablesJournal, initCarousingSocket, getCustomCarousingTables, getCarousingTableById, setCarousingTable } from "./CarousingSD.mjs";
 import { openCarousingOverlay, refreshCarousingOverlay } from "./CarousingOverlaySD.mjs";
 import { openCarousingTablesEditor } from "./CarousingTablesApp.mjs";
@@ -17596,6 +17596,22 @@ Hooks.once("ready", () => {
 			}
 		});
 
+		macroExecuteSocket.register("applyWrathWeaponAsGM", async (weaponUuid, casterUuid, itemUuid, targetActorUuid, targetTokenUuid) => {
+			const weapon = await fromUuid(weaponUuid);
+			const casterActor = await fromUuid(casterUuid);
+			const casterItem = await fromUuid(itemUuid);
+			const targetActor = await fromUuid(targetActorUuid);
+			const targetTokenDoc = targetTokenUuid ? await fromUuid(targetTokenUuid) : null;
+			const targetToken = targetTokenDoc?.object || null;
+
+			if (weapon && casterActor && casterItem && targetActor) {
+				const module = game.modules.get(MODULE_ID);
+				if (module?.api?.applyWrathWeapon) {
+					await module.api.applyWrathWeapon(weapon, casterActor, casterItem, targetActor, targetToken);
+				}
+			}
+		});
+
 		macroExecuteSocket.register("identifyItemAsGM", async (itemUuid, identifySpellUuid, maskedName, originatingUserId) => {
 			const item = await fromUuid(itemUuid);
 			if (!item) return;
@@ -18847,7 +18863,8 @@ Hooks.on("setup", () => {
 	if (module) {
 		module.api = {
 			startDurationSpell: startDurationSpell,
-			registerSpellModification: registerSpellModification
+			registerSpellModification: registerSpellModification,
+			getActiveDurationSpells: getActiveDurationSpells
 		};
 		//console.log(`${MODULE_ID} | Module API registered`);
 	}
