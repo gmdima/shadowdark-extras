@@ -3539,9 +3539,13 @@ function applySheetDecorationStyles() {
 	let sheetBorder, abilityPanel, acPanel, statPanel;
 	let borderImageWidth, borderImageSlice, borderTransparencyWidth;
 	let borderImageOutset, borderImageRepeat, borderBackgroundColor;
+	let sheetHeaderBackgroundColor;
 	let boxBorder, boxBorderImageWidth, boxBorderImageSlice, boxBorderTransparencyWidth;
 	let journalBorder, journalBorderImageWidth, journalBorderImageSlice, journalBorderImageOutset, journalBorderImageRepeat;
+	let conditionModalBorder, conditionModalBorderImageWidth, conditionModalBorderImageSlice, conditionModalBorderImageOutset, conditionModalBorderImageRepeat;
 	let abilityModColor, levelValueColor, acValueColor, initModColor, luckValueColor;
+	let navLinkColor, navLinkActiveColor, detailsRowColor, luckContainerColor, actorNameColor, windowHeaderColor;
+	let navBackgroundColor, navBorderColor, effectsTextColor, talentsTextColor, xpRowColor, windowTitleBarBackgroundColor;
 	let tabGradientStart, tabGradientEnd;
 	try {
 		sheetBorder = game.settings.get(MODULE_ID, "sheetBorderStyle") || "panel-border-004.png";
@@ -3552,7 +3556,9 @@ function applySheetDecorationStyles() {
 		borderImageSlice = game.settings.get(MODULE_ID, "borderImageSlice") ?? 12;
 		borderImageOutset = game.settings.get(MODULE_ID, "borderImageOutset") ?? 0;
 		borderImageRepeat = game.settings.get(MODULE_ID, "borderImageRepeat") || "stretch";
+		borderImageRepeat = game.settings.get(MODULE_ID, "borderImageRepeat") || "stretch";
 		borderBackgroundColor = game.settings.get(MODULE_ID, "borderBackgroundColor") || "";
+		sheetHeaderBackgroundColor = game.settings.get(MODULE_ID, "sheetHeaderBackgroundColor") || "";
 		borderTransparencyWidth = game.settings.get(MODULE_ID, "borderWidth") ?? 10;
 		boxBorder = game.settings.get(MODULE_ID, "sdBoxBorderStyle") || "panel-border-001.png";
 		boxBorderImageWidth = game.settings.get(MODULE_ID, "sdBoxBorderWidth") ?? 16;
@@ -3563,11 +3569,28 @@ function applySheetDecorationStyles() {
 		journalBorderImageSlice = game.settings.get(MODULE_ID, "journalBorderImageSlice") ?? 12;
 		journalBorderImageOutset = game.settings.get(MODULE_ID, "journalBorderImageOutset") ?? 0;
 		journalBorderImageRepeat = game.settings.get(MODULE_ID, "journalBorderImageRepeat") || "repeat";
+		conditionModalBorder = game.settings.get(MODULE_ID, "conditionModalBorderStyle") || "panel-border-004.png";
+		conditionModalBorderImageWidth = game.settings.get(MODULE_ID, "conditionModalBorderImageWidth") ?? 16;
+		conditionModalBorderImageSlice = game.settings.get(MODULE_ID, "conditionModalBorderImageSlice") ?? 12;
+		conditionModalBorderImageOutset = game.settings.get(MODULE_ID, "conditionModalBorderImageOutset") ?? 0;
+		conditionModalBorderImageRepeat = game.settings.get(MODULE_ID, "conditionModalBorderImageRepeat") || "repeat";
 		abilityModColor = game.settings.get(MODULE_ID, "abilityModColor") || "#000000";
 		levelValueColor = game.settings.get(MODULE_ID, "levelValueColor") || "#000000";
 		acValueColor = game.settings.get(MODULE_ID, "acValueColor") || "#000000";
 		initModColor = game.settings.get(MODULE_ID, "initModColor") || "#000000";
 		luckValueColor = game.settings.get(MODULE_ID, "luckValueColor") || "#000000";
+		navLinkColor = game.settings.get(MODULE_ID, "navLinkColor") || "#ffffff";
+		navLinkActiveColor = game.settings.get(MODULE_ID, "navLinkActiveColor") || "#ffffff";
+		detailsRowColor = game.settings.get(MODULE_ID, "detailsRowColor") || "#ffffff";
+		luckContainerColor = game.settings.get(MODULE_ID, "luckContainerColor") || "#ffffff";
+		actorNameColor = game.settings.get(MODULE_ID, "actorNameColor") || "#ffffff";
+		windowHeaderColor = game.settings.get(MODULE_ID, "windowHeaderColor") || "#ffffff";
+		navBackgroundColor = game.settings.get(MODULE_ID, "navBackgroundColor") || "#ffffff";
+		navBorderColor = game.settings.get(MODULE_ID, "navBorderColor") || "rgba(0, 0, 0, 0.5)";
+		effectsTextColor = game.settings.get(MODULE_ID, "effectsTextColor") || "#ffffff";
+		talentsTextColor = game.settings.get(MODULE_ID, "talentsTextColor") || "#000000";
+		xpRowColor = game.settings.get(MODULE_ID, "xpRowColor") || "#ffffff";
+		windowTitleBarBackgroundColor = game.settings.get(MODULE_ID, "windowTitleBarBackgroundColor") || "#ffffff";
 		tabGradientStart = game.settings.get(MODULE_ID, "tabGradientStart") || "#000000";
 		tabGradientEnd = game.settings.get(MODULE_ID, "tabGradientEnd") || "#2f2b2b";
 	} catch {
@@ -3580,7 +3603,9 @@ function applySheetDecorationStyles() {
 		borderImageSlice = 12;
 		borderImageOutset = 0;
 		borderImageRepeat = "stretch";
+		borderImageRepeat = "stretch";
 		borderBackgroundColor = "";
+		sheetHeaderBackgroundColor = "";
 		borderTransparencyWidth = 10;
 		boxBorder = "panel-border-001.png";
 		boxBorderImageWidth = 16;
@@ -3591,11 +3616,28 @@ function applySheetDecorationStyles() {
 		journalBorderImageSlice = 12;
 		journalBorderImageOutset = 0;
 		journalBorderImageRepeat = "repeat";
+		conditionModalBorder = "panel-border-004.png";
+		conditionModalBorderImageWidth = 16;
+		conditionModalBorderImageSlice = 12;
+		conditionModalBorderImageOutset = 0;
+		conditionModalBorderImageRepeat = "repeat";
 		abilityModColor = "#000000";
 		levelValueColor = "#000000";
 		acValueColor = "#000000";
 		initModColor = "#000000";
 		luckValueColor = "#000000";
+		navLinkColor = "#ffffff";
+		navLinkActiveColor = "#ffffff";
+		detailsRowColor = "#ffffff";
+		luckContainerColor = "#ffffff";
+		actorNameColor = "#ffffff";
+		windowHeaderColor = "#ffffff";
+		navBackgroundColor = "#ffffff";
+		navBorderColor = "rgba(0, 0, 0, 0.5)";
+		effectsTextColor = "#ffffff";
+		talentsTextColor = "#000000";
+		xpRowColor = "#ffffff";
+		windowTitleBarBackgroundColor = "#ffffff";
 		tabGradientStart = "#000000";
 		tabGradientEnd = "#2f2b2b";
 	}
@@ -3607,6 +3649,7 @@ function applySheetDecorationStyles() {
 	const statPanelPath = `/modules/${MODULE_ID}/art/PNG/Default/Transparent center/${statPanel}`;
 	const boxBorderPath = `/modules/${MODULE_ID}/art/PNG/Default/Border/${boxBorder}`;
 	const journalBorderPath = `/modules/${MODULE_ID}/art/PNG/Default/Border/${journalBorder}`;
+	const conditionModalBorderPath = `/modules/${MODULE_ID}/art/PNG/Default/Border/${conditionModalBorder}`;
 
 	// Create style element with CSS custom properties
 	const style = document.createElement('style');
@@ -3621,7 +3664,9 @@ function applySheetDecorationStyles() {
 			--sdx-border-image-slice: ${borderImageSlice};
 			--sdx-border-image-outset: ${borderImageOutset}px;
 			--sdx-border-image-repeat: ${borderImageRepeat};
+			--sdx-border-image-repeat: ${borderImageRepeat};
 			--sdx-border-background-color: ${borderBackgroundColor || 'transparent'};
+			--sdx-sheet-header-bg: ${sheetHeaderBackgroundColor || 'transparent'};
 			--sdx-border-width: ${borderTransparencyWidth}px;
 			--sdx-box-border: url('${boxBorderPath}');
 			--sdx-box-border-image-width: ${boxBorderImageWidth}px;
@@ -3632,11 +3677,28 @@ function applySheetDecorationStyles() {
 			--sdx-journal-border-image-slice: ${journalBorderImageSlice};
 			--sdx-journal-border-image-outset: ${journalBorderImageOutset}px;
 			--sdx-journal-border-image-repeat: ${journalBorderImageRepeat};
+			--sdx-condition-modal-border: url('${conditionModalBorderPath}');
+			--sdx-condition-modal-border-image-width: ${conditionModalBorderImageWidth}px;
+			--sdx-condition-modal-border-image-slice: ${conditionModalBorderImageSlice};
+			--sdx-condition-modal-border-image-outset: ${conditionModalBorderImageOutset}px;
+			--sdx-condition-modal-border-image-repeat: ${conditionModalBorderImageRepeat};
 			--sdx-ability-mod-color: ${abilityModColor};
 			--sdx-level-value-color: ${levelValueColor};
 			--sdx-ac-value-color: ${acValueColor};
 			--sdx-init-mod-color: ${initModColor};
 			--sdx-luck-value-color: ${luckValueColor};
+			--sdx-nav-link-color: ${navLinkColor};
+			--sdx-nav-link-active-color: ${navLinkActiveColor};
+			--sdx-details-row-color: ${detailsRowColor};
+			--sdx-luck-container-color: ${luckContainerColor};
+			--sdx-actor-name-color: ${actorNameColor};
+			--sdx-window-header-color: ${windowHeaderColor};
+			--sdx-nav-bg: ${navBackgroundColor};
+			--sdx-nav-border-color: ${navBorderColor};
+			--sdx-effects-text-color: ${effectsTextColor};
+			--sdx-talents-text-color: ${talentsTextColor};
+			--sdx-xp-row-color: ${xpRowColor};
+			--sdx-window-title-bar-bg: ${windowTitleBarBackgroundColor};
 			--sdx-tab-gradient-start: ${tabGradientStart};
 			--sdx-tab-gradient-end: ${tabGradientEnd};
 		}
@@ -3997,6 +4059,52 @@ function registerSettings() {
 		onChange: () => applySheetDecorationStyles()
 	});
 
+	// Condition Modal Border Settings
+	game.settings.register(MODULE_ID, "conditionModalBorderStyle", {
+		name: game.i18n.localize("SHADOWDARK_EXTRAS.sheetEditor.conditionModalBorder"),
+		scope: "world",
+		config: false,
+		default: "panel-border-004.png",
+		type: String,
+		onChange: () => applySheetDecorationStyles()
+	});
+
+	game.settings.register(MODULE_ID, "conditionModalBorderImageWidth", {
+		name: game.i18n.localize("SHADOWDARK_EXTRAS.sheetEditor.conditionModalBorderImageWidth"),
+		scope: "world",
+		config: false,
+		default: 16,
+		type: Number,
+		onChange: () => applySheetDecorationStyles()
+	});
+
+	game.settings.register(MODULE_ID, "conditionModalBorderImageSlice", {
+		name: game.i18n.localize("SHADOWDARK_EXTRAS.sheetEditor.conditionModalBorderImageSlice"),
+		scope: "world",
+		config: false,
+		default: 12,
+		type: Number,
+		onChange: () => applySheetDecorationStyles()
+	});
+
+	game.settings.register(MODULE_ID, "conditionModalBorderImageOutset", {
+		name: game.i18n.localize("SHADOWDARK_EXTRAS.sheetEditor.conditionModalBorderImageOutset"),
+		scope: "world",
+		config: false,
+		default: 0,
+		type: Number,
+		onChange: () => applySheetDecorationStyles()
+	});
+
+	game.settings.register(MODULE_ID, "conditionModalBorderImageRepeat", {
+		name: game.i18n.localize("SHADOWDARK_EXTRAS.sheetEditor.conditionModalBorderImageRepeat"),
+		scope: "world",
+		config: false,
+		default: "repeat",
+		type: String,
+		onChange: () => applySheetDecorationStyles()
+	});
+
 	game.settings.register(MODULE_ID, "abilityModColor", {
 		name: "Ability Modifier Color",
 		scope: "world",
@@ -4034,10 +4142,137 @@ function registerSettings() {
 	});
 
 	game.settings.register(MODULE_ID, "luckValueColor", {
-		name: "Luck Value Color",
+		name: game.i18n.localize("SHADOWDARK_EXTRAS.sheetEditor.luckValueColor"),
 		scope: "world",
 		config: false,
 		default: "#000000",
+		type: String,
+		onChange: () => applySheetDecorationStyles()
+	});
+
+	// Extended Text Color Settings
+	game.settings.register(MODULE_ID, "navLinkColor", {
+		name: game.i18n.localize("SHADOWDARK_EXTRAS.sheetEditor.navLinkColor"),
+		scope: "world",
+		config: false,
+		default: "#ffffff",
+		type: String,
+		onChange: () => applySheetDecorationStyles()
+	});
+
+	game.settings.register(MODULE_ID, "navLinkActiveColor", {
+		name: game.i18n.localize("SHADOWDARK_EXTRAS.sheetEditor.navLinkActiveColor"),
+		scope: "world",
+		config: false,
+		default: "#ffffff",
+		type: String,
+		onChange: () => applySheetDecorationStyles()
+	});
+
+	game.settings.register(MODULE_ID, "detailsRowColor", {
+		name: game.i18n.localize("SHADOWDARK_EXTRAS.sheetEditor.detailsRowColor"),
+		scope: "world",
+		config: false,
+		default: "#ffffff",
+		type: String,
+		onChange: () => applySheetDecorationStyles()
+	});
+
+	game.settings.register(MODULE_ID, "borderBackgroundColor", {
+		name: game.i18n.localize("SHADOWDARK_EXTRAS.sheetEditor.borderBackgroundColor"),
+		scope: "world",
+		config: false,
+		default: "",
+		type: String,
+		onChange: () => applySheetDecorationStyles()
+	});
+
+	game.settings.register(MODULE_ID, "sheetHeaderBackgroundColor", {
+		name: game.i18n.localize("SHADOWDARK_EXTRAS.sheetEditor.sheetHeaderBackgroundColor"),
+		scope: "world",
+		config: false,
+		default: "",
+		type: String,
+		onChange: () => applySheetDecorationStyles()
+	});
+
+	game.settings.register(MODULE_ID, "luckContainerColor", {
+		name: game.i18n.localize("SHADOWDARK_EXTRAS.sheetEditor.luckContainerColor"),
+		scope: "world",
+		config: false,
+		default: "#ffffff",
+		type: String,
+		onChange: () => applySheetDecorationStyles()
+	});
+
+	game.settings.register(MODULE_ID, "actorNameColor", {
+		name: game.i18n.localize("SHADOWDARK_EXTRAS.sheetEditor.actorNameColor"),
+		scope: "world",
+		config: false,
+		default: "#ffffff",
+		type: String,
+		onChange: () => applySheetDecorationStyles()
+	});
+
+	game.settings.register(MODULE_ID, "windowHeaderColor", {
+		name: game.i18n.localize("SHADOWDARK_EXTRAS.sheetEditor.windowHeaderColor"),
+		scope: "world",
+		config: false,
+		default: "#ffffff",
+		type: String,
+		onChange: () => applySheetDecorationStyles()
+	});
+
+	game.settings.register(MODULE_ID, "navBackgroundColor", {
+		name: game.i18n.localize("SHADOWDARK_EXTRAS.sheetEditor.navBackgroundColor"),
+		scope: "world",
+		config: false,
+		default: "#ffffff",
+		type: String,
+		onChange: () => applySheetDecorationStyles()
+	});
+
+	game.settings.register(MODULE_ID, "navBorderColor", {
+		name: game.i18n.localize("SHADOWDARK_EXTRAS.sheetEditor.navBorderColor"),
+		scope: "world",
+		config: false,
+		default: "rgba(0, 0, 0, 0.5)",
+		type: String,
+		onChange: () => applySheetDecorationStyles()
+	});
+
+	game.settings.register(MODULE_ID, "effectsTextColor", {
+		name: game.i18n.localize("SHADOWDARK_EXTRAS.sheetEditor.effectsTextColor"),
+		scope: "world",
+		config: false,
+		default: "#ffffff",
+		type: String,
+		onChange: () => applySheetDecorationStyles()
+	});
+
+	game.settings.register(MODULE_ID, "talentsTextColor", {
+		name: game.i18n.localize("SHADOWDARK_EXTRAS.sheetEditor.talentsTextColor"),
+		scope: "world",
+		config: false,
+		default: "#000000",
+		type: String,
+		onChange: () => applySheetDecorationStyles()
+	});
+
+	game.settings.register(MODULE_ID, "xpRowColor", {
+		name: game.i18n.localize("SHADOWDARK_EXTRAS.sheetEditor.xpRowColor"),
+		scope: "world",
+		config: false,
+		default: "#ffffff",
+		type: String,
+		onChange: () => applySheetDecorationStyles()
+	});
+
+	game.settings.register(MODULE_ID, "windowTitleBarBackgroundColor", {
+		name: game.i18n.localize("SHADOWDARK_EXTRAS.sheetEditor.windowTitleBarBackgroundColor"),
+		scope: "world",
+		config: false,
+		default: "#ffffff",
 		type: String,
 		onChange: () => applySheetDecorationStyles()
 	});
@@ -5052,6 +5287,56 @@ function addInlineEffectControls($effectsTab, actor) {
 	});
 }
 
+
+/**
+ * Get all conditions data for the modal
+ */
+async function getConditionsData() {
+	let conditions = [];
+
+	// Try shadowdark-extras first
+	const sdxItemsPack = game.packs.get("shadowdark-extras.pack-sdxitems");
+	if (sdxItemsPack) {
+		const sdxDocs = await sdxItemsPack.getDocuments();
+		const sdxConditions = sdxDocs.filter(doc =>
+			doc.type === "Effect" &&
+			(doc.name.startsWith("Condition:") || doc.name.startsWith("Absorption:"))
+		);
+		conditions.push(...sdxConditions);
+	}
+
+	// Then add shadowdark conditions (but don't duplicate)
+	const conditionsPack = game.packs.get("shadowdark.conditions");
+	if (conditionsPack) {
+		const shadowdarkConditions = await conditionsPack.getDocuments();
+		// Only add conditions that aren't already in our list (by name)
+		const existingNames = new Set(conditions.map(c => c.name));
+		const uniqueShadowdarkConditions = shadowdarkConditions.filter(c => !existingNames.has(c.name));
+		conditions.push(...uniqueShadowdarkConditions);
+	}
+
+	if (!conditions || conditions.length === 0) {
+		console.warn(`${MODULE_ID} | No conditions found in either compendium`);
+		return {};
+	}
+
+	// Group conditions by base name (store minimal data, not document references)
+	const groupedConditions = groupConditionsByBaseName(conditions);
+
+	// Convert grouped conditions to plain data objects to avoid holding document references
+	const conditionDataMap = {};
+	for (const [baseName, conditionGroup] of Object.entries(groupedConditions)) {
+		conditionDataMap[baseName] = conditionGroup.map(cond => ({
+			uuid: cond.uuid,
+			name: cond.name,
+			img: cond.img,
+			description: cond.system?.description?.value || cond.system?.description || ''
+		}));
+	}
+
+	return conditionDataMap;
+}
+
 /**
  * Inject conditions quick toggles into the Effects tab
  */
@@ -5068,51 +5353,10 @@ async function injectConditionsToggles(app, html, actor) {
 	// Add inline control buttons to existing effects/conditions
 	addInlineEffectControls($effectsTab, actor);
 
-	// Fetch all conditions from the compendium
-	// First check shadowdark-extras, then shadowdark
-	let conditions = [];
+	// Fetch all conditions data
+	const conditionDataMap = await getConditionsData();
 
-	// Try shadowdark-extras first
-	const sdxItemsPack = game.packs.get("shadowdark-extras.pack-sdxitems");
-	if (sdxItemsPack) {
-		const sdxDocs = await sdxItemsPack.getDocuments();
-		const sdxConditions = sdxDocs.filter(doc =>
-			doc.type === "Effect" &&
-			(doc.name.startsWith("Condition:") || doc.name.startsWith("Absorption:"))
-		);
-		conditions.push(...sdxConditions);
-		//console.log(`${MODULE_ID} | Loaded ${sdxConditions.length} conditions from shadowdark-extras`);
-	}
-
-	// Then add shadowdark conditions (but don't duplicate)
-	const conditionsPack = game.packs.get("shadowdark.conditions");
-	if (conditionsPack) {
-		const shadowdarkConditions = await conditionsPack.getDocuments();
-		// Only add conditions that aren't already in our list (by name)
-		const existingNames = new Set(conditions.map(c => c.name));
-		const uniqueShadowdarkConditions = shadowdarkConditions.filter(c => !existingNames.has(c.name));
-		conditions.push(...uniqueShadowdarkConditions);
-		//console.log(`${MODULE_ID} | Loaded ${uniqueShadowdarkConditions.length} unique conditions from shadowdark (${shadowdarkConditions.length} total)`);
-	}
-
-	if (!conditions || conditions.length === 0) {
-		console.warn(`${MODULE_ID} | No conditions found in either compendium`);
-		return;
-	}
-
-	// Group conditions by base name (store minimal data, not document references)
-	const groupedConditions = groupConditionsByBaseName(conditions);
-
-	// Convert grouped conditions to plain data objects to avoid holding document references
-	const conditionDataMap = {};
-	for (const [baseName, conditionGroup] of Object.entries(groupedConditions)) {
-		conditionDataMap[baseName] = conditionGroup.map(cond => ({
-			uuid: cond.uuid,
-			name: cond.name,
-			img: cond.img,
-			description: cond.system?.description?.value || cond.system?.description || ''
-		}));
-	}
+	if (!conditionDataMap || Object.keys(conditionDataMap).length === 0) return;
 
 	// Get currently active condition items on the actor
 	const conditionItems = actor.items.filter(item =>
@@ -9186,7 +9430,9 @@ Hooks.on("preCreateItem", (item, data, options, userId) => {
 
 // Inject SDX Rolls button into chat controls
 Hooks.on("renderChatLog", (app, html) => {
-	injectSdxRollButton();
+	// if (!game.settings.get(MODULE_ID, "tray.enabled")) {
+	// 	injectSdxRollButton();
+	// }
 });
 
 // Before party actor is created, ensure proper prototype token settings
@@ -9244,7 +9490,9 @@ Hooks.on("renderPlayerSheetSD", async (app, html, data) => {
 	injectHeaderCustomization(app, html, app.actor);
 	await injectJournalNotes(app, html, app.actor);
 	await injectConditionsToggles(app, html, app.actor);
-	await injectCarousingButton(app, html, app.actor);
+	// if (!game.settings.get(MODULE_ID, "tray.enabled")) {
+	// 	await injectCarousingButton(app, html, app.actor);
+	// }
 	enableItemChatIcon(app, html);
 	fixUnidentifiedWeaponBoldForAllUsers(html);
 });
@@ -18868,7 +19116,9 @@ Hooks.on("setup", () => {
 		module.api = {
 			startDurationSpell: startDurationSpell,
 			registerSpellModification: registerSpellModification,
-			getActiveDurationSpells: getActiveDurationSpells
+			getActiveDurationSpells: getActiveDurationSpells,
+			showConditionsModal: showConditionsModal,
+			getConditionsData: getConditionsData
 		};
 		//console.log(`${MODULE_ID} | Module API registered`);
 	}

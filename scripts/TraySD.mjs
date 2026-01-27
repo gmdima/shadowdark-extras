@@ -34,6 +34,9 @@ export function initTray() {
         return;
     }
 
+    // Add class to body to enable tray-specific CSS
+    document.body.classList.add("sdx-tray-enabled");
+
     console.log("shadowdark-extras | Initializing Character Tray");
 
     // Create the tray app
@@ -362,7 +365,25 @@ export async function renderTray() {
         showSelectionBox: canvas.tokens?.controlled.length > 1,
 
         // Pins Data
-        pins: game.user.isGM ? getPinsData() : []
+        pins: game.user.isGM ? getPinsData() : [],
+
+        // Active Effects
+        activeEffects: (() => {
+            if (!actor) return [];
+            // Use appliedEffects if available (V11+) to get currently active effects
+            // This handles disabled state, suppression, etc.
+            const effects = actor.appliedEffects || actor.effects;
+
+            // Debug log to troubleshoot missing effects
+            console.log("Shadowdark Extras Tray | Fetching effects for", actor.name, effects);
+
+            return effects.map(e => ({
+                id: e.id,
+                name: e.name,
+                img: e.icon || e.img,
+                disabled: e.disabled
+            }));
+        })()
     };
 
     _trayApp.updateData(data);

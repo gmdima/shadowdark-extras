@@ -113,7 +113,9 @@ export function initMarchingMode() {
     // If sidebar already exists, inject buttons now
     const sidebar = document.getElementById("sidebar");
     if (sidebar) {
-        // injectSidebarButtons($(sidebar)); // Disabled for Tray migration
+        if (!game.settings.get(MODULE_ID, "tray.enabled")) {
+            injectSidebarButtons($(sidebar));
+        }
     }
 
     // Hook into token movement
@@ -149,8 +151,9 @@ export function initMarchingMode() {
  * Hook callback for renderSidebar
  */
 function onRenderSidebar(sidebar, html) {
-    if (!game.user.isGM) return;
-    // injectSidebarButtons(html); // Disabled for Tray migration
+    if (!game.settings.get(MODULE_ID, "tray.enabled")) {
+        injectSidebarButtons(html);
+    }
 }
 
 /**
@@ -215,37 +218,81 @@ function injectSidebarButtons($html) {
     `);
 
     // Insert before settings
-    $settingsBtn.before($leaderBtn);
-    $settingsBtn.before($movementBtn);
-    $settingsBtn.before($formationBtn);
-    $settingsBtn.before($addPinBtn);
+    if (game.user.isGM) {
+        $settingsBtn.before($leaderBtn);
+        $settingsBtn.before($movementBtn);
+        $settingsBtn.before($formationBtn);
+        $settingsBtn.before($addPinBtn);
+    }
 
     // Add event handlers
-    $leaderBtn.find("button").on("click", showLeaderDialog);
-    $movementBtn.find("button").on("click", showMovementModeDialog);
-    $formationBtn.find("button").on("click", () => FormationSpawnerSD.show());
+    if (game.user.isGM) {
+        $leaderBtn.find("button").on("click", showLeaderDialog);
+        $movementBtn.find("button").on("click", showMovementModeDialog);
+        $formationBtn.find("button").on("click", () => FormationSpawnerSD.show());
 
-    // SDX Pins - Menu Dialog
-    $addPinBtn.find("button").on("click", () => {
-        new Dialog({
-            title: "SDX Pins",
-            content: "<p>Select an action:</p>",
-            buttons: {
-                add: {
-                    icon: '<i class="fas fa-map-pin"></i>',
-                    label: "Add Pin",
-                    callback: () => PinPlacer.activate()
+        // SDX Pins - Menu Dialog
+        $addPinBtn.find("button").on("click", () => {
+            new Dialog({
+                title: "SDX Pins",
+                content: "<p>Select an action:</p>",
+                buttons: {
+                    add: {
+                        icon: '<i class="fas fa-map-pin"></i>',
+                        label: "Add Pin",
+                        callback: () => PinPlacer.activate()
+                    },
+                    list: {
+                        icon: '<i class="fas fa-list"></i>',
+                        label: "Pin List",
+                        callback: () => PinListApp.show()
+                    }
                 },
-                list: {
-                    icon: '<i class="fas fa-list"></i>',
-                    label: "Pin List",
-                    callback: () => PinListApp.show()
-                }
-            },
-            default: "add"
-        }, {
-            width: 300
-        }).render(true);
+                default: "add"
+            }, {
+                width: 300
+            }).render(true);
+        });
+    }
+
+    // Create Carousing button
+    const $carousingBtn = $(`
+        <li class="sdx-marching-btn-container">
+            <button type="button" class="ui-control plain icon fa-solid fa-beer sdx-carousing-sidebar-btn"
+                    data-tooltip="${game.i18n.localize("SHADOWDARK_EXTRAS.carousing.title")}" data-tooltip-direction="LEFT">
+            </button>
+        </li>
+    `);
+
+    $settingsBtn.before($carousingBtn);
+
+    // Add Carousing handler
+    $carousingBtn.find("button").on("click", () => {
+        if (window.sdxOpenCarousingOverlay) {
+            window.sdxOpenCarousingOverlay();
+        } else {
+            ui.notifications.warn("Carousing system not ready.");
+        }
+    });
+
+    // Create SDX Roll button
+    const $sdxRollBtn = $(`
+        <li class="sdx-marching-btn-container">
+            <button type="button" class="ui-control plain icon fa-solid fa-dice-d20 sdx-roll-sidebar-btn"
+                    data-tooltip="${game.i18n.localize("SHADOWDARK_EXTRAS.SDXROLLS.SdxRoll")}" data-tooltip-direction="LEFT">
+            </button>
+        </li>
+    `);
+
+    $settingsBtn.before($sdxRollBtn);
+
+    // Add SDX Roll handler
+    $sdxRollBtn.find("button").on("click", () => {
+        if (ui.SdxRollsSD?.GetRollData) {
+            new ui.SdxRollsSD.GetRollData().render(true);
+        } else {
+            ui.notifications.warn("SDX Rolls system not ready.");
+        }
     });
 
     // Update button states

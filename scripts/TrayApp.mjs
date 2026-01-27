@@ -21,6 +21,9 @@ import { showLeaderDialog, showMovementModeDialog } from "./MarchingModeSD.mjs";
 import { FormationSpawnerSD } from "./FormationSpawnerSD.mjs";
 import { PinPlacer } from "./JournalPinsSD.mjs";
 import { PinListApp } from "./PinListApp.mjs";
+import { GetRollDataSD } from "./sdx-rolls/GetRollDataSD.mjs";
+import { SdxRollSD } from "./sdx-rolls/SdxRollSD.mjs";
+import { getSDXROLLSSetting } from "./sdx-rolls/SdxRollsSD.mjs";
 
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
@@ -164,12 +167,16 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
             const actor = this.trayData?.actor;
             if (!actor) return;
 
-            // Try to use the Shadowdark system's effect selector if available
-            // Or look for our module's enhanced selector (Condition Quick Toggler)
-
-            // For now, notify user that we need the class name
-            console.warn("Shadowdark Extras Tray | Condition toggler class not found. Please provide the class name.");
-            ui.notifications.warn("Condition toggler not configured. See console for details.");
+            // Use the Shadowdark Extras API to show the condition selector
+            const moduleApi = game.modules.get("shadowdark-extras")?.api;
+            if (moduleApi && moduleApi.getConditionsData && moduleApi.showConditionsModal) {
+                const conditionData = await moduleApi.getConditionsData();
+                const theme = game.settings.get("shadowdark-extras", "conditionsTheme") || "parchment";
+                moduleApi.showConditionsModal(actor, conditionData, theme);
+            } else {
+                console.warn("Shadowdark Extras Tray | Condition toggler API not found.");
+                ui.notifications.warn("Condition toggler API not found. Please reload.");
+            }
         });
 
         elem.querySelector(".tray-handle-button-tool[data-action='pin-list']")?.addEventListener("click", (e) => {
@@ -177,6 +184,89 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
             e.stopPropagation();
             setViewMode("pins");
             this.setExpanded(true);
+        });
+
+        // SDX Roll Button
+        elem.querySelector(".tray-handle-button-tool[data-action='sdx-roll']")?.addEventListener("click", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            new GetRollDataSD().render(true);
+        });
+
+        elem.querySelector(".tray-handle-button-tool[data-action='sdx-roll']")?.addEventListener("contextmenu", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+
+            const btn = e.currentTarget;
+            const existingMenu = document.querySelector(".sdx-recent-rolls");
+            if (existingMenu) {
+                existingMenu.remove();
+                return;
+            }
+
+            const recentRolls = getSDXROLLSSetting("recentRolls");
+            if (!recentRolls || recentRolls.length === 0) return;
+
+            const wrapper = document.createElement("div");
+            const ul = document.createElement("ul");
+            wrapper.appendChild(ul);
+            wrapper.classList.add("sdx-recent-rolls");
+
+            recentRolls.forEach((roll) => {
+                const li = document.createElement("li");
+                li.innerHTML = SdxRollSD.getRollLabel(roll.type, roll.options.DC, roll.contest, roll.options);
+                ul.appendChild(li);
+                li.addEventListener("click", () => {
+                    new GetRollDataSD(roll).render(true);
+                    wrapper.remove();
+                });
+            });
+
+            // Position to the right of the button
+            const rect = btn.getBoundingClientRect();
+            wrapper.style.position = "fixed";
+            wrapper.style.left = `${rect.right + 10}px`;
+            wrapper.style.top = `${rect.top}px`;
+            wrapper.style.bottom = "auto";
+            wrapper.style.right = "auto";
+            wrapper.style.zIndex = "100"; // Ensure visibility
+
+            document.body.appendChild(wrapper);
+
+            const listener = (event) => {
+                if (!wrapper.contains(event.target) && event.target !== btn) {
+                    wrapper.remove();
+                    document.removeEventListener("click", listener);
+                    document.removeEventListener("contextmenu", listener);
+                }
+            };
+
+            setTimeout(() => {
+                document.addEventListener("click", listener);
+                document.addEventListener("contextmenu", listener);
+            }, 10);
+        });
+
+        // Light Tracker Button
+        elem.querySelector(".tray-handle-button-tool[data-action='light-tracker']")?.addEventListener("click", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            if (game.shadowdark?.lightSourceTracker?.toggleInterface) {
+                game.shadowdark.lightSourceTracker.toggleInterface();
+            } else {
+                ui.notifications.warn("Light Source Tracker not found. Ensure the system is updated.");
+            }
+        });
+
+        // Carousing Button
+        elem.querySelector(".tray-handle-button-tool[data-action='carousing']")?.addEventListener("click", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            if (window.sdxOpenCarousingOverlay) {
+                window.sdxOpenCarousingOverlay();
+            } else {
+                ui.notifications.warn("Carousing system not ready.");
+            }
         });
 
         // Tab buttons

@@ -112,6 +112,24 @@
                         placeholder="transparent" class="color-text-input">
                 </div>
             </div>
+            <div class="header-control-group">
+                <label>{{localize "SHADOWDARK_EXTRAS.sheetEditor.sheetHeaderBackgroundColor"}}</label>
+                <div class="control-input">
+                    <input type="color" data-setting="sheetHeaderBackgroundColor"
+                        value="{{sheetHeaderBackgroundColor}}">
+                    <input type="text" data-setting="sheetHeaderBackgroundColor" value="{{sheetHeaderBackgroundColor}}"
+                        placeholder="transparent" class="color-text-input">
+                </div>
+            </div>
+            <div class="header-control-group">
+                <label>{{localize "SHADOWDARK_EXTRAS.sheetEditor.windowTitleBarBackgroundColor"}}</label>
+                <div class="control-input">
+                    <input type="color" data-setting="windowTitleBarBackgroundColor"
+                        value="{{windowTitleBarBackgroundColor}}">
+                    <input type="text" data-setting="windowTitleBarBackgroundColor"
+                        value="{{windowTitleBarBackgroundColor}}" placeholder="#ffffff" class="color-text-input">
+                </div>
+            </div>
         </div>
     </div>
 
@@ -247,6 +265,87 @@
                         <option value="round" {{#if (eq journalBorderImageRepeat "round" )}}selected{{/if}}>Round
                         </option>
                         <option value="space" {{#if (eq journalBorderImageRepeat "space" )}}selected{{/if}}>Space
+                        </option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    {{!-- Condition Modal Border Style --}}
+    <div class="sheet-editor-category" data-category="condition-modal-border">
+        <div class="sheet-editor-category-header">
+            <div class="category-title">
+                <i class="fas fa-chevron-right category-toggle"></i>
+                <i class="fas fa-window-maximize category-icon"></i>
+                <span>{{localize "SHADOWDARK_EXTRAS.sheetEditor.conditionModalBorder"}}</span>
+                <span class="category-count">({{borderImages.length}})</span>
+            </div>
+            <div class="current-selection">
+                <img class="current-condition-modal-border-img" src="{{conditionModalBorderPath}}" alt="Current">
+            </div>
+        </div>
+        <div class="sheet-editor-grid" style="display: none;">
+            <input type="text" class="sheet-editor-filter"
+                placeholder="{{localize 'SHADOWDARK_EXTRAS.sheetEditor.search'}}">
+            <div class="sheet-editor-thumbs">
+                {{#each borderImages}}
+                <div class="sheet-editor-thumb {{#if (eq this.filename ../conditionModalBorderStyle)}}selected{{/if}}"
+                    data-setting="conditionModalBorderStyle" data-filename="{{this.filename}}" data-path="{{this.path}}"
+                    data-name="{{this.name}}">
+                    <img src="{{this.path}}" alt="{{this.name}}">
+                    <span class="thumb-label">{{this.name}}</span>
+                </div>
+                {{/each}}
+            </div>
+        </div>
+    </div>
+
+    {{!-- Condition Modal Frame Tweaking --}}
+    <div class="sheet-editor-category" data-category="condition-modal-frame">
+        <div class="sheet-editor-category-header">
+            <div class="category-title">
+                <i class="fas fa-chevron-right category-toggle"></i>
+                <i class="fas fa-expand-arrows-alt category-icon"></i>
+                <span>{{localize "SHADOWDARK_EXTRAS.sheetEditor.conditionModalFrameTweaking"}}</span>
+            </div>
+        </div>
+        <div class="sheet-editor-grid frame-controls" style="display: none;">
+            <div class="header-control-group">
+                <label>{{localize "SHADOWDARK_EXTRAS.sheetEditor.conditionModalBorderImageWidth"}}</label>
+                <div class="control-input">
+                    <input type="number" data-setting="conditionModalBorderImageWidth"
+                        value="{{conditionModalBorderImageWidth}}" min="1" max="200">
+                </div>
+            </div>
+            <div class="header-control-group">
+                <label>{{localize "SHADOWDARK_EXTRAS.sheetEditor.conditionModalBorderImageSlice"}}</label>
+                <div class="control-input">
+                    <input type="number" data-setting="conditionModalBorderImageSlice"
+                        value="{{conditionModalBorderImageSlice}}" min="1" max="200">
+                </div>
+            </div>
+            <div class="header-control-group">
+                <label>{{localize "SHADOWDARK_EXTRAS.sheetEditor.conditionModalBorderImageOutset"}}</label>
+                <div class="control-input">
+                    <input type="number" data-setting="conditionModalBorderImageOutset"
+                        value="{{conditionModalBorderImageOutset}}" min="0" max="50">
+                </div>
+            </div>
+            <div class="header-control-group">
+                <label>{{localize "SHADOWDARK_EXTRAS.sheetEditor.conditionModalBorderImageRepeat"}}</label>
+                <div class="control-input">
+                    <select data-setting="conditionModalBorderImageRepeat">
+                        <option value="stretch" {{#if (eq conditionModalBorderImageRepeat "stretch" )}}selected{{/if}}>
+                            Stretch
+                        </option>
+                        <option value="repeat" {{#if (eq conditionModalBorderImageRepeat "repeat" )}}selected{{/if}}>
+                            Repeat
+                        </option>
+                        <option value="round" {{#if (eq conditionModalBorderImageRepeat "round" )}}selected{{/if}}>Round
+                        </option>
+                        <option value="space" {{#if (eq conditionModalBorderImageRepeat "space" )}}selected{{/if}}>Space
                         </option>
                     </select>
                 </div>
@@ -391,6 +490,96 @@
                         class="color-text-input">
                 </div>
             </div>
+
+            {{!-- Extended Text Colors --}}
+            <div class="header-control-group">
+                <label>{{localize "SHADOWDARK_EXTRAS.sheetEditor.actorNameColor"}}</label>
+                <div class="control-input">
+                    <input type="color" data-setting="actorNameColor" value="{{actorNameColor}}">
+                    <input type="text" data-setting="actorNameColor" value="{{actorNameColor}}" placeholder="#ffffff"
+                        class="color-text-input">
+                </div>
+            </div>
+            <div class="header-control-group">
+                <label>{{localize "SHADOWDARK_EXTRAS.sheetEditor.windowHeaderColor"}}</label>
+                <div class="control-input">
+                    <input type="color" data-setting="windowHeaderColor" value="{{windowHeaderColor}}">
+                    <input type="text" data-setting="windowHeaderColor" value="{{windowHeaderColor}}"
+                        placeholder="#ffffff" class="color-text-input">
+                </div>
+            </div>
+            <div class="header-control-group">
+                <label>{{localize "SHADOWDARK_EXTRAS.sheetEditor.navLinkColor"}}</label>
+                <div class="control-input">
+                    <input type="color" data-setting="navLinkColor" value="{{navLinkColor}}">
+                    <input type="text" data-setting="navLinkColor" value="{{navLinkColor}}" placeholder="#ffffff"
+                        class="color-text-input">
+                </div>
+            </div>
+            <div class="header-control-group">
+                <label>{{localize "SHADOWDARK_EXTRAS.sheetEditor.navLinkActiveColor"}}</label>
+                <div class="control-input">
+                    <input type="color" data-setting="navLinkActiveColor" value="{{navLinkActiveColor}}">
+                    <input type="text" data-setting="navLinkActiveColor" value="{{navLinkActiveColor}}"
+                        placeholder="#ffffff" class="color-text-input">
+                </div>
+            </div>
+            <div class="header-control-group">
+                <label>{{localize "SHADOWDARK_EXTRAS.sheetEditor.detailsRowColor"}}</label>
+                <div class="control-input">
+                    <input type="color" data-setting="detailsRowColor" value="{{detailsRowColor}}">
+                    <input type="text" data-setting="detailsRowColor" value="{{detailsRowColor}}" placeholder="#ffffff"
+                        class="color-text-input">
+                </div>
+            </div>
+            <div class="header-control-group">
+                <label>{{localize "SHADOWDARK_EXTRAS.sheetEditor.luckContainerColor"}}</label>
+                <div class="control-input">
+                    <input type="color" data-setting="luckContainerColor" value="{{luckContainerColor}}">
+                    <input type="text" data-setting="luckContainerColor" value="{{luckContainerColor}}"
+                        placeholder="#ffffff" class="color-text-input">
+                </div>
+            </div>
+            <div class="header-control-group">
+                <label>{{localize "SHADOWDARK_EXTRAS.sheetEditor.navBackgroundColor"}}</label>
+                <div class="control-input">
+                    <input type="color" data-setting="navBackgroundColor" value="{{navBackgroundColor}}">
+                    <input type="text" data-setting="navBackgroundColor" value="{{navBackgroundColor}}"
+                        placeholder="#ffffff" class="color-text-input">
+                </div>
+            </div>
+            <div class="header-control-group">
+                <label>{{localize "SHADOWDARK_EXTRAS.sheetEditor.navBorderColor"}}</label>
+                <div class="control-input">
+                    <input type="color" data-setting="navBorderColor" value="{{navBorderColor}}">
+                    <input type="text" data-setting="navBorderColor" value="{{navBorderColor}}"
+                        placeholder="rgba(0, 0, 0, 0.5)" class="color-text-input">
+                </div>
+            </div>
+            <div class="header-control-group">
+                <label>{{localize "SHADOWDARK_EXTRAS.sheetEditor.effectsTextColor"}}</label>
+                <div class="control-input">
+                    <input type="color" data-setting="effectsTextColor" value="{{effectsTextColor}}">
+                    <input type="text" data-setting="effectsTextColor" value="{{effectsTextColor}}"
+                        placeholder="#ffffff" class="color-text-input">
+                </div>
+            </div>
+            <div class="header-control-group">
+                <label>{{localize "SHADOWDARK_EXTRAS.sheetEditor.talentsTextColor"}}</label>
+                <div class="control-input">
+                    <input type="color" data-setting="talentsTextColor" value="{{talentsTextColor}}">
+                    <input type="text" data-setting="talentsTextColor" value="{{talentsTextColor}}"
+                        placeholder="#000000" class="color-text-input">
+                </div>
+            </div>
+            <div class="header-control-group">
+                <label>{{localize "SHADOWDARK_EXTRAS.sheetEditor.xpRowColor"}}</label>
+                <div class="control-input">
+                    <input type="color" data-setting="xpRowColor" value="{{xpRowColor}}">
+                    <input type="text" data-setting="xpRowColor" value="{{xpRowColor}}" placeholder="#ffffff"
+                        class="color-text-input">
+                </div>
+            </div>
         </div>
     </div>
 
@@ -429,6 +618,12 @@
             <i class="fas fa-undo"></i> {{localize "SHADOWDARK_EXTRAS.sheetEditor.loadDefaults"}}
         </button>
         <div class="button-spacer"></div>
+        <button type="button" data-action="importTheme" class="import-btn">
+            <i class="fas fa-file-import"></i> {{localize "SHADOWDARK_EXTRAS.sheetEditor.import"}}
+        </button>
+        <button type="button" data-action="exportTheme" class="export-btn">
+            <i class="fas fa-file-export"></i> {{localize "SHADOWDARK_EXTRAS.sheetEditor.export"}}
+        </button>
         <button type="button" data-action="cancel" class="cancel-btn">
             <i class="fas fa-times"></i> {{localize "SHADOWDARK_EXTRAS.sheetEditor.cancel"}}
         </button>

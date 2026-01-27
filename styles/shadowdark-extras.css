@@ -6122,7 +6122,7 @@ section[data-tab="tab-notes"].sdx-journal-active>div:not(.sdx-journal-notes) {
 .sdx-conditions-modal-content {
     position: relative;
     z-index: 2;
-    background: linear-gradient(180deg, rgba(20, 20, 20, 0.95) 0%, rgba(10, 10, 10, 0.9) 100%);
+    background: #000 !important;
     border-radius: 8px;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.8);
     width: 90%;
@@ -6130,11 +6130,11 @@ section[data-tab="tab-notes"].sdx-journal-active>div:not(.sdx-journal-notes) {
     max-height: 80vh;
     display: flex;
     flex-direction: column;
-    border: var(--sdx-box-border-width) solid transparent !important;
-    border-image: var(--sdx-journal-border) var(--sdx-journal-border-image-slice) fill !important;
-    border-image-repeat: var(--sdx-journal-border-image-repeat) !important;
-    border-image-width: var(--sdx-journal-border-image-width) !important;
-    border-image-outset: var(--sdx-journal-border-image-outset, 0px) !important;
+    border: 10px solid transparent !important;
+    border-image: var(--sdx-condition-modal-border) var(--sdx-condition-modal-border-image-slice) fill !important;
+    border-image-repeat: var(--sdx-condition-modal-border-image-repeat) !important;
+    border-image-width: var(--sdx-condition-modal-border-image-width) !important;
+    border-image-outset: var(--sdx-condition-modal-border-image-outset, 0px) !important;
 
 }
 
@@ -17777,4 +17777,94 @@ body.sdx-dark-mode .sdx-carousing-toggle-btn i {
 
 .shadowdark-extras-party .member:active {
     cursor: grabbing;
+}
+
+/* ============================================
+   TEXT COLOR CUSTOMIZATION
+   ============================================ */
+
+/* Navigation Links */
+.shadowdark.sheet.player .SD-nav a {
+    color: var(--sdx-nav-link-color) !important;
+}
+
+.shadowdark.sheet.player .SD-nav a.active {
+    color: var(--sdx-nav-link-active-color) !important;
+}
+
+/* Details Row */
+.sdx-enhanced-content .sdx-char-details-row {
+    color: var(--sdx-details-row-color);
+}
+
+/* Luck Container */
+.sdx-enhanced-content .sdx-luck-container.standard-mode {
+    color: var(--sdx-luck-container-color);
+}
+
+.sdx-enhanced-content .sdx-luck-container.standard-mode.has-luck {
+    color: var(--sdx-luck-container-color);
+}
+
+/* Actor Name */
+.sdx-enhanced-content .sdx-actor-name {
+    color: var(--sdx-actor-name-color) !important;
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.8);
+}
+
+/* Window Header */
+/* Window Header */
+div.window-app.shadowdark.sheet.player .window-header,
+div.window-app.shadowdark.sheet.player .window-header .window-title,
+div.window-app.shadowdark.sheet.player .window-header .header-button,
+div.window-app.shadowdark.sheet.player .window-header a {
+    color: var(--sdx-window-header-color) !important;
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.8) !important;
+}
+
+div.window-app.shadowdark.sheet.player .window-header {
+    background-color: var(--sdx-window-title-bar-bg) !important;
+}
+
+.shadowdark.sheet.player .SD-header {
+    background-color: var(--sdx-sheet-header-bg) !important;
+}
+
+/* Navigation Bar */
+/* Navigation Bar */
+.shadowdark.sheet.player .SD-nav {
+    background: var(--sdx-nav-bg) !important;
+    border-bottom-color: var(--sdx-nav-border-color) !important;
+}
+
+/* Effects & Conditions Text Color */
+/* Effects & Conditions Text Color */
+.shadowdark.sheet.player .tab-effects.sdx-enhanced-effects .SD-list .header .item-name,
+.shadowdark.sheet.player .tab-effects.sdx-enhanced-effects .SD-list .header .flex-100-px,
+.shadowdark.sheet.player .tab-effects.sdx-enhanced-effects .SD-list .item .item-name,
+.shadowdark.sheet.player .tab-effects.sdx-enhanced-effects .SD-list .item .flex-100-px,
+.shadowdark.sheet.player .tab-effects.sdx-enhanced-effects .effect-duration,
+.shadowdark.sheet.player .tab-effects.sdx-enhanced-effects h3,
+.shadowdark.sheet.player .tab-effects.sdx-enhanced-effects .item-name a,
+.shadowdark.sheet.player .tab-effects.sdx-enhanced-effects .effect-name,
+.shadowdark.sheet.player .sdx-conditions-toggles.sdx-theme-shadowdark .sdx-conditions-header {
+    color: var(--sdx-effects-text-color) !important;
+}
+
+/* Talents Text Color */
+/* Talents Text Color */
+.shadowdark.sheet.player .tab-talents.sdx-enhanced-talents .SD-list .header .item-name,
+.shadowdark.sheet.player .tab-talents.sdx-enhanced-talents .SD-list .header .flex-100-px,
+.shadowdark.sheet.player .tab-talents.sdx-enhanced-talents .SD-list .item .item-name,
+.shadowdark.sheet.player .tab-talents.sdx-enhanced-talents .SD-list .item .flex-100-px {
+    color: var(--sdx-talents-text-color) !important;
+}
+
+/* XP Row Color */
+.shadowdark.sheet.player .sdx-xp-row,
+.shadowdark.sheet.player .sdx-xp-row .sdx-xp-label,
+.shadowdark.sheet.player .sdx-xp-row .sdx-xp-value,
+.shadowdark.sheet.player .sdx-xp-row .sdx-xp-separator,
+.shadowdark.sheet.player .sdx-xp-row .sdx-xp-max {
+    color: var(--sdx-xp-row-color) !important;
 }

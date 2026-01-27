@@ -20,6 +20,7 @@ const DEFAULTS = {
     borderImageOutset: 0,
     borderImageRepeat: "stretch",
     borderBackgroundColor: "",
+    sheetHeaderBackgroundColor: "",
     borderWidth: 10,
     sdBoxBorderStyle: "panel-border-001.png",
     sdBoxBorderWidth: 16,
@@ -36,9 +37,27 @@ const DEFAULTS = {
     acValueColor: "#000000",
     initModColor: "#000000",
     luckValueColor: "#000000",
-    // Tab background gradient settings
     tabGradientStart: "#000000",
-    tabGradientEnd: "#2f2b2b"
+    tabGradientEnd: "#2f2b2b",
+    // Condition Modal border settings
+    conditionModalBorderStyle: "panel-border-004.png",
+    conditionModalBorderImageWidth: 16,
+    conditionModalBorderImageSlice: 12,
+    conditionModalBorderImageOutset: 0,
+    conditionModalBorderImageRepeat: "repeat",
+    // Extended Text Color Settings
+    navLinkColor: "#ffffff",
+    navLinkActiveColor: "#ffffff",
+    detailsRowColor: "#ffffff",
+    luckContainerColor: "#ffffff",
+    actorNameColor: "#ffffff",
+    windowHeaderColor: "#ffffff",
+    navBackgroundColor: "#ffffff",
+    navBorderColor: "rgba(0, 0, 0, 0.5)",
+    effectsTextColor: "#ffffff",
+    talentsTextColor: "#000000",
+    xpRowColor: "#ffffff",
+    windowTitleBarBackgroundColor: "#ffffff"
 };
 
 /**
@@ -64,7 +83,9 @@ export default class SheetEditorConfig extends HandlebarsApplicationMixin(Applic
         actions: {
             save: SheetEditorConfig.#onSave,
             cancel: SheetEditorConfig.#onCancel,
-            loadDefaults: SheetEditorConfig.#onLoadDefaults
+            loadDefaults: SheetEditorConfig.#onLoadDefaults,
+            exportTheme: SheetEditorConfig.#onExportTheme,
+            importTheme: SheetEditorConfig.#onImportTheme
         }
     };
 
@@ -144,6 +165,7 @@ export default class SheetEditorConfig extends HandlebarsApplicationMixin(Applic
         context.statPath = `/${basePath}/Transparent center/${this._previewState.statPanelStyle}`;
         context.boxBorderPath = `/${basePath}/Border/${this._previewState.sdBoxBorderStyle}`;
         context.journalBorderPath = `/${basePath}/Border/${this._previewState.journalBorderStyle}`;
+        context.conditionModalBorderPath = `/${basePath}/Border/${this._previewState.conditionModalBorderStyle}`;
 
         context.defaults = DEFAULTS;
 
@@ -313,6 +335,13 @@ export default class SheetEditorConfig extends HandlebarsApplicationMixin(Applic
             preview.style.setProperty('--preview-ability-mod-color', this._previewState.abilityModColor || '#000000');
             preview.style.setProperty('--preview-level-value-color', this._previewState.levelValueColor || '#000000');
             preview.style.setProperty('--preview-ac-value-color', this._previewState.acValueColor || '#000000');
+
+            // Condition Modal Preview
+            preview.style.setProperty('--preview-condition-modal-border', `url('${basePath}/Border/${this._previewState.conditionModalBorderStyle}')`);
+            preview.style.setProperty('--preview-condition-modal-border-image-width', `${this._previewState.conditionModalBorderImageWidth}px`);
+            preview.style.setProperty('--preview-condition-modal-border-slice', this._previewState.conditionModalBorderImageSlice);
+            preview.style.setProperty('--preview-condition-modal-border-outset', `${this._previewState.conditionModalBorderImageOutset}px`);
+            preview.style.setProperty('--preview-condition-modal-border-repeat', this._previewState.conditionModalBorderImageRepeat);
         }
 
         // Update current selection displays
@@ -332,6 +361,9 @@ export default class SheetEditorConfig extends HandlebarsApplicationMixin(Applic
         const currentJournalBorderImg = html.querySelector('.current-journal-border-img');
         if (currentJournalBorderImg) currentJournalBorderImg.src = `${basePath}/Border/${this._previewState.journalBorderStyle}`;
 
+        const currentConditionModalBorderImg = html.querySelector('.current-condition-modal-border-img');
+        if (currentConditionModalBorderImg) currentConditionModalBorderImg.src = `${basePath}/Border/${this._previewState.conditionModalBorderStyle}`;
+
         // Also apply to actual player sheets (live preview)
         this._applyLiveStyles();
     }
@@ -349,6 +381,7 @@ export default class SheetEditorConfig extends HandlebarsApplicationMixin(Applic
         const statPanelPath = `${basePath}/Transparent center/${this._previewState.statPanelStyle}`;
         const boxBorderPath = `${basePath}/Border/${this._previewState.sdBoxBorderStyle}`;
         const journalBorderPath = `${basePath}/Border/${this._previewState.journalBorderStyle}`;
+        const conditionModalBorderPath = `${basePath}/Border/${this._previewState.conditionModalBorderStyle}`;
 
         // Inject/update the live preview style element
         let liveStyle = document.getElementById('sdx-decoration-styles-preview');
@@ -370,6 +403,7 @@ export default class SheetEditorConfig extends HandlebarsApplicationMixin(Applic
                 --sdx-border-image-outset: ${this._previewState.borderImageOutset}px;
                 --sdx-border-image-repeat: ${this._previewState.borderImageRepeat};
                 --sdx-border-background-color: ${this._previewState.borderBackgroundColor || 'transparent'};
+                --sdx-sheet-header-bg: ${this._previewState.sheetHeaderBackgroundColor || 'transparent'};
                 --sdx-box-border: url('${boxBorderPath}');
                 --sdx-box-border-image-width: ${this._previewState.sdBoxBorderWidth}px;
                 --sdx-box-border-image-slice: ${this._previewState.sdBoxBorderSlice};
@@ -386,6 +420,25 @@ export default class SheetEditorConfig extends HandlebarsApplicationMixin(Applic
                 --sdx-luck-value-color: ${this._previewState.luckValueColor || '#000000'};
                 --sdx-tab-gradient-start: ${this._previewState.tabGradientStart || '#000000'};
                 --sdx-tab-gradient-end: ${this._previewState.tabGradientEnd || '#2f2b2b'};
+                --sdx-condition-modal-border: url('${conditionModalBorderPath}');
+                --sdx-condition-modal-border-image-width: ${this._previewState.conditionModalBorderImageWidth}px;
+                --sdx-condition-modal-border-image-slice: ${this._previewState.conditionModalBorderImageSlice};
+                --sdx-condition-modal-border-image-outset: ${this._previewState.conditionModalBorderImageOutset}px;
+                --sdx-condition-modal-border-image-outset: ${this._previewState.conditionModalBorderImageOutset}px;
+                --sdx-condition-modal-border-image-repeat: ${this._previewState.conditionModalBorderImageRepeat};
+                --sdx-nav-link-color: ${this._previewState.navLinkColor || '#ffffff'};
+                --sdx-nav-link-active-color: ${this._previewState.navLinkActiveColor || '#ffffff'};
+                --sdx-details-row-color: ${this._previewState.detailsRowColor || '#ffffff'};
+                --sdx-luck-container-color: ${this._previewState.luckContainerColor || '#ffffff'};
+                --sdx-actor-name-color: ${this._previewState.actorNameColor || '#ffffff'};
+                --sdx-window-header-color: ${this._previewState.windowHeaderColor || '#ffffff'};
+                --sdx-window-header-color: ${this._previewState.windowHeaderColor || '#ffffff'};
+                --sdx-nav-bg: ${this._previewState.navBackgroundColor || '#ffffff'};
+                --sdx-nav-border-color: ${this._previewState.navBorderColor || 'rgba(0, 0, 0, 0.5)'};
+                --sdx-effects-text-color: ${this._previewState.effectsTextColor || '#ffffff'};
+                --sdx-talents-text-color: ${this._previewState.talentsTextColor || '#000000'};
+                --sdx-xp-row-color: ${this._previewState.xpRowColor || '#ffffff'};
+                --sdx-window-title-bar-bg: ${this._previewState.windowTitleBarBackgroundColor || '#ffffff'};
             }
         `;
     }
@@ -431,6 +484,97 @@ export default class SheetEditorConfig extends HandlebarsApplicationMixin(Applic
         this.render();
 
         ui.notifications.info(game.i18n.localize("SHADOWDARK_EXTRAS.sheetEditor.defaultsLoaded"));
+    }
+
+    static async #onExportTheme(event, target) {
+        const data = { ...this._previewState };
+        const filename = `shadowdark-extras-theme.json`;
+        saveDataToFile(JSON.stringify(data, null, 2), "text/json", filename);
+    }
+
+    static async #onImportTheme(event, target) {
+        const input = document.createElement("input");
+        input.type = "file";
+        input.accept = ".json";
+
+        input.onchange = async () => {
+            const file = input.files[0];
+            if (!file) return;
+
+            const readJSON = (file) => new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = (e) => resolve(JSON.parse(e.target.result));
+                reader.onerror = (e) => reject(e);
+                reader.readAsText(file);
+            });
+
+            try {
+                const json = await readJSON(file);
+                const missingAssets = [];
+                const basePath = `modules/${MODULE_ID}/art/PNG/Default`;
+
+                // Map settings to their folder types for validation
+                const IMAGE_SETTINGS = {
+                    sheetBorderStyle: { folder: "Border", prefix: "panel-border" },
+                    sdBoxBorderStyle: { folder: "Border", prefix: "panel-border" },
+                    journalBorderStyle: { folder: "Border", prefix: "panel-border" },
+                    conditionModalBorderStyle: { folder: "Border", prefix: "panel-border" },
+                    abilityPanelStyle: { folder: "Panel", prefix: "panel" },
+                    acPanelStyle: { folder: "Transparent center", prefix: "panel-transparent-center" },
+                    statPanelStyle: { folder: "Transparent center", prefix: "panel-transparent-center" }
+                };
+
+                // Pre-fetch valid images for each category to avoid repetitive API calls
+                const validImages = {};
+                const categories = ["Border", "Panel", "Transparent center"];
+
+                for (const cat of categories) {
+                    try {
+                        const result = await FilePicker.browse("data", `${basePath}/${cat}`);
+                        validImages[cat] = new Set(result.files.map(f => f.split('/').pop()));
+                    } catch (e) {
+                        console.warn(`${MODULE_ID} | Failed to scan ${cat} for validation`, e);
+                        validImages[cat] = new Set();
+                    }
+                }
+
+                // Update preview state with imported values, validating images
+                for (const key of Object.keys(DEFAULTS)) {
+                    if (json[key] !== undefined) {
+                        let value = json[key];
+
+                        // If this is an image setting, validate it
+                        if (IMAGE_SETTINGS[key]) {
+                            const { folder } = IMAGE_SETTINGS[key];
+                            if (!validImages[folder].has(value)) {
+                                missingAssets.push(`${key}: ${value}`);
+                                value = DEFAULTS[key]; // Fallback to default
+                            }
+                        }
+
+                        this._previewState[key] = value;
+                    }
+                }
+
+                // Update preview and re-render
+                this._updatePreview();
+                this.render();
+
+                if (missingAssets.length > 0) {
+                    ui.notifications.warn(game.i18n.format("SHADOWDARK_EXTRAS.sheetEditor.importMissingAssets", {
+                        count: missingAssets.length
+                    }));
+                    console.warn("Shadowdark Extras | The following assets were missing in the imported theme and reset to defaults:", missingAssets);
+                } else {
+                    ui.notifications.info(game.i18n.localize("SHADOWDARK_EXTRAS.sheetEditor.themeImported"));
+                }
+            } catch (err) {
+                console.error("Shadowdark Extras | Failed to import theme:", err);
+                ui.notifications.error(game.i18n.localize("SHADOWDARK_EXTRAS.sheetEditor.importError"));
+            }
+        };
+
+        input.click();
     }
 }
 

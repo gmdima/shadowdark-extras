@@ -28,6 +28,15 @@
             <button class="tray-handle-button-tool" data-action="pin-list" title="Pin List">
                 <i class="fa-solid fa-list"></i>
             </button>
+            <button class="tray-handle-button-tool" data-action="sdx-roll" title="Sdx Roll">
+                <i class="fa-solid fa-dice-d20"></i>
+            </button>
+            <button class="tray-handle-button-tool" data-action="light-tracker" title="Light Source Tracker">
+                <i class="fa-solid fa-fire"></i>
+            </button>
+            <button class="tray-handle-button-tool" data-action="carousing" title="Carousing">
+                <i class="fa-solid fa-beer"></i>
+            </button>
             {{/if}}
 
             <div class="tray-handle-content-wrapper">
@@ -52,6 +61,28 @@
                     </div>
                     {{/if}}
                 </div>
+
+                {{#if activeEffects}}
+                <span class="tray-handle-separator spacer"></span>
+                <div class="tray-handle-effects">
+                    {{#each activeEffects}}
+                    <div class="tray-effect-icon" data-effect-id="{{this.id}}" data-tooltip="{{this.name}}">
+                        <img src="{{this.img}}" alt="{{this.name}}" />
+                    </div>
+                    {{/each}}
+                    <div class="tray-effect-add" data-action="add-condition" data-tooltip="Add Condition">
+                        <i class="fas fa-plus"></i>
+                    </div>
+                </div>
+                {{else}}
+                <span class="tray-handle-separator spacer"></span>
+                <div class="tray-handle-effects">
+                    <div class="tray-effect-add" data-action="add-condition" data-tooltip="Add Condition">
+                        <i class="fas fa-plus"></i>
+                    </div>
+                </div>
+                {{/if}}
+
                 <span class="tray-handle-separator line-ridge-thin"></span>
                 {{else}}
                 <div class="handle-info-container">
