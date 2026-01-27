@@ -3545,7 +3545,7 @@ function applySheetDecorationStyles() {
 	let conditionModalBorder, conditionModalBorderImageWidth, conditionModalBorderImageSlice, conditionModalBorderImageOutset, conditionModalBorderImageRepeat;
 	let abilityModColor, levelValueColor, acValueColor, initModColor, luckValueColor;
 	let navLinkColor, navLinkActiveColor, detailsRowColor, luckContainerColor, actorNameColor, windowHeaderColor;
-	let navBackgroundColor, navBorderColor, effectsTextColor, talentsTextColor, xpRowColor, windowTitleBarBackgroundColor;
+	let navBackgroundColor, navBorderColor, effectsTextColor, talentsTextColor, xpRowColor, windowTitleBarBackgroundColor, statsLabelColor;
 	let tabGradientStart, tabGradientEnd;
 	try {
 		sheetBorder = game.settings.get(MODULE_ID, "sheetBorderStyle") || "panel-border-004.png";
@@ -3591,6 +3591,7 @@ function applySheetDecorationStyles() {
 		talentsTextColor = game.settings.get(MODULE_ID, "talentsTextColor") || "#000000";
 		xpRowColor = game.settings.get(MODULE_ID, "xpRowColor") || "#ffffff";
 		windowTitleBarBackgroundColor = game.settings.get(MODULE_ID, "windowTitleBarBackgroundColor") || "#ffffff";
+		statsLabelColor = game.settings.get(MODULE_ID, "statsLabelColor") || "#ffffff";
 		tabGradientStart = game.settings.get(MODULE_ID, "tabGradientStart") || "#000000";
 		tabGradientEnd = game.settings.get(MODULE_ID, "tabGradientEnd") || "#2f2b2b";
 	} catch {
@@ -3638,6 +3639,7 @@ function applySheetDecorationStyles() {
 		talentsTextColor = "#000000";
 		xpRowColor = "#ffffff";
 		windowTitleBarBackgroundColor = "#ffffff";
+		statsLabelColor = "#ffffff";
 		tabGradientStart = "#000000";
 		tabGradientEnd = "#2f2b2b";
 	}
@@ -3699,6 +3701,7 @@ function applySheetDecorationStyles() {
 			--sdx-talents-text-color: ${talentsTextColor};
 			--sdx-xp-row-color: ${xpRowColor};
 			--sdx-window-title-bar-bg: ${windowTitleBarBackgroundColor};
+			--sdx-stats-label-color: ${statsLabelColor};
 			--sdx-tab-gradient-start: ${tabGradientStart};
 			--sdx-tab-gradient-end: ${tabGradientEnd};
 		}
@@ -4270,6 +4273,15 @@ function registerSettings() {
 
 	game.settings.register(MODULE_ID, "windowTitleBarBackgroundColor", {
 		name: game.i18n.localize("SHADOWDARK_EXTRAS.sheetEditor.windowTitleBarBackgroundColor"),
+		scope: "world",
+		config: false,
+		default: "#ffffff",
+		type: String,
+		onChange: () => applySheetDecorationStyles()
+	});
+
+	game.settings.register(MODULE_ID, "statsLabelColor", {
+		name: game.i18n.localize("SHADOWDARK_EXTRAS.sheetEditor.statsLabelColor"),
 		scope: "world",
 		config: false,
 		default: "#ffffff",

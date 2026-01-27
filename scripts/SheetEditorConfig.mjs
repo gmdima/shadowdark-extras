@@ -57,7 +57,8 @@ const DEFAULTS = {
     effectsTextColor: "#ffffff",
     talentsTextColor: "#000000",
     xpRowColor: "#ffffff",
-    windowTitleBarBackgroundColor: "#ffffff"
+    windowTitleBarBackgroundColor: "#ffffff",
+    statsLabelColor: "#ffffff"
 };
 
 /**
@@ -335,6 +336,7 @@ export default class SheetEditorConfig extends HandlebarsApplicationMixin(Applic
             preview.style.setProperty('--preview-ability-mod-color', this._previewState.abilityModColor || '#000000');
             preview.style.setProperty('--preview-level-value-color', this._previewState.levelValueColor || '#000000');
             preview.style.setProperty('--preview-ac-value-color', this._previewState.acValueColor || '#000000');
+            preview.style.setProperty('--preview-stats-label-color', this._previewState.statsLabelColor || '#ffffff');
 
             // Condition Modal Preview
             preview.style.setProperty('--preview-condition-modal-border', `url('${basePath}/Border/${this._previewState.conditionModalBorderStyle}')`);
@@ -439,6 +441,7 @@ export default class SheetEditorConfig extends HandlebarsApplicationMixin(Applic
                 --sdx-talents-text-color: ${this._previewState.talentsTextColor || '#000000'};
                 --sdx-xp-row-color: ${this._previewState.xpRowColor || '#ffffff'};
                 --sdx-window-title-bar-bg: ${this._previewState.windowTitleBarBackgroundColor || '#ffffff'};
+                --sdx-stats-label-color: ${this._previewState.statsLabelColor || '#ffffff'};
             }
         `;
     }

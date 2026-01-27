@@ -1112,6 +1112,7 @@
   "SHADOWDARK_EXTRAS.sheetEditor.effectsTextColor": "Effects & Conditions Text Color",
   "SHADOWDARK_EXTRAS.sheetEditor.talentsTextColor": "Talents Text Color",
   "SHADOWDARK_EXTRAS.sheetEditor.xpRowColor": "XP Row Text Color",
+  "SHADOWDARK_EXTRAS.sheetEditor.statsLabelColor": "Stats Labels Color (AC, Ability, Init, Level)",
   "SHADOWDARK_EXTRAS.sheetEditor.windowTitleBarBackgroundColor": "Window Title Bar Background Color",
   "SHADOWDARK_EXTRAS.sheetEditor.import": "Import Theme",
   "SHADOWDARK_EXTRAS.sheetEditor.export": "Export Theme",

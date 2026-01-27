@@ -16339,7 +16339,7 @@ body:not(.game-master) .sdx-carousing-chat .sdx-player-only {
     justify-content: center;
     font-size: 8px;
     font-weight: bold;
-    color: var(--se-text);
+    color: var(--preview-stats-label-color, var(--se-text));
     background-image: var(--preview-ability);
     background-size: 100% 100%;
     background-repeat: no-repeat;
@@ -16358,7 +16358,7 @@ body:not(.game-master) .sdx-carousing-chat .sdx-player-only {
     justify-content: center;
     font-size: 8px;
     font-weight: bold;
-    color: var(--se-text);
+    color: var(--preview-stats-label-color, var(--se-text));
     background-image: var(--preview-ac);
     background-size: 100% 100%;
     background-repeat: no-repeat;
@@ -16372,7 +16372,7 @@ body:not(.game-master) .sdx-carousing-chat .sdx-player-only {
     justify-content: center;
     font-size: 8px;
     font-weight: bold;
-    color: var(--se-text);
+    color: var(--preview-stats-label-color, var(--se-text));
     background-image: var(--preview-stat);
     background-size: 100% 100%;
     background-repeat: no-repeat;
@@ -17867,4 +17867,13 @@ div.window-app.shadowdark.sheet.player .window-header {
 .shadowdark.sheet.player .sdx-xp-row .sdx-xp-separator,
 .shadowdark.sheet.player .sdx-xp-row .sdx-xp-max {
     color: var(--sdx-xp-row-color) !important;
+}
+
+/* Global Stats Labels Color */
+.shadowdark.sheet.player .sdx-ac-label,
+.shadowdark.sheet.player .sdx-ability-label,
+.shadowdark.sheet.player .sdx-init-label,
+.shadowdark.sheet.player .sdx-enhanced-content .sdx-level-label,
+.shadowdark.sheet.player .sdx-enhanced-content .sdx-init-label {
+    color: var(--sdx-stats-label-color) !important;
 }
