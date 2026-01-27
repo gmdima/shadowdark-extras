@@ -113,7 +113,7 @@ export function initMarchingMode() {
     // If sidebar already exists, inject buttons now
     const sidebar = document.getElementById("sidebar");
     if (sidebar) {
-        injectSidebarButtons($(sidebar));
+        // injectSidebarButtons($(sidebar)); // Disabled for Tray migration
     }
 
     // Hook into token movement
@@ -150,7 +150,7 @@ export function initMarchingMode() {
  */
 function onRenderSidebar(sidebar, html) {
     if (!game.user.isGM) return;
-    injectSidebarButtons(html);
+    // injectSidebarButtons(html); // Disabled for Tray migration
 }
 
 /**
@@ -255,7 +255,7 @@ function injectSidebarButtons($html) {
 /**
  * Show leader selection dialog
  */
-function showLeaderDialog() {
+export function showLeaderDialog() {
     // Get all player-owned tokens on the current scene
     const playerTokens = canvas.tokens.placeables.filter(t => {
         const actor = t.actor;
@@ -311,7 +311,7 @@ function showLeaderDialog() {
 /**
  * Show movement mode configuration dialog
  */
-function showMovementModeDialog() {
+export function showMovementModeDialog() {
     const content = `
         <form>
             <div class="sdx-movement-mode-options">

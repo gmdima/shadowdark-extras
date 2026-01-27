@@ -50,6 +50,7 @@ import BackgroundSheetSD from "./BackgroundSheetSD.mjs";
 import NPCAttackSheetSD from "./NPCAttackSheetSD.mjs";
 import NPCFeatureSheetSD from "./NPCFeatureSheetSD.mjs";
 import { initTokenToolbar, registerTokenToolbarSettings } from "./TokenToolbarSD.mjs";
+import { initTray, registerTraySettings } from "./TraySD.mjs";
 import { initAppearanceSettings } from "./AppearanceSettingsSD.mjs";
 import AmmunitionSelector from "./AmmunitionSelector.mjs";
 import StaffSpellManager from "./StaffSpellManager.mjs";
@@ -4323,6 +4324,9 @@ function registerSettings() {
 
 	// Token Toolbar settings
 	registerTokenToolbarSettings();
+
+	// Character Tray settings
+	registerTraySettings();
 
 	// 11. PIN STYLE EDITOR
 	// ═══════════════════════════════════════════════════════════════
@@ -19044,6 +19048,9 @@ Hooks.once("ready", () => {
 
 	// Initialize Token Toolbar
 	initTokenToolbar();
+
+	// Initialize Character Tray
+	initTray();
 
 	// Global listener for @DisplayTable roll buttons
 	$(document).on("click", ".sdx-table-roll-btn", async (event) => {

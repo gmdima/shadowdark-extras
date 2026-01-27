@@ -124,6 +124,9 @@
     },
     {
       "src": "styles/sheet-locking.css"
+    },
+    {
+      "src": "styles/sdx-tray.css"
     }
   ],
   "languages": [

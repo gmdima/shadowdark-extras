@@ -175,6 +175,7 @@
 .pin-name {
     font-weight: bold;
     font-size: 14px;
+    color: #000;
 }
 
 .pin-page-name {

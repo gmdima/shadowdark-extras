@@ -1,0 +1,374 @@
+<div class="sdx-tray {{#if isExpanded}}expanded{{/if}}" data-position="left">
+
+    <!-- TRAY HANDLE -->
+    <div class="tray-handle">
+        <div class="tray-handle-content-container">
+
+            <button class="tray-handle-button-toggle" title="Toggle Tray">
+                <i class="fa-solid fa-chevron-right"></i>
+            </button>
+            <button class="tray-handle-button-viewcycle" title="Toggle View Mode">
+                <i class="fas {{#if (eq viewMode 'party')}}fa-users{{else}}fa-user{{/if}}"></i>
+            </button>
+
+            <!-- GM TOOLS -->
+            {{#if isGM}}
+            <button class="tray-handle-button-tool" data-action="leader" title="Choose Party Leader">
+                <i class="fa-solid fa-crown"></i>
+            </button>
+            <button class="tray-handle-button-tool" data-action="marching" title="Marching Mode">
+                <i class="fa-solid fa-person-walking"></i>
+            </button>
+            <button class="tray-handle-button-tool" data-action="formation" title="Formation Spawner">
+                <i class="fa-solid fa-users-viewfinder"></i>
+            </button>
+            <button class="tray-handle-button-tool" data-action="add-pin" title="Add Pin">
+                <i class="fa-solid fa-map-pin"></i>
+            </button>
+            <button class="tray-handle-button-tool" data-action="pin-list" title="Pin List">
+                <i class="fa-solid fa-list"></i>
+            </button>
+            {{/if}}
+
+            <div class="tray-handle-content-wrapper">
+                {{#if (eq viewMode 'player')}}
+                <!-- PLAYER HANDLE -->
+                {{#if actor}}
+                <div class="handle-info-container">
+                    <span class="handle-info-title">{{default actorDisplayName actor.name}}</span>
+                </div>
+                <span class="tray-handle-separator spacer"></span>
+                <div class="handle-partymembers">
+                    <div class="handle-character-icon" data-actor-id="{{actor.id}}">
+                        <img src="{{actor.img}}" alt="{{actor.name}}" />
+                    </div>
+                    {{#if showHealthBars}}
+                    <div class="handle-healthbar" title="{{actorHP.value}}/{{actorHP.max}} HP">
+                        <div class="handle-healthbar-fill {{actorHealthbarStatus}}"
+                            style="height: {{actorHP.percent}}%"></div>
+                        <span class="handle-healthbar-value">{{actorHP.value}}</span>
+                        <span class="handle-healthbar-icon {{actorHealthbarStatus}}"><i
+                                class="fa-solid fa-skull"></i></span>
+                    </div>
+                    {{/if}}
+                </div>
+                <span class="tray-handle-separator line-ridge-thin"></span>
+                {{else}}
+                <div class="handle-info-container">
+                    <span class="handle-info-title">Select a Character</span>
+                </div>
+                <span class="tray-handle-separator spacer"></span>
+                {{/if}}
+                {{else}}
+                <!-- PARTY HANDLE -->
+                <div class="handle-info-container">
+                    <span class="handle-info-title">{{#if partyName}}{{partyName}}{{else}}Party{{/if}}</span>
+                </div>
+                <span class="tray-handle-separator spacer"></span>
+
+                {{#if actor}}
+                <div class="handle-partymembers">
+                    <div class="handle-character-icon" data-actor-id="{{actor.id}}">
+                        <img src="{{actor.img}}" alt="{{actor.name}}" />
+                    </div>
+                    {{#if showHealthBars}}
+                    <div class="handle-healthbar" title="{{actorHP.value}}/{{actorHP.max}} HP">
+                        <div class="handle-healthbar-fill {{actorHealthbarStatus}}"
+                            style="height: {{actorHP.percent}}%"></div>
+                        <span class="handle-healthbar-value">{{actorHP.value}}</span>
+                        <span class="handle-healthbar-icon {{actorHealthbarStatus}}"><i
+                                class="fa-solid fa-skull"></i></span>
+                    </div>
+                    {{/if}}
+                </div>
+                <span class="tray-handle-separator line-ridge-thin"></span>
+                {{/if}}
+
+                {{#if otherPartyMembers}}
+                {{#each otherPartyMembers as |member|}}
+                {{#unless @first}}<span class="tray-handle-separator line-dotted-thin"></span>{{/unless}}
+                <div class="handle-partymembers">
+                    <div class="handle-partymember-icon {{#if member.isOwner}}clickable{{/if}}" {{#if
+                        member.isOwner}}data-tooltip="Switch to {{member.name}}" {{/if}}
+                        data-actor-id="{{member.actor.id}}">
+                        <img src="{{member.img}}" alt="{{member.name}}" />
+                    </div>
+                    {{#if ../showHealthBars}}
+                    <div class="handle-healthbar party" title="{{member.hp.value}}/{{member.hp.max}} HP">
+                        <div class="handle-healthbar-fill {{member.healthbarStatus}}"
+                            style="height: {{member.hp.percent}}%"></div>
+                        <span class="handle-healthbar-value {{member.healthbarStatus}}">{{member.hp.value}}</span>
+                        <span class="handle-healthbar-icon {{member.healthbarStatus}}"><i
+                                class="fa-solid fa-skull"></i></span>
+                    </div>
+                    {{/if}}
+                </div>
+                {{/each}}
+                <span class="tray-handle-separator line-ridge-thin"></span>
+                {{/if}}
+                {{/if}}
+            </div>
+        </div>
+        <div class="tray-handle-fade-bottom"></div>
+    </div>
+
+    <!-- TRAY CONTENT -->
+    <div class="tray-content">
+
+        <!-- GM TOOLS -->
+
+
+        <!-- TRAY TABS -->
+        <div class="tray-view-tabs">
+            <button class="tray-tab-button {{#if (eq viewMode 'player')}}active{{/if}}" data-view="player"
+                title="Player View">
+                <i class="fa-solid fa-user"></i> Token
+            </button>
+            {{#if showTabParty}}
+            <button class="tray-tab-button {{#if (eq viewMode 'party')}}active{{/if}}" data-view="party"
+                title="Party View">
+                <i class="fa-solid fa-users"></i> Party
+            </button>
+            {{/if}}
+            {{#if isGM}}
+            <button class="tray-tab-button {{#if (eq viewMode 'pins')}}active{{/if}}" data-view="pins"
+                title="Journal Pins">
+                <i class="fa-solid fa-map-pin"></i> Pins
+            </button>
+            {{/if}}
+        </div>
+
+        <!-- PANELS -->
+        <div class="tray-panel-wrapper">
+
+            <!-- Selection Info - Only shown when multiple tokens are selected -->
+            {{#if showSelectionBox}}
+            <div class="tray-selection-wrapper">
+                <div class="tray-selection-count">{{selectionCount}} tokens selected</div>
+                <div class="tray-selection-actions">
+                    <button class="tray-selection-button button-clear"
+                        data-tooltip="Clear all selections">Clear</button>
+                </div>
+            </div>
+            {{/if}}
+
+            <!-- PLAYER TAB -->
+            <div class="tray-view-content player-view {{#unless (eq viewMode 'player')}}hidden{{/unless}}">
+                {{#if actor}}
+                <!-- CHARACTER PANEL -->
+                <div class="panel-container" data-panel="character" data-clickable="true">
+                    <div class="character-panel">
+                        <div class="character-portrait" style="background-image: url('{{actor.img}}')">
+                            {{#if actorHP}}
+                            <div class="health-overlay" style="height: {{healthOverlayHeight actorHP}}"></div>
+                            {{#if (eq actorHP.value 0)}}
+                            <i class="fa-solid fa-skull death-skull"></i>
+                            {{/if}}
+                            {{/if}}
+                        </div>
+                        <div class="character-info">
+                            <div class="character-name">{{actor.name}}</div>
+                            <div class="character-details">
+                                {{#if actor.system.level.value}}
+                                <span class="character-level">Level {{actor.system.level.value}}</span>
+                                {{/if}}
+                            </div>
+                            {{#if actorHP}}
+                            <div class="character-hp-bar">
+                                <div class="hp-current">
+                                    <span class="hp-value">{{actorHP.value}}</span>
+                                </div>
+                                <div class="hp-fill {{actorHealthbarStatus}}" style="width: {{actorHP.percent}}%"></div>
+                                <div class="hp-max">
+                                    <span class="hp-value">{{actorHP.max}}</span>
+                                </div>
+                            </div>
+                            {{/if}}
+                        </div>
+                    </div>
+                </div>
+                {{else}}
+                <div class="no-character-message">
+                    <p>NO TOKEN SELECTED OR OWNED</p>
+                    <p>Select an owned token to get started.</p>
+                </div>
+                {{/if}}
+            </div>
+
+            <!-- PARTY TAB -->
+            <div class="tray-view-content party-view {{#unless (eq viewMode 'party')}}hidden{{/unless}}">
+
+                <!-- Party Toolbar -->
+                <div class="tray-tools-toolbar">
+                    {{#if isGM}}
+                    <button class="tray-tools-button" data-action="select-party">
+                        <i class="fa-solid fa-users-viewfinder"></i> Select Party
+                    </button>
+                    {{else}}
+                    <button class="tray-tools-button" data-action="select-party">
+                        <i class="fa-solid fa-users-viewfinder"></i> Select Owned
+                    </button>
+                    {{/if}}
+                </div>
+
+                <!-- PARTY HEALTH -->
+                <div class="party-health-card">
+                    <div class="party-health-card-info">
+                        <div class="party-health-card-title">Party Health</div>
+                        <div class="party-health-card-details">
+                            <div class="party-hp-bar party-health-card-hp-bar">
+                                <div class="hp-current">
+                                    <span class="hp-value">{{partyRemainingHP}}</span>
+                                </div>
+                                <div class="hp-fill {{partyHealthbarStatus}}"
+                                    style="width: {{multiply (divide partyRemainingHP partyTotalHP) 100}}%"></div>
+                                <div class="hp-max">
+                                    <span class="hp-value">{{partyTotalHP}}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PARTY CHARACTERS -->
+                {{#each partyTokens as |member|}}
+                <div class="party-card {{#if member.isOwner}}party-card-clickable{{/if}} {{#if member.isSelected}}party-card-selected{{/if}}"
+                    data-token-id="{{member.id}}">
+                    <div class="party-card-image party-card-clickable" style="background-image: url('{{member.img}}')"
+                        title="Click to select token">
+                        {{#if member.hp}}
+                        <div class="health-overlay" style="height: {{healthOverlayHeight member.hp}}"></div>
+                        {{#if (eq member.hp.value 0)}}
+                        <i class="fa-solid fa-skull death-skull"></i>
+                        {{/if}}
+                        {{/if}}
+                    </div>
+                    <div class="party-card-info">
+                        <div class="party-card-name">{{member.name}}</div>
+                        <div class="party-card-details">
+                            {{#if member.hp}}
+                            <div class="party-hp-bar">
+                                <div class="hp-current">
+                                    <span class="hp-value">{{member.hp.value}}</span>
+                                </div>
+                                <div class="hp-fill {{member.healthbarStatus}}" style="width: {{member.hp.percent}}%">
+                                </div>
+                                <div class="hp-max">
+                                    <span class="hp-value">{{member.hp.max}}</span>
+                                </div>
+                            </div>
+                            {{/if}}
+                        </div>
+                    </div>
+                    <div class="party-card-actions">
+                        {{#if member.isOwner}}
+                        <i class="fa-solid fa-feather-alt open-sheet" title="Open Character Sheet"></i>
+                        {{/if}}
+                    </div>
+                </div>
+                {{else}}
+                <div class="no-party-message">
+                    <p>- No Party Tokens to Display -</p>
+                    <p>Add tokens to the scene to get started</p>
+                </div>
+                {{/each}}
+
+                <!-- MONSTER AND NPC CHARACTERS -->
+                {{#if isGM}}
+                {{#if npcTokens.length}}
+                <div class="section-divider">
+                    <span class="divider-text">MONSTERS & NPCs</span>
+                </div>
+
+                {{#each npcTokens as |npc|}}
+                <div class="party-card party-npc-card {{#if npc.isSelected}}party-card-selected{{/if}}"
+                    data-token-id="{{npc.id}}">
+                    <div class="party-card-image party-card-clickable" style="background-image: url('{{npc.img}}')"
+                        title="Click to select token">
+                        {{#if npc.hp}}
+                        <div class="health-overlay" style="height: {{healthOverlayHeight npc.hp}}"></div>
+                        {{#if (eq npc.hp.value 0)}}
+                        <i class="fa-solid fa-skull death-skull"></i>
+                        {{/if}}
+                        {{/if}}
+                    </div>
+                    <div class="party-card-info">
+                        <div class="party-card-name">{{npc.name}}</div>
+                        <div class="party-card-details">
+                            {{#if npc.hp}}
+                            <div class="party-hp-bar">
+                                <div class="hp-current">
+                                    <span class="hp-value">{{npc.hp.value}}</span>
+                                </div>
+                                <div class="hp-fill {{npc.healthbarStatus}}" style="width: {{npc.hp.percent}}%"></div>
+                                <div class="hp-max">
+                                    <span class="hp-value">{{npc.hp.max}}</span>
+                                </div>
+                            </div>
+                            {{/if}}
+                        </div>
+                    </div>
+                    <div class="party-card-actions">
+                        <i class="fa-solid fa-feather-alt open-sheet" title="Open Character Sheet"></i>
+                    </div>
+                </div>
+                {{/each}}
+                {{/if}}
+                {{/if}}
+            </div>
+
+            <!-- PINS TAB -->
+            <div class="tray-view-content pins-view {{#unless (eq viewMode 'pins')}}hidden{{/unless}}"
+                style="overflow-y: hidden; display: flex; flex-direction: column;">
+
+                <!-- Search Bar -->
+                <div class="pin-search-container">
+                    <i class="fas fa-search"></i>
+                    <input type="text" class="pin-search-input" placeholder="Search pins..." value="{{pinSearchTerm}}">
+                </div>
+
+                <!-- Pin List Content -->
+                <div class="pin-list-scroll-container"
+                    style="flex: 1; overflow-y: auto; scrollbar-width: thin; scrollbar-color: rgba(255, 255, 255, 0.2) rgba(0, 0, 0, 0.1);">
+                    {{#if pins.length}}
+                    <ul class="sdx-pin-list">
+                        {{#each pins}}
+                        <li class="pin-entry flexrow" data-id="{{this.id}}" data-x="{{this.x}}" data-y="{{this.y}}">
+                            <div class="pin-icon"
+                                style="display: flex; justify-content: center; align-items: center; background-color: {{this.backgroundColor}}; border: 2px solid {{this.borderColor}}; border-radius: 50%; width: 32px; height: 32px; box-shadow: 0 0 4px rgba(0,0,0,0.5);">
+                                {{#if (eq this.displayType "image")}}
+                                <img src="{{this.displayContent}}"
+                                    style="display: block; width: 20px; height: 20px; object-fit: contain;"
+                                    alt="Icon" />
+                                {{else if (eq this.displayType "icon")}}
+                                <i class="{{this.displayClass}}" style="{{this.displayStyle}} font-size: 16px;"></i>
+                                {{else if (eq this.displayType "text")}}
+                                <span
+                                    style="{{this.displayStyle}} font-size: 14px; line-height: 1;">{{this.displayContent}}</span>
+                                {{/if}}
+                            </div>
+                            <div class="pin-info flexcol">
+                                <span class="pin-name">{{this.name}}</span>
+                                {{#if this.pageName}}
+                                <span class="pin-page-name">{{this.pageName}}</span>
+                                {{/if}}
+                            </div>
+                            <div class="pin-controls">
+                                <a class="pin-control" data-action="pan" title="Pan to Pin">
+                                    <i class="fas fa-crosshairs"></i>
+                                </a>
+                            </div>
+                        </li>
+                        {{/each}}
+                    </ul>
+                    {{else}}
+                    <div class="no-character-message">
+                        <p>No Pins Found</p>
+                        <p>Add pins to the scene using the map pin tool</p>
+                    </div>
+                    {{/if}}
+                </div>
+
+            </div>
+        </div>
+    </div>

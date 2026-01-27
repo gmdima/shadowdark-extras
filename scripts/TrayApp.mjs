@@ -1,0 +1,348 @@
+/**
+ * Character Tray Application
+ *
+ * V2 Application for displaying the character tray.
+ * Uses Handlebars templates for rendering.
+ * Ported from coffee-pub-squire module.
+ */
+
+import {
+    setViewMode,
+    getViewMode,
+    cycleViewMode,
+    openTokenSheet,
+    selectToken,
+    selectPartyTokens,
+    clearTokenSelection,
+    switchToActor,
+    getHealthOverlayHeight
+} from "./TraySD.mjs";
+import { showLeaderDialog, showMovementModeDialog } from "./MarchingModeSD.mjs";
+import { FormationSpawnerSD } from "./FormationSpawnerSD.mjs";
+import { PinPlacer } from "./JournalPinsSD.mjs";
+import { PinListApp } from "./PinListApp.mjs";
+
+const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
+
+const MODULE_ID = "shadowdark-extras";
+
+export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
+    static DEFAULT_OPTIONS = {
+        id: "sdx-tray",
+        tag: "div",
+        position: {
+            width: "auto",
+            height: "auto",
+        },
+        window: {
+            frame: false,
+            positioned: false,
+        },
+    };
+
+    static PARTS = {
+        main: {
+            template: "modules/shadowdark-extras/templates/sdx-tray/tray.hbs"
+        }
+    };
+
+    constructor(data = {}, options = {}) {
+        super(options);
+        this.trayData = data;
+        this._isExpanded = false;
+        this._pinSearchTerm = "";
+    }
+
+    /**
+     * Update the tray data and re-render
+     * @param {Object} data - Tray data
+     */
+    updateData(data) {
+        this.trayData = data;
+        this.render();
+    }
+
+    /**
+     * Toggle expanded state
+     */
+    toggleExpanded() {
+        this._isExpanded = !this._isExpanded;
+        this._applyExpandedState();
+    }
+
+    /**
+     * Set expanded state
+     */
+    setExpanded(expanded) {
+        this._isExpanded = expanded;
+        this._applyExpandedState();
+    }
+
+    /**
+     * Apply the expanded state to the DOM
+     */
+    _applyExpandedState() {
+        const elem = document.querySelector(".sdx-tray");
+        if (elem) {
+            elem.classList.toggle("expanded", this._isExpanded);
+        }
+    }
+
+    /**
+     * Check if tray is expanded
+     * @returns {boolean}
+     */
+    isExpanded() {
+        return this._isExpanded;
+    }
+
+    /**
+     * Prepare context data for the template
+     */
+    _prepareContext(options) {
+        return {
+            ...this.trayData,
+            isExpanded: this._isExpanded,
+            viewMode: getViewMode(),
+            pinSearchTerm: this._pinSearchTerm
+        };
+    }
+
+
+
+    /**
+     * Attach event listeners after render
+     */
+    _onRender(context, options) {
+        super._onRender(context, options);
+
+        const elem = document.querySelector(".sdx-tray");
+        if (!elem) return;
+
+        // Toggle button - click to expand/collapse
+        elem.querySelector(".tray-handle-button-toggle")?.addEventListener("click", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            this.toggleExpanded();
+        });
+
+        // View cycle button
+        elem.querySelector(".tray-handle-button-viewcycle")?.addEventListener("click", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            cycleViewMode();
+        });
+
+        // GM Tools Buttons
+        elem.querySelector(".tray-handle-button-tool[data-action='leader']")?.addEventListener("click", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            showLeaderDialog();
+        });
+
+        elem.querySelector(".tray-handle-button-tool[data-action='marching']")?.addEventListener("click", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            showMovementModeDialog();
+        });
+
+        elem.querySelector(".tray-handle-button-tool[data-action='formation']")?.addEventListener("click", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            FormationSpawnerSD.show();
+        });
+
+        elem.querySelector(".tray-handle-button-tool[data-action='add-pin']")?.addEventListener("click", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            PinPlacer.activate();
+        });
+
+        elem.querySelector("[data-action='add-condition']")?.addEventListener("click", async (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            const actor = this.trayData?.actor;
+            if (!actor) return;
+
+            // Try to use the Shadowdark system's effect selector if available
+            // Or look for our module's enhanced selector (Condition Quick Toggler)
+
+            // For now, notify user that we need the class name
+            console.warn("Shadowdark Extras Tray | Condition toggler class not found. Please provide the class name.");
+            ui.notifications.warn("Condition toggler not configured. See console for details.");
+        });
+
+        elem.querySelector(".tray-handle-button-tool[data-action='pin-list']")?.addEventListener("click", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            setViewMode("pins");
+            this.setExpanded(true);
+        });
+
+        // Tab buttons
+        elem.querySelectorAll(".tray-tab-button").forEach(btn => {
+            btn.addEventListener("click", (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                const view = btn.dataset.view;
+                if (view) setViewMode(view);
+            });
+        });
+
+        // Party card clicks
+        elem.querySelectorAll(".party-card").forEach(card => {
+            card.addEventListener("click", (e) => {
+                // Don't trigger if clicking a specific action button
+                if (e.target.closest(".party-card-actions")) return;
+
+                const tokenId = card.dataset.tokenId;
+                if (tokenId) {
+                    selectToken(tokenId);
+                }
+            });
+        });
+
+        // Open sheet buttons
+        elem.querySelectorAll(".open-sheet").forEach(btn => {
+            btn.addEventListener("click", (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                const card = btn.closest(".party-card");
+                const tokenId = card?.dataset.tokenId;
+                if (tokenId) {
+                    openTokenSheet(tokenId);
+                }
+            });
+        });
+
+        // Party member icons (switch actor)
+        elem.querySelectorAll(".handle-partymember-icon.clickable").forEach(icon => {
+            icon.addEventListener("click", (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                const actorId = icon.dataset.actorId;
+                if (actorId) {
+                    switchToActor(actorId);
+                }
+            });
+        });
+
+        // Select party button
+        elem.querySelector('[data-action="select-party"]')?.addEventListener("click", (e) => {
+            e.preventDefault();
+            selectPartyTokens();
+        });
+
+        // Clear selection button
+        elem.querySelector(".button-clear")?.addEventListener("click", (e) => {
+            e.preventDefault();
+            clearTokenSelection();
+        });
+
+
+
+        // Character panel click to open sheet
+        elem.querySelector('.panel-container[data-panel="character"]')?.addEventListener("click", (e) => {
+            const actor = this.trayData?.actor;
+            if (actor) {
+                actor.sheet.render(true);
+            }
+        });
+
+        // Pin List Pan Action
+        elem.querySelectorAll(".pin-control[data-action='pan']").forEach(btn => {
+            btn.addEventListener("click", (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                const entry = btn.closest(".pin-entry");
+                const x = parseFloat(entry.dataset.x);
+                const y = parseFloat(entry.dataset.y);
+
+                if (!isNaN(x) && !isNaN(y)) {
+                    canvas.animatePan({ x, y, scale: 1.5, duration: 500 });
+                }
+            });
+        });
+
+        // Pin Search Input
+        const searchInput = elem.querySelector(".pin-search-input");
+        if (searchInput) {
+            // Restore focus if we re-rendered and input was focused (simple heuristic)
+            // But actually ApplicationV2 re-renders the whole thing, so focus is lost.
+            // We can rely on value={pinSearchTerm} to restore value, 
+            // but for smooth typing we might want to avoid full re-render on every keystroke if possible,
+            // or just use client-side filtering without re-render.
+
+            // We will use client-side filtering for better performance (no re-render)
+            searchInput.addEventListener("input", (e) => {
+                e.preventDefault();
+                const term = e.target.value;
+                this._pinSearchTerm = term;
+                this._filterPins(term);
+            });
+
+            // Initial filter application (in case of re-render with existing term)
+            if (this._pinSearchTerm) {
+                this._filterPins(this._pinSearchTerm);
+            }
+        }
+    }
+
+    /**
+     * Filter the pin list based on search term
+     * @param {string} term 
+     */
+    _filterPins(term) {
+        const elem = document.querySelector(".sdx-tray");
+        if (!elem) return;
+
+        const entries = elem.querySelectorAll(".pin-entry");
+        const lowerTerm = term.toLowerCase();
+
+        entries.forEach(entry => {
+            const name = entry.querySelector(".pin-name")?.textContent.toLowerCase() || "";
+            const page = entry.querySelector(".pin-page-name")?.textContent.toLowerCase() || "";
+
+            if (name.includes(lowerTerm) || page.includes(lowerTerm)) {
+                entry.style.display = "flex";
+            } else {
+                entry.style.display = "none";
+            }
+        });
+    }
+}
+
+// Register Handlebars helpers for the tray
+Hooks.once("init", () => {
+    // Helper to check equality
+    Handlebars.registerHelper("eq", function (a, b) {
+        return a === b;
+    });
+
+    // Helper for health overlay height
+    Handlebars.registerHelper("healthOverlayHeight", function (hp) {
+        return getHealthOverlayHeight(hp);
+    });
+
+    // Helper for multiplication
+    Handlebars.registerHelper("multiply", function (a, b) {
+        return (a || 0) * (b || 0);
+    });
+
+    // Helper for division
+    Handlebars.registerHelper("divide", function (a, b) {
+        if (!b || b === 0) return 0;
+        return (a || 0) / b;
+    });
+
+    // Helper to check if value is in array
+    Handlebars.registerHelper("includes", function (arr, value) {
+        if (!Array.isArray(arr)) return false;
+        return arr.includes(value);
+    });
+
+    // Helper for default values
+    Handlebars.registerHelper("default", function (value, defaultValue) {
+        return value ?? defaultValue;
+    });
+});
