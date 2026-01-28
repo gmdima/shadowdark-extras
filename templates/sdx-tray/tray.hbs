@@ -167,6 +167,10 @@
                 <i class="fa-solid fa-map-pin"></i> Pins
             </button>
             {{/if}}
+            <button class="tray-tab-button {{#if (eq viewMode 'notes')}}active{{/if}}" data-view="notes"
+                title="Placeable Notes">
+                <i class="fa-solid fa-sticky-note"></i> Notes
+            </button>
         </div>
 
         <!-- PANELS -->
@@ -396,6 +400,51 @@
                     <div class="no-character-message">
                         <p>No Pins Found</p>
                         <p>Add pins to the scene using the map pin tool</p>
+                    </div>
+                    {{/if}}
+                </div>
+
+            </div>
+            <!-- NOTES TAB -->
+            <div class="tray-view-content notes-view {{#unless (eq viewMode 'notes')}}hidden{{/unless}}"
+                style="overflow-y: hidden; display: flex; flex-direction: column;">
+
+                <!-- Note List Content -->
+                <div class="note-list-scroll-container"
+                    style="flex: 1; overflow-y: auto; scrollbar-width: thin; scrollbar-color: rgba(255, 255, 255, 0.2) rgba(0, 0, 0, 0.1);">
+                    {{#if notes.length}}
+                    <ul class="sdx-note-list">
+                        {{#each notes}}
+                        <li class="note-entry {{#if (and ../isGM (not this.isVisible))}}hidden-note{{/if}}"
+                            data-id="{{this.id}}" data-x="{{this.x}}" data-y="{{this.y}}">
+                            <div class="note-header">
+                                <span class="toggle-icon"><i class="fas fa-chevron-right"></i></span>
+                                <div class="note-icon"><i class="{{this.icon}}"></i></div>
+                                <span class="note-name">{{this.name}}</span>
+                                <div class="note-controls">
+                                    {{#if ../isGM}}
+                                    <a class="note-control" data-action="toggle-visibility"
+                                        title="{{#if this.isVisible}}Make Hidden{{else}}Make Visible{{/if}}">
+                                        <i class="fas {{#if this.isVisible}}fa-eye{{else}}fa-eye-slash{{/if}}"
+                                            style="{{#if this.isVisible}}color: #4ade80;{{else}}color: #999;{{/if}}"></i>
+                                    </a>
+                                    <a class="note-control" data-action="rename" title="Rename Note"><i
+                                            class="fas fa-pen"></i></a>
+                                    {{/if}}
+                                    <a class="note-control" data-action="pan" title="Pan to Object"><i
+                                            class="fas fa-crosshairs"></i></a>
+                                </div>
+                            </div>
+                            <div class="note-content hidden">
+                                {{{this.content}}}
+                            </div>
+                        </li>
+                        {{/each}}
+                    </ul>
+                    {{else}}
+                    <div class="no-character-message">
+                        <p>No Notes Found</p>
+                        <p>Add notes to placeables to see them here</p>
                     </div>
                     {{/if}}
                 </div>

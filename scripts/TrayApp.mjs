@@ -339,7 +339,7 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
             }
         });
 
-        // Pin List Pan Action
+        // Pin/Note List Pan Action
         elem.querySelectorAll(".pin-control[data-action='pan']").forEach(btn => {
             btn.addEventListener("click", (e) => {
                 e.preventDefault();
@@ -350,6 +350,96 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
 
                 if (!isNaN(x) && !isNaN(y)) {
                     canvas.animatePan({ x, y, scale: 1.5, duration: 500 });
+                }
+            });
+        });
+
+        // Note Actions
+        elem.querySelectorAll(".note-control").forEach(btn => {
+            btn.addEventListener("click", async (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                const action = btn.dataset.action;
+                const entry = btn.closest(".note-entry");
+                const id = entry.dataset.id;
+                const type = entry.querySelector(".note-icon i").className.includes("fa-user") ? "Token" :
+                    entry.querySelector(".note-icon i").className.includes("fa-lightbulb") ? "AmbientLight" :
+                        entry.querySelector(".note-icon i").className.includes("fa-volume-high") ? "AmbientSound" :
+                            entry.querySelector(".note-icon i").className.includes("fa-image") ? "Tile" :
+                                entry.querySelector(".note-icon i").className.includes("fa-block-brick") ? "Wall" : null;
+
+                if (!type) return;
+
+                // Find the document
+                let doc;
+                if (type === "Token") doc = canvas.tokens.get(id)?.document;
+                else if (type === "AmbientLight") doc = canvas.lighting.get(id)?.document;
+                else if (type === "AmbientSound") doc = canvas.sounds.get(id)?.document;
+                else if (type === "Tile") doc = canvas.tiles.get(id)?.document;
+                else if (type === "Wall") doc = canvas.walls.get(id)?.document;
+
+                if (!doc) return;
+
+                if (action === "pan") {
+                    const x = parseFloat(entry.dataset.x);
+                    const y = parseFloat(entry.dataset.y);
+                    canvas.animatePan({ x, y, scale: 1.5, duration: 500 });
+                } else if (action === "rename") {
+                    const currentName = doc.getFlag("shadowdark-extras", "customName") || doc.name || "";
+                    new Dialog({
+                        title: "Rename Placeable Note",
+                        content: `
+                            <form>
+                                <div class="form-group">
+                                    <label>Name:</label>
+                                    <input type="text" name="name" value="${currentName}" autofocus>
+                                </div>
+                            </form>
+                        `,
+                        buttons: {
+                            save: {
+                                label: "Save",
+                                icon: '<i class="fas fa-check"></i>',
+                                callback: async (html) => {
+                                    const newName = html.find("input[name='name']").val();
+                                    await doc.setFlag("shadowdark-extras", "customName", newName);
+                                    // Tray will auto-update via hooks
+                                }
+                            },
+                            reset: {
+                                label: "Reset",
+                                icon: '<i class="fas fa-undo"></i>',
+                                callback: async () => {
+                                    await doc.unsetFlag("shadowdark-extras", "customName");
+                                }
+                            }
+                        },
+                        default: "save"
+                    }).render(true);
+                } else if (action === "toggle-visibility") {
+                    const isVisible = !!doc.getFlag("shadowdark-extras", "noteVisible");
+                    await doc.setFlag("shadowdark-extras", "noteVisible", !isVisible);
+                }
+            });
+        });
+
+        // Note Toggle Action
+        elem.querySelectorAll(".note-header").forEach(header => {
+            header.addEventListener("click", (e) => {
+                // Don't toggle if clicking a control button
+                if (e.target.closest(".note-controls")) return;
+
+                e.preventDefault();
+                e.stopPropagation();
+                const entry = header.closest(".note-entry");
+                const content = entry.querySelector(".note-content");
+                if (content) {
+                    content.classList.toggle("hidden");
+                    const icon = header.querySelector(".toggle-icon i");
+                    if (icon) {
+                        icon.classList.toggle("fa-chevron-right");
+                        icon.classList.toggle("fa-chevron-down");
+                    }
                 }
             });
         });

@@ -17877,3 +17877,22 @@ div.window-app.shadowdark.sheet.player .window-header {
 .shadowdark.sheet.player .sdx-enhanced-content .sdx-init-label {
     color: var(--sdx-stats-label-color) !important;
 }
+
+/* Placeable Notes */
+.placeable-notes .editor {
+    height: 90%;
+}
+
+.placeable-notes form {
+    height: 100%;
+}
+
+/* Hide text in window header buttons for Notes, but keep icon */
+.window-header .header-button.open-sdx-notes {
+    font-size: 0;
+}
+
+.window-header .header-button.open-sdx-notes i {
+    font-size: var(--font-size-14, 14px);
+    margin-right: 0;
+}

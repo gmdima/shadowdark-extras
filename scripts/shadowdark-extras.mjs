@@ -48,6 +48,7 @@ import SheetEditorConfig from "./SheetEditorConfig.mjs";
 import PotionSheetSD from "./PotionSheetSD.mjs";
 import BackgroundSheetSD from "./BackgroundSheetSD.mjs";
 import NPCAttackSheetSD from "./NPCAttackSheetSD.mjs";
+import { initPlaceableNotes } from "./PlaceableNotesSD.mjs";
 import NPCFeatureSheetSD from "./NPCFeatureSheetSD.mjs";
 import { initTokenToolbar, registerTokenToolbarSettings } from "./TokenToolbarSD.mjs";
 import { initTray, registerTraySettings } from "./TraySD.mjs";
@@ -4311,6 +4312,16 @@ function registerSettings() {
 	game.settings.register(MODULE_ID, "enableJournalNotes", {
 		name: game.i18n.localize("SHADOWDARK_EXTRAS.settings.enable_journal_notes.name"),
 		hint: game.i18n.localize("SHADOWDARK_EXTRAS.settings.enable_journal_notes.hint"),
+		scope: "world",
+		config: true,
+		default: true,
+		type: Boolean,
+		requiresReload: true
+	});
+
+	game.settings.register(MODULE_ID, "enablePlaceableNotes", {
+		name: "Enable Notes on placeables and Notes tab in tray",
+		hint: "Adds a Notes button to configuration windows for Lights, Sounds, Tokens, Walls, and Tiles.",
 		scope: "world",
 		config: true,
 		default: true,
@@ -20564,6 +20575,12 @@ function initCarouselDrag() {
 
 // Initialize carousel drag
 initCarouselDrag();
+
+// Initialize Placeable Notes
+Hooks.once("ready", () => {
+	initPlaceableNotes();
+});
+
 
 
 

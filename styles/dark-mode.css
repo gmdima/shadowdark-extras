@@ -81,9 +81,9 @@ body.sdx-dark-mode .sheet.journal-entry .window-header {
 }
 
 body.sdx-dark-mode .window-header .window-title {
-    font-size: 19px;
-    padding-left: 10px;
-    font-family: 'Old Newspaper Font';
+    font-size: 13px;
+    padding-left: 5px;
+    font-family: 'Montserrat-Medium', sans-serif;
 }
 
 body.sdx-dark-mode .chat-message.whisper {

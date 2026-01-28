@@ -73,10 +73,18 @@ export function initTray() {
         if (item.type === "Effect") await renderTray();
     });
 
-    // Hook into token creation/deletion for party view
+    // Hook into token creation/deletion for party view & notes
     Hooks.on("createToken", async () => await renderTray());
     Hooks.on("deleteToken", async () => await renderTray());
     Hooks.on("updateToken", async () => await renderTray());
+
+    // Hook into other placeables for notes
+    const placeableHooks = ["AmbientLight", "AmbientSound", "Wall", "Tile"];
+    placeableHooks.forEach(type => {
+        Hooks.on(`create${type}`, async () => await renderTray());
+        Hooks.on(`update${type}`, async () => await renderTray());
+        Hooks.on(`delete${type}`, async () => await renderTray());
+    });
 
     // Hook into scene changes
     Hooks.on("canvasReady", async () => await renderTray());
@@ -295,15 +303,20 @@ export function getViewMode() {
  */
 export function cycleViewMode() {
     const showParty = game.settings.get(MODULE_ID, "tray.showPartyTab");
+    const isGM = game.user.isGM;
 
-    if (_viewMode === "player" && showParty) {
-        _viewMode = "party";
-    } else {
-        _viewMode = "player";
-    }
+    const modes = ["player"];
+    if (showParty) modes.push("party");
+    if (isGM) modes.push("pins");
+    modes.push("notes"); // Notes mode for everyone (filtered for players)
+
+    const currentIndex = modes.indexOf(_viewMode);
+    const nextIndex = (currentIndex + 1) % modes.length;
+    _viewMode = modes[nextIndex];
 
     renderTray();
 }
+
 
 /**
  * Toggle tray expansion
@@ -367,15 +380,15 @@ export async function renderTray() {
         // Pins Data
         pins: game.user.isGM ? getPinsData() : [],
 
+        // Notes Data
+        notes: await getNotesData(),
+
         // Active Effects
         activeEffects: (() => {
             if (!actor) return [];
             // Use appliedEffects if available (V11+) to get currently active effects
             // This handles disabled state, suppression, etc.
             const effects = actor.appliedEffects || actor.effects;
-
-            // Debug log to troubleshoot missing effects
-            console.log("Shadowdark Extras Tray | Fetching effects for", actor.name, effects);
 
             return effects.map(e => ({
                 id: e.id,
@@ -504,6 +517,119 @@ export function getPinsData() {
     enrichedPins.sort((a, b) => a.name.localeCompare(b.name));
     return enrichedPins;
 }
+
+/**
+ * Get enriched notes data for the current scene
+ * @returns {Promise<Array>}
+ */
+export async function getNotesData() {
+    if (!canvas.scene) return [];
+
+    const notesList = [];
+    const isGM = game.user.isGM;
+
+    // Helper to process placeables
+    const processPlaceables = async (collection, type, icon) => {
+        if (!collection) return;
+        for (const placeable of collection) {
+            const doc = placeable.document;
+            const noteContent = doc.getFlag(MODULE_ID, "notes");
+
+            // Visibility Check
+            const isVisible = !!doc.getFlag(MODULE_ID, "noteVisible");
+            if (!isGM && !isVisible) continue;
+
+            if (noteContent) {
+                // Enrich the HTML for display (convert secrets etc if needed, though we probably want raw for now or enriched safely)
+                // We will enrich it so links work
+                const enriched = await TextEditor.enrichHTML(noteContent, { async: true });
+
+                // Get Name
+                let name = doc.getFlag(MODULE_ID, "customName") || doc.name || "Unnamed";
+
+                // For walls/lights without names, give a descriptive name if no custom name
+                if (!doc.getFlag(MODULE_ID, "customName")) {
+                    if (type === "Wall" && (!doc.name || doc.name === "Wall")) name = `Wall (${Math.round(placeable.center.x)}, ${Math.round(placeable.center.y)})`;
+                    if (type === "Light" && (!doc.name || doc.name === "Light")) name = `Light - ${doc.config?.dim || 0}/${doc.config?.bright || 0}`;
+                    if (type === "Sound" && (!doc.name || doc.name === "Sound")) name = `Sound - ${doc.path?.split('/').pop() || "Unknown"}`;
+                }
+
+                notesList.push({
+                    id: doc.id,
+                    uuid: doc.uuid,
+                    x: placeable.center.x, // Use center for panning
+                    y: placeable.center.y,
+                    name: name,
+                    type: type,
+                    icon: icon,
+                    content: enriched,
+                    shortContent: enriched.replace(/<[^>]*>/g, '').substring(0, 50) + (enriched.length > 50 ? "..." : ""),
+                    isVisible: isVisible
+                });
+            }
+        }
+    };
+
+    // Scan all layers
+    // Lighting
+    await processPlaceables(canvas.lighting?.placeables, "Light", "fa-solid fa-lightbulb");
+    // Sounds
+    await processPlaceables(canvas.sounds?.placeables, "Sound", "fa-solid fa-volume-high");
+    // Tokens
+    if (canvas.tokens?.placeables) {
+        for (const token of canvas.tokens.placeables) {
+            const doc = token.document;
+            // Check both Token and Actor for notes
+            let noteContent = doc.getFlag(MODULE_ID, "notes");
+            if (!noteContent && token.actor) {
+                noteContent = token.actor.getFlag(MODULE_ID, "notes");
+            }
+
+            // Visibility Check
+            // For tokens we check the token document first, then actor? 
+            // Logic: If token has specific visibility flag, use it. If not, default to hidden?
+            // Or share visibility with the note source?
+            // Let's assume visibility flag is on the object that has the note, or just the token document itself for simplicity?
+            // Actually, keep it simple: visibility flag is on the Token Document.
+            const isVisible = !!doc.getFlag(MODULE_ID, "noteVisible");
+
+            if (!isGM && !isVisible) continue;
+
+            if (noteContent) {
+                const enriched = await TextEditor.enrichHTML(noteContent, { async: true });
+                const name = doc.getFlag(MODULE_ID, "customName") || doc.name || "Unnamed";
+
+                notesList.push({
+                    id: doc.id,
+                    uuid: doc.uuid,
+                    x: token.center.x,
+                    y: token.center.y,
+                    name: name,
+                    type: "Token",
+                    icon: "fa-solid fa-user",
+                    content: enriched,
+                    shortContent: enriched.replace(/<[^>]*>/g, '').substring(0, 50) + (enriched.length > 50 ? "..." : ""),
+                    isVisible: isVisible
+                });
+            }
+        }
+    }
+    // Tiles (TilesLayer is deprecated in V12? No, `canvas.tiles`)
+    await processPlaceables(canvas.tiles?.placeables, "Tile", "fa-solid fa-image");
+    // Walls (Walls don't technically support notes via standard config usually, but our code enabled it)
+    // Wait, WallsLayer objects are `Wall` which is a Document.
+    // However, wall selection is tricky. But our PlaceableNotesSD attached to WallConfig.
+    // So yes, walls can have notes.
+    // Note: placeable.center might be a getter or calculated differently for walls (midpoint).
+    await processPlaceables(canvas.walls?.placeables, "Wall", "fa-solid fa-block-brick");
+
+    // Sort by name
+    notesList.sort((a, b) => a.name.localeCompare(b.name));
+
+    return notesList;
+}
+
+
 
 /**
  * Get party health bar status

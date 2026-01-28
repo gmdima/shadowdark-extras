@@ -1034,3 +1034,135 @@ body.sdx-tray-enabled #ui-left-column-1 {
     background: rgba(255, 255, 255, 0.15);
     color: #fff;
 }
+
+/* ========================================= */
+/* NOTE LIST STYLES (Placeable Notes)        */
+/* ========================================= */
+
+.sdx-tray .note-list-scroll-container {
+    padding-right: 4px;
+}
+
+.sdx-tray .sdx-note-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+/* Note Entry */
+.sdx-tray .note-entry {
+    background: rgba(10, 10, 10, 0.9);
+    border: 1px solid rgba(68, 68, 68, 0.6);
+    border-radius: 4px;
+    margin-bottom: 6px;
+    padding: 6px;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    transition: all 0.2s ease;
+}
+
+.sdx-tray .note-entry.hidden-note {
+    opacity: 0.6;
+    border-style: dashed;
+}
+
+.sdx-tray .note-entry:hover {
+    background: rgba(20, 20, 20, 1.0);
+    border-color: rgba(255, 150, 0, 0.5);
+}
+
+/* Note Header */
+.sdx-tray .note-header {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 4px;
+    cursor: pointer;
+}
+
+/* Icons */
+.sdx-tray .note-icon {
+    flex: none;
+    width: 24px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-right: 8px;
+    color: #9f9275;
+    font-size: 1.1em;
+}
+
+/* Name */
+.sdx-tray .note-name {
+    flex: 1;
+    color: #9f9275;
+    font-weight: bold;
+    font-size: 0.9em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Controls */
+.sdx-tray .note-controls {
+    flex: none;
+    display: flex;
+    gap: 4px;
+    margin-left: 8px;
+}
+
+.sdx-tray .note-control {
+    color: rgba(255, 255, 255, 0.4);
+    cursor: pointer;
+    transition: color 0.2s ease;
+    padding: 2px;
+}
+
+.sdx-tray .note-control:hover {
+    color: #fff;
+}
+
+/* Toggle Icon */
+.sdx-tray .toggle-icon {
+    width: 16px;
+    text-align: center;
+    margin-right: 4px;
+    color: rgba(255, 255, 255, 0.3);
+    font-size: 0.8em;
+    transition: color 0.2s ease;
+}
+
+.sdx-tray .note-entry:hover .toggle-icon {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+/* Note Content */
+.sdx-tray .note-content {
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px dashed rgba(255, 255, 255, 0.1);
+    font-size: 0.9em;
+    color: #ccc;
+    line-height: 1.4;
+    word-break: break-word;
+    user-select: text;
+    /* Allow selecting text */
+}
+
+.sdx-tray .note-content.hidden {
+    display: none;
+}
+
+/* Ensure images in notes don't overflow */
+.sdx-tray .note-content img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 4px;
+    margin: 4px 0;
+}
+
+.sdx-tray .note-content p {
+    margin: 0.5em 0;
+}
