@@ -24,6 +24,7 @@ import { PinListApp } from "./PinListApp.mjs";
 import { GetRollDataSD } from "./sdx-rolls/GetRollDataSD.mjs";
 import { SdxRollSD } from "./sdx-rolls/SdxRollSD.mjs";
 import { getSDXROLLSSetting } from "./sdx-rolls/SdxRollsSD.mjs";
+import { PlaceableNotesSD } from "./PlaceableNotesSD.mjs";
 
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
@@ -372,7 +373,20 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
 
                 // Find the document
                 let doc;
-                if (type === "Token") doc = canvas.tokens.get(id)?.document;
+                if (type === "Token") {
+                    const token = canvas.tokens.get(id);
+                    if (token) {
+                        const tokenDoc = token.document;
+                        // Check if token has its own note
+                        const tokenNote = tokenDoc.getFlag("shadowdark-extras", "notes");
+                        // If token has no note, but actor does, edit the actor's note (matching display logic)
+                        if (!tokenNote && token.actor && token.actor.getFlag("shadowdark-extras", "notes")) {
+                            doc = token.actor;
+                        } else {
+                            doc = tokenDoc;
+                        }
+                    }
+                }
                 else if (type === "AmbientLight") doc = canvas.lighting.get(id)?.document;
                 else if (type === "AmbientSound") doc = canvas.sounds.get(id)?.document;
                 else if (type === "Tile") doc = canvas.tiles.get(id)?.document;
@@ -419,6 +433,20 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
                 } else if (action === "toggle-visibility") {
                     const isVisible = !!doc.getFlag("shadowdark-extras", "noteVisible");
                     await doc.setFlag("shadowdark-extras", "noteVisible", !isVisible);
+                } else if (action === "delete") {
+                    Dialog.confirm({
+                        title: "Delete Note",
+                        content: `<p>Are you sure you want to delete the note for <strong>${doc.name}</strong>?</p>`,
+                        yes: async () => {
+                            // If we are deleting a note on a token, and it was displaying fallback actor notes...
+                            // Actually, 'doc' is already resolved to the correct document (Token or Actor)
+                            // So we just delete the flag from 'doc'.
+                            await doc.unsetFlag("shadowdark-extras", "notes");
+                            // Also clear visibility flag? Yes.
+                            await doc.unsetFlag("shadowdark-extras", "noteVisible");
+                        },
+                        defaultYes: false
+                    });
                 }
             });
         });
@@ -441,6 +469,49 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
                         icon.classList.toggle("fa-chevron-down");
                     }
                 }
+            });
+        });
+
+        // Note Entry Context Menu (Edit)
+        elem.querySelectorAll(".note-entry").forEach(entry => {
+            entry.addEventListener("contextmenu", (e) => {
+                if (!game.user.isGM) return;
+                e.preventDefault();
+                e.stopPropagation();
+
+                const id = entry.dataset.id;
+                const type = entry.querySelector(".note-icon i").className.includes("fa-user") ? "Token" :
+                    entry.querySelector(".note-icon i").className.includes("fa-lightbulb") ? "AmbientLight" :
+                        entry.querySelector(".note-icon i").className.includes("fa-volume-high") ? "AmbientSound" :
+                            entry.querySelector(".note-icon i").className.includes("fa-image") ? "Tile" :
+                                entry.querySelector(".note-icon i").className.includes("fa-block-brick") ? "Wall" : null;
+
+                if (!type) return;
+
+                // Find the document
+                let doc;
+                if (type === "Token") {
+                    const token = canvas.tokens.get(id);
+                    if (token) {
+                        const tokenDoc = token.document;
+                        // Check if token has its own note
+                        const tokenNote = tokenDoc.getFlag("shadowdark-extras", "notes");
+                        // If token has no note, but actor does, edit the actor's note (matching display logic)
+                        if (!tokenNote && token.actor && token.actor.getFlag("shadowdark-extras", "notes")) {
+                            doc = token.actor;
+                        } else {
+                            doc = tokenDoc;
+                        }
+                    }
+                }
+                else if (type === "AmbientLight") doc = canvas.lighting.get(id)?.document;
+                else if (type === "AmbientSound") doc = canvas.sounds.get(id)?.document;
+                else if (type === "Tile") doc = canvas.tiles.get(id)?.document;
+                else if (type === "Wall") doc = canvas.walls.get(id)?.document;
+
+                if (!doc) return;
+
+                new PlaceableNotesSD(doc).render(true);
             });
         });
 

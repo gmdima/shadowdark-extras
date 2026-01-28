@@ -430,6 +430,8 @@
                                     </a>
                                     <a class="note-control" data-action="rename" title="Rename Note"><i
                                             class="fas fa-pen"></i></a>
+                                    <a class="note-control danger" data-action="delete" title="Delete Note"><i
+                                            class="fas fa-times" style="color: #ff3333;"></i></a>
                                     {{/if}}
                                     <a class="note-control" data-action="pan" title="Pan to Object"><i
                                             class="fas fa-crosshairs"></i></a>
@@ -448,6 +450,12 @@
                     </div>
                     {{/if}}
                 </div>
+
+                {{#if isGM}}
+                <div class="tray-footer-message">
+                    Right click to edit a note content
+                </div>
+                {{/if}}
 
             </div>
         </div>
