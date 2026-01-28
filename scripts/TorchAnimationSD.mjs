@@ -353,6 +353,9 @@ export function initTorchAnimations() {
 
 	// Hook into item updates to detect light source toggling
 	Hooks.on("updateItem", async (item, changes, options, userId) => {
+		// Only the user who made the change should create the animation
+		if (userId !== game.user.id) return;
+
 		// Only process light items
 		if (!item.system?.light) return;
 
@@ -381,6 +384,9 @@ export function initTorchAnimations() {
 	// Hook into actor light changes (for turnLightOn/turnLightOff)
 	// The actor's turnLightOn method changes the token's light settings
 	Hooks.on("updateToken", async (tokenDoc, changes, options, userId) => {
+		// Only the user who made the change should update the animation
+		if (userId !== game.user.id) return;
+
 		// Check if light settings were changed
 		const lightChanged = foundry.utils.hasProperty(changes, "light");
 		if (!lightChanged) return;
@@ -403,6 +409,11 @@ export function initTorchAnimations() {
 
 	// Also hook into when an active light source is detected on scene ready
 	Hooks.on("canvasReady", async () => {
+		// Only the first GM or the first user should restore animations
+		// This prevents all clients from creating duplicate effects
+		const firstActiveUser = game.users.find(u => u.active);
+		if (game.user.id !== firstActiveUser?.id) return;
+
 		// Small delay to ensure everything is loaded
 		await new Promise(resolve => setTimeout(resolve, 500));
 
@@ -424,6 +435,9 @@ export function initTorchAnimations() {
 
 	// Clean up animations when token is deleted
 	Hooks.on("deleteToken", async (tokenDoc, options, userId) => {
+		// Only the user who deleted the token should clean up
+		if (userId !== game.user.id) return;
+
 		const deps = checkDependencies();
 		if (!deps.hasSequencer) return;
 
@@ -433,6 +447,9 @@ export function initTorchAnimations() {
 
 	// Check for active light sources when a new token is created
 	Hooks.on("createToken", async (tokenDoc, options, userId) => {
+		// Only the user who created the token should add animations
+		if (userId !== game.user.id) return;
+
 		// Small delay to ensure token is fully initialized
 		await new Promise(resolve => setTimeout(resolve, 200));
 
