@@ -1,7 +1,6 @@
 /**
  * Journal Pins System for Shadowdark Extras
  * Allows placing journal/page pins on the canvas via Ctrl+drag
- * Based on Coffee Pub Blacksmith's layer registration pattern
  */
 
 const MODULE_ID = "shadowdark-extras";
@@ -24,6 +23,8 @@ const DEFAULT_PIN_STYLE = {
     opacity: 1.0,
     fillOpacity: 1.0,
     ringOpacity: 1.0,
+    hoverAnimation: false, // New property
+    imagePath: "", // Path to image for "image" shape
     contentType: "number", // "number", "icon", "text"
     iconClass: "fa-solid fa-book-open",
     customText: "",
@@ -603,6 +604,8 @@ class JournalPinGraphics extends PIXI.Container {
         const fillOpacity = (style.fillOpacity ?? 1.0) * baseOpacity;
         const ringOpacity = (style.ringOpacity ?? 1.0) * baseOpacity;
 
+
+
         // Use red dashed stroke if pin is GM-only (visible indicator for GM)
         let ringColor;
         let ringStyle = style.ringStyle || "solid";
@@ -618,58 +621,121 @@ class JournalPinGraphics extends PIXI.Container {
 
         const container = new PIXI.Container();
 
-        const circle = new PIXI.Graphics();
-        this._circle = circle; // Keep reference if needed
-
         const shape = style.shape || "circle";
-        this._circle.beginFill(fillColorNum, fillOpacity);
 
-        // Use standard lineStyle for solid, or helper for dashed/dotted
-        if (ringStyle === "solid") {
-            this._circle.lineStyle(ringWidth, ringColorNum, ringOpacity);
-        } else {
-            this._circle.lineStyle(0); // Standard stroke off for segment drawing
-        }
+        // Special handling for Image Shape
+        if (shape === "image") {
+            try {
+                // If shape is image, we skip the standard graphics builder
+                // We create a sprite directly container
 
-        switch (shape) {
-            case "circle":
-                this._circle.drawCircle(0, 0, radius);
-                break;
-            case "square":
-                const cornerRadius = style.borderRadius ?? 4;
-                this._circle.drawRoundedRect(-radius, -radius, size, size, cornerRadius);
-                break;
-            case "diamond":
-                const half = radius;
-                this._circle.moveTo(0, -half);
-                this._circle.lineTo(half, 0);
-                this._circle.lineTo(0, half);
-                this._circle.lineTo(-half, 0);
-                this._circle.closePath();
-                break;
-            case "hexagon":
-                const hexRadius = radius;
-                for (let i = 0; i < 6; i++) {
-                    const angle = (Math.PI / 3) * i - Math.PI / 2;
-                    const hx = Math.cos(angle) * hexRadius;
-                    const hy = Math.sin(angle) * hexRadius;
-                    if (i === 0) this._circle.moveTo(hx, hy);
-                    else this._circle.lineTo(hx, hy);
+                const imagePath = style.imagePath;
+                if (imagePath) {
+                    const texture = await loadTexture(imagePath);
+                    if (texture) {
+                        const sprite = new PIXI.Sprite(texture);
+                        // Center anchor
+                        sprite.anchor.set(0.5);
+
+                        // Scale to fit size, maintaining aspect ratio usually, 
+                        // but here we might force square fit or contain? 
+                        // Let's use "contain" logic within the size box
+
+                        const maxDim = Math.max(texture.width, texture.height);
+                        const scale = size / maxDim;
+
+                        sprite.width = texture.width * scale;
+                        sprite.height = texture.height * scale;
+
+                        // Apply opacity
+                        sprite.alpha = baseOpacity;
+
+                        container.addChild(sprite);
+                    }
+                } else {
+                    // Fallback if no image path: broken image placeholder
+                    const placeholder = new PIXI.Graphics();
+                    placeholder.lineStyle(2, 0xFF0000, baseOpacity);
+                    placeholder.moveTo(-radius, -radius);
+                    placeholder.lineTo(radius, radius);
+                    placeholder.moveTo(radius, -radius);
+                    placeholder.lineTo(-radius, radius);
+                    placeholder.drawRect(-radius, -radius, size, size);
+                    container.addChild(placeholder);
                 }
-                this._circle.closePath();
-                break;
-            default:
-                this._circle.drawCircle(0, 0, radius);
+
+                // Add content (text/number/icon) on top?
+                // Plan assumption: yes, standard content renders on top
+                // So we fall through to the content rendering block...
+
+                // We need a dummy _circle reference because content rendering logic might use it?
+                // Checking code... no, content is added to 'container'.
+                // BUT _drawStyledStroke uses _circle. We skip that for image.
+
+                // We successfully added the visual to 'container'.
+                // The code below expects 'this._circle' to exist for shape drawing logic.
+                // We should bail out of the shape drawing part but continue to content.
+
+                // Let's restructure a bit.
+                // We'll define a flag to skip standard shape drawing.
+
+            } catch (err) {
+                console.error("SDX Journal Pins | Error loading pin image:", err);
+            }
         }
+        else {
+            // Standard Shape Drawing
+            const circle = new PIXI.Graphics();
+            this._circle = circle; // Keep reference if needed
 
-        this._circle.endFill();
-        container.addChild(this._circle);
+            this._circle.beginFill(fillColorNum, fillOpacity);
 
+            // Use standard lineStyle for solid, or helper for dashed/dotted
+            if (ringStyle === "solid") {
+                this._circle.lineStyle(ringWidth, ringColorNum, ringOpacity);
+            } else {
+                this._circle.lineStyle(0); // Standard stroke off for segment drawing
+            }
 
-        // Draw custom stroke if not solid
-        if (ringStyle !== "solid") {
-            const cornerRadius = style.borderRadius ?? 4;
-            this._drawStyledStroke(this._circle, shape, radius, size, ringWidth, ringColorNum, ringOpacity, ringStyle, cornerRadius);
+            switch (shape) {
+                case "circle":
+                    this._circle.drawCircle(0, 0, radius);
+                    break;
+                case "square":
+                    const cornerRadius = style.borderRadius ?? 4;
+                    this._circle.drawRoundedRect(-radius, -radius, size, size, cornerRadius);
+                    break;
+                case "diamond":
+                    const half = radius;
+                    this._circle.moveTo(0, -half);
+                    this._circle.lineTo(half, 0);
+                    this._circle.lineTo(0, half);
+                    this._circle.lineTo(-half, 0);
+                    this._circle.closePath();
+                    break;
+                case "hexagon":
+                    const hexRadius = radius;
+                    for (let i = 0; i < 6; i++) {
+                        const angle = (Math.PI / 3) * i - Math.PI / 2;
+                        const hx = Math.cos(angle) * hexRadius;
+                        const hy = Math.sin(angle) * hexRadius;
+                        if (i === 0) this._circle.moveTo(hx, hy);
+                        else this._circle.lineTo(hx, hy);
+                    }
+                    this._circle.closePath();
+                    break;
+                default:
+                    this._circle.drawCircle(0, 0, radius);
+            }
+
+            this._circle.endFill();
+            container.addChild(this._circle);
+
+            // Draw custom stroke if not solid AND not image
+            if (ringStyle !== "solid") {
+                const cornerRadius = style.borderRadius ?? 4;
+                this._drawStyledStroke(this._circle, shape, radius, size, ringWidth, ringColorNum, ringOpacity, ringStyle, cornerRadius);
+            }
         }
 
         // Add content: number, symbol, custom icon, or custom text
@@ -1270,12 +1336,32 @@ class JournalPinGraphics extends PIXI.Container {
         if (this._labelContainer && style.labelShowOnHover) {
             this._labelContainer.visible = true;
         }
+
+        // Hover Animation
+        if (style.hoverAnimation) {
+            // Use GSAP if available, otherwise simple set
+            if (window.gsap) {
+                gsap.to(this.scale, { x: 1.2, y: 1.2, duration: 0.1 });
+            } else {
+                this.scale.set(1.2);
+            }
+        }
     }
 
     _onPointerLeave(event) {
         JournalPinTooltip.hide();
         if (this._labelContainer && this.pinData.style?.labelShowOnHover) {
             this._labelContainer.visible = false;
+        }
+
+        // Hover Animation Reset
+        const style = this.pinData.style || {};
+        if (style.hoverAnimation) {
+            if (window.gsap) {
+                gsap.to(this.scale, { x: 1.0, y: 1.0, duration: 0.1 });
+            } else {
+                this.scale.set(1.0);
+            }
         }
     }
 

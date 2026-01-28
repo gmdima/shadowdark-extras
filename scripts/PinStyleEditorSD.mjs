@@ -114,7 +114,8 @@ export class PinStyleEditorApp extends HandlebarsApplicationMixin(ApplicationV2)
             { value: "circle", label: game.i18n.localize("SDX.pinStyleEditor.shapeCircle") },
             { value: "square", label: game.i18n.localize("SDX.pinStyleEditor.shapeSquare") },
             { value: "diamond", label: game.i18n.localize("SDX.pinStyleEditor.shapeDiamond") },
-            { value: "hexagon", label: game.i18n.localize("SDX.pinStyleEditor.shapeHexagon") }
+            { value: "hexagon", label: game.i18n.localize("SDX.pinStyleEditor.shapeHexagon") },
+            { value: "image", label: game.i18n.localize("SDX.pinStyleEditor.shapeImage") }
         ];
 
         const ringStyles = [
@@ -302,15 +303,32 @@ export class PinStyleEditorApp extends HandlebarsApplicationMixin(ApplicationV2)
             updateLabelBgVisibility();
         }
 
-        // Show/hide border radius options based on shape selection
+        // Show/hide options based on shape selection
         const shapeSelect = form.querySelector('[name="shape"]');
         const borderRadiusSection = form.querySelector('.border-radius-options');
-        if (shapeSelect && borderRadiusSection) {
-            const updateBorderRadiusVisibility = () => {
-                borderRadiusSection.style.display = shapeSelect.value === "square" ? "flex" : "none";
+        const standardStyleSection = form.querySelector('.standard-style-options');
+        const imageShapeOptions = form.querySelector('.image-shape-options');
+
+        if (shapeSelect) {
+            const updateShapeVisibility = () => {
+                const shape = shapeSelect.value;
+
+                // Toggle Border Radius (Square only)
+                if (borderRadiusSection) {
+                    borderRadiusSection.style.display = shape === "square" ? "flex" : "none";
+                }
+
+                // Toggle Standard Options vs Image Options
+                if (shape === "image") {
+                    if (standardStyleSection) standardStyleSection.style.display = "none";
+                    if (imageShapeOptions) imageShapeOptions.style.display = "block";
+                } else {
+                    if (standardStyleSection) standardStyleSection.style.display = "block";
+                    if (imageShapeOptions) imageShapeOptions.style.display = "none";
+                }
             };
-            updateBorderRadiusVisibility();
-            shapeSelect.addEventListener("change", updateBorderRadiusVisibility);
+            updateShapeVisibility();
+            shapeSelect.addEventListener("change", updateShapeVisibility);
         }
 
         // Journal dropdown changes - update page options
@@ -404,6 +422,24 @@ export class PinStyleEditorApp extends HandlebarsApplicationMixin(ApplicationV2)
                     // Use clip-path for true hexagon shape
                     previewPin.style.clipPath = "polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)";
                     break;
+                case "image":
+                    previewPin.style.backgroundColor = "transparent";
+                    previewPin.style.border = "none";
+                    previewPin.style.borderRadius = "0";
+                    previewPin.style.transform = "rotate(0deg)";
+
+                    // Add background image to preview
+                    if (style.imagePath) {
+                        previewPin.style.backgroundImage = `url("${style.imagePath}")`;
+                        previewPin.style.backgroundSize = "contain";
+                        previewPin.style.backgroundPosition = "center";
+                        previewPin.style.backgroundRepeat = "no-repeat";
+                    } else {
+                        // Fallback placeholder
+                        previewPin.style.backgroundImage = "none";
+                        previewPin.style.border = "1px dashed #666";
+                    }
+                    return; // Skip content addition for image shape background
             }
 
             // Content (number, symbol, custom icon, or text)
@@ -460,11 +496,23 @@ export class PinStyleEditorApp extends HandlebarsApplicationMixin(ApplicationV2)
         const formData = {
             size: parseInt(form.querySelector('[name="size"]')?.value) || 32,
             shape: form.querySelector('[name="shape"]')?.value || "circle",
+            imagePath: form.querySelector('[name="imagePath"]')?.value || "",
+            hoverAnimation: form.querySelector('[name="hoverAnimation"]')?.checked || false,
             ringColor: form.querySelector('[name="ringColor"]')?.value || "#ffffff",
             fillColor: form.querySelector('[name="fillColor"]')?.value || "#000000",
             ringWidth: parseInt(form.querySelector('[name="ringWidth"]')?.value) || 3,
             ringStyle: form.querySelector('[name="ringStyle"]')?.value || "solid",
-            opacity: parseFloat(form.querySelector('[name="opacity"]')?.value) ?? 1.0,
+
+            // Get opacity based on shape (handle duplicate inputs)
+            opacity: (() => {
+                const shape = form.querySelector('[name="shape"]')?.value;
+                if (shape === "image") {
+                    return parseFloat(form.querySelector('.image-opacity-option [name="opacity"]')?.value) ?? 1.0;
+                } else {
+                    return parseFloat(form.querySelector('.standard-style-options [name="opacity"]')?.value) ?? 1.0;
+                }
+            })(),
+
             fillOpacity: parseFloat(form.querySelector('[name="fillOpacity"]')?.value) ?? 1.0,
             ringOpacity: parseFloat(form.querySelector('[name="ringOpacity"]')?.value) ?? 1.0,
             contentType: form.querySelector('[name="contentType"]')?.value || "number",

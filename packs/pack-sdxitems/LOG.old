@@ -1,3 +1,7 @@
-2026/01/28-00:17:15.305 c204 Recovering log #734
-2026/01/28-00:17:15.314 c204 Delete type=0 #734
-2026/01/28-00:17:15.314 c204 Delete type=3 #733
+2026/01/28-01:30:16.193 74c8 Recovering log #738
+2026/01/28-01:30:16.202 74c8 Delete type=0 #738
+2026/01/28-01:30:16.202 74c8 Delete type=3 #737
+2026/01/28-12:37:20.193 cd40 Level-0 table #742: started
+2026/01/28-12:37:20.193 cd40 Level-0 table #742: 0 bytes OK
+2026/01/28-12:37:20.197 cd40 Delete type=0 #740
+2026/01/28-12:37:20.197 cd40 Manual compaction at level-0 from '!folders!F3AKMIJQch1KV4FP' @ 72057594037927935 : 1 .. '!items.effects!zqCuFAr8GhvpF3x2.EjglH7c4lr0267Hu' @ 0 : 0; will stop at (end)

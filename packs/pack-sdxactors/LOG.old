@@ -1,3 +1,7 @@
-2026/01/28-00:17:15.333 ac30 Recovering log #688
-2026/01/28-00:17:15.342 ac30 Delete type=0 #688
-2026/01/28-00:17:15.342 ac30 Delete type=3 #687
+2026/01/28-01:30:16.207 ac20 Recovering log #692
+2026/01/28-01:30:16.216 ac20 Delete type=0 #692
+2026/01/28-01:30:16.216 ac20 Delete type=3 #691
+2026/01/28-12:37:20.200 cd40 Level-0 table #696: started
+2026/01/28-12:37:20.200 cd40 Level-0 table #696: 0 bytes OK
+2026/01/28-12:37:20.203 cd40 Delete type=0 #694
+2026/01/28-12:37:20.216 cd40 Manual compaction at level-0 from '!actors!X2leBdJeqwKWrTlE' @ 72057594037927935 : 1 .. '!actors!X2leBdJeqwKWrTlE' @ 0 : 0; will stop at (end)
