@@ -36,7 +36,7 @@ async function saveMarchingState() {
  * Load marching mode state from settings
  */
 function loadMarchingState() {
-    if (!game.user.isGM) return;
+
 
     const savedLeader = game.settings.get(MODULE_ID, SETTING_KEY_LEADER);
     const savedEnabled = game.settings.get(MODULE_ID, SETTING_KEY_ENABLED);
@@ -94,7 +94,7 @@ function clearScheduledTimeouts() {
  * Initialize Marching Mode
  */
 export function initMarchingMode() {
-    if (!game.user.isGM) return;
+
 
     console.log(`${MODULE_ID} | Initializing Marching Mode`);
 
