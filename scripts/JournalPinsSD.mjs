@@ -1460,6 +1460,28 @@ class JournalPinGraphics extends PIXI.Container {
                 callback: () => this._openJournal()
             },
             {
+                name: "Bring Players Here",
+                icon: '<i class="fa-solid fa-location-crosshairs"></i>',
+                callback: async () => {
+                    if (game.user.isGM) {
+                        // Broadcast to others
+                        game.socket.emit("module.shadowdark-extras", {
+                            type: "panToPin",
+                            x: this.pinData.x,
+                            y: this.pinData.y,
+                            sceneId: canvas.scene?.id
+                        });
+                        // Pan self
+                        canvas.animatePan({ x: this.pinData.x, y: this.pinData.y });
+                        if (canvas.ping) {
+                            canvas.ping({ x: this.pinData.x, y: this.pinData.y });
+                        }
+                    } else {
+                        ui.notifications.warn("Only the GM can bring players here.");
+                    }
+                }
+            },
+            {
                 name: "Edit Style",
                 icon: '<i class="fa-solid fa-palette"></i>',
                 callback: async () => {
@@ -1932,6 +1954,21 @@ if (typeof CONFIG !== 'undefined' && CONFIG.Canvas?.layers) {
 function initJournalPins() {
     // Initialize drop handler
     JournalPinDropHandler.initialize();
+
+    // Register Socket Listener for "Bring Players Here"
+    Hooks.once("ready", () => {
+        game.socket.on("module.shadowdark-extras", (data) => {
+            if (data.type === "panToPin") {
+                // Check scene match
+                if (canvas.scene?.id !== data.sceneId) return;
+
+                canvas.animatePan({ x: data.x, y: data.y });
+                if (canvas.ping) {
+                    canvas.ping({ x: data.x, y: data.y });
+                }
+            }
+        });
+    });
 
     // Load pins when canvas is ready
     Hooks.on("canvasReady", () => {
