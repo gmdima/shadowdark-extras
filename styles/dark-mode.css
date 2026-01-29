@@ -76,6 +76,10 @@ body.sdx-dark-mode .window-header a {
     font-size: smaller;
 }
 
+body.sdx-dark-mode .item-piles-chat-card li:nth-child(odd) {
+    background-color: black;
+}
+
 body.sdx-dark-mode .sheet.journal-entry .window-header {
     background: #222020c4;
 }

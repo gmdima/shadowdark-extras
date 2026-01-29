@@ -75,6 +75,7 @@
   },
   "socket": true,
   "scripts": [
+    "greensock/dist/gsap.min.js",
     "libs/jszip.min.js"
   ],
   "esmodules": [

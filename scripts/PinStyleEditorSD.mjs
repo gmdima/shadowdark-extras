@@ -156,6 +156,12 @@ export class PinStyleEditorApp extends HandlebarsApplicationMixin(ApplicationV2)
             });
         }
 
+        // Normalize hoverAnimation to string for select compatibility
+        if (typeof style.hoverAnimation === "boolean") {
+            style.hoverAnimation = style.hoverAnimation ? "scale" : "none";
+        }
+        if (!style.hoverAnimation) style.hoverAnimation = "none";
+
         return {
             style,
             fontFamilies,
@@ -497,7 +503,9 @@ export class PinStyleEditorApp extends HandlebarsApplicationMixin(ApplicationV2)
             size: parseInt(form.querySelector('[name="size"]')?.value) || 32,
             shape: form.querySelector('[name="shape"]')?.value || "circle",
             imagePath: form.querySelector('[name="imagePath"]')?.value || "",
-            hoverAnimation: form.querySelector('[name="hoverAnimation"]')?.checked || false,
+            hoverAnimation: form.querySelector('[name="hoverAnimation"]')?.value || "none",
+            pingAnimation: form.querySelector('[name="pingAnimation"]')?.value || "ripple",
+            bringAnimation: form.querySelector('[name="bringAnimation"]')?.value || "ripple",
             ringColor: form.querySelector('[name="ringColor"]')?.value || "#ffffff",
             fillColor: form.querySelector('[name="fillColor"]')?.value || "#000000",
             ringWidth: parseInt(form.querySelector('[name="ringWidth"]')?.value) || 3,

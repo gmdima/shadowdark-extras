@@ -169,7 +169,46 @@
 
         <div class="form-group">
             <label>{{localize "SDX.pinStyleEditor.hoverAnimation"}}</label>
-            <input type="checkbox" name="hoverAnimation" {{#if style.hoverAnimation}}checked{{/if}} />
+            <select name="hoverAnimation">
+                <option value="none" {{#if (eq style.hoverAnimation "none" )}}selected{{/if}}>{{localize "None"}}
+                </option>
+                <option value="scale" {{#if (eq style.hoverAnimation "scale" )}}selected{{/if}}>{{localize "Scale"}}
+                </option>
+                <option value="pulse" {{#if (eq style.hoverAnimation "pulse" )}}selected{{/if}}>{{localize "Pulse"}}
+                </option>
+                <option value="shake" {{#if (eq style.hoverAnimation "shake" )}}selected{{/if}}>{{localize "Shake"}}
+                </option>
+                <option value="brightness" {{#if (eq style.hoverAnimation "brightness" )}}selected{{/if}}>{{localize
+                    "Brightness"}}</option>
+                <option value="hue" {{#if (eq style.hoverAnimation "hue" )}}selected{{/if}}>{{localize "Color Cycle"}}
+                </option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>{{localize "SDX.pinStyleEditor.pingAnimation"}}</label>
+            <select name="pingAnimation">
+                <option value="ripple" {{#if (eq style.pingAnimation "ripple" )}}selected{{/if}}>{{localize "Ripple"}}
+                </option>
+                <option value="shake" {{#if (eq style.pingAnimation "shake" )}}selected{{/if}}>{{localize "Shake"}}
+                </option>
+                <option value="flash" {{#if (eq style.pingAnimation "flash" )}}selected{{/if}}>{{localize "Flash"}}
+                </option>
+                <option value="none" {{#if (eq style.pingAnimation "none" )}}selected{{/if}}>{{localize "None"}}
+                </option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>{{localize "SDX.pinStyleEditor.bringAnimation"}}</label>
+            <select name="bringAnimation">
+                <option value="ripple" {{#if (eq style.bringAnimation "ripple" )}}selected{{/if}}>{{localize "Ripple"}}
+                </option>
+                <option value="shake" {{#if (eq style.bringAnimation "shake" )}}selected{{/if}}>{{localize "Shake"}}
+                </option>
+                <option value="flash" {{#if (eq style.bringAnimation "flash" )}}selected{{/if}}>{{localize "Flash"}}
+                </option>
+                <option value="none" {{#if (eq style.bringAnimation "none" )}}selected{{/if}}>{{localize "None"}}
+                </option>
+            </select>
         </div>
     </section>
 
@@ -299,8 +338,9 @@
         <h3><i class="fa-solid fa-tag"></i> Label</h3>
 
         <div class="form-group">
-            <label>Label Text</label>
-            <input type="text" name="labelText" value="{{style.labelText}}" placeholder="Optional hover label..." />
+            <label>Label Text <i class="fa-solid fa-circle-info"
+                    title="Supports multiple lines. Press Enter to add a line break."></i></label>
+            <textarea name="labelText" rows="2" placeholder="Optional hover label...">{{style.labelText}}</textarea>
         </div>
 
         <div class="form-group checkbox-group">

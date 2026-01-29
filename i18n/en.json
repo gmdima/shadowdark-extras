@@ -1084,6 +1084,8 @@
   "SDX.pinStyleEditor.tooltipTitlePlaceholder": "Leave empty to use page title",
   "SDX.pinStyleEditor.tooltipContent": "Tooltip Content",
   "SDX.pinStyleEditor.tooltipContentPlaceholder": "Leave empty to use page content",
+  "SDX.pinStyleEditor.pingAnimation": "Ping Animation",
+  "SDX.pinStyleEditor.bringAnimation": "Bring Animation",
   "SDX.pinStyleEditor.contentTypeSymbol": "Symbol",
   "SDX.pinStyleEditor.symbolType": "Symbol Type",
   "SDX.pinStyleEditor.symbolColor": "Symbol Color",

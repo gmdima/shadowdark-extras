@@ -23,7 +23,9 @@ const DEFAULT_PIN_STYLE = {
     opacity: 1.0,
     fillOpacity: 1.0,
     ringOpacity: 1.0,
-    hoverAnimation: false, // New property
+    hoverAnimation: "none", // "none", "scale", "pulse", "rotate", "shake"
+    pingAnimation: "ripple", // "ripple", "rotate", "shake", "none"
+    bringAnimation: "ripple", // "ripple", "rotate", "shake", "none"
     imagePath: "", // Path to image for "image" shape
     contentType: "number", // "number", "icon", "text"
     iconClass: "fa-solid fa-book-open",
@@ -583,6 +585,76 @@ class JournalPinGraphics extends PIXI.Container {
         }
     }
 
+
+    animatePing(type = "ping") {
+        if (!window.gsap) {
+            if (canvas.ping) canvas.ping({ x: this.pinData.x, y: this.pinData.y });
+            return;
+        }
+
+        const style = { ...getPinStyle(), ...(this.pinData.style || {}) };
+        const pingAnim = (type === "bring")
+            ? (style.bringAnimation || "ripple")
+            : (style.pingAnimation || "ripple");
+
+        if (pingAnim === "none") return;
+
+        // Logic to reset scale after animation
+        const hoverAnim = style.hoverAnimation;
+        const isHoverScale = this.isHovered && (hoverAnim === true || hoverAnim === "scale");
+        const restingScale = isHoverScale ? 1.2 : 1.0;
+
+        gsap.killTweensOf(this);
+        gsap.killTweensOf(this.scale);
+
+        if (pingAnim === "ripple") {
+            const color = style.ringColor || "#ffffff";
+            let colorNum = 0xFFFFFF;
+            try {
+                if (typeof color === "string" && color.startsWith("#")) colorNum = parseInt(color.slice(1), 16);
+                else if (typeof color === "number") colorNum = color;
+            } catch (e) { }
+
+            const ripple = new PIXI.Graphics();
+            ripple.lineStyle(6, colorNum, 0.8);
+            ripple.drawCircle(0, 0, 40);
+            ripple.endFill();
+            ripple.alpha = 0;
+            ripple.scale.set(0.5);
+
+            this.addChild(ripple);
+
+            const tl = gsap.timeline({ onComplete: () => ripple.destroy() });
+            tl.to(ripple, { alpha: 0.8, duration: 0.1 })
+                .to(ripple, { alpha: 0, duration: 1.2 }, "<")
+                .to(ripple.scale, { x: 4, y: 4, duration: 1.3, ease: "power2.out" }, "<");
+
+            gsap.fromTo(this.scale,
+                { x: 1.6, y: 1.6 },
+                { x: restingScale, y: restingScale, duration: 1.0, ease: "elastic.out(1, 0.5)" }
+            );
+
+        } else if (pingAnim === "flash") {
+            gsap.fromTo(this, { pixi: { brightness: 3 } }, { pixi: { brightness: 1 }, duration: 1.0, ease: "power2.out" });
+            gsap.fromTo(this.scale,
+                { x: 1.5, y: 1.5 },
+                { x: restingScale, y: restingScale, duration: 1.0, ease: "elastic.out(1, 0.5)" }
+            );
+
+        } else if (pingAnim === "shake") {
+            const originalX = this.pinData.x;
+            gsap.to(this, {
+                x: "+=5", yoyo: true, repeat: 9, duration: 0.05, onComplete: () => {
+                    this.x = originalX;
+                }
+            });
+            gsap.to(this.scale, {
+                x: 1.3, y: 1.3, duration: 0.1, yoyo: true, repeat: 3, onComplete: () => {
+                    gsap.to(this.scale, { x: restingScale, y: restingScale, duration: 0.2 });
+                }
+            });
+        }
+    }
 
     async _build() {
         if (this.destroyed) return;
@@ -1338,17 +1410,35 @@ class JournalPinGraphics extends PIXI.Container {
         }
 
         // Hover Animation
-        if (style.hoverAnimation) {
-            // Use GSAP if available, otherwise simple set
-            if (window.gsap) {
-                gsap.to(this.scale, { x: 1.2, y: 1.2, duration: 0.1 });
-            } else {
-                this.scale.set(1.2);
+        let animType = style.hoverAnimation;
+        if (animType === true) animType = "scale";
+        if (!animType) animType = "none";
+
+        if (animType !== "none" && window.gsap) {
+            gsap.killTweensOf(this);
+            gsap.killTweensOf(this.scale);
+
+            if (animType === "scale") {
+                gsap.to(this.scale, { x: 1.2, y: 1.2, duration: 0.3, ease: "back.out(1.7)" });
+            } else if (animType === "pulse") {
+                gsap.to(this.scale, { x: 1.15, y: 1.15, duration: 0.5, yoyo: true, repeat: -1, ease: "sine.inOut" });
+            } else if (animType === "shake") {
+                gsap.to(this, {
+                    rotation: 0.2, duration: 0.05, yoyo: true, repeat: 5, ease: "power1.inOut", onComplete: () => {
+                        gsap.to(this, { rotation: 0, duration: 0.1 });
+                    }
+                });
+                gsap.to(this.scale, { x: 1.1, y: 1.1, duration: 0.2 });
+            } else if (animType === "brightness") {
+                gsap.to(this, { pixi: { brightness: 1.5 }, duration: 0.4, yoyo: true, repeat: -1, ease: "sine.inOut" });
+            } else if (animType === "hue") {
+                gsap.to(this, { pixi: { hue: 180 }, duration: 2, repeat: -1, yoyo: true, ease: "linear" });
             }
         }
     }
 
     _onPointerLeave(event) {
+
         JournalPinTooltip.hide();
         if (this._labelContainer && this.pinData.style?.labelShowOnHover) {
             this._labelContainer.visible = false;
@@ -1356,12 +1446,16 @@ class JournalPinGraphics extends PIXI.Container {
 
         // Hover Animation Reset
         const style = this.pinData.style || {};
-        if (style.hoverAnimation) {
-            if (window.gsap) {
-                gsap.to(this.scale, { x: 1.0, y: 1.0, duration: 0.1 });
-            } else {
-                this.scale.set(1.0);
-            }
+        if (window.gsap) {
+            gsap.killTweensOf(this);
+            gsap.killTweensOf(this.scale);
+
+            // Smooth reset
+            gsap.to(this.scale, { x: 1.0, y: 1.0, duration: 0.3, ease: "power2.out" });
+            gsap.to(this, { rotation: 0, pixi: { brightness: 1, hue: 0 }, duration: 0.3, ease: "power2.out" });
+        } else {
+            this.scale.set(1.0);
+            this.rotation = 0;
         }
     }
 
@@ -1469,15 +1563,36 @@ class JournalPinGraphics extends PIXI.Container {
                             type: "panToPin",
                             x: this.pinData.x,
                             y: this.pinData.y,
-                            sceneId: canvas.scene?.id
+                            sceneId: canvas.scene?.id,
+                            pinId: this.pinData.id
                         });
                         // Pan self
                         canvas.animatePan({ x: this.pinData.x, y: this.pinData.y });
-                        if (canvas.ping) {
+
+                        if (this.animatePing) {
+                            this.animatePing("bring");
+                        } else if (canvas.ping) {
                             canvas.ping({ x: this.pinData.x, y: this.pinData.y });
                         }
                     } else {
                         ui.notifications.warn("Only the GM can bring players here.");
+                    }
+                }
+            },
+            {
+                name: "Ping Pin",
+                icon: '<i class="fa-solid fa-bullseye"></i>',
+                callback: async () => {
+                    // Broadcast ping only, no pan
+                    if (game.user.isGM) {
+                        game.socket.emit("module.shadowdark-extras", {
+                            type: "pingPin",
+                            sceneId: canvas.scene?.id,
+                            pinId: this.pinData.id
+                        });
+                        if (this.animatePing) this.animatePing();
+                    } else {
+                        ui.notifications.warn("Only the GM can ping pins.");
                     }
                 }
             },
@@ -1963,8 +2078,27 @@ function initJournalPins() {
                 if (canvas.scene?.id !== data.sceneId) return;
 
                 canvas.animatePan({ x: data.x, y: data.y });
-                if (canvas.ping) {
+
+                // Try to find the pin for custom animation
+                let pin;
+                if (data.pinId && JournalPinRenderer.getContainer()) {
+                    pin = JournalPinRenderer.getContainer().children.find(c => c.pinData?.id === data.pinId);
+                }
+
+                if (pin && pin.animatePing) {
+                    pin.animatePing("bring");
+                } else if (canvas.ping) {
                     canvas.ping({ x: data.x, y: data.y });
+                }
+            } else if (data.type === "pingPin") {
+                if (canvas.scene?.id !== data.sceneId) return;
+
+                let pin;
+                if (data.pinId && JournalPinRenderer.getContainer()) {
+                    pin = JournalPinRenderer.getContainer().children.find(c => c.pinData?.id === data.pinId);
+                }
+                if (pin && pin.animatePing) {
+                    pin.animatePing();
                 }
             }
         });

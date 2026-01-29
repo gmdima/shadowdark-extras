@@ -185,8 +185,13 @@
 }
 
 .pin-controls {
-    flex: 0 0 24px;
-    text-align: center;
+    display: flex;
+    flex-direction: row;
+    gap: 12px;
+    margin-top: 6px;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+    /* Safety wrap */
 }
 
 .pin-control {

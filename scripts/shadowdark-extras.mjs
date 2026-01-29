@@ -66,6 +66,8 @@ import SheetLockManager from "./SheetLockManager.mjs";
 import "./SpellMacrosSD.mjs";
 import { initMysteriousCasting } from "./MysteriousCasting.mjs";
 
+import { PixiPlugin } from "/scripts/greensock/esm/all.js";
+
 const MODULE_ID = "shadowdark-extras";
 const TRADE_JOURNAL_NAME = "__sdx_trade_sync__"; // Must match TradeWindowSD.mjs
 const CAROUSING_JOURNAL_NAME = "__sdx_carousing_sync__"; // Must match CarousingSD.mjs
@@ -85,6 +87,14 @@ initJournalNarration();
 initMedkit();
 initJournalPins();
 Hooks.once("init", () => {
+	// Register GSAP Plugins
+	try {
+		gsap.registerPlugin(PixiPlugin);
+		console.log("Shadowdark Extras | Registered GSAP PixiPlugin");
+	} catch (err) {
+		console.error("Shadowdark Extras | Failed to register GSAP PixiPlugin:", err);
+	}
+
 	initMysteriousCasting();
 	SheetLockManager.init();
 });

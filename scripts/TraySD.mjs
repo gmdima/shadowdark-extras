@@ -450,23 +450,31 @@ export function getPinsData() {
         // Determine Display Type & Content
         const style = pin.style || {};
         const contentType = style.contentType || (style.showIcon ? "symbol" : "number");
+        const shape = style.shape || "circle";
 
         let displayType = "icon";
         let displayContent = "";
         let displayStyle = "";
         let displayClass = "";
 
-        if (contentType === "symbol" || contentType === "icon") {
-            displayType = "icon";
-            displayClass = style.symbolClass || style.iconClass || "fa-solid fa-map-pin";
-            displayStyle = `color: ${style.symbolColor || style.fontColor || "#ffffff"};`;
+        // Handle Image Shape (Icon is the image itself)
+        if (shape === "image" && style.imagePath) {
+            displayType = "image";
+            displayContent = style.imagePath;
         }
+        // Handle Custom Icon Content
         else if (contentType === "customIcon" && style.customIconPath) {
             displayType = "image";
             displayContent = style.customIconPath;
         }
+        // Handle FontAwesome Icon
+        else if (contentType === "symbol" || contentType === "icon") {
+            displayType = "icon";
+            displayClass = style.symbolClass || style.iconClass || "fa-solid fa-map-pin";
+            displayStyle = `color: ${style.symbolColor || style.fontColor || "#ffffff"};`;
+        }
+        // Handle Text/Number
         else {
-            // Text or Number
             displayType = "text";
             displayStyle = `
                 color: ${style.fontColor || "#ffffff"}; 
@@ -480,7 +488,6 @@ export function getPinsData() {
             } else {
                 // Number logic
                 if (pin.journalId && pin.pageId) {
-                    // Find page index
                     const journal = game.journal.get(pin.journalId);
                     if (journal) {
                         const sortedPages = journal.pages.contents.sort((a, b) => a.sort - b.sort);
@@ -498,6 +505,13 @@ export function getPinsData() {
         let backgroundColor = style.fillColor || "#000000";
         let borderColor = style.ringColor || "#ffffff";
 
+        // Calculate Border Radius
+        let borderRadius = "50%";
+        if (shape !== "circle") {
+            const r = style.borderRadius !== undefined ? style.borderRadius : 4;
+            borderRadius = `${r}px`;
+        }
+
         return {
             id: pin.id,
             x: pin.x,
@@ -509,7 +523,10 @@ export function getPinsData() {
             displayStyle,
             displayClass,
             backgroundColor,
-            borderColor
+            borderColor,
+            borderRadius,
+            gmOnly: pin.gmOnly,
+            requiresVision: pin.requiresVision
         };
     });
 

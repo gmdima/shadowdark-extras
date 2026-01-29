@@ -368,29 +368,59 @@
                     {{#if pins.length}}
                     <ul class="sdx-pin-list">
                         {{#each pins}}
-                        <li class="pin-entry flexrow" data-id="{{this.id}}" data-x="{{this.x}}" data-y="{{this.y}}">
-                            <div class="pin-icon"
-                                style="display: flex; justify-content: center; align-items: center; background-color: {{this.backgroundColor}}; border: 2px solid {{this.borderColor}}; border-radius: 50%; width: 32px; height: 32px; box-shadow: 0 0 4px rgba(0,0,0,0.5);">
-                                {{#if (eq this.displayType "image")}}
-                                <img src="{{this.displayContent}}"
-                                    style="display: block; width: 20px; height: 20px; object-fit: contain;"
-                                    alt="Icon" />
-                                {{else if (eq this.displayType "icon")}}
-                                <i class="{{this.displayClass}}" style="{{this.displayStyle}} font-size: 16px;"></i>
-                                {{else if (eq this.displayType "text")}}
-                                <span
-                                    style="{{this.displayStyle}} font-size: 14px; line-height: 1;">{{this.displayContent}}</span>
-                                {{/if}}
+                        <li class="pin-entry flexrow" data-id="{{this.id}}" data-x="{{this.x}}" data-y="{{this.y}}"
+                            style="align-items: stretch; padding: 0;">
+                            <div
+                                style="flex: 0 0 50px; width: 50px; display: flex; align-items: center; justify-content: center; border-right: 1px solid #85733f;">
+                                <div class="pin-icon"
+                                    style="display: flex; justify-content: center; align-items: center; background-color: {{this.backgroundColor}}; border: 2px solid {{this.borderColor}}; border-radius: {{this.borderRadius}}; width: 32px; height: 32px; box-shadow: 0 0 4px rgba(0,0,0,0.5);">
+                                    {{#if (eq this.displayType "image")}}
+                                    <img src="{{this.displayContent}}"
+                                        style="display: block; width: 20px; height: 20px; object-fit: contain;"
+                                        alt="Icon" />
+                                    {{else if (eq this.displayType "icon")}}
+                                    <i class="{{this.displayClass}}" style="{{this.displayStyle}} font-size: 16px;"></i>
+                                    {{else if (eq this.displayType "text")}}
+                                    <span
+                                        style="{{this.displayStyle}} font-size: 14px; line-height: 1;">{{this.displayContent}}</span>
+                                    {{/if}}
+                                </div>
                             </div>
-                            <div class="pin-info flexcol">
+                            <div class="pin-info flexcol"
+                                style="flex: 1; min-width: 0; justify-content: center; padding: 4px 8px;">
                                 <span class="pin-name">{{this.name}}</span>
                                 {{#if this.pageName}}
                                 <span class="pin-page-name">{{this.pageName}}</span>
                                 {{/if}}
+                                <div class="pin-controls flexrow">
+                                    <a class="pin-control" data-action="ping-pin" title="Ping Pin"><i
+                                            class="fa-solid fa-bullseye"></i></a>
+                                    <a class="pin-control" data-action="bring-players" title="Bring Players Here"><i
+                                            class="fa-solid fa-location-crosshairs"></i></a>
+                                    <a class="pin-control" data-action="pan" title="Pan to Pin"><i
+                                            class="fas fa-crosshairs"></i></a>
+                                    <a class="pin-control" data-action="copy-style" title="Copy Style"><i
+                                            class="fa-solid fa-copy"></i></a>
+                                    <a class="pin-control" data-action="paste-style" title="Paste Style"><i
+                                            class="fa-solid fa-paste"></i></a>
+                                    <a class="pin-control" data-action="edit-pin" title="Edit Pin"><i
+                                            class="fa-solid fa-pen"></i></a>
+                                    <a class="pin-control danger" data-action="delete-pin" title="Delete Pin"><i
+                                            class="fa-solid fa-trash" style="color: #ff3333;"></i></a>
+                                </div>
                             </div>
-                            <div class="pin-controls">
-                                <a class="pin-control" data-action="pan" title="Pan to Pin">
-                                    <i class="fas fa-crosshairs"></i>
+                            <div class="pin-sidebar flexcol"
+                                style="flex: 0 0 50px; width: 50px; border-left: 1px solid #85733f; align-items: center; justify-content: center; gap: 4px; margin: 0; padding: 0;">
+                                <a class="pin-control toggle-gm-only" data-action="toggle-gm-only"
+                                    title="{{#if this.gmOnly}}Make Visible to Players{{else}}Make GM Only{{/if}}">
+                                    <i class="fa-solid {{#if this.gmOnly}}fa-eye-slash{{else}}fa-eye{{/if}}" {{#if
+                                        this.gmOnly}}style="color: #ff3333;" {{else}}style="color: #44cc44;"
+                                        {{/if}}></i>
+                                </a>
+                                <a class="pin-control toggle-vision" data-action="toggle-vision"
+                                    title="Toggle Require Line of Sight: {{#if this.requiresVision}}ON{{else}}OFF{{/if}}">
+                                    <i class="fa-solid fa-binoculars" {{#if this.requiresVision}}style="color: #44cc44;"
+                                        {{else}}style="color: #888888;" {{/if}} style="font-size: 0.9em;"></i>
                                 </a>
                             </div>
                         </li>

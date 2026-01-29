@@ -19,7 +19,8 @@ import {
 } from "./TraySD.mjs";
 import { showLeaderDialog, showMovementModeDialog } from "./MarchingModeSD.mjs";
 import { FormationSpawnerSD } from "./FormationSpawnerSD.mjs";
-import { PinPlacer } from "./JournalPinsSD.mjs";
+import { PinPlacer, JournalPinManager, JournalPinRenderer } from "./JournalPinsSD.mjs";
+import { PinStyleEditorApp } from "./PinStyleEditorSD.mjs";
 import { PinListApp } from "./PinListApp.mjs";
 import { GetRollDataSD } from "./sdx-rolls/GetRollDataSD.mjs";
 import { SdxRollSD } from "./sdx-rolls/SdxRollSD.mjs";
@@ -341,16 +342,100 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
         });
 
         // Pin/Note List Pan Action
-        elem.querySelectorAll(".pin-control[data-action='pan']").forEach(btn => {
-            btn.addEventListener("click", (e) => {
+        elem.querySelectorAll(".pin-control").forEach(btn => {
+            btn.addEventListener("click", async (e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                const entry = btn.closest(".pin-entry");
-                const x = parseFloat(entry.dataset.x);
-                const y = parseFloat(entry.dataset.y);
 
-                if (!isNaN(x) && !isNaN(y)) {
-                    canvas.animatePan({ x, y, scale: 1.5, duration: 500 });
+                const action = btn.dataset.action;
+                const entry = btn.closest(".pin-entry");
+                const id = entry.dataset.id;
+
+                if (!id) return;
+
+                if (action === "pan") {
+                    const x = parseFloat(entry.dataset.x);
+                    const y = parseFloat(entry.dataset.y);
+                    if (!isNaN(x) && !isNaN(y)) {
+                        canvas.animatePan({ x, y, scale: 1.5, duration: 500 });
+                    }
+                } else if (action === "ping-pin") {
+                    if (!JournalPinRenderer.getContainer()) return;
+                    const pin = JournalPinRenderer.getContainer().children.find(c => c.pinData?.id === id);
+
+                    if (game.user.isGM) {
+                        if (pin && pin.animatePing) pin.animatePing("ping");
+                        game.socket.emit("module.shadowdark-extras", {
+                            type: "pingPin",
+                            sceneId: canvas.scene?.id,
+                            pinId: id
+                        });
+                    } else {
+                        ui.notifications.warn("Only GM can ping pins.");
+                    }
+                } else if (action === "bring-players") {
+                    const x = parseFloat(entry.dataset.x);
+                    const y = parseFloat(entry.dataset.y);
+
+                    if (game.user.isGM) {
+                        if (!isNaN(x) && !isNaN(y)) {
+                            canvas.animatePan({ x, y, scale: 1.5, duration: 500 });
+                            if (JournalPinRenderer.getContainer()) {
+                                const pin = JournalPinRenderer.getContainer().children.find(c => c.pinData?.id === id);
+                                if (pin && pin.animatePing) pin.animatePing("bring");
+                            }
+                            game.socket.emit("module.shadowdark-extras", {
+                                type: "panToPin",
+                                x: x,
+                                y: y,
+                                sceneId: canvas.scene?.id,
+                                pinId: id
+                            });
+                        }
+                    } else {
+                        ui.notifications.warn("Only GM can bring players.");
+                    }
+                } else if (action === "edit-pin") {
+                    const pinData = JournalPinManager.get(id);
+                    if (pinData) {
+                        new PinStyleEditorApp({ pinId: id }).render(true);
+                    }
+                } else if (action === "toggle-gm-only") {
+                    const pinData = JournalPinManager.get(id);
+                    if (pinData) {
+                        if (game.user.isGM) {
+                            const current = pinData.gmOnly || false;
+                            await JournalPinManager.update(id, { gmOnly: !current });
+                        } else {
+                            ui.notifications.warn("Only GM can toggle visibility.");
+                        }
+                    }
+                } else if (action === "toggle-vision") {
+                    const pinData = JournalPinManager.get(id);
+                    if (pinData) {
+                        if (game.user.isGM) {
+                            const current = pinData.requiresVision || false;
+                            await JournalPinManager.update(id, { requiresVision: !current });
+                        } else {
+                            ui.notifications.warn("Only GM can toggle vision requirement.");
+                        }
+                    }
+                } else if (action === "delete-pin") {
+                    Dialog.confirm({
+                        title: "Delete Pin",
+                        content: "<p>Are you sure you want to delete this pin?</p>",
+                        yes: async () => {
+                            await JournalPinManager.delete(id);
+                        },
+                        defaultYes: false
+                    });
+                } else if (action === "copy-style") {
+                    const pinData = JournalPinManager.get(id);
+                    if (pinData) {
+                        JournalPinManager.copyStyle(pinData);
+                    }
+                } else if (action === "paste-style") {
+                    await JournalPinManager.pasteStyle(id);
                 }
             });
         });
