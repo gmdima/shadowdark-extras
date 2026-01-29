@@ -53,6 +53,58 @@
     font-size: 13px;
 }
 
+.sdx-pin-style-editor .filter-list li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 6px 10px;
+    margin-bottom: 6px;
+    border-radius: 4px;
+    font-size: 0.9em;
+    border-left: 3px solid #c9aa58;
+}
+
+.sdx-pin-style-editor .filter-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.sdx-pin-style-editor .btn-remove-tmfx,
+.sdx-pin-style-editor .btn-edit-tmfx {
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #ff4444;
+    cursor: pointer;
+    padding: 3px 6px;
+    font-size: 0.9em;
+    opacity: 0.8;
+    transition: all 0.2s;
+    border-radius: 3px;
+    line-height: 1;
+}
+
+.sdx-pin-style-editor .btn-edit-tmfx {
+    color: #c9aa58;
+}
+
+.sdx-pin-style-editor .btn-remove-tmfx:hover {
+    opacity: 1;
+    background: rgba(255, 68, 68, 0.2);
+    border-color: #ff4444;
+}
+
+.sdx-pin-style-editor .btn-edit-tmfx:hover {
+    opacity: 1;
+    background: rgba(201, 170, 88, 0.2);
+    border-color: #c9aa58;
+}
+
+.sdx-pin-style-editor .filter-info small {
+    color: rgba(255, 255, 255, 0.5);
+    margin-left: 4px;
+}
+
 /* Section Styling */
 .sdx-pin-style-editor .editor-section {
     background: rgba(0, 0, 0, 0.4);
@@ -318,6 +370,61 @@
 .sdx-pin-style-editor .btn-save:hover {
     background: linear-gradient(180deg, #5a6a4a 0%, #3a4a30 100%);
     box-shadow: 0 0 8px rgba(201, 170, 88, 0.4);
+}
+
+/* TokenMagic FX Section */
+.sdx-pin-style-editor .tmfx-section {
+    border-color: rgba(201, 170, 88, 0.3);
+}
+
+.sdx-pin-style-editor .btn-clear-tmfx {
+    width: 100%;
+    margin-top: 10px;
+    padding: 6px;
+    background: linear-gradient(180deg, #4a3a3a 0%, #2a2020 100%);
+    color: #ff6b6b;
+    border: 1px solid rgba(255, 107, 107, 0.3);
+    border-radius: 4px;
+    font-size: 11px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+
+.sdx-pin-style-editor .btn-clear-tmfx:hover {
+    background: linear-gradient(180deg, #5a4a4a 0%, #3a3030 100%);
+    border-color: #ff6b6b;
+}
+
+.sdx-pin-style-editor .active-filters {
+    margin-top: 10px;
+    padding: 8px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 4px;
+    border: 1px dashed rgba(255, 255, 255, 0.1);
+}
+
+.sdx-pin-style-editor .active-filters label {
+    font-size: 11px;
+    color: #888;
+    margin-bottom: 4px;
+    display: block;
+}
+
+.sdx-pin-style-editor .filter-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    font-size: 11px;
+    color: #c9aa58;
+}
+
+
+.sdx-pin-style-editor .filter-list li i {
+    font-size: 9px;
+    opacity: 0.7;
 }
 
 /* Scrollbar Styling for the window */

@@ -167,6 +167,7 @@ class JournalPinManager {
             label: pinData.label ?? "Journal Pin",
             gmOnly: pinData.gmOnly ?? false,
             requiresVision: pinData.requiresVision ?? false,
+            flags: pinData.flags || {},
             version: PIN_SCHEMA_VERSION
         };
 
@@ -215,6 +216,15 @@ class JournalPinManager {
         if (patch.tooltipTitle !== undefined) updated.tooltipTitle = patch.tooltipTitle;
         if (patch.tooltipContent !== undefined) updated.tooltipContent = patch.tooltipContent;
         if (patch.hideTooltip !== undefined) updated.hideTooltip = patch.hideTooltip;
+
+        // Use expandObject to handle flattened keys like "flags.scope.key"
+        const expandedPatch = foundry.utils.expandObject(patch);
+        if (expandedPatch.flags) {
+            updated.flags = foundry.utils.mergeObject(updated.flags || {}, expandedPatch.flags);
+        }
+        if (expandedPatch.style) {
+            updated.style = foundry.utils.mergeObject(updated.style || {}, expandedPatch.style);
+        }
 
         const next = [...pins];
         next[idx] = updated;
@@ -551,13 +561,14 @@ class JournalPinGraphics extends PIXI.Container {
         // Set initial position synchronously to prevent race conditions
         this.position.set(this.pinData.x, this.pinData.y);
 
-        this._init();
+        // Do NOT call _init() here, we defer it until we are indexed in the renderer
     }
 
-    async _init() {
+    async init() {
         await this._build();
         if (this.destroyed) return;
         this._setupEventListeners();
+        return this;
     }
 
     /**
@@ -582,6 +593,134 @@ class JournalPinGraphics extends PIXI.Container {
             // Default to first page (index 0)
             console.log("SDX Journal Pins | _getPageNumber: No pageId, using index 0");
             return 0;
+        }
+    }
+
+    // ===========================================
+    // FOUNDRY / TOKENMAGIC INTERFACE MOCK
+    // ===========================================
+
+    // We MUST use a getter for document that returns a proxy/wrapper
+    // to avoid property collisions with PIXI (especially 'parent' and 'name')
+    get document() {
+        return {
+            id: this.pinData.id,
+            documentName: "JournalPin",
+            name: this.pinData.label || "Journal Pin",
+            parent: canvas.scene,
+            getFlag: (s, k) => this.getFlag(s, k),
+            setFlag: (s, k, v) => this.setFlag(s, k, v),
+            unsetFlag: (s, k) => this.unsetFlag(s, k),
+            _TMFXsetFlag: (f) => this._TMFXsetFlag(f),
+            _TMFXunsetFlag: () => this._TMFXunsetFlag(),
+            _TMFXsetAnimeFlag: (f) => this._TMFXsetAnimeFlag(f),
+            _TMFXunsetAnimeFlag: () => this._TMFXunsetAnimeFlag(),
+            _TMFXgetPlaceableType: () => this._TMFXgetPlaceableType(),
+            _TMFXgetMaxFilterRank: () => this._TMFXgetMaxFilterRank(),
+            get object() { return this; }
+        };
+    }
+
+    get id() {
+        return this.pinData.id;
+    }
+
+    // Mock getFlag for TokenMagic
+    getFlag(scope, key) {
+        const flags = this.pinData.flags || {};
+        if (scope && key) return foundry.utils.getProperty(flags, `${scope}.${key}`);
+        if (scope) return flags[scope];
+        return flags;
+    }
+
+    async setFlag(scope, key, value) {
+        const updateData = {};
+        updateData[`flags.${scope}.${key}`] = value;
+        return await JournalPinManager.update(this.pinData.id, updateData);
+    }
+
+    async unsetFlag(scope, key) {
+        const updateData = {};
+        updateData[`flags.${scope}.-=${key}`] = null;
+        return await JournalPinManager.update(this.pinData.id, updateData);
+    }
+
+    // Mock CanvasDocument / PlaceableObject methods for TMFX
+    async _TMFXsetFlag(flag) {
+        return await this.setFlag("tokenmagic", "filters", flag);
+    }
+
+    async _TMFXunsetFlag() {
+        return await this.unsetFlag("tokenmagic", "filters");
+    }
+
+    async _TMFXsetAnimeFlag(flag) {
+        return await this.setFlag("tokenmagic", "animeInfo", flag);
+    }
+
+    async _TMFXunsetAnimeFlag() {
+        return await this.unsetFlag("tokenmagic", "animeInfo");
+    }
+
+    _TMFXgetPlaceableType() {
+        return "JournalPin";
+    }
+
+    _TMFXgetSprite() {
+        return this;
+    }
+
+    _TMFXcheckSprite() {
+        return true;
+    }
+
+    _TMFXgetMaxFilterRank() {
+        const filters = this.filters || [];
+        if (filters.length === 0) return 10000;
+        return Math.max(...filters.map(f => f.rank || 0)) + 1;
+    }
+
+    async TMFXaddFilters(paramsArray, replace = false) {
+        if (window.TokenMagic) await window.TokenMagic.addFilters(this, paramsArray, replace);
+    }
+
+    async TMFXupdateFilters(paramsArray) {
+        if (window.TokenMagic) await window.TokenMagic.updateFiltersByPlaceable(this, paramsArray);
+    }
+
+    async TMFXdeleteFilters(filterId = null) {
+        if (window.TokenMagic) await window.TokenMagic.deleteFilters(this, filterId);
+    }
+
+    // Mimic PlaceableObjectProto._TMFXsetRawFilters
+    _TMFXsetRawFilters(filters) {
+        if (!this.filters) this.filters = [];
+        // Simple append for now as TMFX usually manages the array
+        if (filters === null) {
+            this.filters = null;
+        } else {
+            if (Array.isArray(filters)) this.filters = filters;
+            else this.filters.push(filters);
+        }
+    }
+
+    async update(pinData) {
+        this.pinData = foundry.utils.deepClone(pinData);
+
+        // Update Transform
+        this.position.set(this.pinData.x, this.pinData.y);
+
+        // Rebuild graphics if needed (style change)
+        // Ideally we check if style changed, but rebuilding is safer
+        await this._build();
+
+        // Refresh TMFX filters from flags
+        if (window.TokenMagic) {
+            const filters = this.getFlag("tokenmagic", "filters");
+            window.TokenMagic._clearImgFiltersByPlaceable(this);
+            if (filters) {
+                window.TokenMagic._assignFilters(this, filters);
+            }
         }
     }
 
@@ -1039,6 +1178,14 @@ class JournalPinGraphics extends PIXI.Container {
             await this._addVisionIndicator(container, radius);
         }
 
+        // Apply TMFX filters if present
+        if (window.TokenMagic) {
+            const filters = this.getFlag("tokenmagic", "filters");
+            if (filters) {
+                window.TokenMagic._assignFilters(this, filters);
+            }
+        }
+
         console.log(`SDX Journal Pins | Pin built - interactive:${this.interactive}, eventMode:${this.eventMode}, cursor:${this.cursor}`);
     }
     /**
@@ -1368,14 +1515,35 @@ class JournalPinGraphics extends PIXI.Container {
 
     async update(newData) {
         // Optimization: If data hasn't changed, don't rebuild
-        // This prevents flickering/disappearing icons during token movement hooks
-        if (foundry.utils.objectsEqual(this.pinData, newData)) {
+        // BUT: Always check TMFX flags if we have them, as shaders might need refresh
+        const hasTMFX = !!(this.pinData.flags?.tokenmagic || newData.flags?.tokenmagic);
+
+        if (!hasTMFX && foundry.utils.objectsEqual(this.pinData, newData)) {
             return;
         }
 
+        console.log(`SDX Journal Pins | Updating pin ${this.id}. hasTMFX: ${hasTMFX}`);
+
         this._removeEventListeners();
         this.pinData = foundry.utils.deepClone(newData);
+
+        // Rebuild the graphics
         await this._build();
+
+        // Refresh TMFX filters from flags
+        if (window.TokenMagic && !this.destroyed) {
+            const filters = this.getFlag("tokenmagic", "filters");
+            console.log(`SDX Journal Pins | Syncing TMFX filters for ${this.id}:`, filters);
+
+            window.TokenMagic._clearImgFiltersByPlaceable(this);
+            if (filters && Array.isArray(filters) && filters.length > 0) {
+                window.TokenMagic._assignFilters(this, filters);
+            } else {
+                console.log(`SDX Journal Pins | No filters found, clearing manually.`);
+                this.filters = null;
+            }
+        }
+
         this._setupEventListeners();
     }
 
@@ -1889,15 +2057,30 @@ class JournalPinRenderer {
             return;
         }
 
+        // We create the graphics object but defer the build-intensive parts
+        // or ensure it's indexed BEFORE any TMFX logic triggers lookups
         const graphics = new JournalPinGraphics(pinData);
+
+        // Critical: Register in map BEFORE adding to container or any logic that might trigger TMFX calculatePadding
         this._pins.set(pinData.id, graphics);
+
+        // Now add to container
         this._container.addChild(graphics);
+
+        // 4. Trigger initialization (async)
+        graphics.init().catch(err => {
+            console.error(`SDX Journal Pins | Error initializing pin ${pinData.id}:`, err);
+        });
 
         console.log(`SDX Journal Pins | Added pin ${pinData.id} at (${pinData.x}, ${pinData.y})`);
     }
 
     static addPin(pinData) {
         this._addPinGraphics(pinData);
+    }
+
+    static getPin(pinId) {
+        return this._pins.get(pinId);
     }
 
     static updatePin(pinData) {
@@ -2142,7 +2325,6 @@ function initJournalPins() {
     });
 
     // Refresh pins when sight/vision changes
-    // Refresh pins when sight/vision changes
     // Debounce to prevent flickering during animation
     Hooks.on("sightRefresh", foundry.utils.debounce(() => {
         if (canvas?.scene) {
@@ -2161,6 +2343,70 @@ function initJournalPins() {
             }
             const pins = JournalPinManager.list({ sceneId: canvas.scene.id });
             JournalPinRenderer.loadScenePins(canvas.scene.id, pins);
+        }
+    });
+
+    // Patch TokenMagic if active
+    Hooks.once("ready", () => {
+        if (game.modules.get("tokenmagic")?.active && window.TokenMagic && !window.TokenMagic._sdxPatched) {
+            // Patch getPlaceableById on window.TokenMagic for general use
+            const originalGetPlaceableById = window.TokenMagic.getPlaceableById;
+            window.TokenMagic.getPlaceableById = (id, type) => {
+                if (type === "JournalPin") {
+                    return JournalPinRenderer.getPin(id);
+                }
+                return originalGetPlaceableById(id, type);
+            };
+
+            // Patch PIXI.Filter.prototype.getPlaceable because the internal logic 
+            // of filters uses an imported version of getPlaceableById which we can't easily patch
+            if (PIXI.Filter.prototype.getPlaceable) {
+                const originalGetPlaceable = PIXI.Filter.prototype.getPlaceable;
+                PIXI.Filter.prototype.getPlaceable = function () {
+                    // this.placeableType is set by TokenMagic when assigning the filter
+                    if (this.placeableType === "JournalPin") {
+                        return JournalPinRenderer.getPin(this.placeableId);
+                    }
+                    return originalGetPlaceable.call(this);
+                };
+            }
+
+            // Patch calculatePadding to fail gracefully if the placeable image is missing
+            // This prevents crashes during scene transitions or world load race conditions
+            if (PIXI.Filter.prototype.calculatePadding) {
+                const originalCalculatePadding = PIXI.Filter.prototype.calculatePadding;
+                PIXI.Filter.prototype.calculatePadding = function () {
+                    if (!this.placeableImg && this.placeableType === "JournalPin") return;
+                    try {
+                        return originalCalculatePadding.call(this);
+                    } catch (err) {
+                        // Ignore rotation errors for pins that are being destroyed/removed
+                        if (this.placeableType === "JournalPin") return;
+                        throw err;
+                    }
+                };
+            }
+
+            window.TokenMagic._sdxPatched = true;
+            console.log("SDX Journal Pins | Patched TokenMagic for JournalPin support");
+
+            // Re-apply filters for all pins on the current scene to ensure they show up
+            // This fixes the 'persistence' issue where filters are in flags but not rendering
+            if (canvas.ready) {
+                const pins = JournalPinManager.list({ sceneId: canvas.scene.id });
+                for (const pinData of pins) {
+                    const graphics = JournalPinRenderer.getPin(pinData.id);
+                    if (graphics) {
+                        const filters = graphics.getFlag("tokenmagic", "filters");
+                        if (filters) {
+                            window.TokenMagic._clearImgFiltersByPlaceable(graphics);
+                            window.TokenMagic._assignFilters(graphics, filters);
+                            // Force a build refresh to ensure textures and filters sync up
+                            graphics.update(graphics.pinData);
+                        }
+                    }
+                }
+            }
         }
     });
 

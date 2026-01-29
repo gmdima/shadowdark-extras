@@ -486,6 +486,64 @@
         </div>
     </section>
 
+    <!-- Token Magic FX (Individual Pin Only) -->
+    {{#if pinId}}
+    {{#if tmfxPresets}}
+    <section class="editor-section tmfx-section">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <h3><i class="fa-solid fa-wand-magic-sparkles"></i> Token Magic FX</h3>
+            <span style="font-size: 0.7em; opacity: 0.6; font-style: italic;">Live Preview <i
+                    class="fa-solid fa-bolt"></i></span>
+        </div>
+        <div class="form-group">
+            <label>Apply Preset</label>
+            <div class="form-fields" style="display: flex; gap: 5px;">
+                <select name="tmfxPreset" style="flex: 1;">
+                    <option value="">- Select Preset -</option>
+                    {{#each tmfxPresets}}
+                    <option value="{{this.name}}">{{this.label}}</option>
+                    {{/each}}
+                </select>
+                <button type="button" data-action="apply-tmfx" title="Apply Filter" style="flex: 0 0 32px;">
+                    <i class="fa-solid fa-plus"></i>
+                </button>
+            </div>
+        </div>
+
+        {{#if activeFilters}}
+        <div class="active-filters">
+            <label>Active Filters:</label>
+            <ul class="filter-list">
+                {{#each activeFilters}}
+                <li>
+                    <span class="filter-info">
+                        <i class="fa-solid fa-sparkles"></i> {{this.label}} {{#if
+                        this.id}}<small>({{this.id}})</small>{{/if}}
+                    </span>
+                    <div class="filter-actions" style="display: flex; gap: 4px;">
+                        <button type="button" class="btn-edit-tmfx" data-action="edit-tmfx" data-filter-id="{{this.id}}"
+                            data-filter-type="{{this.type}}" data-filter-internal-id="{{this.internalId}}"
+                            title="Edit Effect" style="flex: 0 0 24px; padding: 2px;">
+                            <i class="fa-solid fa-edit"></i>
+                        </button>
+                        <button type="button" class="btn-remove-tmfx" data-action="remove-tmfx"
+                            data-filter-id="{{this.id}}" title="Remove Effect" style="flex: 0 0 24px; padding: 2px;">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </div>
+                </li>
+                {{/each}}
+            </ul>
+        </div>
+        {{/if}}
+
+        <button type="button" class="btn-clear-tmfx" data-action="clear-tmfx">
+            <i class="fa-solid fa-trash-can"></i> Clear All Effects
+        </button>
+    </section>
+    {{/if}}
+    {{/if}}
+
     <!-- Buttons -->
     <footer class="editor-buttons">
         <button type="button" class="btn-reset" data-action="reset">
