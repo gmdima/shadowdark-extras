@@ -65,6 +65,7 @@ import { registerPinStyleSettings } from "./PinStyleEditorSD.mjs";
 import SheetLockManager from "./SheetLockManager.mjs";
 import "./SpellMacrosSD.mjs";
 import { initMysteriousCasting } from "./MysteriousCasting.mjs";
+import { TomSD } from "./TomSD.mjs";
 
 import { PixiPlugin } from "/scripts/greensock/esm/all.js";
 
@@ -97,6 +98,7 @@ Hooks.once("init", () => {
 
 	initMysteriousCasting();
 	SheetLockManager.init();
+	TomSD.initialize();
 });
 
 // ============================================

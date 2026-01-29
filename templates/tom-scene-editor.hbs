@@ -1,0 +1,108 @@
+<div class="tom-character-editor">
+  
+  <!-- ═══════════════════════════════════════════════════════════════
+       HEADER
+       ═══════════════════════════════════════════════════════════════ -->
+  <header class="tom-editor-header">
+    <div class="tom-editor-title">
+      <input type="text" name="name" value="{{scene.name}}" placeholder="Scene Name" aria-label="Scene Name (required)" required>
+    </div>
+  </header>
+
+  <!-- ═══════════════════════════════════════════════════════════════
+       CONTENT
+       ═══════════════════════════════════════════════════════════════ -->
+  <section class="tom-editor-content">
+    
+    <div class="form-group">
+      <label>Background Media</label>
+      <div class="tom-file-input-wrapper">
+          <input type="text" name="background" value="{{scene.background}}" placeholder="Path to image or video...">
+          <button class="file-picker" data-type="imagevideo" data-target="background">
+            <i class="fas fa-file-import"></i>
+          </button>
+      </div>
+    </div>
+
+    <div class="tom-scene-preview">
+      {{#if isVideo}}
+        <video src="{{scene.background}}" muted loop autoplay></video>
+      {{else}}
+        <img src="{{scene.background}}">
+      {{/if}}
+    </div>
+
+    <div class="form-group">
+      <label>Tags <span class="tom-hint">(Press Enter to add)</span></label>
+      <div class="tom-tag-input-container">
+        {{#each scene.tags}}
+          <span class="tom-tag-chip">{{this}} <i class="fas fa-times" data-action="remove-tag" data-tag="{{this}}"></i></span>
+        {{/each}}
+        <input type="text" class="tom-tag-input" placeholder="Add tags..." data-action="tag-input" aria-label="Add new tag">
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         CAST LAYOUT SETTINGS
+         ═══════════════════════════════════════════════════════════════ -->
+    <div class="tom-layout-section">
+      <h3><i class="fas fa-th-large"></i> Cast Layout</h3>
+      <p class="tom-hint tom-section-hint">Controls how character portraits appear during broadcast</p>
+
+      <div class="tom-layout-grid">
+        <div class="form-group">
+          <label>Position</label>
+          <select name="layoutPreset">
+            {{#each layoutPresets}}
+              <option value="{{key}}" {{#if selected}}selected{{/if}}>
+                {{name}}
+              </option>
+            {{/each}}
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Portrait Size</label>
+          <select name="layoutSize">
+            {{#each sizePresets}}
+              <option value="{{key}}" {{#if selected}}selected{{/if}}>
+                {{name}}
+              </option>
+            {{/each}}
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Spacing</label>
+          <input type="number" name="layoutSpacing" value="{{layoutSettings.spacing}}" min="0" max="100">
+          <span class="tom-hint">Distance between portraits (px)</span>
+        </div>
+
+        <div class="form-group">
+          <label>Horizontal Offset</label>
+          <input type="number" name="layoutOffsetX" value="{{layoutSettings.offsetX}}" min="0" max="50">
+          <span class="tom-hint">Distance from screen edge (%)</span>
+        </div>
+
+        <div class="form-group">
+          <label>Vertical Offset</label>
+          <input type="number" name="layoutOffsetY" value="{{layoutSettings.offsetY}}" min="0" max="50">
+          <span class="tom-hint">Distance from bottom (%)</span>
+        </div>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════════════
+       FOOTER
+       ═══════════════════════════════════════════════════════════════ -->
+  <footer class="tom-editor-footer">
+    <button class="tom-btn" data-action="close">Cancel</button>
+    {{#if isCreateMode}}
+      <button class="tom-btn tom-btn-primary" data-action="save"><i class="fas fa-plus"></i> Create Scene</button>
+    {{else}}
+      <button class="tom-btn tom-btn-primary" data-action="save"><i class="fas fa-save"></i> Save Changes</button>
+    {{/if}}
+  </footer>
+</div>

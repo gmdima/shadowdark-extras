@@ -271,6 +271,19 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
             }
         });
 
+        // Tom Button (Scene Manager)
+        elem.querySelector(".tray-handle-button-tool[data-action='tom']")?.addEventListener("click", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            // Import TomSD dynamically to avoid circular dependencies
+            import("./TomSD.mjs").then(({ TomSD }) => {
+                TomSD.open();
+            }).catch(err => {
+                console.error("Shadowdark Extras | Failed to open Tom:", err);
+                ui.notifications.error("Failed to open Tom panel.");
+            });
+        });
+
         // Tab buttons
         elem.querySelectorAll(".tray-tab-button").forEach(btn => {
             btn.addEventListener("click", (e) => {
