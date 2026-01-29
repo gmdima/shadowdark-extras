@@ -1,0 +1,144 @@
+{{!-- Details Tab --}}
+<section class="tab-content {{#if tab.active}}active{{/if}}" data-tab="details">
+
+    {{!-- Attack Stats Section --}}
+    <fieldset class="npc-attack-fieldset">
+        <legend><i class="fas fa-dice-d20"></i> Attack Statistics</legend>
+
+        <div class="attack-stats-grid">
+            <div class="form-group">
+                <label>Number of Attacks</label>
+                <input type="text" name="system.attack.num" value="{{system.attack.num}}" placeholder="1" />
+            </div>
+
+            <div class="form-group">
+                <label>Attack Bonus</label>
+                <input type="number" name="system.bonuses.attackBonus" value="{{system.bonuses.attackBonus}}"
+                    placeholder="0" />
+            </div>
+
+            <div class="form-group">
+                <label>Damage Bonus</label>
+                <input type="number" name="system.bonuses.damageBonus" value="{{system.bonuses.damageBonus}}"
+                    placeholder="0" />
+            </div>
+        </div>
+    </fieldset>
+
+    {{!-- Base Damage Section --}}
+    <fieldset class="npc-attack-fieldset">
+        <legend><i class="fas fa-burst"></i> Base Damage</legend>
+
+        <div class="base-damage-grid">
+            <div class="form-group full-width">
+                <label>Damage Formula</label>
+                <input type="text" name="system.damage.value" value="{{system.damage.value}}" placeholder="1d6" />
+            </div>
+
+            <div class="form-group full-width">
+                <label>Damage Type</label>
+                <select name="flags.shadowdark-extras.baseDamageType">
+                    {{#each damageTypes}}
+                    <option value="{{value}}" {{#if (eq ../sdxFlags.baseDamageType value)}}selected{{/if}}>
+                        {{label}}
+                    </option>
+                    {{/each}}
+                </select>
+            </div>
+        </div>
+    </fieldset>
+
+    {{!-- Extra Damage Section --}}
+    <fieldset class="npc-attack-fieldset">
+        <legend>
+            <i class="fas fa-fire"></i> Additional Damage
+            <button type="button" class="add-extra-damage-btn" data-action="addExtraDamage"
+                title="Add Additional Damage">
+                <i class="fas fa-plus"></i>
+            </button>
+        </legend>
+
+        <div class="extra-damage-list">
+            {{#each extraDamages}}
+            <div class="extra-damage-row" data-index="{{@index}}">
+                <div class="form-group damage-formula">
+                    <label>Formula</label>
+                    <input type="text" name="flags.shadowdark-extras.extraDamages.{{@index}}.formula"
+                        value="{{formula}}" placeholder="1d4+2" />
+                </div>
+
+                <div class="form-group damage-type">
+                    <label>Type</label>
+                    <select name="flags.shadowdark-extras.extraDamages.{{@index}}.damageType">
+                        {{#each ../damageTypes}}
+                        <option value="{{value}}" {{#if (eq ../damageType value)}}selected{{/if}}>
+                            {{label}}
+                        </option>
+                        {{/each}}
+                    </select>
+                </div>
+
+                <button type="button" class="remove-extra-damage-btn" data-action="removeExtraDamage"
+                    data-index="{{@index}}" title="Remove">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </div>
+            {{else}}
+            <div class="extra-damage-empty">
+                <p>No additional damage types. Click the + button to add.</p>
+            </div>
+            {{/each}}
+        </div>
+    </fieldset>
+
+    {{!-- Critical Section --}}
+    <fieldset class="npc-attack-fieldset">
+        <legend><i class="fas fa-star"></i> Critical Hits</legend>
+
+        <div class="critical-grid">
+            <div class="form-group">
+                <label>Critical Multiplier</label>
+                <input type="number" name="system.bonuses.critical.multiplier"
+                    value="{{system.bonuses.critical.multiplier}}" min="1" placeholder="2" />
+            </div>
+
+            <div class="form-group">
+                <label>Critical Success</label>
+                <input type="number" name="system.bonuses.critical.successThreshold"
+                    value="{{system.bonuses.critical.successThreshold}}" min="1" max="20" placeholder="20" />
+            </div>
+
+            <div class="form-group">
+                <label>Critical Failure</label>
+                <input type="number" name="system.bonuses.critical.failureThreshold"
+                    value="{{system.bonuses.critical.failureThreshold}}" min="1" max="20" placeholder="1" />
+            </div>
+        </div>
+    </fieldset>
+
+    {{!-- Attack Ranges Section --}}
+    <fieldset class="npc-attack-fieldset">
+        <legend><i class="fas fa-bullseye"></i> Attack Ranges</legend>
+
+        <div class="ranges-grid">
+            {{#each rangesList}}
+            <label class="checkbox-label">
+                <input type="checkbox" name="system.ranges" value="{{key}}" {{#if checked}}checked{{/if}} />
+                <span>{{localize label}}</span>
+            </label>
+            {{/each}}
+        </div>
+    </fieldset>
+
+    {{!-- Attack Features Section --}}
+    <fieldset class="npc-attack-fieldset">
+        <legend><i class="fas fa-shield-alt"></i> Special Features</legend>
+
+        <div class="form-group">
+            <label>Special Abilities</label>
+            <textarea name="system.damage.special" rows="3"
+                placeholder="e.g., On a hit, the target must make a DC 12 CON save or be poisoned">{{system.damage.special}}</textarea>
+        </div>
+    </fieldset>
+
+</section>

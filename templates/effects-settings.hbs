@@ -1,0 +1,64 @@
+<form class="sdx-effects-settings-form">
+	<div class="sdx-settings-section">
+		<h3><i class="fas fa-magic"></i> Effects & Conditions</h3>
+		<p class="sdx-settings-hint">Configure behavior for active effects and conditions</p>
+		
+		{{!-- Silenced Effect --}}
+		<details class="sdx-effect-category">
+			<summary class="sdx-effect-header">
+				<i class="fas fa-skull"></i>
+				<strong>Silenced</strong>
+				<span class="sdx-effect-summary">Configure which item types are blocked</span>
+			</summary>
+			<div class="sdx-effect-content">
+				<p class="sdx-effect-description">
+					When an actor has the Silenced effect, configure which item types are blocked from being cast.
+				</p>
+				
+				<div class="sdx-setting-item">
+					<div class="sdx-setting-header">
+						<label for="silenced-spells">
+							<input type="checkbox" name="silenced.blocksSpells" id="silenced-spells" {{checked settings.silenced.blocksSpells}} />
+							<strong>Block Spells</strong>
+						</label>
+					</div>
+					<p class="sdx-setting-hint">Prevent casting Spell and NPC Spell items</p>
+				</div>
+				
+				<div class="sdx-setting-item">
+					<div class="sdx-setting-header">
+						<label for="silenced-scrolls">
+							<input type="checkbox" name="silenced.blocksScrolls" id="silenced-scrolls" {{checked settings.silenced.blocksScrolls}} />
+							<strong>Block Scrolls</strong>
+						</label>
+					</div>
+					<p class="sdx-setting-hint">Prevent using Scroll items (requires reading aloud)</p>
+				</div>
+				
+				<div class="sdx-setting-item">
+					<div class="sdx-setting-header">
+						<label for="silenced-wands">
+							<input type="checkbox" name="silenced.blocksWands" id="silenced-wands" {{checked settings.silenced.blocksWands}} />
+							<strong>Block Wands</strong>
+						</label>
+					</div>
+					<p class="sdx-setting-hint">Prevent using Wand items (requires command word)</p>
+				</div>
+				
+				<p class="sdx-effect-note">
+					<i class="fas fa-info-circle"></i>
+					<em>Note: Potions are never affected by Silenced (drinking doesn't require speech)</em>
+				</p>
+			</div>
+		</details>
+		
+		{{!-- Future conditions can be added here as additional details elements --}}
+		
+	</div>
+
+	<footer class="sheet-footer flexrow">
+		<button type="submit" name="submit">
+			<i class="fas fa-save"></i> Save Settings
+		</button>
+	</footer>
+</form>

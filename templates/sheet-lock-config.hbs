@@ -1,0 +1,81 @@
+<div class="sdx-sheet-lock-config">
+    <p class="notes">{{localize "SHADOWDARK_EXTRAS.sheet_lock.config_hint"}}</p>
+
+    <div class="lock-groups">
+        {{!-- GENERAL --}}
+        <div class="lock-group">
+            <h3>{{localize "SHADOWDARK_EXTRAS.sheet_lock.group_general"}}</h3>
+            <div class="form-group">
+                <label>
+                    <input type="checkbox" name="xp" {{checked xp}}>
+                    {{localize "SHADOWDARK_EXTRAS.sheet_lock.xp"}}
+                </label>
+                <p class="notes">{{localize "SHADOWDARK_EXTRAS.sheet_lock.xp_hint"}}</p>
+            </div>
+            <div class="form-group">
+                <label>
+                    <input type="checkbox" name="coins" {{checked coins}}>
+                    {{localize "SHADOWDARK_EXTRAS.sheet_lock.coins"}}
+                </label>
+            </div>
+
+        </div>
+
+        {{!-- ATTRIBUTES --}}
+        <div class="lock-group">
+            <h3>{{localize "SHADOWDARK_EXTRAS.sheet_lock.group_attributes"}}</h3>
+            <div class="form-group">
+                <label>
+                    <input type="checkbox" name="hp" {{checked hp}}>
+                    {{localize "SHADOWDARK_EXTRAS.sheet_lock.hp"}}
+                </label>
+            </div>
+            <div class="form-group">
+                <label>
+                    <input type="checkbox" name="stats" {{checked stats}}>
+                    {{localize "SHADOWDARK_EXTRAS.sheet_lock.stats"}}
+                </label>
+            </div>
+            <div class="form-group">
+                <label>
+                    <input type="checkbox" name="luck" {{checked luck}}>
+                    {{localize "SHADOWDARK_EXTRAS.sheet_lock.luck"}}
+                </label>
+            </div>
+        </div>
+
+        {{!-- ITEMS & FEATURES --}}
+        <div class="lock-group">
+            <h3>{{localize "SHADOWDARK_EXTRAS.sheet_lock.group_items"}}</h3>
+
+            <div class="form-group">
+                <label>
+                    <input type="checkbox" name="inventory" {{checked inventory}}>
+                    {{localize "SHADOWDARK_EXTRAS.sheet_lock.inventory"}}
+                </label>
+                <p class="notes">{{localize "SHADOWDARK_EXTRAS.sheet_lock.inventory_hint"}}</p>
+            </div>
+
+        </div>
+
+        {{!-- BIO --}}
+
+
+        {{!-- EFFECTS --}}
+        <div class="lock-group">
+            <h3>{{localize "SHADOWDARK_EXTRAS.sheet_lock.group_effects"}}</h3>
+            <div class="form-group">
+                <label>
+                    <input type="checkbox" name="activeEffects" {{checked activeEffects}}>
+                    {{localize "SHADOWDARK_EXTRAS.sheet_lock.active_effects"}}
+                </label>
+            </div>
+        </div>
+    </div>
+
+    <footer class="sheet-footer">
+        <button type="submit" name="submit">
+            <i class="far fa-save"></i> {{localize "SHADOWDARK_EXTRAS.save"}}
+        </button>
+    </footer>
+</div>

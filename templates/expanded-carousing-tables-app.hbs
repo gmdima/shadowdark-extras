@@ -1,0 +1,199 @@
+<form class="expanded-carousing-tables-form carousing-tables-app" autocomplete="off">
+    {{#if isEditing}}
+    {{!-- Edit/New Table Form --}}
+    <div class="carousing-table-editor">
+        <div class="form-group table-name-group">
+            <label>{{localize "SHADOWDARK_EXTRAS.carousing.table_name"}}:</label>
+            <input type="text" name="name" value="{{editingTable.name}}"
+                placeholder="{{localize 'SHADOWDARK_EXTRAS.carousing.table_name_placeholder'}}" required />
+        </div>
+
+        <nav class="tabs">
+            <a class="item active" data-tab="tiers"><i class="fas fa-layer-group"></i> {{localize
+                "SHADOWDARK_EXTRAS.carousing.tiers"}}</a>
+            <a class="item" data-tab="outcomes"><i class="fas fa-dice-d8"></i> Outcomes (d8)</a>
+            <a class="item" data-tab="benefits"><i class="fas fa-star"></i> Benefits (d100)</a>
+            <a class="item" data-tab="mishaps"><i class="fas fa-skull"></i> Mishaps (d100)</a>
+        </nav>
+
+        <div class="tab-content">
+            {{!-- TIERS TAB --}}
+            <div class="tab-pane active" data-tab="tiers">
+                <div class="tab-header flexrow">
+                    <h3>{{localize "SHADOWDARK_EXTRAS.carousing.tiers"}}</h3>
+                    <div class="tab-actions">
+                        <button type="button" data-action="add-tier"><i class="fas fa-plus"></i> {{localize
+                            "SHADOWDARK_EXTRAS.carousing.add_tier"}}</button>
+                        <button type="button" data-action="import-tiers"><i class="fas fa-file-import"></i> {{localize
+                            "SHADOWDARK_EXTRAS.carousing.import"}}</button>
+                        <button type="button" data-action="reset-tiers"><i class="fas fa-undo"></i> {{localize
+                            "SHADOWDARK_EXTRAS.carousing.reset"}}</button>
+                    </div>
+                </div>
+                <div class="table-header flexrow">
+                    <span style="width:80px">{{localize "SHADOWDARK_EXTRAS.carousing.cost"}} (GP)</span>
+                    <span style="width:60px">{{localize "SHADOWDARK_EXTRAS.carousing.bonus"}}</span>
+                    <span style="flex:1">{{localize "SHADOWDARK_EXTRAS.carousing.description"}}</span>
+                    <span style="width:30px"></span>
+                </div>
+                <div class="tiers-list scrollable-list">
+                    {{#each editingTable.tiers}}
+                    <div class="table-row flexrow">
+                        <input type="number" name="tier-cost-{{@index}}" value="{{this.cost}}" placeholder="GP"
+                            style="width:80px" />
+                        <input type="number" name="tier-bonus-{{@index}}" value="{{this.bonus}}" placeholder="+0"
+                            style="width:60px" />
+                        <input type="text" name="tier-description-{{@index}}" value="{{this.description}}"
+                            placeholder="{{localize 'SHADOWDARK_EXTRAS.carousing.description'}}" style="flex:1" />
+                        <a data-action="remove-row" title="Remove"><i class="fas fa-trash"></i></a>
+                    </div>
+                    {{/each}}
+                </div>
+            </div>
+
+            {{!-- OUTCOMES TAB --}}
+            <div class="tab-pane" data-tab="outcomes">
+                <div class="tab-header flexrow">
+                    <h3>Outcome Table (d8 + Tier Bonus)</h3>
+                    <div class="tab-actions">
+                        <button type="button" data-action="add-outcome"><i class="fas fa-plus"></i> {{localize
+                            "SHADOWDARK_EXTRAS.carousing.add_outcome"}}</button>
+                        <button type="button" data-action="import-outcomes"><i class="fas fa-file-import"></i>
+                            {{localize
+                            "SHADOWDARK_EXTRAS.carousing.import"}}</button>
+                        <button type="button" data-action="reset-outcomes"><i class="fas fa-undo"></i> {{localize
+                            "SHADOWDARK_EXTRAS.carousing.reset"}}</button>
+                    </div>
+                </div>
+                <div class="table-header flexrow">
+                    <span style="width:50px">{{localize "SHADOWDARK_EXTRAS.carousing.roll"}}</span>
+                    <span style="width:60px">Benefits</span>
+                    <span style="width:60px">Mishaps</span>
+                    <span style="width:60px">% Mod</span>
+                    <span style="width:50px">XP</span>
+                    <span style="width:30px"></span>
+                </div>
+                <div class="outcomes-list scrollable-list">
+                    {{#each editingTable.outcomes}}
+                    <div class="table-row flexrow">
+                        <input type="number" name="outcome-roll-{{@index}}" value="{{this.roll}}" style="width:50px" />
+                        <input type="number" name="outcome-benefits-{{@index}}" value="{{this.benefits}}"
+                            style="width:60px" />
+                        <input type="number" name="outcome-mishaps-{{@index}}" value="{{this.mishaps}}"
+                            style="width:60px" />
+                        <input type="number" name="outcome-modifier-{{@index}}" value="{{this.modifier}}"
+                            style="width:60px" />
+                        <input type="number" name="outcome-xp-{{@index}}" value="{{this.xp}}" style="width:50px" />
+                        <a data-action="remove-row" title="Remove"><i class="fas fa-trash"></i></a>
+                    </div>
+                    {{/each}}
+                </div>
+            </div>
+
+            {{!-- BENEFITS TAB --}}
+            <div class="tab-pane" data-tab="benefits">
+                <div class="tab-header flexrow">
+                    <h3>Benefits Table (d100)</h3>
+                    <div class="tab-actions">
+                        <button type="button" data-action="add-benefit"><i class="fas fa-plus"></i> {{localize
+                            "SHADOWDARK_EXTRAS.carousing.add_outcome"}}</button>
+                        <button type="button" data-action="import-benefits"><i class="fas fa-file-import"></i>
+                            {{localize
+                            "SHADOWDARK_EXTRAS.carousing.import"}}</button>
+                        <button type="button" data-action="reset-benefits"><i class="fas fa-undo"></i> {{localize
+                            "SHADOWDARK_EXTRAS.carousing.reset"}}</button>
+                    </div>
+                </div>
+                <div class="table-header flexrow">
+                    <span style="width:50px">{{localize "SHADOWDARK_EXTRAS.carousing.roll"}}</span>
+                    <span style="flex:1">{{localize "SHADOWDARK_EXTRAS.carousing.description"}}</span>
+                    <span style="width:30px"></span>
+                </div>
+                <div class="benefits-list scrollable-list">
+                    {{#each editingTable.benefits}}
+                    <div class="table-row flexrow">
+                        <input type="number" name="benefit-roll-{{@index}}" value="{{this.roll}}" style="width:50px" />
+                        <input type="text" name="benefit-description-{{@index}}" value="{{this.description}}"
+                            style="flex:1" />
+                        <a data-action="remove-row" title="Remove"><i class="fas fa-trash"></i></a>
+                    </div>
+                    {{/each}}
+                </div>
+            </div>
+
+            {{!-- MISHAPS TAB --}}
+            <div class="tab-pane" data-tab="mishaps">
+                <div class="tab-header flexrow">
+                    <h3>Mishaps Table (d100)</h3>
+                    <div class="tab-actions">
+                        <button type="button" data-action="add-mishap"><i class="fas fa-plus"></i> {{localize
+                            "SHADOWDARK_EXTRAS.carousing.add_outcome"}}</button>
+                        <button type="button" data-action="import-mishaps"><i class="fas fa-file-import"></i> {{localize
+                            "SHADOWDARK_EXTRAS.carousing.import"}}</button>
+                        <button type="button" data-action="reset-mishaps"><i class="fas fa-undo"></i> {{localize
+                            "SHADOWDARK_EXTRAS.carousing.reset"}}</button>
+                    </div>
+                </div>
+                <div class="table-header flexrow">
+                    <span style="width:50px">{{localize "SHADOWDARK_EXTRAS.carousing.roll"}}</span>
+                    <span style="flex:1">{{localize "SHADOWDARK_EXTRAS.carousing.description"}}</span>
+                    <span style="width:30px"></span>
+                </div>
+                <div class="mishaps-list scrollable-list">
+                    {{#each editingTable.mishaps}}
+                    <div class="table-row flexrow">
+                        <input type="number" name="mishap-roll-{{@index}}" value="{{this.roll}}" style="width:50px" />
+                        <input type="text" name="mishap-description-{{@index}}" value="{{this.description}}"
+                            style="flex:1" />
+                        <a data-action="remove-row" title="Remove"><i class="fas fa-trash"></i></a>
+                    </div>
+                    {{/each}}
+                </div>
+            </div>
+        </div>
+
+        <footer class="form-footer">
+            <button type="submit" class="primary"><i class="fas fa-save"></i> {{localize
+                "SHADOWDARK_EXTRAS.carousing.save_table"}}</button>
+            <button type="button" data-action="cancel-edit"><i class="fas fa-times"></i> {{localize
+                "SHADOWDARK_EXTRAS.carousing.cancel"}}</button>
+        </footer>
+    </div>
+    {{else}}
+    {{!-- Table List View --}}
+    <div class="carousing-tables-list-view">
+        <div class="carousing-tables-header flexrow">
+            <h2>{{localize "SHADOWDARK_EXTRAS.carousing.custom_tables"}} (Expanded)</h2>
+            <div class="header-actions">
+                <button type="button" data-action="import-table"><i class="fas fa-file-import"></i> {{localize
+                    "SHADOWDARK_EXTRAS.carousing.import"}}</button>
+                <button type="button" data-action="new-table" class="primary"><i class="fas fa-plus"></i> {{localize
+                    "SHADOWDARK_EXTRAS.carousing.new_table"}}</button>
+            </div>
+        </div>
+
+        {{#if tables.length}}
+        <div class="carousing-tables-list">
+            {{#each tables}}
+            <div class="carousing-table-item flexrow">
+                <span class="table-name">{{this.name}}</span>
+                <span class="table-info">{{this.tiers.length}} {{localize "SHADOWDARK_EXTRAS.carousing.tiers"}}</span>
+                <div class="table-actions">
+                    <a data-action="edit-table" data-table-id="{{this.id}}"
+                        title="{{localize 'SHADOWDARK_EXTRAS.carousing.edit_table'}}"><i class="fas fa-edit"></i></a>
+                    <a data-action="export-table" data-table-id="{{this.id}}"
+                        title="{{localize 'SHADOWDARK_EXTRAS.carousing.export'}}"><i class="fas fa-file-export"></i></a>
+                    <a data-action="delete-table" data-table-id="{{this.id}}"
+                        title="{{localize 'SHADOWDARK_EXTRAS.carousing.delete_table'}}"><i class="fas fa-trash"></i></a>
+                </div>
+            </div>
+            {{/each}}
+        </div>
+        {{else}}
+        <div class="carousing-no-tables">
+            <p>{{localize "SHADOWDARK_EXTRAS.carousing.no_custom_tables"}}</p>
+        </div>
+        {{/if}}
+    </div>
+    {{/if}}
+</form>

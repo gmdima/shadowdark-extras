@@ -1,0 +1,38 @@
+<form class="sdx-travel-speeds-form">
+	<div class="sdx-speeds-list">
+		{{#each speeds}}
+		<div class="sdx-speed-row" data-index="{{this.index}}">
+			<div class="sdx-speed-order">
+				<button type="button" class="sdx-move-up" data-tooltip="{{localize 'SHADOWDARK_EXTRAS.travel_speeds.move_up'}}">
+					<i class="fas fa-chevron-up"></i>
+				</button>
+				<button type="button" class="sdx-move-down" data-tooltip="{{localize 'SHADOWDARK_EXTRAS.travel_speeds.move_down'}}">
+					<i class="fas fa-chevron-down"></i>
+				</button>
+			</div>
+			<input type="hidden" name="speeds.{{this.index}}.key" value="{{this.key}}">
+			<input type="text" name="speeds.{{this.index}}.name"
+				placeholder="{{localize 'SHADOWDARK_EXTRAS.travel_speeds.name_placeholder'}}"
+				value="{{this.name}}" class="sdx-speed-name"/>
+			<button type="button" class="sdx-remove-speed" data-tooltip="{{localize 'SHADOWDARK_EXTRAS.travel_speeds.remove'}}">
+				<i class="fas fa-trash"></i>
+			</button>
+		</div>
+		{{/each}}
+	</div>
+
+	<div class="sdx-speeds-actions">
+		<button type="button" class="sdx-add-speed">
+			<i class="fas fa-plus"></i> {{localize "SHADOWDARK_EXTRAS.travel_speeds.add_speed"}}
+		</button>
+		<button type="button" class="sdx-reset-defaults">
+			<i class="fas fa-undo"></i> {{localize "SHADOWDARK_EXTRAS.travel_speeds.reset_defaults"}}
+		</button>
+	</div>
+
+	<footer class="sheet-footer flexrow">
+		<button type="submit" name="submit">
+			<i class="fas fa-save"></i> {{localize "SHADOWDARK_EXTRAS.travel_speeds.save"}}
+		</button>
+	</footer>
+</form>

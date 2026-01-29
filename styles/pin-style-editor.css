@@ -1,0 +1,453 @@
+/* ================================================
+   SDX Pin Style Editor - Scoped Styles
+   Only applies to the pin style editor, not Foundry
+   ================================================ */
+
+/* Main Application Window */
+.sdx-pin-style-editor-app {
+    background: #000000 !important;
+    border: var(--sdx-box-border-width, 8px) solid transparent !important;
+    border-image: var(--sdx-box-border) var(--sdx-box-border-image-slice, 40) fill !important;
+    border-image-repeat: stretch !important;
+    border-image-width: var(--sdx-box-border-image-width, 40px) !important;
+    max-height: 80vh !important;
+    transition: none !important;
+    animation: none !important;
+}
+
+.sdx-pin-style-editor-app * {
+    transition: none !important;
+    animation: none !important;
+}
+
+
+.sdx-pin-style-editor-app .window-header {
+    background: rgba(30, 30, 30, 0.95) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+.sdx-pin-style-editor-app .window-header .window-title {
+    font-family: 'Old Newspaper Font', serif !important;
+    font-size: 16px !important;
+    color: #f0f0f0 !important;
+    text-shadow: 1px 1px 2px #000 !important;
+}
+
+.sdx-pin-style-editor-app .window-content {
+    background: #1a1a1a !important;
+    padding: 0 !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    max-height: 70vh !important;
+}
+
+/* Form Styles */
+.sdx-pin-style-editor {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 12px;
+    background: #1a1a1a;
+    color: #f0f0f0;
+    font-family: 'Montserrat-medium', sans-serif;
+    font-size: 13px;
+}
+
+.sdx-pin-style-editor .filter-list li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 6px 10px;
+    margin-bottom: 6px;
+    border-radius: 4px;
+    font-size: 0.9em;
+    border-left: 3px solid #c9aa58;
+}
+
+.sdx-pin-style-editor .filter-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.sdx-pin-style-editor .btn-remove-tmfx,
+.sdx-pin-style-editor .btn-edit-tmfx {
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #ff4444;
+    cursor: pointer;
+    padding: 3px 6px;
+    font-size: 0.9em;
+    opacity: 0.8;
+    transition: all 0.2s;
+    border-radius: 3px;
+    line-height: 1;
+}
+
+.sdx-pin-style-editor .btn-edit-tmfx {
+    color: #c9aa58;
+}
+
+.sdx-pin-style-editor .btn-remove-tmfx:hover {
+    opacity: 1;
+    background: rgba(255, 68, 68, 0.2);
+    border-color: #ff4444;
+}
+
+.sdx-pin-style-editor .btn-edit-tmfx:hover {
+    opacity: 1;
+    background: rgba(201, 170, 88, 0.2);
+    border-color: #c9aa58;
+}
+
+.sdx-pin-style-editor .filter-info small {
+    color: rgba(255, 255, 255, 0.5);
+    margin-left: 4px;
+}
+
+/* Section Styling */
+.sdx-pin-style-editor .editor-section {
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 6px;
+    padding: 12px;
+    margin-bottom: 4px;
+}
+
+.sdx-pin-style-editor .editor-section h3 {
+    margin: 0 0 12px 0;
+    padding-bottom: 8px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    font-family: 'Old Newspaper Font', serif;
+    font-size: 16px;
+    font-weight: normal;
+    color: #c9aa58;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.sdx-pin-style-editor .editor-section h3 i {
+    opacity: 0.8;
+}
+
+/* Preview Section */
+.sdx-pin-style-editor .preview-section {
+    background: linear-gradient(135deg, rgba(40, 40, 40, 0.8) 0%, rgba(20, 20, 20, 0.9) 100%);
+}
+
+.sdx-pin-style-editor .pin-preview-canvas {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 80px;
+    background: repeating-linear-gradient(45deg,
+            rgba(50, 50, 50, 0.5),
+            rgba(50, 50, 50, 0.5) 10px,
+            rgba(30, 30, 30, 0.5) 10px,
+            rgba(30, 30, 30, 0.5) 20px);
+    border-radius: 4px;
+    padding: 20px;
+}
+
+.sdx-pin-style-editor .preview-pin {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.sdx-pin-style-editor .preview-content {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Form Groups */
+.sdx-pin-style-editor .form-group {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 10px;
+    min-height: 28px;
+}
+
+.sdx-pin-style-editor .form-group:last-child {
+    margin-bottom: 0;
+}
+
+.sdx-pin-style-editor .form-group label {
+    font-size: 12px;
+    color: #ccc;
+    flex-shrink: 0;
+}
+
+.sdx-pin-style-editor .form-group label span {
+    color: #c9aa58;
+    font-weight: bold;
+    margin-left: 4px;
+}
+
+/* Inputs */
+.sdx-pin-style-editor select {
+    flex: 1;
+    max-width: 180px;
+    background: rgba(0, 0, 0, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+    padding: 6px 10px;
+    color: #f0f0f0;
+    font-size: 12px;
+}
+
+.sdx-pin-style-editor select:focus {
+    outline: none;
+    border-color: #c9aa58;
+}
+
+/* Text Inputs */
+.sdx-pin-style-editor input[type="text"],
+.sdx-pin-style-editor textarea {
+    flex: 1;
+    background: rgba(0, 0, 0, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+    padding: 6px 10px;
+    color: #f0f0f0;
+    font-size: 12px;
+    font-family: 'Montserrat-medium', sans-serif;
+}
+
+.sdx-pin-style-editor input[type="text"]:focus,
+.sdx-pin-style-editor textarea:focus {
+    outline: none;
+    border-color: #c9aa58;
+}
+
+.sdx-pin-style-editor textarea {
+    resize: vertical;
+    min-height: 60px;
+}
+
+.sdx-pin-style-editor .tooltip-content-group {
+    flex-direction: column;
+    align-items: stretch;
+}
+
+.sdx-pin-style-editor .tooltip-content-group label {
+    margin-bottom: 6px;
+}
+
+/* Color Inputs */
+.sdx-pin-style-editor .color-group {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.sdx-pin-style-editor input[type="color"] {
+    width: 50px;
+    height: 26px;
+    padding: 0;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 4px;
+    cursor: pointer;
+    background: transparent;
+}
+
+.sdx-pin-style-editor input[type="color"]::-webkit-color-swatch-wrapper {
+    padding: 2px;
+}
+
+.sdx-pin-style-editor input[type="color"]::-webkit-color-swatch {
+    border-radius: 2px;
+    border: none;
+}
+
+/* Range Sliders */
+.sdx-pin-style-editor input[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+    flex: 1;
+    max-width: 180px;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 3px;
+    cursor: pointer;
+}
+
+.sdx-pin-style-editor input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 14px;
+    height: 14px;
+    background: #c9aa58;
+    border-radius: 50%;
+    cursor: grab;
+}
+
+.sdx-pin-style-editor input[type="range"]::-webkit-slider-thumb:hover {
+    transform: scale(1.1);
+}
+
+.sdx-pin-style-editor input[type="range"]::-moz-range-thumb {
+    width: 14px;
+    height: 14px;
+    background: #c9aa58;
+    border-radius: 50%;
+    border: none;
+    cursor: grab;
+}
+
+/* Checkboxes */
+.sdx-pin-style-editor .checkbox-group {
+    justify-content: flex-start;
+}
+
+.sdx-pin-style-editor .checkbox-group label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    color: #f0f0f0;
+}
+
+.sdx-pin-style-editor input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    accent-color: #c9aa58;
+    cursor: pointer;
+}
+
+/* Icon/Font Options Toggle */
+.sdx-pin-style-editor .icon-options,
+.sdx-pin-style-editor .font-options {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px dashed rgba(255, 255, 255, 0.1);
+}
+
+/* Footer Buttons */
+.sdx-pin-style-editor .editor-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    padding: 12px;
+    background: rgba(0, 0, 0, 0.3);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    margin: 0 -12px -12px -12px;
+}
+
+.sdx-pin-style-editor .editor-buttons button {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+    font-family: 'Montserrat-medium', sans-serif;
+    font-size: 13px;
+    cursor: pointer;
+}
+
+.sdx-pin-style-editor .btn-reset {
+    background: linear-gradient(180deg, #4a3a3a 0%, #2a2020 100%);
+    color: #f0f0f0;
+}
+
+.sdx-pin-style-editor .btn-reset:hover {
+    background: linear-gradient(180deg, #5a4a4a 0%, #3a3030 100%);
+    border-color: rgba(255, 255, 255, 0.4);
+}
+
+.sdx-pin-style-editor .btn-save {
+    background: linear-gradient(180deg, #4a5a3a 0%, #2a3a20 100%);
+    color: #f0f0f0;
+    border-color: #c9aa58;
+}
+
+.sdx-pin-style-editor .btn-save:hover {
+    background: linear-gradient(180deg, #5a6a4a 0%, #3a4a30 100%);
+    box-shadow: 0 0 8px rgba(201, 170, 88, 0.4);
+}
+
+/* TokenMagic FX Section */
+.sdx-pin-style-editor .tmfx-section {
+    border-color: rgba(201, 170, 88, 0.3);
+}
+
+.sdx-pin-style-editor .btn-clear-tmfx {
+    width: 100%;
+    margin-top: 10px;
+    padding: 6px;
+    background: linear-gradient(180deg, #4a3a3a 0%, #2a2020 100%);
+    color: #ff6b6b;
+    border: 1px solid rgba(255, 107, 107, 0.3);
+    border-radius: 4px;
+    font-size: 11px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+
+.sdx-pin-style-editor .btn-clear-tmfx:hover {
+    background: linear-gradient(180deg, #5a4a4a 0%, #3a3030 100%);
+    border-color: #ff6b6b;
+}
+
+.sdx-pin-style-editor .active-filters {
+    margin-top: 10px;
+    padding: 8px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 4px;
+    border: 1px dashed rgba(255, 255, 255, 0.1);
+}
+
+.sdx-pin-style-editor .active-filters label {
+    font-size: 11px;
+    color: #888;
+    margin-bottom: 4px;
+    display: block;
+}
+
+.sdx-pin-style-editor .filter-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    font-size: 11px;
+    color: #c9aa58;
+}
+
+
+.sdx-pin-style-editor .filter-list li i {
+    font-size: 9px;
+    opacity: 0.7;
+}
+
+/* Scrollbar Styling for the window */
+.sdx-pin-style-editor-app .window-content::-webkit-scrollbar {
+    width: 10px;
+}
+
+.sdx-pin-style-editor-app .window-content::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.4);
+    border-radius: 5px;
+}
+
+.sdx-pin-style-editor-app .window-content::-webkit-scrollbar-thumb {
+    background: rgba(201, 170, 88, 0.6);
+    border-radius: 5px;
+}
+
+.sdx-pin-style-editor-app .window-content::-webkit-scrollbar-thumb:hover {
+    background: rgba(201, 170, 88, 0.8);
+}
+
+/* Firefox scrollbar */
+.sdx-pin-style-editor-app .window-content {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(201, 170, 88, 0.6) rgba(0, 0, 0, 0.4);
+}

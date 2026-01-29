@@ -1,0 +1,40 @@
+<form class="flexcol">
+    <div class="form-group">
+        <p class="notes">{{localize "SHADOWDARK_EXTRAS.pinList.hint"}}</p>
+    </div>
+
+    <div class="pin-list-container">
+        {{#if pins.length}}
+        <ul class="sdx-pin-list">
+            {{#each pins}}
+            <li class="pin-entry flexrow" data-id="{{this.id}}" data-x="{{this.x}}" data-y="{{this.y}}">
+                <div class="pin-icon"
+                    style="display: flex; justify-content: center; align-items: center; background-color: {{this.backgroundColor}}; border: 2px solid {{this.borderColor}}; border-radius: 50%; width: 32px; height: 32px; box-shadow: 0 0 4px rgba(0,0,0,0.5);">
+                    {{#if (eq this.displayType "image")}}
+                    <img src="{{this.displayContent}}"
+                        style="display: block; width: 20px; height: 20px; object-fit: contain;" alt="Icon" />
+                    {{else if (eq this.displayType "icon")}}
+                    <i class="{{this.displayClass}}" style="{{this.displayStyle}} font-size: 16px;"></i>
+                    {{else if (eq this.displayType "text")}}
+                    <span style="{{this.displayStyle}} font-size: 14px; line-height: 1;">{{this.displayContent}}</span>
+                    {{/if}}
+                </div>
+                <div class="pin-info flexcol">
+                    <span class="pin-name">{{this.name}}</span>
+                    {{#if this.pageName}}
+                    <span class="pin-page-name">{{this.pageName}}</span>
+                    {{/if}}
+                </div>
+                <div class="pin-controls">
+                    <a class="pin-control" data-action="pan" title="{{localize 'SHADOWDARK_EXTRAS.pinList.pan'}}">
+                        <i class="fas fa-crosshairs"></i>
+                    </a>
+                </div>
+            </li>
+            {{/each}}
+        </ul>
+        {{else}}
+        <p class="notification info">{{localize "SHADOWDARK_EXTRAS.pinList.noPins"}}</p>
+        {{/if}}
+    </div>
+</form>

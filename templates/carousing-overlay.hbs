@@ -1,0 +1,433 @@
+<div class="sdx-carousing-overlay-backdrop">
+    <div class="sdx-carousing-overlay-container">
+        {{!-- Toast container for notifications --}}
+        <div class="sdx-carousing-toast-container"></div>
+
+        {{!-- Close button --}}
+        <button type="button" class="sdx-carousing-overlay-close" data-action="close-overlay"
+            data-tooltip="{{localize 'SHADOWDARK_EXTRAS.dialog.close'}}">
+            <i class="fas fa-times"></i>
+        </button>
+
+        {{!-- Header --}}
+        <header class="sdx-carousing-overlay-header">
+            <h1>
+                <i class="fas fa-beer"></i>
+                {{localize "SHADOWDARK_EXTRAS.carousing.title"}}
+                <span class="sdx-carousing-mode-badge">{{#if isExpandedMode}}Expanded{{else}}Original{{/if}}</span>
+            </h1>
+        </header>
+
+        {{!-- Main content --}}
+        <main class="sdx-carousing-overlay-main">
+            {{#if isGM}}
+            {{!-- GM Controls --}}
+            <div class="sdx-carousing-gm-controls">
+                <div class="sdx-carousing-table-select">
+                    <label>{{localize "SHADOWDARK_EXTRAS.carousing.select_table"}}:</label>
+                    {{#if hasCustomTables}}
+                    <select data-action="select-table">
+                        {{#each customTables}}
+                        <option value="{{this.id}}" {{#if this.selected}}selected{{/if}}>{{this.name}}</option>
+                        {{/each}}
+                    </select>
+                    {{else}}
+                    <div class="sdx-carousing-no-tables">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        {{localize "SHADOWDARK_EXTRAS.carousing.no_tables_found"}}
+                    </div>
+                    {{/if}}
+                </div>
+
+                <div class="sdx-carousing-tier-select">
+                    <label>{{localize "SHADOWDARK_EXTRAS.carousing.select_tier"}}:</label>
+                    <select data-action="select-tier">
+                        <option value="">-- {{localize "SHADOWDARK_EXTRAS.carousing.choose_tier"}} --</option>
+                        {{#each tierOptions}}
+                        <option value="{{this.index}}" {{#if this.selected}}selected{{/if}}>{{this.label}}</option>
+                        {{/each}}
+                    </select>
+                </div>
+
+                {{#if (gt participantCount 0)}}
+                <div class="sdx-carousing-gm-status">
+                    <span>{{localize "SHADOWDARK_EXTRAS.carousing.participants"}}: {{participantCount}}</span>
+                    {{#if allConfirmed}}
+                    <span class="sdx-carousing-status-ok"><i class="fas fa-check-circle"></i> {{localize
+                        "SHADOWDARK_EXTRAS.carousing.all_confirmed"}}</span>
+                    {{else}}
+                    <span class="sdx-carousing-status-waiting"><i class="fas fa-hourglass-half"></i> {{localize
+                        "SHADOWDARK_EXTRAS.carousing.waiting_confirmations"}}</span>
+                    {{/if}}
+                </div>
+                {{/if}}
+
+                <div class="sdx-carousing-gm-buttons">
+                    <button type="button" class="sdx-carousing-roll-btn" data-action="roll-carousing" {{#unless
+                        canRoll}}disabled{{/unless}}>
+                        <i class="fas fa-dice-d20"></i> {{localize "SHADOWDARK_EXTRAS.carousing.roll"}}
+                    </button>
+                    <button type="button" class="sdx-carousing-reset-btn" data-action="reset-carousing">
+                        <i class="fas fa-undo"></i> {{localize "SHADOWDARK_EXTRAS.carousing.reset"}}
+                    </button>
+                </div>
+            </div>
+            {{/if}}
+
+            {{#if hasSelectedTier}}
+            {{#if selectedTierDescription}}
+            <div class="sdx-carousing-description-box">
+                <p>"{{selectedTierDescription}}"</p>
+            </div>
+            {{/if}}
+
+            <div class="sdx-carousing-cost-info">
+                <i class="fas fa-coins"></i>
+                {{localize "SHADOWDARK_EXTRAS.carousing.cost_per_player"}}: <strong>{{selectedTierCost}} GP</strong>
+            </div>
+            {{/if}}
+
+            {{#if hasParticipants}}
+            <div class="sdx-carousing-overlay-players">
+                {{#each participants}}
+                <div class="sdx-carousing-overlay-card {{#if this.hasDrop}}has-drop{{/if}} {{#if this.isCurrentUser}}is-current-user{{/if}} {{#if this.isConfirmed}}is-confirmed{{/if}} {{#if this.result}}has-result{{/if}} {{#if this.isGmManaged}}is-gm-managed{{/if}}"
+                    data-participant-id="{{this.participantId}}">
+
+                    {{!-- Player name header --}}
+                    <div class="sdx-carousing-card-header" style="border-color: {{this.color}}">
+                        <span class="sdx-carousing-player-name">
+                            {{#if this.isGmManaged}}
+                            <i class="fas fa-crown" title="GM Managed"></i>
+                            {{/if}}
+                            {{this.name}}
+                            {{#if this.isConfirmed}}
+                            <i class="fas fa-check-circle sdx-carousing-confirmed-badge"></i>
+                            {{/if}}
+                        </span>
+                        {{#if @root.isGM}}
+                        {{#if this.isGmManaged}}
+                        <button type="button" class="sdx-remove-gm-participant-btn" data-action="remove-gm-participant"
+                            data-actor-id="{{this.droppedActorId}}" title="Remove Participant">
+                            <i class="fas fa-times"></i>
+                        </button>
+                        {{/if}}
+                        {{/if}}
+                    </div>
+
+                    {{!-- Flip card container --}}
+                    <div class="sdx-carousing-flip-container">
+                        <div class="sdx-carousing-flip-inner">
+                            {{!-- FRONT FACE: Actor Portrait --}}
+                            <div class="sdx-carousing-flip-front">
+                                {{#if this.hasDrop}}
+                                {{!-- GM MODIFIERS DRAWER --}}
+                                {{#if @root.isGM}}
+                                <div class="sdx-modifiers-toggle-container">
+                                    <button type="button" class="sdx-toggle-modifiers-btn"
+                                        data-action="toggle-modifiers"
+                                        data-tooltip="{{localize 'SHADOWDARK_EXTRAS.carousing.modifiers'}}"
+                                        data-participant-id="{{this.participantId}}">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                </div>
+                                <div class="sdx-modifiers-drawer" data-participant-id="{{this.participantId}}">
+                                    <div class="sdx-modifier-row">
+                                        <label>{{localize "SHADOWDARK_EXTRAS.carousing.outcome"}}</label>
+                                        <input type="text" class="sdx-modifier-input" data-mod-type="outcome"
+                                            placeholder="+0" value="{{this.modifiers.outcome}}">
+                                    </div>
+                                    <div class="sdx-modifier-row">
+                                        <label>{{localize "SHADOWDARK_EXTRAS.carousing.benefits"}}</label>
+                                        <input type="text" class="sdx-modifier-input" data-mod-type="benefits"
+                                            placeholder="+0" value="{{this.modifiers.benefits}}">
+                                    </div>
+                                    {{#if @root.isExpandedMode}}
+                                    <div class="sdx-modifier-row">
+                                        <label>{{localize "SHADOWDARK_EXTRAS.carousing.mishaps"}}</label>
+                                        <input type="text" class="sdx-modifier-input" data-mod-type="mishaps"
+                                            placeholder="+0" value="{{this.modifiers.mishaps}}">
+                                    </div>
+                                    {{/if}}
+                                </div>
+                                {{/if}}
+
+                                <img class="sdx-carousing-card-portrait" src="{{this.droppedActorImg}}"
+                                    alt="{{this.droppedActorName}}" />
+                                <span class="sdx-carousing-card-charname">{{this.droppedActorName}}</span>
+
+                                {{#if this.result}}
+                                <div class="sdx-carousing-result-badge">
+                                    <span class="sdx-carousing-roll-result">{{this.result.outcomeRoll}}</span>
+                                    <span class="sdx-carousing-xp-result">+{{this.result.xp}} XP</span>
+                                </div>
+                                {{/if}}
+                                {{else}}
+                                <div class="sdx-carousing-card-empty">
+                                    {{#if this.isCurrentUser}}
+                                    <i class="fas fa-user-plus"></i>
+                                    <span>{{localize "SHADOWDARK_EXTRAS.carousing.select_your_character"}}</span>
+                                    {{else}}
+                                    <i class="fas fa-hourglass-half"></i>
+                                    <span>{{localize "SHADOWDARK_EXTRAS.carousing.waiting"}}</span>
+                                    {{/if}}
+                                </div>
+                                {{/if}}
+                            </div>
+
+                            {{!-- BACK FACE: Results --}}
+                            <div class="sdx-carousing-flip-back">
+                                {{#if this.result}}
+                                <div class="sdx-carousing-results-content">
+                                    {{!-- Check if this is expanded mode (has xp property) --}}
+                                    {{#if this.result.xp}}
+                                    {{!-- EXPANDED MODE RESULTS --}}
+                                    <div class="sdx-results-header">
+                                        <span class="sdx-results-roll">Roll: {{this.result.outcomeRoll}}</span>
+                                        <span class="sdx-results-xp">+{{this.result.xp}} XP</span>
+                                    </div>
+
+                                    {{!-- Benefits --}}
+                                    <div class="sdx-results-section sdx-benefits"
+                                        data-player-id="{{this.participantId}}">
+                                        <div class="sdx-results-label">
+                                            <span><i class="fas fa-star"></i> Benefits
+                                                ({{this.result.benefits.length}})</span>
+                                            {{#if @root.canSeeBenefits}}
+                                            <button type="button" class="sdx-add-result-btn" data-action="add-benefit"
+                                                data-participant-id="{{this.participantId}}" title="Add Benefit">
+                                                <i class="fas fa-plus"></i>
+                                            </button>
+                                            {{/if}}
+                                        </div>
+                                        {{#if @root.canSeeBenefits}}
+                                        {{#each this.result.benefits}}
+                                        <div class="sdx-result-item sdx-benefit-item">
+                                            {{#if @root.isGM}}
+                                            <button type="button" class="sdx-remove-result-btn"
+                                                data-action="remove-benefit" data-index="{{@index}}" title="Remove">
+                                                <i class="fas fa-minus"></i>
+                                            </button>
+                                            {{/if}}
+                                            <span class="sdx-result-roll">({{this.finalRoll}})</span>
+                                            <span class="sdx-result-desc">{{this.description}}</span>
+                                        </div>
+                                        {{/each}}
+                                        {{else}}
+                                        <div class="sdx-result-hidden">
+                                            <i class="fas fa-eye-slash"></i>
+                                            <span>Benefits are hidden by GM</span>
+                                        </div>
+                                        {{/if}}
+                                    </div>
+
+                                    {{!-- Mishaps --}}
+                                    <div class="sdx-results-section sdx-mishaps"
+                                        data-player-id="{{this.participantId}}">
+                                        <div class="sdx-results-label">
+                                            <span><i class="fas fa-skull"></i> Mishaps
+                                                ({{this.result.mishaps.length}})</span>
+                                            {{#if @root.canSeeMishaps}}
+                                            <button type="button" class="sdx-add-result-btn" data-action="add-mishap"
+                                                data-participant-id="{{this.participantId}}" title="Add Mishap">
+                                                <i class="fas fa-plus"></i>
+                                            </button>
+                                            {{/if}}
+                                        </div>
+                                        {{#if @root.canSeeMishaps}}
+                                        {{#each this.result.mishaps}}
+                                        <div class="sdx-result-item sdx-mishap-item">
+                                            {{#if @root.isGM}}
+                                            <button type="button" class="sdx-remove-result-btn"
+                                                data-action="remove-mishap" data-index="{{@index}}" title="Remove">
+                                                <i class="fas fa-minus"></i>
+                                            </button>
+                                            {{/if}}
+                                            <span class="sdx-result-roll">({{this.finalRoll}})</span>
+                                            <span class="sdx-result-desc">{{this.description}}</span>
+                                        </div>
+                                        {{/each}}
+                                        {{else}}
+                                        <div class="sdx-result-hidden">
+                                            <i class="fas fa-eye-slash"></i>
+                                            <span>Mishaps are hidden by GM</span>
+                                        </div>
+                                        {{/if}}
+                                    </div>
+
+                                    {{!-- No benefits/mishaps (expanded mode) --}}
+                                    {{#unless this.result.benefits.length}}
+                                    {{#unless this.result.mishaps.length}}
+                                    <div class="sdx-results-empty">
+                                        <i class="fas fa-meh"></i>
+                                        <span>No benefits or mishaps this time.</span>
+                                    </div>
+                                    {{/unless}}
+                                    {{/unless}}
+
+                                    {{else}}
+                                    {{!-- CLASSIC MODE RESULTS --}}
+                                    <div class="sdx-results-header">
+                                        <span class="sdx-results-roll">Roll: {{this.result.diceRoll}} +
+                                            {{this.result.bonus}} = {{this.result.roll}}</span>
+                                    </div>
+
+                                    {{!-- Description --}}
+                                    {{#if this.result.description}}
+                                    <div class="sdx-classic-result-section">
+                                        <div class="sdx-classic-result-label"><i class="fas fa-scroll"></i> What
+                                            Happened</div>
+                                        <div class="sdx-classic-result-text">{{this.result.description}}</div>
+                                    </div>
+                                    {{/if}}
+
+                                    {{!-- Benefit --}}
+                                    {{#if this.result.benefit}}
+                                    <div class="sdx-classic-result-section sdx-classic-benefit">
+                                        <div class="sdx-classic-result-label"><i class="fas fa-star"></i> Benefit</div>
+                                        <div class="sdx-classic-result-text">{{this.result.benefit}}</div>
+                                    </div>
+                                    {{/if}}
+
+                                    {{!-- No description case --}}
+                                    {{#unless this.result.description}}
+                                    {{#unless this.result.benefit}}
+                                    <div class="sdx-results-empty">
+                                        <i class="fas fa-meh"></i>
+                                        <span>No specific outcome recorded.</span>
+                                    </div>
+                                    {{/unless}}
+                                    {{/unless}}
+
+                                    {{/if}}
+                                </div>
+                                {{else}}
+                                <div class="sdx-results-empty">
+                                    <i class="fas fa-question"></i>
+                                    <span>No results yet</span>
+                                </div>
+                                {{/if}}
+                            </div>
+                        </div>
+                    </div>
+
+                    {{!-- Card footer with controls --}}
+                    <div class="sdx-carousing-card-footer">
+                        {{#if this.hasDrop}}
+                        <div class="sdx-carousing-card-stats">
+                            <span
+                                class="sdx-carousing-card-gp {{#if ../hasSelectedTier}}{{#if this.canAfford}}can-afford{{else}}cannot-afford{{/if}}{{/if}}">
+                                <i class="fas fa-coins"></i> {{this.actorGp}} GP
+                            </span>
+                            <span class="sdx-carousing-card-bonus"
+                                title="{{localize 'SHADOWDARK_EXTRAS.carousing.total_bonus_hint'}}">
+                                <i class="fas fa-dice-d20"></i>
+                                {{#if ../hasSelectedTier}}+{{this.totalBonus}}{{#if this.modifiers.outcome}}<span
+                                    class="sdx-modifier-display">
+                                    {{this.modifiers.outcome}}</span>{{/if}}{{else}}+{{this.renown}}{{/if}}
+                            </span>
+                        </div>
+                        {{/if}}
+
+                        {{!-- Flip button (only if has result) --}}
+                        {{#if this.result}}
+                        <button type="button" class="sdx-carousing-flip-btn" data-action="flip-card"
+                            data-participant-id="{{this.participantId}}">
+                            <i class="fas fa-sync-alt"></i>
+                            <span class="sdx-flip-show-results">{{localize
+                                "SHADOWDARK_EXTRAS.carousing.show_results"}}</span>
+                            <span class="sdx-flip-show-actor">{{localize
+                                "SHADOWDARK_EXTRAS.carousing.show_actor"}}</span>
+                        </button>
+                        {{/if}}
+
+                        <div class="sdx-carousing-card-buttons">
+                            {{#if this.isCurrentUser}}
+                            {{!-- Change character button --}}
+                            <button type="button" class="sdx-carousing-change-btn" data-action="change-character"
+                                data-participant-id="{{this.participantId}}">
+                                <i class="fas fa-user-edit"></i>
+                                {{#if this.hasDrop}}
+                                {{localize "SHADOWDARK_EXTRAS.carousing.change_character"}}
+                                {{else}}
+                                {{localize "SHADOWDARK_EXTRAS.carousing.select_character"}}
+                                {{/if}}
+                            </button>
+                            {{/if}}
+
+                            {{!-- Confirm/Unconfirm button (GM can confirm virtual/managed ones) --}}
+                            {{#if ../hasSelectedTier}}
+                            {{#if this.hasDrop}}
+                            {{#unless this.result}}
+                            {{#if this.canAfford}}
+                            {{#if this.isConfirmed}}
+                            <button type="button" class="sdx-carousing-confirm-btn confirmed"
+                                data-action="unconfirm-carousing" data-participant-id="{{this.participantId}}">
+                                <i class="fas fa-check"></i> {{localize "SHADOWDARK_EXTRAS.carousing.confirmed"}}
+                            </button>
+                            {{else}}
+                            <button type="button" class="sdx-carousing-confirm-btn" data-action="confirm-carousing"
+                                data-participant-id="{{this.participantId}}">
+                                {{localize "SHADOWDARK_EXTRAS.carousing.accept_pay"}}
+                            </button>
+                            {{/if}}
+                            {{/if}}
+                            {{/unless}}
+                            {{/if}}
+                            {{/if}}
+                        </div>
+                    </div>
+                </div>
+                {{/each}}
+            </div>
+
+            {{#if isGM}}
+            {{#if hasAvailableActors}}
+            <div class="sdx-carousing-available-actors">
+                <h3><i class="fas fa-plus-circle"></i> Add Offline/Unassigned Actors</h3>
+                <div class="sdx-available-actors-grid">
+                    {{#each availableActors}}
+                    <div class="sdx-available-actor-item" data-action="add-gm-actor" data-actor-id="{{this.id}}"
+                        title="Add {{this.name}}">
+                        <img src="{{this.img}}" alt="{{this.name}}">
+                        <span class="sdx-actor-name">{{this.name}}</span>
+                    </div>
+                    {{/each}}
+                </div>
+            </div>
+            {{/if}}
+            {{/if}}
+
+            {{else}}
+            <div class="sdx-carousing-no-players">
+                <i class="fas fa-user-slash fa-3x"></i>
+                <p>{{localize "SHADOWDARK_EXTRAS.carousing.no_players"}}</p>
+
+                {{#if isGM}}
+                {{#if hasAvailableActors}}
+                <div class="sdx-carousing-available-actors">
+                    <h3><i class="fas fa-plus-circle"></i> Add Offline/Unassigned Actors</h3>
+                    <div class="sdx-available-actors-grid">
+                        {{#each availableActors}}
+                        <div class="sdx-available-actor-item" data-action="add-gm-actor" data-actor-id="{{this.id}}"
+                            title="Add {{this.name}}">
+                            <img src="{{this.img}}" alt="{{this.name}}">
+                            <span class="sdx-actor-name">{{this.name}}</span>
+                        </div>
+                        {{/each}}
+                    </div>
+                </div>
+                {{/if}}
+                {{/if}}
+            </div>
+            {{/if}}
+
+
+            {{!-- Session complete message --}}
+            {{#if (eq phase "complete")}}
+            <div class="sdx-carousing-phase-complete">
+                <p><i class="fas fa-check-circle"></i> {{localize "SHADOWDARK_EXTRAS.carousing.session_complete"}}</p>
+            </div>
+            {{/if}}
+        </main>
+    </div>
+</div>

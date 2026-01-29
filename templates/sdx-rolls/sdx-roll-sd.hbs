@@ -1,0 +1,77 @@
+﻿<div id="sdx-roll-sd">
+
+    <div class="end-sdx-roll {{#unless isGM}}sdx-hidden{{/unless}}">
+        <i class="fa-duotone fa-times"></i>
+    </div>
+    <button class="end-sdx-roll-manual sdx-hidden-2">{{localize "SHADOWDARK_EXTRAS.SDXROLLS.completeRoll"}}</button>
+
+    <div class="sdx-roll-container">
+        <h1 class="intro-text">
+            {{introLabel}}
+        </h1>
+
+        <h1 class="outro-text sdx-hidden">
+            {{localize "SHADOWDARK_EXTRAS.SDXROLLS.success"}}!
+        </h1>
+
+        <div class="actor-cards sdx-hidden">
+            {{#each actors as |actor|}}
+            <div class="actor-card" data-uuid="{{actor.uuid}}">
+                <h3>
+                    {{#if actor.isOwner}}
+                        {{actor.name}}
+                    {{else}}
+                        {{#if ../options.hideNames}}
+                        ???
+                        {{else}}
+                            {{actor.name}}
+                        {{/if}}
+                    {{/if}}
+                </h3>
+                <img src="{{actor.img}}" alt="">
+                <div class="roll-badge">
+                    <span class="dis">DIS</span>
+                    <div class="roll-result">
+                        {{#if actor.isOwner}}
+                        <i class="roll fa-duotone fa-dice-d20"></i>
+                        {{/if}}
+                        <label class="result sdx-hidden"></label>
+                    </div>
+                    <span class="adv">ADV</span>
+                </div>
+            </div>
+            {{/each}}
+            {{#if contestants.length}}
+            <span class="actor-card vs">VS</span>
+            {{/if}}
+            {{#each contestants as |actor|}}
+            <div class="actor-card" data-uuid="{{actor.uuid}}">
+                <h3>
+                    {{#if actor.isOwner}}
+                        {{actor.name}}
+                    {{else}}
+                        {{#if ../options.hideNames}}
+                        ???
+                        {{else}}
+                            {{actor.name}}
+                        {{/if}}
+                    {{/if}}
+                </h3>
+                <img src="{{actor.img}}" alt="">
+                <div class="roll-badge">
+                    <span class="dis">DIS</span>
+                    <div class="roll-result">
+                        {{#if actor.isOwner}}
+                        <i class="roll fa-duotone fa-dice-d20"></i>
+                        {{/if}}
+                        <label class="result sdx-hidden"></label>
+                    </div>
+                    <span class="adv">ADV</span>
+                </div>
+            </div>
+            {{/each}}
+        </div>
+
+    </div>
+
+</div>

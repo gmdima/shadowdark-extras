@@ -1,0 +1,130 @@
+<div class="tom-character-editor">
+  
+  <!-- ═══════════════════════════════════════════════════════════════
+       HEADER
+       ═══════════════════════════════════════════════════════════════ -->
+  <header class="tom-editor-header">
+    <img src="{{character.image}}" class="tom-editor-avatar">
+    <div class="tom-editor-title">
+      <input type="text" name="name" value="{{character.name}}" placeholder="Character Name">
+    </div>
+  </header>
+
+  <!-- ═══════════════════════════════════════════════════════════════
+       TABS
+       ═══════════════════════════════════════════════════════════════ -->
+  <nav class="tom-tabs">
+    <a class="item {{#if (eq activeTab 'identity')}}active{{/if}}" data-tab="identity" data-action="tab-switch">
+      <i class="fas fa-id-card"></i> Identity
+    </a>
+    <a class="item {{#if (eq activeTab 'emotions')}}active{{/if}}" data-tab="emotions" data-action="tab-switch">
+      <i class="fas fa-theater-masks"></i> Emotions
+    </a>
+  </nav>
+
+  <!-- ═══════════════════════════════════════════════════════════════
+       CONTENT
+       ═══════════════════════════════════════════════════════════════ -->
+  <section class="tom-editor-content">
+    
+    <!-- IDENTITY TAB -->
+    <div class="tab {{#if (eq activeTab 'identity')}}active{{/if}}" data-tab="identity">
+      <div class="form-group">
+        <label>Tags <span class="tom-hint">(Press Enter to add)</span></label>
+        <div class="tom-tag-input-container">
+          {{#each character.tags}}
+            <span class="tom-tag-chip">{{this}} <i class="fas fa-times" data-action="remove-tag" data-tag="{{this}}"></i></span>
+          {{/each}}
+          <input type="text" class="tom-tag-input" placeholder="Add tags..." data-action="tag-input">
+        </div>
+      </div>
+
+      {{#if isGM}}
+        <div class="form-group tom-lock-setting">
+          <label>
+            <i class="fas fa-lock"></i> Emotion Lock
+            <span class="tom-hint">(When locked, only GM can change emotions in Player View)</span>
+          </label>
+          <button class="tom-btn tom-lock-toggle {{#if locked}}active{{/if}}" data-action="toggle-lock" title="{{#if locked}}Unlock emotions{{else}}Lock emotions{{/if}}">
+            <i class="fas {{#if locked}}fa-lock{{else}}fa-lock-open{{/if}}"></i>
+            <span>{{#if locked}}Locked{{else}}Unlocked{{/if}}</span>
+          </button>
+        </div>
+
+        <div class="form-group tom-permission-setting">
+          <label>
+            <i class="fas fa-user-shield"></i> Player Permissions
+            <span class="tom-hint">(Assign which players can edit this character)</span>
+          </label>
+          <button class="tom-btn" data-action="open-permissions">
+            <i class="fas fa-users-cog"></i> Manage Permissions
+          </button>
+        </div>
+
+        <div class="tom-danger-zone">
+          <h3>Danger Zone</h3>
+          <button class="tom-btn tom-btn-danger" data-action="delete-character">
+            <i class="fas fa-trash"></i> Delete Character
+          </button>
+        </div>
+      {{/if}}
+    </div>
+
+    <!-- EMOTIONS TAB -->
+    <div class="tab {{#if (eq activeTab 'emotions')}}active{{/if}}" data-tab="emotions">
+      <div class="tom-emotions-list">
+        {{#each emotions}}
+          <div class="tom-emotion-row">
+            <img src="{{path}}" class="tom-emotion-thumb">
+            <div class="tom-emotion-details">
+              <input type="text" value="{{key}}" data-action="rename-emotion" data-original-key="{{key}}">
+              <div class="tom-emotion-path">{{path}}</div>
+            </div>
+            <div class="tom-emotion-actions">
+              <button class="tom-icon-btn delete" title="Delete Emotion" data-action="delete-emotion" data-key="{{key}}">
+                <i class="fas fa-trash"></i>
+              </button>
+            </div>
+          </div>
+        {{/each}}
+      </div>
+
+      <div class="tom-add-emotion">
+        <h4>Add New Emotion</h4>
+
+        <div class="tom-add-emotion-form">
+          {{!-- Row 1: Image URL (full width) --}}
+          <div class="tom-add-emotion-url-row">
+            <label><i class="fas fa-image"></i> Image</label>
+            <div class="tom-file-input-wrapper">
+               <input type="text" name="newEmotionPath" placeholder="{{#if canBrowseFiles}}Click icon to browse or paste URL{{else}}Paste image URL here (e.g. https://...){{/if}}">
+               {{#if canBrowseFiles}}
+                 <button class="file-picker" data-type="image" data-target="newEmotionPath" title="Browse Files">
+                   <i class="fas fa-folder-open"></i>
+                 </button>
+               {{/if}}
+            </div>
+          </div>
+
+          {{!-- Row 2: Emotion Name + Add Button --}}
+          <div class="tom-add-emotion-name-row">
+            <label><i class="fas fa-tag"></i> Name</label>
+            <input type="text" name="newEmotionName" placeholder="e.g. Happy, Sad, Angry...">
+            <button class="tom-btn tom-btn-primary" data-action="add-emotion">
+              <i class="fas fa-plus"></i> Add
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════════════
+       FOOTER
+       ═══════════════════════════════════════════════════════════════ -->
+  <footer class="tom-editor-footer">
+    <button class="tom-btn" data-action="close">Cancel</button>
+    <button class="tom-btn tom-btn-primary" data-action="save">Save Changes</button>
+  </footer>
+</div>

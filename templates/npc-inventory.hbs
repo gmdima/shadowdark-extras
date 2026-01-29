@@ -1,0 +1,136 @@
+<section class="tab tab-inventory shadowdark-extras-npc-inventory" data-group="primary" data-tab="tab-inventory">
+	<div class="inventory-grid">
+		<div class="inventory-main">
+			<!-- Carried Items -->
+			<div class="SD-box">
+				<div class="header">
+					<label>
+						<a class="fa-solid fa-square-plus" data-action="npc-create-item"
+							style="margin:0px 8px 0px 4px"></a>
+						{{localize "SHADOWDARK_EXTRAS.sheet.npc.inventory.items"}}
+					</label>
+					<span></span>
+				</div>
+				<div class="content">
+					<ol class="SD-list item-list npc-item-list">
+						<li class="header">
+							<div class="item-name">
+								{{localize "SHADOWDARK_EXTRAS.sheet.npc.inventory.item_name"}}
+							</div>
+							<div class="quantity">
+								{{localize "SHADOWDARK_EXTRAS.sheet.npc.inventory.qty"}}
+							</div>
+							<div class="actions"></div>
+						</li>
+
+						{{#each npcInventory as |item|}}
+						<li class="item" data-item-id="{{item._id}}" data-uuid="{{item.uuid}}" draggable="true">
+							<div class="item-image" style="background-image: url({{item.img}})">
+								<i class="fas fa-comment fa-lg"></i>
+							</div>
+							<a class="item-name" data-action="show-details">
+								{{item.name}}
+								{{#if item.lightSourceUsed}}
+								<em>{{localize "SHADOWDARK.inventory.item.light_used"}}</em>
+								{{/if}}
+							</a>
+
+							<div class="quantity">
+								{{#if item.showQuantity}}
+								{{#if ../owner}}
+								<a data-action="npc-item-decrement" data-item-id="{{item._id}}"
+									data-tooltip="{{localize 'SHADOWDARK.inventory.tooltip.item_decrement'}}">
+									<i class="fa-regular fa-minus fa-xs"></i>
+								</a>
+								{{/if}}
+								{{item.system.quantity}}/{{item.system.slots.per_slot}}
+								{{#if ../owner}}
+								<a data-action="npc-item-increment" data-item-id="{{item._id}}"
+									data-tooltip="{{localize 'SHADOWDARK.inventory.tooltip.item_increment'}}">
+									<i class="fa-regular fa-plus fa-xs"></i>
+								</a>
+								{{/if}}
+								{{else}}
+								&nbsp;
+								{{/if}}
+							</div>
+
+							<div class="actions"></div>
+						</li>
+						{{/each}}
+					</ol>
+				</div>
+			</div>
+
+			<!-- Treasure Items -->
+			{{#if npcTreasure.length}}
+			<div class="SD-box">
+				<div class="header">
+					<label>{{localize "SHADOWDARK_EXTRAS.sheet.npc.inventory.treasure"}}</label>
+					<span></span>
+				</div>
+				<div class="content">
+					<ol class="SD-list item-list npc-item-list">
+						{{#each npcTreasure as |item|}}
+						<li class="item" data-item-id="{{item._id}}" data-uuid="{{item.uuid}}" draggable="true">
+							<div class="item-image" style="background-image: url({{item.img}})">
+								<i class="fas fa-comment fa-lg"></i>
+							</div>
+							<a class="item-name" data-action="show-details">
+								{{item.name}}
+							</a>
+							<div class="quantity">
+								{{#if item.showQuantity}}
+								{{item.system.quantity}}
+								{{else}}
+								&nbsp;
+								{{/if}}
+							</div>
+							<div class="actions"></div>
+						</li>
+						{{/each}}
+					</ol>
+				</div>
+			</div>
+			{{/if}}
+		</div>
+
+		<!-- Sidebar with Coins -->
+		<div class="inventory-sidebar">
+			<div class="SD-box npc-slot-summary">
+				<div class="header">
+					<label>{{localize "SHADOWDARK_EXTRAS.sheet.npc.inventory.slots_used"}}</label>
+					<span></span>
+				</div>
+				<div class="content">
+					<div class="npc-slot-total">{{npcSlotsUsed}}</div>
+					<div class="npc-slot-breakdown">
+						{{localize "SHADOWDARK_EXTRAS.sheet.npc.inventory.items"}}: {{npcItemSlots}} · {{localize
+						"SHADOWDARK_EXTRAS.sheet.npc.inventory.coins"}}: {{npcCoinSlots}}
+					</div>
+				</div>
+			</div>
+			<div class="SD-box">
+				<div class="header">
+					<label>{{localize "SHADOWDARK_EXTRAS.sheet.npc.inventory.coins"}}</label>
+					<span></span>
+				</div>
+				<div class="content">
+					<div class="SD-grid center centered npc-coins-grid">
+						<input type="number" name="system.coins.gp" value="{{npcCoins.gp}}" class="coin-value"
+							placeholder="0" data-dtype="Number" min="0">
+						<h3>{{localize "SHADOWDARK.coins.gp"}}</h3>
+
+						<input type="number" name="system.coins.sp" value="{{npcCoins.sp}}" class="coin-value"
+							placeholder="0" data-dtype="Number" min="0">
+						<h3>{{localize "SHADOWDARK.coins.sp"}}</h3>
+
+						<input type="number" name="system.coins.cp" value="{{npcCoins.cp}}" class="coin-value"
+							placeholder="0" data-dtype="Number" min="0">
+						<h3>{{localize "SHADOWDARK.coins.cp"}}</h3>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</section>

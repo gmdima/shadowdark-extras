@@ -1,0 +1,61 @@
+<div class="sdx-medkit-content">
+    <div class="sdx-medkit-header">
+        <div class="header-title">
+            <i class="fas fa-kit-medical"></i>
+            <h2>{{actor.name}}</h2>
+        </div>
+        <p class="header-desc">Update your items to the enhanced versions from Shadowdark Extras.</p>
+    </div>
+
+    <div class="sdx-medkit-summary">
+        {{#if hasUpdates}}
+        <div class="sdx-medkit-section warning">
+            <div class="section-header">
+                <h3><i class="fas fa-exclamation-circle"></i> Updates Available ({{updateCount}})</h3>
+                <button type="button" class="sdx-medkit-update-all-btn" data-action="updateAll">
+                    <i class="fas fa-download"></i> Update All
+                </button>
+            </div>
+            <div class="sdx-medkit-list">
+                {{#each updatesAvailable}}
+                <div class="sdx-medkit-item">
+                    <img src="{{this.img}}" alt="{{this.name}}">
+                    <div class="sdx-medkit-item-details">
+                        <span class="name">{{this.name}}</span>
+                        <span class="source" style="color: #ffaa00;">{{this.statusLabel}}</span>
+                        <span class="source" style="font-size: 0.7em;">Src: {{this.currentSource}}</span>
+                    </div>
+                    <button type="button" class="sdx-medkit-update-btn" data-action="updateItem"
+                        data-item-id="{{this.id}}" data-uuid="{{this.compendiumUuid}}" title="Update Item">
+                        <i class="fas fa-sync"></i> Update
+                    </button>
+                </div>
+                {{/each}}
+            </div>
+        </div>
+        {{else}}
+        <div class="sdx-medkit-section success">
+            <h3><i class="fas fa-check-circle"></i> All Scanned Items Up to Date</h3>
+            <p class="note">No updates found in Shadowdark Extras compendium for your current items.</p>
+        </div>
+        {{/if}}
+
+        {{#if hasUpToDate}}
+        <div class="sdx-medkit-section info">
+            <h3><i class="fas fa-check-double"></i> Up to Date ({{upToDate.length}})</h3>
+            <div class="sdx-medkit-list">
+                {{#each upToDate}}
+                <div class="sdx-medkit-item">
+                    <img src="{{this.img}}" alt="{{this.name}}">
+                    <div class="sdx-medkit-item-details">
+                        <span class="name">{{this.name}}</span>
+                        <span class="source">Source: Shadowdark Extras</span>
+                    </div>
+                    <span class="sdx-medkit-status"><i class="fas fa-check"></i></span>
+                </div>
+                {{/each}}
+            </div>
+        </div>
+        {{/if}}
+    </div>
+</div>

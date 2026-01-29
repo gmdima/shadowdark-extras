@@ -1,0 +1,30 @@
+<form class="sdx-formation-spawner">
+    <div class="formation-header">
+        <div class="party-pool">
+            {{#each pool as |member|}}
+            <div class="pool-member" data-uuid="{{member.uuid}}" draggable="true">
+                <img src="{{member.img}}" title="{{member.name}}" />
+            </div>
+            {{/each}}
+        </div>
+        <div class="spawn-btn" title="{{localize 'SDX.formationSpawner.spawn'}}" draggable="true">
+            <i class="fa-solid fa-users"></i>
+        </div>
+    </div>
+
+    <div class="formation-grid">
+        {{{gridHtml}}}
+    </div>
+
+    <div class="formation-footer">
+        <select name="gridSize" class="grid-size-select">
+            <option value="5" {{#if (eq gridSize 5)}}selected{{/if}}>5×5</option>
+            <option value="7" {{#if (eq gridSize 7)}}selected{{/if}}>7×7</option>
+            <option value="9" {{#if (eq gridSize 9)}}selected{{/if}}>9×9</option>
+        </select>
+        <button type="button" class="rotate-btn">
+            <i class="fa-solid fa-rotate-right"></i>
+            {{localize "SDX.formationSpawner.rotate"}}
+        </button>
+    </div>
+</form>

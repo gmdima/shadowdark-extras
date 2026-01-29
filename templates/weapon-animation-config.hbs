@@ -1,0 +1,309 @@
+<div class="weapon-animation-config-content">
+	<div class="form-group">
+		<label>
+			<input type="checkbox" class="weapon-animation-enabled" {{#if config.enabled}}checked{{/if}}>
+			{{localize "SHADOWDARK_EXTRAS.weaponAnimation.enabled"}}
+		</label>
+	</div>
+
+	<div class="weapon-animation-settings" style="{{#unless config.enabled}}display: none;{{/unless}}">
+		<nav class="sheet-tabs tabs" data-group="primary">
+			<a class="item active" data-tab="general" data-group="primary" data-action="tab"><i class="fas fa-cog"></i>
+				{{localize
+				"SHADOWDARK_EXTRAS.weaponAnimation.tabs.general"}}</a>
+			<a class="item" data-tab="filters" data-group="primary" data-action="tab"><i class="fas fa-filter"></i>
+				{{localize
+				"SHADOWDARK_EXTRAS.weaponAnimation.tabs.filters"}}</a>
+		</nav>
+
+		<div class="tab-content">
+			<div class="tab active" data-group="primary" data-tab="general">
+				{{#if hasImages}}
+				<div class="form-group">
+					<label>{{localize "SHADOWDARK_EXTRAS.weaponAnimation.imageSelect"}}</label>
+
+					{{!-- Current Selection Display --}}
+					<div class="weapon-image-current" data-action="open-image-picker">
+						{{#if config.imagePath}}
+						<img src="{{config.imagePath}}" alt="Selected">
+						<span class="weapon-image-name">{{config.imageName}}</span>
+						{{else}}
+						<i class="fas fa-image"></i>
+						<span class="weapon-image-name">-- {{localize "SHADOWDARK_EXTRAS.weaponAnimation.selectImage"}}
+							--</span>
+						{{/if}}
+						<i class="fas fa-folder-open weapon-image-browse-icon"></i>
+					</div>
+					<input type="hidden" class="weapon-image-select" value="{{config.imagePath}}">
+
+					{{!-- Image Browser Panel (collapsed by default) --}}
+					<div class="weapon-image-browser" style="display: none;">
+						{{!-- Search Filter --}}
+						<div class="weapon-image-search">
+							<i class="fas fa-search"></i>
+							<input type="text" class="weapon-image-filter"
+								placeholder="{{localize 'SHADOWDARK_EXTRAS.weaponAnimation.searchImages'}}">
+							<span class="weapon-image-count">{{imageCount}} images</span>
+						</div>
+
+						{{!-- Categories --}}
+						<div class="weapon-image-categories">
+							{{#each sortedCategories}}
+							<div class="weapon-image-category" data-category="{{this}}">
+								<div class="weapon-image-category-header">
+									<i class="fas fa-chevron-right category-toggle"></i>
+									<i class="fas fa-folder category-icon"></i>
+									<span class="category-name">{{this}}</span>
+									<span class="category-count">({{lookup ../categoryCounts this}})</span>
+								</div>
+								<div class="weapon-image-grid" style="display: none;">
+									{{#each (lookup ../imagesByCategory this)}}
+									<div class="weapon-image-thumb {{#if (eq this.path ../../../config.imagePath)}}selected{{/if}}"
+										data-path="{{this.path}}" data-name="{{this.name}}" title="{{this.name}}">
+										<img src="{{this.path}}" alt="{{this.name}}" loading="lazy">
+									</div>
+									{{/each}}
+								</div>
+							</div>
+							{{/each}}
+						</div>
+					</div>
+				</div>
+
+				<div class="form-group weapon-preview-container">
+					<label>{{localize "SHADOWDARK_EXTRAS.weaponAnimation.preview"}}</label>
+					<div class="weapon-preview-box"
+						style="background-image: url('{{tokenImg}}'); background-size: cover; background-position: center; position: relative;">
+						{{#if config.imagePath}}
+						<img class="weapon-preview-img" src="{{config.imagePath}}" alt="Preview"
+							style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain;">
+						<div class="weapon-preview-placeholder" style="display: none;">
+							<i class="fas fa-sword"></i>
+						</div>
+						{{else}}
+						<img class="weapon-preview-img" src="" alt="Preview"
+							style="display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain;">
+						<div class="weapon-preview-placeholder">
+							<i class="fas fa-sword"></i>
+						</div>
+						{{/if}}
+					</div>
+				</div>
+
+				<hr>
+
+				<div class="form-group slider-group">
+					<label>{{localize "SHADOWDARK_EXTRAS.weaponAnimation.offsetX"}}</label>
+					<div class="slider-container">
+						<input type="range" name="offsetX" min="-1" max="1" step="0.05" value="{{config.offsetX}}">
+						<span class="slider-value">{{config.offsetX}}</span>
+					</div>
+				</div>
+
+				<div class="form-group slider-group">
+					<label>{{localize "SHADOWDARK_EXTRAS.weaponAnimation.offsetY"}}</label>
+					<div class="slider-container">
+						<input type="range" name="offsetY" min="-1" max="1" step="0.05" value="{{config.offsetY}}">
+						<span class="slider-value">{{config.offsetY}}</span>
+					</div>
+				</div>
+
+				<div class="form-group slider-group">
+					<label>{{localize "SHADOWDARK_EXTRAS.weaponAnimation.scale"}}</label>
+					<div class="slider-container">
+						<input type="range" name="scale" min="0.5" max="2" step="0.1" value="{{config.scale}}">
+						<span class="slider-value">{{config.scale}}</span>
+					</div>
+				</div>
+
+				<div class="form-group slider-group">
+					<label>{{localize "SHADOWDARK_EXTRAS.weaponAnimation.rotation"}}</label>
+					<div class="slider-container">
+						<input type="range" name="rotation" min="0" max="360" step="5" value="{{config.rotation}}">
+						<span class="slider-value">{{config.rotation}}°</span>
+					</div>
+				</div>
+
+				<div class="form-group">
+					<label>{{localize "SHADOWDARK_EXTRAS.weaponAnimation.animationType"}}</label>
+					<select name="animationType">
+						{{#each animationTypes}}
+						<option value="{{@key}}" {{#if (eq @key ../config.animationType)}}selected{{/if}}>
+							{{localize this}}
+						</option>
+						{{/each}}
+					</select>
+				</div>
+
+			</div>
+
+			<div class="tab" data-group="primary" data-tab="filters">
+				<fieldset>
+					<legend>{{localize "SHADOWDARK_EXTRAS.weaponAnimation.filterColorMatrix"}}</legend>
+					<div class="form-group slider-group">
+						<label>{{localize "SHADOWDARK_EXTRAS.weaponAnimation.hue"}}</label>
+						<div class="slider-container">
+							<input type="range" name="filters.colorMatrix.hue" min="0" max="360" step="5"
+								value="{{config.filters.colorMatrix.hue}}">
+							<span class="slider-value">{{config.filters.colorMatrix.hue}}°</span>
+						</div>
+					</div>
+					<div class="form-group slider-group">
+						<label>{{localize "SHADOWDARK_EXTRAS.weaponAnimation.brightness"}}</label>
+						<div class="slider-container">
+							<input type="range" name="filters.colorMatrix.brightness" min="0" max="3" step="0.1"
+								value="{{config.filters.colorMatrix.brightness}}">
+							<span class="slider-value">{{config.filters.colorMatrix.brightness}}</span>
+						</div>
+					</div>
+					<div class="form-group slider-group">
+						<label>{{localize "SHADOWDARK_EXTRAS.weaponAnimation.contrast"}}</label>
+						<div class="slider-container">
+							<input type="range" name="filters.colorMatrix.contrast" min="0" max="3" step="0.1"
+								value="{{config.filters.colorMatrix.contrast}}">
+							<span class="slider-value">{{config.filters.colorMatrix.contrast}}</span>
+						</div>
+					</div>
+					<div class="form-group slider-group">
+						<label>{{localize "SHADOWDARK_EXTRAS.weaponAnimation.saturate"}}</label>
+						<div class="slider-container">
+							<input type="range" name="filters.colorMatrix.saturate" min="-1" max="1" step="0.1"
+								value="{{config.filters.colorMatrix.saturate}}">
+							<span class="slider-value">{{config.filters.colorMatrix.saturate}}</span>
+						</div>
+					</div>
+				</fieldset>
+
+				<fieldset>
+					<legend>{{localize "SHADOWDARK_EXTRAS.weaponAnimation.filterGlow"}}</legend>
+					<div class="form-group">
+						<label>
+							<input type="checkbox" name="filters.glow.enabled" {{#if
+								config.filters.glow.enabled}}checked{{/if}}>
+							{{localize "SHADOWDARK_EXTRAS.weaponAnimation.enabled"}}
+						</label>
+					</div>
+					<div class="glow-settings" style="{{#unless config.filters.glow.enabled}}display: none;{{/unless}}">
+						<div class="form-group slider-group">
+							<label>{{localize "SHADOWDARK_EXTRAS.weaponAnimation.glowDistance"}}</label>
+							<div class="slider-container">
+								<input type="range" name="filters.glow.distance" min="0" max="50" step="1"
+									value="{{config.filters.glow.distance}}">
+								<span class="slider-value">{{config.filters.glow.distance}}px</span>
+							</div>
+						</div>
+						<div class="form-group slider-group">
+							<label>{{localize "SHADOWDARK_EXTRAS.weaponAnimation.glowOuterStrength"}}</label>
+							<div class="slider-container">
+								<input type="range" name="filters.glow.outerStrength" min="0" max="20" step="1"
+									value="{{config.filters.glow.outerStrength}}">
+								<span class="slider-value">{{config.filters.glow.outerStrength}}</span>
+							</div>
+						</div>
+						<div class="form-group slider-group">
+							<label>{{localize "SHADOWDARK_EXTRAS.weaponAnimation.glowInnerStrength"}}</label>
+							<div class="slider-container">
+								<input type="range" name="filters.glow.innerStrength" min="0" max="20" step="1"
+									value="{{config.filters.glow.innerStrength}}">
+								<span class="slider-value">{{config.filters.glow.innerStrength}}</span>
+							</div>
+						</div>
+						<div class="form-group">
+							<label>{{localize "SHADOWDARK_EXTRAS.weaponAnimation.glowColor"}}</label>
+							<div class="form-fields">
+								<input type="color" value="{{config.filters.glow.color}}"
+									data-edit="filters.glow.color">
+								<input type="text" name="filters.glow.color" value="{{config.filters.glow.color}}">
+							</div>
+						</div>
+						<div class="form-group slider-group">
+							<label>{{localize "SHADOWDARK_EXTRAS.weaponAnimation.glowQuality"}}</label>
+							<div class="slider-container">
+								<input type="range" name="filters.glow.quality" min="0.1" max="1.0" step="0.1"
+									value="{{config.filters.glow.quality}}">
+								<span class="slider-value">{{config.filters.glow.quality}}</span>
+							</div>
+						</div>
+						<div class="form-group">
+							<label>
+								<input type="checkbox" name="filters.glow.knockout" {{#if
+									config.filters.glow.knockout}}checked{{/if}}>
+								{{localize "SHADOWDARK_EXTRAS.weaponAnimation.glowKnockout"}}
+							</label>
+						</div>
+					</div>
+				</fieldset>
+
+				<fieldset>
+					<legend>{{localize "SHADOWDARK_EXTRAS.weaponAnimation.filterDropShadow"}}</legend>
+					<div class="form-group">
+						<label>
+							<input type="checkbox" name="filters.dropShadow.enabled" {{#if
+								config.filters.dropShadow.enabled}}checked{{/if}}>
+							{{localize "SHADOWDARK_EXTRAS.weaponAnimation.enabled"}}
+						</label>
+					</div>
+					<div class="drop-shadow-settings"
+						style="{{#unless config.filters.dropShadow.enabled}}display: none;{{/unless}}">
+						<div class="form-group">
+							<label>{{localize "SHADOWDARK_EXTRAS.weaponAnimation.dropShadowColor"}}</label>
+							<div class="form-fields">
+								<input type="color" value="{{config.filters.dropShadow.color}}"
+									data-edit="filters.dropShadow.color">
+								<input type="text" name="filters.dropShadow.color"
+									value="{{config.filters.dropShadow.color}}">
+							</div>
+						</div>
+						<div class="form-group slider-group">
+							<label>{{localize "SHADOWDARK_EXTRAS.weaponAnimation.dropShadowAlpha"}}</label>
+							<div class="slider-container">
+								<input type="range" name="filters.dropShadow.alpha" min="0" max="1" step="0.1"
+									value="{{config.filters.dropShadow.alpha}}">
+								<span class="slider-value">{{config.filters.dropShadow.alpha}}</span>
+							</div>
+						</div>
+						<div class="form-group slider-group">
+							<label>{{localize "SHADOWDARK_EXTRAS.weaponAnimation.dropShadowBlur"}}</label>
+							<div class="slider-container">
+								<input type="range" name="filters.dropShadow.blur" min="0" max="10" step="0.5"
+									value="{{config.filters.dropShadow.blur}}">
+								<span class="slider-value">{{config.filters.dropShadow.blur}}</span>
+							</div>
+						</div>
+						<div class="form-group slider-group">
+							<label>{{localize "SHADOWDARK_EXTRAS.weaponAnimation.dropShadowDistance"}}</label>
+							<div class="slider-container">
+								<input type="range" name="filters.dropShadow.distance" min="0" max="50" step="1"
+									value="{{config.filters.dropShadow.distance}}">
+								<span class="slider-value">{{config.filters.dropShadow.distance}}px</span>
+							</div>
+						</div>
+						<div class="form-group slider-group">
+							<label>{{localize "SHADOWDARK_EXTRAS.weaponAnimation.dropShadowRotation"}}</label>
+							<div class="slider-container">
+								<input type="range" name="filters.dropShadow.rotation" min="0" max="360" step="5"
+									value="{{config.filters.dropShadow.rotation}}">
+								<span class="slider-value">{{config.filters.dropShadow.rotation}}°</span>
+							</div>
+						</div>
+					</div>
+				</fieldset>
+			</div>
+		</div>
+		{{else}}
+		<div class="notification warning">
+			<i class="fas fa-exclamation-triangle"></i>
+			{{localize "SHADOWDARK_EXTRAS.weaponAnimation.noImages"}}
+		</div>
+		{{/if}}
+	</div>
+
+	<footer class="sheet-footer flexrow">
+		<button type="button" data-action="save">
+			<i class="fas fa-save"></i> {{localize "SHADOWDARK_EXTRAS.weaponAnimation.save"}}
+		</button>
+		<button type="button" data-action="cancel">
+			<i class="fas fa-times"></i> {{localize "SHADOWDARK_EXTRAS.weaponAnimation.cancel"}}
+		</button>
+	</footer>
+</div>

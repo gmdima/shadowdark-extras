@@ -1,0 +1,248 @@
+/* ================================================
+   SDX Icon Picker - Fullscreen Modal
+   ================================================ */
+
+/* Main Application - Fullscreen */
+.sdx-icon-picker-app {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    max-width: 100vw !important;
+    max-height: 100vh !important;
+    background: rgba(0, 0, 0, 0.95) !important;
+    border: none !important;
+    z-index: 10000 !important;
+}
+
+.sdx-icon-picker-app .window-header {
+    display: none !important;
+}
+
+.sdx-icon-picker-app .window-content {
+    padding: 0 !important;
+    overflow: hidden !important;
+    height: 100% !important;
+}
+
+/* Main Container */
+.sdx-icon-picker {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    font-family: 'Montserrat-medium', sans-serif;
+    color: #f0f0f0;
+}
+
+/* Header */
+.sdx-icon-picker .picker-header {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding: 12px 25px;
+    background: #1a1a1a;
+    border-bottom: 1px solid rgba(201, 170, 88, 0.3);
+    flex-shrink: 0;
+}
+
+/* Search Box */
+.sdx-icon-picker .search-box {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: 1;
+    max-width: 400px;
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 4px;
+    padding: 6px 15px;
+}
+
+.sdx-icon-picker .search-box i {
+    color: rgba(255, 255, 255, 0.4);
+}
+
+.sdx-icon-picker .search-box input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: #eee;
+    font-size: 14px;
+    outline: none;
+}
+
+/* Category Filter */
+.sdx-icon-picker .category-filter {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.sdx-icon-picker .category-filter select {
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 4px;
+    padding: 6px 12px;
+    color: #eee;
+    font-size: 13px;
+    min-width: 160px;
+}
+
+/* Result Count */
+.sdx-icon-picker .result-count {
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.5);
+    margin-left: auto;
+}
+
+/* Cancel Button */
+.sdx-icon-picker .cancel-btn {
+    background: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 20px;
+    cursor: pointer;
+    padding: 5px 10px;
+    transition: color 0.1s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.sdx-icon-picker .cancel-btn:hover {
+    color: #ff6b6b;
+}
+
+/* Icon Grid */
+.sdx-icon-picker .icon-grid {
+    flex: 1;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 12px;
+    padding: 20px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    align-content: start;
+    background: rgba(0, 0, 0, 0.2);
+}
+
+/* Individual Icon Item */
+.sdx-icon-picker .icon-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 10px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.1s, border-color 0.1s;
+}
+
+.sdx-icon-picker .icon-item:hover {
+    background: rgba(201, 170, 88, 0.12);
+    border-color: rgba(201, 170, 88, 0.4);
+}
+
+.sdx-icon-picker .icon-item img {
+    width: 44px;
+    height: 44px;
+    object-fit: contain;
+}
+
+.sdx-icon-picker .icon-item:hover img {
+    filter: invert(1);
+}
+
+.sdx-icon-picker .icon-item .icon-name {
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.4);
+    text-align: center;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    text-transform: capitalize;
+}
+
+.sdx-icon-picker .icon-item:hover .icon-name {
+    color: #fff;
+}
+
+/* No Results */
+.sdx-icon-picker .no-icons {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+    padding: 60px;
+    color: rgba(255, 255, 255, 0.3);
+}
+
+.sdx-icon-picker .no-icons i {
+    font-size: 40px;
+}
+
+/* Footer / Pagination */
+.sdx-icon-picker .picker-footer {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    padding: 12px 25px;
+    background: #111;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    flex-shrink: 0;
+}
+
+.sdx-icon-picker .picker-footer button {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 14px;
+    background: rgba(201, 170, 88, 0.15);
+    border: 1px solid rgba(201, 170, 88, 0.3);
+    border-radius: 4px;
+    color: #eee;
+    font-size: 13px;
+    cursor: pointer;
+    transition: none;
+}
+
+.sdx-icon-picker .picker-footer button:hover:not(:disabled) {
+    background: rgba(201, 170, 88, 0.25);
+    border-color: rgba(201, 170, 88, 0.5);
+}
+
+.sdx-icon-picker .picker-footer button:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.sdx-icon-picker .page-info {
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.6);
+}
+
+/* Scrollbar */
+.sdx-icon-picker .icon-grid::-webkit-scrollbar {
+    width: 12px;
+}
+
+.sdx-icon-picker .icon-grid::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.4);
+}
+
+.sdx-icon-picker .icon-grid::-webkit-scrollbar-thumb {
+    background: rgba(201, 170, 88, 0.5);
+    border-radius: 6px;
+}
+
+.sdx-icon-picker .icon-grid::-webkit-scrollbar-thumb:hover {
+    background: rgba(201, 170, 88, 0.7);
+}

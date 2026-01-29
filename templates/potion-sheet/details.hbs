@@ -1,0 +1,81 @@
+{{!-- Details Tab --}}
+<section class="tab-content {{#if tab.active}}active{{/if}}" data-tab="details">
+    {{!-- Cost Section --}}
+    <fieldset class="potion-fieldset">
+        <legend><i class="fas fa-coins"></i> {{localize "SHADOWDARK.item.cost"}}</legend>
+        <div class="form-group">
+            <label>Currency</label>
+            <div class="cost-grid">
+                <div class="cost-item">
+                    <input type="number" name="system.cost.gp" value="{{system.cost.gp}}" min="0" />
+                    <span>GP</span>
+                </div>
+                <div class="cost-item">
+                    <input type="number" name="system.cost.sp" value="{{system.cost.sp}}" min="0" />
+                    <span>SP</span>
+                </div>
+                <div class="cost-item">
+                    <input type="number" name="system.cost.cp" value="{{system.cost.cp}}" min="0" />
+                    <span>CP</span>
+                </div>
+            </div>
+        </div>
+    </fieldset>
+
+    {{!-- Slots Section --}}
+    <fieldset class="potion-fieldset">
+        <legend><i class="fas fa-weight-hanging"></i> {{localize "SHADOWDARK.inventory.slots"}}</legend>
+        <div class="slots-grid">
+            <div class="form-group">
+                <label>Quantity</label>
+                <input type="number" name="system.quantity" value="{{system.quantity}}" min="0" />
+            </div>
+            <div class="form-group">
+                <label>Slots/Item</label>
+                <input type="number" name="system.slots.slots_used" value="{{system.slots.slots_used}}" min="0" />
+            </div>
+            <div class="form-group">
+                <label>Max/Slot</label>
+                <input type="number" name="system.slots.per_slot" value="{{system.slots.per_slot}}" min="0" />
+            </div>
+            <div class="form-group">
+                <label>Free Carry</label>
+                <input type="number" name="system.slots.free_carry" value="{{system.slots.free_carry}}" min="0" />
+            </div>
+        </div>
+    </fieldset>
+
+    {{!-- Source Section --}}
+    <fieldset class="potion-fieldset">
+        <legend><i class="fas fa-book"></i> {{localize "SHADOWDARK.sheet.item.tab.source"}}</legend>
+        <div class="form-group">
+            <label>Source</label>
+            <select name="system.source.title">
+                <option value="">&nbsp;</option>
+                {{#each sources}}
+                <option value="{{uuid}}" {{#if (eq ../system.source.title uuid)}}selected{{/if}}>
+                    {{name}}
+                </option>
+                {{/each}}
+            </select>
+        </div>
+    </fieldset>
+
+    {{!-- Identification Section --}}
+    <fieldset class="potion-fieldset">
+        <legend><i class="fas fa-search"></i> Identification</legend>
+        <div class="form-group">
+            <label>Status</label>
+            <label class="checkbox-label">
+                <input type="checkbox" name="flags.shadowdark-extras.unidentified" {{#if
+                    isUnidentified}}checked{{/if}} />
+                <span>Unidentified</span>
+            </label>
+        </div>
+        <div class="form-group">
+            <label>Unidentified Name</label>
+            <input type="text" name="flags.shadowdark-extras.unidentifiedName" value="{{unidentifiedName}}"
+                placeholder="Unidentified Potion" />
+        </div>
+    </fieldset>
+</section>

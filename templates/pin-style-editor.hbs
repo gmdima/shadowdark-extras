@@ -1,0 +1,556 @@
+<form class="sdx-pin-style-editor">
+    <!-- Preview Section -->
+    <section class="editor-section preview-section">
+        <h3><i class="fa-solid fa-eye"></i> {{localize "SDX.pinStyleEditor.preview"}}</h3>
+        <div class="pin-preview-canvas">
+            <div class="preview-pin" style="border-style: solid;">
+                <span class="preview-content">3</span>
+            </div>
+        </div>
+    </section>
+
+    {{#if allJournals}}
+    <!-- Journal & Page Selection (Individual Pin Only) -->
+    <section class="editor-section">
+        <h3><i class="fa-solid fa-book"></i> {{localize "SDX.pinStyleEditor.journalPage"}}</h3>
+
+        <div class="form-group">
+            <label>{{localize "SDX.pinStyleEditor.selectJournal"}}</label>
+            <select name="journalId">
+                {{#each allJournals}}
+                <option value="{{this.id}}" {{#if (eq this.id ../currentJournalId)}}selected{{/if}}>
+                    {{this.name}}
+                </option>
+                {{/each}}
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>{{localize "SDX.pinStyleEditor.selectPage"}}</label>
+            <select name="pageId">
+                {{#each journalPages}}
+                <option value="{{this.id}}" {{#if (eq this.id ../currentPageId)}}selected{{/if}}>
+                    {{this.name}}
+                </option>
+                {{/each}}
+            </select>
+        </div>
+    </section>
+    {{/if}}
+
+    {{#if allJournals}}
+    <!-- Vision Requirement (Individual Pin Only) -->
+    <section class="editor-section">
+        <h3><i class="fa-solid fa-eye"></i> Visibility</h3>
+
+        <div class="form-group checkbox-group">
+            <label>
+                <input type="checkbox" name="requiresVision" {{#if requiresVision}}checked{{/if}} />
+                {{localize "SDX.pinStyleEditor.requiresVision"}}
+            </label>
+            <p class="hint">{{localize "SDX.pinStyleEditor.requiresVisionHint"}}</p>
+        </div>
+    </section>
+    {{/if}}
+
+    {{#if allJournals}}
+    <!-- Custom Tooltip (Individual Pin Only) -->
+    <section class="editor-section">
+        <h3><i class="fa-solid fa-comment"></i> {{localize "SDX.pinStyleEditor.customTooltip"}}</h3>
+
+        <div class="form-group">
+            <label>{{localize "SDX.pinStyleEditor.tooltipTitle"}}</label>
+            <input type="text" name="tooltipTitle" value="{{tooltipTitle}}"
+                placeholder="{{localize 'SDX.pinStyleEditor.tooltipTitlePlaceholder'}}" />
+        </div>
+
+        <div class="form-group tooltip-content-group">
+            <label>{{localize "SDX.pinStyleEditor.tooltipContent"}}</label>
+            <textarea name="tooltipContent" rows="3"
+                placeholder="{{localize 'SDX.pinStyleEditor.tooltipContentPlaceholder'}}">{{tooltipContent}}</textarea>
+        </div>
+
+        <div class="form-group checkbox-group">
+            <label>
+                <input type="checkbox" name="hideTooltip" {{checked hideTooltip}} />
+                Hide Hover Tooltip
+            </label>
+            <p class="hint">Disables the tooltip popup for this pin.</p>
+        </div>
+    </section>
+    {{/if}}
+
+    <!-- Shape & Size -->
+    <section class="editor-section">
+        <h3><i class="fa-solid fa-shapes"></i> {{localize "SDX.pinStyleEditor.shapeSize"}}</h3>
+
+        <div class="form-group">
+            <label>{{localize "SDX.pinStyleEditor.shape"}}</label>
+            <select name="shape">
+                {{#each shapes}}
+                <option value="{{this.value}}" {{#if (eq this.value ../style.shape)}}selected{{/if}}>{{this.label}}
+                </option>
+                {{/each}}
+            </select>
+        </div>
+
+        <!-- Border Radius (shown only for square shape) -->
+        <div class="form-group border-radius-options"
+            style="{{#unless (eq style.shape 'square')}}display: none;{{/unless}}">
+            <label>{{localize "SDX.pinStyleEditor.borderRadius"}} <span
+                    data-for="borderRadius">{{style.borderRadius}}</span>px</label>
+            <input type="range" name="borderRadius" min="0" max="50" value="{{style.borderRadius}}" />
+        </div>
+
+        <div class="form-group">
+            <label>{{localize "SDX.pinStyleEditor.size"}} <span data-for="size">{{style.size}}</span>px</label>
+            <input type="range" name="size" min="16" max="128" value="{{style.size}}" />
+        </div>
+
+        <!-- Image Shape Options -->
+        <div class="image-shape-options" style="{{#unless (eq style.shape 'image')}}display: none;{{/unless}}">
+            <div class="form-group">
+                <label>{{localize "SDX.pinStyleEditor.selectedImage"}}</label>
+                <div class="form-fields" style="display: flex; gap: 5px;">
+                    <input type="text" name="imagePath" value="{{style.imagePath}}" placeholder="path/to/image.png" />
+                    <button type="button" class="file-picker-btn" data-target="imagePath" title="Browse Files"
+                        style="flex: 0 0 32px;">
+                        <i class="fa-solid fa-file-import"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Standard Shape Options (Ring, Fill, Etc) -->
+        <div class="standard-style-options" style="{{#if (eq style.shape 'image')}}display: none;{{/if}}">
+            <div class="form-group">
+                <label>{{localize "SDX.pinStyleEditor.ringWidth"}} <span
+                        data-for="ringWidth">{{style.ringWidth}}</span>px</label>
+                <input type="range" name="ringWidth" min="1" max="8" value="{{style.ringWidth}}" />
+            </div>
+
+            <div class="form-group">
+                <label>{{localize "SDX.pinStyleEditor.ringStyle"}}</label>
+                <select name="ringStyle">
+                    {{#each ringStyles}}
+                    <option value="{{this.value}}" {{#if (eq this.value ../style.ringStyle)}}selected{{/if}}>
+                        {{this.label}}</option>
+                    {{/each}}
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>{{localize "SDX.pinStyleEditor.opacity"}} <span
+                        data-for="opacity">{{style.opacity}}</span></label>
+                <input type="range" name="opacity" min="0.3" max="1" step="0.1" value="{{style.opacity}}" />
+            </div>
+
+            <div class="form-group">
+                <label>{{localize "SDX.pinStyleEditor.fillOpacity"}} <span
+                        data-for="fillOpacity">{{style.fillOpacity}}</span></label>
+                <input type="range" name="fillOpacity" min="0" max="1" step="0.1" value="{{style.fillOpacity}}" />
+            </div>
+
+            <div class="form-group">
+                <label>{{localize "SDX.pinStyleEditor.ringOpacity"}} <span
+                        data-for="ringOpacity">{{style.ringOpacity}}</span></label>
+                <input type="range" name="ringOpacity" min="0" max="1" step="0.1" value="{{style.ringOpacity}}" />
+            </div>
+        </div>
+
+        <!-- Opacity for Image (Outside standard options) -->
+        <div class="image-opacity-option" style="{{#unless (eq style.shape 'image')}}display: none;{{/unless}}">
+            <div class="form-group">
+                <label>{{localize "SDX.pinStyleEditor.opacity"}} <span
+                        data-for="opacity">{{style.opacity}}</span></label>
+                <input type="range" name="opacity" min="0.3" max="1" step="0.1" value="{{style.opacity}}" />
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>{{localize "SDX.pinStyleEditor.hoverAnimation"}}</label>
+            <select name="hoverAnimation">
+                <option value="none" {{#if (eq style.hoverAnimation "none" )}}selected{{/if}}>{{localize "None"}}
+                </option>
+                <option value="scale" {{#if (eq style.hoverAnimation "scale" )}}selected{{/if}}>{{localize "Scale"}}
+                </option>
+                <option value="pulse" {{#if (eq style.hoverAnimation "pulse" )}}selected{{/if}}>{{localize "Pulse"}}
+                </option>
+                <option value="shake" {{#if (eq style.hoverAnimation "shake" )}}selected{{/if}}>{{localize "Shake"}}
+                </option>
+                <option value="brightness" {{#if (eq style.hoverAnimation "brightness" )}}selected{{/if}}>{{localize
+                    "Brightness"}}</option>
+                <option value="hue" {{#if (eq style.hoverAnimation "hue" )}}selected{{/if}}>{{localize "Color Cycle"}}
+                </option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>{{localize "SDX.pinStyleEditor.pingAnimation"}}</label>
+            <select name="pingAnimation">
+                <option value="ripple" {{#if (eq style.pingAnimation "ripple" )}}selected{{/if}}>{{localize "Ripple"}}
+                </option>
+                <option value="shake" {{#if (eq style.pingAnimation "shake" )}}selected{{/if}}>{{localize "Shake"}}
+                </option>
+                <option value="flash" {{#if (eq style.pingAnimation "flash" )}}selected{{/if}}>{{localize "Flash"}}
+                </option>
+                <option value="none" {{#if (eq style.pingAnimation "none" )}}selected{{/if}}>{{localize "None"}}
+                </option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>{{localize "SDX.pinStyleEditor.bringAnimation"}}</label>
+            <select name="bringAnimation">
+                <option value="ripple" {{#if (eq style.bringAnimation "ripple" )}}selected{{/if}}>{{localize "Ripple"}}
+                </option>
+                <option value="shake" {{#if (eq style.bringAnimation "shake" )}}selected{{/if}}>{{localize "Shake"}}
+                </option>
+                <option value="flash" {{#if (eq style.bringAnimation "flash" )}}selected{{/if}}>{{localize "Flash"}}
+                </option>
+                <option value="none" {{#if (eq style.bringAnimation "none" )}}selected{{/if}}>{{localize "None"}}
+                </option>
+            </select>
+        </div>
+    </section>
+
+    <!-- Colors (Standard Only) -->
+    <section class="editor-section standard-style-options"
+        style="{{#if (eq style.shape 'image')}}display: none;{{/if}}">
+        <h3><i class="fa-solid fa-palette"></i> {{localize "SDX.pinStyleEditor.colors"}}</h3>
+
+        <div class="form-group color-group">
+            <label>{{localize "SDX.pinStyleEditor.ringColor"}}</label>
+            <input type="color" name="ringColor" value="{{style.ringColor}}" />
+        </div>
+
+        <div class="form-group color-group">
+            <label>{{localize "SDX.pinStyleEditor.fillColor"}}</label>
+            <input type="color" name="fillColor" value="{{style.fillColor}}" />
+        </div>
+    </section>
+
+    <!-- Content Type -->
+    <section class="editor-section">
+        <h3><i class="fa-solid fa-font"></i> {{localize "SDX.pinStyleEditor.content"}}</h3>
+
+        <div class="form-group">
+            <label>{{localize "SDX.pinStyleEditor.contentType"}}</label>
+            <select name="contentType">
+                <option value="number" {{#if (eq style.contentType "number" )}}selected{{/if}}>
+                    {{localize "SDX.pinStyleEditor.contentTypeNumber"}}</option>
+                <option value="symbol" {{#if (or (eq style.contentType "symbol" ) (eq style.contentType "icon"
+                    ))}}selected{{/if}}>
+                    {{localize "SDX.pinStyleEditor.contentTypeSymbol"}}</option>
+                <option value="customIcon" {{#if (eq style.contentType "customIcon" )}}selected{{/if}}>
+                    {{localize "SDX.pinStyleEditor.contentTypeIcon"}}</option>
+                <option value="text" {{#if (eq style.contentType "text" )}}selected{{/if}}>
+                    {{localize "SDX.pinStyleEditor.contentTypeText"}}</option>
+            </select>
+        </div>
+
+        <!-- Text Option: Custom Text -->
+        <div class="text-options" style="{{#unless (eq style.contentType 'text')}}display: none;{{/unless}}">
+            <div class="form-group">
+                <label>{{localize "SDX.pinStyleEditor.customText"}}</label>
+                <input type="text" name="customText" value="{{style.customText}}" placeholder="e.g. A, B, 10..." />
+            </div>
+        </div>
+
+        <!-- Symbol Options (FontAwesome - previously called "icon") -->
+        <div class="symbol-options"
+            style="{{#unless (eq style.contentType 'symbol')}}{{#unless (eq style.contentType 'icon')}}display: none;{{/unless}}{{/unless}}">
+            <div class="form-group">
+                <label>{{localize "SDX.pinStyleEditor.symbolType"}}</label>
+                <select name="symbolClass">
+                    {{#each iconOptions}}
+                    <option value="{{this.value}}" {{#if (eq this.value ../style.symbolClass)}}selected{{/if}}{{#if (eq
+                        this.value ../style.iconClass)}}selected{{/if}}>
+                        {{this.label}}
+                    </option>
+                    {{/each}}
+                </select>
+            </div>
+            <div class="form-group color-group">
+                <label>{{localize "SDX.pinStyleEditor.symbolColor"}}</label>
+                <input type="color" name="symbolColor" value="{{style.symbolColor}}" />
+            </div>
+        </div>
+
+        <!-- Custom Icon Options (SVG from assets) -->
+        <div class="custom-icon-options"
+            style="{{#unless (eq style.contentType 'customIcon')}}display: none;{{/unless}}">
+            <div class="form-group">
+                <label>{{localize "SDX.pinStyleEditor.selectedIcon"}}</label>
+                <div class="icon-selection-row">
+                    <div class="selected-icon-preview">
+                        {{#if style.customIconPath}}
+                        <img src="{{style.customIconPath}}" alt="Selected Icon" />
+                        {{else}}
+                        <i class="fa-solid fa-image"></i>
+                        {{/if}}
+                    </div>
+                    <button type="button" class="btn-browse-icons" data-action="browse-icons">
+                        <i class="fa-solid fa-folder-open"></i> {{localize "SDX.pinStyleEditor.browseIcons"}}
+                    </button>
+                </div>
+                <input type="hidden" name="customIconPath" value="{{style.customIconPath}}" />
+            </div>
+            <div class="form-group color-group">
+                <label>{{localize "SDX.pinStyleEditor.iconColor"}}</label>
+                <input type="color" name="iconColor" value="{{style.iconColor}}" />
+            </div>
+        </div>
+
+        <!-- Font Options (shown when contentType is number or text) -->
+        <div class="font-options"
+            style="{{#if (eq style.contentType 'symbol')}}display: none;{{/if}}{{#if (eq style.contentType 'customIcon')}}display: none;{{/if}}{{#if (eq style.contentType 'icon')}}display: none;{{/if}}">
+            <div class="form-group">
+                <label>{{localize "SDX.pinStyleEditor.fontFamily"}}</label>
+                <select name="fontFamily">
+                    {{#each fontFamilies}}
+                    <option value="{{this.value}}" {{#if (eq this.value ../style.fontFamily)}}selected{{/if}}>
+                        {{this.label}}</option>
+                    {{/each}}
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>{{localize "SDX.pinStyleEditor.fontSize"}} <span
+                        data-for="fontSize">{{style.fontSize}}</span>px</label>
+                <input type="range" name="fontSize" min="8" max="120" value="{{style.fontSize}}" />
+            </div>
+
+            <div class="form-group color-group">
+                <label>{{localize "SDX.pinStyleEditor.fontColor"}}</label>
+                <input type="color" name="fontColor" value="{{style.fontColor}}" />
+            </div>
+
+            <div class="form-group checkbox-group">
+                <label>
+                    <input type="checkbox" name="fontWeight" {{#if (eq style.fontWeight "bold" )}}checked{{/if}} />
+                    {{localize "SDX.pinStyleEditor.fontBold"}}
+                </label>
+            </div>
+        </div>
+    </section>
+
+    <!-- Label Settings -->
+    <section class="editor-section">
+        <h3><i class="fa-solid fa-tag"></i> Label</h3>
+
+        <div class="form-group">
+            <label>Label Text <i class="fa-solid fa-circle-info"
+                    title="Supports multiple lines. Press Enter to add a line break."></i></label>
+            <textarea name="labelText" rows="2" placeholder="Optional hover label...">{{style.labelText}}</textarea>
+        </div>
+
+        <div class="form-group checkbox-group">
+            <label>
+                <input type="checkbox" name="labelShowOnHover" {{#if style.labelShowOnHover}}checked{{/if}} />
+                Show only on hover
+            </label>
+        </div>
+
+        <div class="form-group">
+            <label>Label Position</label>
+            <select name="labelAnchor">
+                <option value="top" {{#if (eq style.labelAnchor "top" )}}selected{{/if}}>Top</option>
+                <option value="bottom" {{#if (eq style.labelAnchor "bottom" )}}selected{{/if}}>Bottom</option>
+                <option value="left" {{#if (eq style.labelAnchor "left" )}}selected{{/if}}>Left</option>
+                <option value="right" {{#if (eq style.labelAnchor "right" )}}selected{{/if}}>Right</option>
+                <option value="center" {{#if (eq style.labelAnchor "center" )}}selected{{/if}}>Center</option>
+            </select>
+        </div>
+
+        <!-- Label Styling -->
+        <div class="label-styling-options">
+            <div class="form-group">
+                <label>Font Family</label>
+                <select name="labelFontFamily">
+                    {{#each fontFamilies}}
+                    <option value="{{this.value}}" {{#if (eq this.value ../style.labelFontFamily)}}selected{{/if}}>
+                        {{this.label}}</option>
+                    {{/each}}
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Font Size <span data-for="labelFontSize">{{style.labelFontSize}}</span>px</label>
+                <input type="range" name="labelFontSize" min="8" max="64" value="{{style.labelFontSize}}" />
+            </div>
+
+            <div class="form-group color-group">
+                <label>Text Color</label>
+                <input type="color" name="labelColor" value="{{style.labelColor}}" />
+            </div>
+
+            <div class="form-group color-group">
+                <label>Text Outline</label>
+                <input type="color" name="labelStroke" value="{{style.labelStroke}}" />
+            </div>
+            <div class="form-group">
+                <label>Outline Width <span
+                        data-for="labelStrokeThickness">{{style.labelStrokeThickness}}</span>px</label>
+                <input type="range" name="labelStrokeThickness" min="0" max="10"
+                    value="{{style.labelStrokeThickness}}" />
+            </div>
+
+            <div class="form-group checkbox-group">
+                <label>
+                    <input type="checkbox" name="labelBold" {{#if style.labelBold}}checked{{/if}} />
+                    Bold
+                </label>
+                <label style="margin-left: 10px;">
+                    <input type="checkbox" name="labelItalic" {{#if style.labelItalic}}checked{{/if}} />
+                    Italic
+                </label>
+            </div>
+
+            <div class="form-group">
+                <label>Background</label>
+                <select name="labelBackground">
+                    <option value="none" {{#if (eq style.labelBackground "none" )}}selected{{/if}}>None</option>
+                    <option value="solid" {{#if (eq style.labelBackground "solid" )}}selected{{/if}}>Solid Color
+                    </option>
+                    <option value="image" {{#if (eq style.labelBackground "image" )}}selected{{/if}}>Image Border
+                    </option>
+                </select>
+            </div>
+
+            <!-- Image Border Options -->
+            <div class="label-image-options"
+                style="{{#unless (eq style.labelBackground 'image')}}display: none;{{/unless}}">
+                <div class="form-group">
+                    <label>Border Style</label>
+                    <select name="labelBorderImageIndex" style="font-family: monospace;">
+                        {{#each borderStyles}}
+                        <option value="{{this.value}}" {{#if (eq this.value
+                            ../style.labelBorderImageIndex)}}selected{{/if}}>
+                            {{this.label}}
+                        </option>
+                        {{/each}}
+                    </select>
+                </div>
+                <div class="form-group color-group">
+                    <label>BG Color</label>
+                    <input type="color" name="labelImageBackgroundColor" value="{{style.labelBackgroundColor}}" />
+                </div>
+                <div class="form-group">
+                    <label>Opacity <span
+                            data-for="labelImageBackgroundOpacity">{{style.labelBackgroundOpacity}}</span></label>
+                    <input type="range" name="labelImageBackgroundOpacity" min="0" max="1" step="0.1"
+                        value="{{style.labelBackgroundOpacity}}" />
+                </div>
+
+                <div class="form-group">
+                    <label>Custom Border Path</label>
+                    <div class="form-fields" style="display: flex; gap: 5px;">
+                        <input type="text" name="labelBorderImagePath" value="{{style.labelBorderImagePath}}"
+                            placeholder="path/to/image.png" />
+                        <button type="button" class="file-picker-btn" data-target="labelBorderImagePath"
+                            title="Browse Files" style="flex: 0 0 32px;">
+                            <i class="fa-solid fa-file-import"></i>
+                        </button>
+                    </div>
+                    <p class="hint" style="font-size: 0.8em; color: #888;">Overrides the numbered style selection above.
+                    </p>
+                </div>
+
+            </div>
+
+            <!-- Solid Background Options -->
+            <div class="label-bg-options"
+                style="{{#unless (eq style.labelBackground 'solid')}}display: none;{{/unless}}">
+                <div class="form-group color-group">
+                    <label>BG Color</label>
+                    <input type="color" name="labelBackgroundColor" value="{{style.labelBackgroundColor}}" />
+                </div>
+                <div class="form-group color-group">
+                    <label>Border Color</label>
+                    <input type="color" name="labelBorderColor" value="{{style.labelBorderColor}}" />
+                </div>
+                <div class="form-group">
+                    <label>Opacity <span
+                            data-for="labelBackgroundOpacity">{{style.labelBackgroundOpacity}}</span></label>
+                    <input type="range" name="labelBackgroundOpacity" min="0" max="1" step="0.1"
+                        value="{{style.labelBackgroundOpacity}}" />
+                </div>
+                <div class="form-group">
+                    <label>Border Width <span data-for="labelBorderWidth">{{style.labelBorderWidth}}</span>px</label>
+                    <input type="range" name="labelBorderWidth" min="0" max="10" value="{{style.labelBorderWidth}}" />
+                </div>
+                <div class="form-group">
+                    <label>Corner Radius <span data-for="labelBorderRadius">{{style.labelBorderRadius}}</span>px</label>
+                    <input type="range" name="labelBorderRadius" min="0" max="20" value="{{style.labelBorderRadius}}" />
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Token Magic FX (Individual Pin Only) -->
+    {{#if pinId}}
+    {{#if tmfxPresets}}
+    <section class="editor-section tmfx-section">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <h3><i class="fa-solid fa-wand-magic-sparkles"></i> Token Magic FX</h3>
+            <span style="font-size: 0.7em; opacity: 0.6; font-style: italic;">Live Preview <i
+                    class="fa-solid fa-bolt"></i></span>
+        </div>
+        <div class="form-group">
+            <label>Apply Preset</label>
+            <div class="form-fields" style="display: flex; gap: 5px;">
+                <select name="tmfxPreset" style="flex: 1;">
+                    <option value="">- Select Preset -</option>
+                    {{#each tmfxPresets}}
+                    <option value="{{this.name}}">{{this.label}}</option>
+                    {{/each}}
+                </select>
+                <button type="button" data-action="apply-tmfx" title="Apply Filter" style="flex: 0 0 32px;">
+                    <i class="fa-solid fa-plus"></i>
+                </button>
+            </div>
+        </div>
+
+        {{#if activeFilters}}
+        <div class="active-filters">
+            <label>Active Filters:</label>
+            <ul class="filter-list">
+                {{#each activeFilters}}
+                <li>
+                    <span class="filter-info">
+                        <i class="fa-solid fa-sparkles"></i> {{this.label}} {{#if
+                        this.id}}<small>({{this.id}})</small>{{/if}}
+                    </span>
+                    <div class="filter-actions" style="display: flex; gap: 4px;">
+                        <button type="button" class="btn-edit-tmfx" data-action="edit-tmfx" data-filter-id="{{this.id}}"
+                            data-filter-type="{{this.type}}" data-filter-internal-id="{{this.internalId}}"
+                            title="Edit Effect" style="flex: 0 0 24px; padding: 2px;">
+                            <i class="fa-solid fa-edit"></i>
+                        </button>
+                        <button type="button" class="btn-remove-tmfx" data-action="remove-tmfx"
+                            data-filter-id="{{this.id}}" title="Remove Effect" style="flex: 0 0 24px; padding: 2px;">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </div>
+                </li>
+                {{/each}}
+            </ul>
+        </div>
+        {{/if}}
+
+        <button type="button" class="btn-clear-tmfx" data-action="clear-tmfx">
+            <i class="fa-solid fa-trash-can"></i> Clear All Effects
+        </button>
+    </section>
+    {{/if}}
+    {{/if}}
+
+    <!-- Buttons -->
+    <footer class="editor-buttons">
+        <button type="button" class="btn-reset" data-action="reset">
+            <i class="fa-solid fa-rotate-left"></i> {{localize "SDX.pinStyleEditor.reset"}}
+        </button>
+        <button type="button" class="btn-save" data-action="save">
+            <i class="fa-solid fa-save"></i> {{localize "SDX.pinStyleEditor.save"}}
+        </button>
+    </footer>
+</form>

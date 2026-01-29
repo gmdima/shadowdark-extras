@@ -1,0 +1,324 @@
+/**
+ * Staff Spell Manager Styles - AppV2
+ * Styles for the staff spell configuration dialog
+ */
+
+/* ============================================
+   Staff Spell Button on Weapon Sheet
+   ============================================ */
+.sdx-staff-spell-button {
+    display: block;
+    width: 100%;
+    padding: 8px 12px;
+    margin: 0;
+    border: 1px solid var(--color-border-light);
+    border-top: none;
+    background: rgba(100, 150, 255, 0.15);
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 500;
+    text-align: center;
+    transition: background 0.2s;
+}
+
+.sdx-staff-spell-button:hover {
+    background: rgba(100, 150, 255, 0.25);
+}
+
+.sdx-staff-spell-button i {
+    margin-right: 6px;
+}
+
+/* ============================================
+   Fieldsets
+   ============================================ */
+.staff-spell-fieldset {
+    border: 1px solid var(--color-border-light);
+    border-radius: 4px;
+    padding: 12px;
+}
+
+.staff-spell-fieldset legend {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 12px;
+    font-weight: 600;
+    font-family: var(--font-primary);
+    text-transform: uppercase;
+    font-size: 0.9rem;
+    letter-spacing: 0.5px;
+    color: var(--color-text-light-1);
+}
+
+.staff-spell-fieldset legend i {
+    font-size: 0.8rem;
+    opacity: 0.8;
+}
+
+.staff-spell-fieldset .hint {
+    font-size: 0.85rem;
+    font-style: italic;
+    opacity: 0.7;
+    margin-bottom: 12px;
+}
+
+/* ============================================
+   Spell Drop Zone
+   ============================================ */
+.staff-spell-drop {
+    min-height: 80px;
+    border: 2px dashed var(--color-border-light);
+    border-radius: 4px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 16px;
+    margin-bottom: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.staff-spell-drop:hover {
+    border-color: var(--color-border-highlight);
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.staff-spell-drop.drag-over {
+    border-color: var(--color-border-highlight);
+    background: rgba(100, 150, 255, 0.1);
+}
+
+.staff-spell-drop i {
+    font-size: 1.5rem;
+    opacity: 0.5;
+}
+
+.staff-spell-drop p {
+    margin: 0;
+    font-size: 0.9rem;
+    opacity: 0.7;
+    text-align: center;
+}
+
+/* ============================================
+   Spells List
+   ============================================ */
+.staff-spells-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.staff-spell-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px;
+    border: 1px solid var(--color-border-light);
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.staff-spell-item .spell-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 4px;
+    border: 1px solid var(--color-border-dark);
+}
+
+.staff-spell-item .spell-name {
+    flex: 1;
+    font-weight: 500;
+}
+
+.spell-uses-input {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-right: 8px;
+}
+
+.spell-uses-input label {
+    font-size: 0.8rem;
+    opacity: 0.8;
+    white-space: nowrap;
+}
+
+.spell-max-uses {
+    width: 60px;
+    padding: 2px 6px;
+    border: 1px solid var(--color-border-light);
+    border-radius: 4px;
+    background: rgba(0, 0, 0, 0.3);
+    text-align: center;
+    font-size: 0.85rem;
+}
+
+.spell-max-uses::placeholder {
+    opacity: 0.5;
+}
+
+.spell-current-uses {
+    font-size: 0.85rem;
+    font-weight: 600;
+    padding: 2px 6px;
+    background: rgba(100, 150, 255, 0.2);
+    border-radius: 4px;
+    margin-left: 4px;
+    white-space: nowrap;
+}
+
+.restore-uses-btn {
+    padding: 4px 8px;
+    border: 1px solid var(--color-border-light);
+    border-radius: 4px;
+    background: rgba(0, 180, 0, 0.2);
+    cursor: pointer;
+    color: var(--color-text-light-1);
+    margin-left: 4px;
+}
+
+.restore-uses-btn:hover {
+    background: rgba(0, 180, 0, 0.4);
+}
+
+.remove-spell-btn {
+    padding: 4px 8px;
+    border: 1px solid var(--color-border-light);
+    border-radius: 4px;
+    background: rgba(128, 0, 0, 0.2);
+    cursor: pointer;
+    color: var(--color-text-light-1);
+}
+
+.remove-spell-btn:hover {
+    background: rgba(128, 0, 0, 0.4);
+}
+
+/* ============================================
+   Empty State
+   ============================================ */
+.no-spells-hint {
+    padding: 16px;
+    text-align: center;
+    font-style: italic;
+    opacity: 0.6;
+}
+
+.no-spells-hint i {
+    margin-right: 6px;
+}
+
+/* ============================================
+   Staff Spells Section in Player Sheet
+   ============================================ */
+.sdx-staff-spells-section {
+    margin-bottom: 12px;
+}
+
+.sdx-staff-spells-section .header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    background: rgba(100, 150, 255, 0.15);
+    border-bottom: 1px solid var(--color-border-light);
+}
+
+.sdx-staff-spells-section .header label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    letter-spacing: 0.5px;
+}
+
+.sdx-staff-spells-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.sdx-staff-spell {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 8px;
+    border-bottom: 1px solid var(--color-border-light);
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.sdx-staff-spell:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.sdx-staff-spell .item-image {
+    width: 32px;
+    height: 32px;
+    border-radius: 4px;
+    border: 1px solid var(--color-border-dark);
+    background-size: cover;
+    background-position: center;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.sdx-staff-spell .item-image i {
+    font-size: 0.9rem;
+    opacity: 0.9;
+}
+
+.sdx-staff-spell-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.sdx-staff-spell-name {
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.sdx-staff-spell-name:hover {
+    text-decoration: underline;
+}
+
+.sdx-staff-source {
+    font-size: 0.75rem;
+    opacity: 0.7;
+    font-style: italic;
+}
+
+.sdx-staff-spell-uses {
+    display: inline-block;
+    padding: 2px 8px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    background: rgba(100, 150, 255, 0.2);
+    border-radius: 4px;
+    margin-right: 4px;
+    white-space: nowrap;
+    vertical-align: middle;
+}
+
+.sdx-staff-spell-uses-depleted {
+    display: inline-block;
+    padding: 2px 8px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    background: rgba(255, 0, 0, 0.2);
+    border-radius: 4px;
+    margin-right: 4px;
+    white-space: nowrap;
+    color: #ff6666;
+    vertical-align: middle;
+}

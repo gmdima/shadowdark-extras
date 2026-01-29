@@ -1,0 +1,121 @@
+<div class="tom-smart-creator">
+  
+  <!-- ═══════════════════════════════════════════════════════════════
+       HEADER & STEPS
+       ═══════════════════════════════════════════════════════════════ -->
+  <header class="tom-wizard-header">
+    <div class="tom-wizard-title">
+      <i class="fas fa-magic"></i> Character Creator
+    </div>
+    <div class="tom-wizard-steps">
+      <div class="tom-step {{#if (eq step 1)}}active{{/if}} {{#if (gt step 1)}}completed{{/if}}">
+        <div class="tom-step-number">1</div>
+        <div class="tom-step-label">Identity</div>
+      </div>
+      <div class="tom-step-line"></div>
+      <div class="tom-step {{#if (eq step 2)}}active{{/if}} {{#if (gt step 2)}}completed{{/if}}">
+        <div class="tom-step-number">2</div>
+        <div class="tom-step-label">Assets</div>
+      </div>
+      <div class="tom-step-line"></div>
+      <div class="tom-step {{#if (eq step 3)}}active{{/if}} {{#if (gt step 3)}}completed{{/if}}">
+        <div class="tom-step-number">3</div>
+        <div class="tom-step-label">Review</div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ═══════════════════════════════════════════════════════════════
+       CONTENT AREA
+       ═══════════════════════════════════════════════════════════════ -->
+  <div class="tom-wizard-content">
+    
+    <!-- STEP 1: IDENTITY -->
+    {{#if (eq step 1)}}
+      <div class="tom-wizard-step" data-step="1">
+        <div class="form-group">
+          <label class="required">Character Name</label>
+          <input type="text" name="name" value="{{data.name}}" placeholder="e.g. Shura" aria-label="Character Name (required)" required autofocus>
+          <p class="notes">This will be used to create the folder structure.</p>
+        </div>
+
+        <div class="form-group">
+          <label>Tags <span class="tom-tag-hint">(Press Enter)</span></label>
+          <div class="tom-tag-input-container">
+            {{#each data.tags}}
+              <span class="tom-tag-chip">{{this}} <i class="fas fa-times" data-action="remove-tag" data-tag="{{this}}"></i></span>
+            {{/each}}
+            <input type="text" class="tom-tag-input" placeholder="Add tags..." aria-label="Add new tag">
+          </div>
+        </div>
+      </div>
+    {{/if}}
+
+    <!-- STEP 2: ASSETS (DROP ZONE) -->
+    {{#if (eq step 2)}}
+      <div class="tom-wizard-step" data-step="2">
+        <div class="tom-step-intro">
+          <p class="tom-hint">Upload images for each emotion. File names become emotion labels.</p>
+          <p class="tom-hint tom-example"><i class="fas fa-lightbulb"></i> Example: <code>Happy.png</code>, <code>Angry.png</code>, <code>Thinking.png</code></p>
+        </div>
+        <div class="tom-drop-zone" data-action="trigger-upload">
+          <i class="fas fa-cloud-upload-alt"></i>
+          <h3>Drag & Drop Folder Here</h3>
+          <p>or click to browse</p>
+          <input type="file" webkitdirectory directory multiple style="display:none" class="tom-file-input">
+        </div>
+        
+        {{#if uploadProgress}}
+          <div class="tom-progress-bar">
+            <div class="tom-progress-fill" style="width: {{uploadProgress}}%"></div>
+            <span class="tom-progress-text">{{uploadProgress}}%</span>
+          </div>
+        {{/if}}
+      </div>
+    {{/if}}
+
+    <!-- STEP 3: REVIEW -->
+    {{#if (eq step 3)}}
+      <div class="tom-wizard-step" data-step="3">
+        <div class="tom-review-grid">
+          {{#each data.emotions}}
+            <div class="tom-review-card {{#if excluded}}excluded{{/if}}">
+              <div class="tom-review-thumb">
+                <img src="{{path}}">
+                <div class="tom-review-actions">
+                  <button class="tom-icon-btn {{#if (eq ../data.defaultEmotion key)}}active{{/if}}" 
+                          title="Set as Default" data-action="set-default" data-key="{{key}}">
+                    <i class="fas fa-star"></i>
+                  </button>
+                  <button class="tom-icon-btn delete" title="Exclude" data-action="toggle-exclude" data-key="{{key}}">
+                    <i class="fas fa-trash"></i>
+                  </button>
+                </div>
+              </div>
+              <input type="text" class="tom-emotion-name" value="{{key}}" data-action="rename-emotion" data-original-key="{{key}}">
+            </div>
+          {{/each}}
+        </div>
+      </div>
+    {{/if}}
+
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════════
+       FOOTER & CONTROLS
+       ═══════════════════════════════════════════════════════════════ -->
+  <footer class="tom-wizard-footer">
+    {{#if (gt step 1)}}
+      <button class="tom-btn tom-btn-secondary" data-action="prev-step">Back</button>
+    {{else}}
+      <div></div> <!-- Spacer -->
+    {{/if}}
+
+    {{#if (lt step 3)}}
+      <button class="tom-btn tom-btn-primary" data-action="next-step" {{#if (eq step 2)}}disabled{{/if}}>Next</button>
+    {{else}}
+      <button class="tom-btn tom-btn-primary" data-action="finish">Create Character</button>
+    {{/if}}
+  </footer>
+
+</div>

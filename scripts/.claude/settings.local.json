@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node -e:*)",
+      "Bash(node --check:*)",
+      "Bash(for file in Traveller*.mjs FormBuilderSD.mjs SocketSD.mjs FogSD.mjs BannerTextSD.mjs GridUtilsSD.mjs)",
+      "Bash(do echo \"Checking $file...\")",
+      "Bash(done)",
+      "Bash(git restore:*)",
+      "Bash(node:*)"
+    ]
+  }
+}

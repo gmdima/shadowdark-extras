@@ -1,0 +1,70 @@
+{{!-- Advancement Tab --}}
+<section class="tab-content {{#if tab.active}}active{{/if}}" data-tab="advancement">
+
+    <fieldset class="background-fieldset advancement-fieldset">
+        <legend><i class="fas fa-gift"></i> {{localize "SHADOWDARK_EXTRAS.backgroundSheet.advancement.title"}}</legend>
+        <p class="hint">{{localize "SHADOWDARK_EXTRAS.backgroundSheet.advancement.hint"}}</p>
+
+        {{!-- Add Entry Button --}}
+        <div class="advancement-controls">
+            <button type="button" class="add-entry-btn" data-action="addAdvancementEntry">
+                <i class="fas fa-plus"></i> {{localize "SHADOWDARK_EXTRAS.backgroundSheet.advancement.addEntry"}}
+            </button>
+        </div>
+
+        {{!-- Advancement Entries --}}
+        <div class="advancement-entries">
+            {{#if advancementEntries.length}}
+                {{#each advancementEntries}}
+                <div class="advancement-entry" data-advancement-id="{{id}}">
+                    <div class="entry-header">
+                        <div class="entry-level">
+                            <label>{{localize "SHADOWDARK_EXTRAS.backgroundSheet.advancement.level"}}</label>
+                            <select name="advancement.{{id}}.level" data-advancement-id="{{id}}" class="advancement-level-select">
+                                {{#each ../levelOptions}}
+                                <option value="{{value}}" {{#if (eq ../level value)}}selected{{/if}}>{{label}}</option>
+                                {{/each}}
+                            </select>
+                        </div>
+                        <button type="button" class="delete-entry-btn" data-action="removeAdvancementEntry" data-advancement-id="{{id}}" data-tooltip="{{localize "SHADOWDARK_EXTRAS.backgroundSheet.advancement.removeEntry"}}">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+
+                    <div class="entry-body">
+                        {{!-- Drop Zone --}}
+                        <div class="advancement-item-drop" data-advancement-id="{{id}}">
+                            <i class="fas fa-download"></i>
+                            <p>{{localize "SHADOWDARK_EXTRAS.backgroundSheet.advancement.dropZone"}}</p>
+                        </div>
+
+                        {{!-- Items List --}}
+                        {{#if items.length}}
+                        <div class="advancement-items-list">
+                            {{#each items}}
+                            <div class="advancement-item">
+                                <img src="{{img}}" alt="{{name}}" class="item-icon" />
+                                <span class="item-name">{{name}}</span>
+                                <button type="button" class="remove-item-btn" data-action="removeAdvancementItem" data-advancement-id="{{../id}}" data-item-uuid="{{uuid}}" data-tooltip="{{localize "SHADOWDARK_EXTRAS.backgroundSheet.advancement.removeItem"}}">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                            {{/each}}
+                        </div>
+                        {{else}}
+                        <div class="no-items-hint">
+                            <i class="fas fa-info-circle"></i> {{localize "SHADOWDARK_EXTRAS.backgroundSheet.advancement.noItems"}}
+                        </div>
+                        {{/if}}
+                    </div>
+                </div>
+                {{/each}}
+            {{else}}
+                <div class="no-entries-hint">
+                    <i class="fas fa-info-circle"></i> {{localize "SHADOWDARK_EXTRAS.backgroundSheet.advancement.noEntries"}}
+                </div>
+            {{/if}}
+        </div>
+    </fieldset>
+
+</section>

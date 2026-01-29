@@ -1,0 +1,102 @@
+<div class="sdx-toolbar-info">
+    <div class="sdx-toolbar-details">
+        <div class="sdx-toolbar-name">
+            {{name}}
+        </div>
+    </div>
+
+    <div class="sdx-toolbar-top">
+        <form class="sdx-toolbar-attrs">
+            {{!-- Focus Spell Icons (above attributes) --}}
+            {{#if focusSpells.length}}
+            <div class="sdx-toolbar-icons sdx-toolbar-focus-spells">
+                {{#each focusSpells}}
+                <div class="sdx-toolbar-icon sdx-toolbar-icon-spell" data-spell-id="{{spellId}}"
+                    data-actor-uuid="{{../uuid}}" data-spell-name="{{name}}" data-is-focus="true"
+                    data-tooltip="{{name}} (Focus)">
+                    <img src="{{img}}" alt="{{name}}" />
+                </div>
+                {{/each}}
+            </div>
+            {{/if}}
+
+            <div class="sdx-toolbar-bar-wrapper">
+                {{#if isPlayer}}
+                <div class="sdx-toolbar-attr sdx-toolbar-attr-luck" data-uuid="{{uuid}}">
+                    <label>LUCK</label>
+                    <span>{{luck}}</span>
+                </div>
+                {{/if}}
+
+                <div class="sdx-toolbar-attr">
+                    <label>AC</label>
+                    <span>{{armor}}</span>
+                </div>
+            </div>
+            {{!-- Equipped Items Icons --}}
+            {{#if equippedItems.length}}
+            <div class="sdx-toolbar-icons sdx-toolbar-equipped">
+                {{#each equippedItems}}
+                <div class="sdx-toolbar-icon sdx-toolbar-icon-equipped" data-item-id="{{id}}" data-item-type="{{type}}"
+                    data-actor-uuid="{{../uuid}}" data-tooltip="{{name}}{{#if description}}: {{description}}{{/if}}">
+                    <img src="{{img}}" alt="{{name}}" />
+                </div>
+                {{/each}}
+            </div>
+            {{/if}}
+        </form>
+
+        <div class="sdx-toolbar-picture">
+            <img class="sdx-toolbar-img" src="{{picture}}" alt="{{name}}" />
+
+            <div class="sdx-toolbar-sheet" data-uuid="{{uuid}}" data-token={{isToken}}>
+                SHEET
+            </div>
+
+            <div class="sdx-toolbar-level">
+                <div class="sdx-toolbar-level-badge"></div>
+                <span>{{level}}</span>
+            </div>
+        </div>
+
+        <div class="sdx-toolbar-health">
+            {{!-- Duration Spell Icons (above HP bar) --}}
+            {{#if durationSpells.length}}
+            <div class="sdx-toolbar-icons sdx-toolbar-duration-spells">
+                {{#each durationSpells}}
+                <div class="sdx-toolbar-icon sdx-toolbar-icon-spell" data-instance-id="{{instanceId}}"
+                    data-spell-id="{{spellId}}" data-actor-uuid="{{../uuid}}" data-spell-name="{{name}}"
+                    data-is-focus="false" data-tooltip="{{name}}{{#if durationLabel}} ({{durationLabel}}){{/if}}">
+                    <img src="{{img}}" alt="{{name}}" />
+                    {{#if duration}}
+                    <span class="sdx-toolbar-spell-duration">{{duration}}</span>
+                    {{/if}}
+                </div>
+                {{/each}}
+            </div>
+            {{/if}}
+
+            <div class="sdx-toolbar-bar-wrapper">
+                <div class="sdx-toolbar-bar {{hp.status}}" style="width: {{hp.percent}}%"></div>
+
+                <input type="text" class="sdx-toolbar-hp-current" data-value="{{hp.value}}" data-uuid="{{uuid}}"
+                    data-token={{isToken}} value="{{hp.value}}" />
+                <span class="sdx-toolbar-divider">/</span>
+                <input type="text" class="sdx-toolbar-hp-max" value="{{hp.max}}" disabled />
+            </div>
+            {{!-- Active Effects Icons --}}
+            {{#if activeEffects.length}}
+            <div class="sdx-toolbar-icons sdx-toolbar-effects">
+                {{#each activeEffects}}
+                <div class="sdx-toolbar-icon sdx-toolbar-icon-effect" data-effect-id="{{id}}"
+                    data-actor-uuid="{{../uuid}}" data-is-active-effect="{{isActiveEffect}}"
+                    data-tooltip="{{name}}{{#if description}}: {{description}}{{/if}}{{#if duration}} ({{duration}}){{/if}}">
+                    <img src="{{img}}" alt="{{name}}" />
+                </div>
+                {{/each}}
+            </div>
+            {{/if}}
+        </div>
+
+    </div>
+</div>

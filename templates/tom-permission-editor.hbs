@@ -1,0 +1,104 @@
+<div class="tom-permission-editor-content">
+
+  <!-- ═══════════════════════════════════════════════════════════════
+       HEADER
+       ═══════════════════════════════════════════════════════════════ -->
+  <header class="tom-perm-header">
+    <img src="{{character.thumbnail}}" class="tom-perm-avatar" alt="{{character.name}}">
+    <div class="tom-perm-info">
+      <h2>{{character.name}}</h2>
+      <p>Assign which players can edit this character's emotions and settings.</p>
+    </div>
+  </header>
+
+  <!-- ═══════════════════════════════════════════════════════════════
+       DEFAULT PERMISSION
+       ═══════════════════════════════════════════════════════════════ -->
+  <div class="tom-perm-section">
+    <label>Default Permission</label>
+    <select name="defaultPermission">
+      {{#each permissionLevels}}
+        <option value="{{key}}" {{#if (eq key ../defaultPermission)}}selected{{/if}}>
+          {{name}} - {{description}}
+        </option>
+      {{/each}}
+    </select>
+    <span class="tom-hint">Applied to players not listed below</span>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════════
+       PLAYER LIST
+       ═══════════════════════════════════════════════════════════════ -->
+  <div class="tom-perm-section">
+    <label>Player Permissions</label>
+
+    {{#if players.length}}
+      <div class="tom-perm-players">
+        {{#each players}}
+          <div class="tom-perm-player">
+            <div class="tom-perm-player-info">
+              <img src="{{avatar}}" class="tom-perm-player-avatar" style="border-color: {{color}}">
+              <span class="tom-perm-player-name">{{name}}</span>
+            </div>
+            <div class="tom-perm-player-buttons">
+              <button type="button" class="tom-perm-btn {{#if isNone}}active{{/if}}"
+                      data-action="set-permission" data-user-id="{{id}}" data-level="none"
+                      title="No Access">
+                <i class="fas fa-ban"></i>
+              </button>
+              <button type="button" class="tom-perm-btn {{#if isView}}active{{/if}}"
+                      data-action="set-permission" data-user-id="{{id}}" data-level="view"
+                      title="View Only">
+                <i class="fas fa-eye"></i>
+              </button>
+              <button type="button" class="tom-perm-btn {{#if isEmotion}}active{{/if}}"
+                      data-action="set-permission" data-user-id="{{id}}" data-level="emotion"
+                      title="Can Change Emotions">
+                <i class="fas fa-theater-masks"></i>
+              </button>
+              <button type="button" class="tom-perm-btn {{#if isFull}}active{{/if}}"
+                      data-action="set-permission" data-user-id="{{id}}" data-level="full"
+                      title="Full Control">
+                <i class="fas fa-crown"></i>
+              </button>
+            </div>
+          </div>
+        {{/each}}
+      </div>
+    {{else}}
+      <div class="tom-perm-empty">
+        <i class="fas fa-users-slash"></i>
+        <p>No players connected to assign permissions.</p>
+      </div>
+    {{/if}}
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════════
+       LEGEND
+       ═══════════════════════════════════════════════════════════════ -->
+  <div class="tom-perm-legend">
+    <div class="tom-perm-legend-item">
+      <i class="fas fa-ban"></i> No Access
+    </div>
+    <div class="tom-perm-legend-item">
+      <i class="fas fa-eye"></i> View Only
+    </div>
+    <div class="tom-perm-legend-item">
+      <i class="fas fa-theater-masks"></i> Emotions
+    </div>
+    <div class="tom-perm-legend-item">
+      <i class="fas fa-crown"></i> Full Control
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════════
+       FOOTER
+       ═══════════════════════════════════════════════════════════════ -->
+  <footer class="tom-perm-footer">
+    <button type="button" class="tom-btn" data-action="close">Cancel</button>
+    <button type="button" class="tom-btn tom-btn-primary" data-action="save">
+      <i class="fas fa-save"></i> Save Permissions
+    </button>
+  </footer>
+
+</div>
