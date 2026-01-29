@@ -14591,8 +14591,10 @@ body:not(.game-master) .sdx-carousing-chat .sdx-player-only {
     animation: sdx-fade-in 0.5s ease-out;
     max-height: 200px;
     overflow-y: auto;
+    width: 100%;
 }
 
+/* test */
 .sdx-carousing-available-actors h3 {
     margin: 0 0 20px 0;
     color: #c9aa58;
