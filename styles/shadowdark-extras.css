@@ -10929,7 +10929,7 @@ section[data-tab="tab-notes"].sdx-journal-active>div:not(.sdx-journal-notes) {
     border: 1px solid rgba(212, 175, 55, 0.3);
     border-radius: 4px;
     padding: 12px;
-    margin-bottom: 16px;
+
 }
 
 .sdx-carousing-table-select {
@@ -11525,6 +11525,7 @@ section[data-tab="tab-notes"].sdx-journal-active>div:not(.sdx-journal-notes) {
     margin-bottom: 10px;
     font-size: 0.9em;
     color: #999;
+    gap: 10px;
 }
 
 .sdx-carousing-status-ok {
@@ -11550,6 +11551,7 @@ section[data-tab="tab-notes"].sdx-journal-active>div:not(.sdx-journal-notes) {
     border-radius: 4px;
     cursor: pointer;
     width: 75px;
+    height: 32px;
     /* font-weight: bold; */
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
     transition: all 0.2s ease;
@@ -11569,7 +11571,7 @@ section[data-tab="tab-notes"].sdx-journal-active>div:not(.sdx-journal-notes) {
     background: rgba(40, 40, 40, 0.8);
     border: 1px solid #555;
     color: #aaa;
-    padding: 10px 16px;
+    height: 32px;
     border-radius: 4px;
     cursor: pointer;
     width: 90px;
@@ -11584,7 +11586,7 @@ section[data-tab="tab-notes"].sdx-journal-active>div:not(.sdx-journal-notes) {
 .sdx-carousing-cost-info {
     text-align: center;
     margin: 0 0 16px 0;
-    padding: 10px 16px;
+    padding: 2px 16px;
     background: rgba(212, 175, 55, 0.1);
     border: 1px solid rgba(212, 175, 55, 0.3);
     border-radius: 4px;
@@ -11916,8 +11918,8 @@ section[data-tab="tab-notes"].sdx-journal-active>div:not(.sdx-journal-notes) {
 
 .sdx-carousing-phase-complete {
     text-align: center;
-    padding: 12px 16px;
-    margin-top: 16px;
+    padding: 3px 16px;
+    margin-top: 3px;
     background: rgba(76, 175, 80, 0.15);
     border: 1px solid rgba(76, 175, 80, 0.4);
     border-radius: 4px;
@@ -13751,9 +13753,9 @@ body:not(.game-master) .sdx-carousing-chat .sdx-player-only {
 /* Main container */
 .sdx-carousing-overlay-container {
     position: relative;
-    width: 90vw;
-    max-width: 1400px;
-    height: 90vh;
+    width: 95vw;
+
+    height: 95vh;
     max-height: 900px;
     background: linear-gradient(180deg, #1a1a1a 0%, #0d0d0d 100%);
     border: 2px solid #444;
@@ -13791,7 +13793,7 @@ body:not(.game-master) .sdx-carousing-chat .sdx-player-only {
 
 /* Header */
 .sdx-carousing-overlay-header {
-    padding: 20px 30px;
+    padding: 3px 30px;
     background: linear-gradient(90deg, #0a0a0a 0%, #1a1a1a 50%, #0a0a0a 100%);
     border-bottom: 2px solid #333;
     text-align: center;
@@ -13816,11 +13818,11 @@ body:not(.game-master) .sdx-carousing-chat .sdx-player-only {
 /* Main content area */
 .sdx-carousing-overlay-main {
     flex: 1;
-    padding: 20px 30px;
+    padding: 5px 5px;
     overflow-y: auto;
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 2px;
 }
 
 /* GM Controls in overlay */
@@ -13830,10 +13832,11 @@ body:not(.game-master) .sdx-carousing-chat .sdx-player-only {
     gap: 15px;
     align-items: center;
     justify-content: center;
-    padding: 15px;
+    padding: 2px;
     background: rgba(0, 0, 0, 0.4);
     border: 1px solid #333;
     border-radius: 8px;
+    height: 38px;
 }
 
 /* Player cards container - single row, cards resize to fit */
@@ -14575,6 +14578,120 @@ body:not(.game-master) .sdx-carousing-chat .sdx-player-only {
         transform: translateY(-10px);
     }
 }
+
+/* ============================================
+   AVAILABLE ACTORS GRID (GM ONLY)
+   ============================================ */
+.sdx-carousing-available-actors {
+    margin-top: 5px;
+    padding: 5px;
+    background: rgba(0, 0, 0, 0.4);
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    animation: sdx-fade-in 0.5s ease-out;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.sdx-carousing-available-actors h3 {
+    margin: 0 0 20px 0;
+    color: #c9aa58;
+    font-size: 1.4rem;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-family: 'Signika', serif;
+    border-bottom: 2px solid rgba(201, 170, 88, 0.3);
+    padding-bottom: 8px;
+}
+
+.sdx-available-actors-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    gap: 20px;
+}
+
+.sdx-available-actor-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 2px;
+    background: rgba(255, 255, 255, 0.04);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.sdx-available-actor-item:hover {
+    background: rgba(201, 170, 88, 0.1);
+    transform: translateY(-4px);
+    border-color: #c9aa58;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
+}
+
+.sdx-available-actor-item img {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid rgba(255, 255, 255, 0.15);
+    margin-bottom: 10px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.sdx-available-actor-item:hover img {
+    border-color: #c9aa58;
+}
+
+.sdx-available-actor-item .sdx-actor-name {
+    font-size: 0.95rem;
+    font-weight: 500;
+    text-align: center;
+    color: #eee;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    width: 100%;
+}
+
+/* Remove Participant Button (GM Only) */
+.sdx-remove-gm-participant-btn {
+    background: none;
+    border: none;
+    color: rgba(255, 255, 255, 0.3);
+    cursor: pointer;
+    padding: 0 5px;
+    font-size: 1rem;
+    transition: all 0.2s;
+    margin-left: auto;
+}
+
+.sdx-remove-gm-participant-btn:hover {
+    color: #ff4d4d;
+    transform: scale(1.2);
+}
+
+/* Crown Icon for GM Managed */
+.sdx-carousing-player-name .fa-crown {
+    color: #c9aa58;
+    margin-right: 6px;
+    font-size: 0.85rem;
+    filter: drop-shadow(0 0 3px rgba(201, 170, 88, 0.4));
+}
+
+@keyframes sdx-fade-in {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
 
 /* ============================================
    ENHANCED JOURNAL CONTENT STYLING
@@ -15444,7 +15561,7 @@ body:not(.game-master) .sdx-carousing-chat .sdx-player-only {
     left: 10px;
     right: 10px;
     background: rgba(20, 20, 20, 0.95);
-    border: 1px solid #c9ad6a;
+
     border-radius: 4px;
     padding: 0 8px;
     z-index: 10;
@@ -15458,7 +15575,7 @@ body:not(.game-master) .sdx-carousing-chat .sdx-player-only {
 
 .sdx-modifiers-drawer.expanded {
     padding: 8px;
-    border-bottom: 2px solid #c9ad6a;
+    border: 1px solid #c9ad6a;
     min-height: 107px;
 }
 

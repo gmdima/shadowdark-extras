@@ -7,6 +7,10 @@ import {
     getCarousingMode,
     getCarousingSession,
     getCarousingDrops,
+    getCarousingParticipants,
+    getCarousingGmActors,
+    addGmParticipant,
+    removeGmParticipant,
     getExpandedCarousingData,
     getExpandedCarousingTables,
     getCustomCarousingTables,
@@ -177,11 +181,14 @@ export default class CarousingOverlaySD extends Application {
             activeTable = getCarousingTableById(session.selectedTableId);
         }
 
-        // Get ONLINE PLAYERS and calculate split cost
-        const onlinePlayers = this._getOnlinePlayers(session, activeTable);
+        // Get ALL participants (Online + GM added)
+        const participants = this._getParticipants(session, activeTable);
+        const onlinePlayers = participants.filter(p => !p.isGmManaged);
 
-        // Get participants and calculate selected tier info for display
-        let participants = onlinePlayers.filter(p => p.hasDrop);
+        // Calculate split cost based on ALL dropped participants
+        const participantCount = participants.filter(p => p.hasDrop).length;
+
+        // Calculate selected tier info for display
         let selectedTierCost = 0;
         let selectedTierDescription = "";
         let selectedTierBonus = 0;
@@ -191,14 +198,14 @@ export default class CarousingOverlaySD extends Application {
             selectedTierDescription = tier.description || "";
             selectedTierBonus = tier.bonus || 0;
 
-            const participantCount = participants.length > 0 ? participants.length : 1;
-            selectedTierCost = Math.ceil(tier.cost / participantCount);
+            const effectiveCount = participantCount > 0 ? participantCount : 1;
+            selectedTierCost = Math.ceil(tier.cost / effectiveCount);
         }
 
-        // Recalculate allConfirmed and allCanAfford AFTER updating canAfford
-        const allConfirmed = participants.length > 0 && participants.every(p => p.isConfirmed);
-        const allCanAfford = participants.length > 0 && participants.every(p => p.canAfford);
-        const canRoll = allConfirmed && allCanAfford && session.selectedTier !== null && participants.length > 0;
+        const droppedParticipants = participants.filter(p => p.hasDrop);
+        const allConfirmed = droppedParticipants.length > 0 && droppedParticipants.every(p => p.isConfirmed);
+        const allCanAfford = droppedParticipants.length > 0 && droppedParticipants.every(p => p.canAfford);
+        const canRoll = allConfirmed && allCanAfford && session.selectedTier !== null && droppedParticipants.length > 0;
 
         const customTables = availableTables.map(t => ({
             ...t,
@@ -214,15 +221,29 @@ export default class CarousingOverlaySD extends Application {
             const tier = activeTable.tiers[i];
             return tier.cost > 0 || tier.bonus > 0 || tier.description;
         });
+
         // Get visibility settings for benefits/mishaps
         const showBenefitsToPlayers = game.settings.get(MODULE_ID, "carousingShowBenefitsToPlayers") ?? true;
         const showMishapsToPlayers = game.settings.get(MODULE_ID, "carousingShowMishapsToPlayers") ?? true;
 
+        // Get available actors for GM to add (Player type not already in participants)
+        let availableActors = [];
+        if (game.user.isGM) {
+            const participantActorIds = participants.map(p => p.droppedActorId).filter(id => !!id);
+            availableActors = game.actors.filter(a =>
+                a.type === "Player" && !participantActorIds.includes(a.id)
+            ).map(a => ({
+                id: a.id,
+                name: a.name,
+                img: a.img
+            }));
+        }
+
         return {
             isGM: game.user.isGM,
-            onlinePlayers: onlinePlayers,
-            hasPlayers: onlinePlayers.length > 0,
-            playerCount: onlinePlayers.length,
+            participants: participants,
+            hasParticipants: participants.length > 0,
+            participantCount: participantCount,
             tierOptions: tierOptions,
             selectedTier: session.selectedTier,
             hasSelectedTier: session.selectedTier !== null,
@@ -232,89 +253,63 @@ export default class CarousingOverlaySD extends Application {
             phase: session.phase,
             canRoll: canRoll,
             allConfirmed: allConfirmed,
-            participantCount: participants.length,
             selectedTableId: session.selectedTableId || "default",
             customTables: customTables,
             hasCustomTables: customTables.length > 0,
             carousingMode: carousingMode,
             isExpandedMode: carousingMode === "expanded",
+            availableActors: availableActors,
+            hasAvailableActors: availableActors.length > 0,
             // Visibility settings - show to GMs always, only to players if setting enabled
             canSeeBenefits: game.user.isGM || showBenefitsToPlayers,
             canSeeMishaps: game.user.isGM || showMishapsToPlayers
         };
+
     }
 
     /**
-     * Get online players with their carousing data
+     * Get participants with their carousing data
      */
-    _getOnlinePlayers(session, activeTable) {
-        const drops = getCarousingDrops();
-        const selectedTier = session.selectedTier !== null ? activeTable.tiers[session.selectedTier] : null;
-        const totalTierCost = selectedTier?.cost || 0;
+    _getParticipants(session, activeTable) {
+        const participants = getCarousingParticipants();
 
-        // Calculate split cost
-        const participantCount = Object.values(drops).length;
-        const splitCost = Math.ceil(totalTierCost / Math.max(1, participantCount));
+        // Get owned actors for character selection (used by players)
+        const ownedActors = game.actors.filter(a =>
+            a.type === "Player" && a.isOwner
+        ).map(a => ({
+            id: a.id,
+            name: a.name,
+            img: a.img
+        }));
 
-        return game.users.filter(user => {
-            if (!user.active) return false;
-            if (user.role === CONST.USER_ROLES.GAMEMASTER) return false;
-            if (user.role === CONST.USER_ROLES.ASSISTANT) return false;
-            return true;
-        }).map(user => {
-            const droppedActorId = drops[user.id];
-            const droppedActor = droppedActorId ? game.actors.get(droppedActorId) : null;
-            const actorGp = droppedActor ? this._getActorTotalGp(droppedActor) : 0;
-            const canAfford = actorGp >= splitCost;
-            const isConfirmed = session.confirmations[user.id] === true;
-            const result = session.results?.[user.id];
-            const renown = droppedActor ? (droppedActor.getFlag(MODULE_ID, "renown") || 0) : 0;
-            const renownBonus = getRenownBonus(renown);
-            const totalBonus = selectedTier ? (selectedTier.bonus + renownBonus) : renownBonus;
-
-            // Get GM modifiers for this player
-            const playerMods = session.modifiers?.[user.id] || {};
-            const modifiers = {
-                outcome: playerMods.outcome || "",
-                benefits: playerMods.benefits || "",
-                mishaps: playerMods.mishaps || ""
-            };
-
-            // Get owned actors for character selection
-            const ownedActors = game.actors.filter(a =>
-                a.type === "Player" && a.isOwner
-            ).map(a => ({
-                id: a.id,
-                name: a.name,
-                img: a.img,
-                selected: a.id === droppedActorId
-            }));
+        return participants.map(p => {
+            const pId = p.participantId;
+            const playerMods = session.modifiers?.[pId] || {};
 
             return {
-                id: user.id,
-                name: user.name,
-                character: user.character,
-                characterName: user.character?.name || game.i18n.localize("SHADOWDARK_EXTRAS.carousing.no_character"),
-                color: user.color,
-                droppedActor: droppedActor,
-                droppedActorId: droppedActorId,
-                droppedActorName: droppedActor?.name || null,
-                droppedActorImg: droppedActor?.img || null,
-                hasDrop: !!droppedActor,
-                isCurrentUser: user.id === game.user.id,
-                actorGp: actorGp,
-                canAfford: canAfford,
-                isConfirmed: isConfirmed,
-                result: result,
-                renown: renown,
-                renownBonus: renownBonus,
-                totalBonus: totalBonus,
-                modifiers: modifiers,
-                ownedActors: ownedActors,
+                ...p,
+                modifiers: {
+                    outcome: playerMods.outcome || "",
+                    benefits: playerMods.benefits || "",
+                    mishaps: playerMods.mishaps || ""
+                },
+                ownedActors: ownedActors.map(a => ({
+                    ...a,
+                    selected: a.id === p.droppedActorId
+                })),
                 hasMultipleActors: ownedActors.length > 1
             };
         });
     }
+
+    /**
+     * Get online players with their carousing data
+     * @deprecated
+     */
+    _getOnlinePlayers(session, activeTable) {
+        return this._getParticipants(session, activeTable).filter(p => !p.isGmManaged);
+    }
+
 
     /**
      * Get actor's total GP
@@ -371,18 +366,26 @@ export default class CarousingOverlaySD extends Application {
         // Player: Confirm button
         html.find('[data-action="confirm-carousing"]').click(async (event) => {
             event.preventDefault();
-            const userId = $(event.currentTarget).data('user-id');
-            if (userId !== game.user.id) return;
-            await setPlayerConfirmation(userId, true);
+            const pId = $(event.currentTarget).data('participant-id');
+            // If GM managed, GM can confirm. If user managed, only user can confirm.
+            const p = getCarousingParticipants().find(x => x.participantId === pId);
+            if (!p) return;
+            if (p.isGmManaged && !game.user.isGM) return;
+            if (!p.isGmManaged && pId !== game.user.id) return;
+            await setPlayerConfirmation(pId, true);
         });
 
         // Player: Unconfirm button
         html.find('[data-action="unconfirm-carousing"]').click(async (event) => {
             event.preventDefault();
-            const userId = $(event.currentTarget).data('user-id');
-            if (userId !== game.user.id) return;
-            await setPlayerConfirmation(userId, false);
+            const pId = $(event.currentTarget).data('participant-id');
+            const p = getCarousingParticipants().find(x => x.participantId === pId);
+            if (!p) return;
+            if (p.isGmManaged && !game.user.isGM) return;
+            if (!p.isGmManaged && pId !== game.user.id) return;
+            await setPlayerConfirmation(pId, false);
         });
+
 
         // Player: Change character button
         html.find('[data-action="change-character"]').click(async (event) => {
@@ -407,53 +410,64 @@ export default class CarousingOverlaySD extends Application {
             await setCarousingDrop(userId, null);
         });
 
-        // Add benefit button
+        // Result actions (benefit/mishap)
         html.find('[data-action="add-benefit"]').click(async (event) => {
             event.preventDefault();
-            const userId = $(event.currentTarget).data('user-id');
-            const result = await addCarousingResult(userId, "benefit");
+            const pId = $(event.currentTarget).data('participant-id');
+            const result = await addCarousingResult(pId, "benefit");
             if (result) {
-                const user = game.users.get(userId);
-                this._showToast(`${user?.name || "Someone"} gained a benefit`, "benefit");
+                const p = getCarousingParticipants().find(x => x.participantId === pId);
+                this._showToast(`${p?.droppedActorName || "Someone"} gained a benefit`, "benefit");
             }
         });
 
-        // Add mishap button
         html.find('[data-action="add-mishap"]').click(async (event) => {
             event.preventDefault();
-            const userId = $(event.currentTarget).data('user-id');
-            const result = await addCarousingResult(userId, "mishap");
+            const pId = $(event.currentTarget).data('participant-id');
+            const result = await addCarousingResult(pId, "mishap");
             if (result) {
-                const user = game.users.get(userId);
-                this._showToast(`${user?.name || "Someone"} suffered a mishap`, "mishap");
+                const p = getCarousingParticipants().find(x => x.participantId === pId);
+                this._showToast(`${p?.droppedActorName || "Someone"} suffered a mishap`, "mishap");
             }
         });
 
-        // Remove benefit button
+        // GM: Add/Remove Offline Actor
+        html.find('[data-action="add-gm-actor"]').click(async (event) => {
+            event.preventDefault();
+            const actorId = $(event.currentTarget).data('actor-id');
+            await addGmParticipant(actorId);
+        });
+
+        html.find('[data-action="remove-gm-participant"]').click(async (event) => {
+            event.preventDefault();
+            const actorId = $(event.currentTarget).data('actor-id');
+            await removeGmParticipant(actorId);
+        });
+
+
+        // Remove benefit/mishap
         html.find('[data-action="remove-benefit"]').click(async (event) => {
             event.preventDefault();
-            // Get userId from closest section's data-player-id
-            const userId = $(event.currentTarget).closest('.sdx-results-section').data('player-id');
+            const pId = $(event.currentTarget).closest('.sdx-results-section').data('player-id');
             const index = parseInt($(event.currentTarget).data('index'));
-            const success = await removeCarousingResult(userId, "benefit", index);
+            const success = await removeCarousingResult(pId, "benefit", index);
             if (success) {
-                const user = game.users.get(userId);
-                this._showToast(`${user?.name || "Someone"} removed a benefit`, "remove");
+                const p = getCarousingParticipants().find(x => x.participantId === pId);
+                this._showToast(`${p?.droppedActorName || "Someone"} removed a benefit`, "remove");
             }
         });
 
-        // Remove mishap button
         html.find('[data-action="remove-mishap"]').click(async (event) => {
             event.preventDefault();
-            // Get userId from closest section's data-player-id
-            const userId = $(event.currentTarget).closest('.sdx-results-section').data('player-id');
+            const pId = $(event.currentTarget).closest('.sdx-results-section').data('player-id');
             const index = parseInt($(event.currentTarget).data('index'));
-            const success = await removeCarousingResult(userId, "mishap", index);
+            const success = await removeCarousingResult(pId, "mishap", index);
             if (success) {
-                const user = game.users.get(userId);
-                this._showToast(`${user?.name || "Someone"} removed a mishap`, "remove");
+                const p = getCarousingParticipants().find(x => x.participantId === pId);
+                this._showToast(`${p?.droppedActorName || "Someone"} removed a mishap`, "remove");
             }
         });
+
 
         // Click outside to close (on the backdrop)
         html.find('.sdx-carousing-overlay-backdrop').click((e) => {
@@ -473,11 +487,12 @@ export default class CarousingOverlaySD extends Application {
         if (!game.user.isGM) return;
 
         const input = event.currentTarget;
-        const userId = input.closest('[data-user-id]').dataset.userId;
+        const pId = input.closest('[data-participant-id]').dataset.participantId;
         const modType = input.dataset.modType;
         const value = input.value;
 
-        await setPlayerModifier(userId, modType, value);
+        await setPlayerModifier(pId, modType, value);
+
     }
 
     _onToggleModifiers(event) {

@@ -429,6 +429,15 @@ export function getCarousingTableById(tableId) {
 }
 
 /**
+ * Get carousing gm-added actors
+ */
+export function getCarousingGmActors() {
+    const journal = getCarousingJournal();
+    if (!journal) return [];
+    return journal.getFlag(MODULE_ID, "carousingGmActors") || [];
+}
+
+/**
  * Get carousing drops state
  */
 export function getCarousingDrops() {
@@ -579,6 +588,47 @@ export async function setPlayerModifier(userId, type, value) {
     // Don't re-render everything on every keystroke if called from input, 
     // but useful for sync
 }
+
+/**
+ * Add a GM-managed participant (offline/unassigned actor)
+ */
+export async function addGmParticipant(actorId) {
+    if (!game.user.isGM) return;
+    const journal = getCarousingJournal();
+    if (!journal) return;
+
+    const gmActors = getCarousingGmActors();
+    if (gmActors.includes(actorId)) return;
+
+    gmActors.push(actorId);
+    await journal.setFlag(MODULE_ID, "carousingGmActors", gmActors);
+    rerenderPlayerSheets();
+}
+
+/**
+ * Remove a GM-managed participant
+ */
+export async function removeGmParticipant(actorId) {
+    if (!game.user.isGM) return;
+    const journal = getCarousingJournal();
+    if (!journal) return;
+
+    let gmActors = getCarousingGmActors();
+    gmActors = gmActors.filter(id => id !== actorId);
+
+    const session = getCarousingSession();
+    const participantId = `actor-${actorId}`;
+    delete session.confirmations[participantId];
+    if (session.results) delete session.results[participantId];
+    if (session.modifiers) delete session.modifiers[participantId];
+
+    await journal.update({
+        [`flags.${MODULE_ID}.carousingGmActors`]: gmActors,
+        [`flags.${MODULE_ID}.carousingSession`]: session
+    });
+    rerenderPlayerSheets();
+}
+
 
 /**
  * Reset carousing session (GM only)
@@ -733,6 +783,9 @@ export async function pruneOfflineCarousingData() {
 
     // Check confirmations
     for (const userId of Object.keys(session.confirmations || {})) {
+        // Skip GM-managed actors
+        if (userId.startsWith("actor-")) continue;
+
         const user = game.users.get(userId);
         if (!user || !user.active) {
             delete session.confirmations[userId];
@@ -769,10 +822,11 @@ export function getRenownBonus(renown) {
 }
 
 /**
- * Get online players with their carousing data
+ * Get online players and GM-added actors with their carousing data
  */
-function getOnlinePlayers() {
+export function getCarousingParticipants() {
     const drops = getCarousingDrops();
+    const gmActors = getCarousingGmActors();
     const session = getCarousingSession();
 
     // Get the correct table based on mode
@@ -784,16 +838,18 @@ function getOnlinePlayers() {
     const selectedTier = session.selectedTier !== null ? activeTable.tiers[session.selectedTier] : null;
     const totalTierCost = selectedTier?.cost || 0;
 
-    // Calculate how many players have characters dropped
-    const participantCount = Object.values(drops).length;
+    // Calculate how many participants have characters dropped
+    const participantCount = Object.values(drops).length + gmActors.length;
     const splitCost = Math.ceil(totalTierCost / Math.max(1, participantCount));
 
-    return game.users.filter(user => {
+    // 1. Get Online User participants
+    const userParticipants = game.users.filter(user => {
         if (!user.active) return false;
         if (user.role === CONST.USER_ROLES.GAMEMASTER) return false;
         if (user.role === CONST.USER_ROLES.ASSISTANT) return false;
         return true;
     }).map(user => {
+        const participantId = user.id; // Keep original ID for user drops to avoid breaking everything
         const droppedActorId = drops[user.id];
         const droppedActor = droppedActorId ? game.actors.get(droppedActorId) : null;
         const actorGp = droppedActor ? getActorTotalGp(droppedActor) : 0;
@@ -806,6 +862,7 @@ function getOnlinePlayers() {
 
         return {
             id: user.id,
+            participantId: user.id,
             name: user.name,
             character: user.character,
             characterName: user.character?.name || game.i18n.localize("SHADOWDARK_EXTRAS.carousing.no_character"),
@@ -821,10 +878,59 @@ function getOnlinePlayers() {
             isConfirmed: isConfirmed,
             result: result,
             renown: renown,
-            totalBonus: totalBonus
+            totalBonus: totalBonus,
+            isGmManaged: false
         };
     });
+
+    // 2. Get GM-added Actor participants
+    const gmParticipants = gmActors.map(actorId => {
+        const droppedActor = game.actors.get(actorId);
+        if (!droppedActor) return null;
+
+        const participantId = `actor-${actorId}`;
+        const actorGp = getActorTotalGp(droppedActor);
+        const canAfford = actorGp >= splitCost;
+        const isConfirmed = session.confirmations[participantId] === true;
+        const result = session.results?.[participantId];
+        const renown = droppedActor.getFlag(MODULE_ID, "renown") || 0;
+        const renownBonus = getRenownBonus(renown);
+        const totalBonus = selectedTier ? (selectedTier.bonus + renownBonus) : renownBonus;
+
+        return {
+            id: participantId,
+            participantId: participantId,
+            name: "GM Managed",
+            character: droppedActor,
+            characterName: droppedActor.name,
+            color: "#666",
+            droppedActor: droppedActor,
+            droppedActorId: actorId,
+            droppedActorName: droppedActor.name,
+            droppedActorImg: droppedActor.img,
+            hasDrop: true,
+            isCurrentUser: game.user.isGM,
+            actorGp: actorGp,
+            canAfford: canAfford,
+            isConfirmed: isConfirmed,
+            result: result,
+            renown: renown,
+            totalBonus: totalBonus,
+            isGmManaged: true
+        };
+    }).filter(p => p !== null);
+
+    return [...userParticipants, ...gmParticipants];
 }
+
+/**
+ * Get online players with their carousing data
+ * @deprecated Use getCarousingParticipants instead
+ */
+function getOnlinePlayers() {
+    return getCarousingParticipants().filter(p => !p.isGmManaged);
+}
+
 
 /**
  * Get actor's total GP (coins.gp + sp/10 + cp/100)
@@ -838,10 +944,10 @@ function getActorTotalGp(actor) {
 }
 
 /**
- * Get players who have dropped actors
+ * Get participants who have dropped actors
  */
 function getParticipants() {
-    return getOnlinePlayers().filter(p => p.hasDrop);
+    return getCarousingParticipants().filter(p => p.hasDrop);
 }
 
 // ============================================
@@ -960,7 +1066,7 @@ async function executeExpandedCarousingRolls(session, tier, participants) {
         const renownBonus = getRenownBonus(renown);
 
         // Get custom GM modifiers for this player
-        const playerMods = session.modifiers?.[participant.id] || {};
+        const playerMods = session.modifiers?.[participant.participantId] || {};
         const outcomeMod = playerMods.outcome ? ` + ${playerMods.outcome}` : "";
 
         // Roll 1d8 + tier bonus + renown bonus + custom modifier for outcome table
@@ -1024,7 +1130,7 @@ async function executeExpandedCarousingRolls(session, tier, participants) {
         }
 
         // Store result
-        results[participant.id] = {
+        results[participant.participantId] = {
             outcomeRoll: outcomeTotal,
             diceRoll: outcomeDice,
             bonus: tier.bonus,
@@ -1064,7 +1170,7 @@ async function executeExpandedCarousingRolls(session, tier, participants) {
                 <div class="sdx-player-header">
                     <img src="${actor.img}" class="sdx-player-portrait">
                     <div class="sdx-player-info">
-                        <strong class="sdx-player-name">${actor.name}</strong>
+                        <strong class="sdx-player-name">${participant.isGmManaged ? participant.droppedActorName : participant.name}</strong>
                         <div class="sdx-outcome-roll">
                             <span class="sdx-roll-label">Outcome:</span>
                             <span class="sdx-roll-formula">${outcomeFormula}</span>
@@ -1246,7 +1352,7 @@ export async function executeCarousingRolls() {
         await deductCoins(actor, costPerPerson);
 
         // Get custom GM modifiers for this player
-        const playerMods = session.modifiers?.[participant.id] || {};
+        const playerMods = session.modifiers?.[participant.participantId] || {};
         const outcomeMod = playerMods.outcome ? ` + ${playerMods.outcome}` : "";
 
         // Roll 1d8 + bonus + custom modifier
@@ -1260,7 +1366,7 @@ export async function executeCarousingRolls() {
         const outcome = getOutcome(rollTotal, activeTable.outcomes);
 
         // Store result (simplified - no XP or effects applied)
-        results[participant.id] = {
+        results[participant.participantId] = {
             roll: rollTotal,
             diceRoll: diceResult,
             bonus: tier.bonus,
@@ -1290,7 +1396,7 @@ export async function executeCarousingRolls() {
                 <div class="sdx-player-header">
                     <img src="${actor.img}" class="sdx-player-portrait">
                     <div class="sdx-player-info">
-                        <strong class="sdx-player-name">${actor.name}</strong>
+                        <strong class="sdx-player-name">${participant.isGmManaged ? participant.droppedActorName : participant.name}</strong>
                         <div class="sdx-outcome-roll">
                             <span class="sdx-roll-label">Roll:</span>
                             <span class="sdx-roll-formula">${diceResult} + ${tier.bonus}${playerMods.outcome ? ` + ${playerMods.outcome}` : ''} = <strong>${rollTotal}</strong></span>
@@ -1405,8 +1511,10 @@ export function initCarousingSocket() {
         // Re-render if drops or session changed (including deletions with -= prefix)
         const hasCarousingChange =
             flagChanges.carousingDrops !== undefined ||
+            flagChanges.carousingGmActors !== undefined ||
             flagChanges.carousingSession !== undefined ||
             flagChanges["-=carousingDrops"] !== undefined ||
+            flagChanges["-=carousingGmActors"] !== undefined ||
             flagChanges["-=carousingSession"] !== undefined;
 
         if (hasCarousingChange) {
