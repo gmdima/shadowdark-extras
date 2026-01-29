@@ -1,4 +1,4 @@
-// Tom Configuration - Ported from Exalted Scenes
+
 // All references to "exalted-scenes" have been replaced with shadowdark-extras paths
 
 export const TOM_CONFIG = {

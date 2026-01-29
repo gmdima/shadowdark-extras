@@ -176,11 +176,16 @@ export class TomSmartCreator extends HandlebarsApplicationMixin(ApplicationV2) {
     for (const file of files) {
       // Upload File
       try {
+        // Extract basename to avoid subfolder creation on some hosted environments (e.g. Sqyre)
+        // This ensures that even if a folder was selected, we only use the filename itself
+        const basename = file.name.split('/').pop().split('\\').pop();
+        const cleanFile = new File([file], basename, { type: file.type });
+
         // We use FilePicker.upload
         // Note: 'data' source is usually 'user' data.
-        await FilePicker.upload('data', targetDir, file);
+        await FilePicker.upload('data', targetDir, cleanFile);
 
-        const path = `${targetDir}/${file.name}`;
+        const path = `${targetDir}/${basename}`;
 
         // Smart Parse
         const emotionKey = this._parseEmotionName(file.name);

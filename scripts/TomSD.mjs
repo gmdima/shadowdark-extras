@@ -1,4 +1,3 @@
-// Tom - Ported from Exalted Scenes
 // Scene/Character management and broadcasting system
 
 import { TOM_CONFIG } from './TomConfig.mjs';
