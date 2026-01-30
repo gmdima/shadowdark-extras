@@ -429,14 +429,51 @@
                         </li>
                         {{/each}}
                     </ul>
-                    {{else}}
-                    <div class="no-character-message">
-                        <p>No Pins Found</p>
-                        <p>Add pins to the scene using the map pin tool</p>
-                    </div>
                     {{/if}}
-                </div>
 
+                    {{#if mapNotes.length}}
+                    <div class="section-divider">
+                        <span class="divider-text">MAP NOTES</span>
+                    </div>
+                    <ul class="sdx-pin-list map-notes-list">
+                        {{#each mapNotes}}
+                        <li class="pin-entry map-note-entry flexrow" data-id="{{this.id}}" data-uuid="{{this.uuid}}"
+                            data-x="{{this.x}}" data-y="{{this.y}}" style="align-items: stretch; padding: 0;">
+                            <div
+                                style="flex: 0 0 50px; width: 50px; display: flex; align-items: center; justify-content: center; border-right: 1px solid #85733f;">
+                                <div class="pin-icon"
+                                    style="display: flex; justify-content: center; align-items: center; background-color: rgba(0,0,0,0.5); border: 2px solid #85733f; border-radius: 4px; width: 32px; height: 32px;">
+                                    <img src="{{this.img}}"
+                                        style="display: block; width: 24px; height: 24px; object-fit: contain;"
+                                        alt="Icon" />
+                                </div>
+                            </div>
+                            <div class="pin-info flexcol"
+                                style="flex: 1; min-width: 0; justify-content: center; padding: 4px 8px;">
+                                <span class="pin-name">{{this.name}}</span>
+                                <div class="pin-controls flexrow">
+                                    <a class="map-note-control" data-action="open" title="Open Note"><i
+                                            class="fa-solid fa-book-open"></i></a>
+                                    <a class="map-note-control" data-action="pan" title="Pan to Note"><i
+                                            class="fas fa-crosshairs"></i></a>
+                                    {{#if this.canDelete}}
+                                    <a class="map-note-control danger" data-action="delete" title="Delete Note"><i
+                                            class="fa-solid fa-trash" style="color: #ff3333;"></i></a>
+                                    {{/if}}
+                                </div>
+                            </div>
+                        </li>
+                        {{/each}}
+                    </ul>
+                    {{/if}}
+
+                    {{#unless (or pins.length mapNotes.length)}}
+                    <div class="no-character-message">
+                        <p>No Pins or Notes Found</p>
+                        <p>Add pins or map notes to the scene to see them here</p>
+                    </div>
+                    {{/unless}}
+                </div>
             </div>
             <!-- NOTES TAB -->
             <div class="tray-view-content notes-view {{#unless (eq viewMode 'notes')}}hidden{{/unless}}"

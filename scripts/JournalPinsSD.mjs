@@ -564,6 +564,9 @@ class JournalPinGraphics extends PIXI.Container {
         // Set initial position synchronously to prevent race conditions
         this.position.set(this.pinData.x, this.pinData.y);
 
+        this._labelOffset = { x: 0, y: 0 };
+        this._labelContainer = null;
+
         // Do NOT call _init() here, we defer it until we are indexed in the renderer
     }
 
@@ -800,6 +803,17 @@ class JournalPinGraphics extends PIXI.Container {
 
     async _build() {
         if (this.destroyed) return;
+
+        // Cleanup old label container BEFORE building new content
+        // This prevents orphaned labels when pin is moved or rebuilt
+        if (this._labelContainer) {
+            if (this._labelContainer.parent) {
+                this._labelContainer.parent.removeChild(this._labelContainer);
+            }
+            this._labelContainer.destroy({ children: true });
+            this._labelContainer = null;
+        }
+
         // Don't remove children yet, wait until new content is ready
 
 
@@ -1050,16 +1064,18 @@ class JournalPinGraphics extends PIXI.Container {
                 }
             }
 
-            // Create text
+            // Create text with extra padding for script/italic fonts that bleed outside bounds
+            const fontSize = style.labelFontSize || 16;
             const labelText = new PIXI.Text(style.labelText, {
                 fontFamily: labelFontFamily,
-                fontSize: style.labelFontSize || 16,
+                fontSize: fontSize,
                 fill: style.labelColor || "#ffffff",
                 stroke: style.labelStroke || "#000000",
                 strokeThickness: style.labelStrokeThickness ?? 4,
                 fontWeight: style.labelBold ? "bold" : "normal",
                 fontStyle: style.labelItalic ? "italic" : "normal",
-                align: "center"
+                align: "center",
+                padding: Math.ceil(fontSize * 0.4) // Extra padding for script/decorative fonts
             });
 
             // Background
@@ -1180,10 +1196,21 @@ class JournalPinGraphics extends PIXI.Container {
 
             this._labelContainer.position.set(posX, posY);
 
+            // Store offset for movement syncing
+            this._labelOffset = { x: posX, y: posY };
+
             // Initial Visibility
             this._labelContainer.visible = !style.labelShowOnHover;
 
-            this.addChild(this._labelContainer);
+            // Add to the SEPARATE label container if available, otherwise fallback to self
+            const rendererLabelContainer = JournalPinRenderer.getLabelContainer();
+            if (rendererLabelContainer) {
+                // Determine absolute position
+                this._labelContainer.position.set(this.position.x + posX, this.position.y + posY);
+                rendererLabelContainer.addChild(this._labelContainer);
+            } else {
+                this.addChild(this._labelContainer);
+            }
         }
 
         // Hit area based on shape
@@ -1692,6 +1719,11 @@ class JournalPinGraphics extends PIXI.Container {
         if (this._hasDragged) {
             this.position.x = newX;
             this.position.y = newY;
+
+            // Update label position if it exists and is separated
+            if (this._labelContainer && this._labelContainer.parent !== this) {
+                this._labelContainer.position.set(newX + this._labelOffset.x, newY + this._labelOffset.y);
+            }
         }
     }
 
@@ -1880,6 +1912,10 @@ class JournalPinGraphics extends PIXI.Container {
 
     destroy(options) {
         this._removeEventListeners();
+        if (this._labelContainer) {
+            this._labelContainer.destroy({ children: true });
+            this._labelContainer = null;
+        }
         super.destroy(options);
     }
 }
@@ -1995,6 +2031,7 @@ class JournalPinTooltip {
 
 class JournalPinRenderer {
     static _container = null;
+    static _labelContainer = null;
     static _pins = new Map();
 
     static initialize(layer) {
@@ -2032,8 +2069,19 @@ class JournalPinRenderer {
         // Use canvas.controls which supports PIXI pointer events
         if (canvas?.controls) {
             canvas.controls.addChild(this._container);
-            console.log("SDX Journal Pins | Container added to canvas.controls");
+
+            this._labelContainer = new PIXI.Container();
+            this._labelContainer.name = "sdx-pins-label-container";
+            this._labelContainer.eventMode = "none";
+            this._labelContainer.interactiveChildren = false;
+            canvas.controls.addChild(this._labelContainer);
+
+            console.log("SDX Journal Pins | Containers added to canvas.controls");
         }
+    }
+
+    static getLabelContainer() {
+        return this._labelContainer;
     }
 
     static getContainer() {
@@ -2160,6 +2208,10 @@ class JournalPinRenderer {
         if (this._container) {
             this._container.destroy();
             this._container = null;
+        }
+        if (this._labelContainer) {
+            this._labelContainer.destroy();
+            this._labelContainer = null;
         }
     }
 }

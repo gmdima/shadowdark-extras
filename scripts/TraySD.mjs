@@ -89,6 +89,11 @@ export function initTray() {
     // Hook into scene changes
     Hooks.on("canvasReady", async () => await renderTray());
 
+    // Hook into Map Notes
+    Hooks.on("createNote", async () => await renderTray());
+    Hooks.on("updateNote", async () => await renderTray());
+    Hooks.on("deleteNote", async () => await renderTray());
+
     // Hook to update tray when pins change on scene
     Hooks.on("updateScene", (document, change, options, userId) => {
         // Check if the update involves the flags for this module (pins)
@@ -379,6 +384,7 @@ export async function renderTray() {
 
         // Pins Data
         pins: game.user.isGM ? getPinsData() : [],
+        mapNotes: getMapNotesData(),
 
         // Notes Data
         notes: await getNotesData(),
@@ -644,6 +650,41 @@ export async function getNotesData() {
     notesList.sort((a, b) => a.name.localeCompare(b.name));
 
     return notesList;
+}
+
+/**
+ * Get enriched Map Notes data for the current scene
+ * @returns {Array}
+ */
+export function getMapNotesData() {
+    if (!canvas.scene) return [];
+
+    // Filter notes based on user permission
+    const notes = canvas.scene.notes.filter(n => n.testUserPermission(game.user, "LIMITED"));
+
+    const enrichedNotes = notes.map(note => {
+        const journal = game.journal.get(note.journalId);
+        const page = journal?.pages.get(note.pageId);
+
+        let name = note.text || page?.name || journal?.name || "Unnamed Note";
+
+        return {
+            id: note.id,
+            uuid: note.uuid,
+            name: name,
+            img: note.texture?.src || "icons/svg/book.svg",
+            x: note.x,
+            y: note.y,
+            journalId: note.journalId,
+            pageId: note.pageId,
+            global: note.global,
+            canDelete: note.canUserModify(game.user, "delete")
+        };
+    });
+
+    // Sort alphabetically
+    enrichedNotes.sort((a, b) => a.name.localeCompare(b.name));
+    return enrichedNotes;
 }
 
 

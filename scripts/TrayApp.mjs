@@ -613,6 +613,42 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
             });
         });
 
+        // Map Note Actions
+        elem.querySelectorAll(".map-note-control").forEach(btn => {
+            btn.addEventListener("click", async (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+
+                const action = btn.dataset.action;
+                const entry = btn.closest(".map-note-entry");
+                const id = entry.dataset.id;
+                const uuid = entry.dataset.uuid;
+
+                if (!id) return;
+
+                if (action === "pan") {
+                    const x = parseFloat(entry.dataset.x);
+                    const y = parseFloat(entry.dataset.y);
+                    if (!isNaN(x) && !isNaN(y)) {
+                        canvas.animatePan({ x, y, scale: 1.5, duration: 500 });
+                    }
+                } else if (action === "delete") {
+                    const note = fromUuidSync(uuid);
+                    if (!note) return;
+
+                    Dialog.confirm({
+                        title: "Delete Map Note",
+                        content: `<p>Are you sure you want to delete the map note <strong>${note.text || note.name}</strong>?</p>`,
+                        yes: () => note.delete(),
+                        defaultYes: false
+                    });
+                } else if (action === "open") {
+                    const note = fromUuidSync(uuid);
+                    if (note) note.sheet.render(true);
+                }
+            });
+        });
+
         // Pin Search Input
         const searchInput = elem.querySelector(".pin-search-input");
         if (searchInput) {

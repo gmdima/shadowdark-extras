@@ -117,7 +117,11 @@ Hooks.once("init", () => {
 		"stonehen", "times_new_yorker", "venus-rising-rg"
 	];
 
-	CONFIG.fontFamilies = [...new Set([...CONFIG.fontFamilies, ...SDX_FONTS])];
+	if (CONFIG.fontFamilies instanceof Set) {
+		for (const font of SDX_FONTS) CONFIG.fontFamilies.add(font);
+	} else {
+		CONFIG.fontFamilies = [...new Set([...(CONFIG.fontFamilies || []), ...SDX_FONTS])];
+	}
 
 	if (window.FontsLoader) {
 		window.FontsLoader.load({
