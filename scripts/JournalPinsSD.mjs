@@ -1036,14 +1036,16 @@ class JournalPinGraphics extends PIXI.Container {
 
                 const label = new PIXI.Text(textValue, {
                     fontFamily: fontFamily,
-                    fontSize: fontSize,
+                    fontSize: fontSize * 4,
                     fontWeight: fontWeight,
                     fill: fontColorNum,
                     stroke: style.fontStroke || "#000000",
-                    strokeThickness: style.fontStrokeThickness ?? 0,
+                    strokeThickness: (style.fontStrokeThickness ?? 0) * 4,
                     fontStyle: style.fontItalic ? "italic" : "normal",
-                    align: "center"
+                    align: "center",
+                    resolution: 4
                 });
+                label.scale.set(0.25);
                 label.anchor.set(0.5, 0.5);
                 label.position.set(0, 0);
 
@@ -1082,15 +1084,17 @@ class JournalPinGraphics extends PIXI.Container {
             const fontSize = style.labelFontSize || 16;
             const labelText = new PIXI.Text(style.labelText, {
                 fontFamily: labelFontFamily,
-                fontSize: fontSize,
+                fontSize: fontSize * 4,
                 fill: style.labelColor || "#ffffff",
                 stroke: style.labelStroke || "#000000",
-                strokeThickness: style.labelStrokeThickness ?? 4,
+                strokeThickness: (style.labelStrokeThickness ?? 4) * 4,
                 fontWeight: style.labelBold ? "bold" : "normal",
                 fontStyle: style.labelItalic ? "italic" : "normal",
                 align: "center",
-                padding: Math.ceil(fontSize * 0.4) // Extra padding for script/decorative fonts
+                padding: Math.ceil(fontSize * 0.4) * 4, // Extra padding for script/decorative fonts
+                resolution: 4
             });
+            labelText.scale.set(0.25);
 
             // Background
             const padX = 8;
