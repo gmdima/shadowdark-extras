@@ -1,31 +1,8 @@
 <form class="sheet-editor-form" autocomplete="off">
-    {{!-- Live Preview Panel --}}
-    <div class="sheet-editor-preview">
-        <div class="preview-header">
-            <i class="fas fa-eye"></i> {{localize "SHADOWDARK_EXTRAS.sheetEditor.livePreview"}}
-        </div>
-        <div class="preview-container">
-            {{!-- Mini sheet mockup --}}
-            <div class="preview-sheet">
-                <div class="preview-border"></div>
-                <div class="preview-content">
-                    <div class="preview-abilities">
-                        <div class="preview-ability-box">STR</div>
-                        <div class="preview-ability-box">DEX</div>
-                        <div class="preview-ability-box">CON</div>
-                    </div>
-                    <div class="preview-stats">
-                        <div class="preview-ac-box">AC</div>
-                        <div class="preview-stat-box">Init</div>
-                        <div class="preview-stat-box">Lvl</div>
-                    </div>
-                    {{!-- Box preview for border tweaks --}}
-                    <div class="preview-sd-box">
-                        <span style="font-size: 8px;">Box Border Preview</span>
-                    </div>
-                </div>
-            </div>
-        </div>
+    {{!-- Real-time Preview Hint --}}
+    <div class="sheet-editor-hint">
+        <i class="fas fa-info-circle"></i>
+        <span>{{localize "SHADOWDARK_EXTRAS.sheetEditor.realTimeHint"}}</span>
     </div>
 
     {{!-- Sheet Border Style --}}
@@ -102,32 +79,6 @@
                         <option value="round" {{#if (eq borderImageRepeat "round" )}}selected{{/if}}>Round</option>
                         <option value="space" {{#if (eq borderImageRepeat "space" )}}selected{{/if}}>Space</option>
                     </select>
-                </div>
-            </div>
-            <div class="header-control-group">
-                <label>{{localize "SHADOWDARK_EXTRAS.sheetEditor.borderBackgroundColor"}}</label>
-                <div class="control-input">
-                    <input type="color" data-setting="borderBackgroundColor" value="{{borderBackgroundColor}}">
-                    <input type="text" data-setting="borderBackgroundColor" value="{{borderBackgroundColor}}"
-                        placeholder="transparent" class="color-text-input">
-                </div>
-            </div>
-            <div class="header-control-group">
-                <label>{{localize "SHADOWDARK_EXTRAS.sheetEditor.sheetHeaderBackgroundColor"}}</label>
-                <div class="control-input">
-                    <input type="color" data-setting="sheetHeaderBackgroundColor"
-                        value="{{sheetHeaderBackgroundColor}}">
-                    <input type="text" data-setting="sheetHeaderBackgroundColor" value="{{sheetHeaderBackgroundColor}}"
-                        placeholder="transparent" class="color-text-input">
-                </div>
-            </div>
-            <div class="header-control-group">
-                <label>{{localize "SHADOWDARK_EXTRAS.sheetEditor.windowTitleBarBackgroundColor"}}</label>
-                <div class="control-input">
-                    <input type="color" data-setting="windowTitleBarBackgroundColor"
-                        value="{{windowTitleBarBackgroundColor}}">
-                    <input type="text" data-setting="windowTitleBarBackgroundColor"
-                        value="{{windowTitleBarBackgroundColor}}" placeholder="#ffffff" class="color-text-input">
                 </div>
             </div>
         </div>
@@ -441,12 +392,12 @@
     </div>
 
     {{!-- Text Color Customization --}}
-    <div class="sheet-editor-category" data-category="text-colors">
+    <div class="sheet-editor-category" data-category="text-customization">
         <div class="sheet-editor-category-header">
             <div class="category-title">
                 <i class="fas fa-chevron-right category-toggle"></i>
-                <i class="fas fa-palette category-icon"></i>
-                <span>{{localize "SHADOWDARK_EXTRAS.sheetEditor.textColors"}}</span>
+                <i class="fas fa-font category-icon"></i>
+                <span>{{localize "SHADOWDARK_EXTRAS.sheetEditor.textCustomization"}}</span>
             </div>
         </div>
         <div class="sheet-editor-grid frame-controls" style="display: none;">
@@ -501,6 +452,35 @@
                 </div>
             </div>
             <div class="header-control-group">
+                <label>{{localize "SHADOWDARK_EXTRAS.sheetEditor.actorNameShadowColor"}}</label>
+                <div class="control-input">
+                    <input type="color" data-setting="actorNameShadowColor" value="{{actorNameShadowColor}}">
+                    <input type="text" data-setting="actorNameShadowColor" value="{{actorNameShadowColor}}"
+                        placeholder="#000000" class="color-text-input">
+                </div>
+            </div>
+            <div class="header-control-group">
+                <label>{{localize "SHADOWDARK_EXTRAS.sheetEditor.actorNameShadowAlpha"}}</label>
+                <div class="control-input">
+                    <input type="range" data-setting="actorNameShadowAlpha" value="{{actorNameShadowAlpha}}" min="0"
+                        max="1" step="0.05">
+                    <span class="range-value">{{actorNameShadowAlpha}}</span>
+                </div>
+            </div>
+            <div class="header-control-group">
+                <label>{{localize "SHADOWDARK_EXTRAS.sheetEditor.actorNameFontWeight"}}</label>
+                <div class="control-input">
+                    <select data-setting="actorNameFontWeight">
+                        <option value="bold" {{#if (eq actorNameFontWeight "bold" )}}selected{{/if}}>
+                            {{localize "SHADOWDARK_EXTRAS.sheetEditor.fontWeightBold"}}
+                        </option>
+                        <option value="normal" {{#if (eq actorNameFontWeight "normal" )}}selected{{/if}}>
+                            {{localize "SHADOWDARK_EXTRAS.sheetEditor.fontWeightNormal"}}
+                        </option>
+                    </select>
+                </div>
+            </div>
+            <div class="header-control-group">
                 <label>{{localize "SHADOWDARK_EXTRAS.sheetEditor.windowHeaderColor"}}</label>
                 <div class="control-input">
                     <input type="color" data-setting="windowHeaderColor" value="{{windowHeaderColor}}">
@@ -541,22 +521,6 @@
                 </div>
             </div>
             <div class="header-control-group">
-                <label>{{localize "SHADOWDARK_EXTRAS.sheetEditor.navBackgroundColor"}}</label>
-                <div class="control-input">
-                    <input type="color" data-setting="navBackgroundColor" value="{{navBackgroundColor}}">
-                    <input type="text" data-setting="navBackgroundColor" value="{{navBackgroundColor}}"
-                        placeholder="#ffffff" class="color-text-input">
-                </div>
-            </div>
-            <div class="header-control-group">
-                <label>{{localize "SHADOWDARK_EXTRAS.sheetEditor.navBorderColor"}}</label>
-                <div class="control-input">
-                    <input type="color" data-setting="navBorderColor" value="{{navBorderColor}}">
-                    <input type="text" data-setting="navBorderColor" value="{{navBorderColor}}"
-                        placeholder="rgba(0, 0, 0, 0.5)" class="color-text-input">
-                </div>
-            </div>
-            <div class="header-control-group">
                 <label>{{localize "SHADOWDARK_EXTRAS.sheetEditor.effectsTextColor"}}</label>
                 <div class="control-input">
                     <input type="color" data-setting="effectsTextColor" value="{{effectsTextColor}}">
@@ -591,16 +555,58 @@
         </div>
     </div>
 
-    {{!-- Tab Background Gradient --}}
-    <div class="sheet-editor-category" data-category="tab-gradient">
+    {{!-- Background Colors & Gradients --}}
+    <div class="sheet-editor-category" data-category="background-colors">
         <div class="sheet-editor-category-header">
             <div class="category-title">
                 <i class="fas fa-chevron-right category-toggle"></i>
-                <i class="fas fa-fill category-icon"></i>
-                <span>{{localize "SHADOWDARK_EXTRAS.sheetEditor.tabGradient"}}</span>
+                <i class="fas fa-palette category-icon"></i>
+                <span>{{localize "SHADOWDARK_EXTRAS.sheetEditor.backgroundColors"}}</span>
             </div>
         </div>
         <div class="sheet-editor-grid frame-controls" style="display: none;">
+            <div class="header-control-group">
+                <label>{{localize "SHADOWDARK_EXTRAS.sheetEditor.borderBackgroundColor"}}</label>
+                <div class="control-input">
+                    <input type="color" data-setting="borderBackgroundColor" value="{{borderBackgroundColor}}">
+                    <input type="text" data-setting="borderBackgroundColor" value="{{borderBackgroundColor}}"
+                        placeholder="transparent" class="color-text-input">
+                </div>
+            </div>
+            <div class="header-control-group">
+                <label>{{localize "SHADOWDARK_EXTRAS.sheetEditor.sheetHeaderBackgroundColor"}}</label>
+                <div class="control-input">
+                    <input type="color" data-setting="sheetHeaderBackgroundColor"
+                        value="{{sheetHeaderBackgroundColor}}">
+                    <input type="text" data-setting="sheetHeaderBackgroundColor" value="{{sheetHeaderBackgroundColor}}"
+                        placeholder="transparent" class="color-text-input">
+                </div>
+            </div>
+            <div class="header-control-group">
+                <label>{{localize "SHADOWDARK_EXTRAS.sheetEditor.windowTitleBarBackgroundColor"}}</label>
+                <div class="control-input">
+                    <input type="color" data-setting="windowTitleBarBackgroundColor"
+                        value="{{windowTitleBarBackgroundColor}}">
+                    <input type="text" data-setting="windowTitleBarBackgroundColor"
+                        value="{{windowTitleBarBackgroundColor}}" placeholder="#ffffff" class="color-text-input">
+                </div>
+            </div>
+            <div class="header-control-group">
+                <label>{{localize "SHADOWDARK_EXTRAS.sheetEditor.navBackgroundColor"}}</label>
+                <div class="control-input">
+                    <input type="color" data-setting="navBackgroundColor" value="{{navBackgroundColor}}">
+                    <input type="text" data-setting="navBackgroundColor" value="{{navBackgroundColor}}"
+                        placeholder="#ffffff" class="color-text-input">
+                </div>
+            </div>
+            <div class="header-control-group">
+                <label>{{localize "SHADOWDARK_EXTRAS.sheetEditor.navBorderColor"}}</label>
+                <div class="control-input">
+                    <input type="color" data-setting="navBorderColor" value="{{navBorderColor}}">
+                    <input type="text" data-setting="navBorderColor" value="{{navBorderColor}}"
+                        placeholder="rgba(0, 0, 0, 0.5)" class="color-text-input">
+                </div>
+            </div>
             <div class="header-control-group">
                 <label>{{localize "SHADOWDARK_EXTRAS.sheetEditor.tabGradientStart"}}</label>
                 <div class="control-input">

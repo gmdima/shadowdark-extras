@@ -384,6 +384,11 @@ export class PinStyleEditorApp extends HandlebarsApplicationMixin(ApplicationV2)
                 const targetName = btn.dataset.target;
                 const currentInput = form.querySelector(`[name="${targetName}"]`);
 
+                let browsePath = currentInput ? currentInput.value : "";
+                if (!browsePath && targetName === "labelBorderImagePath") {
+                    browsePath = "modules/shadowdark-extras/assets/labelframes/";
+                }
+
                 new FilePicker({
                     type: "image",
                     callback: (path) => {
@@ -393,7 +398,7 @@ export class PinStyleEditorApp extends HandlebarsApplicationMixin(ApplicationV2)
                             this._updatePreview();
                         }
                     }
-                }).browse(currentInput ? currentInput.value : "");
+                }).browse(browsePath);
             });
         });
 
@@ -630,6 +635,83 @@ export class PinStyleEditorApp extends HandlebarsApplicationMixin(ApplicationV2)
                 }
                 content.style.transform = style.shape === "diamond" ? "rotate(-45deg)" : "none";
             }
+
+            // Label Preview
+            const previewLabel = preview.querySelector('.preview-label');
+            if (previewLabel) {
+                const labelBg = style.labelBackground;
+                previewLabel.style.display = labelBg === "none" ? "none" : "flex";
+
+                // Position preview label relative to pin using CSS transform
+                const anchor = style.labelAnchor || "bottom";
+                const offsetSq = style.labelOffset ?? 5;
+                const pinHalf = (style.size || 40) / 2;
+
+                let tx = 0, ty = 0;
+                let originX = "center", originY = "center";
+
+                switch (anchor) {
+                    case "top":
+                        ty = -(pinHalf + offsetSq);
+                        originY = "bottom";
+                        break;
+                    case "bottom":
+                        ty = (pinHalf + offsetSq);
+                        originY = "top";
+                        break;
+                    case "left":
+                        tx = -(pinHalf + offsetSq);
+                        originX = "right";
+                        break;
+                    case "right":
+                        tx = (pinHalf + offsetSq);
+                        originX = "left";
+                        break;
+                    case "center":
+                        tx = 0;
+                        ty = 0;
+                        break;
+                }
+
+                previewLabel.style.transform = `translate(-50%, -50%) translate(${tx}px, ${ty}px)`;
+                previewLabel.style.transformOrigin = `${originX} ${originY}`;
+
+                if (labelBg === "solid") {
+                    previewLabel.style.border = `${style.labelBorderWidth}px solid ${style.labelBorderColor || "#ffffff"}`;
+                    previewLabel.style.borderRadius = `${style.labelBorderRadius}px`;
+                    previewLabel.style.backgroundColor = style.labelBackgroundColor || "rgba(0,0,0,0.8)";
+                    previewLabel.style.opacity = style.labelBackgroundOpacity ?? 1.0;
+                    previewLabel.style.borderImage = "none";
+                } else if (labelBg === "image") {
+                    previewLabel.style.borderRadius = "0";
+
+                    if (style.labelBorderImagePath) {
+                        const sT = style.labelBorderSliceTop || 15;
+                        const sR = style.labelBorderSliceRight || 15;
+                        const sB = style.labelBorderSliceBottom || 15;
+                        const sL = style.labelBorderSliceLeft || 15;
+
+                        previewLabel.style.borderStyle = "solid";
+                        previewLabel.style.borderWidth = `0px`; // Slices will define the visible border via fill
+                        previewLabel.style.borderImageSource = `url("${style.labelBorderImagePath}")`;
+                        previewLabel.style.borderImageSlice = `${sT} ${sR} ${sB} ${sL} fill`;
+                        previewLabel.style.borderImageWidth = "auto";
+                        previewLabel.style.borderImageOutset = "0px";
+                        previewLabel.style.borderImageRepeat = "stretch";
+
+                        if (style.labelBackgroundOpacity > 0) {
+                            previewLabel.style.backgroundColor = style.labelBackgroundColor || "#000000";
+                            previewLabel.style.opacity = style.labelBackgroundOpacity;
+                        } else {
+                            previewLabel.style.backgroundColor = "transparent";
+                        }
+                    } else {
+                        previewLabel.style.border = "1px dashed #666";
+                        previewLabel.style.backgroundColor = "transparent";
+                        previewLabel.style.borderImage = "none";
+                    }
+                }
+            }
         }
     }
 
@@ -701,9 +783,13 @@ export class PinStyleEditorApp extends HandlebarsApplicationMixin(ApplicationV2)
             labelBorderColor: form.querySelector('[name="labelBorderColor"]')?.value || "#ffffff",
             labelBorderWidth: parseInt(form.querySelector('[name="labelBorderWidth"]')?.value) || 0,
             labelBorderRadius: parseInt(form.querySelector('[name="labelBorderRadius"]')?.value) || 4,
-            labelBorderImageIndex: parseInt(form.querySelector('[name="labelBorderImageIndex"]')?.value) || 0,
             labelBorderImagePath: form.querySelector('[name="labelBorderImagePath"]')?.value || "",
+            labelBorderSliceTop: parseInt(form.querySelector('[name="labelBorderSliceTop"]')?.value) || 15,
+            labelBorderSliceRight: parseInt(form.querySelector('[name="labelBorderSliceRight"]')?.value) || 15,
+            labelBorderSliceBottom: parseInt(form.querySelector('[name="labelBorderSliceBottom"]')?.value) || 15,
+            labelBorderSliceLeft: parseInt(form.querySelector('[name="labelBorderSliceLeft"]')?.value) || 15,
             labelAnchor: form.querySelector('[name="labelAnchor"]')?.value || "bottom",
+            labelOffset: parseInt(form.querySelector('[name="labelOffset"]')?.value) || 0,
             hideTooltip: form.querySelector('[name="hideTooltip"]')?.checked || false
         };
 

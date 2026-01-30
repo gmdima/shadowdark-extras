@@ -4538,9 +4538,9 @@ li.entry.sdx-sidebar-unidentified {
 .shadowdark.sheet form:has(.SD-header.sdx-enhanced-header):not(:has(.sdx-header-bg-extension)) .SD-nav {
     position: relative;
     z-index: 1;
-    background: rgb(0 0 0);
+    background: var(--sdx-nav-bg);
     backdrop-filter: blur(2px);
-    border-bottom-color: rgba(0, 0, 0, 0.5);
+    border-bottom-color: var(--sdx-nav-border-color);
     margin: 0;
     padding: 0px 8px;
     margin-bottom: 0px;
@@ -5016,7 +5016,7 @@ li.entry.sdx-sidebar-unidentified {
     color: #fff;
     font-size: 28px;
     font-family: "Old Newspaper Font";
-    font-weight: bold;
+    font-weight: var(--sdx-actor-name-font-weight);
     text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.8);
     padding: 2px 4px;
     margin: 0;
@@ -5249,7 +5249,7 @@ li.entry.sdx-sidebar-unidentified {
 
 /* Increase gap in pulp mode */
 .sdx-enhanced-content .sdx-header-right:has(.sdx-luck-container.pulp-mode) {
-    gap: 8px;
+    gap: 6px;
 }
 
 /* Luck Container - Base styles */
@@ -5276,7 +5276,7 @@ li.entry.sdx-sidebar-unidentified {
 .sdx-enhanced-content .sdx-luck-container.standard-mode {
     color: rgba(200, 180, 140, 0.4);
     font-size: 30px;
-    margin-bottom: 28px;
+    margin-bottom: 14px;
 }
 
 .sdx-enhanced-content .sdx-luck-container.standard-mode.has-luck {
@@ -5296,6 +5296,14 @@ li.entry.sdx-sidebar-unidentified {
 
 .sdx-enhanced-content .sdx-luck-container.standard-mode.has-luck i {
     text-shadow: 0 0 8px rgba(200, 180, 140, 0.8);
+}
+
+.sdx-enhanced-content .sdx-luck-container.standard-mode .sdx-luck-label {
+    font-size: 9px;
+    letter-spacing: 0.5px;
+    color: inherit;
+    text-transform: uppercase;
+    font-weight: 600;
 }
 
 /* Pulp Mode - Editable Number */
@@ -5323,7 +5331,7 @@ li.entry.sdx-sidebar-unidentified {
 .sdx-enhanced-content .sdx-luck-container.pulp-mode .sdx-luck-label {
     font-size: 11px;
     letter-spacing: 0.7px;
-    color: rgba(255, 255, 255, 0.85);
+    color: var(--sdx-luck-container-color, rgba(255, 255, 255, 0.85));
     text-transform: uppercase;
     order: -1;
     /* Put label above */
@@ -17827,6 +17835,8 @@ body.sdx-dark-mode .sdx-carousing-toggle-btn i {
     display: inline !important;
     vertical-align: middle;
     margin-right: 3px;
+    margin-left: 3px;
+    margin-bottom: 2px;
 }
 
 /* ============================================
@@ -17928,7 +17938,7 @@ body.sdx-dark-mode .sdx-carousing-toggle-btn i {
 /* Actor Name */
 .sdx-enhanced-content .sdx-actor-name {
     color: var(--sdx-actor-name-color) !important;
-    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.8);
+    text-shadow: var(--sdx-actor-name-shadow);
 }
 
 /* Window Header */
@@ -17942,17 +17952,17 @@ div.window-app.shadowdark.sheet.player .window-header a {
 }
 
 div.window-app.shadowdark.sheet.player .window-header {
-    background-color: var(--sdx-window-title-bar-bg) !important;
+    background-color: var(--sdx-window-title-bar-bg);
 }
 
 .shadowdark.sheet.player .SD-header {
-    background-color: var(--sdx-sheet-header-bg) !important;
+    background-color: var(--sdx-sheet-header-bg);
 }
 
 /* Navigation Bar */
 /* Navigation Bar */
 .shadowdark.sheet.player .SD-nav {
-    background: var(--sdx-nav-bg) !important;
+    background: var(--sdx-nav-bg);
     border-bottom-color: var(--sdx-nav-border-color) !important;
 }
 

@@ -6,6 +6,7 @@
             <div class="preview-pin" style="border-style: solid;">
                 <span class="preview-content">3</span>
             </div>
+            <div class="preview-label">Label Name</div>
         </div>
     </section>
 
@@ -375,6 +376,12 @@
             </select>
         </div>
 
+        <div class="form-group">
+            <label>{{localize "SDX.pinStyleEditor.labelOffset"}} <span
+                    data-for="labelOffset">{{style.labelOffset}}</span>px</label>
+            <input type="range" name="labelOffset" min="-50" max="100" value="{{style.labelOffset}}" />
+        </div>
+
         <!-- Label Styling -->
         <div class="label-styling-options">
             <div class="form-group">
@@ -433,17 +440,6 @@
             <!-- Image Border Options -->
             <div class="label-image-options"
                 style="{{#unless (eq style.labelBackground 'image')}}display: none;{{/unless}}">
-                <div class="form-group">
-                    <label>Border Style</label>
-                    <select name="labelBorderImageIndex" style="font-family: monospace;">
-                        {{#each borderStyles}}
-                        <option value="{{this.value}}" {{#if (eq this.value
-                            ../style.labelBorderImageIndex)}}selected{{/if}}>
-                            {{this.label}}
-                        </option>
-                        {{/each}}
-                    </select>
-                </div>
                 <div class="form-group color-group">
                     <label>BG Color</label>
                     <input type="color" name="labelImageBackgroundColor" value="{{style.labelBackgroundColor}}" />
@@ -465,9 +461,39 @@
                             <i class="fa-solid fa-file-import"></i>
                         </button>
                     </div>
-                    <p class="hint" style="font-size: 0.8em; color: #888;">Overrides the numbered style selection above.
-                    </p>
                 </div>
+
+                <details class="advanced-border-details">
+                    <summary><i class="fa-solid fa-cog"></i> {{localize "SDX.pinStyleEditor.advancedBorder"}}</summary>
+                    <div class="advanced-border-options">
+                        <div class="slice-grid">
+                            <div class="form-group slice-group">
+                                <label>{{localize "SDX.pinStyleEditor.borderSliceTop"}} <span
+                                        data-for="labelBorderSliceTop">{{style.labelBorderSliceTop}}</span></label>
+                                <input type="range" name="labelBorderSliceTop" min="1" max="250"
+                                    value="{{style.labelBorderSliceTop}}" />
+                            </div>
+                            <div class="form-group slice-group">
+                                <label>{{localize "SDX.pinStyleEditor.borderSliceRight"}} <span
+                                        data-for="labelBorderSliceRight">{{style.labelBorderSliceRight}}</span></label>
+                                <input type="range" name="labelBorderSliceRight" min="1" max="250"
+                                    value="{{style.labelBorderSliceRight}}" />
+                            </div>
+                            <div class="form-group slice-group">
+                                <label>{{localize "SDX.pinStyleEditor.borderSliceBottom"}} <span
+                                        data-for="labelBorderSliceBottom">{{style.labelBorderSliceBottom}}</span></label>
+                                <input type="range" name="labelBorderSliceBottom" min="1" max="250"
+                                    value="{{style.labelBorderSliceBottom}}" />
+                            </div>
+                            <div class="form-group slice-group">
+                                <label>{{localize "SDX.pinStyleEditor.borderSliceLeft"}} <span
+                                        data-for="labelBorderSliceLeft">{{style.labelBorderSliceLeft}}</span></label>
+                                <input type="range" name="labelBorderSliceLeft" min="1" max="250"
+                                    value="{{style.labelBorderSliceLeft}}" />
+                            </div>
+                        </div>
+                    </div>
+                </details>
 
             </div>
 

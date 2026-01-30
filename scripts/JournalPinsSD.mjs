@@ -53,9 +53,13 @@ const DEFAULT_PIN_STYLE = {
     labelBorderRadius: 4,
     labelBold: false,
     labelItalic: false,
-    labelBorderImageIndex: 0, // 0-31
-    labelBorderImagePath: "", // Custom path overrides index
+    labelBorderImagePath: "", // Custom path for border image
+    labelBorderSliceTop: 15,
+    labelBorderSliceRight: 15,
+    labelBorderSliceBottom: 15,
+    labelBorderSliceLeft: 15,
     labelAnchor: "bottom", // "top", "bottom", "left", "right", "center"
+    labelOffset: 5,
     hideTooltip: false
 };
 
@@ -1091,21 +1095,21 @@ class JournalPinGraphics extends PIXI.Container {
                     // Check for custom image path first
                     if (style.labelBorderImagePath && typeof style.labelBorderImagePath === "string" && style.labelBorderImagePath.trim() !== "") {
                         path = style.labelBorderImagePath.trim();
-                    } else {
-                        // Load the numbered border image (0-31)
-                        // Ensure index is valid integer 0-31
-                        let idx = parseInt(style.labelBorderImageIndex);
-                        if (isNaN(idx) || idx < 0) idx = 0;
-                        if (idx > 36) idx = 36;
-
-                        const filename = `panel-border-${String(idx).padStart(3, "0")}.png`;
-                        path = `modules/shadowdark-extras/art/PNG/Default/Border/${filename}`;
                     }
+
+                    if (!path) return;
 
                     const tex = await loadTexture(path);
                     if (tex) {
-                        // Assume typical 15px corner slice for these assets
-                        bg = new PIXI.NineSlicePlane(tex, 15, 15, 15, 15);
+                        const sT = parseInt(style.labelBorderSliceTop) || 15;
+                        const sR = parseInt(style.labelBorderSliceRight) || 15;
+                        const sB = parseInt(style.labelBorderSliceBottom) || 15;
+                        const sL = parseInt(style.labelBorderSliceLeft) || 15;
+
+                        // PIXI.NineSlicePlane(texture, leftWidth, topHeight, rightWidth, bottomHeight)
+                        bg = new PIXI.NineSlicePlane(tex, sL, sT, sR, sB);
+
+                        // The background size should cover the text plus padding
                         bg.width = labelText.width + (padX * 4);
                         bg.height = labelText.height + (padY * 4);
 
@@ -1169,7 +1173,7 @@ class JournalPinGraphics extends PIXI.Container {
             const bgW = bg ? bg.width : labelText.width;
             const bgH = bg ? bg.height : labelText.height;
             const pinRadius = style.size / 2;
-            const padding = 5;
+            const padding = style.labelOffset ?? 5;
 
             let posX = 0;
             let posY = 0;

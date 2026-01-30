@@ -8,35 +8,35 @@ const MODULE_ID = "shadowdark-extras";
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
 /**
- * Default style values
+ * Default style values (Dark theme - matches dark mode)
  */
 const DEFAULTS = {
-    sheetBorderStyle: "panel-border-004.png",
-    abilityPanelStyle: "panel-013.png",
-    acPanelStyle: "panel-transparent-center-004.png",
-    statPanelStyle: "panel-transparent-center-015.png",
-    borderImageWidth: 16,
-    borderImageSlice: 12,
-    borderImageOutset: 0,
-    borderImageRepeat: "stretch",
+    sheetBorderStyle: "skulls.png",
+    abilityPanelStyle: "skulls.png",
+    acPanelStyle: "round1.png",
+    statPanelStyle: "round1.png",
+    borderImageWidth: 15,
+    borderImageSlice: 80,
+    borderImageOutset: 1,
+    borderImageRepeat: "repeat",
     borderBackgroundColor: "",
-    sheetHeaderBackgroundColor: "",
+    sheetHeaderBackgroundColor: "#000000",
     borderWidth: 10,
-    sdBoxBorderStyle: "panel-border-001.png",
-    sdBoxBorderWidth: 16,
-    sdBoxBorderSlice: 12,
+    sdBoxBorderStyle: "stat.png",
+    sdBoxBorderWidth: 1,
+    sdBoxBorderSlice: 71,
     sdBoxBorderTransparencyWidth: 10,
     // Journal border settings
-    journalBorderStyle: "panel-border-004.png",
-    journalBorderImageWidth: 16,
-    journalBorderImageSlice: 12,
+    journalBorderStyle: "stat.png",
+    journalBorderImageWidth: 24,
+    journalBorderImageSlice: 200,
     journalBorderImageOutset: 0,
     journalBorderImageRepeat: "repeat",
-    abilityModColor: "#000000",
-    levelValueColor: "#000000",
-    acValueColor: "#000000",
-    initModColor: "#000000",
-    luckValueColor: "#000000",
+    abilityModColor: "#ffffff",
+    levelValueColor: "#ffffff",
+    acValueColor: "#ffffff",
+    initModColor: "#ffffff",
+    luckValueColor: "#ffffff",
     tabGradientStart: "#000000",
     tabGradientEnd: "#2f2b2b",
     // Condition Modal border settings
@@ -52,13 +52,16 @@ const DEFAULTS = {
     luckContainerColor: "#ffffff",
     actorNameColor: "#ffffff",
     windowHeaderColor: "#ffffff",
-    navBackgroundColor: "#ffffff",
+    navBackgroundColor: "#131010",
     navBorderColor: "rgba(0, 0, 0, 0.5)",
     effectsTextColor: "#ffffff",
-    talentsTextColor: "#000000",
+    talentsTextColor: "#ffffff",
     xpRowColor: "#ffffff",
-    windowTitleBarBackgroundColor: "#ffffff",
-    statsLabelColor: "#ffffff"
+    windowTitleBarBackgroundColor: "#000000",
+    statsLabelColor: "#ffffff",
+    actorNameShadowColor: "#000000",
+    actorNameShadowAlpha: 0.8,
+    actorNameFontWeight: "bold"
 };
 
 /**
@@ -442,6 +445,8 @@ export default class SheetEditorConfig extends HandlebarsApplicationMixin(Applic
                 --sdx-xp-row-color: ${this._previewState.xpRowColor || '#ffffff'};
                 --sdx-window-title-bar-bg: ${this._previewState.windowTitleBarBackgroundColor || '#ffffff'};
                 --sdx-stats-label-color: ${this._previewState.statsLabelColor || '#ffffff'};
+                --sdx-actor-name-shadow: 1px 1px 3px ${this._hexToRgba(this._previewState.actorNameShadowColor || '#000000', this._previewState.actorNameShadowAlpha ?? 0.8)};
+                --sdx-actor-name-font-weight: ${this._previewState.actorNameFontWeight || 'bold'};
             }
         `;
     }
@@ -578,6 +583,25 @@ export default class SheetEditorConfig extends HandlebarsApplicationMixin(Applic
         };
 
         input.click();
+    }
+
+    /**
+     * Convert hex color and alpha to rgba string
+     * @param {string} hex - Hex color string
+     * @param {number} alpha - Alpha value (0-1)
+     * @returns {string} - rgba string
+     */
+    _hexToRgba(hex, alpha) {
+        if (!hex) return `rgba(0, 0, 0, ${alpha})`;
+
+        // Handle rgba strings if already present
+        if (hex.startsWith('rgba')) return hex;
+
+        const r = parseInt(hex.slice(1, 3), 16);
+        const g = parseInt(hex.slice(3, 5), 16);
+        const b = parseInt(hex.slice(5, 7), 16);
+
+        return `rgba(${r}, ${g}, ${b}, ${alpha})`;
     }
 }
 

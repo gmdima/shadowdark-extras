@@ -3572,6 +3572,25 @@ function enableItemChatIcon(app, html) {
  */
 
 /**
+ * Convert hex color and alpha to rgba string
+ * @param {string} hex - Hex color string
+ * @param {number} alpha - Alpha value (0-1)
+ * @returns {string} - rgba string
+ */
+function hexToRgba(hex, alpha) {
+	if (!hex) return `rgba(0, 0, 0, ${alpha})`;
+
+	// Handle rgba strings if already present
+	if (hex.startsWith('rgba')) return hex;
+
+	const r = parseInt(hex.slice(1, 3), 16);
+	const g = parseInt(hex.slice(3, 5), 16);
+	const b = parseInt(hex.slice(5, 7), 16);
+
+	return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+
+/**
  * Apply sheet decoration styles dynamically based on settings
  * Injects CSS custom properties for border and panel images
  */
@@ -3591,6 +3610,7 @@ function applySheetDecorationStyles() {
 	let abilityModColor, levelValueColor, acValueColor, initModColor, luckValueColor;
 	let navLinkColor, navLinkActiveColor, detailsRowColor, luckContainerColor, actorNameColor, windowHeaderColor;
 	let navBackgroundColor, navBorderColor, effectsTextColor, talentsTextColor, xpRowColor, windowTitleBarBackgroundColor, statsLabelColor;
+	let actorNameShadowColor, actorNameShadowAlpha, actorNameFontWeight;
 	let tabGradientStart, tabGradientEnd;
 	try {
 		sheetBorder = game.settings.get(MODULE_ID, "sheetBorderStyle") || "panel-border-004.png";
@@ -3637,6 +3657,9 @@ function applySheetDecorationStyles() {
 		xpRowColor = game.settings.get(MODULE_ID, "xpRowColor") || "#ffffff";
 		windowTitleBarBackgroundColor = game.settings.get(MODULE_ID, "windowTitleBarBackgroundColor") || "#ffffff";
 		statsLabelColor = game.settings.get(MODULE_ID, "statsLabelColor") || "#ffffff";
+		actorNameShadowColor = game.settings.get(MODULE_ID, "actorNameShadowColor") || "#000000";
+		actorNameShadowAlpha = game.settings.get(MODULE_ID, "actorNameShadowAlpha") ?? 0.8;
+		actorNameFontWeight = game.settings.get(MODULE_ID, "actorNameFontWeight") || "bold";
 		tabGradientStart = game.settings.get(MODULE_ID, "tabGradientStart") || "#000000";
 		tabGradientEnd = game.settings.get(MODULE_ID, "tabGradientEnd") || "#2f2b2b";
 	} catch {
@@ -3685,6 +3708,9 @@ function applySheetDecorationStyles() {
 		xpRowColor = "#ffffff";
 		windowTitleBarBackgroundColor = "#ffffff";
 		statsLabelColor = "#ffffff";
+		actorNameShadowColor = "#000000";
+		actorNameShadowAlpha = 0.8;
+		actorNameFontWeight = "bold";
 		tabGradientStart = "#000000";
 		tabGradientEnd = "#2f2b2b";
 	}
@@ -3749,6 +3775,8 @@ function applySheetDecorationStyles() {
 			--sdx-stats-label-color: ${statsLabelColor};
 			--sdx-tab-gradient-start: ${tabGradientStart};
 			--sdx-tab-gradient-end: ${tabGradientEnd};
+			--sdx-actor-name-shadow: 1px 1px 3px ${hexToRgba(actorNameShadowColor, actorNameShadowAlpha)};
+			--sdx-actor-name-font-weight: ${actorNameFontWeight};
 		}
 	`;
 
@@ -4330,6 +4358,33 @@ function registerSettings() {
 		scope: "world",
 		config: false,
 		default: "#ffffff",
+		type: String,
+		onChange: () => applySheetDecorationStyles()
+	});
+
+	game.settings.register(MODULE_ID, "actorNameShadowColor", {
+		name: game.i18n.localize("SHADOWDARK_EXTRAS.sheetEditor.actorNameShadowColor"),
+		scope: "world",
+		config: false,
+		default: "#000000",
+		type: String,
+		onChange: () => applySheetDecorationStyles()
+	});
+
+	game.settings.register(MODULE_ID, "actorNameShadowAlpha", {
+		name: game.i18n.localize("SHADOWDARK_EXTRAS.sheetEditor.actorNameShadowAlpha"),
+		scope: "world",
+		config: false,
+		default: 0.8,
+		type: Number,
+		onChange: () => applySheetDecorationStyles()
+	});
+
+	game.settings.register(MODULE_ID, "actorNameFontWeight", {
+		name: game.i18n.localize("SHADOWDARK_EXTRAS.sheetEditor.actorNameFontWeight"),
+		scope: "world",
+		config: false,
+		default: "bold",
 		type: String,
 		onChange: () => applySheetDecorationStyles()
 	});
@@ -6690,6 +6745,7 @@ async function injectEnhancedHeader(app, html, actor) {
 		luckHtml = `
 			<div class="sdx-luck-container standard-mode ${hasLuck}" data-tooltip="Luck (${luckStatus})">
 				<i class="fa-solid fa-dice-d20"></i>
+				<div class="sdx-luck-label">LUCK</div>
 			</div>
 		`;
 	}
