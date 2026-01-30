@@ -42,6 +42,8 @@ export class PinStyleEditorApp extends HandlebarsApplicationMixin(ApplicationV2)
 
         if (this.pinId) {
             this.options.window.title = "SDX.pinStyleEditor.titleIndividual";
+            this._isSaved = false;
+            this._canvasUpdateDebounce = foundry.utils.debounce(this._updateCanvasPreview.bind(this), 100);
         }
     }
 
@@ -507,6 +509,11 @@ export class PinStyleEditorApp extends HandlebarsApplicationMixin(ApplicationV2)
 
         const style = this._getFormData();
 
+        // Real-time canvas preview for individual pins
+        if (this.pinId && this._canvasUpdateDebounce) {
+            this._canvasUpdateDebounce(style);
+        }
+
         // Update preview display
         const size = parseInt(style.size) || 32;
         const previewPin = html.querySelector('.preview-pin');
@@ -607,7 +614,15 @@ export class PinStyleEditorApp extends HandlebarsApplicationMixin(ApplicationV2)
                     if (type === "text") {
                         content.textContent = style.customText || "";
                     } else {
-                        content.textContent = "3";
+                        // Calculate actual page number for preview
+                        let pageNumber = "";
+                        const journal = game.journal.get(style.journalId);
+                        if (journal && style.pageId) {
+                            const sortedPages = journal.pages.contents.sort((a, b) => a.sort - b.sort);
+                            const idx = sortedPages.findIndex(p => p.id === style.pageId);
+                            pageNumber = idx !== -1 ? String(idx + 1) : "";
+                        }
+                        content.textContent = pageNumber || (style.journalId ? "1" : "3");
                     }
 
                     // Await font loading if it's a custom font
@@ -835,6 +850,7 @@ export class PinStyleEditorApp extends HandlebarsApplicationMixin(ApplicationV2)
     }
 
     async _onSave() {
+        this._isSaved = true;
         const style = this._getFormData();
         const pinId = this.pinId;
 
@@ -898,13 +914,40 @@ export class PinStyleEditorApp extends HandlebarsApplicationMixin(ApplicationV2)
         }
     }
 
-    /**
-     * Override close to ensure it's always instant
-     */
     async close(options = {}) {
+        // Revert individual pin changes if closed without saving
+        if (this.pinId && !this._isSaved) {
+            const originalPin = JournalPinManager.get(this.pinId);
+            if (originalPin) {
+                JournalPinRenderer.updatePin(originalPin);
+            }
+        }
         if (this.element) this.element.style.display = "none"; // Vanish immediately
         options.animate = false;
         return super.close(options);
+    }
+
+    /**
+     * Update the pin on the canvas in real-time
+     * @param {Object} style - The temporary style data from the form
+     */
+    async _updateCanvasPreview(style) {
+        if (!this.pinId) return;
+
+        const pinGraphics = JournalPinRenderer.getPin(this.pinId);
+        if (pinGraphics) {
+            const originalPin = JournalPinManager.get(this.pinId);
+            if (!originalPin) return;
+
+            // Merge current form style into original pin data for a temporary update
+            const tempData = foundry.utils.mergeObject(
+                foundry.utils.deepClone(originalPin),
+                { style },
+                { inplace: false }
+            );
+
+            await pinGraphics.update(tempData);
+        }
     }
 
 

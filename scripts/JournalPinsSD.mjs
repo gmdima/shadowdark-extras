@@ -54,10 +54,10 @@ const DEFAULT_PIN_STYLE = {
     labelBold: false,
     labelItalic: false,
     labelBorderImagePath: "", // Custom path for border image
-    labelBorderSliceTop: 15,
-    labelBorderSliceRight: 15,
-    labelBorderSliceBottom: 15,
-    labelBorderSliceLeft: 15,
+    labelBorderSliceTop: 54,
+    labelBorderSliceRight: 54,
+    labelBorderSliceBottom: 54,
+    labelBorderSliceLeft: 54,
     labelAnchor: "bottom", // "top", "bottom", "left", "right", "center"
     labelOffset: 5,
     hideTooltip: false
