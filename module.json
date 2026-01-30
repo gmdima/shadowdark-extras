@@ -57,7 +57,9 @@
       {
         "id": "tokenmagic",
         "type": "module",
-        "compatibility": {}
+        "compatibility": {
+          "minimum": "0.7.5.1"
+        }
       },
       {
         "id": "itemacro",
