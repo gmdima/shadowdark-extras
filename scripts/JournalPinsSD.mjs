@@ -1164,20 +1164,20 @@ class JournalPinGraphics extends PIXI.Container {
                 if (bgColorGraphic) {
                     bgColorGraphic.pivot.set(pivotX, pivotY);
                     bgColorGraphic.position.set(0, 0);
-                    this._labelContainer.addChild(bgColorGraphic);
+                    newLabelContainer.addChild(bgColorGraphic);
                 }
 
                 // Add border/frame
                 if (bg instanceof PIXI.Graphics) bg.pivot.set(pivotX, pivotY);
                 else bg.pivot.set(pivotX, pivotY);
                 bg.position.set(0, 0);
-                this._labelContainer.addChild(bg);
+                newLabelContainer.addChild(bg);
             }
 
             // Center text
             labelText.anchor.set(0.5, 0.5);
             labelText.position.set(0, 0);
-            this._labelContainer.addChild(labelText);
+            newLabelContainer.addChild(labelText);
 
             // Position container relative to pin
             const bgW = bg ? bg.width : labelText.width;
