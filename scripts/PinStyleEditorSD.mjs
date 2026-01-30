@@ -43,7 +43,7 @@ export class PinStyleEditorApp extends HandlebarsApplicationMixin(ApplicationV2)
         if (this.pinId) {
             this.options.window.title = "SDX.pinStyleEditor.titleIndividual";
             this._isSaved = false;
-            this._canvasUpdateDebounce = foundry.utils.debounce(this._updateCanvasPreview.bind(this), 100);
+            this._canvasUpdateDebounce = foundry.utils.debounce(this._updateCanvasPreview.bind(this), 150);
         }
     }
 

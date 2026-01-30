@@ -570,6 +570,7 @@ class JournalPinGraphics extends PIXI.Container {
 
         this._labelOffset = { x: 0, y: 0 };
         this._labelContainer = null;
+        this._buildId = 0;
 
         // Do NOT call _init() here, we defer it until we are indexed in the renderer
     }
@@ -808,8 +809,10 @@ class JournalPinGraphics extends PIXI.Container {
     async _build() {
         if (this.destroyed) return;
 
-        // Cleanup old label container BEFORE building new content
-        // This prevents orphaned labels when pin is moved or rebuilt
+        // Track build cycle to prevent overlapping async builds from creating ghost labels
+        const buildId = ++this._buildId;
+
+        // Cleanup old label container reference if this is a fresh start
         if (this._labelContainer) {
             if (this._labelContainer.parent) {
                 this._labelContainer.parent.removeChild(this._labelContainer);
@@ -817,6 +820,10 @@ class JournalPinGraphics extends PIXI.Container {
             this._labelContainer.destroy({ children: true });
             this._labelContainer = null;
         }
+
+        // We will build the new label in a local variable and only 
+        // attach it to the class/renderer if this build cycle is still valid at the end.
+        let newLabelContainer = null;
 
         // Don't remove children yet, wait until new content is ready
 
@@ -864,6 +871,8 @@ class JournalPinGraphics extends PIXI.Container {
                 const imagePath = style.imagePath;
                 if (imagePath) {
                     const texture = await loadTexture(imagePath);
+                    if (this._buildId !== buildId || this.destroyed) return;
+
                     if (texture) {
                         const sprite = new PIXI.Sprite(texture);
                         // Center anchor
@@ -982,8 +991,7 @@ class JournalPinGraphics extends PIXI.Container {
                 : 0xFFFFFF;
 
             await this._addIcon(container, iconClass, radius, symbolColorNum);
-            // Check if destroyed during await
-            if (this.destroyed) return;
+            if (this._buildId !== buildId || this.destroyed) return;
         }
         else if (contentType === "customIcon") {
             // Custom SVG icon from assets
@@ -994,7 +1002,7 @@ class JournalPinGraphics extends PIXI.Container {
                     ? parseInt(iconColor.slice(1), 16)
                     : 0xFFFFFF;
                 await this._addSvgIcon(container, iconPath, radius, iconColorNum);
-                if (this.destroyed) return;
+                if (this._buildId !== buildId || this.destroyed) return;
             }
         } else {
             // Show text (page number or custom)
@@ -1020,6 +1028,7 @@ class JournalPinGraphics extends PIXI.Container {
                 if (fontFamily && fontFamily !== "Arial") {
                     try {
                         await document.fonts.load(`16px ${fontFamily}`);
+                        if (this._buildId !== buildId || this.destroyed) return;
                     } catch (e) {
                         console.warn(`SDX Journal Pins | Failed to load font: ${fontFamily}`);
                     }
@@ -1055,7 +1064,7 @@ class JournalPinGraphics extends PIXI.Container {
         // ADD OPTIONAL HOVER LABEL
         // ===================================
         if (style.labelText) {
-            this._labelContainer = new PIXI.Container();
+            newLabelContainer = new PIXI.Container();
 
             const labelFontFamily = style.labelFontFamily || "Arial";
 
@@ -1063,6 +1072,7 @@ class JournalPinGraphics extends PIXI.Container {
             if (labelFontFamily && labelFontFamily !== "Arial") {
                 try {
                     await document.fonts.load(`16px ${labelFontFamily}`);
+                    if (this._buildId !== buildId || this.destroyed) return;
                 } catch (e) {
                     console.warn(`SDX Journal Pins | Failed to load label font: ${labelFontFamily}`);
                 }
@@ -1198,22 +1208,33 @@ class JournalPinGraphics extends PIXI.Container {
                     break;
             }
 
-            this._labelContainer.position.set(posX, posY);
-
-            // Store offset for movement syncing
-            this._labelOffset = { x: posX, y: posY };
+            newLabelContainer.position.set(posX, posY);
 
             // Initial Visibility
-            this._labelContainer.visible = !style.labelShowOnHover;
+            newLabelContainer.visible = !style.labelShowOnHover;
 
-            // Add to the SEPARATE label container if available, otherwise fallback to self
-            const rendererLabelContainer = JournalPinRenderer.getLabelContainer();
-            if (rendererLabelContainer) {
-                // Determine absolute position
-                this._labelContainer.position.set(this.position.x + posX, this.position.y + posY);
-                rendererLabelContainer.addChild(this._labelContainer);
+            // Winner takes all: Only update instance variables and 
+            // add to canvas if this build is still the latest one.
+            if (this._buildId === buildId && !this.destroyed) {
+                // Final cleanup of any concurrent build's label that might have slipped in
+                if (this._labelContainer) {
+                    if (this._labelContainer.parent) this._labelContainer.parent.removeChild(this._labelContainer);
+                    this._labelContainer.destroy({ children: true });
+                }
+
+                this._labelContainer = newLabelContainer;
+                this._labelOffset = { x: posX, y: posY };
+
+                const rendererLabelContainer = JournalPinRenderer.getLabelContainer();
+                if (rendererLabelContainer) {
+                    this._labelContainer.position.set(this.position.x + posX, this.position.y + posY);
+                    rendererLabelContainer.addChild(this._labelContainer);
+                } else {
+                    this.addChild(this._labelContainer);
+                }
             } else {
-                this.addChild(this._labelContainer);
+                // This build was superseded, clean up our local container
+                newLabelContainer.destroy({ children: true });
             }
         }
 
