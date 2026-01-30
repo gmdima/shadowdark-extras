@@ -1354,7 +1354,11 @@ export class SavePreset extends HandlebarsApplicationMixin(ApplicationV2) {
 }
 
 export function getCloneFilterParams(document) {
-    const filters = deepClone(document.getFlag('tokenmagic', 'filters'));
+    const filters = deepClone(
+        typeof document.getFlag === 'function'
+            ? document.getFlag('tokenmagic', 'filters')
+            : document.flags?.tokenmagic?.filters,
+    );
     if (!filters?.length) return null;
 
     const params = filters.map((f) => f.tmFilters.tmParams);

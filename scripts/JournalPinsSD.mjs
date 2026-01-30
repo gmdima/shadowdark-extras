@@ -34,6 +34,9 @@ const DEFAULT_PIN_STYLE = {
     fontFamily: "Arial",
     fontColor: "#ffffff",
     fontWeight: "bold",
+    fontItalic: false,
+    fontStroke: "#000000",
+    fontStrokeThickness: 0,
     // Label settings
     labelText: "",
     labelShowOnHover: true,
@@ -995,11 +998,23 @@ class JournalPinGraphics extends PIXI.Container {
                 const fontFamily = style.fontFamily || "Arial";
                 const fontWeight = style.fontWeight || "bold";
 
+                // Await font loading if it's a custom font
+                if (fontFamily && fontFamily !== "Arial") {
+                    try {
+                        await document.fonts.load(`16px ${fontFamily}`);
+                    } catch (e) {
+                        console.warn(`SDX Journal Pins | Failed to load font: ${fontFamily}`);
+                    }
+                }
+
                 const label = new PIXI.Text(textValue, {
                     fontFamily: fontFamily,
                     fontSize: fontSize,
                     fontWeight: fontWeight,
                     fill: fontColorNum,
+                    stroke: style.fontStroke || "#000000",
+                    strokeThickness: style.fontStrokeThickness ?? 0,
+                    fontStyle: style.fontItalic ? "italic" : "normal",
                     align: "center"
                 });
                 label.anchor.set(0.5, 0.5);
@@ -1024,9 +1039,20 @@ class JournalPinGraphics extends PIXI.Container {
         if (style.labelText) {
             this._labelContainer = new PIXI.Container();
 
+            const labelFontFamily = style.labelFontFamily || "Arial";
+
+            // Await font loading if it's a custom font
+            if (labelFontFamily && labelFontFamily !== "Arial") {
+                try {
+                    await document.fonts.load(`16px ${labelFontFamily}`);
+                } catch (e) {
+                    console.warn(`SDX Journal Pins | Failed to load label font: ${labelFontFamily}`);
+                }
+            }
+
             // Create text
             const labelText = new PIXI.Text(style.labelText, {
-                fontFamily: style.labelFontFamily || "Arial",
+                fontFamily: labelFontFamily,
                 fontSize: style.labelFontSize || 16,
                 fill: style.labelColor || "#ffffff",
                 stroke: style.labelStroke || "#000000",

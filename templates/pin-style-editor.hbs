@@ -324,10 +324,24 @@
                 <input type="color" name="fontColor" value="{{style.fontColor}}" />
             </div>
 
+            <div class="form-group color-group">
+                <label>Text Outline</label>
+                <input type="color" name="fontStroke" value="{{style.fontStroke}}" />
+            </div>
+
+            <div class="form-group">
+                <label>Outline Width <span data-for="fontStrokeThickness">{{style.fontStrokeThickness}}</span>px</label>
+                <input type="range" name="fontStrokeThickness" min="0" max="10" value="{{style.fontStrokeThickness}}" />
+            </div>
+
             <div class="form-group checkbox-group">
                 <label>
                     <input type="checkbox" name="fontWeight" {{#if (eq style.fontWeight "bold" )}}checked{{/if}} />
                     {{localize "SDX.pinStyleEditor.fontBold"}}
+                </label>
+                <label style="margin-left: 10px;">
+                    <input type="checkbox" name="fontItalic" {{#if style.fontItalic}}checked{{/if}} />
+                    Italic
                 </label>
             </div>
         </div>
@@ -491,7 +505,7 @@
     {{#if tmfxPresets}}
     <section class="editor-section tmfx-section">
         <div style="display: flex; justify-content: space-between; align-items: center;">
-            <h3><i class="fa-solid fa-wand-magic-sparkles"></i> Token Magic FX</h3>
+            <h3><i class="fa-solid fa-wand-magic-sparkles"></i> Filters and Effects</h3>
             <span style="font-size: 0.7em; opacity: 0.6; font-style: italic;">Live Preview <i
                     class="fa-solid fa-bolt"></i></span>
         </div>
@@ -501,9 +515,18 @@
                 <select name="tmfxPreset" style="flex: 1;">
                     <option value="">- Select Preset -</option>
                     {{#each tmfxPresets}}
-                    <option value="{{this.name}}">{{this.label}}</option>
+                    <option value="{{this.name}}" data-library="{{this.library}}" data-removable="{{this.removable}}">
+                        {{this.label}} {{#if this.removable}}(Custom){{/if}}
+                    </option>
                     {{/each}}
                 </select>
+                <button type="button" data-action="save-tmfx-preset" title="Save as Preset" style="flex: 0 0 32px;">
+                    <i class="fa-solid fa-floppy-disk"></i>
+                </button>
+                <button type="button" data-action="delete-tmfx-preset" title="Delete Preset"
+                    style="flex: 0 0 32px; display: none;" class="btn-delete-preset">
+                    <i class="fa-solid fa-trash"></i>
+                </button>
                 <button type="button" data-action="apply-tmfx" title="Apply Filter" style="flex: 0 0 32px;">
                     <i class="fa-solid fa-plus"></i>
                 </button>

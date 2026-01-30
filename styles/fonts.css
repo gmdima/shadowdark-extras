@@ -1,0 +1,376 @@
+/* Custom Fonts for Shadowdark Extras */
+
+@font-face {
+    font-family: 'ACaslonPro-Bold';
+    src: url('../assets/fonts/ACaslonPro-Bold.otf');
+}
+
+@font-face {
+    font-family: 'ArabDances';
+    src: url('../assets/fonts/ArabDances.ttf');
+}
+
+@font-face {
+    font-family: 'BaksoSapi';
+    src: url('../assets/fonts/BaksoSapi.otf');
+}
+
+@font-face {
+    font-family: 'BalletHarmony';
+    src: url('../assets/fonts/BalletHarmony.ttf');
+}
+
+@font-face {
+    font-family: 'Cardinal';
+    src: url('../assets/fonts/Cardinal.ttf');
+}
+
+@font-face {
+    font-family: 'CaslonAntique-Bold';
+    src: url('../assets/fonts/CaslonAntique-Bold.ttf');
+}
+
+@font-face {
+    font-family: 'Cathallina';
+    src: url('../assets/fonts/Cathallina.ttf');
+}
+
+@font-face {
+    font-family: 'ChildWriting-Regular';
+    src: url('../assets/fonts/ChildWriting-Regular.ttf');
+}
+
+@font-face {
+    font-family: 'Comic-ink';
+    src: url('../assets/fonts/Comic-ink.otf');
+}
+
+@font-face {
+    font-family: 'DREAMERS-BRUSH';
+    src: url('../assets/fonts/DREAMERS-BRUSH.ttf');
+}
+
+@font-face {
+    font-family: 'DSnet_Stamped';
+    src: url('../assets/fonts/DSnet_Stamped.ttf');
+}
+
+@font-face {
+    font-family: 'DUNGRG';
+    src: url('../assets/fonts/DUNGRG.ttf');
+}
+
+@font-face {
+    font-family: 'DancingVampyrish';
+    src: url('../assets/fonts/DancingVampyrish.ttf');
+}
+
+@font-face {
+    font-family: 'Dreamy-Land-Medium';
+    src: url('../assets/fonts/Dreamy-Land-Medium.ttf');
+}
+
+@font-face {
+    font-family: 'FairProsper';
+    src: url('../assets/fonts/FairProsper.ttf');
+}
+
+@font-face {
+    font-family: 'Fast-In-My-Car';
+    src: url('../assets/fonts/Fast-In-My-Car.ttf');
+}
+
+@font-face {
+    font-family: 'FuturaHandwritten';
+    src: url('../assets/fonts/FuturaHandwritten.ttf');
+}
+
+@font-face {
+    font-family: 'GODOFWAR';
+    src: url('../assets/fonts/GODOFWAR.ttf');
+}
+
+@font-face {
+    font-family: 'Galactico-Basic';
+    src: url('../assets/fonts/Galactico-Basic.otf');
+}
+
+@font-face {
+    font-family: 'Ghost-theory-2';
+    src: url('../assets/fonts/Ghost-theory-2.ttf');
+}
+
+@font-face {
+    font-family: 'GhostChase';
+    src: url('../assets/fonts/GhostChase.ttf');
+}
+
+@font-face {
+    font-family: 'Good-Brush';
+    src: url('../assets/fonts/Good-Brush.ttf');
+}
+
+@font-face {
+    font-family: 'Hamish';
+    src: url('../assets/fonts/Hamish.otf');
+}
+
+@font-face {
+    font-family: 'Headache';
+    src: url('../assets/fonts/Headache.ttf');
+}
+
+@font-face {
+    font-family: 'Hiroshio';
+    src: url('../assets/fonts/Hiroshio.otf');
+}
+
+@font-face {
+    font-family: 'HoneyScript-SemiBold';
+    src: url('../assets/fonts/HoneyScript-SemiBold.ttf');
+}
+
+@font-face {
+    font-family: 'IronSans';
+    src: url('../assets/fonts/IronSans.ttf');
+}
+
+@font-face {
+    font-family: 'JIANGKRIK';
+    src: url('../assets/fonts/JIANGKRIK.otf');
+}
+
+@font-face {
+    font-family: 'LPEducational';
+    src: url('../assets/fonts/LPEducational.ttf');
+}
+
+@font-face {
+    font-family: 'LUMOS';
+    src: url('../assets/fonts/LUMOS.ttf');
+}
+
+@font-face {
+    font-family: 'Lemon-Tuesday';
+    src: url('../assets/fonts/Lemon-Tuesday.otf');
+}
+
+@font-face {
+    font-family: 'LinLibertine_RB';
+    src: url('../assets/fonts/LinLibertine_RB.ttf');
+}
+
+@font-face {
+    font-family: 'Luna';
+    src: url('../assets/fonts/Luna.ttf');
+}
+
+@font-face {
+    font-family: 'MLTWNII_';
+    src: url('../assets/fonts/MLTWNII_.ttf');
+}
+
+@font-face {
+    font-family: 'Magiera_Script';
+    src: url('../assets/fonts/Magiera_Script.ttf');
+}
+
+@font-face {
+    font-family: 'OldLondon';
+    src: url('../assets/fonts/OldLondon.ttf');
+}
+
+@font-face {
+    font-family: 'Paul-Signature';
+    src: url('../assets/fonts/Paul-Signature.ttf');
+}
+
+@font-face {
+    font-family: 'RifficFree-Bold';
+    src: url('../assets/fonts/RifficFree-Bold.ttf');
+}
+
+@font-face {
+    font-family: 'Rooters';
+    src: url('../assets/fonts/Rooters.otf');
+}
+
+@font-face {
+    font-family: 'STAMPACT';
+    src: url('../assets/fonts/STAMPACT.ttf');
+}
+
+@font-face {
+    font-family: 'SUBSCRIBER-Regular';
+    src: url('../assets/fonts/SUBSCRIBER-Regular.otf');
+}
+
+@font-face {
+    font-family: 'Signika-Bold';
+    src: url('../assets/fonts/Signika-Bold.ttf');
+}
+
+@font-face {
+    font-family: 'Suplexmentary_Comic_NC';
+    src: url('../assets/fonts/Suplexmentary_Comic_NC.ttf');
+}
+
+@font-face {
+    font-family: 'Syemox-italic';
+    src: url('../assets/fonts/Syemox-italic.ttf');
+}
+
+@font-face {
+    font-family: 'Times-New-Romance';
+    src: url('../assets/fonts/Times-New-Romance.ttf');
+}
+
+@font-face {
+    font-family: 'TrashHand';
+    src: url('../assets/fonts/TrashHand.ttf');
+}
+
+@font-face {
+    font-family: 'Valentino';
+    src: url('../assets/fonts/Valentino.ttf');
+}
+
+@font-face {
+    font-family: 'VarsityTeam-Bold';
+    src: url('../assets/fonts/VarsityTeam-Bold.otf');
+}
+
+@font-face {
+    font-family: 'WEST';
+    src: url('../assets/fonts/WEST.ttf');
+}
+
+@font-face {
+    font-family: 'YIKES!';
+    src: url('../assets/fonts/YIKES!.ttf');
+}
+
+@font-face {
+    font-family: 'YOZAKURA-Regular';
+    src: url('../assets/fonts/YOZAKURA-Regular.otf');
+}
+
+@font-face {
+    font-family: 'Younger-than-me';
+    src: url('../assets/fonts/Younger-than-me.ttf');
+}
+
+@font-face {
+    font-family: 'alamain1';
+    src: url('../assets/fonts/alamain1.ttf');
+}
+
+@font-face {
+    font-family: 'breakaway';
+    src: url('../assets/fonts/breakaway.ttf');
+}
+
+@font-face {
+    font-family: 'bwptype';
+    src: url('../assets/fonts/bwptype.ttf');
+}
+
+@font-face {
+    font-family: 'codex';
+    src: url('../assets/fonts/codex.ttf');
+}
+
+@font-face {
+    font-family: 'college';
+    src: url('../assets/fonts/college.ttf');
+}
+
+@font-face {
+    font-family: 'ethnocentric-rg';
+    src: url('../assets/fonts/ethnocentric-rg.ttf');
+}
+
+@font-face {
+    font-family: 'exmouth_';
+    src: url('../assets/fonts/exmouth_.ttf');
+}
+
+@font-face {
+    font-family: 'fewriter_memesbruh03';
+    src: url('../assets/fonts/fewriter_memesbruh03.ttf');
+}
+
+@font-face {
+    font-family: 'fontopoSUBWAY-Regular';
+    src: url('../assets/fonts/fontopoSUBWAY-Regular.otf');
+}
+
+@font-face {
+    font-family: 'fontopoSunnyDay-Regular';
+    src: url('../assets/fonts/fontopoSunnyDay-Regular.otf');
+}
+
+@font-face {
+    font-family: 'glashou';
+    src: url('../assets/fonts/glashou.ttf');
+}
+
+@font-face {
+    font-family: 'go3v2';
+    src: url('../assets/fonts/go3v2.ttf');
+}
+
+@font-face {
+    font-family: 'happyfrushzero';
+    src: url('../assets/fonts/happyfrushzero.ttf');
+}
+
+@font-face {
+    font-family: 'himagsikan';
+    src: url('../assets/fonts/himagsikan.otf');
+}
+
+@font-face {
+    font-family: 'kindergarten';
+    src: url('../assets/fonts/kindergarten.ttf');
+}
+
+@font-face {
+    font-family: 'kirsty-rg';
+    src: url('../assets/fonts/kirsty-rg.ttf');
+}
+
+@font-face {
+    font-family: 'makayla';
+    src: url('../assets/fonts/makayla.ttf');
+}
+
+@font-face {
+    font-family: 'oko';
+    src: url('../assets/fonts/oko.ttf');
+}
+
+@font-face {
+    font-family: 'shoplift';
+    src: url('../assets/fonts/shoplift.ttf');
+}
+
+@font-face {
+    font-family: 'stereofidelic';
+    src: url('../assets/fonts/stereofidelic.ttf');
+}
+
+@font-face {
+    font-family: 'stonehen';
+    src: url('../assets/fonts/stonehen.ttf');
+}
+
+@font-face {
+    font-family: 'times_new_yorker';
+    src: url('../assets/fonts/times_new_yorker.ttf');
+}
+
+@font-face {
+    font-family: 'venus-rising-rg';
+    src: url('../assets/fonts/venus-rising-rg.ttf');
+}

@@ -99,6 +99,34 @@ Hooks.once("init", () => {
 	initMysteriousCasting();
 	SheetLockManager.init();
 	TomSD.initialize();
+
+	// Register Custom Fonts
+	const SDX_FONTS = [
+		"ACaslonPro-Bold", "ArabDances", "BaksoSapi", "BalletHarmony", "Cardinal", "CaslonAntique-Bold",
+		"Cathallina", "ChildWriting-Regular", "Comic-ink", "DREAMERS-BRUSH", "DSnet_Stamped", "DUNGRG",
+		"DancingVampyrish", "Dreamy-Land-Medium", "FairProsper", "Fast-In-My-Car", "FuturaHandwritten",
+		"GODOFWAR", "Galactico-Basic", "Ghost-theory-2", "GhostChase", "Good-Brush", "Hamish", "Headache",
+		"Hiroshio", "HoneyScript-SemiBold", "IronSans", "JIANGKRIK", "LPEducational", "LUMOS", "Lemon-Tuesday",
+		"LinLibertine_RB", "Luna", "MLTWNII_", "Magiera_Script", "OldLondon", "Paul-Signature",
+		"RifficFree-Bold", "Rooters", "STAMPACT", "SUBSCRIBER-Regular", "Signika-Bold",
+		"Suplexmentary_Comic_NC", "Syemox-italic", "Times-New-Romance", "TrashHand", "Valentino",
+		"VarsityTeam-Bold", "WEST", "YIKES!", "YOZAKURA-Regular", "Younger-than-me", "alamain1",
+		"breakaway", "bwptype", "codex", "college", "ethnocentric-rg", "exmouth_", "fewriter_memesbruh03",
+		"fontopoSUBWAY-Regular", "fontopoSunnyDay-Regular", "glashou", "go3v2", "happyfrushzero",
+		"himagsikan", "kindergarten", "kirsty-rg", "makayla", "oko", "shoplift", "stereofidelic",
+		"stonehen", "times_new_yorker", "venus-rising-rg"
+	];
+
+	CONFIG.fontFamilies = [...new Set([...CONFIG.fontFamilies, ...SDX_FONTS])];
+
+	if (window.FontsLoader) {
+		window.FontsLoader.load({
+			custom: {
+				families: SDX_FONTS,
+				urls: ["modules/shadowdark-extras/styles/fonts.css"]
+			}
+		});
+	}
 });
 
 // ============================================

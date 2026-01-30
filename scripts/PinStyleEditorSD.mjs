@@ -5,7 +5,7 @@ const MODULE_ID = "shadowdark-extras";
  */
 import { getPinStyle, JournalPinManager, JournalPinRenderer, DEFAULT_PIN_STYLE } from "./JournalPinsSD.mjs";
 import { IconPickerApp } from "./IconPickerSD.mjs";
-import { FilterEditor } from "./TMFXFilterEditor.mjs";
+import { FilterEditor, getCloneFilterParams } from "./TMFXFilterEditor.mjs";
 
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
@@ -100,6 +100,22 @@ export class PinStyleEditorApp extends HandlebarsApplicationMixin(ApplicationV2)
             style = getPinStyle();
         }
 
+        const SDX_FONTS = [
+            "ACaslonPro-Bold", "ArabDances", "BaksoSapi", "BalletHarmony", "Cardinal", "CaslonAntique-Bold",
+            "Cathallina", "ChildWriting-Regular", "Comic-ink", "DREAMERS-BRUSH", "DSnet_Stamped", "DUNGRG",
+            "DancingVampyrish", "Dreamy-Land-Medium", "FairProsper", "Fast-In-My-Car", "FuturaHandwritten",
+            "GODOFWAR", "Galactico-Basic", "Ghost-theory-2", "GhostChase", "Good-Brush", "Hamish", "Headache",
+            "Hiroshio", "HoneyScript-SemiBold", "IronSans", "JIANGKRIK", "LPEducational", "LUMOS", "Lemon-Tuesday",
+            "LinLibertine_RB", "Luna", "MLTWNII_", "Magiera_Script", "OldLondon", "Paul-Signature",
+            "RifficFree-Bold", "Rooters", "STAMPACT", "SUBSCRIBER-Regular", "Signika-Bold",
+            "Suplexmentary_Comic_NC", "Syemox-italic", "Times-New-Romance", "TrashHand", "Valentino",
+            "VarsityTeam-Bold", "WEST", "YIKES!", "YOZAKURA-Regular", "Younger-than-me", "alamain1",
+            "breakaway", "bwptype", "codex", "college", "ethnocentric-rg", "exmouth_", "fewriter_memesbruh03",
+            "fontopoSUBWAY-Regular", "fontopoSunnyDay-Regular", "glashou", "go3v2", "happyfrushzero",
+            "himagsikan", "kindergarten", "kirsty-rg", "makayla", "oko", "shoplift", "stereofidelic",
+            "stonehen", "times_new_yorker", "venus-rising-rg"
+        ];
+
         const fontFamilies = [
             { value: "Arial", label: "Arial" },
             { value: "Verdana", label: "Verdana" },
@@ -108,7 +124,11 @@ export class PinStyleEditorApp extends HandlebarsApplicationMixin(ApplicationV2)
             { value: "Courier New", label: "Courier New" },
             { value: "'Old Newspaper Font'", label: "Old Newspaper Font" },
             { value: "'Montserrat-medium'", label: "Montserrat" },
-            { value: "'JSL Blackletter'", label: "JSL Blackletter" }
+            { value: "'JSL Blackletter'", label: "JSL Blackletter" },
+            ...SDX_FONTS.map(f => ({
+                value: f,
+                label: f.split(/[-_]/).map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')
+            }))
         ];
 
         const shapes = [
@@ -189,13 +209,19 @@ export class PinStyleEditorApp extends HandlebarsApplicationMixin(ApplicationV2)
         if (!game.modules.get("tokenmagic")?.active || !window.TokenMagic) return [];
 
         try {
-            // Fetch presets from TokenMagic
-            const presets = window.TokenMagic.getPresets();
-            if (!presets || !Array.isArray(presets)) return [];
+            // Fetch presets from libraries
+            const mainPresets = window.TokenMagic.getPresets("tmfx-main") || [];
+            const sdxPresets = window.TokenMagic.getPresets("sdx-presets") || [];
 
-            // Convert to sorted array of objects with value/label
-            return presets.map(p => ({
+            const allPresets = [
+                ...mainPresets.map(p => ({ ...p, library: "tmfx-main", removable: false })),
+                ...sdxPresets.map(p => ({ ...p, library: "sdx-presets", removable: true }))
+            ];
+
+            return allPresets.map(p => ({
                 name: p.name,
+                library: p.library,
+                removable: p.removable,
                 label: p.name.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')
             })).sort((a, b) => a.label.localeCompare(b.label));
         } catch (err) {
@@ -245,7 +271,7 @@ export class PinStyleEditorApp extends HandlebarsApplicationMixin(ApplicationV2)
 
         // All inputs - update preview on change
         form.querySelectorAll('input, select').forEach(input => {
-            input.addEventListener("change", () => this._updatePreview());
+            input.addEventListener("change", async () => await this._updatePreview());
         });
 
         // Range sliders - show value and update preview on input
@@ -262,7 +288,7 @@ export class PinStyleEditorApp extends HandlebarsApplicationMixin(ApplicationV2)
 
         // Color pickers - update preview on input (for font color)
         form.querySelectorAll('input[type="color"]').forEach(input => {
-            input.addEventListener("input", () => this._updatePreview());
+            input.addEventListener("input", async () => await this._updatePreview());
         });
 
         // Save button
@@ -270,6 +296,28 @@ export class PinStyleEditorApp extends HandlebarsApplicationMixin(ApplicationV2)
 
         // Reset button
         form.querySelector('[data-action="reset"]')?.addEventListener("click", () => this._onReset());
+
+        // TMFX Preset dropdown change
+        const tmfxSelect = form.querySelector('[name="tmfxPreset"]');
+        if (tmfxSelect) {
+            const deleteBtn = form.querySelector('[data-action="delete-tmfx-preset"]');
+            const toggleDelete = () => {
+                const opt = tmfxSelect.options[tmfxSelect.selectedIndex];
+                const isRemovable = opt?.dataset.removable === "true";
+                if (deleteBtn) deleteBtn.style.display = isRemovable ? "block" : "none";
+            };
+            tmfxSelect.addEventListener("change", toggleDelete);
+            toggleDelete();
+        }
+
+        // TMFX Application button
+        form.querySelector('[data-action="apply-tmfx"]')?.addEventListener("click", () => this._onApplyTMFX());
+
+        // TMFX Save Preset button
+        form.querySelector('[data-action="save-tmfx-preset"]')?.addEventListener("click", () => this._onSaveTMFXPreset());
+
+        // TMFX Delete Preset button
+        form.querySelector('[data-action="delete-tmfx-preset"]')?.addEventListener("click", () => this._onDeleteTMFXPreset());
 
         // Show/hide content options based on contentType selection
         const contentTypeSelect = form.querySelector('[name="contentType"]');
@@ -445,7 +493,7 @@ export class PinStyleEditorApp extends HandlebarsApplicationMixin(ApplicationV2)
         this._updatePreview();
     }
 
-    _updatePreview() {
+    async _updatePreview() {
         const html = this.element;
         if (!html) return;
 
@@ -556,10 +604,29 @@ export class PinStyleEditorApp extends HandlebarsApplicationMixin(ApplicationV2)
                     } else {
                         content.textContent = "3";
                     }
+
+                    // Await font loading if it's a custom font
+                    if (style.fontFamily && style.fontFamily !== "Arial") {
+                        try {
+                            await document.fonts.load(`16px ${style.fontFamily}`);
+                        } catch (e) {
+                            console.warn(`SDX Pin Editor | Failed to load font: ${style.fontFamily}`);
+                        }
+                    }
+
                     content.style.fontSize = `${style.fontSize}px`;
                     content.style.fontFamily = style.fontFamily;
                     content.style.fontWeight = style.fontWeight;
+                    content.style.fontStyle = style.fontItalic ? "italic" : "normal";
                     content.style.color = style.fontColor || "#ffffff";
+
+                    // Apply stroke (outline)
+                    if (style.fontStrokeThickness > 0) {
+                        content.style.webkitTextStroke = `${style.fontStrokeThickness}px ${style.fontStroke || "#000000"}`;
+                        content.style.paintOrder = "stroke fill";
+                    } else {
+                        content.style.webkitTextStroke = "unset";
+                    }
                 }
                 content.style.transform = style.shape === "diamond" ? "rotate(-45deg)" : "none";
             }
@@ -614,7 +681,10 @@ export class PinStyleEditorApp extends HandlebarsApplicationMixin(ApplicationV2)
             fontSize: parseInt(form.querySelector('[name="fontSize"]')?.value) || 14,
             fontFamily: form.querySelector('[name="fontFamily"]')?.value || "Arial",
             fontColor: form.querySelector('[name="fontColor"]')?.value || "#ffffff",
+            fontStroke: form.querySelector('[name="fontStroke"]')?.value || "#000000",
+            fontStrokeThickness: parseInt(form.querySelector('[name="fontStrokeThickness"]')?.value) || 0,
             fontWeight: form.querySelector('[name="fontWeight"]')?.checked ? "bold" : "normal",
+            fontItalic: form.querySelector('[name="fontItalic"]')?.checked || false,
             borderRadius: parseInt(form.querySelector('[name="borderRadius"]')?.value) || 4,
             // Label Settings
             labelText: form.querySelector('[name="labelText"]')?.value || "",
@@ -629,12 +699,6 @@ export class PinStyleEditorApp extends HandlebarsApplicationMixin(ApplicationV2)
             labelBackground: form.querySelector('[name="labelBackground"]')?.value || "none",
             labelBackgroundColor: form.querySelector('[name="labelBackgroundColor"]')?.value || "#000000",
             labelBorderColor: form.querySelector('[name="labelBorderColor"]')?.value || "#ffffff",
-            labelBold: form.querySelector('[name="labelBold"]')?.checked || false,
-            labelItalic: form.querySelector('[name="labelItalic"]')?.checked || false,
-            labelBackground: form.querySelector('[name="labelBackground"]')?.value || "none",
-            labelBorderColor: form.querySelector('[name="labelBorderColor"]')?.value || "#ffffff",
-            labelBorderWidth: parseInt(form.querySelector('[name="labelBorderWidth"]')?.value) || 0,
-            labelBorderRadius: parseInt(form.querySelector('[name="labelBorderRadius"]')?.value) || 4,
             labelBorderWidth: parseInt(form.querySelector('[name="labelBorderWidth"]')?.value) || 0,
             labelBorderRadius: parseInt(form.querySelector('[name="labelBorderRadius"]')?.value) || 4,
             labelBorderImageIndex: parseInt(form.querySelector('[name="labelBorderImageIndex"]')?.value) || 0,
@@ -773,9 +837,10 @@ export class PinStyleEditorApp extends HandlebarsApplicationMixin(ApplicationV2)
 
     async _onApplyTMFX() {
         if (!this.pinId) return;
-        console.log(`SDX Pin Editor | Applying TMFX for pin ${this.pinId}`);
-        const form = this.element.querySelector('form');
-        const presetName = form.querySelector('[name="tmfxPreset"]')?.value;
+        const select = this.element.querySelector('[name="tmfxPreset"]');
+        const presetName = select?.value;
+        const option = select?.options[select.selectedIndex];
+        const library = option?.dataset.library || "tmfx-main";
 
         if (!presetName) {
             ui.notifications.warn("Please select a preset first.");
@@ -789,15 +854,16 @@ export class PinStyleEditorApp extends HandlebarsApplicationMixin(ApplicationV2)
         }
 
         try {
-            // Fetch preset from TokenMagic
-            const presets = window.TokenMagic.getPresets();
-            const preset = presets.find(p => p.name === presetName);
+            // Fetch preset from TokenMagic library
+            const libraryPresets = window.TokenMagic.getPresets(library) || [];
+            const preset = libraryPresets.find(p => p.name === presetName);
+
             if (!preset) {
-                ui.notifications.error(`Could not find TokenMagic preset: ${presetName}`);
+                ui.notifications.error(`Could not find TokenMagic preset: ${presetName} in library ${library}`);
                 return;
             }
 
-            // Apply preset via TokenMagic API (this will update flags in our graphics via our mocks)
+            // Apply preset via TokenMagic API
             await window.TokenMagic.addFilters(graphics, preset.params);
 
             ui.notifications.info(`Applied TokenMagic FX: ${presetName}`);
@@ -807,6 +873,86 @@ export class PinStyleEditorApp extends HandlebarsApplicationMixin(ApplicationV2)
         } catch (err) {
             console.error("SDX | Error applying TMFX preset:", err);
             ui.notifications.error("Failed to apply TokenMagic FX preset.");
+        }
+    }
+
+    async _onSaveTMFXPreset() {
+        if (!this.pinId) return;
+        const pin = JournalPinManager.get(this.pinId);
+        if (!pin) return;
+
+        const params = getCloneFilterParams(pin);
+        if (!params || params.length === 0) {
+            ui.notifications.warn("No active filters to save.");
+            return;
+        }
+
+        const name = await foundry.applications.api.DialogV2.prompt({
+            window: { title: "Save as Token Magic Preset" },
+            content: `
+                <div class="form-group">
+                    <label>Preset Name</label>
+                    <div class="form-fields">
+                        <input type="text" name="name" placeholder="sdx-my-preset" autofocus />
+                    </div>
+                </div>
+                <p class="hint">Prefix 'sdx-' will be added automatically if not provided.</p>
+            `,
+            ok: {
+                label: "Save",
+                callback: (event, button, dialog) => button.form.elements.name.value
+            }
+        });
+
+        if (!name) return;
+
+        // Add prefix if missing
+        const finalName = name.startsWith("sdx-") ? name : `sdx-${name}`;
+
+        try {
+            await window.TokenMagic.addPreset({
+                name: finalName,
+                library: "sdx-presets"
+            }, params);
+            ui.notifications.info(`Saved preset: ${finalName}`);
+            this.render();
+        } catch (err) {
+            console.error("SDX | Error saving TMFX preset:", err);
+            ui.notifications.error("Failed to save preset.");
+        }
+    }
+
+    async _onDeleteTMFXPreset() {
+        const select = this.element.querySelector('[name="tmfxPreset"]');
+        const option = select?.options[select.selectedIndex];
+        if (!option || !option.value) return;
+
+        const presetName = option.value;
+        const library = option.dataset.library;
+        const removable = option.dataset.removable === "true";
+
+        if (!removable) {
+            ui.notifications.warn("Cannot delete built-in presets.");
+            return;
+        }
+
+        const confirm = await foundry.applications.api.DialogV2.confirm({
+            window: { title: "Delete Preset" },
+            content: `<p>Are you sure you want to delete the preset <strong>${presetName}</strong>?</p>`
+        });
+
+        if (!confirm) return;
+
+        try {
+            await window.TokenMagic.deletePreset({
+                name: presetName,
+                library: library
+            });
+            ui.notifications.info(`Deleted preset: ${presetName}`);
+            this.render();
+        } catch (err) {
+            console.error("SDX | Error deleting TMFX preset:", err);
+            ui.notifications.error("Failed to delete preset.");
         }
     }
 
@@ -904,7 +1050,7 @@ export class PinStyleEditorApp extends HandlebarsApplicationMixin(ApplicationV2)
                                 ...data,  // Update top-level properties
                                 tmFilters: {
                                     ...existingFilter.tmFilters,
-                                    tmParams: { ...existingFilter.tmFilters.tmParams, ...data }
+                                    tmParams: foundry.utils.mergeObject(existingFilter.tmFilters.tmParams, data)
                                 }
                             };
                         } else if (existingFilter.tmParams) {
@@ -912,7 +1058,7 @@ export class PinStyleEditorApp extends HandlebarsApplicationMixin(ApplicationV2)
                             updatedFilter = {
                                 ...existingFilter,
                                 ...data,  // Update top-level properties
-                                tmParams: { ...existingFilter.tmParams, ...data }  // Update tmParams
+                                tmParams: foundry.utils.mergeObject(existingFilter.tmParams, data)  // Update tmParams
                             };
                         } else {
                             // Flat structure - direct merge
