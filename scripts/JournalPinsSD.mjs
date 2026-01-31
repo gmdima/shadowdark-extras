@@ -1631,6 +1631,9 @@ class JournalPinGraphics extends PIXI.Container {
         // Rebuild the graphics
         await this._build();
 
+        // Update physical position to match data
+        this.position.set(this.pinData.x, this.pinData.y);
+
         // Refresh TMFX filters from flags
         if (window.TokenMagic && !this.destroyed) {
             const filters = this.getFlag("tokenmagic", "filters");
@@ -1732,21 +1735,28 @@ class JournalPinGraphics extends PIXI.Container {
         const originalEvent = event.data?.originalEvent || event.nativeEvent || event;
         const button = originalEvent.button ?? 0;
 
+        // Restriction: Only GMs can drag or right-click pins
+        const isGm = game.user?.isGM;
+
         if (button === 0) {
             // Prevent Foundry from starting a selection marquee
             event.stopPropagation();
 
-            this._isDragging = true;
-            this._hasDragged = false;
-            const local = this.parent.toLocal(event.global);
-            this._dragOffset.x = this.position.x - local.x;
-            this._dragOffset.y = this.position.y - local.y;
-            this._dragStartPos.x = this.position.x;
-            this._dragStartPos.y = this.position.y;
+            if (isGm) {
+                this._isDragging = true;
+                this._hasDragged = false;
+                const local = this.parent.toLocal(event.global);
+                this._dragOffset.x = this.position.x - local.x;
+                this._dragOffset.y = this.position.y - local.y;
+                this._dragStartPos.x = this.position.x;
+                this._dragStartPos.y = this.position.y;
+            }
             JournalPinTooltip.hide();
         } else if (button === 2) {
             event.stopPropagation();
-            this._showContextMenu(event);
+            if (isGm) {
+                this._showContextMenu(event);
+            }
         }
     }
 
