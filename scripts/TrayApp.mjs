@@ -449,6 +449,8 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
                     }
                 } else if (action === "paste-style") {
                     await JournalPinManager.pasteStyle(id);
+                } else if (action === "duplicate-pin") {
+                    await JournalPinManager.duplicate(id);
                 }
             });
         });

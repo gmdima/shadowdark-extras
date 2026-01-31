@@ -300,6 +300,20 @@ class JournalPinManager {
         ui.notifications.info("Pin style pasted.");
     }
 
+    static async duplicate(pinId, options = {}) {
+        const pin = this.get(pinId, options);
+        if (!pin) return;
+
+        const cloneData = foundry.utils.deepClone(pin);
+        delete cloneData.id;
+
+        // Offset by 20 pixels
+        cloneData.x += 20;
+        cloneData.y += 20;
+
+        return await this.create(cloneData, options);
+    }
+
     static hasCopiedStyle() {
         return !!this._styleClipboard;
     }
@@ -1858,6 +1872,11 @@ class JournalPinGraphics extends PIXI.Container {
                     const { PinStyleEditorApp } = await import("./PinStyleEditorSD.mjs");
                     new PinStyleEditorApp({ pinId: this.pinData.id }).render(true);
                 }
+            },
+            {
+                name: "Duplicate Pin",
+                icon: '<i class="fa-solid fa-clone"></i>',
+                callback: async () => await JournalPinManager.duplicate(this.pinData.id)
             }
         ];
 
