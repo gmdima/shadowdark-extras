@@ -1,0 +1,39 @@
+{
+  "name": "NPC Special Attack",
+  "type": "NPC Special Attack",
+  "img": "icons/magic/death/weapon-sword-skull-purple.webp",
+  "system": {
+    "description": "",
+    "source": {
+      "title": ""
+    },
+    "attack": {
+      "num": "1"
+    },
+    "bonuses": {
+      "attackBonus": 0
+    },
+    "ranges": []
+  },
+  "effects": [],
+  "folder": null,
+  "flags": {},
+  "_stats": {
+    "coreVersion": "13.348",
+    "systemId": "shadowdark",
+    "systemVersion": "3.6.1",
+    "createdTime": 1769866796910,
+    "modifiedTime": 1769866796910,
+    "lastModifiedBy": "y7eZDD820PPGpxPR",
+    "exportSource": {
+      "worldId": "eee",
+      "uuid": "Item.NOfbyes4dKtVvBpj",
+      "coreVersion": "13.348",
+      "systemId": "shadowdark",
+      "systemVersion": "3.6.1"
+    }
+  },
+  "ownership": {
+    "default": 0
+  }
+}

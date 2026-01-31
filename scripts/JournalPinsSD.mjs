@@ -2405,8 +2405,8 @@ function initJournalPins() {
 
                 // Try to find the pin for custom animation
                 let pin;
-                if (data.pinId && JournalPinRenderer.getContainer()) {
-                    pin = JournalPinRenderer.getContainer().children.find(c => c.pinData?.id === data.pinId);
+                if (data.pinId) {
+                    pin = JournalPinRenderer.getPin(data.pinId);
                 }
 
                 if (pin && pin.animatePing) {
@@ -2418,8 +2418,8 @@ function initJournalPins() {
                 if (canvas.scene?.id !== data.sceneId) return;
 
                 let pin;
-                if (data.pinId && JournalPinRenderer.getContainer()) {
-                    pin = JournalPinRenderer.getContainer().children.find(c => c.pinData?.id === data.pinId);
+                if (data.pinId) {
+                    pin = JournalPinRenderer.getPin(data.pinId);
                 }
                 if (pin && pin.animatePing) {
                     pin.animatePing();
