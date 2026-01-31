@@ -1,3 +1,7 @@
-2026/01/31-01:15:06.784 1404 Recovering log #752
-2026/01/31-01:15:06.794 1404 Delete type=0 #752
-2026/01/31-01:15:06.794 1404 Delete type=3 #751
+2026/01/31-15:06:32.804 12654 Recovering log #756
+2026/01/31-15:06:32.813 12654 Delete type=0 #756
+2026/01/31-15:06:32.813 12654 Delete type=3 #755
+2026/01/31-15:06:41.389 ff74 Level-0 table #760: started
+2026/01/31-15:06:41.389 ff74 Level-0 table #760: 0 bytes OK
+2026/01/31-15:06:41.394 ff74 Delete type=0 #758
+2026/01/31-15:06:41.394 ff74 Manual compaction at level-0 from '!actors!X2leBdJeqwKWrTlE' @ 72057594037927935 : 1 .. '!actors!X2leBdJeqwKWrTlE' @ 0 : 0; will stop at (end)
