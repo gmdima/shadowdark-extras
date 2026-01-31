@@ -1100,7 +1100,8 @@ video.tom-pv-bg-media {
 }
 
 /* Form Elements */
-.form-group label {
+/* Form Elements */
+#tom-smart-creator .form-group label {
   display: block;
   margin-bottom: 8px;
   font-family: var(--tom-font-display);
@@ -1108,7 +1109,7 @@ video.tom-pv-bg-media {
   font-size: 0.9rem;
 }
 
-.form-group input[type='text'] {
+#tom-smart-creator .form-group input[type='text'] {
   width: 100%;
   background: var(--tom-bg-surface);
   border: 1px solid var(--tom-border-default);
@@ -1118,7 +1119,7 @@ video.tom-pv-bg-media {
   font-size: 1rem;
 }
 
-.form-group input[type='text']:focus {
+#tom-smart-creator .form-group input[type='text']:focus {
   border-color: var(--tom-gold-base);
   outline: none;
   box-shadow: 0 0 0 1px var(--tom-gold-base);

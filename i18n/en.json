@@ -1139,5 +1139,6 @@
   "SHADOWDARK_EXTRAS.sheetEditor.export": "Export Theme",
   "SHADOWDARK_EXTRAS.sheetEditor.themeImported": "Theme imported successfully. Click Save to apply permanently.",
   "SHADOWDARK_EXTRAS.sheetEditor.importMissingAssets": "Import completed with warnings: {count} assets were missing and reset to defaults.",
-  "SHADOWDARK_EXTRAS.sheetEditor.importError": "Failed to import theme. Invalid file format."
+  "SHADOWDARK_EXTRAS.sheetEditor.importError": "Failed to import theme. Invalid file format.",
+  "shadowdark-extras.notes.title": "GM Notes"
 }

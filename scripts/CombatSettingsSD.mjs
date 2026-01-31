@@ -1669,11 +1669,15 @@ export async function injectDamageCard(message, html, data) {
 		}
 
 		// Check if this is a spell or potion type item with damage configuration or effects
-		if (item && ["Spell", "Scroll", "Wand", "NPC Spell", "Potion", "NPC Feature"].includes(item.type)) {
+		if (item && ["Spell", "Scroll", "Wand", "NPC Spell", "Potion", "NPC Feature", "NPC Special Attack"].includes(item.type)) {
 			itemType = item.type; // Store item type for later checks
 
 			spellDamageConfig = item.flags?.["shadowdark-extras"]?.spellDamage;
 			if (spellDamageConfig?.enabled) {
+				isSpellWithDamage = true;
+			}
+			// NPC Special Attack always counts as having damage (calculated manually later)
+			if (item.type === "NPC Special Attack") {
 				isSpellWithDamage = true;
 			}
 			// Check for effects even if damage is not enabled
@@ -2882,18 +2886,53 @@ export async function injectDamageCard(message, html, data) {
 			window._latestEffectsChallengeResults = latestFlags.effectsChallengeResults;
 		}
 	} else {
+		// NPC Special Attack Base Damage Handling (Manual Roll since no system roll exists)
+		if (itemType === "NPC Special Attack") {
+			// Check for synced results first
+			const syncedBaseResults = message.getFlag(MODULE_ID, "npcBaseDamage");
+			if (syncedBaseResults) {
+				totalDamage = syncedBaseResults.total;
+			} else if (isAuthor && item.system.damage?.value) {
+				try {
+					let damageFormula = item.system.damage.value;
+					const damageBonus = item.system.bonuses?.damageBonus;
+					if (damageBonus) {
+						damageFormula += ` + ${damageBonus}`;
+					}
+					const roll = new Roll(damageFormula);
+					await roll.evaluate();
+
+					if (game.dice3d) {
+						game.dice3d.showForRoll(roll, game.user, true);
+					}
+
+					totalDamage = roll.total;
+
+					// Persist result
+					await message.setFlag(MODULE_ID, "npcBaseDamage", {
+						total: totalDamage,
+						json: roll.toJSON()
+					});
+					return; // Allow re-render
+				} catch (err) {
+					console.error("shadowdark-extras | Error rolling NPC Special Attack base damage:", err);
+				}
+			}
+		}
 		// Shadowdark stores rolls in message.flags.shadowdark.rolls
-		const shadowdarkRolls = message.flags?.shadowdark?.rolls;
-		if (shadowdarkRolls?.damage?.roll?.total) {
-			totalDamage = shadowdarkRolls.damage.roll.total;
-		} else if (message.rolls?.[0]) {
-			// Fallback to standard rolls array
-			totalDamage = message.rolls[0].total || 0;
-		} else {
-			// Last resort: try to parse from the displayed total in the damage section
-			const $damageTotal = html.find('.card-damage-roll-single .dice-total, .card-damage-rolls .dice-total').first();
-			if ($damageTotal.length) {
-				totalDamage = parseInt($damageTotal.text()) || 0;
+		else {
+			const shadowdarkRolls = message.flags?.shadowdark?.rolls;
+			if (shadowdarkRolls?.damage?.roll?.total) {
+				totalDamage = shadowdarkRolls.damage.roll.total;
+			} else if (message.rolls?.[0]) {
+				// Fallback to standard rolls array
+				totalDamage = message.rolls[0].total || 0;
+			} else {
+				// Last resort: try to parse from the displayed total in the damage section
+				const $damageTotal = html.find('.card-damage-roll-single .dice-total, .card-damage-rolls .dice-total').first();
+				if ($damageTotal.length) {
+					totalDamage = parseInt($damageTotal.text()) || 0;
+				}
 			}
 		}
 	}
@@ -3045,7 +3084,7 @@ export async function injectDamageCard(message, html, data) {
 				}
 			}
 		}
-	} else if (item?.type === "NPC Attack") {
+	} else if (item?.type === "NPC Attack" || item?.type === "NPC Special Attack") {
 		// NPC Attack Extra Damage Handling
 		const extraDamagesFlag = item.getFlag(MODULE_ID, "extraDamages") || [];
 		const extraDamages = Array.isArray(extraDamagesFlag) ? extraDamagesFlag : Object.values(extraDamagesFlag);
@@ -3155,7 +3194,7 @@ export async function injectDamageCard(message, html, data) {
 
 	// Get base damage type (use item flag for weapons, damageType for spells/others)
 	// Get base damage type (use item flag for weapons/NPC attacks, damageType for spells/others)
-	const baseDamageType = (item?.type === "Weapon" || item?.type === "NPC Attack")
+	const baseDamageType = (item?.type === "Weapon" || item?.type === "NPC Attack" || item?.type === "NPC Special Attack")
 		? (item.getFlag?.(MODULE_ID, 'baseDamageType') || 'physical')
 		: damageType;
 
@@ -3463,7 +3502,6 @@ export async function injectDamageCard(message, html, data) {
 			}
 		}
 	}
-
 }
 
 /**
@@ -3493,8 +3531,21 @@ async function buildRollBreakdown(message, weaponBonusDamage = null, isCritical 
 	// Also check for stored spell roll
 	const spellRoll = window._lastSpellRoll;
 
-	// Use whichever roll we can find (prioritize synced flag, then Shadowdark rolls, then window global)
-	const roll = spellRollFromFlag || damageRollData || messageRoll || spellRoll;
+	// Also check for synced NPC Base Damage
+	const syncedNpcBaseResults = message.getFlag(MODULE_ID, "npcBaseDamage");
+	let npcBaseRoll = null;
+	if (syncedNpcBaseResults?.json) {
+		try {
+			npcBaseRoll = (typeof syncedNpcBaseResults.json === "string")
+				? Roll.fromJSON(syncedNpcBaseResults.json)
+				: Roll.fromData(syncedNpcBaseResults.json);
+		} catch (e) {
+			console.error("shadowdark-extras | Error parsing NPC base roll:", e);
+		}
+	}
+
+	// Use whichever roll we can find (prioritize synced flags, then Shadowdark rolls, then window global)
+	const roll = spellRollFromFlag || damageRollData || messageRoll || spellRoll || npcBaseRoll;
 
 	if (!roll) {
 		// Check for spell roll breakdown stored in window (fallback for per-target)

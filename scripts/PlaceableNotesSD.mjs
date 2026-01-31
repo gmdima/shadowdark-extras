@@ -29,6 +29,33 @@ class PlaceableNotesSD extends FormApplication {
         await this.object.setFlag(MODULE_ID, "notes", formData[`flags.${MODULE_ID}.notes`]);
     }
 
+    static _onRenderTileHUD(hud, html, data) {
+        if (!game.user.isGM) return;
+
+        const tile = hud.object;
+        if (!tile) return;
+
+        const notes = tile.document.getFlag(MODULE_ID, "notes");
+        const hasNotes = !!notes;
+
+        const title = game.i18n.localize("shadowdark-extras.notes.title") || "GM Notes";
+        const button = $(`
+            <div class="control-icon placeable-notes-hud ${hasNotes ? "active" : ""}" title="${title}">
+                <i class="${hasNotes ? "fas fa-sticky-note" : "far fa-sticky-note"}"></i>
+            </div>
+        `);
+
+        // Add click listener
+        button.click((event) => {
+            event.preventDefault();
+            event.stopPropagation(); // vital for HUDs
+            new PlaceableNotesSD(tile.document).render(true);
+        });
+
+        // Add to the HUD (left column usually has less stuff)
+        $(html).find(".col.left").append(button);
+    }
+
     static _attachHeaderButton(app, buttons) {
         if (!game.user.isGM) return;
 
@@ -142,6 +169,7 @@ export function initPlaceableNotes() {
     // Standard Hooks
     Hooks.on("getApplicationHeaderButtons", PlaceableNotesSD._attachHeaderButton);
     Hooks.on("renderApplication", PlaceableNotesSD._updateHeaderButton);
+    Hooks.on("renderTileHUD", PlaceableNotesSD._onRenderTileHUD);
 
     // Replicate gm-notes "watchedHooksV2" hook just in case the user has a setup using it
     Hooks.on("getHeaderControlsApplicationV2", PlaceableNotesSD._attachHeaderButton);

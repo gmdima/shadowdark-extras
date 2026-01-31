@@ -48,6 +48,7 @@ import SheetEditorConfig from "./SheetEditorConfig.mjs";
 import PotionSheetSD from "./PotionSheetSD.mjs";
 import BackgroundSheetSD from "./BackgroundSheetSD.mjs";
 import NPCAttackSheetSD from "./NPCAttackSheetSD.mjs";
+import NPCSpecialAttackSheetSD from "./NPCSpecialAttackSheetSD.mjs";
 import { initPlaceableNotes } from "./PlaceableNotesSD.mjs";
 import NPCFeatureSheetSD from "./NPCFeatureSheetSD.mjs";
 import { initTokenToolbar, registerTokenToolbarSettings } from "./TokenToolbarSD.mjs";
@@ -20679,6 +20680,15 @@ initCarouselDrag();
 // Initialize Placeable Notes
 Hooks.once("ready", () => {
 	initPlaceableNotes();
+});
+
+Hooks.once("init", () => {
+	// Register NPC Special Attack Sheet
+	Items.registerSheet("shadowdark", NPCSpecialAttackSheetSD, {
+		types: ["NPC Special Attack"],
+		makeDefault: true,
+		label: "SDX Special Attack Sheet (V2)"
+	});
 });
 
 

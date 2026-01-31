@@ -1,0 +1,320 @@
+{{!-- Activity Tab --}}
+<section class="tab-content {{#if tab.active}}active{{/if}}" data-tab="activity">
+
+    {{!-- Attack Stats Section (from NPCAttackSheetSD) --}}
+    <fieldset class="potion-fieldset">
+        <legend><i class="fas fa-dice-d20"></i> Attack Statistics</legend>
+        <div class="attack-stats-grid">
+            <div class="form-group">
+                <label>Number of Attacks</label>
+                <input type="text" name="system.attack.num" value="{{system.attack.num}}" placeholder="1" />
+            </div>
+
+            <div class="form-group">
+                <label>Attack Bonus</label>
+                <input type="number" name="system.bonuses.attackBonus" value="{{system.bonuses.attackBonus}}"
+                    placeholder="0" />
+            </div>
+
+            <div class="form-group">
+                <label>Damage Bonus</label>
+                <input type="number" name="system.bonuses.damageBonus" value="{{system.bonuses.damageBonus}}"
+                    placeholder="0" />
+            </div>
+        </div>
+    </fieldset>
+
+    {{!-- Base Damage Section (from NPCAttackSheetSD) --}}
+    <fieldset class="potion-fieldset">
+        <legend><i class="fas fa-burst"></i> Base Damage</legend>
+        <div class="base-damage-grid">
+            <div class="form-group full-width">
+                <label>Damage Formula</label>
+                <input type="text" name="system.damage.value" value="{{system.damage.value}}" placeholder="1d6" />
+            </div>
+
+            <div class="form-group full-width">
+                <label>Damage Type</label>
+                <select name="flags.shadowdark-extras.baseDamageType">
+                    {{#each damageTypes}}
+                    <option value="{{value}}" {{#if (eq ../baseDamageType value)}}selected{{/if}}>
+                        {{label}}
+                    </option>
+                    {{/each}}
+                </select>
+            </div>
+        </div>
+    </fieldset>
+
+    {{!-- Additional Damage Section (from NPCAttackSheetSD) --}}
+    <fieldset class="potion-fieldset">
+        <legend>
+            <i class="fas fa-fire"></i> Additional Damage
+            <button type="button" class="add-extra-damage-btn" data-action="addExtraDamage"
+                title="Add Additional Damage">
+                <i class="fas fa-plus"></i>
+            </button>
+        </legend>
+
+        <div class="extra-damage-list">
+            {{#each extraDamages}}
+            <div class="extra-damage-row" data-index="{{@index}}">
+                <div class="form-group damage-formula">
+                    <label>Formula</label>
+                    <input type="text" name="flags.shadowdark-extras.extraDamages.{{@index}}.formula"
+                        value="{{formula}}" placeholder="1d4+2" />
+                </div>
+
+                <div class="form-group damage-type">
+                    <label>Type</label>
+                    <select name="flags.shadowdark-extras.extraDamages.{{@index}}.damageType">
+                        {{#each ../damageTypes}}
+                        <option value="{{value}}" {{#if (eq ../damageType value)}}selected{{/if}}>
+                            {{label}}
+                        </option>
+                        {{/each}}
+                    </select>
+                </div>
+
+                <button type="button" class="remove-extra-damage-btn" data-action="removeExtraDamage"
+                    data-index="{{@index}}" title="Remove">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </div>
+            {{else}}
+            <div class="extra-damage-empty">
+                <p>No additional damage types. Click the + button to add.</p>
+            </div>
+            {{/each}}
+        </div>
+    </fieldset>
+
+    {{!-- Critical Section (from NPCAttackSheetSD) --}}
+    <fieldset class="potion-fieldset">
+        <legend><i class="fas fa-star"></i> Critical Hits</legend>
+        <div class="critical-grid">
+            <div class="form-group">
+                <label>Critical Multiplier</label>
+                <input type="number" name="system.bonuses.critical.multiplier"
+                    value="{{system.bonuses.critical.multiplier}}" min="1" placeholder="2" />
+            </div>
+
+            <div class="form-group">
+                <label>Critical Success</label>
+                <input type="number" name="system.bonuses.critical.successThreshold"
+                    value="{{system.bonuses.critical.successThreshold}}" min="1" max="20" placeholder="20" />
+            </div>
+
+            <div class="form-group">
+                <label>Critical Failure</label>
+                <input type="number" name="system.bonuses.critical.failureThreshold"
+                    value="{{system.bonuses.critical.failureThreshold}}" min="1" max="20" placeholder="1" />
+            </div>
+        </div>
+    </fieldset>
+
+    {{!-- Attack Ranges Section (from NPCAttackSheetSD) --}}
+    <fieldset class="potion-fieldset">
+        <legend><i class="fas fa-bullseye"></i> Attack Ranges</legend>
+        <div class="ranges-grid">
+            {{#each rangesList}}
+            <label class="checkbox-label">
+                <input type="checkbox" name="system.ranges" value="{{key}}" {{#if checked}}checked{{/if}} />
+                <span>{{localize label}}</span>
+            </label>
+            {{/each}}
+        </div>
+    </fieldset>
+
+    {{!-- Effects Group (from NPCFeatureSheetSD) --}}
+    <details class="potion-details-group" open>
+        <summary><i class="fas fa-magic"></i> Effects</summary>
+
+        <fieldset class="potion-fieldset">
+            <legend><i class="fas fa-wand-sparkles"></i> Effects / Conditions</legend>
+
+            <div class="effects-container">
+                <div class="effects-column">
+                    <label class="effects-label">Apply on Use</label>
+                    <div class="effects-drop-area" data-tooltip="Drag and drop effects here">
+                        {{#if effectsList.length}}
+                        <div class="effects-list">
+                            {{#each effectsList}}
+                            <div class="effect-item" data-uuid="{{uuid}}">
+                                <img src="{{img}}" alt="{{name}}" />
+                                <span>{{name}}</span>
+                                <button type="button" class="remove-effect" data-action="removeEffect"
+                                    data-uuid="{{uuid}}">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                            {{/each}}
+                        </div>
+                        {{else}}
+                        <div class="effects-placeholder">
+                            <i class="fas fa-magic"></i>
+                            <span>Drop effects here</span>
+                        </div>
+                        {{/if}}
+                    </div>
+                </div>
+
+                <div class="effects-column">
+                    <label class="effects-label"><i class="fas fa-star"></i> Critical Only</label>
+                    <div class="effects-drop-area critical-effects"
+                        data-tooltip="Effects applied only on critical success">
+                        {{#if criticalEffectsList.length}}
+                        <div class="effects-list">
+                            {{#each criticalEffectsList}}
+                            <div class="effect-item" data-uuid="{{uuid}}">
+                                <img src="{{img}}" alt="{{name}}" />
+                                <span>{{name}}</span>
+                                <button type="button" class="remove-effect" data-action="removeCriticalEffect"
+                                    data-uuid="{{uuid}}">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                            {{/each}}
+                        </div>
+                        {{else}}
+                        <div class="effects-placeholder">
+                            <i class="fas fa-star"></i>
+                            <span>Optional</span>
+                        </div>
+                        {{/if}}
+                    </div>
+                </div>
+            </div>
+
+            <div class="effects-options">
+                <div class="form-group">
+                    <label>Effects Requirement</label>
+                    <input type="text" name="flags.shadowdark-extras.spellDamage.effectsRequirement"
+                        value="{{sdxFlags.effectsRequirement}}" placeholder="Leave empty to always apply" />
+                </div>
+                <div class="form-group inline-group">
+                    <label>Apply To</label>
+                    <label class="radio-label">
+                        <input type="radio" name="flags.shadowdark-extras.spellDamage.effectsApplyToTarget"
+                            value="false" {{#unless sdxFlags.effectsApplyToTarget}}checked{{/unless}} />
+                        <span>Self</span>
+                    </label>
+                    <label class="radio-label">
+                        <input type="radio" name="flags.shadowdark-extras.spellDamage.effectsApplyToTarget" value="true"
+                            {{#if sdxFlags.effectsApplyToTarget}}checked{{/if}} />
+                        <span>Target</span>
+                    </label>
+                </div>
+                <div class="form-group inline-group">
+                    <label>Selection Mode</label>
+                    <label class="radio-label">
+                        <input type="radio" name="flags.shadowdark-extras.spellDamage.effectSelectionMode" value="all"
+                            {{#if (eq sdxFlags.effectSelectionMode "all" )}}checked{{/if}} />
+                        <span>All</span>
+                    </label>
+                    <label class="radio-label">
+                        <input type="radio" name="flags.shadowdark-extras.spellDamage.effectSelectionMode"
+                            value="random" {{#if (eq sdxFlags.effectSelectionMode "random" )}}checked{{/if}} />
+                        <span>Random</span>
+                    </label>
+                    <label class="radio-label">
+                        <input type="radio" name="flags.shadowdark-extras.spellDamage.effectSelectionMode"
+                            value="prompt" {{#if (eq sdxFlags.effectSelectionMode "prompt" )}}checked{{/if}} />
+                        <span>Prompt</span>
+                    </label>
+                </div>
+            </div>
+        </fieldset>
+    </details>
+
+    {{!-- Summoning Group (from NPCFeatureSheetSD) --}}
+    <details class="potion-details-group" open>
+        <summary><i class="fas fa-dragon"></i> Summoning</summary>
+        <fieldset class="potion-fieldset collapsible-section">
+            <legend>
+                <label class="toggle-label">
+                    <input type="checkbox" name="flags.shadowdark-extras.summoning.enabled" class="section-toggle" {{#if
+                        sdxFlags.summoning.enabled}}checked{{/if}} />
+                    <i class="fas fa-plus-circle"></i> Enable Summoning
+                </label>
+            </legend>
+            <div class="section-content" {{#unless sdxFlags.summoning.enabled}}style="display: none" {{/unless}}>
+                <div class="summon-profiles">
+                    {{#each summonProfiles}}
+                    <div class="summon-profile" data-index="{{@index}}">
+                        <div class="summon-creature-drop" data-index="{{@index}}" data-tooltip="Drop an actor here">
+                            {{#if creatureName}}
+                            <img src="{{creatureImg}}" alt="{{creatureName}}" />
+                            <span>{{creatureName}}</span>
+                            {{else}}
+                            <i class="fas fa-user-plus"></i>
+                            <span>Drop creature</span>
+                            {{/if}}
+                        </div>
+                        <div class="summon-options">
+                            <input type="number" name="flags.shadowdark-extras.summoning.profiles.{{@index}}.count"
+                                value="{{count}}" min="1" placeholder="Count" />
+                            <input type="text" name="flags.shadowdark-extras.summoning.profiles.{{@index}}.displayName"
+                                value="{{displayName}}" placeholder="Display name" />
+                        </div>
+                        <button type="button" class="remove-summon" data-action="removeSummonProfile"
+                            data-index="{{@index}}">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                    {{/each}}
+                </div>
+                <button type="button" class="add-profile-btn" data-action="addSummonProfile">
+                    <i class="fas fa-plus"></i> Add Summon
+                </button>
+                <label class="checkbox-label">
+                    <input type="checkbox" name="flags.shadowdark-extras.summoning.deleteAtExpiry" {{#if
+                        sdxFlags.summoning.deleteAtExpiry}}checked{{/if}} />
+                    <span>Delete at expiry</span>
+                </label>
+            </div>
+        </fieldset>
+    </details>
+
+    {{!-- Give Item Group (from NPCFeatureSheetSD) --}}
+    <details class="potion-details-group" open>
+        <summary><i class="fas fa-gift"></i> Give Item</summary>
+        <fieldset class="potion-fieldset collapsible-section">
+            <legend>
+                <label class="toggle-label">
+                    <input type="checkbox" name="flags.shadowdark-extras.itemGive.enabled" class="section-toggle" {{#if
+                        sdxFlags.itemGive.enabled}}checked{{/if}} />
+                    <i class="fas fa-plus-circle"></i> Enable Item Give
+                </label>
+            </legend>
+            <div class="section-content" {{#unless sdxFlags.itemGive.enabled}}style="display: none" {{/unless}}>
+                <div class="item-give-profiles">
+                    {{#each itemGiveProfiles}}
+                    <div class="item-give-profile" data-index="{{@index}}">
+                        <div class="item-give-drop" data-index="{{@index}}" data-tooltip="Drop an item here">
+                            {{#if itemName}}
+                            <img src="{{itemImg}}" alt="{{itemName}}" />
+                            <span>{{itemName}}</span>
+                            {{else}}
+                            <i class="fas fa-box"></i>
+                            <span>Drop item</span>
+                            {{/if}}
+                        </div>
+                        <div class="item-give-options">
+                            <input type="number" name="flags.shadowdark-extras.itemGive.profiles.{{@index}}.quantity"
+                                value="{{quantity}}" min="1" placeholder="Qty" />
+                        </div>
+                        <button type="button" class="remove-item-give" data-action="removeItemGiveProfile"
+                            data-index="{{@index}}">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                    {{/each}}
+                </div>
+                <button type="button" class="add-profile-btn" data-action="addItemGiveProfile">
+                    <i class="fas fa-plus"></i> Add Item
+                </button>
+            </div>
+        </fieldset>
+    </details>
+</section>
