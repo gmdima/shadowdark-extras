@@ -82,11 +82,9 @@ function getPinStyle() {
 class JournalPinsLayer extends foundry.canvas.layers.CanvasLayer {
     constructor() {
         super();
-        console.log("SDX Journal Pins | Layer constructor called");
     }
 
     async _draw() {
-        console.log("SDX Journal Pins | Layer _draw() called");
 
         // Make layer interactive
         this.eventMode = "passive";
@@ -96,7 +94,6 @@ class JournalPinsLayer extends foundry.canvas.layers.CanvasLayer {
     }
 
     activate() {
-        console.log("SDX Journal Pins | Layer activated");
         if (canvas?.scene && JournalPinRenderer.getContainer()) {
             const pins = JournalPinManager.list({ sceneId: canvas.scene.id });
             JournalPinRenderer.loadScenePins(canvas.scene.id, pins);
@@ -104,7 +101,6 @@ class JournalPinsLayer extends foundry.canvas.layers.CanvasLayer {
     }
 
     deactivate() {
-        console.log("SDX Journal Pins | Layer deactivated");
     }
 }
 
@@ -127,7 +123,6 @@ const hookCanvas = () => {
 
         return layers;
     }, {});
-    console.log("SDX Journal Pins | Layer registered in CONFIG.Canvas.layers");
 };
 
 // ================================================================
@@ -201,7 +196,6 @@ class JournalPinManager {
             JournalPinRenderer.addPin(pin);
         }
 
-        console.log(`SDX Journal Pins | Created pin: ${pin.id} at (${pin.x}, ${pin.y})`);
         return foundry.utils.deepClone(pin);
     }
 
@@ -246,7 +240,6 @@ class JournalPinManager {
             JournalPinRenderer.updatePin(updated);
         }
 
-        console.log(`SDX Journal Pins | Updated pin: ${pinId}`);
         return foundry.utils.deepClone(updated);
     }
 
@@ -264,8 +257,6 @@ class JournalPinManager {
         if (scene.id === canvas?.scene?.id) {
             JournalPinRenderer.removePin(pinId);
         }
-
-        console.log(`SDX Journal Pins | Deleted pin: ${pinId}`);
     }
 
     static get(pinId, options = {}) {
@@ -395,39 +386,27 @@ export class PinPlacer {
  * @returns {boolean} - True if the pin should be visible
  */
 function checkPinVisibility(pin) {
-    console.log(`SDX Journal Pins | Checking visibility for pin ${pin.id}:`, {
-        gmOnly: pin.gmOnly,
-        requiresVision: pin.requiresVision,
-        isGM: game.user?.isGM,
-        userName: game.user?.name
-    });
     // GM can always see all pins
     if (game.user?.isGM) {
-        console.log(`SDX Journal Pins | Pin ${pin.id} visible (user is GM)`);
         return true;
     }
     // Check gmOnly flag
     if (pin.gmOnly) {
-        console.log(`SDX Journal Pins | Pin ${pin.id} hidden (gmOnly and user is not GM)`);
         return false;
     }
     // If vision is not required, pin is visible
     if (!pin.requiresVision) {
-        console.log(`SDX Journal Pins | Pin ${pin.id} visible (requiresVision is false)`);
         return true;
     }
     // Check if any owned token can see the pin
     const pinPosition = { x: pin.x, y: pin.y };
     const ownedTokens = canvas.tokens.placeables.filter(t => t.isOwner);
-    console.log(`SDX Journal Pins | Checking ${ownedTokens.length} owned tokens for vision to pin ${pin.id}`);
     for (const token of ownedTokens) {
         const canSee = checkTokenCanSeePinPosition(token, pinPosition);
-        console.log(`SDX Journal Pins | Token ${token.name} can see pin ${pin.id}: ${canSee}`);
         if (canSee) {
             return true;
         }
     }
-    console.log(`SDX Journal Pins | Pin ${pin.id} hidden (no owned tokens can see it)`);
     return false;
 }
 
@@ -439,12 +418,8 @@ function checkPinVisibility(pin) {
  */
 function checkTokenCanSeePinPosition(token, pinPosition) {
     if (!token?.center) {
-        console.log(`SDX Journal Pins | No token center`);
         return false;
     }
-    console.log(`SDX Journal Pins | ========== VISION CHECK START ==========`);
-    console.log(`SDX Journal Pins | Token: "${token.name}" at (${Math.round(token.center.x)}, ${Math.round(token.center.y)})`);
-    console.log(`SDX Journal Pins | Pin position: (${Math.round(pinPosition.x)}, ${Math.round(pinPosition.y)})`);
     const startPos = token.center;
     const endPos = pinPosition;
     const gridSize = canvas.grid.size || 100;
@@ -457,12 +432,11 @@ function checkTokenCanSeePinPosition(token, pinPosition) {
             isBlocked = canvas.edges.testCollision(startPos, endPos, { mode: "any", type: "sight" });
         }
     } else if (canvas.walls?.checkCollision) {
-        const ray = new Ray(startPos, endPos);
+        const RayClass = foundry.canvas?.geometry?.Ray || globalThis.Ray;
+        const ray = new RayClass(startPos, endPos);
         isBlocked = canvas.walls.checkCollision(ray, { mode: "any", type: "sight" });
     }
-    console.log(`SDX Journal Pins | Wall check: ${isBlocked ? 'BLOCKED' : 'CLEAR'}`);
     if (isBlocked) {
-        console.log(`SDX Journal Pins | ========== VISION CHECK END (FAIL - wall blocking) ==========`);
         return false;
     }
     // Step 2: Determine the token's vision/light capabilities
@@ -475,37 +449,23 @@ function checkTokenCanSeePinPosition(token, pinPosition) {
     const visionRangePixels = (tokenVisionRange / gridDistance) * gridSize;
     const lightRangePixels = (tokenLightRange / gridDistance) * gridSize;
 
-    console.log(`SDX Journal Pins | Distance to pin: ${Math.round(distanceToPin)}px`);
-    console.log(`SDX Journal Pins | Grid distance: ${gridDistance} units/square`);
-    console.log(`SDX Journal Pins | Token vision range: ${tokenVisionRange} units (${Math.round(visionRangePixels)}px)`);
-    console.log(`SDX Journal Pins | Token light range: ${tokenLightRange} units (${Math.round(lightRangePixels)}px)`);
-
     // Step 3: Check visibility based on token's capabilities
     const isIlluminated = isPinPositionIlluminated(pinPosition);
-    console.log(`SDX Journal Pins | General lighting check: ${isIlluminated ? 'ILLUMINATED' : 'DARK'}`);
 
     if (tokenLightRange > 0 && distanceToPin <= lightRangePixels) {
         // Token's own light reaches the pin
-        console.log(`SDX Journal Pins | ========== VISION CHECK END (PASS - within token's light range) ==========`);
         return true;
     }
 
     if (isIlluminated) {
-        // Pin is illuminated by SOME source
-        // Check if it's within vision range or a default reasonable range.
         const effectiveRange = visionRangePixels > 0 ? visionRangePixels : (60 / gridDistance) * gridSize;
-        console.log(`SDX Journal Pins | Pin is illuminated - checking if within effective vision range: ${Math.round(effectiveRange)}px`);
-
         if (distanceToPin <= effectiveRange) {
-            console.log(`SDX Journal Pins | ========== VISION CHECK END (PASS - illuminated and within range) ==========`);
             return true;
         } else {
-            console.log(`SDX Journal Pins | ========== VISION CHECK END (FAIL - illuminated but too far away) ==========`);
             return false;
         }
     }
 
-    console.log(`SDX Journal Pins | ========== VISION CHECK END (FAIL - not illuminated or out of range) ==========`);
     return false;
 }
 /**
@@ -562,7 +522,8 @@ function checkWallCollision(startPos, endPos) {
             isBlocked = canvas.edges.testCollision(startPos, endPos, { mode: "any", type: "sight" });
         }
     } else if (canvas.walls?.checkCollision) {
-        const ray = new Ray(startPos, endPos);
+        const RayClass = foundry.canvas?.geometry?.Ray || globalThis.Ray;
+        const ray = new RayClass(startPos, endPos);
         isBlocked = canvas.walls.checkCollision(ray, { mode: "any", type: "sight" });
     }
     return isBlocked;
@@ -607,7 +568,6 @@ class JournalPinGraphics extends PIXI.Container {
     _getPageNumber() {
         const journal = game.journal.get(this.pinData.journalId);
         if (!journal) {
-            console.log("SDX Journal Pins | _getPageNumber: Journal not found", this.pinData.journalId);
             return null;
         }
 
@@ -617,11 +577,9 @@ class JournalPinGraphics extends PIXI.Container {
         if (this.pinData.pageId) {
             // Find the index of the specific page
             const pageIndex = sortedPages.findIndex(p => p.id === this.pinData.pageId);
-            console.log("SDX Journal Pins | _getPageNumber: Page", this.pinData.pageId, "is at index", pageIndex);
             return pageIndex >= 0 ? pageIndex : 0;
         } else {
             // Default to first page (index 0)
-            console.log("SDX Journal Pins | _getPageNumber: No pageId, using index 0");
             return 0;
         }
     }
@@ -889,7 +847,7 @@ class JournalPinGraphics extends PIXI.Container {
 
                 const imagePath = style.imagePath;
                 if (imagePath) {
-                    const texture = await loadTexture(imagePath);
+                    const texture = await (foundry.canvas?.loadTexture || loadTexture)(imagePath);
                     if (this._buildId !== buildId || this.destroyed) return;
 
                     if (texture) {
@@ -1286,8 +1244,6 @@ class JournalPinGraphics extends PIXI.Container {
                 window.TokenMagic._assignFilters(this, filters);
             }
         }
-
-        console.log(`SDX Journal Pins | Pin built - interactive:${this.interactive}, eventMode:${this.eventMode}, cursor:${this.cursor}`);
     }
     /**
      * Draw a dashed or dotted stroke manually since PIXI.Graphics doesn't support them natively
@@ -1623,8 +1579,6 @@ class JournalPinGraphics extends PIXI.Container {
             return;
         }
 
-        console.log(`SDX Journal Pins | Updating pin ${this.id}. hasTMFX: ${hasTMFX}`);
-
         this._removeEventListeners();
         this.pinData = foundry.utils.deepClone(newData);
 
@@ -1637,13 +1591,11 @@ class JournalPinGraphics extends PIXI.Container {
         // Refresh TMFX filters from flags
         if (window.TokenMagic && !this.destroyed) {
             const filters = this.getFlag("tokenmagic", "filters");
-            console.log(`SDX Journal Pins | Syncing TMFX filters for ${this.id}:`, filters);
 
             window.TokenMagic._clearImgFiltersByPlaceable(this);
             if (filters && Array.isArray(filters) && filters.length > 0) {
                 window.TokenMagic._assignFilters(this, filters);
             } else {
-                console.log(`SDX Journal Pins | No filters found, clearing manually.`);
                 this.filters = null;
             }
         }
@@ -2179,8 +2131,6 @@ class JournalPinRenderer {
         for (const pinData of incomingPins) {
             this.updatePin(pinData); // updatePin handles adding if missing
         }
-
-        console.log(`SDX Journal Pins | Loaded ${incomingPins.length} pins for scene ${sceneId}`);
     }
 
     static _addPinGraphics(pinData) {

@@ -341,18 +341,28 @@
                         {{/if}}
 
                         <div class="sdx-carousing-card-buttons">
+                            {{#unless this.isGmManaged}}
                             {{#if this.isCurrentUser}}
                             {{!-- Change character button --}}
+                            {{#if this.hasDrop}}
+                            {{#if this.hasMultipleActors}}
                             <button type="button" class="sdx-carousing-change-btn" data-action="change-character"
                                 data-participant-id="{{this.participantId}}">
                                 <i class="fas fa-user-edit"></i>
-                                {{#if this.hasDrop}}
                                 {{localize "SHADOWDARK_EXTRAS.carousing.change_character"}}
-                                {{else}}
-                                {{localize "SHADOWDARK_EXTRAS.carousing.select_character"}}
-                                {{/if}}
                             </button>
                             {{/if}}
+                            {{else}}
+                            {{#if this.hasOwnedActors}}
+                            <button type="button" class="sdx-carousing-change-btn" data-action="change-character"
+                                data-participant-id="{{this.participantId}}">
+                                <i class="fas fa-user-edit"></i>
+                                {{localize "SHADOWDARK_EXTRAS.carousing.select_character"}}
+                            </button>
+                            {{/if}}
+                            {{/if}}
+                            {{/if}}
+                            {{/unless}}
 
                             {{!-- Confirm/Unconfirm button (GM can confirm virtual/managed ones) --}}
                             {{#if ../hasSelectedTier}}

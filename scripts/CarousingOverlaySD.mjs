@@ -297,7 +297,8 @@ export default class CarousingOverlaySD extends Application {
                     ...a,
                     selected: a.id === p.droppedActorId
                 })),
-                hasMultipleActors: ownedActors.length > 1
+                hasMultipleActors: ownedActors.length > 1,
+                hasOwnedActors: ownedActors.length > 0
             };
         });
     }
@@ -390,9 +391,10 @@ export default class CarousingOverlaySD extends Application {
         // Player: Change character button
         html.find('[data-action="change-character"]').click(async (event) => {
             event.preventDefault();
-            const userId = $(event.currentTarget).data('user-id');
-            if (userId !== game.user.id) return;
-            await this._showCharacterSelectDialog(userId);
+            const pId = $(event.currentTarget).data('participant-id');
+            // For non-GM players, they can only change their own
+            if (!game.user.isGM && pId !== game.user.id) return;
+            await this._showCharacterSelectDialog(pId);
         });
 
         // Flip card button
@@ -405,9 +407,9 @@ export default class CarousingOverlaySD extends Application {
         // Player: Clear drop button
         html.find('[data-action="clear-carousing-drop"]').click(async (event) => {
             event.preventDefault();
-            const userId = $(event.currentTarget).data('user-id');
-            if (userId !== game.user.id) return;
-            await setCarousingDrop(userId, null);
+            const pId = $(event.currentTarget).data('participant-id');
+            if (!game.user.isGM && pId !== game.user.id) return;
+            await setCarousingDrop(pId, null);
         });
 
         // Result actions (benefit/mishap)

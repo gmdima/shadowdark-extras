@@ -1,33 +1,64 @@
 const MODULE_ID = "shadowdark-extras";
 
-class PlaceableNotesSD extends FormApplication {
-    static get defaultOptions() {
-        return foundry.utils.mergeObject(super.defaultOptions, {
-            id: "sdx-placeable-notes",
-            classes: ["shadowdark", "shadowdark-extras", "placeable-notes"],
-            title: "Notes",
-            template: `modules/${MODULE_ID}/templates/placeable-notes.hbs`,
-            width: 600,
-            height: 400,
-            resizable: true,
-            closeOnSubmit: true,
-            submitOnClose: true
-        });
+const { DocumentSheetV2, HandlebarsApplicationMixin } = foundry.applications.api;
+
+class PlaceableNotesSD extends HandlebarsApplicationMixin(DocumentSheetV2) {
+    constructor(object, options = {}) {
+        options.document = object;
+        super(options);
     }
 
-    async getData() {
-        const notes = this.object.getFlag(MODULE_ID, "notes") || "";
+    get document() {
+        return this.options.document;
+    }
+
+    static DEFAULT_OPTIONS = {
+        id: "sdx-placeable-notes",
+        classes: ["shadowdark", "shadowdark-extras", "placeable-notes"],
+        tag: "form",
+        window: {
+            title: "Notes",
+            resizable: true
+        },
+        position: {
+            width: 600,
+            height: 400
+        },
+        form: {
+            submitOnChange: true,
+            closeOnSubmit: false
+        }
+    };
+
+    static PARTS = {
+        form: {
+            template: `modules/${MODULE_ID}/templates/placeable-notes.hbs`
+        }
+    };
+
+    async _prepareContext(options) {
+        const context = await super._prepareContext(options);
+        const rawNotes = this.document.getFlag(MODULE_ID, "notes") || "";
+
         return {
-            notes: await TextEditor.enrichHTML(notes, { async: true }),
+            ...context,
+            notes: rawNotes,
+            enrichedNotes: await (foundry.applications?.ux?.TextEditor || TextEditor).enrichHTML(rawNotes, {
+                async: true,
+                secrets: this.document.isOwner,
+                relativeTo: this.document
+            }),
             owner: game.user.id,
             isGM: game.user.isGM
         };
     }
 
-    async _updateObject(event, formData) {
-        if (!game.user.isGM) return;
-        await this.object.setFlag(MODULE_ID, "notes", formData[`flags.${MODULE_ID}.notes`]);
+    // Compatibility for render calls in other files
+    render(force, options) {
+        if (force === true) return super.render(true, options);
+        return super.render(force, options);
     }
+
 
     static _onRenderTileHUD(hud, html, data) {
         if (!game.user.isGM) return;
@@ -67,20 +98,6 @@ class PlaceableNotesSD extends FormApplication {
         const supportedTypes = ["AmbientLight", "AmbientSound", "Token", "Wall", "Tile", "Actor"];
         const docName = object.documentName;
 
-        // Debug logging to specific scenarios (Token and Actor sheets)
-        if (app.constructor.name.includes("Token") || app.constructor.name.includes("Actor") || docName === "Actor") {
-            console.log("Shadowdark Extras | Placeable Notes | Checking App:", {
-                appConstructor: app.constructor.name,
-                app,
-                object,
-                documentName: docName,
-                supportedTypes
-            });
-            if (!docName || !supportedTypes.includes(docName)) {
-                console.warn("Shadowdark Extras | Placeable Notes | Rejected due to missing/unsupported docName:", docName);
-            }
-        }
-
         // Validation: must be a Document and one of the supported types
         if (!docName || !supportedTypes.includes(docName)) return;
 
@@ -92,17 +109,14 @@ class PlaceableNotesSD extends FormApplication {
             class: "open-sdx-notes",
             icon: hasNotes ? "fas fa-sticky-note" : "far fa-sticky-note",
             onclick: () => {
-                console.log("Shadowdark Extras | Placeable Notes clicked (onclick)");
                 new PlaceableNotesSD(object).render(true);
             },
             onClick: () => {
-                console.log("Shadowdark Extras | Placeable Notes clicked (onClick)");
                 new PlaceableNotesSD(object).render(true);
             },
             // For V2 controls compatibility if passed as controls
             action: "open-sdx-notes",
             handler: () => {
-                console.log("Shadowdark Extras | Placeable Notes clicked (handler)");
                 new PlaceableNotesSD(object).render(true);
             }
         };
@@ -163,9 +177,6 @@ export function initPlaceableNotes() {
     if (!game.settings.get(MODULE_ID, "enablePlaceableNotes")) return;
 
     // Monitor Application generally to catch everything, mirroring gm-notes approach
-    // gm-notes monitors 'ActorSheet', 'ItemSheet', 'Application'
-    // We only care about placeables, effectively covered by Application
-
     // Standard Hooks
     Hooks.on("getApplicationHeaderButtons", PlaceableNotesSD._attachHeaderButton);
     Hooks.on("renderApplication", PlaceableNotesSD._updateHeaderButton);

@@ -478,7 +478,8 @@ export class SdxRollSD extends Application {
         }
 
         const template = `modules/${MODULE_ID}/templates/sdx-rolls/chat-recap-sd.hbs`;
-        const html = await renderTemplate(template, {
+        const renderTpl = foundry.applications?.handlebars?.renderTemplate || renderTemplate;
+        const html = await renderTpl(template, {
             label: this._introLabel,
             dc,
             successLabel: success !== undefined ? resultLabel : null,

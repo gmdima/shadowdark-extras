@@ -293,7 +293,8 @@ export function initAuraEffects() {
 
     // Also re-evaluate on scene updates that might affect vision/lighting
     Hooks.on("updateScene", (scene, changes) => {
-        if (game.user.isGM && (changes.grid !== undefined || changes.padding !== undefined || changes.fogExploration !== undefined)) {
+        const hasFogExploration = (changes.fog && ("exploration" in changes.fog)) || ("fogExploration" in changes);
+        if (game.user.isGM && (changes.grid !== undefined || changes.padding !== undefined || hasFogExploration)) {
             refreshSceneAuras();
         }
     });
@@ -630,7 +631,8 @@ function checkAuraVisibility(sourceToken, targetToken, fromPosition = null, toPo
         }
     } else if (canvas.walls?.checkCollision) {
         // Fallback for V11/V12
-        const ray = new Ray(startPos, endPos);
+        const RayClass = foundry.canvas?.geometry?.Ray || globalThis.Ray;
+        const ray = new RayClass(startPos, endPos);
         isBlocked = canvas.walls.checkCollision(ray, { mode: "any", type: "sight" });
     }
 
@@ -649,7 +651,8 @@ function checkAuraVisibility(sourceToken, targetToken, fromPosition = null, toPo
             } else if (canvas.edges?.testCollision) {
                 secondaryBlocked = canvas.edges.testCollision(startPos, testEnd, { mode: "any", type: "sight" });
             } else if (canvas.walls?.checkCollision) {
-                secondaryBlocked = canvas.walls.checkCollision(new Ray(startPos, testEnd), { mode: "any", type: "sight" });
+                const RayClass = foundry.canvas?.geometry?.Ray || globalThis.Ray;
+                secondaryBlocked = canvas.walls.checkCollision(new RayClass(startPos, testEnd), { mode: "any", type: "sight" });
             }
 
             if (!secondaryBlocked) {

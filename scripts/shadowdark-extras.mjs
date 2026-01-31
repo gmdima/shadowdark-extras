@@ -67,6 +67,7 @@ import SheetLockManager from "./SheetLockManager.mjs";
 import "./SpellMacrosSD.mjs";
 import { initMysteriousCasting } from "./MysteriousCasting.mjs";
 import { TomSD } from "./TomSD.mjs";
+import { WallContextMenuSD } from "./WallContextMenuSD.mjs";
 
 import { PixiPlugin } from "/scripts/greensock/esm/all.js";
 
@@ -100,6 +101,7 @@ Hooks.once("init", () => {
 	initMysteriousCasting();
 	SheetLockManager.init();
 	TomSD.initialize();
+	WallContextMenuSD.initialize();
 
 	// Register Custom Fonts
 	const SDX_FONTS = [
@@ -3427,8 +3429,9 @@ function patchContextMenuForMultiDelete(app, html) {
 function patchCtrlMoveOnActorSheetDrops() {
 	// Only relevant for Shadowdark in this module
 	if (game.system.id !== "shadowdark") return;
-	if (!globalThis.ActorSheet?.prototype?._onDropItem) return;
-	const proto = globalThis.ActorSheet.prototype;
+	const ActorSheetClass = foundry.appv1?.sheets?.ActorSheet || globalThis.ActorSheet;
+	if (!ActorSheetClass?.prototype?._onDropItem) return;
+	const proto = ActorSheetClass.prototype;
 	if (proto._sdxCtrlMovePatched) return;
 	proto._sdxCtrlMovePatched = true;
 
@@ -7879,7 +7882,8 @@ async function injectNpcInventoryTab(app, html, data) {
 		owner: actor.isOwner
 	};
 
-	const inventoryHtml = await renderTemplate(templatePath, templateData);
+	const renderTpl = foundry.applications?.handlebars?.renderTemplate || renderTemplate;
+	const inventoryHtml = await renderTpl(templatePath, templateData);
 
 	// Insert after the abilities tab content
 	const contentBody = html.find('.SD-content-body');
@@ -9182,7 +9186,7 @@ Hooks.once("init", () => {
 	});
 
 	// Preload templates
-	loadTemplates([
+	(foundry.applications?.handlebars?.loadTemplates || loadTemplates)([
 		`modules/${MODULE_ID}/templates/npc-inventory.hbs`,
 		`modules/${MODULE_ID}/templates/party.hbs`,
 		`modules/${MODULE_ID}/templates/trade-window.hbs`,
@@ -10231,7 +10235,7 @@ async function enhanceSpellSheet(app, html) {
 	//console.log(`${MODULE_ID} | Damage/Heal box inserted into Activity tab`);
 
 	// Prevent auto-submission of form inputs in Activity tab to avoid unwanted re-renders
-	$activityTab.find('input, select, textarea').on('change', function (e) {
+	$activityTab.find('input:not(.sdx-duration-input), select, textarea').on('change', function (e) {
 		// Skip Item Macro inputs - they have their own handlers
 		if ($(this).hasClass('sdx-spell-macro-run-as-gm') ||
 			$(this).hasClass('sdx-spell-macro-trigger-checkbox')) {
@@ -10554,8 +10558,15 @@ async function enhanceSpellSheet(app, html) {
 	});
 
 	// Handle duration input changes
-	html.on('change', '.sdx-duration-input', function () {
-		updateEffectsData();
+	html.on('change', '.sdx-duration-input', function (event) {
+		event.preventDefault();
+		event.stopPropagation();
+
+		if ($(this).closest('.sdx-critical-effect-item').length > 0) {
+			updateCriticalEffectsData();
+		} else {
+			updateEffectsData();
+		}
 	});
 
 	// ===== CRITICAL EFFECTS HANDLERS =====
@@ -15038,10 +15049,11 @@ async function injectHitBonusDisplay(html, hitBonusInfo) {
 
 // Wrap ItemSheet getData to modify context before rendering
 Hooks.once("ready", () => {
-	if (!globalThis.ItemSheet?.prototype?.getData) return;
+	const ItemSheetClass = foundry.appv1?.sheets?.ItemSheet || globalThis.ItemSheet;
+	if (!ItemSheetClass?.prototype?.getData) return;
 
-	const originalGetData = globalThis.ItemSheet.prototype.getData;
-	globalThis.ItemSheet.prototype.getData = async function (options = {}) {
+	const originalGetData = ItemSheetClass.prototype.getData;
+	ItemSheetClass.prototype.getData = async function (options = {}) {
 		const data = await originalGetData.call(this, options);
 
 		// Hide magicItem property for unidentified items for non-GM players

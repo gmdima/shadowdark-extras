@@ -21,7 +21,7 @@ function getCampingTasks() {
  * Party Actor Sheet
  * Extends the base ActorSheet to provide party management functionality
  */
-export default class PartySheetSD extends ActorSheet {
+export default class PartySheetSD extends (foundry.appv1?.sheets?.ActorSheet || ActorSheet) {
 
 	/** @inheritdoc */
 	static get defaultOptions() {

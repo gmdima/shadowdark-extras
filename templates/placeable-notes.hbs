@@ -1,3 +1,14 @@
-<form class="sdx-placeable-notes-form" autocomplete="off">
-    {{editor notes target="flags.shadowdark-extras.notes" button=true owner=owner editable=isGM engine="prosemirror"}}
-</form>
+<div class="sdx-placeable-notes-form" style="height: 100%;">
+    {{#if isGM}}
+    <fieldset style="height: 100%;">
+        <prose-mirror name="flags.shadowdark-extras.notes" button="true" editable="true" toggled="true"
+            value="{{notes}}" style="height: 100%;">
+            {{{enrichedNotes}}}
+        </prose-mirror>
+    </fieldset>
+    {{else}}
+    <div class="notes-display">
+        {{{enrichedNotes}}}
+    </div>
+    {{/if}}
+</div>

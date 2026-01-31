@@ -8088,6 +8088,51 @@ section[data-tab="tab-notes"].sdx-journal-active>div:not(.sdx-journal-notes) {
     color: #3d3426;
 }
 
+/* Wall Context Menu */
+.sdx-wall-context-menu {
+    background: #000000;
+    border: var(--sdx-box-border-width, 8px) solid transparent;
+    border-image: var(--sdx-box-border) var(--sdx-box-border-image-slice, 40) fill;
+    border-image-repeat: stretch;
+    border-image-width: var(--sdx-box-border-image-width, 40px);
+    padding: 8px;
+    min-width: 200px;
+    font-family: 'Montserrat-medium', serif;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+}
+
+.sdx-wall-menu-item {
+    padding: 8px 14px;
+    cursor: pointer;
+    color: #f0f0f0;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border-radius: 4px;
+    transition: background-color 0.15s ease;
+    font-size: 14px;
+}
+
+.sdx-wall-menu-item:hover {
+    background-color: rgba(201, 170, 88, 0.3);
+}
+
+.sdx-wall-menu-item i {
+    width: 20px;
+    text-align: center;
+    color: #c9aa58;
+}
+
+.sdx-wall-menu-item span {
+    flex: 1;
+}
+
+.sdx-wall-menu-separator {
+    border: 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+    margin: 6px 0;
+}
+
 .sdx-radio-label:hover {
     background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(252, 250, 248, 0.95) 100%);
     border-color: rgba(90, 74, 58, 0.4);
