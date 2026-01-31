@@ -172,8 +172,13 @@ class JournalPinManager {
             journalId: pinData.journalId,
             pageId: pinData.pageId ?? null,
             label: pinData.label ?? "Journal Pin",
+            size: pinData.size,
+            style: pinData.style || {},
             gmOnly: pinData.gmOnly ?? false,
             requiresVision: pinData.requiresVision ?? false,
+            tooltipTitle: pinData.tooltipTitle,
+            tooltipContent: pinData.tooltipContent,
+            hideTooltip: pinData.hideTooltip ?? false,
             flags: pinData.flags || {},
             version: PIN_SCHEMA_VERSION
         };

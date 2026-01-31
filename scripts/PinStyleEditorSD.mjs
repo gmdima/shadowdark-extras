@@ -118,20 +118,29 @@ export class PinStyleEditorApp extends HandlebarsApplicationMixin(ApplicationV2)
             "stonehen", "times_new_yorker", "venus-rising-rg"
         ];
 
-        const fontFamilies = [
-            { value: "Arial", label: "Arial" },
-            { value: "Verdana", label: "Verdana" },
-            { value: "Georgia", label: "Georgia" },
-            { value: "Times New Roman", label: "Times New Roman" },
-            { value: "Courier New", label: "Courier New" },
-            { value: "'Old Newspaper Font'", label: "Old Newspaper Font" },
-            { value: "'Montserrat-medium'", label: "Montserrat" },
-            { value: "'JSL Blackletter'", label: "JSL Blackletter" },
-            ...SDX_FONTS.map(f => ({
-                value: f,
-                label: f.split(/[-_]/).map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')
-            }))
+        // Gather core fonts and merge with SDX fonts
+        const coreFonts = game.settings.get("core", "fonts") || {};
+        const allCustomFontFamilies = Object.keys(coreFonts);
+
+        // Base standard fonts
+        const standardFonts = [
+            "Arial", "Verdana", "Georgia", "Times New Roman", "Courier New",
+            "Old Newspaper Font", "Montserrat-medium", "JSL Blackletter"
         ];
+
+        // Merge and format
+        const combinedFonts = [...new Set([...standardFonts, ...SDX_FONTS, ...allCustomFontFamilies])];
+
+        const fontFamilies = combinedFonts.map(f => {
+            const cleanLabel = f.replace(/['"]/g, "") // remove quotes for label
+                .split(/[-_]/)
+                .map(w => w.charAt(0).toUpperCase() + w.slice(1))
+                .join(' ');
+            return {
+                value: f.includes(" ") ? `'${f}'` : f, // quote values with spaces if they aren't already
+                label: cleanLabel
+            };
+        }).sort((a, b) => a.label.localeCompare(b.label));
 
         const shapes = [
             { value: "circle", label: game.i18n.localize("SDX.pinStyleEditor.shapeCircle") },
