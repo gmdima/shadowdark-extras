@@ -36,7 +36,13 @@ export class TomPlayerView extends HandlebarsApplicationMixin(ApplicationV2) {
       // Cast-Only Mode state (cast without scene background)
       castOnlyMode: false,
       castOnlyCharacterIds: [],
-      castOnlyLayoutSettings: null
+      castOnlyLayoutSettings: null,
+      // Arena tokens state
+      arenaTokens: new Map(), // Map of tokenId -> { characterId, actorId, actorName, image, x, y, ownerId }
+      // Arena assets state (GM-only image assets)
+      arenaAssets: new Map(), // Map of assetId -> { image, x, y, scale }
+      // Z-order counter for stacking tokens/assets (increments on each click)
+      arenaZOrder: 10
     };
   }
 
@@ -195,6 +201,488 @@ export class TomPlayerView extends HandlebarsApplicationMixin(ApplicationV2) {
         });
       });
     }
+
+    // === ARENA MODE: DRAG/DROP FOR PORTRAITS ===
+    const scene = this.uiState.sceneId ? Store.scenes.get(this.uiState.sceneId) : null;
+    if (scene?.isArena) {
+      this._setupArenaDragDrop();
+    }
+  }
+
+  /**
+   * Setup drag/drop functionality for arena mode
+   */
+  _setupArenaDragDrop() {
+    const portraits = this.element.querySelectorAll('.tom-pv-character');
+    const arenaArea = this.element.querySelector('.tom-arena-rings');
+
+    if (!arenaArea) return;
+
+    portraits.forEach(portrait => {
+      const charId = portrait.dataset.id;
+      const character = Store.characters.get(charId);
+
+      // Check if player can spawn tokens for this character
+      const canSpawn = game.user.isGM || (character && character.canUserSpawnToken(game.user.id));
+
+      if (canSpawn) {
+        portrait.setAttribute('draggable', 'true');
+        portrait.classList.add('can-spawn');
+
+        portrait.addEventListener('dragstart', (e) => {
+          e.dataTransfer.setData('text/plain', JSON.stringify({
+            characterId: charId,
+            characterName: character?.name || 'Unknown',
+            characterImage: character?.image || ''
+          }));
+          e.dataTransfer.effectAllowed = 'copy';
+          portrait.classList.add('dragging');
+        });
+
+        portrait.addEventListener('dragend', (e) => {
+          portrait.classList.remove('dragging');
+        });
+      }
+    });
+
+    // Setup drop zone on the entire player view (arena area)
+    const playerView = this.element.querySelector('.tom-player-view');
+    if (playerView) {
+      playerView.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'copy';
+      });
+
+      playerView.addEventListener('drop', async (e) => {
+        e.preventDefault();
+
+        // Calculate drop position as percentage of viewport
+        const rect = playerView.getBoundingClientRect();
+        const x = ((e.clientX - rect.left) / rect.width) * 100;
+        const y = ((e.clientY - rect.top) / rect.height) * 100;
+
+        // Get all available data types for debugging
+        const types = e.dataTransfer.types;
+        console.log('Tom | Drop event - available types:', types);
+
+        // Try to get data from various sources
+        const rawData = e.dataTransfer.getData('text/plain');
+        const uriData = e.dataTransfer.getData('text/uri-list');
+        const htmlData = e.dataTransfer.getData('text/html');
+
+        console.log('Tom | Drop data - text/plain:', rawData);
+        console.log('Tom | Drop data - text/uri-list:', uriData);
+
+        try {
+          // Check for FilePicker image drop (GM only)
+          if (game.user.isGM) {
+            // Try different sources for file path
+            let filePath = null;
+
+            // Check text/plain for direct file path
+            if (rawData && !rawData.startsWith('{') && !rawData.startsWith('[')) {
+              const isImage = /\.(webp|png|jpg|jpeg|gif|svg|webm|mp4)$/i.test(rawData);
+              if (isImage) {
+                filePath = rawData;
+              }
+            }
+
+            // Check text/uri-list
+            if (!filePath && uriData) {
+              const isImage = /\.(webp|png|jpg|jpeg|gif|svg|webm|mp4)$/i.test(uriData);
+              if (isImage) {
+                filePath = uriData;
+              }
+            }
+
+            // Check if rawData is JSON with a file path (Foundry Tile format)
+            if (!filePath && rawData && rawData.startsWith('{')) {
+              try {
+                const parsed = JSON.parse(rawData);
+                if (parsed.type === 'Tile' && parsed.texture?.src) {
+                  filePath = parsed.texture.src;
+                } else if (parsed.src || parsed.path || parsed.img) {
+                  filePath = parsed.src || parsed.path || parsed.img;
+                }
+              } catch (e) { /* not JSON */ }
+            }
+
+            if (filePath) {
+              console.log('Tom | Spawning asset from:', filePath);
+              this._spawnAsset(filePath, x, y);
+              return;
+            }
+          }
+
+          const data = JSON.parse(rawData);
+
+          // Check if it's a Foundry Actor drop (from sidebar)
+          if (data.type === 'Actor' && data.uuid) {
+            // Only GM can drop actors from sidebar
+            if (!game.user.isGM) {
+              ui.notifications.warn("Only the GM can drop actors from the sidebar.");
+              return;
+            }
+
+            const actor = await fromUuid(data.uuid);
+            if (!actor) {
+              ui.notifications.warn("Could not find the actor.");
+              return;
+            }
+
+            // Use actor's portrait image (img, fallback to token texture)
+            const image = actor.img || actor.prototypeToken?.texture?.src || 'icons/svg/mystery-man.svg';
+
+            // Spawn the token - GM is the owner, but players with actor ownership can also move it
+            this._spawnActorToken(actor, image, x, y);
+            return;
+          }
+
+          // Otherwise, handle Tom character portrait drop
+          if (!data.characterId) return;
+
+          const character = Store.characters.get(data.characterId);
+          if (!character) return;
+
+          // Check permission again
+          const canSpawn = game.user.isGM || character.canUserSpawnToken(game.user.id);
+          if (!canSpawn) {
+            ui.notifications.warn("You don't have permission to spawn tokens for this character.");
+            return;
+          }
+
+          // Get owned actors
+          const ownedActors = game.actors.filter(a => a.isOwner && a.type === 'Player');
+
+          if (ownedActors.length === 0) {
+            ui.notifications.warn("You don't own any actors.");
+            return;
+          }
+
+          let selectedActor;
+          if (ownedActors.length === 1) {
+            selectedActor = ownedActors[0];
+          } else {
+            // Show actor selection dialog
+            selectedActor = await this._showActorSelectionDialog(ownedActors);
+            if (!selectedActor) return; // User cancelled
+          }
+
+          // Spawn the token
+          this._spawnToken(data.characterId, character.image, selectedActor, x, y);
+        } catch (err) {
+          console.error('Tom | Error handling drop:', err);
+        }
+      });
+    }
+
+    // Setup dragging for existing arena tokens
+    this._setupArenaTokenDragging();
+
+    // Setup dragging/resizing for arena assets (GM only)
+    this._setupArenaAssetInteraction();
+  }
+
+  /**
+   * Show dialog to select an actor when player owns multiple
+   */
+  async _showActorSelectionDialog(actors) {
+    return new Promise((resolve) => {
+      const content = `
+        <form>
+          <div class="form-group">
+            <label>Select your character:</label>
+            <select name="actorId" style="width: 100%;">
+              ${actors.map(a => `<option value="${a.id}">${a.name}</option>`).join('')}
+            </select>
+          </div>
+        </form>
+      `;
+
+      new Dialog({
+        title: "Select Character",
+        content,
+        buttons: {
+          ok: {
+            icon: '<i class="fas fa-check"></i>',
+            label: "Spawn",
+            callback: (html) => {
+              const actorId = html.find('select[name="actorId"]').val();
+              resolve(game.actors.get(actorId));
+            }
+          },
+          cancel: {
+            icon: '<i class="fas fa-times"></i>',
+            label: "Cancel",
+            callback: () => resolve(null)
+          }
+        },
+        default: "ok"
+      }).render(true);
+    });
+  }
+
+  /**
+   * Spawn a token on the arena (from Tom character portrait)
+   */
+  _spawnToken(characterId, image, actor, x, y) {
+    const tokenId = foundry.utils.randomID();
+
+    import('../data/TomSocketHandler.mjs').then(({ TomSocketHandler }) => {
+      TomSocketHandler.emitArenaTokenSpawn({
+        tokenId,
+        characterId,
+        actorId: actor.id,
+        actorName: actor.name,
+        image,
+        x,
+        y,
+        ownerId: game.user.id
+      });
+    });
+  }
+
+  /**
+   * Spawn a token on the arena (from Foundry actor sidebar)
+   * GM spawns these, but players with actor ownership can move them
+   */
+  _spawnActorToken(actor, image, x, y) {
+    const tokenId = foundry.utils.randomID();
+
+    import('../data/TomSocketHandler.mjs').then(({ TomSocketHandler }) => {
+      TomSocketHandler.emitArenaTokenSpawn({
+        tokenId,
+        characterId: null, // No Tom character associated
+        actorId: actor.id,
+        actorName: actor.name,
+        actorType: actor.type, // 'Player', 'NPC', etc.
+        image,
+        x,
+        y,
+        ownerId: actor.id // Use actor ID as owner - checked against actor ownership
+      });
+    });
+  }
+
+  /**
+   * Spawn an asset on the arena (GM only)
+   */
+  _spawnAsset(image, x, y) {
+    const assetId = foundry.utils.randomID();
+
+    import('../data/TomSocketHandler.mjs').then(({ TomSocketHandler }) => {
+      TomSocketHandler.emitArenaAssetSpawn({
+        assetId,
+        image,
+        x,
+        y,
+        scale: 1
+      });
+    });
+  }
+
+  /**
+   * Setup dragging and resizing for arena assets (GM only)
+   */
+  _setupArenaAssetInteraction() {
+    if (!game.user.isGM) return;
+
+    const assets = this.element.querySelectorAll('.tom-arena-asset:not([data-asset-initialized])');
+    const playerView = this.element.querySelector('.tom-player-view');
+
+    assets.forEach(asset => {
+      const assetId = asset.dataset.assetId;
+      asset.dataset.assetInitialized = 'true';
+
+      // Drag functionality
+      const dragState = { isDragging: false };
+
+      asset.addEventListener('mousedown', (e) => {
+        if (e.button !== 0) return;
+        dragState.isDragging = true;
+        asset.classList.add('dragging');
+
+        // Bring to front: increment z-order counter and apply to this element
+        this.uiState.arenaZOrder++;
+        asset.style.zIndex = this.uiState.arenaZOrder;
+
+        e.preventDefault();
+        e.stopPropagation();
+      });
+
+      document.addEventListener('mousemove', (e) => {
+        if (!dragState.isDragging) return;
+
+        const rect = playerView.getBoundingClientRect();
+        const x = ((e.clientX - rect.left) / rect.width) * 100;
+        const y = ((e.clientY - rect.top) / rect.height) * 100;
+
+        const clampedX = Math.max(2, Math.min(98, x));
+        const clampedY = Math.max(2, Math.min(98, y));
+
+        asset.style.left = `${clampedX}%`;
+        asset.style.top = `${clampedY}%`;
+
+        // Update local state
+        const assetData = this.uiState.arenaAssets.get(assetId);
+        if (assetData) {
+          assetData.x = clampedX;
+          assetData.y = clampedY;
+        }
+      });
+
+      document.addEventListener('mouseup', (e) => {
+        if (!dragState.isDragging) return;
+        dragState.isDragging = false;
+        asset.classList.remove('dragging');
+
+        const rect = playerView.getBoundingClientRect();
+        const x = ((e.clientX - rect.left) / rect.width) * 100;
+        const y = ((e.clientY - rect.top) / rect.height) * 100;
+
+        const clampedX = Math.max(2, Math.min(98, x));
+        const clampedY = Math.max(2, Math.min(98, y));
+
+        import('../data/TomSocketHandler.mjs').then(({ TomSocketHandler }) => {
+          TomSocketHandler.emitArenaAssetMove({ assetId, x: clampedX, y: clampedY });
+        });
+      });
+
+      // Wheel resize functionality
+      asset.addEventListener('wheel', (e) => {
+        e.preventDefault();
+
+        const assetData = this.uiState.arenaAssets.get(assetId);
+        if (!assetData) return;
+
+        // Calculate new scale
+        const delta = e.deltaY > 0 ? -0.1 : 0.1;
+        const newScale = Math.max(0.2, Math.min(5, (assetData.scale || 1) + delta));
+
+        // Update local state and DOM
+        assetData.scale = newScale;
+        asset.style.transform = `translate(-50%, -50%) scale(${newScale})`;
+
+        // Emit resize
+        import('../data/TomSocketHandler.mjs').then(({ TomSocketHandler }) => {
+          TomSocketHandler.emitArenaAssetResize({ assetId, scale: newScale });
+        });
+      });
+
+      // Right-click to remove
+      asset.addEventListener('contextmenu', (e) => {
+        e.preventDefault();
+        import('../data/TomSocketHandler.mjs').then(({ TomSocketHandler }) => {
+          TomSocketHandler.emitArenaAssetRemove({ assetId });
+        });
+      });
+    });
+  }
+
+  /**
+   * Setup dragging for arena tokens
+   */
+  _setupArenaTokenDragging() {
+    const tokens = this.element.querySelectorAll('.tom-arena-token:not([data-drag-initialized])');
+    const playerView = this.element.querySelector('.tom-player-view');
+
+    tokens.forEach(token => {
+      const tokenId = token.dataset.tokenId;
+      const ownerId = token.dataset.ownerId;
+
+      // Mark as initialized to avoid duplicate listeners
+      token.dataset.dragInitialized = 'true';
+
+      // Check permissions - ownerId can be a user ID or an actor ID
+      const isUserOwner = game.user.id === ownerId;
+      // Check if ownerId is an actor and user has ownership of that actor
+      const actor = game.actors.get(ownerId);
+      const isActorOwner = actor ? actor.isOwner : false;
+      const isGM = game.user.isGM;
+      const canDrag = isUserOwner || isActorOwner || isGM;
+      const canRemove = isUserOwner || isActorOwner || isGM;
+
+      // Right-click to remove (owner or GM only) - always set up if can remove
+      if (canRemove) {
+        token.addEventListener('contextmenu', (e) => {
+          e.preventDefault();
+          import('../data/TomSocketHandler.mjs').then(({ TomSocketHandler }) => {
+            TomSocketHandler.emitArenaTokenRemove({ tokenId });
+          });
+        });
+      }
+
+      // Only allow owner or GM to drag
+      if (!canDrag) return;
+
+      token.classList.add('draggable');
+
+      // Use a closure to track drag state per token
+      const dragState = { isDragging: false };
+
+      const onMouseDown = (e) => {
+        if (e.button !== 0) return; // Left click only
+        dragState.isDragging = true;
+        token.classList.add('dragging');
+
+        // Bring to front: increment z-order counter and apply to this element
+        this.uiState.arenaZOrder++;
+        token.style.zIndex = this.uiState.arenaZOrder;
+
+        e.preventDefault();
+        e.stopPropagation();
+      };
+
+      const onMouseMove = (e) => {
+        if (!dragState.isDragging) return;
+
+        const rect = playerView.getBoundingClientRect();
+        const x = ((e.clientX - rect.left) / rect.width) * 100;
+        const y = ((e.clientY - rect.top) / rect.height) * 100;
+
+        // Clamp to bounds
+        const clampedX = Math.max(5, Math.min(95, x));
+        const clampedY = Math.max(5, Math.min(95, y));
+
+        // Update position locally for smooth dragging
+        token.style.left = `${clampedX}%`;
+        token.style.top = `${clampedY}%`;
+
+        // Also update local state to persist through re-renders
+        const tokenData = this.uiState.arenaTokens.get(tokenId);
+        if (tokenData) {
+          tokenData.x = clampedX;
+          tokenData.y = clampedY;
+        }
+      };
+
+      const onMouseUp = (e) => {
+        if (!dragState.isDragging) return;
+        dragState.isDragging = false;
+        token.classList.remove('dragging');
+
+        const rect = playerView.getBoundingClientRect();
+        const x = ((e.clientX - rect.left) / rect.width) * 100;
+        const y = ((e.clientY - rect.top) / rect.height) * 100;
+
+        // Clamp to bounds
+        const clampedX = Math.max(5, Math.min(95, x));
+        const clampedY = Math.max(5, Math.min(95, y));
+
+        // Emit position update to all clients
+        import('../data/TomSocketHandler.mjs').then(({ TomSocketHandler }) => {
+          TomSocketHandler.emitArenaTokenMove({
+            tokenId,
+            x: clampedX,
+            y: clampedY
+          });
+        });
+      };
+
+      token.addEventListener('mousedown', onMouseDown);
+      document.addEventListener('mousemove', onMouseMove);
+      document.addEventListener('mouseup', onMouseUp);
+    });
   }
 
   async _prepareContext(options) {
@@ -342,7 +830,21 @@ export class TomPlayerView extends HandlebarsApplicationMixin(ApplicationV2) {
       borderPicker: borderPickerContext,
       layout: layoutContext,
       // Cast-Only Mode flag
-      castOnlyMode: this.uiState.castOnlyMode
+      castOnlyMode: this.uiState.castOnlyMode,
+      // Arena Mode flag
+      isArena: scene?.isArena || false,
+      // Arena tokens (with computed isNPC flag, case-insensitive)
+      arenaTokens: Array.from(this.uiState.arenaTokens.values()).map(token => {
+        const typeLower = token.actorType?.toLowerCase() || '';
+        return {
+          ...token,
+          isNPC: token.actorType && typeLower !== 'player' && typeLower !== 'character'
+        };
+      }),
+      // Arena assets (GM-only)
+      arenaAssets: Array.from(this.uiState.arenaAssets.values()),
+      // Current user ID for ownership checks
+      userId: game.user.id
     };
   }
 
@@ -569,6 +1071,11 @@ export class TomPlayerView extends HandlebarsApplicationMixin(ApplicationV2) {
 
   static deactivate() {
     if (this._instance && this._instance.uiState.active) {
+      // Clear arena tokens and assets
+      this._instance.uiState.arenaTokens.clear();
+      this._instance.uiState.arenaAssets.clear();
+      this._instance.uiState.arenaZOrder = 10; // Reset z-order counter
+
       // Adicionar classe de saída para animação
       const view = this._instance.element;
       if (view) {
@@ -1017,5 +1524,261 @@ export class TomPlayerView extends HandlebarsApplicationMixin(ApplicationV2) {
   static refreshCastOnlyCharacter(characterId) {
     if (!this._instance || !this._instance.uiState.castOnlyMode) return;
     this.refreshCharacter(characterId);
+  }
+
+  /* ═══════════════════════════════════════════════════════════════
+     ARENA TOKEN METHODS
+     ═══════════════════════════════════════════════════════════════ */
+
+  /**
+   * Spawn an arena token
+   */
+  static spawnArenaToken(data) {
+    if (!this._instance || !this._instance.uiState.active) return;
+
+    const { tokenId, characterId, actorId, actorName, actorType, image, x, y, ownerId } = data;
+
+    // Add to state
+    this._instance.uiState.arenaTokens.set(tokenId, {
+      tokenId,
+      characterId,
+      actorId,
+      actorName,
+      actorType,
+      image,
+      x,
+      y,
+      ownerId
+    });
+
+    // Create token element directly (faster than full re-render)
+    this._createArenaTokenElement(data);
+  }
+
+  /**
+   * Create arena token DOM element
+   */
+  static _createArenaTokenElement(data) {
+    const view = this._instance?.element;
+    if (!view) return;
+
+    let tokensContainer = view.querySelector('.tom-arena-tokens');
+    if (!tokensContainer) {
+      // Create container if it doesn't exist
+      const playerView = view.querySelector('.tom-player-view');
+      if (!playerView) return;
+
+      tokensContainer = document.createElement('div');
+      tokensContainer.className = 'tom-arena-tokens';
+      playerView.appendChild(tokensContainer);
+    }
+
+    const { tokenId, actorName, actorType, image, x, y, ownerId } = data;
+    // Check ownership - can be user ID or actor ID
+    const isUserOwner = game.user.id === ownerId;
+    const actor = game.actors.get(ownerId);
+    const isActorOwner = actor ? actor.isOwner : false;
+    const isOwner = isUserOwner || isActorOwner || game.user.isGM;
+
+    // Determine if NPC for styling (case-insensitive check)
+    const actorTypeLower = actorType?.toLowerCase() || '';
+    const isNPC = actorType && actorTypeLower !== 'player' && actorTypeLower !== 'character';
+
+    const tokenEl = document.createElement('div');
+    tokenEl.className = `tom-arena-token ${isOwner ? 'draggable' : ''} ${isNPC ? 'npc' : ''}`;
+    tokenEl.dataset.tokenId = tokenId;
+    tokenEl.dataset.ownerId = ownerId;
+    tokenEl.dataset.actorType = actorType || '';
+    tokenEl.style.left = `${x}%`;
+    tokenEl.style.top = `${y}%`;
+    tokenEl.innerHTML = `
+      <div class="tom-arena-token-portrait">
+        <img src="${image}" alt="${actorName}">
+      </div>
+      <div class="tom-arena-token-name">${actorName}</div>
+    `;
+
+    tokensContainer.appendChild(tokenEl);
+
+    // Setup dragging for this token
+    this._instance._setupArenaTokenDragging();
+  }
+
+  /**
+   * Move an arena token
+   */
+  static moveArenaToken(tokenId, x, y) {
+    if (!this._instance) return;
+
+    // Update state
+    const token = this._instance.uiState.arenaTokens.get(tokenId);
+    if (token) {
+      token.x = x;
+      token.y = y;
+    }
+
+    // Update DOM
+    const view = this._instance.element;
+    if (!view) return;
+
+    const tokenEl = view.querySelector(`.tom-arena-token[data-token-id="${tokenId}"]`);
+    if (tokenEl) {
+      tokenEl.style.left = `${x}%`;
+      tokenEl.style.top = `${y}%`;
+    }
+  }
+
+  /**
+   * Remove an arena token
+   */
+  static removeArenaToken(tokenId) {
+    if (!this._instance) return;
+
+    // Remove from state
+    this._instance.uiState.arenaTokens.delete(tokenId);
+
+    // Remove from DOM
+    const view = this._instance.element;
+    if (!view) return;
+
+    const tokenEl = view.querySelector(`.tom-arena-token[data-token-id="${tokenId}"]`);
+    if (tokenEl) {
+      tokenEl.classList.add('removing');
+      setTimeout(() => tokenEl.remove(), 300);
+    }
+  }
+
+  /**
+   * Clear all arena tokens (called when broadcast stops)
+   */
+  static clearArenaTokens() {
+    if (!this._instance) return;
+    this._instance.uiState.arenaTokens.clear();
+  }
+
+  /* ═══════════════════════════════════════════════════════════════
+     ARENA ASSET METHODS (GM-only image assets)
+     ═══════════════════════════════════════════════════════════════ */
+
+  /**
+   * Spawn an arena asset
+   */
+  static spawnArenaAsset(data) {
+    if (!this._instance || !this._instance.uiState.active) return;
+
+    const { assetId, image, x, y, scale } = data;
+
+    // Add to state
+    this._instance.uiState.arenaAssets.set(assetId, {
+      assetId,
+      image,
+      x,
+      y,
+      scale: scale || 1
+    });
+
+    // Create asset element
+    this._createArenaAssetElement(data);
+  }
+
+  /**
+   * Create arena asset DOM element
+   */
+  static _createArenaAssetElement(data) {
+    const view = this._instance?.element;
+    if (!view) return;
+
+    let assetsContainer = view.querySelector('.tom-arena-assets');
+    if (!assetsContainer) {
+      const playerView = view.querySelector('.tom-player-view');
+      if (!playerView) return;
+
+      assetsContainer = document.createElement('div');
+      assetsContainer.className = 'tom-arena-assets';
+      playerView.appendChild(assetsContainer);
+    }
+
+    const { assetId, image, x, y, scale } = data;
+
+    const assetEl = document.createElement('div');
+    assetEl.className = `tom-arena-asset ${game.user.isGM ? 'gm-control' : ''}`;
+    assetEl.dataset.assetId = assetId;
+    assetEl.style.left = `${x}%`;
+    assetEl.style.top = `${y}%`;
+    assetEl.style.transform = `translate(-50%, -50%) scale(${scale || 1})`;
+    assetEl.innerHTML = `<img src="${image}" alt="Asset">`;
+
+    assetsContainer.appendChild(assetEl);
+
+    // Setup interaction (GM only)
+    this._instance._setupArenaAssetInteraction();
+  }
+
+  /**
+   * Move an arena asset
+   */
+  static moveArenaAsset(assetId, x, y) {
+    if (!this._instance) return;
+
+    const asset = this._instance.uiState.arenaAssets.get(assetId);
+    if (asset) {
+      asset.x = x;
+      asset.y = y;
+    }
+
+    const view = this._instance.element;
+    if (!view) return;
+
+    const assetEl = view.querySelector(`.tom-arena-asset[data-asset-id="${assetId}"]`);
+    if (assetEl) {
+      assetEl.style.left = `${x}%`;
+      assetEl.style.top = `${y}%`;
+    }
+  }
+
+  /**
+   * Resize an arena asset
+   */
+  static resizeArenaAsset(assetId, scale) {
+    if (!this._instance) return;
+
+    const asset = this._instance.uiState.arenaAssets.get(assetId);
+    if (asset) {
+      asset.scale = scale;
+    }
+
+    const view = this._instance.element;
+    if (!view) return;
+
+    const assetEl = view.querySelector(`.tom-arena-asset[data-asset-id="${assetId}"]`);
+    if (assetEl) {
+      assetEl.style.transform = `translate(-50%, -50%) scale(${scale})`;
+    }
+  }
+
+  /**
+   * Remove an arena asset
+   */
+  static removeArenaAsset(assetId) {
+    if (!this._instance) return;
+
+    this._instance.uiState.arenaAssets.delete(assetId);
+
+    const view = this._instance.element;
+    if (!view) return;
+
+    const assetEl = view.querySelector(`.tom-arena-asset[data-asset-id="${assetId}"]`);
+    if (assetEl) {
+      assetEl.classList.add('removing');
+      setTimeout(() => assetEl.remove(), 300);
+    }
+  }
+
+  /**
+   * Clear all arena assets
+   */
+  static clearArenaAssets() {
+    if (!this._instance) return;
+    this._instance.uiState.arenaAssets.clear();
   }
 }

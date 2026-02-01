@@ -32,6 +32,9 @@ export class TomSceneModel {
       offsetX: 0,                 // Horizontal offset in vh
       offsetY: 5                  // Vertical offset in vh
     };
+
+    // Arena mode: allows players with canSpawnToken permission to spawn tokens
+    this.isArena = data.isArena || false;
   }
 
   get thumbnail() {
@@ -130,7 +133,8 @@ export class TomSceneModel {
       isSequence: this.isSequence,
       sequenceBackgrounds: this.sequenceBackgrounds,
       sequenceSettings: this.sequenceSettings,
-      layoutSettings: this.layoutSettings
+      layoutSettings: this.layoutSettings,
+      isArena: this.isArena
     };
   }
 }

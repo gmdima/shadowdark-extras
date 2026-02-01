@@ -9707,7 +9707,8 @@ section[data-tab="tab-notes"].sdx-journal-active>div:not(.sdx-journal-notes) {
 
 /* Damage/Hit bonus requirements section */
 .sdx-damage-bonus-requirements,
-.sdx-hit-bonus-requirements {
+.sdx-hit-bonus-requirements,
+.sdx-critical-requirements {
     padding: 8px 10px;
     border-top: 1px solid rgba(100, 80, 40, 0.3);
     background: rgba(0, 0, 0, 0.02);
@@ -9718,7 +9719,8 @@ section[data-tab="tab-notes"].sdx-journal-active>div:not(.sdx-journal-notes) {
 }
 
 .sdx-damage-bonus-reqs-header,
-.sdx-hit-bonus-reqs-header {
+.sdx-hit-bonus-reqs-header,
+.sdx-requirements-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -9728,7 +9730,8 @@ section[data-tab="tab-notes"].sdx-journal-active>div:not(.sdx-journal-notes) {
 }
 
 .sdx-add-damage-bonus-requirement,
-.sdx-add-hit-bonus-requirement {
+.sdx-add-hit-bonus-requirement,
+.sdx-add-critical-requirement {
     width: 22px;
     height: 22px;
     padding: 0;
@@ -9744,20 +9747,24 @@ section[data-tab="tab-notes"].sdx-journal-active>div:not(.sdx-journal-notes) {
 }
 
 .sdx-add-damage-bonus-requirement:hover,
-.sdx-add-hit-bonus-requirement:hover {
+.sdx-add-hit-bonus-requirement:hover,
+.sdx-add-critical-requirement:hover {
     background: rgba(100, 80, 40, 0.1);
     border-style: solid;
 }
 
 .sdx-damage-bonus-reqs-list,
-.sdx-hit-bonus-reqs-list {
+.sdx-hit-bonus-reqs-list,
+.sdx-critical-dice-requirements-list,
+.sdx-critical-damage-requirements-list {
     display: flex;
     flex-direction: column;
     gap: 6px;
 }
 
 .sdx-damage-bonus-req-row,
-.sdx-hit-bonus-req-row {
+.sdx-hit-bonus-req-row,
+.sdx-critical-req-row {
     display: flex;
     gap: 4px;
     align-items: center;
@@ -9767,7 +9774,8 @@ section[data-tab="tab-notes"].sdx-journal-active>div:not(.sdx-journal-notes) {
 }
 
 .sdx-damage-bonus-req-row select,
-.sdx-hit-bonus-req-row select {
+.sdx-hit-bonus-req-row select,
+.sdx-critical-req-row select {
     padding: 4px 6px;
     border: 1px solid rgba(100, 80, 40, 0.4);
     border-radius: 3px;
@@ -9777,17 +9785,20 @@ section[data-tab="tab-notes"].sdx-journal-active>div:not(.sdx-journal-notes) {
 }
 
 .sdx-damage-bonus-req-type,
-.sdx-hit-bonus-req-type {
+.sdx-hit-bonus-req-type,
+.sdx-critical-req-type {
     flex: 0 0 130px;
 }
 
 .sdx-damage-bonus-req-operator,
-.sdx-hit-bonus-req-operator {
+.sdx-hit-bonus-req-operator,
+.sdx-critical-req-operator {
     flex: 0 0 110px;
 }
 
 .sdx-damage-bonus-req-value,
-.sdx-hit-bonus-req-value {
+.sdx-hit-bonus-req-value,
+.sdx-critical-req-value {
     flex: 1;
     padding: 4px 6px;
     border: 1px solid rgba(100, 80, 40, 0.4);
@@ -9799,7 +9810,8 @@ section[data-tab="tab-notes"].sdx-journal-active>div:not(.sdx-journal-notes) {
 }
 
 .sdx-remove-damage-bonus-requirement,
-.sdx-remove-hit-bonus-requirement {
+.sdx-remove-hit-bonus-requirement,
+.sdx-remove-critical-requirement {
     width: 22px;
     height: 22px;
     padding: 0;
@@ -9816,7 +9828,8 @@ section[data-tab="tab-notes"].sdx-journal-active>div:not(.sdx-journal-notes) {
 }
 
 .sdx-remove-damage-bonus-requirement:hover,
-.sdx-remove-hit-bonus-requirement:hover {
+.sdx-remove-hit-bonus-requirement:hover,
+.sdx-remove-critical-requirement:hover {
     background: rgba(180, 60, 60, 0.8);
 }
 

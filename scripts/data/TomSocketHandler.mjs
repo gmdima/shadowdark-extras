@@ -69,6 +69,27 @@ export class TomSocketHandler {
       case 'cast-only-stop':
         this._onCastOnlyStop();
         break;
+      case 'arena-token-spawn':
+        this._onArenaTokenSpawn(payload.data);
+        break;
+      case 'arena-token-move':
+        this._onArenaTokenMove(payload.data);
+        break;
+      case 'arena-token-remove':
+        this._onArenaTokenRemove(payload.data);
+        break;
+      case 'arena-asset-spawn':
+        this._onArenaAssetSpawn(payload.data);
+        break;
+      case 'arena-asset-move':
+        this._onArenaAssetMove(payload.data);
+        break;
+      case 'arena-asset-resize':
+        this._onArenaAssetResize(payload.data);
+        break;
+      case 'arena-asset-remove':
+        this._onArenaAssetRemove(payload.data);
+        break;
     }
   }
 
@@ -444,5 +465,109 @@ export class TomSocketHandler {
       data: {}
     });
     this._onCastOnlyStop();
+  }
+
+  /* ═══════════════════════════════════════════════════════════════
+     ARENA TOKEN HANDLERS
+     ═══════════════════════════════════════════════════════════════ */
+
+  static _onArenaTokenSpawn(data) {
+    const { tokenId, characterId, actorId, actorName, actorType, image, x, y, ownerId } = data;
+    TomPlayerView.spawnArenaToken({ tokenId, characterId, actorId, actorName, actorType, image, x, y, ownerId });
+  }
+
+  static _onArenaTokenMove(data) {
+    const { tokenId, x, y } = data;
+    TomPlayerView.moveArenaToken(tokenId, x, y);
+  }
+
+  static _onArenaTokenRemove(data) {
+    const { tokenId } = data;
+    TomPlayerView.removeArenaToken(tokenId);
+  }
+
+  /* ═══════════════════════════════════════════════════════════════
+     ARENA TOKEN EMITTERS
+     ═══════════════════════════════════════════════════════════════ */
+
+  static emitArenaTokenSpawn(data) {
+    game.socket.emit(CONFIG.SOCKET_NAME, {
+      type: 'arena-token-spawn',
+      data
+    });
+    this._onArenaTokenSpawn(data);
+  }
+
+  static emitArenaTokenMove(data) {
+    game.socket.emit(CONFIG.SOCKET_NAME, {
+      type: 'arena-token-move',
+      data
+    });
+    // Update local state (important for persisting through re-renders)
+    this._onArenaTokenMove(data);
+  }
+
+  static emitArenaTokenRemove(data) {
+    game.socket.emit(CONFIG.SOCKET_NAME, {
+      type: 'arena-token-remove',
+      data
+    });
+    this._onArenaTokenRemove(data);
+  }
+
+  /* ═══════════════════════════════════════════════════════════════
+     ARENA ASSET HANDLERS (GM-only image assets)
+     ═══════════════════════════════════════════════════════════════ */
+
+  static _onArenaAssetSpawn(data) {
+    TomPlayerView.spawnArenaAsset(data);
+  }
+
+  static _onArenaAssetMove(data) {
+    TomPlayerView.moveArenaAsset(data.assetId, data.x, data.y);
+  }
+
+  static _onArenaAssetResize(data) {
+    TomPlayerView.resizeArenaAsset(data.assetId, data.scale);
+  }
+
+  static _onArenaAssetRemove(data) {
+    TomPlayerView.removeArenaAsset(data.assetId);
+  }
+
+  /* ═══════════════════════════════════════════════════════════════
+     ARENA ASSET EMITTERS
+     ═══════════════════════════════════════════════════════════════ */
+
+  static emitArenaAssetSpawn(data) {
+    game.socket.emit(CONFIG.SOCKET_NAME, {
+      type: 'arena-asset-spawn',
+      data
+    });
+    this._onArenaAssetSpawn(data);
+  }
+
+  static emitArenaAssetMove(data) {
+    game.socket.emit(CONFIG.SOCKET_NAME, {
+      type: 'arena-asset-move',
+      data
+    });
+    // Local state already updated during drag
+  }
+
+  static emitArenaAssetResize(data) {
+    game.socket.emit(CONFIG.SOCKET_NAME, {
+      type: 'arena-asset-resize',
+      data
+    });
+    // Local state already updated during resize
+  }
+
+  static emitArenaAssetRemove(data) {
+    game.socket.emit(CONFIG.SOCKET_NAME, {
+      type: 'arena-asset-remove',
+      data
+    });
+    this._onArenaAssetRemove(data);
   }
 }

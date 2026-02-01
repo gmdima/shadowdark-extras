@@ -43,6 +43,20 @@
     </div>
 
     <!-- ═══════════════════════════════════════════════════════════════
+         ARENA TOGGLE
+         ═══════════════════════════════════════════════════════════════ -->
+    <div class="form-group tom-arena-toggle">
+      <label class="tom-toggle-label">
+        <input type="checkbox" name="isArena" {{#if scene.isArena}}checked{{/if}}>
+        <span class="tom-toggle-switch"></span>
+        <span class="tom-toggle-text">
+          <i class="fas fa-swords"></i> It's an Arena?
+        </span>
+      </label>
+      <span class="tom-hint">Allows players with spawn permission to place tokens on this scene</span>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════
          CAST LAYOUT SETTINGS
          ═══════════════════════════════════════════════════════════════ -->
     <div class="tom-layout-section">

@@ -19,7 +19,8 @@ export class TomSceneEditor extends HandlebarsApplicationMixin(ApplicationV2) {
         bgType: 'image',
         tags: [],
         cast: [],
-        layoutSettings: { ...CONFIG.DEFAULT_LAYOUT }
+        layoutSettings: { ...CONFIG.DEFAULT_LAYOUT },
+        isArena: false
       },
       activeTab: 'general',
       newTag: ''
@@ -182,6 +183,14 @@ export class TomSceneEditor extends HandlebarsApplicationMixin(ApplicationV2) {
     if (offsetYInput) {
       offsetYInput.addEventListener('input', (e) => {
         this.uiState.data.layoutSettings.offsetY = parseInt(e.target.value) || 5;
+      });
+    }
+
+    // Bind Arena Toggle
+    const arenaToggle = this.element.querySelector('input[name="isArena"]');
+    if (arenaToggle) {
+      arenaToggle.addEventListener('change', (e) => {
+        this.uiState.data.isArena = e.target.checked;
       });
     }
   }

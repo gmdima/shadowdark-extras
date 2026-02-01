@@ -1209,6 +1209,19 @@ function wrapBuildWeaponDisplayForUnidentified() {
 							}
 						}
 					}
+					// Critical Hit Bonuses
+					if (weaponBonusConfig.criticalExtraDice) {
+						const hasReqs = weaponBonusConfig.criticalDiceRequirements && weaponBonusConfig.criticalDiceRequirements.length > 0;
+						if (!hasReqs) {
+							extraParts.push(`${weaponBonusConfig.criticalExtraDice} extra dice (Crit)`);
+						}
+					}
+					if (weaponBonusConfig.criticalExtraDamage) {
+						const hasReqs = weaponBonusConfig.criticalDamageRequirements && weaponBonusConfig.criticalDamageRequirements.length > 0;
+						if (!hasReqs) {
+							extraParts.push(`${weaponBonusConfig.criticalExtraDamage} extra damage (Crit)`);
+						}
+					}
 				}
 
 				// Final Layout Assembly (Phase 3)

@@ -25,6 +25,9 @@ export function getDefaultWeaponBonusConfig() {
 		// Critical hit bonuses
 		criticalExtraDice: "",
 		criticalExtraDamage: "",
+		// Critical hit bonus requirements
+		criticalDiceRequirements: [],
+		criticalDamageRequirements: [],
 		// Legacy requirements (for migration)
 		requirements: [],
 		// Effects to apply on hit
@@ -166,6 +169,8 @@ function buildWeaponBonusTabHtml(flags, item) {
 	const enabled = flags.enabled || false;
 	const criticalExtraDice = flags.criticalExtraDice || "";
 	const criticalExtraDamage = flags.criticalExtraDamage || "";
+	const criticalDiceRequirements = flags.criticalDiceRequirements || [];
+	const criticalDamageRequirements = flags.criticalDamageRequirements || [];
 	const effects = flags.effects || [];
 
 	// Item Macro configuration
@@ -206,6 +211,17 @@ function buildWeaponBonusTabHtml(flags, item) {
 
 	// Build Item Macro section HTML
 	const itemMacroHtml = buildItemMacroSectionHtml(itemMacro, itemMacroModuleActive);
+
+	// Build critical requirements HTML
+	let criticalDiceReqsHtml = "";
+	criticalDiceRequirements.forEach((req, reqIndex) => {
+		criticalDiceReqsHtml += buildCriticalRequirementRowHtml(req, 'dice', reqIndex);
+	});
+
+	let criticalDamageReqsHtml = "";
+	criticalDamageRequirements.forEach((req, reqIndex) => {
+		criticalDamageReqsHtml += buildCriticalRequirementRowHtml(req, 'damage', reqIndex);
+	});
 
 	return `
 		<div class="tab" data-group="primary" data-tab="tab-bonuses">
@@ -248,21 +264,47 @@ function buildWeaponBonusTabHtml(flags, item) {
 					</fieldset>
 					
 					<!-- Critical Hit Section -->
-					<fieldset class="sdx-bonus-fieldset">
+					<fieldset class="sdx-bonus-fieldset sdx-critical-bonuses-fieldset">
 						<legend><i class="fas fa-crosshairs"></i> Critical Hit Bonuses</legend>
-						
-						<div class="sdx-bonus-field">
-							<label>Extra Critical Hit Dice</label>
-							<input type="text" class="sdx-critical-extra-dice" value="${criticalExtraDice}" 
-								placeholder="e.g., 1 or 2" />
-							<p class="hint">Additional number of damage dice to roll on a critical hit.</p>
+
+						<div class="sdx-critical-bonus-entry" data-critical-type="dice">
+							<div class="sdx-bonus-field">
+								<label>Extra Critical Hit Dice</label>
+								<input type="text" class="sdx-critical-extra-dice" value="${criticalExtraDice}"
+									placeholder="e.g., 1 or 2" />
+								<p class="hint">Additional number of damage dice to roll on a critical hit.</p>
+							</div>
+							<div class="sdx-critical-requirements">
+								<div class="sdx-requirements-header">
+									<span>Requirements (optional):</span>
+									<button type="button" class="sdx-add-critical-requirement" data-critical-type="dice" title="Add requirement">
+										<i class="fas fa-plus"></i>
+									</button>
+								</div>
+								<div class="sdx-critical-dice-requirements-list">
+									${criticalDiceReqsHtml}
+								</div>
+							</div>
 						</div>
-						
-						<div class="sdx-bonus-field">
-							<label>Extra Critical Hit Damage</label>
-							<input type="text" class="sdx-critical-extra-damage" value="${criticalExtraDamage}" 
-								placeholder="e.g., 1d6 or @abilities.str.mod" />
-							<p class="hint">Additional damage to add on critical hits. Supports formulas.</p>
+
+						<div class="sdx-critical-bonus-entry" data-critical-type="damage">
+							<div class="sdx-bonus-field">
+								<label>Extra Critical Hit Damage</label>
+								<input type="text" class="sdx-critical-extra-damage" value="${criticalExtraDamage}"
+									placeholder="e.g., 1d6 or @abilities.str.mod" />
+								<p class="hint">Additional damage to add on critical hits. Supports formulas.</p>
+							</div>
+							<div class="sdx-critical-requirements">
+								<div class="sdx-requirements-header">
+									<span>Requirements (optional):</span>
+									<button type="button" class="sdx-add-critical-requirement" data-critical-type="damage" title="Add requirement">
+										<i class="fas fa-plus"></i>
+									</button>
+								</div>
+								<div class="sdx-critical-damage-requirements-list">
+									${criticalDamageReqsHtml}
+								</div>
+							</div>
 						</div>
 					</fieldset>
 					
@@ -510,6 +552,47 @@ function buildDamageBonusRequirementRowHtml(req, bonusIndex, reqIndex) {
 			</select>
 			<input type="text" class="sdx-damage-bonus-req-value" value="${value}" placeholder="${getPlaceholderForType(type)}" />
 			<button type="button" class="sdx-remove-damage-bonus-requirement" data-bonus-index="${bonusIndex}" data-req-index="${reqIndex}">
+				<i class="fas fa-times"></i>
+			</button>
+		</div>
+	`;
+}
+
+/**
+ * Build HTML for a critical bonus requirement row
+ * @param {Object} req - The requirement object
+ * @param {string} criticalType - Either 'dice' or 'damage'
+ * @param {number} reqIndex - The requirement index
+ */
+function buildCriticalRequirementRowHtml(req, criticalType, reqIndex) {
+	const type = req.type || "targetName";
+	const operator = req.operator || "contains";
+	const value = req.value || "";
+
+	const typeOptions = [
+		{ value: "targetName", label: "Target Name" },
+		{ value: "targetCondition", label: "Target Has Condition" },
+		{ value: "targetHpPercent", label: "Target HP %" },
+		{ value: "attackerHpPercent", label: "Attacker HP %" },
+		{ value: "targetAncestry", label: "Target Ancestry" }
+	];
+
+	if (game.settings.get(MODULE_ID, "enableNpcCreatureType")) {
+		typeOptions.push({ value: "targetSubtype", label: "Target Subtype" });
+	}
+
+	const operatorOptions = getOperatorsForType(type);
+
+	return `
+		<div class="sdx-critical-req-row" data-critical-type="${criticalType}" data-req-index="${reqIndex}">
+			<select class="sdx-critical-req-type">
+				${typeOptions.map(opt => `<option value="${opt.value}" ${type === opt.value ? 'selected' : ''}>${opt.label}</option>`).join('')}
+			</select>
+			<select class="sdx-critical-req-operator">
+				${operatorOptions.map(opt => `<option value="${opt.value}" ${operator === opt.value ? 'selected' : ''}>${opt.label}</option>`).join('')}
+			</select>
+			<input type="text" class="sdx-critical-req-value" value="${value}" placeholder="${getPlaceholderForType(type)}" />
+			<button type="button" class="sdx-remove-critical-requirement" data-critical-type="${criticalType}" data-req-index="${reqIndex}">
 				<i class="fas fa-times"></i>
 			</button>
 		</div>
@@ -866,6 +949,62 @@ function activateWeaponBonusListeners(html, app, item) {
 	$tab.find('.sdx-critical-extra-dice, .sdx-critical-extra-damage').on('blur', async function () {
 		clearTimeout(saveTimeout);
 		await saveCriticalBonusFields($tab, item);
+	});
+
+	// ========== CRITICAL REQUIREMENTS LISTENERS ==========
+
+	// Add critical requirement
+	$tab.on('click', '.sdx-add-critical-requirement', async function (e) {
+		e.preventDefault();
+		e.stopPropagation();
+		const criticalType = $(this).data('critical-type');
+		const currentFlags = item.flags?.[MODULE_ID]?.weaponBonus || getDefaultWeaponBonusConfig();
+
+		const reqKey = criticalType === 'dice' ? 'criticalDiceRequirements' : 'criticalDamageRequirements';
+		const requirements = currentFlags[reqKey] || [];
+		requirements.push({
+			type: "targetName",
+			operator: "contains",
+			value: ""
+		});
+
+		await saveWeaponBonusConfig(item, { [reqKey]: requirements });
+		app._shadowdarkExtrasActiveTab = "tab-bonuses";
+		app.render(false);
+	});
+
+	// Remove critical requirement
+	$tab.on('click', '.sdx-remove-critical-requirement', async function (e) {
+		e.preventDefault();
+		e.stopPropagation();
+		const criticalType = $(this).data('critical-type');
+		const reqIndex = parseInt($(this).data('req-index'));
+		const currentFlags = item.flags?.[MODULE_ID]?.weaponBonus || getDefaultWeaponBonusConfig();
+
+		const reqKey = criticalType === 'dice' ? 'criticalDiceRequirements' : 'criticalDamageRequirements';
+		const requirements = currentFlags[reqKey] || [];
+		requirements.splice(reqIndex, 1);
+
+		await saveWeaponBonusConfig(item, { [reqKey]: requirements });
+		app._shadowdarkExtrasActiveTab = "tab-bonuses";
+		app.render(false);
+	});
+
+	// Critical requirement changes - immediate save on select/input change
+	$tab.on('change', '.sdx-critical-req-type, .sdx-critical-req-operator', async function () {
+		await saveCriticalRequirementsFromDom($tab, item);
+	});
+
+	$tab.on('input', '.sdx-critical-req-value', function () {
+		clearTimeout(saveTimeout);
+		saveTimeout = setTimeout(async () => {
+			await saveCriticalRequirementsFromDom($tab, item);
+		}, 500);
+	});
+
+	$tab.on('blur', '.sdx-critical-req-value', async function () {
+		clearTimeout(saveTimeout);
+		await saveCriticalRequirementsFromDom($tab, item);
 	});
 
 	// ========== HIT BONUS LISTENERS ==========
@@ -1276,6 +1415,35 @@ async function saveCriticalBonusFields($tab, item) {
 }
 
 /**
+ * Save critical requirements from DOM
+ */
+async function saveCriticalRequirementsFromDom($tab, item) {
+	const criticalDiceRequirements = [];
+	const criticalDamageRequirements = [];
+
+	$tab.find('.sdx-critical-req-row').each(function () {
+		const $row = $(this);
+		const criticalType = $row.data('critical-type');
+		const req = {
+			type: $row.find('.sdx-critical-req-type').val(),
+			operator: $row.find('.sdx-critical-req-operator').val(),
+			value: $row.find('.sdx-critical-req-value').val()
+		};
+
+		if (criticalType === 'dice') {
+			criticalDiceRequirements.push(req);
+		} else {
+			criticalDamageRequirements.push(req);
+		}
+	});
+
+	await saveWeaponBonusConfig(item, {
+		criticalDiceRequirements,
+		criticalDamageRequirements
+	});
+}
+
+/**
  * Save hit bonuses from DOM
  */
 async function saveHitBonusesFromDom($tab, item) {
@@ -1647,8 +1815,10 @@ export function getWeaponBonuses(weapon, attacker, target, isCritical = false) {
 		return {
 			damageBonus: exclusiveMatch.formula,
 			damageBonusParts: [exclusiveMatch],
-			criticalDice: parseInt(flags.criticalExtraDice) || 0,
-			criticalDamage: flags.criticalExtraDamage || ""
+			criticalDice: evaluateRequirements(flags.criticalDiceRequirements || [], attacker, target)
+				? (parseInt(flags.criticalExtraDice) || 0) : 0,
+			criticalDamage: evaluateRequirements(flags.criticalDamageRequirements || [], attacker, target)
+				? (flags.criticalExtraDamage || "") : ""
 		};
 	}
 
@@ -1658,8 +1828,10 @@ export function getWeaponBonuses(weapon, attacker, target, isCritical = false) {
 	return {
 		damageBonus: combinedFormula,
 		damageBonusParts: applicableBonuses,
-		criticalDice: parseInt(flags.criticalExtraDice) || 0,
-		criticalDamage: flags.criticalExtraDamage || ""
+		criticalDice: evaluateRequirements(flags.criticalDiceRequirements || [], attacker, target)
+			? (parseInt(flags.criticalExtraDice) || 0) : 0,
+		criticalDamage: evaluateRequirements(flags.criticalDamageRequirements || [], attacker, target)
+			? (flags.criticalExtraDamage || "") : ""
 	};
 }
 
@@ -1978,25 +2150,98 @@ export async function calculateWeaponBonusDamage(weapon, attacker, target, isCri
 
 	// Handle critical bonuses
 	let criticalExtraDice = 0;
+	let criticalExtraDiceFormula = ""; // Track the extra dice formula for display
 	let criticalBonus = 0;
 	let criticalFormula = "";
 	let criticalRollResults = [];
 	let criticalRolls = []; // NEW: Store actual critical Roll objects
 
 	if (isCritical) {
-		criticalExtraDice = parseInt(flags.criticalExtraDice) || 0;
-		criticalFormula = evaluateFormula(flags.criticalExtraDamage || "", attacker);
+		if (evaluateRequirements(flags.criticalDiceRequirements || [], attacker, target)) {
+			criticalExtraDice = parseInt(flags.criticalExtraDice) || 0;
+		}
+		if (evaluateRequirements(flags.criticalDamageRequirements || [], attacker, target)) {
+			criticalFormula = evaluateFormula(flags.criticalExtraDamage || "", attacker);
+		}
 
+		// Roll extra critical dice based on weapon's base damage die
+		if (criticalExtraDice > 0 && weapon) {
+			// Get the weapon's damage die type
+			const damageData = weapon.system?.damage;
+			let dieType = null;
+
+			if (damageData) {
+				// For player weapons: oneHanded or twoHanded (e.g., "d6")
+				if (damageData.oneHanded) {
+					dieType = damageData.oneHanded;
+				} else if (damageData.twoHanded) {
+					dieType = damageData.twoHanded;
+				}
+				// For NPC attacks: value (e.g., "1d6+2") - extract the die
+				else if (damageData.value) {
+					const dieMatch = damageData.value.match(/d(\d+)/i);
+					if (dieMatch) {
+						dieType = `d${dieMatch[1]}`;
+					}
+				}
+			}
+
+			if (dieType) {
+				// Ensure dieType starts with 'd' (e.g., "d6" not "6")
+				if (!dieType.startsWith('d')) {
+					dieType = `d${dieType}`;
+				}
+
+				const extraDiceFormula = `${criticalExtraDice}${dieType}`;
+				criticalExtraDiceFormula = extraDiceFormula; // Store for display
+				try {
+					const extraDiceRoll = new Roll(extraDiceFormula);
+					await extraDiceRoll.evaluate();
+					criticalRolls.push(extraDiceRoll);
+					criticalBonus += extraDiceRoll.total;
+
+					// Add to damage components
+					damageComponents.push({
+						amount: extraDiceRoll.total,
+						type: "standard",
+						label: "Critical Dice",
+						formula: extraDiceFormula
+					});
+
+					// Extract dice results
+					for (const term of extraDiceRoll.terms) {
+						if (term.operator) continue;
+						if (term.faces !== undefined && term.results) {
+							for (const r of term.results) {
+								criticalRollResults.push({
+									value: r.result,
+									faces: term.faces,
+									label: 'Critical Dice',
+									isMax: r.result === term.faces,
+									isMin: r.result === 1
+								});
+							}
+						}
+					}
+
+					console.log(`${MODULE_ID} | Rolled ${criticalExtraDice} extra critical dice (${extraDiceFormula}): ${extraDiceRoll.total}`);
+				} catch (err) {
+					console.warn(`${MODULE_ID} | Failed to roll extra critical dice: ${extraDiceFormula}`, err);
+				}
+			}
+		}
+
+		// Roll extra critical damage formula (separate from extra dice)
 		if (criticalFormula) {
 			try {
 				const critRoll = new Roll(criticalFormula);
 				await critRoll.evaluate();
 				criticalRolls.push(critRoll); // Store the roll
-				criticalBonus = critRoll.total;
+				criticalBonus += critRoll.total;
 
 				// Critical damage is treated as "standard" type
 				damageComponents.push({
-					amount: criticalBonus,
+					amount: critRoll.total,
 					type: "standard",
 					label: "Critical",
 					formula: criticalFormula
@@ -2044,6 +2289,7 @@ export async function calculateWeaponBonusDamage(weapon, attacker, target, isCri
 		bonusRollResults, // Actual dice results from the roll
 		damageComponents, // Array of { amount, type, label, formula }
 		criticalExtraDice,
+		criticalExtraDiceFormula, // Formula for extra critical dice (e.g., "1d6")
 		criticalBonus,
 		criticalFormula,
 		criticalRolls, // Actual Roll objects for critical damage

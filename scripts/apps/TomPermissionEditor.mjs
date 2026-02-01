@@ -18,7 +18,8 @@ export class TomPermissionEditor extends HandlebarsApplicationMixin(ApplicationV
 
     // Clone permissions for editing
     this.uiState = {
-      permissions: JSON.parse(JSON.stringify(this.character.permissions || { default: 'none', players: {} }))
+      permissions: JSON.parse(JSON.stringify(this.character.permissions || { default: 'none', players: {} })),
+      canSpawnToken: JSON.parse(JSON.stringify(this.character.canSpawnToken || {}))
     };
   }
 
@@ -57,6 +58,7 @@ export class TomPermissionEditor extends HandlebarsApplicationMixin(ApplicationV
     // Get all players (non-GM users)
     const players = game.users.filter(u => !u.isGM && u.active !== false).map(user => {
       const currentLevel = this.uiState.permissions.players[user.id] || this.uiState.permissions.default || 'none';
+      const canSpawn = this.uiState.canSpawnToken[user.id] || false;
       return {
         id: user.id,
         name: user.name,
@@ -66,7 +68,8 @@ export class TomPermissionEditor extends HandlebarsApplicationMixin(ApplicationV
         isNone: currentLevel === 'none',
         isView: currentLevel === 'view',
         isEmotion: currentLevel === 'emotion',
-        isFull: currentLevel === 'full'
+        isFull: currentLevel === 'full',
+        canSpawnToken: canSpawn
       };
     });
 
@@ -94,6 +97,17 @@ export class TomPermissionEditor extends HandlebarsApplicationMixin(ApplicationV
         this.render();
       });
     }
+
+    // Bind right-click on crown buttons to toggle canSpawnToken
+    const crownButtons = this.element.querySelectorAll('.tom-perm-btn[data-level="full"]');
+    for (const btn of crownButtons) {
+      btn.addEventListener('contextmenu', (e) => {
+        e.preventDefault();
+        const userId = btn.dataset.userId;
+        this.uiState.canSpawnToken[userId] = !this.uiState.canSpawnToken[userId];
+        this.render();
+      });
+    }
   }
 
   /* ═══════════════════════════════════════════════════════════════
@@ -117,6 +131,7 @@ export class TomPermissionEditor extends HandlebarsApplicationMixin(ApplicationV
   static _onSave(event, target) {
     // Apply permissions to character
     this.character.permissions = this.uiState.permissions;
+    this.character.canSpawnToken = this.uiState.canSpawnToken;
     Store.saveData();
 
     ui.notifications.info(`Updated permissions for ${this.character.name}`);

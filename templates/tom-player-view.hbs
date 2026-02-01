@@ -21,6 +21,109 @@
        OVERLAY LAYER (Vignette & Effects)
        ═══════════════════════════════════════════════════════════════ -->
   <div class="tom-pv-overlay"></div>
+
+  <!-- ═══════════════════════════════════════════════════════════════
+       ARENA RINGS OVERLAY (Isometric distance rings)
+       ═══════════════════════════════════════════════════════════════ -->
+  {{#if isArena}}
+  <!-- Arena Assets Container (GM-only images, below tokens) -->
+  <div class="tom-arena-assets">
+    {{#each arenaAssets}}
+      <div class="tom-arena-asset {{#if @root.isGM}}gm-control{{/if}}"
+           data-asset-id="{{assetId}}"
+           style="left: {{x}}%; top: {{y}}%; transform: translate(-50%, -50%) scale({{scale}});">
+        <img src="{{image}}" alt="Asset">
+      </div>
+    {{/each}}
+  </div>
+
+  <!-- Arena Tokens Container -->
+  <div class="tom-arena-tokens">
+    {{#each arenaTokens}}
+      <div class="tom-arena-token {{#if isNPC}}npc{{/if}}"
+           data-token-id="{{tokenId}}"
+           data-owner-id="{{ownerId}}"
+           data-actor-type="{{actorType}}"
+           style="left: {{x}}%; top: {{y}}%;">
+        <div class="tom-arena-token-portrait">
+          <img src="{{image}}" alt="{{actorName}}">
+        </div>
+        <div class="tom-arena-token-name">{{actorName}}</div>
+      </div>
+    {{/each}}
+  </div>
+
+  <div class="tom-arena-rings">
+    <svg viewBox="0 0 1000 600" preserveAspectRatio="xMidYMid meet">
+      <defs>
+        <!-- Glow filter for the rings -->
+        <filter id="arenaGlow" x="-50%" y="-50%" width="200%" height="200%">
+          <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+          <feMerge>
+            <feMergeNode in="coloredBlur"/>
+            <feMergeNode in="SourceGraphic"/>
+          </feMerge>
+        </filter>
+        <!-- Gradient for ring stroke -->
+        <linearGradient id="ringGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" style="stop-color:#f59e0b;stop-opacity:1" />
+          <stop offset="50%" style="stop-color:#fbbf24;stop-opacity:1" />
+          <stop offset="100%" style="stop-color:#d97706;stop-opacity:1" />
+        </linearGradient>
+      </defs>
+
+      <!-- 90ft ring (outermost) -->
+      <ellipse cx="500" cy="300" rx="420" ry="210"
+               class="tom-arena-ring tom-arena-ring-90"
+               fill="none" stroke="url(#ringGradient)" stroke-width="2"
+               filter="url(#arenaGlow)" opacity="0.7"/>
+      <text x="500" y="80" class="tom-arena-label" text-anchor="middle">90 ft</text>
+
+      <!-- 60ft ring -->
+      <ellipse cx="500" cy="300" rx="300" ry="150"
+               class="tom-arena-ring tom-arena-ring-60"
+               fill="none" stroke="url(#ringGradient)" stroke-width="2"
+               filter="url(#arenaGlow)" opacity="0.8"/>
+      <text x="500" y="140" class="tom-arena-label" text-anchor="middle">60 ft</text>
+
+      <!-- 30ft ring -->
+      <ellipse cx="500" cy="300" rx="180" ry="90"
+               class="tom-arena-ring tom-arena-ring-30"
+               fill="none" stroke="url(#ringGradient)" stroke-width="2"
+               filter="url(#arenaGlow)" opacity="0.9"/>
+      <text x="500" y="200" class="tom-arena-label" text-anchor="middle">30 ft</text>
+
+      <!-- Sector divider lines (6 sections, from center to 90ft ring) -->
+      <g class="tom-arena-dividers" opacity="0.6">
+        <!-- 0° (right) -->
+        <line x1="500" y1="300" x2="920" y2="300"
+              stroke="#fbbf24" stroke-width="2" stroke-dasharray="8,6"/>
+        <!-- 60° (bottom-right) -->
+        <line x1="500" y1="300" x2="710" y2="482"
+              stroke="#fbbf24" stroke-width="2" stroke-dasharray="8,6"/>
+        <!-- 120° (bottom-left) -->
+        <line x1="500" y1="300" x2="290" y2="482"
+              stroke="#fbbf24" stroke-width="2" stroke-dasharray="8,6"/>
+        <!-- 180° (left) -->
+        <line x1="500" y1="300" x2="80" y2="300"
+              stroke="#fbbf24" stroke-width="2" stroke-dasharray="8,6"/>
+        <!-- 240° (top-left) -->
+        <line x1="500" y1="300" x2="290" y2="118"
+              stroke="#fbbf24" stroke-width="2" stroke-dasharray="8,6"/>
+        <!-- 300° (top-right) -->
+        <line x1="500" y1="300" x2="710" y2="118"
+              stroke="#fbbf24" stroke-width="2" stroke-dasharray="8,6"/>
+      </g>
+
+      <!-- Center area (same size as 30ft ring) - rendered last to cover divider lines -->
+      <ellipse cx="500" cy="300" rx="180" ry="90"
+               class="tom-arena-ring tom-arena-center"
+               fill="rgba(251, 191, 36, 0.1)" stroke="url(#ringGradient)" stroke-width="3"
+               filter="url(#arenaGlow)"/>
+      <text x="500" y="305" class="tom-arena-label tom-arena-label-center" text-anchor="middle">CENTER</text>
+    </svg>
+  </div>
+  {{/if}}
   {{/unless}}
 
   <!-- ═══════════════════════════════════════════════════════════════

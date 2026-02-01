@@ -3051,6 +3051,7 @@ export async function injectDamageCard(message, html, data) {
 						bonusRollResults: weaponBonusDamage.bonusRollResults,
 						damageComponents: weaponBonusDamage.damageComponents,
 						criticalExtraDice: weaponBonusDamage.criticalExtraDice,
+						criticalExtraDiceFormula: weaponBonusDamage.criticalExtraDiceFormula,
 						criticalBonus: weaponBonusDamage.criticalBonus,
 						criticalFormula: weaponBonusDamage.criticalFormula,
 						criticalRollResults: weaponBonusDamage.criticalRollResults,
@@ -3753,6 +3754,11 @@ async function buildRollBreakdown(message, weaponBonusDamage = null, isCritical 
 		if (weaponBonusDamage.bonusFormula) {
 			fullFormula += ` + ${weaponBonusDamage.bonusFormula}`;
 		}
+		// Add extra critical dice formula (e.g., "1d6" for Extra Critical Hit Dice)
+		if (weaponBonusDamage.criticalExtraDiceFormula && isCritical) {
+			fullFormula += ` + ${weaponBonusDamage.criticalExtraDiceFormula}`;
+		}
+		// Add extra critical damage formula (e.g., "1d4" for Extra Critical Hit Damage)
 		if (weaponBonusDamage.criticalFormula && isCritical) {
 			fullFormula += ` + ${weaponBonusDamage.criticalFormula}`;
 		}

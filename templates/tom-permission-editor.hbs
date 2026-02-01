@@ -56,9 +56,9 @@
                       title="Can Change Emotions">
                 <i class="fas fa-theater-masks"></i>
               </button>
-              <button type="button" class="tom-perm-btn {{#if isFull}}active{{/if}}"
+              <button type="button" class="tom-perm-btn {{#if isFull}}active{{/if}} {{#if canSpawnToken}}can-spawn{{/if}}"
                       data-action="set-permission" data-user-id="{{id}}" data-level="full"
-                      title="Full Control">
+                      title="Full Control{{#if canSpawnToken}} + Can Spawn Token{{/if}} (Right-click to toggle token spawning)">
                 <i class="fas fa-crown"></i>
               </button>
             </div>
@@ -89,6 +89,12 @@
     <div class="tom-perm-legend-item">
       <i class="fas fa-crown"></i> Full Control
     </div>
+    <div class="tom-perm-legend-item tom-perm-legend-spawn">
+      <i class="fas fa-crown" style="color: #4ade80;"></i> Can Spawn Token
+    </div>
+  </div>
+  <div class="tom-perm-hint">
+    <i class="fas fa-info-circle"></i> Right-click the crown to grant token spawning permission
   </div>
 
   <!-- ═══════════════════════════════════════════════════════════════

@@ -24,6 +24,10 @@ export class TomCharacterModel {
       default: 'none',    // Default permission for non-listed players
       players: {}         // Map of playerId -> permission level
     };
+
+    // Token spawning permission: map of playerId -> boolean
+    // Players with this flag can spawn tokens for this character
+    this.canSpawnToken = data.canSpawnToken || {};
   }
 
   get image() {
@@ -51,7 +55,8 @@ export class TomCharacterModel {
       favoriteEmotions: Array.from(this.favoriteEmotions),
       borderStyle: this.borderStyle,
       locked: this.locked,
-      permissions: this.permissions
+      permissions: this.permissions,
+      canSpawnToken: this.canSpawnToken
     };
   }
 
@@ -81,5 +86,14 @@ export class TomCharacterModel {
     } else {
       this.permissions.players[userId] = level;
     }
+  }
+
+  /**
+   * Check if a user can spawn tokens for this character
+   * @param {string} userId - The user ID to check
+   * @returns {boolean}
+   */
+  canUserSpawnToken(userId) {
+    return this.canSpawnToken[userId] === true;
   }
 }
