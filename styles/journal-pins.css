@@ -204,6 +204,10 @@
     text-shadow: 0 0 2px rgba(255, 255, 255, 0.8);
 }
 
+.border-radius-options {
+    margin-top: 14px;
+}
+
 /* Dark mode overrides if needed */
 .dark-mode .pin-list-app .window-content {
     background: #2e2e2e;

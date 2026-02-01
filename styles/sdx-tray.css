@@ -11,8 +11,16 @@
 }
 
 /* Push UI controls to make room for the tray handle */
-/* Push UI controls to make room for the tray handle */
 body.sdx-tray-enabled #ui-left-column-1 {
+    margin-left: 40px;
+}
+
+/* When camera views is on the left, it gets the margin instead */
+body.sdx-tray-enabled:has(#camera-views.vertical.left) #ui-left-column-1 {
+    margin-left: -10px;
+}
+
+body.sdx-tray-enabled #camera-views.vertical.left {
     margin-left: 40px;
 }
 

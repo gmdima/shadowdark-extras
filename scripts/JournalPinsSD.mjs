@@ -798,6 +798,9 @@ class JournalPinGraphics extends PIXI.Container {
             this._labelContainer = null;
         }
 
+        // Clear image sprite reference (will be set if shape is "image")
+        this._imageSprite = null;
+
         // We will build the new label in a local variable and only 
         // attach it to the class/renderer if this build cycle is still valid at the end.
         let newLabelContainer = null;
@@ -855,8 +858,8 @@ class JournalPinGraphics extends PIXI.Container {
                         // Center anchor
                         sprite.anchor.set(0.5);
 
-                        // Scale to fit size, maintaining aspect ratio usually, 
-                        // but here we might force square fit or contain? 
+                        // Scale to fit size, maintaining aspect ratio usually,
+                        // but here we might force square fit or contain?
                         // Let's use "contain" logic within the size box
 
                         const maxDim = Math.max(texture.width, texture.height);
@@ -867,6 +870,9 @@ class JournalPinGraphics extends PIXI.Container {
 
                         // Apply opacity
                         sprite.alpha = baseOpacity;
+
+                        // Store reference for pixel-perfect hover detection
+                        this._imageSprite = sprite;
 
                         container.addChild(sprite);
                     }
@@ -1231,6 +1237,77 @@ class JournalPinGraphics extends PIXI.Container {
         this.eventMode = "static";
         this.cursor = "pointer";
         this.interactiveChildren = false;
+
+        // Pixel-perfect hover detection for image-shaped pins
+        if (this._imageSprite && game.settings.get(MODULE_ID, "pixelPerfectPins")) {
+            const sprite = this._imageSprite;
+            const alphaThreshold = game.settings.get(MODULE_ID, "pixelPerfectPinsAlpha") ?? 100;
+
+            // Store original contains function
+            this.hitArea._originalContains = this.hitArea.contains.bind(this.hitArea);
+            this.hitArea._sprite = sprite;
+            this.hitArea._pinGraphics = this;
+            this.hitArea._alphaThreshold = alphaThreshold;
+
+            // Override contains to use pixel-perfect detection
+            this.hitArea.contains = function(x, y) {
+                // First check if point is within basic bounds
+                const inBounds = this._originalContains(x, y);
+                if (!inBounds) return false;
+
+                // Then check pixel alpha
+                const sprite = this._sprite;
+                if (!sprite || !sprite.texture?.baseTexture?.resource?.source) {
+                    return inBounds;
+                }
+
+                try {
+                    // Get the texture source (canvas or image)
+                    const source = sprite.texture.baseTexture.resource.source;
+                    const texture = sprite.texture;
+
+                    // Calculate the point in texture coordinates
+                    // x, y are relative to the pin center (hitArea local coords)
+                    // sprite is anchored at 0.5, 0.5
+
+                    // Convert to sprite local coords
+                    const spriteX = x + sprite.width / 2;
+                    const spriteY = y + sprite.height / 2;
+
+                    // Convert to texture coords
+                    const scaleX = texture.width / sprite.width;
+                    const scaleY = texture.height / sprite.height;
+
+                    const texX = Math.floor(spriteX * scaleX);
+                    const texY = Math.floor(spriteY * scaleY);
+
+                    // Bounds check
+                    if (texX < 0 || texX >= texture.width || texY < 0 || texY >= texture.height) {
+                        return false;
+                    }
+
+                    // Get pixel alpha from canvas
+                    // We need to render texture to canvas to read pixel data
+                    if (!this._pixelCanvas) {
+                        this._pixelCanvas = document.createElement('canvas');
+                        this._pixelCanvas.width = texture.width;
+                        this._pixelCanvas.height = texture.height;
+                        const ctx = this._pixelCanvas.getContext('2d');
+                        ctx.drawImage(source, 0, 0);
+                        this._pixelData = ctx.getImageData(0, 0, texture.width, texture.height).data;
+                    }
+
+                    // Get alpha value at the pixel (RGBA = 4 bytes per pixel, alpha is 4th byte)
+                    const pixelIndex = (texY * texture.width + texX) * 4;
+                    const alpha = this._pixelData[pixelIndex + 3];
+
+                    return alpha >= this._alphaThreshold;
+                } catch (err) {
+                    console.warn("SDX Journal Pins | Pixel-perfect detection failed:", err);
+                    return inBounds;
+                }
+            };
+        }
 
         // Add status indicators for GM
         if (game.user?.isGM && this.pinData.requiresVision) {
@@ -2500,6 +2577,10 @@ function initJournalPins() {
             }
         }
     });
+
+    // Expose globally for settings onChange handlers
+    window.JournalPinManager = JournalPinManager;
+    window.JournalPinRenderer = JournalPinRenderer;
 
     console.log("SDX Journal Pins | initJournalPins called");
 }

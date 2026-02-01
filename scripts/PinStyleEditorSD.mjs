@@ -1281,4 +1281,36 @@ export function registerPinStyleSettings() {
         type: PinStyleEditorApp,
         restricted: true
     });
+
+    // Pixel Perfect Hover Settings
+    game.settings.register(MODULE_ID, "pixelPerfectPins", {
+        name: game.i18n.localize("SHADOWDARK_EXTRAS.settings.enable_pin_pixel_perfect.name"),
+        hint: game.i18n.localize("SHADOWDARK_EXTRAS.settings.enable_pin_pixel_perfect.hint"),
+        scope: "client",
+        config: true,
+        type: Boolean,
+        default: false,
+        onChange: () => {
+            // Refresh all pins on the current scene to apply new setting
+            if (canvas?.scene && window.JournalPinRenderer) {
+                const pins = window.JournalPinManager?.list({ sceneId: canvas.scene.id }) || [];
+                window.JournalPinRenderer.loadScenePins(canvas.scene.id, pins);
+            }
+        }
+    });
+
+    game.settings.register(MODULE_ID, "pixelPerfectPinsAlpha", {
+        name: game.i18n.localize("SHADOWDARK_EXTRAS.settings.pin_pixel_perfect_alpha.name"),
+        hint: game.i18n.localize("SHADOWDARK_EXTRAS.settings.pin_pixel_perfect_alpha.hint"),
+        scope: "world",
+        config: true,
+        type: new foundry.data.fields.NumberField({
+            required: true,
+            min: 0,
+            max: 255,
+            step: 1,
+            initial: 100
+        }),
+        default: 100
+    });
 }

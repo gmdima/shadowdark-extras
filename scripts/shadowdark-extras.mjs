@@ -4422,6 +4422,31 @@ function registerSettings() {
 		requiresReload: true
 	});
 
+	game.settings.register(MODULE_ID, "pixelPerfectPins", {
+		name: game.i18n.localize("SHADOWDARK_EXTRAS.settings.pixel_perfect_pins.name"),
+		hint: game.i18n.localize("SHADOWDARK_EXTRAS.settings.pixel_perfect_pins.hint"),
+		scope: "world",
+		config: true,
+		default: false,
+		type: Boolean,
+		requiresReload: true
+	});
+
+	game.settings.register(MODULE_ID, "pixelPerfectPinsAlpha", {
+		name: game.i18n.localize("SHADOWDARK_EXTRAS.settings.pixel_perfect_pins_alpha.name"),
+		hint: game.i18n.localize("SHADOWDARK_EXTRAS.settings.pixel_perfect_pins_alpha.hint"),
+		scope: "world",
+		config: true,
+		default: 10,
+		type: Number,
+		range: {
+			min: 0,
+			max: 255,
+			step: 1
+		},
+		requiresReload: true
+	});
+
 	game.settings.register(MODULE_ID, "enablePlaceableNotes", {
 		name: "Enable Notes on placeables and Notes tab in tray",
 		hint: "Adds a Notes button to configuration windows for Lights, Sounds, Tokens, Walls, and Tiles.",
