@@ -4422,30 +4422,7 @@ function registerSettings() {
 		requiresReload: true
 	});
 
-	game.settings.register(MODULE_ID, "pixelPerfectPins", {
-		name: game.i18n.localize("SHADOWDARK_EXTRAS.settings.pixel_perfect_pins.name"),
-		hint: game.i18n.localize("SHADOWDARK_EXTRAS.settings.pixel_perfect_pins.hint"),
-		scope: "world",
-		config: true,
-		default: false,
-		type: Boolean,
-		requiresReload: true
-	});
 
-	game.settings.register(MODULE_ID, "pixelPerfectPinsAlpha", {
-		name: game.i18n.localize("SHADOWDARK_EXTRAS.settings.pixel_perfect_pins_alpha.name"),
-		hint: game.i18n.localize("SHADOWDARK_EXTRAS.settings.pixel_perfect_pins_alpha.hint"),
-		scope: "world",
-		config: true,
-		default: 10,
-		type: Number,
-		range: {
-			min: 0,
-			max: 255,
-			step: 1
-		},
-		requiresReload: true
-	});
 
 	game.settings.register(MODULE_ID, "enablePlaceableNotes", {
 		name: "Enable Notes on placeables and Notes tab in tray",
@@ -4697,7 +4674,42 @@ function registerSettings() {
 		type: Boolean,
 		requiresReload: true,
 	});
+	game.settings.register(MODULE_ID, "pixelPerfectPins", {
+		name: game.i18n.localize("SHADOWDARK_EXTRAS.settings.pixel_perfect_pins.name"),
+		hint: game.i18n.localize("SHADOWDARK_EXTRAS.settings.pixel_perfect_pins.hint"),
+		scope: "world",
+		config: true,
+		default: false,
+		type: Boolean,
+		requiresReload: false,
+		onChange: () => {
+			if (canvas?.scene && window.JournalPinRenderer) {
+				const pins = window.JournalPinManager?.list({ sceneId: canvas.scene.id }) || [];
+				window.JournalPinRenderer.loadScenePins(canvas.scene.id, pins);
+			}
+		}
+	});
 
+	game.settings.register(MODULE_ID, "pixelPerfectPinsAlpha", {
+		name: game.i18n.localize("SHADOWDARK_EXTRAS.settings.pixel_perfect_pins_alpha.name"),
+		hint: game.i18n.localize("SHADOWDARK_EXTRAS.settings.pixel_perfect_pins_alpha.hint"),
+		scope: "world",
+		config: true,
+		default: 100,
+		type: Number,
+		range: {
+			min: 0,
+			max: 255,
+			step: 1
+		},
+		requiresReload: false,
+		onChange: () => {
+			if (canvas?.scene && window.JournalPinRenderer) {
+				const pins = window.JournalPinManager?.list({ sceneId: canvas.scene.id }) || [];
+				window.JournalPinRenderer.loadScenePins(canvas.scene.id, pins);
+			}
+		}
+	});
 	// ═══════════════════════════════════════════════════════════════
 	// 9. EASY REFERENCE MENU
 	// ═══════════════════════════════════════════════════════════════
