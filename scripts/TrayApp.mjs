@@ -1191,6 +1191,16 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
     }
 
     /**
+     * Refresh the cast manager panel if it is open
+     */
+    refreshTomCastPanel() {
+        if (document.querySelector(".tom-cast-manager-panel")) {
+            this._toggleTomCastPanel(); // This will close it
+            this._toggleTomCastPanel(); // This will open it again (refreshing data)
+        }
+    }
+
+    /**
      * Update the active scene highlight in the panel
      * @param {string} sceneId - New active scene ID
      */

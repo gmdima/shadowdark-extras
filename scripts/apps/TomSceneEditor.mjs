@@ -17,13 +17,11 @@ export class TomSceneEditor extends HandlebarsApplicationMixin(ApplicationV2) {
         name: 'New Scene',
         background: CONFIG.DEFAULTS.SCENE_BG,
         bgType: 'image',
-        tags: [],
         cast: [],
         layoutSettings: { ...CONFIG.DEFAULT_LAYOUT },
         isArena: false
       },
-      activeTab: 'general',
-      newTag: ''
+      activeTab: 'general'
     };
 
     // Ensure layoutSettings exists for existing scenes
@@ -50,9 +48,6 @@ export class TomSceneEditor extends HandlebarsApplicationMixin(ApplicationV2) {
       save: TomSceneEditor._onSave,
       close: TomSceneEditor._onClose,
       'tab-switch': TomSceneEditor._onTabSwitch,
-      'tag-input': TomSceneEditor._onTagInput, // Keydown handler
-      'remove-tag': TomSceneEditor._onRemoveTag,
-      'add-tag': TomSceneEditor._onAddTag,
       'file-picked': TomSceneEditor._onFilePicked // Custom handler for file picker callback
     }
   };
@@ -138,17 +133,6 @@ export class TomSceneEditor extends HandlebarsApplicationMixin(ApplicationV2) {
       });
     }
 
-    // Bind Tag Input Enter Key
-    const tagInput = this.element.querySelector('.tom-tag-input');
-    if (tagInput) {
-      tagInput.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') {
-          e.preventDefault();
-          this._addTag(e.target.value);
-          e.target.value = '';
-        }
-      });
-    }
 
     // Bind Layout Controls
     const layoutPresetSelect = this.element.querySelector('select[name="layoutPreset"]');
@@ -202,38 +186,8 @@ export class TomSceneEditor extends HandlebarsApplicationMixin(ApplicationV2) {
   _updateBackground(path) {
     this.uiState.data.background = path;
     this.uiState.data.bgType = path.match(/\.(webm|mp4|m4v)$/i) ? 'video' : 'image';
-    
-    // Smart Auto-Tagging
-    this._autoTagFromFilename(path);
   }
 
-  _autoTagFromFilename(path) {
-    const filename = path.split('/').pop().split('.')[0]; // Remove extension and path
-    // Split by common delimiters: _ - space
-    const words = filename.split(/[-_\s]+/);
-    
-    const potentialTags = words.filter(w => w.length > 3).map(w => w.toLowerCase());
-    
-    let added = false;
-    potentialTags.forEach(tag => {
-      if (!this.uiState.data.tags.includes(tag)) {
-        this.uiState.data.tags.push(tag);
-        added = true;
-      }
-    });
-
-    if (added) {
-      ui.notifications.info(`Auto-added tags: ${potentialTags.join(', ')}`);
-    }
-  }
-
-  _addTag(tag) {
-    const cleanTag = tag.trim();
-    if (cleanTag && !this.uiState.data.tags.includes(cleanTag)) {
-      this.uiState.data.tags.push(cleanTag);
-      this.render();
-    }
-  }
 
   /* ═══════════════════════════════════════════════════════════════
      ACTIONS
@@ -244,11 +198,6 @@ export class TomSceneEditor extends HandlebarsApplicationMixin(ApplicationV2) {
     this.render();
   }
 
-  static _onRemoveTag(event, target) {
-    const tagToRemove = target.dataset.tag;
-    this.uiState.data.tags = this.uiState.data.tags.filter(t => t !== tagToRemove);
-    this.render();
-  }
 
   static async _onSave(event, target) {
     // Add loading state to button
@@ -265,7 +214,6 @@ export class TomSceneEditor extends HandlebarsApplicationMixin(ApplicationV2) {
           name: this.uiState.data.name,
           background: this.uiState.data.background,
           bgType: this.uiState.data.bgType,
-          tags: this.uiState.data.tags,
           layoutSettings: this.uiState.data.layoutSettings
         });
 

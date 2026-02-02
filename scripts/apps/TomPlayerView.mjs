@@ -29,10 +29,6 @@ export class TomPlayerView extends HandlebarsApplicationMixin(ApplicationV2) {
       borderPicker: { open: false, characterId: null, x: 0, y: 0 },
       previousSceneId: null,  // Para detectar troca de cena
       isSceneTransition: false, // Flag para controlar animações
-      // Slideshow state
-      slideshowMode: false,
-      cinematicMode: false,
-      slideshowPaused: false,
       // Cast-Only Mode state (cast without scene background)
       castOnlyMode: false,
       castOnlyCharacterIds: [],
@@ -207,6 +203,22 @@ export class TomPlayerView extends HandlebarsApplicationMixin(ApplicationV2) {
     if (scene?.isArena) {
       this._setupArenaDragDrop();
     }
+
+    // === RIGHT-CLICK TO REMOVE CAST (GM ONLY) ===
+    if (game.user.isGM) {
+      const castPortraits = this.element.querySelectorAll('.tom-pv-character');
+      castPortraits.forEach(portrait => {
+        portrait.addEventListener('contextmenu', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          const charId = portrait.dataset.id;
+          if (charId && this.uiState.sceneId) {
+            Store.removeCastMember(this.uiState.sceneId, charId);
+            ui.notifications.info(`Removed ${portrait.querySelector('.tom-pv-name')?.textContent || 'character'} from broadcast.`);
+          }
+        });
+      });
+    }
   }
 
   /**
@@ -339,9 +351,10 @@ export class TomPlayerView extends HandlebarsApplicationMixin(ApplicationV2) {
           }
 
           // Otherwise, handle Tom character portrait drop
-          if (!data.characterId) return;
+          const characterId = data.characterId || (data.type === 'character' ? data.id : null);
+          if (!characterId) return;
 
-          const character = Store.characters.get(data.characterId);
+          const character = Store.characters.get(characterId);
           if (!character) return;
 
           // Check permission again
@@ -694,10 +707,7 @@ export class TomPlayerView extends HandlebarsApplicationMixin(ApplicationV2) {
   async _prepareContext(options) {
     const scene = this.uiState.sceneId ? Store.scenes.get(this.uiState.sceneId) : null;
 
-    // Determine which cast to use:
-    // - In cast-only mode: use castOnlyCharacterIds to build cast
-    // - In slideshow mode: use the fixed slideshowCast (characters persist across all backgrounds)
-    // - Otherwise: use the scene's cast
+    // Determine which cast to use
     let castSource;
     if (this.uiState.castOnlyMode && this.uiState.castOnlyCharacterIds) {
       // Build cast from character IDs for cast-only mode
@@ -705,8 +715,6 @@ export class TomPlayerView extends HandlebarsApplicationMixin(ApplicationV2) {
         const char = Store.characters.get(id);
         return char ? { id: char.id, name: char.name, image: char.image } : null;
       }).filter(c => c !== null);
-    } else if (this.uiState.slideshowMode && this.uiState.slideshowCast) {
-      castSource = this.uiState.slideshowCast;
     } else {
       castSource = scene ? scene.cast : [];
     }
@@ -1203,182 +1211,23 @@ export class TomPlayerView extends HandlebarsApplicationMixin(ApplicationV2) {
     }
   }
 
-  /* ═══════════════════════════════════════════════════════════════
-     SLIDESHOW METHODS
-     ═══════════════════════════════════════════════════════════════ */
-
-  static setSlideshowMode(enabled, cinematicMode = false, cast = null) {
-    if (!this._instance) {
-      this._instance = new TomPlayerView();
-    }
-    this._instance.uiState.slideshowMode = enabled;
-    this._instance.uiState.cinematicMode = cinematicMode;
-    this._instance.uiState.slideshowPaused = false;
-
-    // Store the fixed cast for the entire slideshow
-    // This ensures characters persist across all background changes
-    if (enabled && cast) {
-      this._instance.uiState.slideshowCast = cast;
-    } else if (!enabled) {
-      this._instance.uiState.slideshowCast = null;
-    }
-
-    if (this._instance.uiState.active) {
-      this._instance.render();
-    }
-  }
-
-  static setSlideshowPaused(paused) {
-    if (this._instance) {
-      this._instance.uiState.slideshowPaused = paused;
-      if (this._instance.uiState.active) {
-        this._instance.render();
-      }
-    }
-  }
-
   static activateWithTransition(sceneId, transitionType = 'fade', transitionDuration = 500) {
     if (!this._instance) {
       this._instance = new TomPlayerView();
     }
 
     const isNewScene = this._instance.uiState.sceneId !== sceneId;
-    const wasActive = this._instance.uiState.active;
 
     // Update state
     this._instance.uiState.previousSceneId = this._instance.uiState.sceneId;
     this._instance.uiState.active = true;
     this._instance.uiState.sceneId = sceneId;
 
-    // If in slideshow mode and already active, only update background (don't re-render)
-    if (this._instance.uiState.slideshowMode && wasActive && isNewScene) {
-      this._updateBackgroundOnly(sceneId, transitionType, transitionDuration);
-      return;
-    }
-
-    // Otherwise do full render (first activation or non-slideshow mode)
+    // Do full render
     this._instance.uiState.isSceneTransition = isNewScene;
     this._instance.render(true);
   }
 
-  /**
-   * Update the cast strip without full re-render
-   * Used during slideshow transitions to update characters for new scene
-   */
-  static _updateCastOnly(scene) {
-    const view = this._instance?.element;
-    if (!view || !scene) return;
-
-    const castContainer = view.querySelector('.tom-pv-cast');
-    if (!castContainer) return;
-
-    // Build new cast HTML
-    const castHTML = scene.cast.map(charRef => {
-      const realChar = Store.characters.get(charRef.id);
-      if (!realChar) return '';
-
-      const isLocked = realChar.locked || false;
-      const borderStyle = realChar.borderStyle || 'gold';
-
-      return `
-        <div class="es-pv-character ${isLocked ? 'is-locked' : ''}"
-             data-id="${realChar.id}"
-             data-action="character-click">
-          <div class="es-pv-portrait" data-border="${borderStyle}">
-            <img src="${realChar.image}" alt="${realChar.name}">
-          </div>
-          ${isLocked ? `
-            <div class="es-pv-lock-indicator" title="Locked - Only GM can change emotions">
-              <i class="fas fa-lock"></i>
-            </div>
-          ` : ''}
-          <div class="es-pv-hint">
-            <i class="fas ${isLocked ? 'fa-lock' : 'fa-theater-masks'}"></i>
-          </div>
-          <div class="es-pv-name">${realChar.name}</div>
-        </div>
-      `;
-    }).join('');
-
-    castContainer.innerHTML = castHTML;
-  }
-
-  /**
-   * Update background during slideshow without full re-render
-   * This preserves picker state and keeps the fixed slideshow cast
-   * Characters persist across all background changes in slideshow mode
-   */
-  static _updateBackgroundOnly(sceneId, transitionType = 'dissolve', transitionDuration = 500) {
-    const view = this._instance?.element;
-    if (!view) return;
-
-    const scene = Store.scenes.get(sceneId);
-    if (!scene) return;
-
-    // NOTE: We do NOT update the cast here!
-    // In slideshow mode, the cast is fixed from the first scene and persists across all backgrounds
-    // This represents a journey where the same characters travel through different locations
-
-    const bgContainer = view.querySelector('.tom-pv-background');
-    if (!bgContainer) return;
-
-    const currentMedia = bgContainer.querySelector('.tom-pv-bg-media:not(.tom-bg-outgoing)');
-    const isVideo = scene.bgType === 'video';
-    const transitionClass = `es-bg-transition-${transitionType}`;
-
-    // Create new background element
-    const newMedia = document.createElement(isVideo ? 'video' : 'img');
-    newMedia.className = 'es-pv-bg-media es-bg-incoming';
-    newMedia.src = scene.background;
-
-    if (isVideo) {
-      newMedia.autoplay = true;
-      newMedia.loop = true;
-      newMedia.muted = true;
-      newMedia.playsInline = true;
-      newMedia.disablePictureInPicture = true;
-      // Force play after append
-      newMedia.addEventListener('loadeddata', () => {
-        newMedia.play().catch(() => { });
-      }, { once: true });
-    }
-
-    // Set transition duration on both elements
-    newMedia.style.setProperty('--transition-duration', `${transitionDuration}ms`);
-
-    // Add appropriate transition class to the new element
-    newMedia.classList.add(transitionClass);
-
-    // Also add transition class to old element so it animates out properly
-    if (currentMedia) {
-      currentMedia.style.setProperty('--transition-duration', `${transitionDuration}ms`);
-      currentMedia.classList.add(transitionClass);
-    }
-
-    // Insert new background
-    bgContainer.appendChild(newMedia);
-
-    // Trigger transition after a frame (for CSS transition to work)
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        // Add active state to trigger animation (incoming will be overridden by specificity)
-        newMedia.classList.add('es-bg-active');
-
-        if (currentMedia) {
-          currentMedia.classList.add('es-bg-outgoing');
-        }
-
-        // Remove old background after transition completes
-        setTimeout(() => {
-          if (currentMedia && currentMedia.parentNode) {
-            currentMedia.remove();
-          }
-          // Clean up transition classes from new media
-          newMedia.classList.remove('es-bg-incoming', transitionClass, 'es-bg-active');
-        }, transitionDuration + 50);
-      });
-    });
-  }
 
   /* ═══════════════════════════════════════════════════════════════
      SCENE SEQUENCE METHODS (Manual navigation by GM)

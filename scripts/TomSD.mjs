@@ -34,7 +34,7 @@ export class TomSD {
   static _onActorUpdate(actor, changes, options, userId) {
     // Only process HP changes
     const hpChanged = foundry.utils.hasProperty(changes, 'system.attributes.hp.value') ||
-                      foundry.utils.hasProperty(changes, 'system.hp.value');
+      foundry.utils.hasProperty(changes, 'system.hp.value');
     if (!hpChanged) return;
 
     // Import and update arena tokens that use this actor
@@ -109,20 +109,6 @@ export class TomSD {
     });
 
     game.settings.register(this.ID, TOM_CONFIG.SETTINGS.FOLDERS, {
-      scope: 'world',
-      config: false,
-      type: Array,
-      default: []
-    });
-
-    game.settings.register(this.ID, TOM_CONFIG.SETTINGS.CUSTOM_ORDER, {
-      scope: 'world',
-      config: false,
-      type: Object,
-      default: { scenes: [], characters: [] }
-    });
-
-    game.settings.register(this.ID, TOM_CONFIG.SETTINGS.SLIDESHOWS, {
       scope: 'world',
       config: false,
       type: Array,

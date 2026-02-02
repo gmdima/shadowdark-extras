@@ -1,64 +1,54 @@
-<div class="tom-player-view {{#if active}}active{{/if}} {{#if castOnlyMode}}cast-only-mode{{/if}}" data-scene-id="{{scene.id}}">
+<div class="tom-player-view {{#if active}}active{{/if}} {{#if castOnlyMode}}cast-only-mode{{/if}}"
+  data-scene-id="{{scene.id}}">
 
-  <!-- ═══════════════════════════════════════════════════════════════
-       BACKGROUND LAYER (com suporte a transições)
-       Hidden in Cast-Only Mode for transparent overlay on battlemap
-       ═══════════════════════════════════════════════════════════════ -->
   {{#unless castOnlyMode}}
   <div class="tom-pv-background">
     {{#if scene}}
-      {{#if (eq scene.bgType 'video')}}
-        <video class="tom-pv-bg-media" src="{{scene.background}}" muted loop autoplay playsinline disablepictureinpicture></video>
-      {{else}}
-        <img src="{{scene.background}}" class="tom-pv-bg-media">
-      {{/if}}
+    {{#if (eq scene.bgType 'video')}}
+    <video class="tom-pv-bg-media" src="{{scene.background}}" muted loop autoplay playsinline
+      disablepictureinpicture></video>
     {{else}}
-      <div class="tom-pv-placeholder"></div>
+    <img src="{{scene.background}}" class="tom-pv-bg-media">
+    {{/if}}
+    {{else}}
+    <div class="tom-pv-placeholder"></div>
     {{/if}}
   </div>
 
-  <!-- ═══════════════════════════════════════════════════════════════
-       OVERLAY LAYER (Vignette & Effects)
-       ═══════════════════════════════════════════════════════════════ -->
+
   <div class="tom-pv-overlay"></div>
 
-  <!-- ═══════════════════════════════════════════════════════════════
-       ARENA RINGS OVERLAY (Isometric distance rings)
-       ═══════════════════════════════════════════════════════════════ -->
+
   {{#if isArena}}
   <!-- Arena Assets Container (GM-only images, below tokens) -->
   <div class="tom-arena-assets">
     {{#each arenaAssets}}
-      <div class="tom-arena-asset {{#if @root.isGM}}gm-control{{/if}}"
-           data-asset-id="{{assetId}}"
-           style="left: {{x}}%; top: {{y}}%; transform: translate(-50%, -50%) scale({{scale}});">
-        <img src="{{image}}" alt="Asset">
-      </div>
+    <div class="tom-arena-asset {{#if @root.isGM}}gm-control{{/if}}" data-asset-id="{{assetId}}"
+      style="left: {{x}}%; top: {{y}}%; transform: translate(-50%, -50%) scale({{scale}});">
+      <img src="{{image}}" alt="Asset">
+    </div>
     {{/each}}
   </div>
 
   <!-- Arena Tokens Container -->
   <div class="tom-arena-tokens">
     {{#each arenaTokens}}
-      <div class="tom-arena-token {{#if isNPC}}npc{{/if}} {{#if isOwner}}draggable{{/if}}"
-           data-token-id="{{tokenId}}"
-           data-owner-id="{{ownerId}}"
-           data-actor-id="{{actorId}}"
-           data-actor-type="{{actorType}}"
-           style="left: {{x}}%; top: {{y}}%;">
-        <div class="tom-arena-token-portrait">
-          <img src="{{image}}" alt="{{actorName}}">
-        </div>
-        <div class="tom-arena-token-info">
-          {{#if isOwner}}
-            <div class="tom-arena-token-ac">{{ac}}</div>
-          {{/if}}
-          <div class="tom-arena-token-name">{{actorName}}</div>
-          {{#if isOwner}}
-            <div class="tom-arena-token-hp">{{hpValue}}/{{hpMax}}</div>
-          {{/if}}
-        </div>
+    <div class="tom-arena-token {{#if isNPC}}npc{{/if}} {{#if isOwner}}draggable{{/if}}" data-token-id="{{tokenId}}"
+      data-owner-id="{{ownerId}}" data-actor-id="{{actorId}}" data-actor-type="{{actorType}}"
+      style="left: {{x}}%; top: {{y}}%;">
+      <div class="tom-arena-token-portrait">
+        <img src="{{image}}" alt="{{actorName}}">
       </div>
+      <div class="tom-arena-token-info">
+        {{#if isOwner}}
+        <div class="tom-arena-token-ac">{{ac}}</div>
+        {{/if}}
+        <div class="tom-arena-token-name">{{actorName}}</div>
+        {{#if isOwner}}
+        <div class="tom-arena-token-hp">{{hpValue}}/{{hpMax}}</div>
+        {{/if}}
+      </div>
+    </div>
     {{/each}}
   </div>
 
@@ -67,10 +57,10 @@
       <defs>
         <!-- Glow filter for the rings -->
         <filter id="arenaGlow" x="-50%" y="-50%" width="200%" height="200%">
-          <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+          <feGaussianBlur stdDeviation="3" result="coloredBlur" />
           <feMerge>
-            <feMergeNode in="coloredBlur"/>
-            <feMergeNode in="SourceGraphic"/>
+            <feMergeNode in="coloredBlur" />
+            <feMergeNode in="SourceGraphic" />
           </feMerge>
         </filter>
         <!-- Gradient for ring stroke -->
@@ -81,213 +71,162 @@
         </linearGradient>
       </defs>
 
-      <!-- 90ft ring (outermost) -->
-      <ellipse cx="500" cy="300" rx="420" ry="210"
-               class="tom-arena-ring tom-arena-ring-90"
-               fill="none" stroke="url(#ringGradient)" stroke-width="2"
-               filter="url(#arenaGlow)" opacity="0.7"/>
-      <text x="500" y="80" class="tom-arena-label" text-anchor="middle">90 ft</text>
+      <!-- Outer ring (Far) -->
+      <ellipse cx="500" cy="300" rx="420" ry="210" class="tom-arena-ring tom-arena-ring-90" fill="none"
+        stroke="url(#ringGradient)" stroke-width="2" filter="url(#arenaGlow)" opacity="0.7" />
+      <text x="500" y="80" class="tom-arena-label" text-anchor="middle">FAR</text>
 
-      <!-- 60ft ring -->
-      <ellipse cx="500" cy="300" rx="300" ry="150"
-               class="tom-arena-ring tom-arena-ring-60"
-               fill="none" stroke="url(#ringGradient)" stroke-width="2"
-               filter="url(#arenaGlow)" opacity="0.8"/>
-      <text x="500" y="140" class="tom-arena-label" text-anchor="middle">60 ft</text>
+      <!-- Inner ring (Near) -->
+      <ellipse cx="500" cy="300" rx="180" ry="90" class="tom-arena-ring tom-arena-ring-30" fill="none"
+        stroke="url(#ringGradient)" stroke-width="2" filter="url(#arenaGlow)" opacity="0.9" />
+      <text x="500" y="200" class="tom-arena-label" text-anchor="middle">NEAR</text>
 
-      <!-- 30ft ring -->
-      <ellipse cx="500" cy="300" rx="180" ry="90"
-               class="tom-arena-ring tom-arena-ring-30"
-               fill="none" stroke="url(#ringGradient)" stroke-width="2"
-               filter="url(#arenaGlow)" opacity="0.9"/>
-      <text x="500" y="200" class="tom-arena-label" text-anchor="middle">30 ft</text>
-
-      <!-- Sector divider lines (6 sections, from center to 90ft ring) -->
-      <g class="tom-arena-dividers" opacity="0.6">
-        <!-- 0° (right) -->
-        <line x1="500" y1="300" x2="920" y2="300"
-              stroke="#fbbf24" stroke-width="2" stroke-dasharray="8,6"/>
-        <!-- 60° (bottom-right) -->
-        <line x1="500" y1="300" x2="710" y2="482"
-              stroke="#fbbf24" stroke-width="2" stroke-dasharray="8,6"/>
-        <!-- 120° (bottom-left) -->
-        <line x1="500" y1="300" x2="290" y2="482"
-              stroke="#fbbf24" stroke-width="2" stroke-dasharray="8,6"/>
-        <!-- 180° (left) -->
-        <line x1="500" y1="300" x2="80" y2="300"
-              stroke="#fbbf24" stroke-width="2" stroke-dasharray="8,6"/>
-        <!-- 240° (top-left) -->
-        <line x1="500" y1="300" x2="290" y2="118"
-              stroke="#fbbf24" stroke-width="2" stroke-dasharray="8,6"/>
-        <!-- 300° (top-right) -->
-        <line x1="500" y1="300" x2="710" y2="118"
-              stroke="#fbbf24" stroke-width="2" stroke-dasharray="8,6"/>
-      </g>
-
-      <!-- Center area (same size as 30ft ring) - rendered last to cover divider lines -->
-      <ellipse cx="500" cy="300" rx="180" ry="90"
-               class="tom-arena-ring tom-arena-center"
-               fill="rgba(251, 191, 36, 0.1)" stroke="url(#ringGradient)" stroke-width="3"
-               filter="url(#arenaGlow)"/>
-      <text x="500" y="305" class="tom-arena-label tom-arena-label-center" text-anchor="middle">CENTER</text>
+      <!-- Close area (same size as inner ring) - rendered last to cover divider lines -->
+      <ellipse cx="500" cy="300" rx="180" ry="90" class="tom-arena-ring tom-arena-center" fill="rgba(251, 191, 36, 0.1)"
+        stroke="url(#ringGradient)" stroke-width="3" filter="url(#arenaGlow)" />
+      <text x="500" y="305" class="tom-arena-label tom-arena-label-center" text-anchor="middle">CLOSE</text>
     </svg>
   </div>
   {{/if}}
   {{/unless}}
 
-  <!-- ═══════════════════════════════════════════════════════════════
-       CAST LAYER
-       ═══════════════════════════════════════════════════════════════ -->
-  <div class="tom-pv-cast"
-       data-preset="{{layout.preset}}"
-       style="--cast-size: {{layout.size}}; --cast-spacing: {{layout.spacing}}px; --cast-offset-x: {{layout.offsetX}}vh; --cast-offset-y: {{layout.offsetY}}vh;">
+
+  <div class="tom-pv-cast" data-preset="{{layout.preset}}"
+    style="--cast-size: {{layout.size}}; --cast-spacing: {{layout.spacing}}px; --cast-offset-x: {{layout.offsetX}}vh; --cast-offset-y: {{layout.offsetY}}vh;">
     {{#each cast}}
-      <div class="tom-pv-character {{#if locked}}is-locked{{/if}}"
-           data-id="{{id}}"
-           data-action="character-click">
-        <div class="tom-pv-portrait" data-border="{{borderStyle}}">
-          <img src="{{image}}" alt="{{name}}">
-        </div>
-
-        <!-- Lock Indicator -->
-        {{#if locked}}
-          <div class="tom-pv-lock-indicator" title="Locked - Only GM can change emotions">
-            <i class="fas fa-lock"></i>
-          </div>
-        {{/if}}
-
-        <!-- Hover Hint -->
-        <div class="tom-pv-hint">
-          {{#if locked}}
-            <i class="fas fa-lock"></i>
-          {{else}}
-            <i class="fas fa-theater-masks"></i>
-          {{/if}}
-        </div>
-
-        <div class="tom-pv-name">{{name}}</div>
+    <div class="tom-pv-character {{#if locked}}is-locked{{/if}}" data-id="{{id}}" data-action="character-click">
+      <div class="tom-pv-portrait" data-border="{{borderStyle}}">
+        <img src="{{image}}" alt="{{name}}">
       </div>
+
+      <!-- Lock Indicator -->
+      {{#if locked}}
+      <div class="tom-pv-lock-indicator" title="Locked - Only GM can change emotions">
+        <i class="fas fa-lock"></i>
+      </div>
+      {{/if}}
+
+      <!-- Hover Hint -->
+      <div class="tom-pv-hint">
+        {{#if locked}}
+        <i class="fas fa-lock"></i>
+        {{else}}
+        <i class="fas fa-theater-masks"></i>
+        {{/if}}
+      </div>
+
+      <div class="tom-pv-name">{{name}}</div>
+    </div>
     {{/each}}
   </div>
 
   <!-- Emotion Picker Popover -->
   {{#if emotionPicker}}
-    <div class="tom-emotion-picker {{#if (gt emotionPicker.emotions.length 5)}}has-search{{/if}} {{#if emotionPicker.pickerBelow}}picker-below{{/if}}" style="left: {{emotionPicker.x}}px; top: {{emotionPicker.y}}px;">
-      <div class="tom-picker-header">
-        <span>{{emotionPicker.character.name}}</span>
-        <div class="tom-picker-actions">
-          <button class="tom-btn-icon small tom-btn-palette" data-action="open-border-picker" title="Border Style"><i class="fas fa-palette"></i></button>
-          <button class="tom-btn-icon small" data-action="close-picker"><i class="fas fa-times"></i></button>
-        </div>
-      </div>
-      {{!-- Search field for 6+ emotions --}}
-      {{#if (gt emotionPicker.emotions.length 5)}}
-        <div class="tom-picker-search">
-          <i class="fas fa-search"></i>
-          <input type="text" class="tom-picker-search-input" placeholder="Search emotions...">
-        </div>
-      {{/if}}
-      <div class="tom-picker-grid">
-        {{!-- Emotions are already sorted: favorites first, then alphabetically --}}
-        {{#each emotionPicker.emotions}}
-          <div class="tom-picker-item {{#if (eq ../emotionPicker.character.currentState key)}}active{{/if}} {{#if isFavorite}}is-favorite{{/if}}"
-               data-action="select-emotion"
-               data-state="{{key}}"
-               data-path="{{path}}"
-               title="{{key}}{{#if isFavorite}} (Favorite){{/if}}">
-            <button class="tom-emotion-fav-btn {{#if isFavorite}}active{{/if}}" data-action="toggle-emotion-favorite" data-state="{{key}}" title="{{#if isFavorite}}Remove from favorites{{else}}Add to favorites{{/if}}">
-              <i class="{{#if isFavorite}}fas{{else}}far{{/if}} fa-star"></i>
-            </button>
-            <img src="{{path}}">
-            <span class="tom-picker-label">{{key}}</span>
-          </div>
-        {{/each}}
+  <div
+    class="tom-emotion-picker {{#if (gt emotionPicker.emotions.length 5)}}has-search{{/if}} {{#if emotionPicker.pickerBelow}}picker-below{{/if}}"
+    style="left: {{emotionPicker.x}}px; top: {{emotionPicker.y}}px;">
+    <div class="tom-picker-header">
+      <span>{{emotionPicker.character.name}}</span>
+      <div class="tom-picker-actions">
+        <button class="tom-btn-icon small tom-btn-palette" data-action="open-border-picker" title="Border Style"><i
+            class="fas fa-palette"></i></button>
+        <button class="tom-btn-icon small" data-action="close-picker"><i class="fas fa-times"></i></button>
       </div>
     </div>
+    {{!-- Search field for 6+ emotions --}}
+    {{#if (gt emotionPicker.emotions.length 5)}}
+    <div class="tom-picker-search">
+      <i class="fas fa-search"></i>
+      <input type="text" class="tom-picker-search-input" placeholder="Search emotions...">
+    </div>
+    {{/if}}
+    <div class="tom-picker-grid">
+
+      {{#each emotionPicker.emotions}}
+      <div
+        class="tom-picker-item {{#if (eq ../emotionPicker.character.currentState key)}}active{{/if}} {{#if isFavorite}}is-favorite{{/if}}"
+        data-action="select-emotion" data-state="{{key}}" data-path="{{path}}"
+        title="{{key}}{{#if isFavorite}} (Favorite){{/if}}">
+        <button class="tom-emotion-fav-btn {{#if isFavorite}}active{{/if}}" data-action="toggle-emotion-favorite"
+          data-state="{{key}}" title="{{#if isFavorite}}Remove from favorites{{else}}Add to favorites{{/if}}">
+          <i class="{{#if isFavorite}}fas{{else}}far{{/if}} fa-star"></i>
+        </button>
+        <img src="{{path}}">
+        <span class="tom-picker-label">{{key}}</span>
+      </div>
+      {{/each}}
+    </div>
+  </div>
   {{/if}}
 
   {{!-- Preview panel - MUST be outside emotion-picker to avoid transform containment --}}
   {{#if emotionPicker}}
-    <div class="tom-picker-preview" style="display: none;">
-      <img src="" alt="Preview">
-      <span class="tom-picker-preview-label"></span>
-    </div>
+  <div class="tom-picker-preview" style="display: none;">
+    <img src="" alt="Preview">
+    <span class="tom-picker-preview-label"></span>
+  </div>
   {{/if}}
 
   <!-- Border Picker Popover -->
   {{#if borderPicker}}
-    <div class="tom-border-picker {{#if borderPicker.pickerBelow}}picker-below{{/if}}" style="left: {{borderPicker.x}}px; top: {{borderPicker.y}}px;">
-      <div class="tom-picker-header">
-        <span>Border Style</span>
-        <button class="tom-btn-icon small" data-action="close-border-picker"><i class="fas fa-times"></i></button>
-      </div>
-      <div class="tom-picker-back" data-action="back-to-emotions">
-        <i class="fas fa-arrow-left"></i> Back to Emotions
-      </div>
+  <div class="tom-border-picker {{#if borderPicker.pickerBelow}}picker-below{{/if}}"
+    style="left: {{borderPicker.x}}px; top: {{borderPicker.y}}px;">
+    <div class="tom-picker-header">
+      <span>Border Style</span>
+      <button class="tom-btn-icon small" data-action="close-border-picker"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="tom-picker-back" data-action="back-to-emotions">
+      <i class="fas fa-arrow-left"></i> Back to Emotions
+    </div>
 
-      {{!-- Solid Colors --}}
-      <div class="tom-border-category">
-        <h4>Solid</h4>
-        <div class="tom-border-grid">
-          {{#each borderPicker.solid}}
-            <div class="tom-border-option {{#if active}}active{{/if}}"
-                 data-action="select-border"
-                 data-preset="{{key}}"
-                 data-type="solid"
-                 style="--option-color: {{color}}"
-                 title="{{name}}">
-            </div>
-          {{/each}}
+    {{!-- Solid Colors --}}
+    <div class="tom-border-category">
+      <h4>Solid</h4>
+      <div class="tom-border-grid">
+        {{#each borderPicker.solid}}
+        <div class="tom-border-option {{#if active}}active{{/if}}" data-action="select-border" data-preset="{{key}}"
+          data-type="solid" style="--option-color: {{color}}" title="{{name}}">
         </div>
-      </div>
-
-      {{!-- Gradients --}}
-      <div class="tom-border-category">
-        <h4>Gradient</h4>
-        <div class="tom-border-grid">
-          {{#each borderPicker.gradient}}
-            <div class="tom-border-option {{#if active}}active{{/if}}"
-                 data-action="select-border"
-                 data-preset="{{key}}"
-                 data-type="gradient"
-                 title="{{name}}">
-            </div>
-          {{/each}}
-        </div>
-      </div>
-
-      {{!-- Animated --}}
-      <div class="tom-border-category">
-        <h4>Animated</h4>
-        <div class="tom-border-grid">
-          {{#each borderPicker.animated}}
-            <div class="tom-border-option {{#if active}}active{{/if}}"
-                 data-action="select-border"
-                 data-preset="{{key}}"
-                 data-type="animated"
-                 style="--option-color: {{color}}"
-                 title="{{name}}">
-            </div>
-          {{/each}}
-        </div>
-      </div>
-
-      {{!-- Styled --}}
-      <div class="tom-border-category">
-        <h4>Styled</h4>
-        <div class="tom-border-grid">
-          {{#each borderPicker.styled}}
-            <div class="tom-border-option {{#if active}}active{{/if}}"
-                 data-action="select-border"
-                 data-preset="{{key}}"
-                 data-type="styled"
-                 style="--option-color: {{color}}"
-                 title="{{name}}">
-            </div>
-          {{/each}}
-        </div>
+        {{/each}}
       </div>
     </div>
+
+    {{!-- Gradients --}}
+    <div class="tom-border-category">
+      <h4>Gradient</h4>
+      <div class="tom-border-grid">
+        {{#each borderPicker.gradient}}
+        <div class="tom-border-option {{#if active}}active{{/if}}" data-action="select-border" data-preset="{{key}}"
+          data-type="gradient" title="{{name}}">
+        </div>
+        {{/each}}
+      </div>
+    </div>
+
+    {{!-- Animated --}}
+    <div class="tom-border-category">
+      <h4>Animated</h4>
+      <div class="tom-border-grid">
+        {{#each borderPicker.animated}}
+        <div class="tom-border-option {{#if active}}active{{/if}}" data-action="select-border" data-preset="{{key}}"
+          data-type="animated" style="--option-color: {{color}}" title="{{name}}">
+        </div>
+        {{/each}}
+      </div>
+    </div>
+
+    {{!-- Styled --}}
+    <div class="tom-border-category">
+      <h4>Styled</h4>
+      <div class="tom-border-grid">
+        {{#each borderPicker.styled}}
+        <div class="tom-border-option {{#if active}}active{{/if}}" data-action="select-border" data-preset="{{key}}"
+          data-type="styled" style="--option-color: {{color}}" title="{{name}}">
+        </div>
+        {{/each}}
+      </div>
+    </div>
+  </div>
   {{/if}}
 
 </div>

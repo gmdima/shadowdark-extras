@@ -36,21 +36,6 @@ export class TomSocketHandler {
       case 'update-lock':
         this._onUpdateLock(payload.data);
         break;
-      case 'slideshow-start':
-        this._onSlideshowStart(payload.data);
-        break;
-      case 'slideshow-scene':
-        this._onSlideshowScene(payload.data);
-        break;
-      case 'slideshow-pause':
-        this._onSlideshowPause();
-        break;
-      case 'slideshow-resume':
-        this._onSlideshowResume();
-        break;
-      case 'slideshow-stop':
-        this._onSlideshowStop();
-        break;
       case 'sequence-start':
         this._onSequenceStart(payload.data);
         break;
@@ -216,6 +201,13 @@ export class TomSocketHandler {
     // Refresh the cast (add/remove characters) without triggering scene transition animations
     TomPlayerView.refreshCast();
 
+    // Refresh the tray cast manager if open
+    import('../TrayApp.mjs').then(({ TrayApp }) => {
+      if (TrayApp._instance) {
+        TrayApp._instance.refreshTomCastPanel();
+      }
+    });
+
     // Re-apply overlay if one was active (refresh may have removed it)
     if (Store.currentOverlay) {
       setTimeout(() => {
@@ -350,81 +342,6 @@ export class TomSocketHandler {
     this._onUpdateLock({ characterId, locked });
   }
 
-  /* ═══════════════════════════════════════════════════════════════
-     SLIDESHOW HANDLERS
-     ═══════════════════════════════════════════════════════════════ */
-
-  static _onSlideshowStart(data) {
-    const { slideshowId, cinematicMode, cast } = data;
-    // Non-GM clients just track that a slideshow started
-    // The first scene will be sent via slideshow-scene
-    // Pass the fixed cast that will be used for the entire slideshow
-    TomPlayerView.setSlideshowMode(true, cinematicMode, cast);
-  }
-
-  static _onSlideshowScene(data) {
-    const { sceneId, index, total, transitionType, transitionDuration } = data;
-    Store.setActiveScene(sceneId);
-    TomPlayerView.activateWithTransition(sceneId, transitionType, transitionDuration);
-  }
-
-  static _onSlideshowPause() {
-    TomPlayerView.setSlideshowPaused(true);
-  }
-
-  static _onSlideshowResume() {
-    TomPlayerView.setSlideshowPaused(false);
-  }
-
-  static _onSlideshowStop() {
-    TomPlayerView.setSlideshowMode(false);
-    TomPlayerView.deactivate();
-    Store.clearActiveScene();
-  }
-
-  /* ═══════════════════════════════════════════════════════════════
-     SLIDESHOW EMITTERS
-     ═══════════════════════════════════════════════════════════════ */
-
-  static emitSlideshowStart(data) {
-    game.socket.emit(CONFIG.SOCKET_NAME, {
-      type: 'slideshow-start',
-      data
-    });
-    this._onSlideshowStart(data);
-  }
-
-  static emitSlideshowScene(data) {
-    game.socket.emit(CONFIG.SOCKET_NAME, {
-      type: 'slideshow-scene',
-      data
-    });
-    this._onSlideshowScene(data);
-  }
-
-  static emitSlideshowPause() {
-    game.socket.emit(CONFIG.SOCKET_NAME, {
-      type: 'slideshow-pause',
-      data: {}
-    });
-    this._onSlideshowPause();
-  }
-
-  static emitSlideshowResume() {
-    game.socket.emit(CONFIG.SOCKET_NAME, {
-      type: 'slideshow-resume',
-      data: {}
-    });
-    this._onSlideshowResume();
-  }
-
-  static emitSlideshowStop() {
-    game.socket.emit(CONFIG.SOCKET_NAME, {
-      type: 'slideshow-stop',
-      data: {}
-    });
-    this._onSlideshowStop();
-  }
 
   /* ═══════════════════════════════════════════════════════════════
      SCENE SEQUENCE HANDLERS (Manual navigation by GM)
@@ -455,9 +372,6 @@ export class TomSocketHandler {
     Store.clearActiveScene();
   }
 
-  /* ═══════════════════════════════════════════════════════════════
-     SCENE SEQUENCE EMITTERS
-     ═══════════════════════════════════════════════════════════════ */
 
   static emitSequenceStart(data) {
     game.socket.emit(CONFIG.SOCKET_NAME, {
@@ -483,9 +397,6 @@ export class TomSocketHandler {
     this._onSequenceStop();
   }
 
-  /* ═══════════════════════════════════════════════════════════════
-     CAST-ONLY MODE HANDLERS
-     ═══════════════════════════════════════════════════════════════ */
 
   static _onCastOnlyStart(data) {
     const { characterIds, layoutSettings } = data;
@@ -518,9 +429,6 @@ export class TomSocketHandler {
     TomPlayerView.deactivateCastOnly();
   }
 
-  /* ═══════════════════════════════════════════════════════════════
-     CAST-ONLY MODE EMITTERS
-     ═══════════════════════════════════════════════════════════════ */
 
   static emitCastOnlyStart(data) {
     game.socket.emit(CONFIG.SOCKET_NAME, {
@@ -545,10 +453,6 @@ export class TomSocketHandler {
     });
     this._onCastOnlyStop();
   }
-
-  /* ═══════════════════════════════════════════════════════════════
-     ARENA TOKEN HANDLERS
-     ═══════════════════════════════════════════════════════════════ */
 
   static _onArenaTokenSpawn(data) {
     const { tokenId, characterId, actorId, actorName, actorType, image, x, y, ownerId } = data;
@@ -575,10 +479,6 @@ export class TomSocketHandler {
     TomPlayerView.updateArenaTokenConditions(tokenId, conditions);
   }
 
-  /* ═══════════════════════════════════════════════════════════════
-     ARENA TOKEN EMITTERS
-     ═══════════════════════════════════════════════════════════════ */
-
   static emitArenaTokenSpawn(data) {
     game.socket.emit(CONFIG.SOCKET_NAME, {
       type: 'arena-token-spawn',
@@ -592,7 +492,7 @@ export class TomSocketHandler {
       type: 'arena-token-move',
       data
     });
-    // Update local state (important for persisting through re-renders)
+
     this._onArenaTokenMove(data);
   }
 
@@ -620,10 +520,6 @@ export class TomSocketHandler {
     this._onArenaTokenConditionsUpdate(data);
   }
 
-  /* ═══════════════════════════════════════════════════════════════
-     ARENA ASSET HANDLERS (GM-only image assets)
-     ═══════════════════════════════════════════════════════════════ */
-
   static _onArenaAssetSpawn(data) {
     TomPlayerView.spawnArenaAsset(data);
   }
@@ -639,10 +535,6 @@ export class TomSocketHandler {
   static _onArenaAssetRemove(data) {
     TomPlayerView.removeArenaAsset(data.assetId);
   }
-
-  /* ═══════════════════════════════════════════════════════════════
-     ARENA ASSET EMITTERS
-     ═══════════════════════════════════════════════════════════════ */
 
   static emitArenaAssetSpawn(data) {
     game.socket.emit(CONFIG.SOCKET_NAME, {
@@ -676,14 +568,6 @@ export class TomSocketHandler {
     this._onArenaAssetRemove(data);
   }
 
-  /* ═══════════════════════════════════════════════════════════════
-     SCENE FADE TRANSITION (Quick scene switch with fade effect)
-     ═══════════════════════════════════════════════════════════════ */
-
-  /**
-   * Handle scene fade transition on all clients
-   * Creates a fade overlay, waits, then switches to the new scene
-   */
   static _onSceneFadeTransition(data) {
     const { sceneId } = data;
 

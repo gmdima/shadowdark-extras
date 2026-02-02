@@ -2,7 +2,6 @@ import { TOM_CONFIG as CONFIG } from '../TomConfig.mjs';
 import { TomSceneModel } from './TomSceneModel.mjs';
 import { TomCharacterModel } from './TomCharacterModel.mjs';
 import { TomFolderModel } from './TomFolderModel.mjs';
-import { TomSlideshowModel } from './TomSlideshowModel.mjs';
 import { TomSocketHandler } from './TomSocketHandler.mjs';
 
 export class TomStoreClass {
@@ -10,23 +9,9 @@ export class TomStoreClass {
     this.scenes = new foundry.utils.Collection();
     this.characters = new foundry.utils.Collection();
     this.folders = new foundry.utils.Collection();
-    this.slideshows = new foundry.utils.Collection();
     this.activeSceneId = null;
     this.currentOverlay = null; // Current video overlay path
     this.isInitialized = false;
-    this.customOrder = { scenes: [], characters: [] };
-
-    // Slideshow playback state
-    this.slideshowState = {
-      isPlaying: false,
-      slideshowId: null,
-      currentIndex: 0,
-      sequence: [],
-      isPaused: false,
-      timerId: null,
-      startTime: null, // When current scene started
-      pausedTime: null // Remaining time when paused
-    };
 
     // Scene Sequence playback state (manual navigation by GM)
     this.sequenceState = {
@@ -137,10 +122,6 @@ export class TomStoreClass {
 
   }
 
-  /* ═══════════════════════════════════════════════════════════════
-     DATA LOADING & SAVING
-     ═══════════════════════════════════════════════════════════════ */
-
   async _loadData() {
     // Load Scenes
     const scenesData = game.settings.get(CONFIG.MODULE_ID, CONFIG.SETTINGS.SCENES) || [];
@@ -157,16 +138,7 @@ export class TomStoreClass {
     this.folders.clear();
     foldersData.forEach(d => this.folders.set(d.id, new TomFolderModel(d)));
 
-    // Load Custom Order
-    const customOrderData = game.settings.get(CONFIG.MODULE_ID, CONFIG.SETTINGS.CUSTOM_ORDER) || { scenes: [], characters: [] };
-    this.customOrder = customOrderData;
-
-    // Load Slideshows
-    const slideshowsData = game.settings.get(CONFIG.MODULE_ID, CONFIG.SETTINGS.SLIDESHOWS) || [];
-    this.slideshows.clear();
-    slideshowsData.forEach(d => this.slideshows.set(d.id, new TomSlideshowModel(d)));
-
-    console.log(`${CONFIG.MODULE_NAME} | Loaded ${this.scenes.size} scenes, ${this.characters.size} characters, ${this.slideshows.size} slideshows.`);
+    console.log(`${CONFIG.MODULE_NAME} | Loaded ${this.scenes.size} scenes, ${this.characters.size} characters.`);
   }
 
   async saveData() {
@@ -186,9 +158,6 @@ export class TomStoreClass {
   }
 
 
-  /* ═══════════════════════════════════════════════════════════════
-     ACCESSORS
-     ═══════════════════════════════════════════════════════════════ */
 
   getScenes(options = {}) {
     let scenes = this.scenes.contents;
@@ -257,9 +226,6 @@ export class TomStoreClass {
     return Array.from(tags).sort();
   }
 
-  /* ═══════════════════════════════════════════════════════════════
-     CRUD OPERATIONS
-     ═══════════════════════════════════════════════════════════════ */
 
   createScene(data) {
     const scene = new TomSceneModel(data);
@@ -333,9 +299,6 @@ export class TomStoreClass {
     this.saveData();
   }
 
-  /* ═══════════════════════════════════════════════════════════════
-     FOLDER OPERATIONS
-     ═══════════════════════════════════════════════════════════════ */
 
   createFolder(data) {
     const folder = new TomFolderModel(data);
@@ -444,340 +407,8 @@ export class TomStoreClass {
     }
   }
 
-  /* ═══════════════════════════════════════════════════════════════
-     CUSTOM ORDER
-     ═══════════════════════════════════════════════════════════════ */
 
-  getCustomOrder(type) {
-    return this.customOrder[type] || [];
-  }
 
-  setCustomOrder(type, orderedIds) {
-    this.customOrder[type] = orderedIds;
-    this.saveCustomOrder();
-  }
-
-  async saveCustomOrder() {
-    if (!this.isInitialized) return;
-    await game.settings.set(CONFIG.MODULE_ID, CONFIG.SETTINGS.CUSTOM_ORDER, this.customOrder);
-  }
-
-  /**
-   * Applies custom order to items array
-   * Items not in the custom order are placed at the end
-   */
-  applyCustomOrder(items, type) {
-    const order = this.getCustomOrder(type);
-    if (!order.length) return items;
-
-    const orderMap = new Map(order.map((id, idx) => [id, idx]));
-
-    return [...items].sort((a, b) => {
-      const aIdx = orderMap.has(a.id) ? orderMap.get(a.id) : Infinity;
-      const bIdx = orderMap.has(b.id) ? orderMap.get(b.id) : Infinity;
-      return aIdx - bIdx;
-    });
-  }
-
-  /* ═══════════════════════════════════════════════════════════════
-     SLIDESHOW OPERATIONS
-     ═══════════════════════════════════════════════════════════════ */
-
-  createSlideshow(data) {
-    const slideshow = new TomSlideshowModel(data);
-    this.slideshows.set(slideshow.id, slideshow);
-    this.saveSlideshows();
-    return slideshow;
-  }
-
-  deleteSlideshow(id) {
-    // Stop if currently playing
-    if (this.slideshowState.slideshowId === id) {
-      this.stopSlideshow();
-    }
-    this.slideshows.delete(id);
-    this.saveSlideshows();
-  }
-
-  getSlideshows() {
-    return this.slideshows.contents;
-  }
-
-  async saveSlideshows() {
-    if (!this.isInitialized) return;
-    const data = this.slideshows.map(s => s.toJSON());
-    await game.settings.set(CONFIG.MODULE_ID, CONFIG.SETTINGS.SLIDESHOWS, data);
-  }
-
-  _loadSlideshows(data) {
-    const slideshows = this._parseData(data);
-    if (!slideshows) return;
-    this.slideshows.clear();
-    slideshows.forEach(d => this.slideshows.set(d.id, new TomSlideshowModel(d)));
-    console.log(`${CONFIG.MODULE_NAME} | Loaded ${this.slideshows.size} slideshows`);
-  }
-
-  /* ═══════════════════════════════════════════════════════════════
-     SLIDESHOW PLAYBACK
-     ═══════════════════════════════════════════════════════════════ */
-
-  /**
-   * Start playing a slideshow
-   */
-  startSlideshow(slideshowId) {
-    const slideshow = this.slideshows.get(slideshowId);
-    if (!slideshow || slideshow.scenes.length === 0) {
-      ui.notifications.warn("Cannot play an empty slideshow");
-      return false;
-    }
-
-    // Stop any current playback
-    this.stopSlideshow();
-
-    // Update slideshow stats
-    slideshow.lastUsed = Date.now();
-    slideshow.playCount++;
-    this.saveSlideshows();
-
-    // Get the play sequence
-    const sequence = slideshow.getPlaySequence();
-
-    // Get the cast from the FIRST scene - this will be used for the entire slideshow
-    // The slideshow represents a journey where characters stay consistent across backgrounds
-    const firstSceneId = sequence[0]?.sceneId;
-    const firstScene = firstSceneId ? this.scenes.get(firstSceneId) : null;
-    const slideshowCast = firstScene ? [...firstScene.cast] : [];
-
-    // Initialize playback state
-    this.slideshowState = {
-      isPlaying: true,
-      slideshowId: slideshowId,
-      currentIndex: 0,
-      sequence: sequence,
-      isPaused: false,
-      timerId: null,
-      startTime: Date.now(),
-      pausedTime: null,
-      transitionType: slideshow.transitionType,
-      transitionDuration: slideshow.transitionDuration,
-      loop: slideshow.loop,
-      cinematicMode: slideshow.cinematicMode,
-      cast: slideshowCast // Store the fixed cast for the entire slideshow
-    };
-
-    // Broadcast slideshow start with the fixed cast
-    TomSocketHandler.emitSlideshowStart({
-      slideshowId,
-      sequence: this.slideshowState.sequence,
-      transitionType: slideshow.transitionType,
-      transitionDuration: slideshow.transitionDuration,
-      loop: slideshow.loop,
-      cinematicMode: slideshow.cinematicMode,
-      cast: slideshowCast // Send the cast to all clients
-    });
-
-    // Start first scene
-    this._playCurrentScene();
-
-    return true;
-  }
-
-  /**
-   * Play the current scene in the sequence
-   */
-  _playCurrentScene() {
-    const state = this.slideshowState;
-    if (!state.isPlaying || state.currentIndex >= state.sequence.length) {
-      // End of slideshow
-      if (state.loop && state.sequence.length > 0) {
-        state.currentIndex = 0;
-        this._playCurrentScene();
-      } else {
-        this.stopSlideshow();
-      }
-      return;
-    }
-
-    const currentScene = state.sequence[state.currentIndex];
-    const sceneId = currentScene.sceneId;
-    const duration = currentScene.duration;
-
-    state.startTime = Date.now();
-
-    // Broadcast scene change
-    TomSocketHandler.emitSlideshowScene({
-      sceneId,
-      index: state.currentIndex,
-      total: state.sequence.length,
-      duration,
-      transitionType: state.transitionType,
-      transitionDuration: state.transitionDuration
-    });
-
-    // Schedule next scene
-    state.timerId = setTimeout(() => {
-      state.currentIndex++;
-      this._playCurrentScene();
-    }, duration);
-  }
-
-  /**
-   * Pause the slideshow
-   */
-  pauseSlideshow() {
-    const state = this.slideshowState;
-    if (!state.isPlaying || state.isPaused) return;
-
-    // Bounds check before accessing sequence
-    if (state.currentIndex >= state.sequence.length) return;
-
-    // Calculate remaining time
-    const elapsed = Date.now() - state.startTime;
-    const currentScene = state.sequence[state.currentIndex];
-    if (!currentScene) return;
-
-    state.pausedTime = Math.max(0, currentScene.duration - elapsed);
-
-    // Clear timer
-    if (state.timerId) {
-      clearTimeout(state.timerId);
-      state.timerId = null;
-    }
-
-    state.isPaused = true;
-    TomSocketHandler.emitSlideshowPause();
-  }
-
-  /**
-   * Resume the slideshow
-   */
-  resumeSlideshow() {
-    const state = this.slideshowState;
-    if (!state.isPlaying || !state.isPaused) return;
-
-    // Prevent double-resume
-    if (state.timerId) return;
-
-    state.isPaused = false;
-    state.startTime = Date.now();
-
-    TomSocketHandler.emitSlideshowResume();
-
-    // Schedule next scene with remaining time (ensure valid value)
-    const remainingTime = Math.max(100, state.pausedTime || 1000);
-    state.timerId = setTimeout(() => {
-      state.currentIndex++;
-      this._playCurrentScene();
-    }, remainingTime);
-
-    state.pausedTime = null;
-  }
-
-  /**
-   * Skip to next scene
-   */
-  nextScene() {
-    const state = this.slideshowState;
-    if (!state.isPlaying) return;
-
-    // Clear current timer
-    if (state.timerId) {
-      clearTimeout(state.timerId);
-      state.timerId = null;
-    }
-
-    state.isPaused = false;
-    state.currentIndex++;
-    this._playCurrentScene();
-  }
-
-  /**
-   * Go to previous scene
-   */
-  previousScene() {
-    const state = this.slideshowState;
-    if (!state.isPlaying) return;
-
-    // Clear current timer
-    if (state.timerId) {
-      clearTimeout(state.timerId);
-      state.timerId = null;
-    }
-
-    state.isPaused = false;
-    state.currentIndex = Math.max(0, state.currentIndex - 1);
-    this._playCurrentScene();
-  }
-
-  /**
-   * Stop the slideshow
-   * @param {boolean} broadcast - Whether to emit socket event (default true)
-   */
-  stopSlideshow(broadcast = true) {
-    const state = this.slideshowState;
-
-    // Clear timer FIRST before anything else
-    if (state.timerId) {
-      clearTimeout(state.timerId);
-      state.timerId = null;
-    }
-
-    // Check if was actually playing
-    const wasPlaying = state.isPlaying;
-
-    // Reset state immediately
-    this.slideshowState = {
-      isPlaying: false,
-      slideshowId: null,
-      currentIndex: 0,
-      sequence: [],
-      isPaused: false,
-      timerId: null,
-      startTime: null,
-      pausedTime: null
-    };
-
-    // Only broadcast if we were actually playing and broadcast is requested
-    if (wasPlaying && broadcast) {
-      TomSocketHandler.emitSlideshowStop();
-    }
-  }
-
-  /**
-   * Get current slideshow progress info
-   */
-  getSlideshowProgress() {
-    const state = this.slideshowState;
-    if (!state.isPlaying) return null;
-
-    const currentScene = state.sequence[state.currentIndex];
-    if (!currentScene) return null;
-
-    const scene = this.scenes.get(currentScene.sceneId);
-    const elapsed = state.isPaused
-      ? (currentScene.duration - state.pausedTime)
-      : (Date.now() - state.startTime);
-
-    return {
-      isPlaying: state.isPlaying,
-      isPaused: state.isPaused,
-      currentIndex: state.currentIndex,
-      totalScenes: state.sequence.length,
-      sceneName: scene?.name || 'Unknown',
-      sceneId: currentScene.sceneId,
-      duration: currentScene.duration,
-      elapsed: Math.min(elapsed, currentScene.duration),
-      progress: Math.min(elapsed / currentScene.duration, 1)
-    };
-  }
-
-  /* ═══════════════════════════════════════════════════════════════
-     SCENE SEQUENCE OPERATIONS (Manual navigation by GM)
-     ═══════════════════════════════════════════════════════════════ */
-
-  /**
-   * Start broadcasting a scene sequence
-   */
   startSequence(sceneId) {
     const scene = this.scenes.get(sceneId);
     if (!scene || !scene.isSequence || scene.sequenceBackgrounds.length === 0) {
@@ -785,8 +416,8 @@ export class TomStoreClass {
       return false;
     }
 
-    // Stop any slideshow that might be playing
-    this.stopSlideshow(false);
+    // Stop any sequence that might be playing
+    this.stopSequence(false);
 
     // Set as active scene
     this.setActiveScene(sceneId);
@@ -976,15 +607,7 @@ export class TomStoreClass {
     };
   }
 
-  /* ═══════════════════════════════════════════════════════════════
-     CAST-ONLY MODE OPERATIONS (Cast without scene background)
-     ═══════════════════════════════════════════════════════════════ */
 
-  /**
-   * Start Cast-Only Mode with selected characters
-   * @param {string[]} characterIds - Array of character IDs to display
-   * @param {Object} layoutSettings - Optional layout settings override
-   */
   startCastOnly(characterIds, layoutSettings = null) {
     if (!characterIds || characterIds.length === 0) {
       ui.notifications.warn("Select at least one character for Cast-Only mode");
@@ -992,7 +615,7 @@ export class TomStoreClass {
     }
 
     // Stop any other active broadcasts
-    this.stopSlideshow(false);
+    this.stopSequence(false);
     this.stopSequence(false);
     if (this.activeSceneId) {
       this.clearActiveScene();

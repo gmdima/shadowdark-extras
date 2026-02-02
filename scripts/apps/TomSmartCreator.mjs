@@ -55,10 +55,12 @@ export class TomSmartCreator extends HandlebarsApplicationMixin(ApplicationV2) {
      ═══════════════════════════════════════════════════════════════ */
 
   async _prepareContext(options) {
+    const hasEmotions = Object.keys(this.uiState.data.emotions).length > 0;
     return {
       step: this.uiState.step,
       data: this.uiState.data,
-      uploadProgress: this.uiState.uploadProgress
+      uploadProgress: this.uiState.uploadProgress,
+      hasEmotions
     };
   }
 
@@ -111,7 +113,7 @@ export class TomSmartCreator extends HandlebarsApplicationMixin(ApplicationV2) {
       ui.notifications.warn("Please enter a character name.");
       return;
     }
-    this.uiState.step++;
+    this.uiState.step = 2;
     this.render();
   }
 
@@ -214,7 +216,6 @@ export class TomSmartCreator extends HandlebarsApplicationMixin(ApplicationV2) {
     }
 
     this.uiState.data.emotions = emotions;
-    this.uiState.step = 3; // Move to review
     this.render();
   }
 

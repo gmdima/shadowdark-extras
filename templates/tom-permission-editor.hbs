@@ -18,9 +18,9 @@
     <label>Default Permission</label>
     <select name="defaultPermission">
       {{#each permissionLevels}}
-        <option value="{{key}}" {{#if (eq key ../defaultPermission)}}selected{{/if}}>
-          {{name}} - {{description}}
-        </option>
+      <option value="{{key}}" {{#if (eq key ../defaultPermission)}}selected{{/if}}>
+        {{name}} - {{description}}
+      </option>
       {{/each}}
     </select>
     <span class="tom-hint">Applied to players not listed below</span>
@@ -33,43 +33,40 @@
     <label>Player Permissions</label>
 
     {{#if players.length}}
-      <div class="tom-perm-players">
-        {{#each players}}
-          <div class="tom-perm-player">
-            <div class="tom-perm-player-info">
-              <img src="{{avatar}}" class="tom-perm-player-avatar" style="border-color: {{color}}">
-              <span class="tom-perm-player-name">{{name}}</span>
-            </div>
-            <div class="tom-perm-player-buttons">
-              <button type="button" class="tom-perm-btn {{#if isNone}}active{{/if}}"
-                      data-action="set-permission" data-user-id="{{id}}" data-level="none"
-                      title="No Access">
-                <i class="fas fa-ban"></i>
-              </button>
-              <button type="button" class="tom-perm-btn {{#if isView}}active{{/if}}"
-                      data-action="set-permission" data-user-id="{{id}}" data-level="view"
-                      title="View Only">
-                <i class="fas fa-eye"></i>
-              </button>
-              <button type="button" class="tom-perm-btn {{#if isEmotion}}active{{/if}}"
-                      data-action="set-permission" data-user-id="{{id}}" data-level="emotion"
-                      title="Can Change Emotions">
-                <i class="fas fa-theater-masks"></i>
-              </button>
-              <button type="button" class="tom-perm-btn {{#if isFull}}active{{/if}} {{#if canSpawnToken}}can-spawn{{/if}}"
-                      data-action="set-permission" data-user-id="{{id}}" data-level="full"
-                      title="Full Control{{#if canSpawnToken}} + Can Spawn Token{{/if}} (Right-click to toggle token spawning)">
-                <i class="fas fa-crown"></i>
-              </button>
-            </div>
-          </div>
-        {{/each}}
+    <div class="tom-perm-players">
+      {{#each players}}
+      <div class="tom-perm-player">
+        <div class="tom-perm-player-info">
+          <img src="{{avatar}}" class="tom-perm-player-avatar" style="border-color: {{color}}">
+          <span class="tom-perm-player-name">{{name}}</span>
+        </div>
+        <div class="tom-perm-player-buttons">
+          <button type="button" class="tom-perm-btn {{#if isNone}}active{{/if}}" data-action="set-permission"
+            data-user-id="{{id}}" data-level="none" title="No Access">
+            <i class="fas fa-ban"></i>
+          </button>
+          <button type="button" class="tom-perm-btn {{#if isView}}active{{/if}}" data-action="set-permission"
+            data-user-id="{{id}}" data-level="view" title="View Only">
+            <i class="fas fa-eye"></i>
+          </button>
+          <button type="button" class="tom-perm-btn {{#if isEmotion}}active{{/if}}" data-action="set-permission"
+            data-user-id="{{id}}" data-level="emotion" title="Can Change Emotions">
+            <i class="fas fa-theater-masks"></i>
+          </button>
+          <button type="button" class="tom-perm-btn {{#if isFull}}active{{/if}} {{#if canSpawnToken}}can-spawn{{/if}}"
+            data-action="set-permission" data-user-id="{{id}}" data-level="full"
+            title="Full Control{{#if canSpawnToken}} + Can Spawn Token{{/if}} (Right-click to toggle token spawning)">
+            <i class="fas fa-crown"></i>
+          </button>
+        </div>
       </div>
+      {{/each}}
+    </div>
     {{else}}
-      <div class="tom-perm-empty">
-        <i class="fas fa-users-slash"></i>
-        <p>No players connected to assign permissions.</p>
-      </div>
+    <div class="tom-perm-empty">
+      <i class="fas fa-users-slash"></i>
+      <p>No players connected to assign permissions.</p>
+    </div>
     {{/if}}
   </div>
 

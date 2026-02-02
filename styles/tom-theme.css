@@ -1,59 +1,41 @@
-/* ═══════════════════════════════════════════════════════════════
-   EXALTED SCENES V4.0 - THEME & TOKENS
-   "Dungeon Fire" Palette
-   ═══════════════════════════════════════════════════════════════ */
-
 :root {
-  /* ═══ THE VOID (Backgrounds) ═══ */
   --tom-bg-void: #080808;
-  /* Slightly warmer black */
   --tom-bg-deep: #121010;
-  /* Deep brownish grey */
   --tom-bg-panel: #1a1818;
-  /* Warm grey */
   --tom-bg-surface: #221f1f;
-  /* Lighter surface */
   --tom-bg-hover: #2d2929;
-  /* Reddish grey hover */
   --tom-bg-active: #3a3232;
-  /* Active state */
 
-  /* ═══ ETERNAL FLAME (Orange/Red) ═══ */
-  --tom-gold-dim: #6d2c12;
-  /* Burnt ember - replacing gold-dim */
-  --tom-gold-base: #ff5722;
-  /* Torch orange - replacing gold-base */
-  --tom-gold-bright: #ff8a50;
-  /* Bright flame - replacing gold-bright */
-  --tom-gold-glow: rgba(255, 87, 34, 0.25);
-  --tom-gold-gradient: linear-gradient(135deg, #e64a19, #ffab91, #d84315, #ffccbc, #bf360c);
+  /* Refactored to Monochrome/White Theme */
+  --tom-gold-dim: #444;
+  /* Dark gray for borders/dim elements */
+  --tom-gold-base: #e0e0e0;
+  /* Off-white for standard accents */
+  --tom-gold-bright: #ffffff;
+  /* Pure white for hover/active */
+  --tom-gold-glow: rgba(255, 255, 255, 0.15);
+  --tom-gold-gradient: linear-gradient(135deg, #bbb, #eee, #fff, #eee, #bbb);
 
-  /* ═══ BLOOD (Accent/Danger) ═══ */
   --tom-red-dim: #5c0b0b;
   --tom-red-base: #c62828;
   --tom-red-bright: #ff5252;
 
-  /* ═══ SOUL (Success/Active) ═══ */
   --tom-jade-dim: #1b3325;
   --tom-jade-base: #2e7d32;
   --tom-jade-bright: #66bb6a;
 
-  /* ═══ GLASS (Translucency) ═══ */
   --tom-glass-bg: rgba(25, 20, 20, 0.85);
   --tom-glass-border: rgba(255, 87, 34, 0.15);
   --tom-glass-highlight: rgba(255, 100, 50, 0.1);
 
-  /* ═══ TYPOGRAPHY ═══ */
   --tom-font-ui: "Signika", "Montserrat-Medium", sans-serif;
   --tom-font-display: "Modesto Condensed", "Signika", serif;
 
   --tom-text-primary: #f0f0f0;
   --tom-text-secondary: #9e9e9e;
   --tom-text-muted: #616161;
-  --tom-text-gold: #ff7043;
-  /* Text version of the accent */
+  --tom-text-gold: #e0e0e0;
 
-  /* ═══ SPACING (Density) ═══ */
   --tom-space-2xs: 2px;
   --tom-space-xs: 4px;
   --tom-space-sm: 8px;
@@ -61,26 +43,20 @@
   --tom-space-lg: 20px;
   --tom-space-xl: 32px;
 
-  /* ═══ BORDERS & RADIUS ═══ */
   --tom-border-subtle: #332e2e;
   --tom-border-default: #443c3c;
-  --tom-border-gold: rgba(255, 87, 34, 0.4);
+  --tom-border-gold: rgba(255, 255, 255, 0.3);
 
   --tom-radius-sm: 2px;
-  /* Sharper */
   --tom-radius-md: 3px;
-  /* Sharper */
   --tom-radius-lg: 4px;
-  /* Sharper */
   --tom-radius-full: 9999px;
 
-  /* ═══ SHADOWS ═══ */
   --tom-shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.5);
   --tom-shadow-md: 0 6px 12px rgba(0, 0, 0, 0.6);
   --tom-shadow-lg: 0 12px 24px rgba(0, 0, 0, 0.8);
   --tom-shadow-glow: 0 0 20px var(--tom-gold-glow);
 
-  /* ═══ TRANSITIONS ═══ */
   --tom-ease: cubic-bezier(0.4, 0, 0.2, 1);
   --tom-duration-fast: 150ms;
   --tom-duration-normal: 250ms;

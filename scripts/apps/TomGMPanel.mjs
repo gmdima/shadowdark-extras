@@ -5,7 +5,6 @@ import { TomSocketHandler } from '../data/TomSocketHandler.mjs';
 import { TomSmartCreator } from './TomSmartCreator.mjs';
 import { TomCharacterEditor } from './TomCharacterEditor.mjs';
 import { TomSceneEditor } from './TomSceneEditor.mjs';
-import { TomSlideshowEditor } from './TomSlideshowEditor.mjs';
 
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
@@ -74,7 +73,7 @@ export class TomGMPanel extends HandlebarsApplicationMixin(ApplicationV2) {
       'remove-filter': TomGMPanel._onRemoveFilter,
       'exclude-tag': TomGMPanel._onExcludeTag,
       'toggle-view': TomGMPanel._onToggleView,
-      'quick-add': TomGMPanel._onQuickAdd,
+      'toggle-cast': TomGMPanel._onToggleCast,
       'toggle-favorite': TomGMPanel._onToggleFavorite,
       // Novas actions
       'toggle-sort': TomGMPanel._onToggleSort,
@@ -95,16 +94,6 @@ export class TomGMPanel extends HandlebarsApplicationMixin(ApplicationV2) {
       // Emotion Picker actions
       'toggle-emotion-favorite': TomGMPanel._onToggleEmotionFavorite,
       'search-emotions': TomGMPanel._onSearchEmotions,
-      // Slideshow actions
-      'create-slideshow': TomGMPanel._onCreateSlideshow,
-      'edit-slideshow': TomGMPanel._onEditSlideshow,
-      'play-slideshow': TomGMPanel._onPlaySlideshow,
-      'delete-slideshow': TomGMPanel._onDeleteSlideshow,
-      'slideshow-pause': TomGMPanel._onSlideshowPause,
-      'slideshow-resume': TomGMPanel._onSlideshowResume,
-      'slideshow-next': TomGMPanel._onSlideshowNext,
-      'slideshow-prev': TomGMPanel._onSlideshowPrev,
-      'slideshow-stop': TomGMPanel._onSlideshowStop,
       // Scene Sequence actions
       'convert-to-sequence': TomGMPanel._onConvertToSequence,
       'remove-sequence': TomGMPanel._onRemoveSequence,
@@ -910,10 +899,6 @@ export class TomGMPanel extends HandlebarsApplicationMixin(ApplicationV2) {
             e.preventDefault();
             this.uiState.sortMenuOpen = false;
             this.render();
-          } else if (this.uiState.inspectorOpen) {
-            e.preventDefault();
-            this.uiState.inspectorOpen = false;
-            this.render();
           }
           break;
 
@@ -1106,49 +1091,6 @@ export class TomGMPanel extends HandlebarsApplicationMixin(ApplicationV2) {
   }
 
   /**
-   * Ordena os itens baseado nas configurações atuais
-   */
-  _sortItems(items, type = 'scenes') {
-    const { sortBy, sortAscending } = this.uiState;
-
-    // Custom order - use Store's saved order
-    if (sortBy === 'custom') {
-      return Store.applyCustomOrder(items, type);
-    }
-
-    const sorted = [...items].sort((a, b) => {
-      let comparison = 0;
-
-      switch (sortBy) {
-        case 'name':
-          // Case-insensitive comparison
-          comparison = (a.name || '').toLowerCase().localeCompare((b.name || '').toLowerCase());
-          break;
-        case 'created':
-          // Mais recente primeiro quando descending
-          comparison = (a.createdAt || 0) - (b.createdAt || 0);
-          break;
-        case 'lastUsed':
-          // Mais recente primeiro quando descending, null vai pro final
-          const aLast = a.lastUsed || 0;
-          const bLast = b.lastUsed || 0;
-          comparison = aLast - bLast;
-          break;
-        case 'playCount':
-          // Mais usado primeiro quando descending
-          comparison = (a.playCount || 0) - (b.playCount || 0);
-          break;
-        default:
-          comparison = 0;
-      }
-
-      return sortAscending ? comparison : -comparison;
-    });
-
-    return sorted;
-  }
-
-  /**
    * Retorna o label para o tipo de ordenação atual
    */
   _getSortLabel() {
@@ -1156,8 +1098,7 @@ export class TomGMPanel extends HandlebarsApplicationMixin(ApplicationV2) {
       name: 'Name',
       created: 'Date',
       lastUsed: 'Recent',
-      playCount: 'Popular',
-      custom: 'Custom'
+      playCount: 'Popular'
     };
     return labels[this.uiState.sortBy] || 'Sort';
   }
@@ -1214,6 +1155,10 @@ export class TomGMPanel extends HandlebarsApplicationMixin(ApplicationV2) {
       items = items.filter(i => i.folder === this.uiState.currentFolderId);
     }
 
+    // Get active scene and its cast members for quick reference
+    const activeScene = Store.activeSceneId ? Store.scenes.get(Store.activeSceneId) : null;
+    const activeCastIds = activeScene ? new Set(activeScene.cast.map(c => c.id)) : new Set();
+
     // Transform for Handlebars (if needed, or use models directly)
     items = items.map(i => {
       const folder = i.folder ? Store.folders.get(i.folder) : null;
@@ -1221,12 +1166,34 @@ export class TomGMPanel extends HandlebarsApplicationMixin(ApplicationV2) {
         ...i.toJSON(),
         thumbnail: i.thumbnail,
         image: i.image,
-        folderName: folder ? folder.name : ''
+        folderName: folder ? folder.name : '',
+        isInActiveScene: activeTab === 'characters' && activeCastIds.has(i.id),
+        isActiveScene: activeTab === 'scenes' && Store.activeSceneId === i.id
       };
     });
 
     // Aplicar ordenação
-    items = this._sortItems(items, activeTab);
+    const { sortBy, sortAscending } = this.uiState;
+    items.sort((a, b) => {
+      let comparison = 0;
+      switch (sortBy) {
+        case 'name':
+          comparison = (a.name || '').toLowerCase().localeCompare((b.name || '').toLowerCase());
+          break;
+        case 'created':
+          comparison = (a.createdAt || 0) - (b.createdAt || 0);
+          break;
+        case 'lastUsed':
+          comparison = (a.lastUsed || 0) - (b.lastUsed || 0);
+          break;
+        case 'playCount':
+          comparison = (a.playCount || 0) - (b.playCount || 0);
+          break;
+        default:
+          comparison = 0;
+      }
+      return sortAscending ? comparison : -comparison;
+    });
 
     // Build folder path for breadcrumbs
     const folderPath = this.uiState.currentFolderId
@@ -1297,37 +1264,8 @@ export class TomGMPanel extends HandlebarsApplicationMixin(ApplicationV2) {
       this.uiState.activeTags.size > 0 ||
       this.uiState.excludedTags.size > 0;
 
-    // Floating Cast Strip - mostra quando há uma cena sendo editada e não estamos na aba de scenes com inspector aberto
-    let floatingCastStrip = null;
-    if (this.uiState.editingSceneId) {
-      const editingScene = Store.scenes.get(this.uiState.editingSceneId);
-      if (editingScene) {
-        // Só mostrar floating strip se NÃO estamos vendo o inspector dessa mesma cena
-        const showingInspectorForSameScene = this.uiState.inspectorOpen &&
-          this.uiState.selectedId === this.uiState.editingSceneId &&
-          activeTab === 'scenes';
-        if (!showingInspectorForSameScene) {
-          const updatedCast = editingScene.cast.map(c => {
-            const char = Store.characters.get(c.id);
-            return char ? { id: char.id, name: char.name, image: char.image } : c;
-          });
-          floatingCastStrip = {
-            sceneId: editingScene.id,
-            sceneName: editingScene.name,
-            cast: updatedCast
-          };
-        }
-      }
-    }
+    const floatingCastStrip = null;
 
-    // Prepare slideshows data for sidebar
-    const slideshowProgress = Store.getSlideshowProgress();
-    const slideshows = Store.getSlideshows().map(s => ({
-      id: s.id,
-      name: s.name,
-      sceneCount: s.scenes.length,
-      isPlaying: slideshowProgress?.slideshowId === s.id
-    }));
 
     // Get sequence progress if a sequence is active
     const sequenceProgress = Store.getSequenceProgress();
@@ -1371,9 +1309,6 @@ export class TomGMPanel extends HandlebarsApplicationMixin(ApplicationV2) {
       isFavorites: isFavorites,
       // Floating Cast Strip
       floatingCastStrip: floatingCastStrip,
-      // Slideshows
-      slideshows: slideshows,
-      slideshowProgress: slideshowProgress,
       // Scene Sequence
       sequenceProgress: sequenceProgress,
       // Cast-Only Mode
@@ -1408,7 +1343,6 @@ export class TomGMPanel extends HandlebarsApplicationMixin(ApplicationV2) {
       this.uiState.inspectorOpen = !this.uiState.inspectorOpen;
     } else {
       this.uiState.selectedId = id;
-      this.uiState.inspectorOpen = true;
     }
 
     // Se é uma cena, setar como cena em edição para o floating cast strip
@@ -1684,13 +1618,13 @@ export class TomGMPanel extends HandlebarsApplicationMixin(ApplicationV2) {
     this.render();
   }
 
-  static _onQuickAdd(event, target) {
+  static _onToggleCast(event, target) {
     const card = target.closest('.tom-card');
     const charId = card ? card.dataset.id : this.uiState.selectedId;
     const sceneId = Store.activeSceneId;
 
     if (!sceneId) {
-      ui.notifications.warn("No active scene to add character to. Please broadcast a scene first.");
+      ui.notifications.warn("No active scene. Please broadcast a scene first.");
       return;
     }
 
@@ -1699,8 +1633,18 @@ export class TomGMPanel extends HandlebarsApplicationMixin(ApplicationV2) {
       return;
     }
 
-    Store.addCastMember(sceneId, charId);
-    ui.notifications.info("Character added to active scene.");
+    const scene = Store.scenes.get(sceneId);
+    const isInCast = scene?.cast.some(c => c.id === charId);
+
+    if (isInCast) {
+      Store.removeCastMember(sceneId, charId);
+      ui.notifications.info("Character removed from active scene.");
+    } else {
+      Store.addCastMember(sceneId, charId);
+      ui.notifications.info("Character added to active scene.");
+    }
+
+    this.render();
   }
 
   // --- FAVORITES ---
@@ -1994,68 +1938,6 @@ export class TomGMPanel extends HandlebarsApplicationMixin(ApplicationV2) {
     // This is handled in _onRender via input listener
   }
 
-  /* ═══════════════════════════════════════════════════════════════
-     SLIDESHOW ACTIONS
-     ═══════════════════════════════════════════════════════════════ */
-
-  static _onCreateSlideshow(event, target) {
-    new TomSlideshowEditor().render(true);
-  }
-
-  static _onEditSlideshow(event, target) {
-    const slideshowId = target.dataset.slideshowId;
-    if (slideshowId) {
-      new TomSlideshowEditor(slideshowId).render(true);
-    }
-  }
-
-  static _onPlaySlideshow(event, target) {
-    const slideshowId = target.dataset.slideshowId;
-    if (slideshowId) {
-      Store.startSlideshow(slideshowId);
-    }
-  }
-
-  static async _onDeleteSlideshow(event, target) {
-    const slideshowId = target.dataset.slideshowId;
-    const slideshow = Store.slideshows.get(slideshowId);
-    if (!slideshow) return;
-
-    const confirmed = await Dialog.confirm({
-      title: 'Delete Slideshow',
-      content: `<p>Are you sure you want to delete the slideshow "${slideshow.name}"?</p>`,
-      yes: () => true,
-      no: () => false
-    });
-
-    if (confirmed) {
-      Store.deleteSlideshow(slideshowId);
-      this.render();
-    }
-  }
-
-  static _onSlideshowPause(event, target) {
-    Store.pauseSlideshow();
-    this.render();
-  }
-
-  static _onSlideshowResume(event, target) {
-    Store.resumeSlideshow();
-    this.render();
-  }
-
-  static _onSlideshowNext(event, target) {
-    Store.nextScene();
-  }
-
-  static _onSlideshowPrev(event, target) {
-    Store.previousScene();
-  }
-
-  static _onSlideshowStop(event, target) {
-    Store.stopSlideshow();
-    this.render();
-  }
 
   /* ═══════════════════════════════════════════════════════════════
      SCENE SEQUENCE ACTIONS

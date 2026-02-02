@@ -2,154 +2,138 @@
   <div class="tom-pp-header">
     <h2><i class="fas fa-theater-masks"></i> My Characters</h2>
     {{#if isBroadcasting}}
-      <span class="tom-pp-live-badge"><i class="fas fa-broadcast-tower"></i> Scene Active</span>
+    <span class="tom-pp-live-badge"><i class="fas fa-broadcast-tower"></i> Scene Active</span>
     {{/if}}
   </div>
 
   {{#if hasCharacters}}
-    <div class="tom-pp-description">
-      Click a character to change their emotion or border style.
-    </div>
+  <div class="tom-pp-description">
+    Click a character to change their emotion or border style.
+  </div>
 
-    <div class="tom-pp-grid">
-      {{#each characters}}
-        <div class="tom-pp-character {{#if locked}}is-locked{{/if}}"
-             data-id="{{id}}"
-             data-action="character-click">
-          <div class="tom-pp-portrait" data-border="{{borderStyle}}">
-            <img src="{{image}}" alt="{{name}}">
-          </div>
-          <div class="tom-pp-info">
-            <div class="tom-pp-name">{{name}}</div>
-            <div class="tom-pp-state">{{currentState}}</div>
-          </div>
-          {{#if canEditBorder}}
-            <button class="tom-pp-edit-btn" data-action="edit-character" data-id="{{id}}" title="Edit Character">
-              <i class="fas fa-edit"></i>
-            </button>
-          {{/if}}
-          {{#if locked}}
-            <div class="tom-pp-lock" title="Locked by GM">
-              <i class="fas fa-lock"></i>
-            </div>
-          {{/if}}
-        </div>
-      {{/each}}
+  <div class="tom-pp-grid">
+    {{#each characters}}
+    <div class="tom-pp-character {{#if locked}}is-locked{{/if}}" data-id="{{id}}" data-action="character-click">
+      <div class="tom-pp-portrait" data-border="{{borderStyle}}">
+        <img src="{{image}}" alt="{{name}}">
+      </div>
+      <div class="tom-pp-info">
+        <div class="tom-pp-name">{{name}}</div>
+        <div class="tom-pp-state">{{currentState}}</div>
+      </div>
+      {{#if canEditBorder}}
+      <button class="tom-pp-edit-btn" data-action="edit-character" data-id="{{id}}" title="Edit Character">
+        <i class="fas fa-edit"></i>
+      </button>
+      {{/if}}
+      {{#if locked}}
+      <div class="tom-pp-lock" title="Locked by GM">
+        <i class="fas fa-lock"></i>
+      </div>
+      {{/if}}
     </div>
+    {{/each}}
+  </div>
   {{else}}
-    <div class="tom-pp-empty">
-      <div class="tom-pp-empty-icon">
-        <i class="fas fa-user-slash"></i>
-      </div>
-      <div class="tom-pp-empty-title">No Characters Assigned</div>
-      <div class="tom-pp-empty-description">
-        Ask your GM to assign you characters using the Permission Editor.
-      </div>
+  <div class="tom-pp-empty">
+    <div class="tom-pp-empty-icon">
+      <i class="fas fa-user-slash"></i>
     </div>
+    <div class="tom-pp-empty-title">No Characters Assigned</div>
+    <div class="tom-pp-empty-description">
+      Ask your GM to assign you characters using the Permission Editor.
+    </div>
+  </div>
   {{/if}}
 
   <!-- Emotion Picker Popover -->
   {{#if emotionPicker}}
-    <div class="tom-emotion-picker {{#if (gt emotionPicker.emotions.length 5)}}has-search{{/if}}" style="left: {{emotionPicker.x}}px; top: {{emotionPicker.y}}px;">
-      <div class="tom-picker-header">
-        <span>{{emotionPicker.character.name}}</span>
-        <div class="tom-picker-actions">
-          {{#if emotionPicker.canEditBorder}}
-            <button class="tom-btn-icon small tom-btn-palette" data-action="open-border-picker" title="Border Style"><i class="fas fa-palette"></i></button>
-          {{/if}}
-          <button class="tom-btn-icon small" data-action="close-picker"><i class="fas fa-times"></i></button>
-        </div>
-      </div>
-      {{#if (gt emotionPicker.emotions.length 5)}}
-        <div class="tom-picker-search">
-          <i class="fas fa-search"></i>
-          <input type="text" class="tom-picker-search-input" placeholder="Search emotions...">
-        </div>
-      {{/if}}
-      <div class="tom-picker-grid">
-        {{#each emotionPicker.emotions}}
-          <div class="tom-picker-item {{#if (eq ../emotionPicker.character.currentState key)}}active{{/if}} {{#if isFavorite}}is-favorite{{/if}}"
-               data-action="select-emotion"
-               data-state="{{key}}"
-               data-path="{{path}}"
-               title="{{key}}{{#if isFavorite}} (Favorite){{/if}}">
-            <img src="{{path}}">
-            <span class="tom-picker-label">{{key}}</span>
-          </div>
-        {{/each}}
+  <div class="tom-emotion-picker {{#if (gt emotionPicker.emotions.length 5)}}has-search{{/if}}"
+    style="left: {{emotionPicker.x}}px; top: {{emotionPicker.y}}px;">
+    <div class="tom-picker-header">
+      <span>{{emotionPicker.character.name}}</span>
+      <div class="tom-picker-actions">
+        {{#if emotionPicker.canEditBorder}}
+        <button class="tom-btn-icon small tom-btn-palette" data-action="open-border-picker" title="Border Style"><i
+            class="fas fa-palette"></i></button>
+        {{/if}}
+        <button class="tom-btn-icon small" data-action="close-picker"><i class="fas fa-times"></i></button>
       </div>
     </div>
+    {{#if (gt emotionPicker.emotions.length 5)}}
+    <div class="tom-picker-search">
+      <i class="fas fa-search"></i>
+      <input type="text" class="tom-picker-search-input" placeholder="Search emotions...">
+    </div>
+    {{/if}}
+    <div class="tom-picker-grid">
+      {{#each emotionPicker.emotions}}
+      <div
+        class="tom-picker-item {{#if (eq ../emotionPicker.character.currentState key)}}active{{/if}} {{#if isFavorite}}is-favorite{{/if}}"
+        data-action="select-emotion" data-state="{{key}}" data-path="{{path}}"
+        title="{{key}}{{#if isFavorite}} (Favorite){{/if}}">
+        <img src="{{path}}">
+        <span class="tom-picker-label">{{key}}</span>
+      </div>
+      {{/each}}
+    </div>
+  </div>
   {{/if}}
 
   <!-- Border Picker Popover -->
   {{#if borderPicker}}
-    <div class="tom-border-picker" style="left: {{borderPicker.x}}px; top: {{borderPicker.y}}px;">
-      <div class="tom-picker-header">
-        <span>Border Style</span>
-        <button class="tom-btn-icon small" data-action="close-border-picker"><i class="fas fa-times"></i></button>
-      </div>
-      <div class="tom-picker-back" data-action="back-to-emotions">
-        <i class="fas fa-arrow-left"></i> Back to Emotions
-      </div>
+  <div class="tom-border-picker" style="left: {{borderPicker.x}}px; top: {{borderPicker.y}}px;">
+    <div class="tom-picker-header">
+      <span>Border Style</span>
+      <button class="tom-btn-icon small" data-action="close-border-picker"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="tom-picker-back" data-action="back-to-emotions">
+      <i class="fas fa-arrow-left"></i> Back to Emotions
+    </div>
 
-      <div class="tom-border-category">
-        <h4>Solid</h4>
-        <div class="tom-border-grid">
-          {{#each borderPicker.solid}}
-            <div class="tom-border-option {{#if active}}active{{/if}}"
-                 data-action="select-border"
-                 data-preset="{{key}}"
-                 data-type="solid"
-                 style="--option-color: {{color}}"
-                 title="{{name}}">
-            </div>
-          {{/each}}
+    <div class="tom-border-category">
+      <h4>Solid</h4>
+      <div class="tom-border-grid">
+        {{#each borderPicker.solid}}
+        <div class="tom-border-option {{#if active}}active{{/if}}" data-action="select-border" data-preset="{{key}}"
+          data-type="solid" style="--option-color: {{color}}" title="{{name}}">
         </div>
-      </div>
-
-      <div class="tom-border-category">
-        <h4>Gradient</h4>
-        <div class="tom-border-grid">
-          {{#each borderPicker.gradient}}
-            <div class="tom-border-option {{#if active}}active{{/if}}"
-                 data-action="select-border"
-                 data-preset="{{key}}"
-                 data-type="gradient"
-                 title="{{name}}">
-            </div>
-          {{/each}}
-        </div>
-      </div>
-
-      <div class="tom-border-category">
-        <h4>Animated</h4>
-        <div class="tom-border-grid">
-          {{#each borderPicker.animated}}
-            <div class="tom-border-option {{#if active}}active{{/if}}"
-                 data-action="select-border"
-                 data-preset="{{key}}"
-                 data-type="animated"
-                 style="--option-color: {{color}}"
-                 title="{{name}}">
-            </div>
-          {{/each}}
-        </div>
-      </div>
-
-      <div class="tom-border-category">
-        <h4>Styled</h4>
-        <div class="tom-border-grid">
-          {{#each borderPicker.styled}}
-            <div class="tom-border-option {{#if active}}active{{/if}}"
-                 data-action="select-border"
-                 data-preset="{{key}}"
-                 data-type="styled"
-                 style="--option-color: {{color}}"
-                 title="{{name}}">
-            </div>
-          {{/each}}
-        </div>
+        {{/each}}
       </div>
     </div>
+
+    <div class="tom-border-category">
+      <h4>Gradient</h4>
+      <div class="tom-border-grid">
+        {{#each borderPicker.gradient}}
+        <div class="tom-border-option {{#if active}}active{{/if}}" data-action="select-border" data-preset="{{key}}"
+          data-type="gradient" title="{{name}}">
+        </div>
+        {{/each}}
+      </div>
+    </div>
+
+    <div class="tom-border-category">
+      <h4>Animated</h4>
+      <div class="tom-border-grid">
+        {{#each borderPicker.animated}}
+        <div class="tom-border-option {{#if active}}active{{/if}}" data-action="select-border" data-preset="{{key}}"
+          data-type="animated" style="--option-color: {{color}}" title="{{name}}">
+        </div>
+        {{/each}}
+      </div>
+    </div>
+
+    <div class="tom-border-category">
+      <h4>Styled</h4>
+      <div class="tom-border-grid">
+        {{#each borderPicker.styled}}
+        <div class="tom-border-option {{#if active}}active{{/if}}" data-action="select-border" data-preset="{{key}}"
+          data-type="styled" style="--option-color: {{color}}" title="{{name}}">
+        </div>
+        {{/each}}
+      </div>
+    </div>
+  </div>
   {{/if}}
 </div>

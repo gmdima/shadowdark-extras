@@ -1,5 +1,5 @@
 
-// All references to "exalted-scenes" have been replaced with shadowdark-extras paths
+// All references to "Exalted Scenes" have been replaced with shadowdark-extras paths
 
 export const TOM_CONFIG = {
     MODULE_ID: 'shadowdark-extras',
@@ -13,7 +13,6 @@ export const TOM_CONFIG = {
     TEMPLATES: {
         GM_PANEL: 'modules/shadowdark-extras/templates/tom-gm-panel.hbs',
         PLAYER_VIEW: 'modules/shadowdark-extras/templates/tom-player-view.hbs',
-        SLIDESHOW_EDITOR: 'modules/shadowdark-extras/templates/tom-slideshow-editor.hbs',
         PLAYER_PANEL: 'modules/shadowdark-extras/templates/tom-player-panel.hbs',
         CHARACTER_EDITOR: 'modules/shadowdark-extras/templates/tom-character-editor.hbs',
         SCENE_EDITOR: 'modules/shadowdark-extras/templates/tom-scene-editor.hbs',
@@ -32,11 +31,7 @@ export const TOM_CONFIG = {
         SLIDESHOWS: 'tom-slideshows'
     },
 
-    // Slideshow Transition Types
-    TRANSITIONS: {
-        dissolve: { name: 'Dissolve (Default)', cssClass: 'transition-dissolve' },
-        none: { name: 'None (Instant)', cssClass: 'transition-none' }
-    },
+
 
     // Defaults
     DEFAULTS: {

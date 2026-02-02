@@ -1,233 +1,4 @@
-<div class="tom-layout {{#if inspectorOpen}}with-inspector{{/if}}">
-
-  <!-- ═══════════════════════════════════════════════════════════════
-       SIDEBAR
-       ═══════════════════════════════════════════════════════════════ -->
-  <aside class="tom-sidebar">
-    <!-- Scenes Section -->
-    <div class="tom-sidebar-section">
-      <div class="tom-sidebar-header">SCENES</div>
-      <nav class="tom-nav">
-        <div class="tom-nav-item {{#if (eq currentView 'scenes-all')}}active{{/if}}" data-action="view"
-          data-view="scenes-all">
-          <i class="fas fa-film"></i>
-          <span>All Scenes</span>
-          {{#if activeSceneId}}<span class="tom-active-indicator" title="Broadcasting"></span>{{/if}}
-          <span class="tom-nav-count">{{counts.scenesAll}}</span>
-        </div>
-        <div class="tom-nav-item {{#if (eq currentView 'scenes-favorites')}}active{{/if}}" data-action="view"
-          data-view="scenes-favorites">
-          <i class="fas fa-star"></i>
-          <span>Favorites</span>
-          <span class="tom-nav-count">{{counts.scenesFavorites}}</span>
-        </div>
-      </nav>
-    </div>
-
-    <!-- Characters Section -->
-    <div class="tom-sidebar-section">
-      <div class="tom-sidebar-header">CHARACTERS</div>
-      <nav class="tom-nav">
-        <div class="tom-nav-item {{#if (eq currentView 'characters-all')}}active{{/if}}" data-action="view"
-          data-view="characters-all">
-          <i class="fas fa-users"></i>
-          <span>All Characters</span>
-          <span class="tom-nav-count">{{counts.charactersAll}}</span>
-        </div>
-        <div class="tom-nav-item {{#if (eq currentView 'characters-favorites')}}active{{/if}}" data-action="view"
-          data-view="characters-favorites">
-          <i class="fas fa-heart"></i>
-          <span>Favorites</span>
-          <span class="tom-nav-count">{{counts.charactersFavorites}}</span>
-        </div>
-      </nav>
-    </div>
-
-    <!-- Slideshows Section -->
-    <div class="tom-sidebar-section">
-      <div class="tom-sidebar-header">
-        SLIDESHOWS
-        <button class="tom-btn-icon small" data-action="create-slideshow" title="Create Slideshow">
-          <i class="fas fa-plus"></i>
-        </button>
-      </div>
-
-      {{!-- Slideshow Controls (when playing) --}}
-      {{#if slideshowProgress}}
-      <div class="tom-slideshow-controls-panel">
-        <div class="tom-slideshow-now-playing">
-          <span class="tom-slideshow-status">
-            {{#if slideshowProgress.isPaused}}<i class="fas fa-pause"></i> Paused{{else}}<i class="fas fa-play"></i>
-            Playing{{/if}}
-          </span>
-          <span class="tom-slideshow-current-scene">{{slideshowProgress.sceneName}}</span>
-          <span class="tom-slideshow-counter">{{add slideshowProgress.currentIndex 1}} /
-            {{slideshowProgress.totalScenes}}</span>
-        </div>
-        <div class="tom-slideshow-control-buttons">
-          <button class="tom-btn-icon small" data-action="slideshow-prev" title="Previous Scene">
-            <i class="fas fa-step-backward"></i>
-          </button>
-          {{#if slideshowProgress.isPaused}}
-          <button class="tom-btn-icon small primary" data-action="slideshow-resume" title="Resume">
-            <i class="fas fa-play"></i>
-          </button>
-          {{else}}
-          <button class="tom-btn-icon small" data-action="slideshow-pause" title="Pause">
-            <i class="fas fa-pause"></i>
-          </button>
-          {{/if}}
-          <button class="tom-btn-icon small" data-action="slideshow-next" title="Next Scene">
-            <i class="fas fa-step-forward"></i>
-          </button>
-          <button class="tom-btn-icon small danger" data-action="slideshow-stop" title="Stop Slideshow">
-            <i class="fas fa-stop"></i>
-          </button>
-        </div>
-      </div>
-      {{/if}}
-
-      <nav class="tom-nav tom-slideshow-list">
-        {{#each slideshows}}
-        <div class="tom-nav-item tom-slideshow-item {{#if isPlaying}}slideshow-active{{/if}}"
-          data-slideshow-id="{{id}}">
-          <i class="fas fa-images"></i>
-          <span class="tom-slideshow-name" title="{{name}}">{{name}}</span>
-          <div class="tom-slideshow-actions">
-            <button class="tom-btn-icon tiny" data-action="play-slideshow" data-slideshow-id="{{id}}" title="Play">
-              <i class="fas fa-play"></i>
-            </button>
-            <button class="tom-btn-icon tiny" data-action="edit-slideshow" data-slideshow-id="{{id}}" title="Edit">
-              <i class="fas fa-edit"></i>
-            </button>
-            <button class="tom-btn-icon tiny" data-action="delete-slideshow" data-slideshow-id="{{id}}" title="Delete">
-              <i class="fas fa-trash"></i>
-            </button>
-          </div>
-        </div>
-        {{else}}
-        <div class="tom-nav-empty">
-          <span>No slideshows yet</span>
-        </div>
-        {{/each}}
-      </nav>
-    </div>
-
-    <!-- Cast-Only Mode Section -->
-    <div class="tom-sidebar-section">
-      <div class="tom-sidebar-header">
-        OVER SCENE
-        {{#if castOnlyProgress}}
-        <span class="tom-live-badge small">LIVE</span>
-        {{/if}}
-      </div>
-      <p class="tom-hint tom-sidebar-hint">Show character portraits over the normal scene.</p>
-
-      {{!-- Cast-Only Controls (when active) --}}
-      {{#if castOnlyProgress}}
-      <div class="tom-cast-only-controls-panel">
-        <div class="tom-cast-only-status">
-          <i class="fas fa-users"></i>
-          <span>{{castOnlyProgress.characters.length}} character{{#if (gt castOnlyProgress.characters.length
-            1)}}s{{/if}} visible</span>
-        </div>
-        <button class="tom-btn tom-btn-danger tom-btn-sm" data-action="cast-only-stop">
-          <i class="fas fa-stop"></i> Stop Over Scene
-        </button>
-
-        {{!-- Layout Controls --}}
-        <div class="tom-cast-only-layout">
-          <div class="tom-cast-only-layout-label">Position</div>
-          <div class="tom-cast-only-layout-row">
-            <button
-              class="tom-cast-only-layout-btn {{#if (eq castOnlyProgress.layoutSettings.preset 'top-left')}}active{{/if}}"
-              data-action="cast-only-layout" data-layout="preset" data-preset="top-left" title="Top Left">
-              <i class="fas fa-arrow-up-left"></i>
-            </button>
-            <button
-              class="tom-cast-only-layout-btn {{#if (eq castOnlyProgress.layoutSettings.preset 'top-center')}}active{{/if}}"
-              data-action="cast-only-layout" data-layout="preset" data-preset="top-center" title="Top Center">
-              <i class="fas fa-arrows-up-to-line"></i>
-            </button>
-            <button
-              class="tom-cast-only-layout-btn {{#if (eq castOnlyProgress.layoutSettings.preset 'top-right')}}active{{/if}}"
-              data-action="cast-only-layout" data-layout="preset" data-preset="top-right" title="Top Right">
-              <i class="fas fa-arrow-up-right"></i>
-            </button>
-            <button
-              class="tom-cast-only-layout-btn {{#if (eq castOnlyProgress.layoutSettings.preset 'sidebar-left')}}active{{/if}}"
-              data-action="cast-only-layout" data-layout="preset" data-preset="sidebar-left" title="Sidebar Left">
-              <i class="fas fa-sidebar"></i>
-            </button>
-            <button
-              class="tom-cast-only-layout-btn {{#if (eq castOnlyProgress.layoutSettings.preset 'sidebar-right')}}active{{/if}}"
-              data-action="cast-only-layout" data-layout="preset" data-preset="sidebar-right" title="Sidebar Right">
-              <i class="fas fa-sidebar-flip"></i>
-            </button>
-            <button
-              class="tom-cast-only-layout-btn {{#if (eq castOnlyProgress.layoutSettings.preset 'bottom-left')}}active{{/if}}"
-              data-action="cast-only-layout" data-layout="preset" data-preset="bottom-left" title="Bottom Left">
-              <i class="fas fa-arrow-down-left"></i>
-            </button>
-            <button
-              class="tom-cast-only-layout-btn {{#if (eq castOnlyProgress.layoutSettings.preset 'bottom-center')}}active{{/if}}"
-              data-action="cast-only-layout" data-layout="preset" data-preset="bottom-center" title="Bottom Center">
-              <i class="fas fa-arrows-down-to-line"></i>
-            </button>
-            <button
-              class="tom-cast-only-layout-btn {{#if (eq castOnlyProgress.layoutSettings.preset 'bottom-right')}}active{{/if}}"
-              data-action="cast-only-layout" data-layout="preset" data-preset="bottom-right" title="Bottom Right">
-              <i class="fas fa-arrow-down-right"></i>
-            </button>
-          </div>
-
-          <div class="tom-cast-only-layout-label">Size</div>
-          <div class="tom-cast-only-layout-row">
-            <button
-              class="tom-cast-only-layout-btn {{#if (eq castOnlyProgress.layoutSettings.size 'small')}}active{{/if}}"
-              data-action="cast-only-layout" data-layout="size" data-size="small" title="Small">S</button>
-            <button
-              class="tom-cast-only-layout-btn {{#if (eq castOnlyProgress.layoutSettings.size 'medium')}}active{{/if}}"
-              data-action="cast-only-layout" data-layout="size" data-size="medium" title="Medium">M</button>
-            <button
-              class="tom-cast-only-layout-btn {{#if (eq castOnlyProgress.layoutSettings.size 'large')}}active{{/if}}"
-              data-action="cast-only-layout" data-layout="size" data-size="large" title="Large">L</button>
-            <button
-              class="tom-cast-only-layout-btn {{#if (eq castOnlyProgress.layoutSettings.size 'xlarge')}}active{{/if}}"
-              data-action="cast-only-layout" data-layout="size" data-size="xlarge" title="Extra Large">XL</button>
-          </div>
-        </div>
-      </div>
-      {{/if}}
-
-      {{!-- Character Selection for Cast-Only --}}
-      <div class="tom-cast-only-selector">
-        <div class="tom-cast-only-chars">
-          {{#each castOnlyCharacters}}
-          <div class="tom-cast-only-char {{#if selected}}selected{{/if}}" data-action="toggle-cast-only-char"
-            data-character-id="{{id}}" title="{{name}}">
-            <img src="{{image}}" alt="{{name}}">
-            <div class="tom-cast-only-check">
-              <i class="fas fa-check"></i>
-            </div>
-          </div>
-          {{else}}
-          <div class="tom-cast-only-empty">
-            <span>No characters yet</span>
-          </div>
-          {{/each}}
-        </div>
-        {{#unless castOnlyProgress}}
-        <button
-          class="tom-btn tom-btn-primary tom-btn-sm tom-cast-only-start {{#unless castOnlySelectedCount}}disabled{{/unless}}"
-          data-action="cast-only-start" {{#unless castOnlySelectedCount}}disabled{{/unless}}>
-          <i class="fas fa-broadcast-tower"></i>
-          Start Over Scene {{#if castOnlySelectedCount}}({{castOnlySelectedCount}}){{/if}}
-        </button>
-        {{/unless}}
-      </div>
-    </div>
-  </aside>
+<div class="tom-layout">
 
   <!-- ═══════════════════════════════════════════════════════════════
        LIBRARY (Main Content)
@@ -275,52 +46,6 @@
           <i class="fas fa-times"></i>
         </button>
         {{/if}}
-      </div>
-      <div class="tom-actions">
-        <!-- Sort Dropdown -->
-        <div class="tom-sort-dropdown">
-          <button class="tom-btn tom-btn-secondary tom-sort-trigger" data-action="toggle-sort" title="Sort by">
-            <i class="fas fa-sort-amount-down"></i>
-            <span class="tom-sort-label">{{sortLabel}}</span>
-            <i class="fas fa-caret-down"></i>
-          </button>
-          {{#if sortMenuOpen}}
-          <div class="tom-sort-menu">
-            <div class="tom-sort-option {{#if (eq sortBy 'name')}}active{{/if}}" data-action="sort" data-sort="name">
-              <i class="fas fa-font"></i> Name
-            </div>
-            <div class="tom-sort-option {{#if (eq sortBy 'created')}}active{{/if}}" data-action="sort"
-              data-sort="created">
-              <i class="fas fa-calendar-plus"></i> Date Created
-            </div>
-            <div class="tom-sort-option {{#if (eq sortBy 'lastUsed')}}active{{/if}}" data-action="sort"
-              data-sort="lastUsed">
-              <i class="fas fa-clock"></i> Last Used
-            </div>
-            <div class="tom-sort-option {{#if (eq sortBy 'playCount')}}active{{/if}}" data-action="sort"
-              data-sort="playCount">
-              <i class="fas fa-fire"></i> Most Used
-            </div>
-            <div class="tom-sort-option {{#if (eq sortBy 'custom')}}active{{/if}}" data-action="sort"
-              data-sort="custom">
-              <i class="fas fa-hand-pointer"></i> Custom (Drag & Drop)
-            </div>
-            <div class="tom-sort-divider"></div>
-            <div class="tom-sort-option" data-action="toggle-sort-direction">
-              <i class="fas {{#if sortAscending}}fa-sort-amount-up{{else}}fa-sort-amount-down{{/if}}"></i>
-              {{#if sortAscending}}Ascending{{else}}Descending{{/if}}
-            </div>
-          </div>
-          {{/if}}
-        </div>
-        <button class="tom-btn tom-btn-secondary" data-action="toggle-view" title="Toggle List/Grid View">
-          <i class="fas {{#if (eq viewMode 'list')}}fa-th-large{{else}}fa-list{{/if}}"></i>
-        </button>
-        {{#unless isFavorites}}
-        <button class="tom-btn tom-btn-secondary" data-action="create-folder" title="Create Folder">
-          <i class="fas fa-folder-plus"></i>
-        </button>
-        {{/unless}}
       </div>
     </header>
 
@@ -403,7 +128,11 @@
             <i class="{{#if favorite}}fas{{else}}far{{/if}} fa-star"></i>
           </button>
           <div class="tom-card-overlay">
-            {{#if (eq type 'scene')}}
+            {{#if (and (eq type 'scene') (eq id ../activeSceneId))}}
+            <button class="tom-action-btn active" data-action="stop-broadcast" title="Stop Broadcasting">
+              <i class="fas fa-stop"></i>
+            </button>
+            {{else if (eq type 'scene')}}
             <button class="tom-action-btn" data-action="broadcast" title="Broadcast">
               <i class="fas fa-play"></i>
             </button>
@@ -412,8 +141,10 @@
               <i class="fas fa-edit"></i>
             </button>
             {{#if (eq type 'character')}}
-            <button class="tom-action-btn" data-action="quick-add" title="Add to Active Scene">
-              <i class="fas fa-plus-circle"></i>
+            {{!-- Toggle in Active Scene --}}
+            <button class="tom-action-btn {{#if isInActiveScene}}active{{/if}}" data-action="toggle-cast"
+              title="{{#if isInActiveScene}}Remove from Active Scene{{else}}Add to Active Scene{{/if}}">
+              <i class="fas {{#if isInActiveScene}}fa-times-circle{{else}}fa-plus-circle{{/if}}"></i>
             </button>
             {{/if}}
             <button class="tom-action-btn tom-action-btn-danger" data-action="delete" title="Delete">
@@ -437,298 +168,60 @@
       </div>
       {{/each}}
 
-      {{!-- Empty State (only when no folders AND no items AND not in a folder) --}}
+      {{!-- Empty State (simple text) --}}
       {{#unless (or items.length folders.length isInFolder)}}
       <div
         class="tom-empty-state {{#if (eq activeTab 'scenes')}}scenes{{else}}characters{{/if}} {{#if hasFilters}}no-results{{/if}}">
-        <div class="tom-empty-card">
-          <div class="tom-empty-badge">
-            {{#if hasFilters}}Zero Matches{{else}}Fresh Canvas{{/if}}
-          </div>
-          <div class="tom-empty-icon-stack">
-            <div class="tom-empty-glow"></div>
-            <div class="tom-empty-state-icon">
-              {{#if hasFilters}}
-              <i class="fas fa-search"></i>
-              {{else if (eq activeTab 'scenes')}}
-              <i class="fas fa-film"></i>
-              {{else}}
-              <i class="fas fa-users"></i>
-              {{/if}}
-            </div>
-          </div>
-          <div class="tom-empty-state-title">
-            {{#if hasFilters}}
-            No results found
-            {{else if (eq activeTab 'scenes')}}
-            No Scenes Yet
-            {{else}}
-            No Characters Yet
-            {{/if}}
-          </div>
-          <div class="tom-empty-state-description">
-            {{#if hasFilters}}
-            Try adjusting your search or filters to find what you're looking for.
-            {{else if (eq activeTab 'scenes')}}
-            Craft your first cinematic frame and set the stage for your next story beat.
-            {{else}}
-            Add your first character and give your table expressive faces and emotions.
-            {{/if}}
-          </div>
-          {{#unless hasFilters}}
-          <div class="tom-empty-state-action">
-            <button class="tom-btn tom-btn-primary tom-btn-hero" data-action="create">
-              <i class="fas fa-plus-circle"></i>
-              Create {{#if (eq activeTab 'scenes')}}Scene{{else}}Character{{/if}}
-            </button>
-            <div class="tom-empty-hint">
-              Tip: you can also drag an image here to start faster.
-            </div>
-          </div>
-          {{/unless}}
+        <div class="tom-empty-text">
+          {{#if hasFilters}}
+          No results found
+          {{else if (eq activeTab 'scenes')}}
+          No Scenes yet
+          {{else}}
+          No Characters yet
+          {{/if}}
         </div>
       </div>
       {{/unless}}
     </div>
 
-    <!-- Floating Action Button -->
+
     <button class="tom-fab" data-action="create"
       title="Create New {{#if (eq activeTab 'scenes')}}Scene{{else}}Character{{/if}}">
-      <span class="tom-fab-icon">
-        {{#if (eq activeTab 'scenes')}}
-        <i class="fas fa-film"></i>
-        {{else}}
-        <i class="fas fa-user-plus"></i>
-        {{/if}}
-      </span>
-      <span class="tom-fab-label">New {{#if (eq activeTab 'scenes')}}Scene{{else}}Character{{/if}}</span>
+      <i class="fas fa-plus"></i>
     </button>
   </main>
 
-  <!-- ═══════════════════════════════════════════════════════════════
-       INSPECTOR (Right Panel)
-       ═══════════════════════════════════════════════════════════════ -->
-  {{#if inspectorOpen}}
-  <aside class="tom-inspector">
-    <div class="tom-inspector-header">
-      <div class="tom-inspector-title">
-        <i class="fas fa-info-circle"></i> {{selectedItem.name}}
-        {{#if (eq activeSceneId selectedId)}}
-        <span class="tom-live-badge">LIVE</span>
-        {{/if}}
-      </div>
-      <div class="tom-inspector-actions">
-        <button class="tom-btn-icon tom-favorite-toggle {{#if selectedItem.favorite}}active{{/if}}"
-          data-action="toggle-favorite" data-id="{{selectedItem.id}}" data-type="{{selectedItem.type}}"
-          title="{{#if selectedItem.favorite}}Remove from Favorites (F){{else}}Add to Favorites (F){{/if}}">
-          <i class="{{#if selectedItem.favorite}}fas{{else}}far{{/if}} fa-star"></i>
-        </button>
-        <button class="tom-btn-icon" data-action="close-inspector" title="Close Inspector (Escape)">
-          <i class="fas fa-times"></i>
-        </button>
-      </div>
+  <aside class="tom-sidebar">
+
+    <div class="tom-sidebar-section">
+      <div class="tom-sidebar-header">SCENES</div>
+      <nav class="tom-nav">
+        <div class="tom-nav-item {{#if (eq currentView 'scenes-all')}}active{{/if}}" data-action="view"
+          data-view="scenes-all">
+          <i class="fas fa-film"></i>
+          <span>All Scenes</span>
+          {{#if activeSceneId}}<span class="tom-active-indicator" title="Broadcasting"></span>{{/if}}
+          <span class="tom-nav-count">{{counts.scenesAll}}</span>
+        </div>
+      </nav>
     </div>
 
-    <div class="tom-inspector-preview">
-      {{#if (eq selectedItem.bgType 'video')}}
-      <video src="{{selectedItem.image}}" muted loop autoplay playsinline disablepictureinpicture></video>
-      {{else}}
-      <img src="{{selectedItem.image}}">
-      {{/if}}
+    <!-- Characters Section -->
+    <div class="tom-sidebar-section">
+      <div class="tom-sidebar-header">CHARACTERS</div>
+      <nav class="tom-nav">
+        <div class="tom-nav-item {{#if (eq currentView 'characters-all')}}active{{/if}}" data-action="view"
+          data-view="characters-all">
+          <i class="fas fa-users"></i>
+          <span>All Characters</span>
+          <span class="tom-nav-count">{{counts.charactersAll}}</span>
+        </div>
+
+      </nav>
     </div>
-
-    <div class="tom-inspector-controls">
-      {{#if (eq selectedItem.type 'scene')}}
-      {{#if (eq activeSceneId selectedId)}}
-      <button class="tom-btn tom-btn-danger" data-action="stop-broadcast">
-        <i class="fas fa-stop"></i> Stop Broadcast
-      </button>
-      {{else}}
-      {{#if selectedItem.isSequence}}
-      <button class="tom-btn tom-btn-primary" data-action="broadcast-sequence">
-        <i class="fas fa-play-circle"></i> Start Sequence
-      </button>
-      {{else}}
-      <button class="tom-btn tom-btn-primary" data-action="broadcast">
-        <i class="fas fa-broadcast-tower"></i> Broadcast
-      </button>
-      {{/if}}
-      {{/if}}
-      {{else}}
-      {{!-- Character controls --}}
-      <button class="tom-btn tom-btn-secondary" data-action="quick-add" title="Add to Active Scene">
-        <i class="fas fa-plus-circle"></i> Add to Scene
-      </button>
-      {{/if}}
-    </div>
-
-    {{!-- Sequence Timeline (only for sequence scenes) --}}
-    {{#if (eq selectedItem.type 'scene')}}
-    {{#if selectedItem.isSequence}}
-    <div class="tom-sequence-panel">
-      <div class="tom-sequence-header">
-        <span><i class="fas fa-images"></i> SEQUENCE</span>
-        <span class="tom-sequence-count">{{selectedItem.sequenceBackgrounds.length}} backgrounds</span>
-        <button class="tom-btn-icon small" data-action="remove-sequence" title="Convert back to regular scene">
-          <i class="fas fa-timtom-circle"></i>
-        </button>
-      </div>
-
-      {{!-- Sequence Navigation Controls (visible when sequence is live) --}}
-      {{#if sequenceProgress}}
-      <div class="tom-sequence-controls">
-        <button class="tom-btn-icon {{#if sequenceProgress.isFirst}}disabled{{/if}}" data-action="sequence-prev"
-          title="Previous Background" {{#if sequenceProgress.isFirst}}disabled{{/if}}>
-          <i class="fas fa-chevron-left"></i>
-        </button>
-        <span class="tom-sequence-counter">
-          {{add sequenceProgress.currentIndex 1}} / {{sequenceProgress.totalBackgrounds}}
-        </span>
-        <button
-          class="tom-btn-icon {{#if (and sequenceProgress.isLast (eq selectedItem.sequenceSettings.onEnd 'stop'))}}disabled{{/if}}"
-          data-action="sequence-next" title="Next Background" {{#if (and sequenceProgress.isLast (eq
-          selectedItem.sequenceSettings.onEnd 'stop' ))}}disabled{{/if}}>
-          <i class="fas fa-chevron-right"></i>
-        </button>
-      </div>
-      {{/if}}
-
-      {{!-- Timeline (accepts scene drag & drop) --}}
-      <div class="tom-sequence-timeline" title="Drag scenes here to add their backgrounds">
-        {{#each selectedItem.sequenceBackgrounds}}
-        <div class="tom-sequence-thumb {{#if (eq @index ../sequenceProgress.currentIndex)}}active{{/if}}"
-          data-action="sequence-goto" data-index="{{@index}}" data-bg-id="{{id}}" title="Background {{add @index 1}}">
-          <img src="{{path}}" alt="Background {{add @index 1}}">
-          <span class="tom-sequence-thumb-num">{{add @index 1}}</span>
-          <button class="tom-sequence-thumb-remove" data-action="remove-sequence-bg" data-bg-id="{{id}}" title="Remove">
-            <i class="fas fa-times"></i>
-          </button>
-        </div>
-        {{/each}}
-        <div class="tom-sequence-thumb add-new" data-action="add-sequence-bg"
-          title="Add background from file picker, or drag a scene card here">
-          <i class="fas fa-plus"></i>
-        </div>
-      </div>
-
-      {{!-- Sequence Settings --}}
-      <div class="tom-sequence-settings">
-        <div class="tom-sequence-setting">
-          <label>Transition:</label>
-          <select data-action="sequence-transition-type">
-            <option value="dissolve" {{#if (eq selectedItem.sequenceSettings.transitionType 'dissolve'
-              )}}selected{{/if}}>Dissolve</option>
-            <option value="cut" {{#if (eq selectedItem.sequenceSettings.transitionType 'cut' )}}selected{{/if}}>Cut
-              (instant)</option>
-          </select>
-        </div>
-        {{#if (eq selectedItem.sequenceSettings.transitionType 'dissolve')}}
-        <div class="tom-sequence-setting">
-          <label>Duration:</label>
-          <input type="number" data-action="sequence-transition-duration"
-            value="{{selectedItem.sequenceSettings.transitionDuration}}" min="0.1" max="5" step="0.1">
-          <span class="tom-unit">s</span>
-        </div>
-        {{/if}}
-        <div class="tom-sequence-setting">
-          <label>On End:</label>
-          <select data-action="sequence-on-end">
-            <option value="stop" {{#if (eq selectedItem.sequenceSettings.onEnd 'stop' )}}selected{{/if}}>Stop</option>
-            <option value="loop" {{#if (eq selectedItem.sequenceSettings.onEnd 'loop' )}}selected{{/if}}>Loop</option>
-          </select>
-        </div>
-      </div>
-    </div>
-    {{else}}
-    {{!-- Convert to Sequence button for regular scenes --}}
-    <div class="tom-convert-sequence">
-      <button class="tom-btn tom-btn-secondary small" data-action="convert-to-sequence"
-        title="Convert this scene to a sequence with multiple backgrounds">
-        <i class="fas fa-layer-group"></i> Turn into Sequence
-      </button>
-    </div>
-    {{/if}}
-    {{/if}}
-
-    {{#if (eq selectedItem.type 'scene')}}
-    <div class="tom-cast-strip" data-scene-id="{{selectedItem.id}}">
-      <div class="tom-cast-header">
-        <span>CAST</span>
-        <span class="tom-cast-count">{{selectedItem.cast.length}} character{{#if (gt selectedItem.cast.length
-          1)}}s{{/if}}</span>
-      </div>
-      <div class="tom-cast-row {{#unless selectedItem.cast.length}}empty{{/unless}}">
-        {{#if selectedItem.cast.length}}
-        {{#each selectedItem.cast}}
-        <div class="tom-cast-member" title="{{name}} - Click to change emotion, drag to reorder"
-          data-action="cast-click" data-character-id="{{id}}" data-index="{{@index}}" draggable="true">
-          <img src="{{image}}" alt="{{name}}">
-          <span class="tom-cast-name">{{name}}</span>
-        </div>
-        {{/each}}
-        {{else}}
-        <div class="tom-cast-empty">
-          <i class="fas fa-user-plus"></i>
-          <span>Drag characters here or click + to add</span>
-        </div>
-        {{/if}}
-        <div class="tom-cast-member add-new" data-action="add-cast" title="Add character to scene">
-          <div class="add-btn-circle"><i class="fas fa-plus"></i></div>
-        </div>
-      </div>
-    </div>
-    {{/if}}
   </aside>
-  {{/if}}
 
-  <!-- ═══════════════════════════════════════════════════════════════
-       FLOATING CAST STRIP (visible when editing a scene from Characters tab)
-       ═══════════════════════════════════════════════════════════════ -->
-  {{#if floatingCastStrip}}
-  <div class="tom-floating-cast" data-scene-id="{{floatingCastStrip.sceneId}}">
-    <div class="tom-floating-cast-header">
-      <div class="tom-floating-cast-title">
-        <i class="fas fa-film"></i>
-        <span>{{floatingCastStrip.sceneName}}</span>
-        {{#if (eq activeSceneId floatingCastStrip.sceneId)}}
-        <span class="tom-live-badge small">LIVE</span>
-        {{/if}}
-      </div>
-      <div class="tom-floating-cast-actions">
-        <button class="tom-btn tom-btn-sm" data-action="go-to-scene" data-scene-id="{{floatingCastStrip.sceneId}}"
-          title="Go to Scene">
-          <i class="fas fa-arrow-right"></i>
-        </button>
-        <button class="tom-btn-icon small" data-action="close-floating-cast" title="Close">
-          <i class="fas fa-times"></i>
-        </button>
-      </div>
-    </div>
-    <div class="tom-floating-cast-body">
-      <div class="tom-cast-strip" data-scene-id="{{floatingCastStrip.sceneId}}">
-        <div class="tom-cast-row {{#unless floatingCastStrip.cast.length}}empty{{/unless}}">
-          {{#if floatingCastStrip.cast.length}}
-          {{#each floatingCastStrip.cast}}
-          <div class="tom-cast-member" title="{{name}} - Click to change emotion" data-action="cast-click"
-            data-character-id="{{id}}" data-index="{{@index}}" draggable="true">
-            <img src="{{image}}" alt="{{name}}">
-            <span class="tom-cast-name">{{name}}</span>
-          </div>
-          {{/each}}
-          {{else}}
-          <div class="tom-cast-empty">
-            <i class="fas fa-user-plus"></i>
-            <span>Drag characters here to add to scene</span>
-          </div>
-          {{/if}}
-          <div class="tom-cast-member add-new" data-action="floating-add-cast" title="Add character to scene">
-            <div class="add-btn-circle"><i class="fas fa-plus"></i></div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-  {{/if}}
 
   <!-- Emotion Picker Popover -->
   {{#if emotionPicker}}
