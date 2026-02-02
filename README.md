@@ -363,6 +363,7 @@ This module is provided under the MIT License.
 - [Shadowdark RPG](https://www.thearcanelibrary.com/pages/shadowdark) by The Arcane Library
 - [Foundry VTT Shadowdark System](https://github.com/Muttley/foundryvtt-shadowdark)
 - Icons from [Font Awesome](https://fontawesome.com/)
+- Tom inspired by Exalted Scenes by wands and widgets
 
 ---
 
