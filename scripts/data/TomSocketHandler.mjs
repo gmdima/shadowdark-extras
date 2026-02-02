@@ -78,6 +78,12 @@ export class TomSocketHandler {
       case 'arena-token-remove':
         this._onArenaTokenRemove(payload.data);
         break;
+      case 'arena-token-hp-update':
+        this._onArenaTokenHpUpdate(payload.data);
+        break;
+      case 'arena-token-conditions-update':
+        this._onArenaTokenConditionsUpdate(payload.data);
+        break;
       case 'arena-asset-spawn':
         this._onArenaAssetSpawn(payload.data);
         break;
@@ -90,6 +96,15 @@ export class TomSocketHandler {
       case 'arena-asset-remove':
         this._onArenaAssetRemove(payload.data);
         break;
+      case 'scene-fade-transition':
+        this._onSceneFadeTransition(payload.data);
+        break;
+      case 'overlay-set':
+        this._onOverlaySet(payload.data);
+        break;
+      case 'overlay-clear':
+        this._onOverlayClear();
+        break;
     }
   }
 
@@ -101,11 +116,60 @@ export class TomSocketHandler {
     const { sceneId } = data;
     Store.setActiveScene(sceneId);
     TomPlayerView.activate(sceneId);
+
+    // Show scene switcher button in tray (GM only)
+    if (game.user.isGM) {
+      this._updateTraySceneSwitcher(sceneId);
+    }
   }
 
   static _onStopBroadcast() {
     TomPlayerView.deactivate();
     Store.clearActiveScene();
+
+    // Clear any active overlay
+    this._removeOverlayElement();
+    Store.currentOverlay = null;
+
+    // Hide scene switcher button in tray (GM only)
+    if (game.user.isGM) {
+      this._hideTraySceneSwitcher();
+    }
+  }
+
+  /**
+   * Update or show the tray scene switcher, cast manager, and overlay manager
+   */
+  static _updateTraySceneSwitcher(sceneId) {
+    // Get tray app instance via static reference
+    import('../TrayApp.mjs').then(({ TrayApp }) => {
+      const trayApp = TrayApp._instance;
+      if (!trayApp) return;
+
+      // Check if scene switcher button already exists
+      const existingBtn = document.querySelector(".tom-scene-switcher-btn");
+      if (existingBtn) {
+        // Just update the active scene
+        trayApp.updateTomSceneSwitcher(sceneId);
+      } else {
+        // Show the buttons
+        trayApp.showTomSceneSwitcher(sceneId);
+        trayApp.showTomCastManager();
+        trayApp.showTomOverlayManager();
+      }
+    });
+  }
+
+  /**
+   * Hide the tray scene switcher
+   */
+  static _hideTraySceneSwitcher() {
+    import('../TrayApp.mjs').then(({ TrayApp }) => {
+      const trayApp = TrayApp._instance;
+      if (trayApp) {
+        trayApp.hideTomSceneSwitcher();
+      }
+    });
   }
 
   static _onUpdateEmotion(data) {
@@ -151,6 +215,13 @@ export class TomSocketHandler {
   static _onUpdateCast(data) {
     // Refresh the cast (add/remove characters) without triggering scene transition animations
     TomPlayerView.refreshCast();
+
+    // Re-apply overlay if one was active (refresh may have removed it)
+    if (Store.currentOverlay) {
+      setTimeout(() => {
+        this._onOverlaySet({ overlayPath: Store.currentOverlay });
+      }, 100);
+    }
   }
 
   static _onUpdateBorder(data) {
@@ -204,6 +275,14 @@ export class TomSocketHandler {
 
       // Refresh views
       TomPlayerView.refresh();
+
+      // Re-apply overlay if one was active (refresh may have removed it)
+      if (Store.currentOverlay) {
+        setTimeout(() => {
+          this._onOverlaySet({ overlayPath: Store.currentOverlay });
+        }, 100);
+      }
+
       // Also refresh GM Panel if open
       if (game.user.isGM) {
         import('../apps/TomGMPanel.mjs').then(({ TomGMPanel }) => {
@@ -486,6 +565,16 @@ export class TomSocketHandler {
     TomPlayerView.removeArenaToken(tokenId);
   }
 
+  static _onArenaTokenHpUpdate(data) {
+    const { tokenId, hp, maxHp } = data;
+    TomPlayerView.updateArenaTokenHp(tokenId, hp, maxHp);
+  }
+
+  static _onArenaTokenConditionsUpdate(data) {
+    const { tokenId, conditions } = data;
+    TomPlayerView.updateArenaTokenConditions(tokenId, conditions);
+  }
+
   /* ═══════════════════════════════════════════════════════════════
      ARENA TOKEN EMITTERS
      ═══════════════════════════════════════════════════════════════ */
@@ -513,6 +602,22 @@ export class TomSocketHandler {
       data
     });
     this._onArenaTokenRemove(data);
+  }
+
+  static emitArenaTokenHpUpdate(data) {
+    game.socket.emit(CONFIG.SOCKET_NAME, {
+      type: 'arena-token-hp-update',
+      data
+    });
+    this._onArenaTokenHpUpdate(data);
+  }
+
+  static emitArenaTokenConditionsUpdate(data) {
+    game.socket.emit(CONFIG.SOCKET_NAME, {
+      type: 'arena-token-conditions-update',
+      data
+    });
+    this._onArenaTokenConditionsUpdate(data);
   }
 
   /* ═══════════════════════════════════════════════════════════════
@@ -569,5 +674,167 @@ export class TomSocketHandler {
       data
     });
     this._onArenaAssetRemove(data);
+  }
+
+  /* ═══════════════════════════════════════════════════════════════
+     SCENE FADE TRANSITION (Quick scene switch with fade effect)
+     ═══════════════════════════════════════════════════════════════ */
+
+  /**
+   * Handle scene fade transition on all clients
+   * Creates a fade overlay, waits, then switches to the new scene
+   */
+  static _onSceneFadeTransition(data) {
+    const { sceneId } = data;
+
+    // Create fade overlay
+    const overlay = document.createElement("div");
+    overlay.className = "tom-scene-fade-overlay";
+    document.body.appendChild(overlay);
+
+    // Trigger fade in
+    requestAnimationFrame(() => {
+      overlay.classList.add("active");
+    });
+
+    // Wait for fade in to complete, then switch scene
+    setTimeout(() => {
+      // Clear any active video overlay when changing scenes
+      this._removeOverlayElement();
+      Store.currentOverlay = null;
+
+      // Switch to the new scene
+      Store.setActiveScene(sceneId);
+      TomPlayerView.activate(sceneId);
+
+      // Update tray scene switcher for GM
+      if (game.user.isGM) {
+        this._updateTraySceneSwitcher(sceneId);
+      }
+
+      // Wait a moment for the new scene to render, then fade out
+      setTimeout(() => {
+        overlay.classList.remove("active");
+
+        // Remove overlay after fade out completes
+        setTimeout(() => {
+          overlay.remove();
+        }, 400);
+      }, 100);
+    }, 400);
+  }
+
+  /**
+   * Emit scene fade transition to all clients (GM only)
+   * This broadcasts the fade effect and scene change to everyone
+   */
+  static emitSceneFadeTransition(sceneId) {
+    if (!game.user.isGM) return;
+
+    console.warn(`${CONFIG.MODULE_NAME} | Socket Message Emitted: scene-fade-transition`, { sceneId });
+    game.socket.emit(CONFIG.SOCKET_NAME, {
+      type: 'scene-fade-transition',
+      data: { sceneId }
+    });
+    // Also trigger locally
+    this._onSceneFadeTransition({ sceneId });
+  }
+
+  /* ═══════════════════════════════════════════════════════════════
+     OVERLAY HANDLERS (Video overlays on broadcast)
+     ═══════════════════════════════════════════════════════════════ */
+
+  /**
+   * Handle overlay set on all clients
+   * Creates a video overlay above the scene but below tokens
+   */
+  static _onOverlaySet(data) {
+    const { overlayPath } = data;
+
+    // Remove existing overlay if any
+    this._removeOverlayElement();
+
+    // Get the player view container
+    const playerView = document.querySelector(".tom-player-view");
+    if (!playerView) return;
+
+    // Determine video type from file extension
+    const extension = overlayPath.split('.').pop().toLowerCase();
+    const mimeType = extension === 'mp4' ? 'video/mp4' : 'video/webm';
+    const isMp4 = extension === 'mp4';
+
+    // Create overlay container
+    // Add 'blend-mode' class for mp4 files (no alpha support, need screen blend)
+    const overlay = document.createElement("div");
+    overlay.className = `tom-video-overlay ${isMp4 ? 'blend-mode' : ''}`;
+    overlay.innerHTML = `
+      <video loop autoplay muted playsinline disablepictureinpicture>
+        <source src="${overlayPath}" type="${mimeType}">
+      </video>
+    `;
+
+    // Insert after the overlay layer but before arena/cast elements
+    const arenaRings = playerView.querySelector(".tom-arena-rings");
+    const arenaAssets = playerView.querySelector(".tom-arena-assets");
+    const castLayer = playerView.querySelector(".tom-pv-cast");
+
+    if (arenaAssets) {
+      playerView.insertBefore(overlay, arenaAssets);
+    } else if (arenaRings) {
+      playerView.insertBefore(overlay, arenaRings);
+    } else if (castLayer) {
+      playerView.insertBefore(overlay, castLayer);
+    } else {
+      playerView.appendChild(overlay);
+    }
+
+    // Store current overlay path
+    Store.currentOverlay = overlayPath;
+  }
+
+  /**
+   * Handle overlay clear on all clients
+   */
+  static _onOverlayClear() {
+    this._removeOverlayElement();
+    Store.currentOverlay = null;
+  }
+
+  /**
+   * Remove the overlay DOM element
+   */
+  static _removeOverlayElement() {
+    const existing = document.querySelector(".tom-video-overlay");
+    if (existing) existing.remove();
+  }
+
+  /**
+   * Emit overlay set to all clients (GM only)
+   */
+  static emitOverlaySet(overlayPath) {
+    if (!game.user.isGM) return;
+
+    console.warn(`${CONFIG.MODULE_NAME} | Socket Message Emitted: overlay-set`, { overlayPath });
+    game.socket.emit(CONFIG.SOCKET_NAME, {
+      type: 'overlay-set',
+      data: { overlayPath }
+    });
+    // Also trigger locally
+    this._onOverlaySet({ overlayPath });
+  }
+
+  /**
+   * Emit overlay clear to all clients (GM only)
+   */
+  static emitOverlayClear() {
+    if (!game.user.isGM) return;
+
+    console.warn(`${CONFIG.MODULE_NAME} | Socket Message Emitted: overlay-clear`);
+    game.socket.emit(CONFIG.SOCKET_NAME, {
+      type: 'overlay-clear',
+      data: {}
+    });
+    // Also trigger locally
+    this._onOverlayClear();
   }
 }

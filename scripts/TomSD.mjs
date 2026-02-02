@@ -23,6 +23,38 @@ export class TomSD {
 
     // Register Hooks
     Hooks.on('ready', this._onReady.bind(this));
+
+    // Listen for actor HP changes to update arena tokens
+    Hooks.on('updateActor', this._onActorUpdate.bind(this));
+  }
+
+  /**
+   * Handle actor updates to sync arena token HP display
+   */
+  static _onActorUpdate(actor, changes, options, userId) {
+    // Only process HP changes
+    const hpChanged = foundry.utils.hasProperty(changes, 'system.attributes.hp.value') ||
+                      foundry.utils.hasProperty(changes, 'system.hp.value');
+    if (!hpChanged) return;
+
+    // Import and update arena tokens that use this actor
+    import('./apps/TomPlayerView.mjs').then(({ TomPlayerView }) => {
+      if (!TomPlayerView._instance) return;
+
+      const arenaTokens = TomPlayerView._instance.uiState.arenaTokens;
+      for (const [tokenId, token] of arenaTokens) {
+        if (token.actorId === actor.id || token.ownerId === actor.id) {
+          // Get new HP values
+          const hp = actor.system?.attributes?.hp?.value ?? actor.system?.hp?.value ?? 0;
+          const maxHp = actor.system?.attributes?.hp?.max ?? actor.system?.hp?.max ?? 0;
+
+          // Update token state and display
+          token.currentHp = hp;
+          token.maxHp = maxHp;
+          TomPlayerView.updateArenaTokenHp(tokenId, hp, maxHp);
+        }
+      }
+    });
   }
 
   static _registerHandlebarsHelpers() {

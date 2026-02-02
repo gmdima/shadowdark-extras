@@ -622,6 +622,12 @@ export class TomPlayerView extends HandlebarsApplicationMixin(ApplicationV2) {
 
       const onMouseDown = (e) => {
         if (e.button !== 0) return; // Left click only
+
+        // Don't start drag if clicking on interactive elements (HP badge, conditions button, etc.)
+        if (e.target.closest('.tom-arena-token-hp, .tom-arena-token-ac, .tom-arena-conditions-btn')) {
+          return;
+        }
+
         dragState.isDragging = true;
         token.classList.add('dragging');
 
@@ -833,12 +839,43 @@ export class TomPlayerView extends HandlebarsApplicationMixin(ApplicationV2) {
       castOnlyMode: this.uiState.castOnlyMode,
       // Arena Mode flag
       isArena: scene?.isArena || false,
-      // Arena tokens (with computed isNPC flag, case-insensitive)
+      // Arena tokens (with computed isNPC flag, ownership, and stats)
       arenaTokens: Array.from(this.uiState.arenaTokens.values()).map(token => {
         const typeLower = token.actorType?.toLowerCase() || '';
+        const isNPC = token.actorType && typeLower !== 'player' && typeLower !== 'character';
+
+        // Check ownership
+        const isUserOwner = game.user.id === token.ownerId;
+        const ownerActor = game.actors.get(token.ownerId);
+        const isActorOwner = ownerActor ? ownerActor.isOwner : false;
+        const isOwner = isUserOwner || isActorOwner || game.user.isGM;
+
+        // Get actor stats if owner
+        let ac = '?';
+        let hpValue = 0;
+        let hpMax = 0;
+        if (isOwner) {
+          const actor = game.actors.get(token.actorId) || ownerActor;
+          if (actor) {
+            ac = actor.system?.attributes?.ac?.value ?? actor.system?.ac?.value ?? '?';
+            // Use token state HP if available (for NPCs with modified HP), otherwise actor HP
+            if (token.currentHp !== undefined) {
+              hpValue = token.currentHp;
+              hpMax = token.maxHp ?? actor.system?.attributes?.hp?.max ?? actor.system?.hp?.max ?? 0;
+            } else {
+              hpValue = actor.system?.attributes?.hp?.value ?? actor.system?.hp?.value ?? 0;
+              hpMax = actor.system?.attributes?.hp?.max ?? actor.system?.hp?.max ?? 0;
+            }
+          }
+        }
+
         return {
           ...token,
-          isNPC: token.actorType && typeLower !== 'player' && typeLower !== 'character'
+          isNPC,
+          isOwner,
+          ac,
+          hpValue,
+          hpMax
         };
       }),
       // Arena assets (GM-only)
@@ -1573,35 +1610,285 @@ export class TomPlayerView extends HandlebarsApplicationMixin(ApplicationV2) {
       playerView.appendChild(tokensContainer);
     }
 
-    const { tokenId, actorName, actorType, image, x, y, ownerId } = data;
+    const { tokenId, actorId, actorName, actorType, image, x, y, ownerId } = data;
     // Check ownership - can be user ID or actor ID
     const isUserOwner = game.user.id === ownerId;
-    const actor = game.actors.get(ownerId);
-    const isActorOwner = actor ? actor.isOwner : false;
+    const ownerActor = game.actors.get(ownerId);
+    const isActorOwner = ownerActor ? ownerActor.isOwner : false;
     const isOwner = isUserOwner || isActorOwner || game.user.isGM;
+
+    // Get the actual actor for stats (may be different from ownerActor)
+    const actor = game.actors.get(actorId) || ownerActor;
 
     // Determine if NPC for styling (case-insensitive check)
     const actorTypeLower = actorType?.toLowerCase() || '';
     const isNPC = actorType && actorTypeLower !== 'player' && actorTypeLower !== 'character';
 
+    // Get AC and HP - use token state if available (for NPCs with modified HP), otherwise from actor
+    const tokenState = this._instance?.uiState.arenaTokens.get(tokenId);
+    let ac = '?';
+    let hpValue = 0;
+    let hpMax = 0;
+
+    if (actor) {
+      ac = actor.system?.attributes?.ac?.value ?? actor.system?.ac?.value ?? '?';
+      // For NPCs, use token state HP if set, otherwise actor HP
+      if (isNPC && tokenState?.currentHp !== undefined) {
+        hpValue = tokenState.currentHp;
+        hpMax = tokenState.maxHp ?? actor.system?.attributes?.hp?.max ?? actor.system?.hp?.max ?? 0;
+      } else {
+        hpValue = actor.system?.attributes?.hp?.value ?? actor.system?.hp?.value ?? 0;
+        hpMax = actor.system?.attributes?.hp?.max ?? actor.system?.hp?.max ?? 0;
+      }
+    }
+
+    // Store HP in token state if not already there
+    if (tokenState && tokenState.currentHp === undefined) {
+      tokenState.currentHp = hpValue;
+      tokenState.maxHp = hpMax;
+    }
+
+    // Build badges (only show to owners)
+    let acBadge = '';
+    let hpBadge = '';
+    if (isOwner) {
+      acBadge = `<div class="tom-arena-token-ac">${ac}</div>`;
+      hpBadge = `<div class="tom-arena-token-hp" data-clickable="true">${hpValue}/${hpMax}</div>`;
+    }
+
+    // Get active conditions from token state
+    const conditions = tokenState?.conditions || [];
+    const conditionsHtml = conditions.map(c => {
+      const condDef = this.ARENA_CONDITIONS.find(def => def.id === c);
+      if (!condDef) return '';
+      return `<div class="tom-arena-condition" data-condition="${c}" title="${condDef.name}">
+        ${condDef.icon.startsWith('fa') ? `<i class="${condDef.icon}"></i>` : `<img src="${condDef.icon}">`}
+      </div>`;
+    }).join('');
+
+    // GM conditions button
+    const gmConditionsBtn = game.user.isGM ?
+      `<button class="tom-arena-conditions-btn" title="Manage Conditions"><i class="fas fa-heart-crack"></i></button>` : '';
+
     const tokenEl = document.createElement('div');
     tokenEl.className = `tom-arena-token ${isOwner ? 'draggable' : ''} ${isNPC ? 'npc' : ''}`;
     tokenEl.dataset.tokenId = tokenId;
     tokenEl.dataset.ownerId = ownerId;
+    tokenEl.dataset.actorId = actorId || '';
     tokenEl.dataset.actorType = actorType || '';
+    tokenEl.dataset.isNpc = isNPC ? 'true' : 'false';
     tokenEl.style.left = `${x}%`;
     tokenEl.style.top = `${y}%`;
     tokenEl.innerHTML = `
       <div class="tom-arena-token-portrait">
         <img src="${image}" alt="${actorName}">
+        <div class="tom-arena-conditions">${conditionsHtml}</div>
+        ${gmConditionsBtn}
       </div>
-      <div class="tom-arena-token-name">${actorName}</div>
+      <div class="tom-arena-token-info">
+        ${acBadge}
+        <div class="tom-arena-token-name">${actorName}</div>
+        ${hpBadge}
+      </div>
     `;
 
     tokensContainer.appendChild(tokenEl);
 
+    // Setup HP click handler for owners
+    if (isOwner) {
+      const hpEl = tokenEl.querySelector('.tom-arena-token-hp');
+      if (hpEl) {
+        hpEl.addEventListener('click', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          this._showHpEditDialog(tokenId, actorId, isNPC, hpValue, hpMax, actorName);
+        });
+      }
+    }
+
+    // Setup conditions button for GM
+    if (game.user.isGM) {
+      const condBtn = tokenEl.querySelector('.tom-arena-conditions-btn');
+      if (condBtn) {
+        condBtn.addEventListener('click', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          this._showConditionsPicker(tokenId, actorName, conditions, tokenEl);
+        });
+      }
+    }
+
     // Setup dragging for this token
     this._instance._setupArenaTokenDragging();
+  }
+
+  /**
+   * Available conditions for arena tokens
+   */
+  static ARENA_CONDITIONS = [
+    { id: 'dead', name: 'Dead', icon: 'fas fa-skull' },
+    { id: 'unconscious', name: 'Unconscious', icon: 'fas fa-bed' },
+    { id: 'paralyzed', name: 'Paralyzed', icon: 'fas fa-bolt' },
+    { id: 'poisoned', name: 'Poisoned', icon: 'fas fa-skull-crossbones' },
+    { id: 'stunned', name: 'Stunned', icon: 'fas fa-stars' },
+    { id: 'blinded', name: 'Blinded', icon: 'fas fa-eye-slash' },
+    { id: 'deafened', name: 'Deafened', icon: 'fas fa-ear-deaf' },
+    { id: 'frightened', name: 'Frightened', icon: 'fas fa-ghost' },
+    { id: 'charmed', name: 'Charmed', icon: 'fas fa-heart' },
+    { id: 'restrained', name: 'Restrained', icon: 'fas fa-link' },
+    { id: 'prone', name: 'Prone', icon: 'fas fa-person-falling' },
+    { id: 'invisible', name: 'Invisible', icon: 'fas fa-eye-low-vision' },
+    { id: 'petrified', name: 'Petrified', icon: 'fas fa-gem' },
+    { id: 'burning', name: 'Burning', icon: 'fas fa-fire' },
+    { id: 'frozen', name: 'Frozen', icon: 'fas fa-snowflake' },
+    { id: 'bleeding', name: 'Bleeding', icon: 'fas fa-droplet' },
+    { id: 'concentrating', name: 'Concentrating', icon: 'fas fa-brain' },
+    { id: 'blessed', name: 'Blessed', icon: 'fas fa-hand-sparkles' },
+    { id: 'cursed', name: 'Cursed', icon: 'fas fa-hand-middle-finger' },
+    { id: 'hasted', name: 'Hasted', icon: 'fas fa-wind' },
+    { id: 'slowed', name: 'Slowed', icon: 'fas fa-hourglass-half' },
+    { id: 'silenced', name: 'Silenced', icon: 'fas fa-volume-xmark' },
+    { id: 'exhausted', name: 'Exhausted', icon: 'fas fa-face-tired' },
+    { id: 'marked', name: 'Marked', icon: 'fas fa-crosshairs' }
+  ];
+
+  /**
+   * Show conditions picker for a token (GM only)
+   */
+  static _showConditionsPicker(tokenId, actorName, activeConditions, tokenEl) {
+    // Remove any existing picker
+    document.querySelector('.tom-conditions-picker')?.remove();
+
+    const picker = document.createElement('div');
+    picker.className = 'tom-conditions-picker';
+
+    // Header
+    const header = document.createElement('div');
+    header.className = 'tom-conditions-header';
+    header.innerHTML = `<span><i class="fas fa-heart-crack"></i> ${actorName}</span>
+      <button class="tom-conditions-close"><i class="fas fa-times"></i></button>`;
+    picker.appendChild(header);
+
+    // Conditions grid
+    const grid = document.createElement('div');
+    grid.className = 'tom-conditions-grid';
+
+    for (const cond of this.ARENA_CONDITIONS) {
+      const isActive = activeConditions.includes(cond.id);
+      const item = document.createElement('div');
+      item.className = `tom-condition-item ${isActive ? 'active' : ''}`;
+      item.dataset.conditionId = cond.id;
+      item.title = cond.name;
+      item.innerHTML = `
+        ${cond.icon.startsWith('fa') ? `<i class="${cond.icon}"></i>` : `<img src="${cond.icon}">`}
+        <span>${cond.name}</span>
+      `;
+
+      item.addEventListener('click', async () => {
+        // Check current state dynamically (not captured isActive)
+        const currentlyActive = item.classList.contains('active');
+
+        let newConditions;
+        if (currentlyActive) {
+          // Remove condition
+          newConditions = activeConditions.filter(c => c !== cond.id);
+          const idx = activeConditions.indexOf(cond.id);
+          if (idx > -1) activeConditions.splice(idx, 1);
+        } else {
+          // Add condition
+          newConditions = [...activeConditions, cond.id];
+          activeConditions.push(cond.id);
+        }
+
+        // Update picker UI
+        item.classList.toggle('active');
+
+        // Update via socket
+        const { TomSocketHandler } = await import('../data/TomSocketHandler.mjs');
+        TomSocketHandler.emitArenaTokenConditionsUpdate({ tokenId, conditions: newConditions });
+      });
+
+      grid.appendChild(item);
+    }
+
+    picker.appendChild(grid);
+
+    // Position near the token
+    const tokenRect = tokenEl.getBoundingClientRect();
+    picker.style.position = 'fixed';
+    picker.style.left = `${tokenRect.right + 10}px`;
+    picker.style.top = `${tokenRect.top}px`;
+
+    // Adjust if off-screen
+    document.body.appendChild(picker);
+    const pickerRect = picker.getBoundingClientRect();
+    if (pickerRect.right > window.innerWidth) {
+      picker.style.left = `${tokenRect.left - pickerRect.width - 10}px`;
+    }
+    if (pickerRect.bottom > window.innerHeight) {
+      picker.style.top = `${window.innerHeight - pickerRect.height - 10}px`;
+    }
+
+    // Close button
+    header.querySelector('.tom-conditions-close').addEventListener('click', () => picker.remove());
+
+    // Close on click outside
+    const closeHandler = (e) => {
+      if (!picker.contains(e.target) && !e.target.closest('.tom-arena-conditions-btn')) {
+        picker.remove();
+        document.removeEventListener('click', closeHandler);
+      }
+    };
+    setTimeout(() => document.addEventListener('click', closeHandler), 10);
+  }
+
+  /**
+   * Show dialog to edit token HP
+   */
+  static _showHpEditDialog(tokenId, actorId, isNPC, currentHp, maxHp, actorName) {
+    new Dialog({
+      title: `Edit HP - ${actorName}`,
+      content: `
+        <form class="tom-hp-edit-dialog">
+          <div class="form-group">
+            <label>Current HP</label>
+            <input type="number" name="hp" value="${currentHp}" min="0" max="${maxHp}" autofocus>
+            <span class="tom-hp-max">/ ${maxHp}</span>
+          </div>
+        </form>
+      `,
+      buttons: {
+        save: {
+          icon: '<i class="fas fa-check"></i>',
+          label: "Save",
+          callback: async (html) => {
+            const newHp = parseInt(html.find('input[name="hp"]').val()) || 0;
+            const clampedHp = Math.max(0, Math.min(newHp, maxHp));
+
+            // Import socket handler
+            const { TomSocketHandler } = await import('../data/TomSocketHandler.mjs');
+
+            if (isNPC) {
+              // For NPCs, update token state and broadcast
+              TomSocketHandler.emitArenaTokenHpUpdate({ tokenId, hp: clampedHp, maxHp });
+            } else {
+              // For players, update the actor directly
+              const actor = game.actors.get(actorId);
+              if (actor) {
+                await actor.update({ 'system.attributes.hp.value': clampedHp });
+                // Broadcast token HP update to sync display
+                TomSocketHandler.emitArenaTokenHpUpdate({ tokenId, hp: clampedHp, maxHp });
+              }
+            }
+          }
+        },
+        cancel: {
+          icon: '<i class="fas fa-times"></i>',
+          label: "Cancel"
+        }
+      },
+      default: "save"
+    }).render(true);
   }
 
   /**
@@ -1645,6 +1932,64 @@ export class TomPlayerView extends HandlebarsApplicationMixin(ApplicationV2) {
     if (tokenEl) {
       tokenEl.classList.add('removing');
       setTimeout(() => tokenEl.remove(), 300);
+    }
+  }
+
+  /**
+   * Update an arena token's HP display
+   */
+  static updateArenaTokenHp(tokenId, hp, maxHp) {
+    if (!this._instance) return;
+
+    // Update state
+    const token = this._instance.uiState.arenaTokens.get(tokenId);
+    if (token) {
+      token.currentHp = hp;
+      token.maxHp = maxHp;
+    }
+
+    // Update DOM
+    const view = this._instance.element;
+    if (!view) return;
+
+    const tokenEl = view.querySelector(`.tom-arena-token[data-token-id="${tokenId}"]`);
+    if (tokenEl) {
+      const hpEl = tokenEl.querySelector('.tom-arena-token-hp');
+      if (hpEl) {
+        hpEl.textContent = `${hp}/${maxHp}`;
+      }
+    }
+  }
+
+  /**
+   * Update an arena token's conditions display
+   */
+  static updateArenaTokenConditions(tokenId, conditions) {
+    if (!this._instance) return;
+
+    // Update state
+    const token = this._instance.uiState.arenaTokens.get(tokenId);
+    if (token) {
+      token.conditions = conditions;
+    }
+
+    // Update DOM
+    const view = this._instance.element;
+    if (!view) return;
+
+    const tokenEl = view.querySelector(`.tom-arena-token[data-token-id="${tokenId}"]`);
+    if (tokenEl) {
+      const conditionsContainer = tokenEl.querySelector('.tom-arena-conditions');
+      if (conditionsContainer) {
+        const conditionsHtml = conditions.map(c => {
+          const condDef = this.ARENA_CONDITIONS.find(def => def.id === c);
+          if (!condDef) return '';
+          return `<div class="tom-arena-condition" data-condition="${c}" title="${condDef.name}">
+            ${condDef.icon.startsWith('fa') ? `<i class="${condDef.icon}"></i>` : `<img src="${condDef.icon}">`}
+          </div>`;
+        }).join('');
+        conditionsContainer.innerHTML = conditionsHtml;
+      }
     }
   }
 

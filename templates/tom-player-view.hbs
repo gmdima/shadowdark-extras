@@ -40,15 +40,24 @@
   <!-- Arena Tokens Container -->
   <div class="tom-arena-tokens">
     {{#each arenaTokens}}
-      <div class="tom-arena-token {{#if isNPC}}npc{{/if}}"
+      <div class="tom-arena-token {{#if isNPC}}npc{{/if}} {{#if isOwner}}draggable{{/if}}"
            data-token-id="{{tokenId}}"
            data-owner-id="{{ownerId}}"
+           data-actor-id="{{actorId}}"
            data-actor-type="{{actorType}}"
            style="left: {{x}}%; top: {{y}}%;">
         <div class="tom-arena-token-portrait">
           <img src="{{image}}" alt="{{actorName}}">
         </div>
-        <div class="tom-arena-token-name">{{actorName}}</div>
+        <div class="tom-arena-token-info">
+          {{#if isOwner}}
+            <div class="tom-arena-token-ac">{{ac}}</div>
+          {{/if}}
+          <div class="tom-arena-token-name">{{actorName}}</div>
+          {{#if isOwner}}
+            <div class="tom-arena-token-hp">{{hpValue}}/{{hpMax}}</div>
+          {{/if}}
+        </div>
       </div>
     {{/each}}
   </div>

@@ -1188,3 +1188,527 @@ body.sdx-tray-enabled #camera-views.vertical.left {
     background: rgba(0, 0, 0, 0.4);
     border-radius: 0 0 4px 4px;
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   TOM SCENE SWITCHER (Quick broadcast switching)
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Glowing button when broadcasting */
+.tom-scene-switcher-btn {
+    animation: tomSwitcherGlow 2s ease-in-out infinite;
+    position: relative;
+}
+
+.tom-scene-switcher-btn::after {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    border-radius: 4px;
+    background: linear-gradient(45deg, #f59e0b, #fbbf24, #d97706, #f59e0b);
+    background-size: 300% 300%;
+    animation: tomSwitcherBorderGlow 3s ease infinite;
+    z-index: -1;
+    opacity: 0.7;
+}
+
+@keyframes tomSwitcherGlow {
+    0%, 100% {
+        box-shadow: 0 0 5px rgba(251, 191, 36, 0.5),
+                    0 0 10px rgba(251, 191, 36, 0.3);
+    }
+    50% {
+        box-shadow: 0 0 10px rgba(251, 191, 36, 0.8),
+                    0 0 20px rgba(251, 191, 36, 0.5),
+                    0 0 30px rgba(251, 191, 36, 0.3);
+    }
+}
+
+@keyframes tomSwitcherBorderGlow {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+/* Scene Switcher Panel */
+.tom-scene-switcher-panel {
+    background: rgba(20, 20, 20, 0.98);
+    border: 1px solid rgba(251, 191, 36, 0.5);
+    border-radius: 8px;
+    padding: 8px;
+    min-width: 280px;
+    max-width: 350px;
+    max-height: 400px;
+    overflow-y: auto;
+    z-index: 1000;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.8),
+                0 0 15px rgba(251, 191, 36, 0.2);
+    animation: tomPanelSlideIn 0.2s ease-out;
+}
+
+@keyframes tomPanelSlideIn {
+    from {
+        opacity: 0;
+        transform: translateX(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* Stop Broadcasting Button */
+.tom-switcher-stop-btn {
+    width: 100%;
+    padding: 8px 12px;
+    margin-bottom: 8px;
+    background: rgba(220, 38, 38, 0.2);
+    border: 1px solid rgba(220, 38, 38, 0.5);
+    border-radius: 6px;
+    color: #ef4444;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+
+.tom-switcher-stop-btn:hover {
+    background: rgba(220, 38, 38, 0.4);
+    border-color: rgba(239, 68, 68, 0.8);
+    color: #fca5a5;
+    box-shadow: 0 0 10px rgba(220, 38, 38, 0.3);
+}
+
+.tom-switcher-stop-btn i {
+    font-size: 10px;
+}
+
+.tom-switcher-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.tom-switcher-scene {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    background: rgba(40, 40, 40, 0.6);
+    border: 1px solid transparent;
+}
+
+.tom-switcher-scene:hover {
+    background: rgba(60, 60, 60, 0.8);
+    border-color: rgba(251, 191, 36, 0.3);
+}
+
+.tom-switcher-scene.active {
+    background: rgba(251, 191, 36, 0.15);
+    border-color: rgba(251, 191, 36, 0.6);
+    box-shadow: 0 0 10px rgba(251, 191, 36, 0.2);
+}
+
+.tom-switcher-thumb {
+    width: 80px;
+    height: 45px;
+    border-radius: 4px;
+    background-size: cover;
+    background-position: center;
+    background-color: rgba(30, 30, 30, 0.8);
+    flex-shrink: 0;
+    position: relative;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.tom-switcher-scene.active .tom-switcher-thumb {
+    border-color: rgba(251, 191, 36, 0.5);
+}
+
+.tom-switcher-playing {
+    position: absolute;
+    bottom: 4px;
+    right: 4px;
+    color: #22c55e;
+    font-size: 10px;
+    background: rgba(0, 0, 0, 0.7);
+    padding: 2px 4px;
+    border-radius: 3px;
+    text-shadow: 0 0 5px rgba(34, 197, 94, 0.8);
+}
+
+.tom-switcher-name {
+    flex: 1;
+    font-size: 13px;
+    font-weight: 500;
+    color: #e5e5e5;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.tom-switcher-scene.active .tom-switcher-name {
+    color: #fbbf24;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   TOM CAST MANAGER (Add/remove characters from scene)
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Glowing button similar to scene switcher */
+.tom-cast-manager-btn {
+    animation: tomSwitcherGlow 2s ease-in-out infinite;
+    position: relative;
+}
+
+.tom-cast-manager-btn::after {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    border-radius: 4px;
+    background: linear-gradient(45deg, #f59e0b, #fbbf24, #d97706, #f59e0b);
+    background-size: 300% 300%;
+    animation: tomSwitcherBorderGlow 3s ease infinite;
+    z-index: -1;
+    opacity: 0.7;
+}
+
+/* Cast Manager Panel */
+.tom-cast-manager-panel {
+    background: rgba(20, 20, 20, 0.98);
+    border: 1px solid rgba(251, 191, 36, 0.5);
+    border-radius: 8px;
+    padding: 0;
+    min-width: 260px;
+    max-width: 320px;
+    max-height: 450px;
+    overflow: hidden;
+    z-index: 1000;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.8),
+                0 0 15px rgba(251, 191, 36, 0.2);
+    animation: tomPanelSlideIn 0.2s ease-out;
+    display: flex;
+    flex-direction: column;
+}
+
+.tom-cast-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 12px;
+    background: rgba(251, 191, 36, 0.1);
+    border-bottom: 1px solid rgba(251, 191, 36, 0.3);
+    color: #fbbf24;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.tom-cast-header i {
+    margin-right: 6px;
+}
+
+.tom-cast-scene-name {
+    font-size: 11px;
+    font-weight: 400;
+    color: #a3a3a3;
+    max-width: 120px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.tom-cast-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 8px;
+    overflow-y: auto;
+    max-height: 380px;
+}
+
+.tom-cast-character {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 8px;
+    border-radius: 6px;
+    background: rgba(40, 40, 40, 0.6);
+    border: 1px solid transparent;
+    transition: all 0.15s ease;
+}
+
+.tom-cast-character:hover {
+    background: rgba(60, 60, 60, 0.8);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Characters in the cast get gold highlight */
+.tom-cast-character.in-cast {
+    background: rgba(251, 191, 36, 0.15);
+    border-color: rgba(251, 191, 36, 0.5);
+    box-shadow: 0 0 8px rgba(251, 191, 36, 0.15);
+}
+
+.tom-cast-character.in-cast:hover {
+    background: rgba(251, 191, 36, 0.25);
+    border-color: rgba(251, 191, 36, 0.7);
+}
+
+.tom-cast-portrait {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background-size: cover;
+    background-position: center;
+    background-color: rgba(30, 30, 30, 0.8);
+    flex-shrink: 0;
+    border: 2px solid rgba(80, 80, 80, 0.5);
+}
+
+.tom-cast-character.in-cast .tom-cast-portrait {
+    border-color: rgba(251, 191, 36, 0.6);
+}
+
+.tom-cast-name {
+    flex: 1;
+    font-size: 13px;
+    font-weight: 500;
+    color: #d4d4d4;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.tom-cast-character.in-cast .tom-cast-name {
+    color: #fbbf24;
+}
+
+.tom-cast-toggle {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s ease;
+    font-size: 11px;
+}
+
+.tom-cast-toggle.add {
+    background: rgba(34, 197, 94, 0.2);
+    color: #22c55e;
+    border: 1px solid rgba(34, 197, 94, 0.4);
+}
+
+.tom-cast-toggle.add:hover {
+    background: rgba(34, 197, 94, 0.4);
+    color: #4ade80;
+    box-shadow: 0 0 8px rgba(34, 197, 94, 0.3);
+}
+
+.tom-cast-toggle.remove {
+    background: rgba(239, 68, 68, 0.2);
+    color: #ef4444;
+    border: 1px solid rgba(239, 68, 68, 0.4);
+}
+
+.tom-cast-toggle.remove:hover {
+    background: rgba(239, 68, 68, 0.4);
+    color: #f87171;
+    box-shadow: 0 0 8px rgba(239, 68, 68, 0.3);
+}
+
+.tom-cast-empty {
+    text-align: center;
+    padding: 20px;
+    color: #737373;
+    font-size: 12px;
+    font-style: italic;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   TOM OVERLAY MANAGER (Video overlays on broadcast)
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Glowing button similar to scene switcher */
+.tom-overlay-manager-btn {
+    animation: tomSwitcherGlow 2s ease-in-out infinite;
+    position: relative;
+}
+
+.tom-overlay-manager-btn::after {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    border-radius: 4px;
+    background: linear-gradient(45deg, #f59e0b, #fbbf24, #d97706, #f59e0b);
+    background-size: 300% 300%;
+    animation: tomSwitcherBorderGlow 3s ease infinite;
+    z-index: -1;
+    opacity: 0.7;
+}
+
+/* Overlay Manager Panel */
+.tom-overlay-manager-panel {
+    background: rgba(20, 20, 20, 0.98);
+    border: 1px solid rgba(251, 191, 36, 0.5);
+    border-radius: 8px;
+    padding: 0;
+    min-width: 200px;
+    max-width: 280px;
+    max-height: 400px;
+    overflow: hidden;
+    z-index: 1000;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.8),
+                0 0 15px rgba(251, 191, 36, 0.2);
+    animation: tomPanelSlideIn 0.2s ease-out;
+    display: flex;
+    flex-direction: column;
+}
+
+.tom-overlay-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 12px;
+    background: rgba(251, 191, 36, 0.1);
+    border-bottom: 1px solid rgba(251, 191, 36, 0.3);
+    color: #fbbf24;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.tom-overlay-header i {
+    margin-right: 6px;
+}
+
+/* Clear Overlay Button */
+.tom-overlay-clear-btn {
+    margin: 8px;
+    padding: 8px 12px;
+    background: rgba(239, 68, 68, 0.15);
+    border: 1px solid rgba(239, 68, 68, 0.4);
+    border-radius: 6px;
+    color: #ef4444;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+
+.tom-overlay-clear-btn:hover:not(.disabled) {
+    background: rgba(239, 68, 68, 0.3);
+    border-color: rgba(239, 68, 68, 0.7);
+    color: #fca5a5;
+}
+
+.tom-overlay-clear-btn.disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.tom-overlay-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 0 8px 8px 8px;
+    overflow-y: auto;
+}
+
+.tom-overlay-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 10px;
+    border-radius: 6px;
+    background: rgba(40, 40, 40, 0.6);
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    position: relative;
+}
+
+.tom-overlay-item:hover {
+    background: rgba(60, 60, 60, 0.8);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+.tom-overlay-item.active {
+    background: rgba(251, 191, 36, 0.15);
+    border-color: rgba(251, 191, 36, 0.5);
+    box-shadow: 0 0 8px rgba(251, 191, 36, 0.15);
+}
+
+.tom-overlay-item.active:hover {
+    background: rgba(251, 191, 36, 0.25);
+    border-color: rgba(251, 191, 36, 0.7);
+}
+
+.tom-overlay-preview {
+    width: 40px;
+    height: 40px;
+    border-radius: 6px;
+    background: linear-gradient(135deg, rgba(251, 191, 36, 0.2), rgba(217, 119, 6, 0.3));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(251, 191, 36, 0.7);
+    font-size: 14px;
+    flex-shrink: 0;
+}
+
+.tom-overlay-item.active .tom-overlay-preview {
+    background: linear-gradient(135deg, rgba(251, 191, 36, 0.4), rgba(217, 119, 6, 0.5));
+    color: #fbbf24;
+}
+
+.tom-overlay-name {
+    flex: 1;
+    font-size: 13px;
+    font-weight: 500;
+    color: #d4d4d4;
+}
+
+.tom-overlay-item.active .tom-overlay-name {
+    color: #fbbf24;
+}
+
+.tom-overlay-active-indicator {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: rgba(34, 197, 94, 0.2);
+    border: 1px solid rgba(34, 197, 94, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #22c55e;
+    font-size: 10px;
+}
+
+/* Scene Switch Fade Transition */
+.tom-scene-fade-overlay {
+    position: fixed;
+    inset: 0;
+    background: black;
+    opacity: 0;
+    z-index: 9999;
+    pointer-events: none;
+    transition: opacity 0.4s ease;
+}
+
+.tom-scene-fade-overlay.active {
+    opacity: 1;
+}

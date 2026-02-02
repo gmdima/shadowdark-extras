@@ -851,6 +851,7 @@ video.tom-pv-bg-media {
     opacity: 0;
     transform: scale(0.9);
   }
+
   to {
     opacity: 1;
     transform: scale(1);
@@ -858,19 +859,25 @@ video.tom-pv-bg-media {
 }
 
 @keyframes arenaRingPulse {
-  0%, 100% {
+
+  0%,
+  100% {
     stroke-opacity: 0.6;
   }
+
   50% {
     stroke-opacity: 1;
   }
 }
 
 @keyframes arenaCenterPulse {
-  0%, 100% {
+
+  0%,
+  100% {
     fill-opacity: 0.15;
     stroke-opacity: 0.8;
   }
+
   50% {
     fill-opacity: 0.3;
     stroke-opacity: 1;
@@ -895,7 +902,8 @@ video.tom-pv-bg-media {
   cursor: default;
   transition: transform 0.1s ease, box-shadow 0.2s ease;
   animation: tokenSpawn 0.3s ease-out;
-  z-index: 10; /* Base z-index, will be overridden by inline style when clicked */
+  z-index: 10;
+  /* Base z-index, will be overridden by inline style when clicked */
 }
 
 .tom-arena-token.draggable {
@@ -954,11 +962,19 @@ video.tom-pv-bg-media {
   object-position: top center;
 }
 
-.tom-arena-token-name {
+/* Token info bar (AC + Name + HP) */
+.tom-arena-token-info {
   position: absolute;
   bottom: -8px;
   left: 50%;
   transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+}
+
+.tom-arena-token-name {
   background: linear-gradient(135deg, #8b2929, #6b1f1f);
   color: #fff;
   font-family: var(--tom-font-display, 'Cinzel', serif);
@@ -966,10 +982,277 @@ video.tom-pv-bg-media {
   font-weight: 600;
   padding: 2px 8px;
   border-radius: 3px;
-  white-space: nowrap;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
   border: 1px solid #a33;
+}
+
+.tom-arena-token-ac,
+.tom-arena-token-hp {
+  font-family: var(--tom-font-display, 'Cinzel', serif);
+  font-size: 9px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 3px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.tom-arena-token-ac {
+  background: linear-gradient(135deg, #1e3a5f, #0f2744);
+  color: #60a5fa;
+  border: 1px solid #3b82f6;
+}
+
+.tom-arena-token-hp {
+  background: linear-gradient(135deg, #5b2160, #3d1341);
+  color: #e879f9;
+  border: 1px solid #c026d3;
+}
+
+.tom-arena-token-hp[data-clickable="true"] {
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.tom-arena-token-hp[data-clickable="true"]:hover {
+  background: linear-gradient(135deg, #7c2d83, #5b2160);
+  border-color: #d946ef;
+  transform: scale(1.1);
+  box-shadow: 0 2px 8px rgba(217, 70, 239, 0.4);
+}
+
+/* HP Edit Dialog */
+.tom-hp-edit-dialog {
+  padding: 10px 0;
+}
+
+.tom-hp-edit-dialog .form-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.tom-hp-edit-dialog input[type="number"] {
+  width: 80px;
+  text-align: center;
+  font-size: 1.2em;
+  font-weight: bold;
+}
+
+.tom-hp-edit-dialog .tom-hp-max {
+  font-size: 1.1em;
+  color: #999;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   ARENA TOKEN CONDITIONS
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Conditions overlay on token portrait */
+.tom-arena-conditions {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px;
+  justify-content: flex-start;
+  max-width: 70%;
+  pointer-events: none;
+  z-index: 5;
+}
+
+.tom-arena-condition {
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  color: #ef4444;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+}
+
+.tom-arena-condition i {
+  filter: drop-shadow(0 0 2px rgba(239, 68, 68, 0.5));
+}
+
+.tom-arena-condition img {
+  width: 14px;
+  height: 14px;
+  filter: brightness(0) saturate(100%) invert(35%) sepia(90%) saturate(2000%) hue-rotate(340deg);
+}
+
+/* GM Conditions Button */
+.tom-arena-conditions-btn {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.85);
+  border: 1px solid #ef4444;
+  color: #ef4444;
+  font-size: 11px;
+  cursor: pointer;
+  opacity: 0;
+  transition: all 0.2s ease;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tom-arena-token:hover .tom-arena-conditions-btn {
+  opacity: 1;
+}
+
+.tom-arena-conditions-btn:hover {
+  background: #ef4444;
+  color: white;
+  transform: scale(1.1);
+  box-shadow: 0 0 10px rgba(239, 68, 68, 0.5);
+}
+
+/* Conditions Picker Panel */
+.tom-conditions-picker {
+  position: fixed;
+  background: linear-gradient(135deg, #0a0a0a 0%, #151515 100%);
+  border: 1px solid #333;
+  border-radius: 12px;
+  padding: 0;
+  min-width: 280px;
+  max-width: 320px;
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.9),
+    0 0 20px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  z-index: 10000;
+  animation: conditionsPickerOpen 0.2s ease-out;
+}
+
+@keyframes conditionsPickerOpen {
+  from {
+    opacity: 0;
+    transform: scale(0.9) translateY(-10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.tom-conditions-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border-bottom: 1px solid #333;
+  border-radius: 10px 10px 0 0;
+}
+
+.tom-conditions-header span {
+  font-weight: bold;
+  color: #e5e5e5;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.tom-conditions-header i {
+  margin-right: 6px;
+  color: #fff;
+}
+
+.tom-conditions-close {
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  background: transparent;
+  border: none;
+  color: #6b7280;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  transition: all 0.15s ease;
+  padding: 0;
+}
+
+.tom-conditions-close:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.tom-conditions-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+  padding: 12px;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.tom-condition-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 4px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  gap: 4px;
+}
+
+.tom-condition-item i {
+  font-size: 16px;
+  color: #666;
+  transition: color 0.15s ease;
+}
+
+.tom-condition-item span {
+  font-size: 9px;
+  color: #888;
+  text-align: center;
+  line-height: 1.1;
+  transition: color 0.15s ease;
+}
+
+.tom-condition-item:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.tom-condition-item:hover i,
+.tom-condition-item:hover span {
+  color: #fff;
+}
+
+.tom-condition-item.active {
+  background: linear-gradient(135deg, #333 0%, #444 100%);
+  border-color: #fff;
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+}
+
+.tom-condition-item.active i,
+.tom-condition-item.active span {
+  color: #fff;
+  font-weight: bold;
+}
+
+.tom-condition-item.active i {
+  filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.5));
 }
 
 .tom-arena-token:hover .tom-arena-token-portrait {
@@ -1005,7 +1288,9 @@ video.tom-pv-bg-media {
 }
 
 @keyframes canSpawnPulse {
-  0%, 100% {
+
+  0%,
+  100% {
     box-shadow:
       0 0 20px rgba(0, 0, 0, 0.5),
       0 0 10px var(--tom-gold-glow),
@@ -1013,6 +1298,7 @@ video.tom-pv-bg-media {
       0 0 0 7px rgba(34, 197, 94, 0.4),
       0 0 12px rgba(34, 197, 94, 0.3);
   }
+
   50% {
     box-shadow:
       0 0 20px rgba(0, 0, 0, 0.5),
@@ -1028,6 +1314,7 @@ video.tom-pv-bg-media {
     opacity: 0;
     transform: translate(-50%, -50%) scale(0.5);
   }
+
   to {
     opacity: 1;
     transform: translate(-50%, -50%) scale(1);
@@ -1039,10 +1326,45 @@ video.tom-pv-bg-media {
     opacity: 1;
     transform: translate(-50%, -50%) scale(1);
   }
+
   to {
     opacity: 0;
     transform: translate(-50%, -50%) scale(0.5);
   }
+}
+
+/*
+   VIDEO OVERLAY (webm video effects above scene, below tokens)
+   */
+.tom-video-overlay {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 3;
+  pointer-events: none;
+  overflow: hidden;
+  transform-origin: center center;
+  transform: scale(1.02);
+  background: transparent;
+}
+
+.tom-video-overlay video {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none;
+}
+
+/* For mp4 files without alpha channel - use blend mode to make black transparent */
+.tom-video-overlay.blend-mode {
+  mix-blend-mode: screen;
+}
+
+.tom-video-overlay.blend-mode video {
+  mix-blend-mode: screen;
+  filter: contrast(1.5) brightness(1.2);
 }
 
 /*
@@ -1060,7 +1382,8 @@ video.tom-pv-bg-media {
   pointer-events: none;
   transform-origin: center center;
   animation: assetSpawn 0.3s ease-out;
-  z-index: 10; /* Base z-index, will be overridden by inline style when clicked */
+  z-index: 10;
+  /* Base z-index, will be overridden by inline style when clicked */
 }
 
 .tom-arena-asset.gm-control {
@@ -1095,6 +1418,7 @@ video.tom-pv-bg-media {
     opacity: 0;
     transform: translate(-50%, -50%) scale(0.5);
   }
+
   to {
     opacity: 1;
   }
@@ -1104,6 +1428,7 @@ video.tom-pv-bg-media {
   from {
     opacity: 1;
   }
+
   to {
     opacity: 0;
     transform: translate(-50%, -50%) scale(0.5);
@@ -2186,11 +2511,11 @@ video.tom-pv-bg-media {
   transition: all 0.2s ease;
 }
 
-.tom-toggle-label input:checked + .tom-toggle-switch {
+.tom-toggle-label input:checked+.tom-toggle-switch {
   background: var(--tom-gold-base);
 }
 
-.tom-toggle-label input:checked + .tom-toggle-switch::after {
+.tom-toggle-label input:checked+.tom-toggle-switch::after {
   left: 22px;
   background: var(--tom-bg-void);
 }

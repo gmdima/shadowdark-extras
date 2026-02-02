@@ -51,11 +51,17 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
         }
     };
 
+    // Static instance reference for easy access
+    static _instance = null;
+
     constructor(data = {}, options = {}) {
         super(options);
         this.trayData = data;
         this._isExpanded = false;
         this._pinSearchTerm = "";
+
+        // Store static reference
+        TrayApp._instance = this;
     }
 
     /**
@@ -73,6 +79,11 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
     toggleExpanded() {
         this._isExpanded = !this._isExpanded;
         this._applyExpandedState();
+
+        // Close Tom panels if open (they're positioned relative to handle)
+        document.querySelector(".tom-scene-switcher-panel")?.remove();
+        document.querySelector(".tom-cast-manager-panel")?.remove();
+        document.querySelector(".tom-overlay-manager-panel")?.remove();
     }
 
     /**
@@ -81,6 +92,11 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
     setExpanded(expanded) {
         this._isExpanded = expanded;
         this._applyExpandedState();
+
+        // Close Tom panels if open
+        document.querySelector(".tom-scene-switcher-panel")?.remove();
+        document.querySelector(".tom-cast-manager-panel")?.remove();
+        document.querySelector(".tom-overlay-manager-panel")?.remove();
     }
 
     /**
@@ -123,6 +139,11 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
 
         const elem = document.querySelector(".sdx-tray");
         if (!elem) return;
+
+        // Check for active Tom broadcast and show scene switcher if needed (GM only)
+        if (game.user.isGM) {
+            this._checkTomBroadcastState();
+        }
 
         // Toggle button - click to expand/collapse
         elem.querySelector(".tray-handle-button-toggle")?.addEventListener("click", (e) => {
@@ -677,7 +698,7 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
 
     /**
      * Filter the pin list based on search term
-     * @param {string} term 
+     * @param {string} term
      */
     _filterPins(term) {
         const elem = document.querySelector(".sdx-tray");
@@ -696,6 +717,609 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
                 entry.style.display = "none";
             }
         });
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+       TOM SCENE SWITCHER (Quick scene switching during broadcast)
+       ═══════════════════════════════════════════════════════════════ */
+
+    /**
+     * Check if Tom is broadcasting and show scene switcher if so
+     * Called on tray render to handle page refresh during broadcast
+     */
+    async _checkTomBroadcastState() {
+        try {
+            const { TomStore } = await import("./data/TomStore.mjs");
+            if (TomStore.activeSceneId) {
+                // Always try to show (showTomSceneSwitcher will clean up existing first)
+                this.showTomSceneSwitcher(TomStore.activeSceneId);
+                this.showTomCastManager();
+                this.showTomOverlayManager();
+            }
+        } catch (err) {
+            // TomStore may not be initialized yet, ignore
+        }
+    }
+
+    /**
+     * Show the Tom scene switcher button in the tray handle
+     * Called when broadcast starts
+     * @param {string} activeSceneId - Currently broadcasting scene ID
+     */
+    showTomSceneSwitcher(activeSceneId) {
+        if (!game.user.isGM) return;
+
+        const handle = document.querySelector(".tray-handle-content-container");
+        if (!handle) return;
+
+        // Remove existing if any
+        this.hideTomSceneSwitcher();
+
+        // Create the button
+        const btn = document.createElement("button");
+        btn.className = "tray-handle-button-tool tom-scene-switcher-btn";
+        btn.dataset.action = "tom-scene-switcher";
+        btn.title = "Quick Scene Switch";
+        btn.innerHTML = '<i class="fa-solid fa-images"></i>';
+
+        // Insert after the tom button
+        const tomBtn = handle.querySelector('[data-action="tom"]');
+        if (tomBtn) {
+            tomBtn.after(btn);
+        } else {
+            // Fallback: insert before carousing button or at the end of GM tools
+            const carousingBtn = handle.querySelector('[data-action="carousing"]');
+            if (carousingBtn) {
+                carousingBtn.before(btn);
+            } else {
+                handle.appendChild(btn);
+            }
+        }
+
+        // Store active scene ID
+        this._tomActiveSceneId = activeSceneId;
+
+        // Add click handler
+        btn.addEventListener("click", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            this._toggleTomScenePanel();
+        });
+    }
+
+    /**
+     * Hide the Tom scene switcher button
+     * Called when broadcast stops
+     */
+    hideTomSceneSwitcher() {
+        const btn = document.querySelector(".tom-scene-switcher-btn");
+        if (btn) btn.remove();
+
+        const panel = document.querySelector(".tom-scene-switcher-panel");
+        if (panel) panel.remove();
+
+        // Also hide cast manager and overlay manager
+        this.hideTomCastManager();
+        this.hideTomOverlayManager();
+
+        this._tomActiveSceneId = null;
+    }
+
+    /**
+     * Show the Tom cast manager button in the tray handle
+     * Called when broadcast starts (after scene switcher)
+     */
+    showTomCastManager() {
+        if (!game.user.isGM) return;
+
+        const handle = document.querySelector(".tray-handle-content-container");
+        if (!handle) return;
+
+        // Remove existing if any
+        const existingBtn = document.querySelector(".tom-cast-manager-btn");
+        if (existingBtn) existingBtn.remove();
+
+        // Create the button
+        const btn = document.createElement("button");
+        btn.className = "tray-handle-button-tool tom-cast-manager-btn";
+        btn.dataset.action = "tom-cast-manager";
+        btn.title = "Manage Cast";
+        btn.innerHTML = '<i class="fa-solid fa-users"></i>';
+
+        // Insert after scene switcher button
+        const switcherBtn = handle.querySelector(".tom-scene-switcher-btn");
+        if (switcherBtn) {
+            switcherBtn.after(btn);
+        } else {
+            // Fallback: insert after tom button
+            const tomBtn = handle.querySelector('[data-action="tom"]');
+            if (tomBtn) {
+                tomBtn.after(btn);
+            } else {
+                handle.appendChild(btn);
+            }
+        }
+
+        // Add click handler
+        btn.addEventListener("click", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            this._toggleTomCastPanel();
+        });
+    }
+
+    /**
+     * Hide the Tom cast manager button
+     */
+    hideTomCastManager() {
+        const btn = document.querySelector(".tom-cast-manager-btn");
+        if (btn) btn.remove();
+
+        const panel = document.querySelector(".tom-cast-manager-panel");
+        if (panel) panel.remove();
+    }
+
+    /**
+     * Show the Tom overlay manager button in the tray handle
+     * Called when broadcast starts (after cast manager)
+     */
+    showTomOverlayManager() {
+        if (!game.user.isGM) return;
+
+        const handle = document.querySelector(".tray-handle-content-container");
+        if (!handle) return;
+
+        // Remove existing if any
+        const existingBtn = document.querySelector(".tom-overlay-manager-btn");
+        if (existingBtn) existingBtn.remove();
+
+        // Create the button
+        const btn = document.createElement("button");
+        btn.className = "tray-handle-button-tool tom-overlay-manager-btn";
+        btn.dataset.action = "tom-overlay-manager";
+        btn.title = "Video Overlays";
+        btn.innerHTML = '<i class="fa-solid fa-film"></i>';
+
+        // Insert after cast manager button
+        const castBtn = handle.querySelector(".tom-cast-manager-btn");
+        if (castBtn) {
+            castBtn.after(btn);
+        } else {
+            // Fallback: insert after scene switcher
+            const switcherBtn = handle.querySelector(".tom-scene-switcher-btn");
+            if (switcherBtn) {
+                switcherBtn.after(btn);
+            } else {
+                handle.appendChild(btn);
+            }
+        }
+
+        // Add click handler
+        btn.addEventListener("click", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            this._toggleTomOverlayPanel();
+        });
+    }
+
+    /**
+     * Hide the Tom overlay manager button
+     */
+    hideTomOverlayManager() {
+        const btn = document.querySelector(".tom-overlay-manager-btn");
+        if (btn) btn.remove();
+
+        const panel = document.querySelector(".tom-overlay-manager-panel");
+        if (panel) panel.remove();
+    }
+
+    /**
+     * Toggle the overlay manager panel
+     */
+    async _toggleTomOverlayPanel() {
+        // Close other panels first
+        document.querySelector(".tom-scene-switcher-panel")?.remove();
+        document.querySelector(".tom-cast-manager-panel")?.remove();
+
+        const existingPanel = document.querySelector(".tom-overlay-manager-panel");
+        if (existingPanel) {
+            existingPanel.remove();
+            return;
+        }
+
+        // Available overlays (hardcoded for now, could be made dynamic)
+        const overlays = [
+            { name: "Fire", file: "fire.webm" },
+            { name: "Snow", file: "snow.webm" },
+            { name: "Wind", file: "wind.webm" },
+            { name: "Rain", file: "rain.webm" },
+            { name: "Dust", file: "dust.webm" },
+            { name: "Campfire", file: "campfire.webm" },
+            { name: "Burning", file: "burning.webm" },
+            { name: "Gold", file: "gold.webm" },
+            { name: "Purple", file: "purple.webm" },
+            { name: "Light", file: "light.webm" },
+            { name: "Storm", file: "storm.webm" },
+            { name: "Fog", file: "fog.webm" },
+            { name: "Gente Snow", file: "gentlesnow.mp4" },
+            { name: "Light Rain", file: "lightrain.mp4" },
+            { name: "Slow Snow", file: "slowsnow.mp4" },
+            { name: "Light Snow", file: "lightsnow.mp4" },
+            { name: "Blue Rays", file: "bluerays.mp4" },
+            { name: "Embers", file: "embers.mp4" },
+            { name: "Sparks", file: "sparks.mp4" },
+            { name: "Glow", file: "aurora.mp4" }
+
+        ];
+
+        const basePath = "modules/shadowdark-extras/assets/Tom/overlays/";
+
+        // Get current overlay from TomStore
+        const { TomStore } = await import("./data/TomStore.mjs");
+        const currentOverlay = TomStore.currentOverlay;
+
+        // Create panel
+        const panel = document.createElement("div");
+        panel.className = "tom-overlay-manager-panel";
+
+        // Header
+        const header = document.createElement("div");
+        header.className = "tom-overlay-header";
+        header.innerHTML = `<span><i class="fas fa-film"></i> Video Overlays</span>`;
+        panel.appendChild(header);
+
+        // Clear overlay button
+        const clearBtn = document.createElement("button");
+        clearBtn.className = `tom-overlay-clear-btn ${!currentOverlay ? "disabled" : ""}`;
+        clearBtn.innerHTML = '<i class="fas fa-times"></i> Clear Overlay';
+        clearBtn.disabled = !currentOverlay;
+        clearBtn.addEventListener("click", async (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            const { TomSocketHandler } = await import("./data/TomSocketHandler.mjs");
+            TomSocketHandler.emitOverlayClear();
+            panel.remove();
+            this._toggleTomOverlayPanel(); // Refresh panel
+        });
+        panel.appendChild(clearBtn);
+
+        // Build overlay list
+        const list = document.createElement("div");
+        list.className = "tom-overlay-list";
+
+        for (const overlay of overlays) {
+            const overlayPath = basePath + overlay.file;
+            const isActive = currentOverlay === overlayPath;
+
+            const item = document.createElement("div");
+            item.className = `tom-overlay-item ${isActive ? "active" : ""}`;
+            item.dataset.path = overlayPath;
+
+            // Preview thumbnail (use video poster or just colored box)
+            const preview = document.createElement("div");
+            preview.className = "tom-overlay-preview";
+            preview.innerHTML = `<i class="fas fa-play"></i>`;
+
+            // Name
+            const name = document.createElement("div");
+            name.className = "tom-overlay-name";
+            name.textContent = overlay.name;
+
+            // Active indicator
+            if (isActive) {
+                const indicator = document.createElement("div");
+                indicator.className = "tom-overlay-active-indicator";
+                indicator.innerHTML = '<i class="fas fa-check"></i>';
+                item.appendChild(indicator);
+            }
+
+            item.appendChild(preview);
+            item.appendChild(name);
+            list.appendChild(item);
+
+            // Click handler
+            item.addEventListener("click", async (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+
+                const { TomSocketHandler } = await import("./data/TomSocketHandler.mjs");
+
+                if (isActive) {
+                    // Clicking active overlay clears it
+                    TomSocketHandler.emitOverlayClear();
+                } else {
+                    // Set new overlay
+                    TomSocketHandler.emitOverlaySet(overlayPath);
+                }
+
+                panel.remove();
+                this._toggleTomOverlayPanel(); // Refresh panel
+            });
+        }
+
+        panel.appendChild(list);
+
+        // Position panel next to button
+        const btn = document.querySelector(".tom-overlay-manager-btn");
+        if (btn) {
+            const rect = btn.getBoundingClientRect();
+            panel.style.position = "fixed";
+            panel.style.left = `${rect.right + 10}px`;
+            panel.style.top = `${rect.top}px`;
+        }
+
+        document.body.appendChild(panel);
+
+        // Close on click outside
+        const closeHandler = (e) => {
+            if (!panel.contains(e.target) && !e.target.closest(".tom-overlay-manager-btn")) {
+                panel.remove();
+                document.removeEventListener("click", closeHandler);
+            }
+        };
+        setTimeout(() => document.addEventListener("click", closeHandler), 10);
+    }
+
+    /**
+     * Toggle the cast manager panel
+     */
+    async _toggleTomCastPanel() {
+        // Close other panels first
+        document.querySelector(".tom-scene-switcher-panel")?.remove();
+        document.querySelector(".tom-overlay-manager-panel")?.remove();
+
+        const existingPanel = document.querySelector(".tom-cast-manager-panel");
+        if (existingPanel) {
+            existingPanel.remove();
+            return;
+        }
+
+        if (!this._tomActiveSceneId) {
+            ui.notifications.warn("No scene is currently broadcasting.");
+            return;
+        }
+
+        // Get Tom data from store
+        const { TomStore } = await import("./data/TomStore.mjs");
+        const scene = TomStore.scenes.get(this._tomActiveSceneId);
+        if (!scene) {
+            ui.notifications.warn("Broadcasting scene not found.");
+            return;
+        }
+
+        const allCharacters = Array.from(TomStore.characters.values());
+        const castIds = scene.cast.map(c => c.id);
+
+        // Create panel
+        const panel = document.createElement("div");
+        panel.className = "tom-cast-manager-panel";
+
+        // Header
+        const header = document.createElement("div");
+        header.className = "tom-cast-header";
+        header.innerHTML = `<span><i class="fas fa-users"></i> Manage Cast</span><span class="tom-cast-scene-name">${scene.name}</span>`;
+        panel.appendChild(header);
+
+        // Build character list
+        const list = document.createElement("div");
+        list.className = "tom-cast-list";
+
+        for (const character of allCharacters) {
+            const isInCast = castIds.includes(character.id);
+
+            const item = document.createElement("div");
+            item.className = `tom-cast-character ${isInCast ? "in-cast" : ""}`;
+            item.dataset.characterId = character.id;
+
+            // Portrait
+            const portrait = document.createElement("div");
+            portrait.className = "tom-cast-portrait";
+            if (character.image) {
+                portrait.style.backgroundImage = `url('${character.image}')`;
+            }
+
+            // Name
+            const name = document.createElement("div");
+            name.className = "tom-cast-name";
+            name.textContent = character.name;
+
+            // Toggle button
+            const toggleBtn = document.createElement("button");
+            toggleBtn.className = `tom-cast-toggle ${isInCast ? "remove" : "add"}`;
+            toggleBtn.innerHTML = isInCast
+                ? '<i class="fas fa-minus"></i>'
+                : '<i class="fas fa-plus"></i>';
+            toggleBtn.title = isInCast ? "Remove from cast" : "Add to cast";
+
+            item.appendChild(portrait);
+            item.appendChild(name);
+            item.appendChild(toggleBtn);
+            list.appendChild(item);
+
+            // Click handler for toggle
+            toggleBtn.addEventListener("click", async (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+
+                const { TomSocketHandler } = await import("./data/TomSocketHandler.mjs");
+
+                if (isInCast) {
+                    // Remove from cast
+                    TomStore.removeCastMember(this._tomActiveSceneId, character.id);
+                } else {
+                    // Add to cast
+                    TomStore.addCastMember(this._tomActiveSceneId, character.id);
+                }
+
+                // Broadcast the cast update
+                TomSocketHandler.emitUpdateCast(this._tomActiveSceneId);
+
+                // Refresh the panel
+                panel.remove();
+                this._toggleTomCastPanel();
+            });
+        }
+
+        if (allCharacters.length === 0) {
+            const empty = document.createElement("div");
+            empty.className = "tom-cast-empty";
+            empty.textContent = "No characters available. Create characters in Tom first.";
+            list.appendChild(empty);
+        }
+
+        panel.appendChild(list);
+
+        // Position panel next to button
+        const btn = document.querySelector(".tom-cast-manager-btn");
+        if (btn) {
+            const rect = btn.getBoundingClientRect();
+            panel.style.position = "fixed";
+            panel.style.left = `${rect.right + 10}px`;
+            panel.style.top = `${rect.top}px`;
+        }
+
+        document.body.appendChild(panel);
+
+        // Close on click outside
+        const closeHandler = (e) => {
+            if (!panel.contains(e.target) && !e.target.closest(".tom-cast-manager-btn")) {
+                panel.remove();
+                document.removeEventListener("click", closeHandler);
+            }
+        };
+        setTimeout(() => document.addEventListener("click", closeHandler), 10);
+    }
+
+    /**
+     * Update the active scene highlight in the panel
+     * @param {string} sceneId - New active scene ID
+     */
+    updateTomSceneSwitcher(sceneId) {
+        this._tomActiveSceneId = sceneId;
+
+        // Update highlight if panel is open
+        const panel = document.querySelector(".tom-scene-switcher-panel");
+        if (panel) {
+            panel.querySelectorAll(".tom-switcher-scene").forEach(item => {
+                item.classList.toggle("active", item.dataset.sceneId === sceneId);
+            });
+        }
+    }
+
+    /**
+     * Toggle the scene switcher panel
+     */
+    async _toggleTomScenePanel() {
+        // Close other panels first
+        document.querySelector(".tom-cast-manager-panel")?.remove();
+        document.querySelector(".tom-overlay-manager-panel")?.remove();
+
+        const existingPanel = document.querySelector(".tom-scene-switcher-panel");
+        if (existingPanel) {
+            existingPanel.remove();
+            return;
+        }
+
+        // Get Tom scenes from store
+        const { TomStore } = await import("./data/TomStore.mjs");
+        const scenes = Array.from(TomStore.scenes.values());
+
+        if (scenes.length === 0) {
+            ui.notifications.warn("No Tom scenes available.");
+            return;
+        }
+
+        // Create panel
+        const panel = document.createElement("div");
+        panel.className = "tom-scene-switcher-panel";
+
+        // Stop Broadcasting button
+        const stopBtn = document.createElement("button");
+        stopBtn.className = "tom-switcher-stop-btn";
+        stopBtn.innerHTML = '<i class="fas fa-stop"></i> Stop Broadcasting';
+        stopBtn.addEventListener("click", async (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            panel.remove();
+
+            const { TomSocketHandler } = await import("./data/TomSocketHandler.mjs");
+            TomSocketHandler.emitStopBroadcast();
+        });
+        panel.appendChild(stopBtn);
+
+        // Build scene list
+        const list = document.createElement("div");
+        list.className = "tom-switcher-list";
+
+        for (const scene of scenes) {
+            const item = document.createElement("div");
+            item.className = `tom-switcher-scene ${scene.id === this._tomActiveSceneId ? "active" : ""}`;
+            item.dataset.sceneId = scene.id;
+
+            // Thumbnail
+            const thumb = document.createElement("div");
+            thumb.className = "tom-switcher-thumb";
+            if (scene.background) {
+                thumb.style.backgroundImage = `url('${scene.background}')`;
+            }
+
+            // Name
+            const name = document.createElement("div");
+            name.className = "tom-switcher-name";
+            name.textContent = scene.name;
+
+            // Playing indicator
+            if (scene.id === this._tomActiveSceneId) {
+                const indicator = document.createElement("i");
+                indicator.className = "fas fa-play tom-switcher-playing";
+                thumb.appendChild(indicator);
+            }
+
+            item.appendChild(thumb);
+            item.appendChild(name);
+            list.appendChild(item);
+
+            // Click handler
+            item.addEventListener("click", async (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+
+                if (scene.id === this._tomActiveSceneId) return; // Already playing
+
+                // Close the panel first
+                panel.remove();
+
+                // Emit scene fade transition to all clients
+                // This handles the fade effect and scene switch for everyone
+                const { TomSocketHandler } = await import("./data/TomSocketHandler.mjs");
+                TomSocketHandler.emitSceneFadeTransition(scene.id);
+
+                // Update local state
+                this._tomActiveSceneId = scene.id;
+            });
+        }
+
+        panel.appendChild(list);
+
+        // Position panel next to button
+        const btn = document.querySelector(".tom-scene-switcher-btn");
+        if (btn) {
+            const rect = btn.getBoundingClientRect();
+            panel.style.position = "fixed";
+            panel.style.left = `${rect.right + 10}px`;
+            panel.style.top = `${rect.top}px`;
+        }
+
+        document.body.appendChild(panel);
+
+        // Close on click outside
+        const closeHandler = (e) => {
+            if (!panel.contains(e.target) && !e.target.closest(".tom-scene-switcher-btn")) {
+                panel.remove();
+                document.removeEventListener("click", closeHandler);
+            }
+        };
+        setTimeout(() => document.addEventListener("click", closeHandler), 10);
     }
 }
 

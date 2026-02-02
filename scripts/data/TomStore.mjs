@@ -12,6 +12,7 @@ export class TomStoreClass {
     this.folders = new foundry.utils.Collection();
     this.slideshows = new foundry.utils.Collection();
     this.activeSceneId = null;
+    this.currentOverlay = null; // Current video overlay path
     this.isInitialized = false;
     this.customOrder = { scenes: [], characters: [] };
 
