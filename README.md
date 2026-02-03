@@ -348,7 +348,7 @@ All features can be individually enabled/disabled in module settings. Settings a
 
 - **Foundry VTT**: v12+
 - **Shadowdark System**: Latest version
-- Tested with popular modules including Dice So Nice, Token Action HUD, and more
+- Tested with popular modules including Dice So Nice, Token Action HUD, SD crawler helper
 
 ---
 
@@ -364,6 +364,9 @@ This module is provided under the MIT License.
 - [Foundry VTT Shadowdark System](https://github.com/Muttley/foundryvtt-shadowdark)
 - Icons from [Font Awesome](https://fontawesome.com/)
 - Tom inspired by Exalted Scenes by wands and widgets
+- Assets from Forgotten Adventure
+- Overlays by Pixelbay
+- All fonts licences included in the fonts folders
 
 ---
 
