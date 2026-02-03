@@ -1,102 +1,77 @@
 <div class="tom-permission-editor-content">
 
-  <!-- ═══════════════════════════════════════════════════════════════
-       HEADER
-       ═══════════════════════════════════════════════════════════════ -->
+  <!-- Header: avatar + name + offline toggle -->
   <header class="tom-perm-header">
     <img src="{{character.thumbnail}}" class="tom-perm-avatar" alt="{{character.name}}">
-    <div class="tom-perm-info">
-      <h2>{{character.name}}</h2>
-      <p>Assign which players can edit this character's emotions and settings.</p>
-    </div>
+    <span class="tom-perm-name">{{character.name}}</span>
+    <label class="tom-perm-offline-toggle">
+      <input type="checkbox" class="tom-perm-offline-input" {{#if showOffline}}checked{{/if}}>
+      <span class="tom-perm-toggle-track"></span>
+      <span class="tom-perm-toggle-label">Offline</span>
+    </label>
   </header>
 
-  <!-- ═══════════════════════════════════════════════════════════════
-       DEFAULT PERMISSION
-       ═══════════════════════════════════════════════════════════════ -->
-  <div class="tom-perm-section">
-    <label>Default Permission</label>
+  <!-- Default permission row -->
+  <div class="tom-perm-default-row">
+    <span class="tom-perm-default-label">Default</span>
     <select name="defaultPermission">
       {{#each permissionLevels}}
       <option value="{{key}}" {{#if (eq key ../defaultPermission)}}selected{{/if}}>
-        {{name}} - {{description}}
+        {{name}} — {{description}}
       </option>
       {{/each}}
     </select>
-    <span class="tom-hint">Applied to players not listed below</span>
   </div>
 
-  <!-- ═══════════════════════════════════════════════════════════════
-       PLAYER LIST
-       ═══════════════════════════════════════════════════════════════ -->
-  <div class="tom-perm-section">
-    <label>Player Permissions</label>
-
-    {{#if players.length}}
-    <div class="tom-perm-players">
-      {{#each players}}
-      <div class="tom-perm-player">
-        <div class="tom-perm-player-info">
-          <img src="{{avatar}}" class="tom-perm-player-avatar" style="border-color: {{color}}">
-          <span class="tom-perm-player-name">{{name}}</span>
-        </div>
-        <div class="tom-perm-player-buttons">
-          <button type="button" class="tom-perm-btn {{#if isNone}}active{{/if}}" data-action="set-permission"
-            data-user-id="{{id}}" data-level="none" title="No Access">
-            <i class="fas fa-ban"></i>
-          </button>
-          <button type="button" class="tom-perm-btn {{#if isView}}active{{/if}}" data-action="set-permission"
-            data-user-id="{{id}}" data-level="view" title="View Only">
-            <i class="fas fa-eye"></i>
-          </button>
-          <button type="button" class="tom-perm-btn {{#if isEmotion}}active{{/if}}" data-action="set-permission"
-            data-user-id="{{id}}" data-level="emotion" title="Can Change Emotions">
-            <i class="fas fa-theater-masks"></i>
-          </button>
-          <button type="button" class="tom-perm-btn {{#if isFull}}active{{/if}} {{#if canSpawnToken}}can-spawn{{/if}}"
-            data-action="set-permission" data-user-id="{{id}}" data-level="full"
-            title="Full Control{{#if canSpawnToken}} + Can Spawn Token{{/if}} (Right-click to toggle token spawning)">
-            <i class="fas fa-crown"></i>
-          </button>
-        </div>
+  <!-- Player list -->
+  <div class="tom-perm-players">
+    {{#each players}}
+    <div class="tom-perm-player {{#unless online}}offline{{/unless}}">
+      <div class="tom-perm-player-info">
+        <img src="{{avatar}}" class="tom-perm-player-avatar" style="border-color: {{color}}">
+        <span class="tom-perm-player-name">{{name}}</span>
+        {{#unless online}}<span class="tom-perm-offline-badge">offline</span>{{/unless}}
       </div>
-      {{/each}}
+      <div class="tom-perm-player-buttons">
+        <button type="button" class="tom-perm-btn {{#if isNone}}active{{/if}}" data-action="set-permission"
+          data-user-id="{{id}}" data-level="none" title="No Access">
+          <i class="fas fa-ban"></i>
+        </button>
+        <button type="button" class="tom-perm-btn {{#if isView}}active{{/if}}" data-action="set-permission"
+          data-user-id="{{id}}" data-level="view" title="View Only">
+          <i class="fas fa-eye"></i>
+        </button>
+        <button type="button" class="tom-perm-btn {{#if isEmotion}}active{{/if}}" data-action="set-permission"
+          data-user-id="{{id}}" data-level="emotion" title="Can Change Emotions">
+          <i class="fas fa-theater-masks"></i>
+        </button>
+        <button type="button" class="tom-perm-btn {{#if isFull}}active{{/if}} {{#if canSpawnToken}}can-spawn{{/if}}"
+          data-action="set-permission" data-user-id="{{id}}" data-level="full"
+          title="Full Control (Right-click to toggle token spawning)">
+          <i class="fas fa-crown"></i>
+        </button>
+      </div>
     </div>
     {{else}}
     <div class="tom-perm-empty">
       <i class="fas fa-users-slash"></i>
-      <p>No players connected to assign permissions.</p>
+      <p>No players to assign permissions.</p>
     </div>
-    {{/if}}
+    {{/each}}
   </div>
 
-  <!-- ═══════════════════════════════════════════════════════════════
-       LEGEND
-       ═══════════════════════════════════════════════════════════════ -->
+  <!-- Legend + spawn hint in one compact bar -->
   <div class="tom-perm-legend">
-    <div class="tom-perm-legend-item">
-      <i class="fas fa-ban"></i> No Access
-    </div>
-    <div class="tom-perm-legend-item">
-      <i class="fas fa-eye"></i> View Only
-    </div>
-    <div class="tom-perm-legend-item">
-      <i class="fas fa-theater-masks"></i> Emotions
-    </div>
-    <div class="tom-perm-legend-item">
-      <i class="fas fa-crown"></i> Full Control
-    </div>
-    <div class="tom-perm-legend-item tom-perm-legend-spawn">
-      <i class="fas fa-crown" style="color: #4ade80;"></i> Can Spawn Token
-    </div>
-  </div>
-  <div class="tom-perm-hint">
-    <i class="fas fa-info-circle"></i> Right-click the crown to grant token spawning permission
+    <span class="tom-perm-legend-item"><i class="fas fa-ban"></i> None</span>
+    <span class="tom-perm-legend-item"><i class="fas fa-eye"></i> View</span>
+    <span class="tom-perm-legend-item"><i class="fas fa-theater-masks"></i> Emotions</span>
+    <span class="tom-perm-legend-item"><i class="fas fa-crown"></i> Full</span>
+    <span class="tom-perm-legend-item tom-perm-legend-spawn"><i class="fas fa-crown" style="color:#4ade80"></i> Spawn</span>
+    <span class="tom-perm-legend-sep">·</span>
+    <span class="tom-perm-legend-hint"><i class="fas fa-info-circle"></i> Right-click crown for token spawn</span>
   </div>
 
-  <!-- ═══════════════════════════════════════════════════════════════
-       FOOTER
-       ═══════════════════════════════════════════════════════════════ -->
+  <!-- Footer -->
   <footer class="tom-perm-footer">
     <button type="button" class="tom-btn" data-action="close">Cancel</button>
     <button type="button" class="tom-btn tom-btn-primary" data-action="save">

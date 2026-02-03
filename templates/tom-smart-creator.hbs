@@ -1,66 +1,33 @@
 <div class="tom-smart-creator">
 
   <!-- ═══════════════════════════════════════════════════════════════
-       HEADER & STEPS
+       HEADER
        ═══════════════════════════════════════════════════════════════ -->
-  <header class="tom-wizard-header">
-    <div class="tom-wizard-title">
-      <i class="fas fa-magic"></i> Character Creator
-    </div>
-    <div class="tom-wizard-steps">
-      <div class="tom-step {{#if (eq step 1)}}active{{/if}} {{#if (gt step 1)}}completed{{/if}}">
-        <div class="tom-step-number">1</div>
-        <div class="tom-step-label">Identity</div>
-      </div>
-      <div class="tom-step-line"></div>
-      <div class="tom-step {{#if (eq step 2)}}active{{/if}}">
-        <div class="tom-step-number">2</div>
-        <div class="tom-step-label">Assets</div>
-      </div>
-    </div>
+  <header class="tom-creator-header">
+    <i class="fas fa-user-circle"></i>
+    <span class="tom-creator-title">New Character</span>
   </header>
 
   <!-- ═══════════════════════════════════════════════════════════════
-       CONTENT AREA
+       BODY
        ═══════════════════════════════════════════════════════════════ -->
-  <div class="tom-wizard-content">
+  <div class="tom-creator-body">
 
-    <!-- STEP 1: IDENTITY -->
-    {{#if (eq step 1)}}
-    <div class="tom-wizard-step" data-step="1">
-      <div class="form-group">
-        <label class="required">Character Name</label>
-        <input type="text" name="name" value="{{data.name}}" placeholder="e.g. Shura"
-          aria-label="Character Name (required)" required autofocus>
-        <p class="notes">This will be used to create the folder structure.</p>
-      </div>
-
-      <div class="form-group">
-        <label>Tags <span class="tom-tag-hint">(Press Enter)</span></label>
-        <div class="tom-tag-input-container">
-          {{#each data.tags}}
-          <span class="tom-tag-chip">{{this}} <i class="fas fa-times" data-action="remove-tag"
-              data-tag="{{this}}"></i></span>
-          {{/each}}
-          <input type="text" class="tom-tag-input" placeholder="Add tags..." aria-label="Add new tag">
-        </div>
-      </div>
+    <!-- Name -->
+    <div class="tom-creator-name-row">
+      <input type="text" name="name" value="{{data.name}}" placeholder="Character name…" autofocus>
     </div>
-    {{/if}}
 
-    <!-- STEP 2: ASSETS & REVIEW -->
-    {{#if (eq step 2)}}
-    <div class="tom-wizard-step" data-step="2">
+    <!-- Assets: drop zone or review grid -->
+    <div class="tom-creator-assets">
       {{#unless hasEmotions}}
-      <div class="tom-step-intro">
-        <p class="tom-hint">Upload images for each emotion. File names become emotion labels.</p>
-        <p class="tom-hint tom-example"><i class="fas fa-lightbulb"></i> Example: <code>Happy.png</code>,
-          <code>Angry.png</code>
-        </p>
-      </div>
+      <p class="tom-creator-hint">
+        <i class="fas fa-lightbulb"></i>
+        Upload one image per emotion — file names become the labels (e.g. <code>Happy.png</code>).
+      </p>
       <div class="tom-drop-zone" data-action="trigger-upload">
-        <h3>DRAG & DROP FOLDER HERE</h3>
-        <p>or click to browse</p>
+        <i class="fas fa-folder-open"></i>
+        <span>Drop a folder here or click to browse</span>
         <input type="file" webkitdirectory directory multiple style="display:none" class="tom-file-input">
       </div>
       {{else}}
@@ -95,22 +62,16 @@
       {{/if}}
       {{/if}}
     </div>
-    {{/if}}
 
   </div>
 
   <!-- ═══════════════════════════════════════════════════════════════
-       FOOTER & CONTROLS
+       FOOTER
        ═══════════════════════════════════════════════════════════════ -->
-  <footer class="tom-wizard-footer">
-    {{#if (eq step 2)}}
-    <button class="tom-btn tom-btn-secondary" data-action="prev-step">Back</button>
-    <button class="tom-btn tom-btn-primary" data-action="finish" {{#unless hasEmotions}}disabled{{/unless}}>Create
-      Character</button>
-    {{else}}
-    <div></div> <!-- Spacer -->
-    <button class="tom-btn tom-btn-primary" data-action="next-step">Next</button>
-    {{/if}}
+  <footer class="tom-creator-footer">
+    <button class="tom-btn tom-btn-primary" data-action="finish" {{#unless hasEmotions}}disabled{{/unless}}>
+      <i class="fas fa-plus"></i> Create Character
+    </button>
   </footer>
 
 </div>

@@ -8,17 +8,15 @@ export class TomCharacterEditor extends HandlebarsApplicationMixin(ApplicationV2
     super(options);
     this.characterId = characterId;
     
-    // Clone data for editing to avoid direct mutation until save
+    
     const char = Store.characters.get(characterId);
     if (!char) throw new Error(`Character ${characterId} not found`);
 
     this.uiState = {
-      activeTab: 'identity',
       data: {
         name: char.name,
-        tags: Array.from(char.tags),
-        states: { ...char.states }, // Clone states
-        locked: char.locked || false // Lock state
+        states: { ...char.states }, 
+        locked: char.locked || false 
       }
     };
   }
@@ -38,8 +36,6 @@ export class TomCharacterEditor extends HandlebarsApplicationMixin(ApplicationV2
       height: 700
     },
     actions: {
-      'tab-switch': TomCharacterEditor._onTabSwitch,
-      'remove-tag': TomCharacterEditor._onRemoveTag,
       'rename-emotion': TomCharacterEditor._onRenameEmotion,
       'delete-emotion': TomCharacterEditor._onDeleteEmotion,
       'add-emotion': TomCharacterEditor._onAddEmotion,
@@ -58,30 +54,27 @@ export class TomCharacterEditor extends HandlebarsApplicationMixin(ApplicationV2
     }
   };
 
-  /* ═══════════════════════════════════════════════════════════════
-     RENDER CONTEXT
-     ═══════════════════════════════════════════════════════════════ */
+  
 
   async _prepareContext(options) {
     const char = Store.characters.get(this.characterId);
     if (!char) return {};
 
-    // Prepare emotions list
+    
     const emotions = Object.entries(this.uiState.data.states).map(([key, path]) => ({
       key,
       path
     }));
 
-    // Check if user can browse files (players typically can't)
+    
     const canBrowseFiles = game.user.isGM || game.user.can("FILES_BROWSE");
 
     return {
       character: {
         ...this.uiState.data,
-        image: char.image // Use current image for avatar
+        image: char.image 
       },
       emotions: emotions,
-      activeTab: this.uiState.activeTab,
       locked: this.uiState.data.locked,
       canBrowseFiles: canBrowseFiles,
       isGM: game.user.isGM
@@ -91,7 +84,7 @@ export class TomCharacterEditor extends HandlebarsApplicationMixin(ApplicationV2
   _onRender(context, options) {
     super._onRender(context, options);
 
-    // Bind Name Input
+    
     const nameInput = this.element.querySelector('input[name="name"]');
     if (nameInput) {
       nameInput.addEventListener('input', (e) => {
@@ -99,7 +92,7 @@ export class TomCharacterEditor extends HandlebarsApplicationMixin(ApplicationV2
       });
     }
 
-    // Bind File Picker for New Emotion
+    
     const pickerBtn = this.element.querySelector('.file-picker');
     if (pickerBtn) {
       pickerBtn.addEventListener('click', (e) => {
@@ -113,45 +106,15 @@ export class TomCharacterEditor extends HandlebarsApplicationMixin(ApplicationV2
       });
     }
 
-    // Bind Tag Input (Enter Key)
-    const tagInput = this.element.querySelector('.tom-tag-input');
-    if (tagInput) {
-      tagInput.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') {
-          e.preventDefault();
-          const tag = e.target.value.trim();
-          if (tag && !this.uiState.data.tags.includes(tag)) {
-            this.uiState.data.tags.push(tag);
-            e.target.value = '';
-            this.render();
-          }
-        }
-      });
-    }
   }
 
-  /* ═══════════════════════════════════════════════════════════════
-     ACTIONS
-     ═══════════════════════════════════════════════════════════════ */
-
-  static _onTabSwitch(event, target) {
-    this.uiState.activeTab = target.dataset.tab;
-    this.render();
-  }
+  
 
   static _onClose(event, target) {
     this.close();
   }
 
-  // --- TAGS ---
-
-  static _onRemoveTag(event, target) {
-    const tag = target.dataset.tag;
-    this.uiState.data.tags = this.uiState.data.tags.filter(t => t !== tag);
-    this.render();
-  }
-
-  // --- EMOTIONS ---
+  
 
   static _onRenameEmotion(event, target) {
     const originalKey = target.dataset.originalKey;
@@ -185,14 +148,14 @@ export class TomCharacterEditor extends HandlebarsApplicationMixin(ApplicationV2
     }
   }
 
-  // --- LOCK ---
+  
 
   static _onToggleLock(event, target) {
     this.uiState.data.locked = !this.uiState.data.locked;
     this.render();
   }
 
-  // --- PERMISSIONS ---
+  
 
   static _onOpenPermissions(event, target) {
     import('./TomPermissionEditor.mjs').then(({ TomPermissionEditor }) => {
@@ -200,13 +163,13 @@ export class TomCharacterEditor extends HandlebarsApplicationMixin(ApplicationV2
     });
   }
 
-  // --- SAVE & DELETE ---
+  
 
   static async _onSave(event, target) {
     const char = Store.characters.get(this.characterId);
     if (!char) return;
 
-    // Add loading state to button
+    
     const btn = target;
     const originalHtml = btn.innerHTML;
     btn.classList.add('es-btn-loading');
@@ -214,20 +177,19 @@ export class TomCharacterEditor extends HandlebarsApplicationMixin(ApplicationV2
     btn.disabled = true;
 
     try {
-      // Update Character Model
+      
       char.name = this.uiState.data.name;
-      char.tags = new Set(this.uiState.data.tags);
       char.states = this.uiState.data.states;
       char.locked = this.uiState.data.locked;
 
-      // Ensure current state is valid
+      
       if (!char.states[char.currentState]) {
         char.currentState = Object.keys(char.states)[0] || 'normal';
       }
 
       await Store.saveData();
 
-      // Broadcast lock change to all clients
+      
       const { TomSocketHandler } = await import('../data/TomSocketHandler.mjs');
       TomSocketHandler.emitUpdateLock(char.id, char.locked);
 
@@ -235,13 +197,13 @@ export class TomCharacterEditor extends HandlebarsApplicationMixin(ApplicationV2
 
       this.close();
 
-      // Refresh GM Panel
-      const gmPanel = foundry.applications.instances.get('tom-gm-panel');
-      if (gmPanel) gmPanel.render();
+      
+      const { TrayApp } = await import('../TrayApp.mjs');
+      if (TrayApp._instance) TrayApp._instance.refreshTomCastPanel();
     } catch (error) {
       console.error('Tom | Error saving character:', error);
       ui.notifications.error('Failed to save character. Check console for details.');
-      // Restore button state on error
+      
       btn.classList.remove('es-btn-loading');
       btn.innerHTML = originalHtml;
       btn.disabled = false;
@@ -258,10 +220,11 @@ export class TomCharacterEditor extends HandlebarsApplicationMixin(ApplicationV2
         Store.deleteItem(this.characterId, 'character');
         ui.notifications.info(`Deleted ${char.name}`);
         this.close();
+
         
-        // Refresh GM Panel
-        const gmPanel = foundry.applications.instances.get('tom-gm-panel');
-        if (gmPanel) gmPanel.render();
+        import('../TrayApp.mjs').then(({ TrayApp }) => {
+          if (TrayApp._instance) TrayApp._instance.refreshTomCastPanel();
+        });
       },
       no: () => {},
       defaultYes: false

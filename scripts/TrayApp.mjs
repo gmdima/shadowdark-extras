@@ -292,19 +292,6 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
             }
         });
 
-        // Tom Button (Scene Manager)
-        elem.querySelector(".tray-handle-button-tool[data-action='tom']")?.addEventListener("click", (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            // Import TomSD dynamically to avoid circular dependencies
-            import("./TomSD.mjs").then(({ TomSD }) => {
-                TomSD.open();
-            }).catch(err => {
-                console.error("Shadowdark Extras | Failed to open Tom:", err);
-                ui.notifications.error("Failed to open Tom panel.");
-            });
-        });
-
         // Tab buttons
         elem.querySelectorAll(".tray-tab-button").forEach(btn => {
             btn.addEventListener("click", (e) => {
@@ -730,10 +717,10 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
     async _checkTomBroadcastState() {
         try {
             const { TomStore } = await import("./data/TomStore.mjs");
+            // Scene switcher and cast manager are always visible for GM
+            this.showTomSceneSwitcher(TomStore.activeSceneId || null);
+            this.showTomCastManager();
             if (TomStore.activeSceneId) {
-                // Always try to show (showTomSceneSwitcher will clean up existing first)
-                this.showTomSceneSwitcher(TomStore.activeSceneId);
-                this.showTomCastManager();
                 this.showTomOverlayManager();
             }
         } catch (err) {
@@ -752,8 +739,8 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
         const handle = document.querySelector(".tray-handle-content-container");
         if (!handle) return;
 
-        // Remove existing if any
-        this.hideTomSceneSwitcher();
+        // Remove existing button if any (avoid duplicates on re-render)
+        document.querySelector(".tom-scene-switcher-btn")?.remove();
 
         // Create the button
         const btn = document.createElement("button");
@@ -762,18 +749,12 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
         btn.title = "Quick Scene Switch";
         btn.innerHTML = '<i class="fa-solid fa-images"></i>';
 
-        // Insert after the tom button
-        const tomBtn = handle.querySelector('[data-action="tom"]');
-        if (tomBtn) {
-            tomBtn.after(btn);
+        // Insert before carousing button or at the end of GM tools
+        const carousingBtn = handle.querySelector('[data-action="carousing"]');
+        if (carousingBtn) {
+            carousingBtn.before(btn);
         } else {
-            // Fallback: insert before carousing button or at the end of GM tools
-            const carousingBtn = handle.querySelector('[data-action="carousing"]');
-            if (carousingBtn) {
-                carousingBtn.before(btn);
-            } else {
-                handle.appendChild(btn);
-            }
+            handle.appendChild(btn);
         }
 
         // Store active scene ID
@@ -788,18 +769,14 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
     }
 
     /**
-     * Hide the Tom scene switcher button
-     * Called when broadcast stops
+     * Handle broadcast stop — keep the scene switcher button visible,
+     * close its panel if open, and hide cast/overlay manager buttons.
      */
-    hideTomSceneSwitcher() {
-        const btn = document.querySelector(".tom-scene-switcher-btn");
-        if (btn) btn.remove();
+    onBroadcastStopped() {
+        // Close any open panels so they refresh with the new state
+        document.querySelector(".tom-scene-switcher-panel")?.remove();
+        document.querySelector(".tom-cast-manager-panel")?.remove();
 
-        const panel = document.querySelector(".tom-scene-switcher-panel");
-        if (panel) panel.remove();
-
-        // Also hide cast manager and overlay manager
-        this.hideTomCastManager();
         this.hideTomOverlayManager();
 
         this._tomActiveSceneId = null;
@@ -831,13 +808,7 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
         if (switcherBtn) {
             switcherBtn.after(btn);
         } else {
-            // Fallback: insert after tom button
-            const tomBtn = handle.querySelector('[data-action="tom"]');
-            if (tomBtn) {
-                tomBtn.after(btn);
-            } else {
-                handle.appendChild(btn);
-            }
+            handle.appendChild(btn);
         }
 
         // Add click handler
@@ -1074,31 +1045,40 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
             return;
         }
 
-        if (!this._tomActiveSceneId) {
-            ui.notifications.warn("No scene is currently broadcasting.");
-            return;
-        }
-
         // Get Tom data from store
         const { TomStore } = await import("./data/TomStore.mjs");
-        const scene = TomStore.scenes.get(this._tomActiveSceneId);
-        if (!scene) {
-            ui.notifications.warn("Broadcasting scene not found.");
-            return;
-        }
+        const scene = this._tomActiveSceneId ? TomStore.scenes.get(this._tomActiveSceneId) : null;
+        const broadcasting = !!scene;
 
         const allCharacters = Array.from(TomStore.characters.values());
-        const castIds = scene.cast.map(c => c.id);
+        const castIds = broadcasting ? scene.cast.map(c => c.id) : [];
 
         // Create panel
         const panel = document.createElement("div");
         panel.className = "tom-cast-manager-panel";
 
-        // Header
+        // Header — shows scene name only while broadcasting
         const header = document.createElement("div");
         header.className = "tom-cast-header";
-        header.innerHTML = `<span><i class="fas fa-users"></i> Manage Cast</span><span class="tom-cast-scene-name">${scene.name}</span>`;
+        if (broadcasting) {
+            header.innerHTML = `<span><i class="fas fa-users"></i> Manage Cast</span><span class="tom-cast-scene-name">${scene.name}</span>`;
+        } else {
+            header.innerHTML = `<span><i class="fas fa-users"></i> Characters</span>`;
+        }
         panel.appendChild(header);
+
+        // Create new character button
+        const createCharBtn = document.createElement("button");
+        createCharBtn.className = "tom-switcher-create-btn";
+        createCharBtn.innerHTML = '<i class="fas fa-plus"></i> Create new character';
+        createCharBtn.addEventListener("click", async (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            panel.remove();
+            const { TomSmartCreator } = await import("./apps/TomSmartCreator.mjs");
+            new TomSmartCreator().render(true);
+        });
+        panel.appendChild(createCharBtn);
 
         // Build character list
         const list = document.createElement("div");
@@ -1123,47 +1103,89 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
             name.className = "tom-cast-name";
             name.textContent = character.name;
 
-            // Toggle button
-            const toggleBtn = document.createElement("button");
-            toggleBtn.className = `tom-cast-toggle ${isInCast ? "remove" : "add"}`;
-            toggleBtn.innerHTML = isInCast
-                ? '<i class="fas fa-minus"></i>'
-                : '<i class="fas fa-plus"></i>';
-            toggleBtn.title = isInCast ? "Remove from cast" : "Add to cast";
+            // Toggle button — only shown while broadcasting a scene
+            let toggleBtn = null;
+            if (broadcasting) {
+                toggleBtn = document.createElement("button");
+                toggleBtn.className = `tom-cast-toggle ${isInCast ? "remove" : "add"}`;
+                toggleBtn.innerHTML = isInCast
+                    ? '<i class="fas fa-minus"></i>'
+                    : '<i class="fas fa-plus"></i>';
+                toggleBtn.title = isInCast ? "Remove from cast" : "Add to cast";
+            }
+
+            // Edit / Delete action buttons
+            const charActions = document.createElement("div");
+            charActions.className = "tom-switcher-actions";
+
+            const charEditBtn = document.createElement("button");
+            charEditBtn.className = "tom-switcher-action-btn tom-switcher-action-edit";
+            charEditBtn.title = "Edit Character";
+            charEditBtn.innerHTML = '<i class="fas fa-pen-to-square"></i>';
+            charEditBtn.addEventListener("click", async (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                panel.remove();
+                const { TomCharacterEditor } = await import("./apps/TomCharacterEditor.mjs");
+                new TomCharacterEditor(character.id).render(true);
+            });
+
+            const charDeleteBtn = document.createElement("button");
+            charDeleteBtn.className = "tom-switcher-action-btn tom-switcher-action-delete";
+            charDeleteBtn.title = "Delete Character";
+            charDeleteBtn.innerHTML = '<i class="fas fa-trash"></i>';
+            charDeleteBtn.addEventListener("click", async (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                const confirmed = await Dialog.confirm({
+                    title: "Delete Character",
+                    content: `<p>Are you sure you want to delete <strong>${character.name}</strong>?</p><p>This action cannot be undone.</p>`,
+                    yes: () => true,
+                    no: () => false,
+                    defaultYes: false
+                });
+                if (!confirmed) return;
+                panel.remove();
+                TomStore.deleteItem(character.id, "character");
+                ui.notifications.info(`Character "${character.name}" deleted.`);
+            });
+
+            charActions.appendChild(charEditBtn);
+            charActions.appendChild(charDeleteBtn);
 
             item.appendChild(portrait);
             item.appendChild(name);
-            item.appendChild(toggleBtn);
+            if (toggleBtn) item.appendChild(toggleBtn);
+            item.appendChild(charActions);
             list.appendChild(item);
 
-            // Click handler for toggle
-            toggleBtn.addEventListener("click", async (e) => {
-                e.preventDefault();
-                e.stopPropagation();
+            // Click handler for toggle (only present while broadcasting)
+            if (toggleBtn) {
+                toggleBtn.addEventListener("click", async (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
 
-                const { TomSocketHandler } = await import("./data/TomSocketHandler.mjs");
+                    const { TomSocketHandler } = await import("./data/TomSocketHandler.mjs");
 
-                if (isInCast) {
-                    // Remove from cast
-                    TomStore.removeCastMember(this._tomActiveSceneId, character.id);
-                } else {
-                    // Add to cast
-                    TomStore.addCastMember(this._tomActiveSceneId, character.id);
-                }
+                    if (isInCast) {
+                        TomStore.removeCastMember(this._tomActiveSceneId, character.id);
+                    } else {
+                        TomStore.addCastMember(this._tomActiveSceneId, character.id);
+                    }
 
-                // Broadcast the cast update
-                TomSocketHandler.emitUpdateCast(this._tomActiveSceneId);
+                    TomSocketHandler.emitUpdateCast(this._tomActiveSceneId);
 
-                // Refresh the panel
-                panel.remove();
-                this._toggleTomCastPanel();
-            });
+                    // Refresh the panel
+                    panel.remove();
+                    this._toggleTomCastPanel();
+                });
+            }
         }
 
         if (allCharacters.length === 0) {
             const empty = document.createElement("div");
             empty.className = "tom-cast-empty";
-            empty.textContent = "No characters available. Create characters in Tom first.";
+            empty.textContent = "Click above to create a new Character";
             list.appendChild(empty);
         }
 
@@ -1234,28 +1256,38 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
         const { TomStore } = await import("./data/TomStore.mjs");
         const scenes = Array.from(TomStore.scenes.values());
 
-        if (scenes.length === 0) {
-            ui.notifications.warn("No Tom scenes available.");
-            return;
-        }
-
         // Create panel
         const panel = document.createElement("div");
         panel.className = "tom-scene-switcher-panel";
 
-        // Stop Broadcasting button
-        const stopBtn = document.createElement("button");
-        stopBtn.className = "tom-switcher-stop-btn";
-        stopBtn.innerHTML = '<i class="fas fa-stop"></i> Stop Broadcasting';
-        stopBtn.addEventListener("click", async (e) => {
+        // Create new scene button (always at top)
+        const createSceneBtn = document.createElement("button");
+        createSceneBtn.className = "tom-switcher-create-btn";
+        createSceneBtn.innerHTML = '<i class="fas fa-plus"></i> Create new scene';
+        createSceneBtn.addEventListener("click", async (e) => {
             e.preventDefault();
             e.stopPropagation();
             panel.remove();
-
-            const { TomSocketHandler } = await import("./data/TomSocketHandler.mjs");
-            TomSocketHandler.emitStopBroadcast();
+            const { TomSceneEditor } = await import("./apps/TomSceneEditor.mjs");
+            new TomSceneEditor().render(true);
         });
-        panel.appendChild(stopBtn);
+        panel.appendChild(createSceneBtn);
+
+        // Stop Broadcasting button — only shown while actively broadcasting
+        if (this._tomActiveSceneId) {
+            const stopBtn = document.createElement("button");
+            stopBtn.className = "tom-switcher-stop-btn";
+            stopBtn.innerHTML = '<i class="fas fa-stop"></i> Stop Broadcasting';
+            stopBtn.addEventListener("click", async (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                panel.remove();
+
+                const { TomSocketHandler } = await import("./data/TomSocketHandler.mjs");
+                TomSocketHandler.emitStopBroadcast();
+            });
+            panel.appendChild(stopBtn);
+        }
 
         // Build scene list
         const list = document.createElement("div");
@@ -1285,8 +1317,49 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
                 thumb.appendChild(indicator);
             }
 
+            // Edit / Delete action buttons
+            const actions = document.createElement("div");
+            actions.className = "tom-switcher-actions";
+
+            const editBtn = document.createElement("button");
+            editBtn.className = "tom-switcher-action-btn tom-switcher-action-edit";
+            editBtn.title = "Edit Scene";
+            editBtn.innerHTML = '<i class="fas fa-pen-to-square"></i>';
+            editBtn.addEventListener("click", async (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                panel.remove();
+                const { TomSceneEditor } = await import("./apps/TomSceneEditor.mjs");
+                new TomSceneEditor(scene.id).render(true);
+            });
+
+            const deleteBtn = document.createElement("button");
+            deleteBtn.className = "tom-switcher-action-btn tom-switcher-action-delete";
+            deleteBtn.title = "Delete Scene";
+            deleteBtn.innerHTML = '<i class="fas fa-trash"></i>';
+            deleteBtn.addEventListener("click", async (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                const confirmed = await Dialog.confirm({
+                    title: "Delete Scene",
+                    content: `<p>Are you sure you want to delete <strong>${scene.name}</strong>?</p><p>This action cannot be undone.</p>`,
+                    yes: () => true,
+                    no: () => false,
+                    defaultYes: false
+                });
+                if (!confirmed) return;
+                panel.remove();
+                const { TomStore } = await import("./data/TomStore.mjs");
+                TomStore.deleteItem(scene.id, "scene");
+                ui.notifications.info(`Scene "${scene.name}" deleted.`);
+            });
+
+            actions.appendChild(editBtn);
+            actions.appendChild(deleteBtn);
+
             item.appendChild(thumb);
             item.appendChild(name);
+            item.appendChild(actions);
             list.appendChild(item);
 
             // Click handler
@@ -1299,14 +1372,26 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
                 // Close the panel first
                 panel.remove();
 
-                // Emit scene fade transition to all clients
-                // This handles the fade effect and scene switch for everyone
                 const { TomSocketHandler } = await import("./data/TomSocketHandler.mjs");
-                TomSocketHandler.emitSceneFadeTransition(scene.id);
+
+                if (this._tomActiveSceneId) {
+                    // Already broadcasting — fade-transition to the new scene
+                    TomSocketHandler.emitSceneFadeTransition(scene.id);
+                } else {
+                    // Not broadcasting yet — start a new broadcast
+                    TomSocketHandler.emitBroadcastScene(scene.id);
+                }
 
                 // Update local state
                 this._tomActiveSceneId = scene.id;
             });
+        }
+
+        if (scenes.length === 0) {
+            const empty = document.createElement("div");
+            empty.className = "tom-switcher-empty";
+            empty.textContent = "Click above to create a new Scene";
+            list.appendChild(empty);
         }
 
         panel.appendChild(list);

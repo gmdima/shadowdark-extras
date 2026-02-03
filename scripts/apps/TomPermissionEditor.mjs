@@ -3,9 +3,6 @@ import { TomStore as Store } from '../data/TomStore.mjs';
 
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
-/**
- * Permission Editor - Allows GM to assign character edit permissions to players
- */
 export class TomPermissionEditor extends HandlebarsApplicationMixin(ApplicationV2) {
   constructor(characterId, options = {}) {
     super(options);
@@ -16,10 +13,11 @@ export class TomPermissionEditor extends HandlebarsApplicationMixin(ApplicationV
       throw new Error(`Character not found: ${characterId}`);
     }
 
-    // Clone permissions for editing
+    
     this.uiState = {
       permissions: JSON.parse(JSON.stringify(this.character.permissions || { default: 'none', players: {} })),
-      canSpawnToken: JSON.parse(JSON.stringify(this.character.canSpawnToken || {}))
+      canSpawnToken: JSON.parse(JSON.stringify(this.character.canSpawnToken || {})),
+      showOffline: false
     };
   }
 
@@ -55,8 +53,11 @@ export class TomPermissionEditor extends HandlebarsApplicationMixin(ApplicationV
   }
 
   async _prepareContext(options) {
-    // Get all players (non-GM users)
-    const players = game.users.filter(u => !u.isGM && u.active !== false).map(user => {
+    const players = game.users.filter(u => {
+      if (u.isGM) return false;
+      if (!this.uiState.showOffline && !u.active) return false;
+      return true;
+    }).map(user => {
       const currentLevel = this.uiState.permissions.players[user.id] || this.uiState.permissions.default || 'none';
       const canSpawn = this.uiState.canSpawnToken[user.id] || false;
       return {
@@ -64,6 +65,7 @@ export class TomPermissionEditor extends HandlebarsApplicationMixin(ApplicationV
         name: user.name,
         avatar: user.avatar,
         color: user.color,
+        online: user.active,
         permission: currentLevel,
         isNone: currentLevel === 'none',
         isView: currentLevel === 'view',
@@ -76,6 +78,7 @@ export class TomPermissionEditor extends HandlebarsApplicationMixin(ApplicationV
     return {
       character: this.character,
       players,
+      showOffline: this.uiState.showOffline,
       defaultPermission: this.uiState.permissions.default,
       permissionLevels: [
         { key: 'none', name: 'No Access', icon: 'fa-ban', description: 'Cannot interact with this character' },
@@ -89,7 +92,7 @@ export class TomPermissionEditor extends HandlebarsApplicationMixin(ApplicationV
   _onRender(context, options) {
     super._onRender(context, options);
 
-    // Bind default permission select
+    
     const defaultSelect = this.element.querySelector('select[name="defaultPermission"]');
     if (defaultSelect) {
       defaultSelect.addEventListener('change', (e) => {
@@ -98,7 +101,16 @@ export class TomPermissionEditor extends HandlebarsApplicationMixin(ApplicationV
       });
     }
 
-    // Bind right-click on crown buttons to toggle canSpawnToken
+    
+    const offlineCheckbox = this.element.querySelector('.tom-perm-offline-input');
+    if (offlineCheckbox) {
+      offlineCheckbox.addEventListener('change', (e) => {
+        this.uiState.showOffline = e.target.checked;
+        this.render();
+      });
+    }
+
+    
     const crownButtons = this.element.querySelectorAll('.tom-perm-btn[data-level="full"]');
     for (const btn of crownButtons) {
       btn.addEventListener('contextmenu', (e) => {
@@ -110,16 +122,14 @@ export class TomPermissionEditor extends HandlebarsApplicationMixin(ApplicationV
     }
   }
 
-  /* ═══════════════════════════════════════════════════════════════
-     ACTIONS
-     ═══════════════════════════════════════════════════════════════ */
+  
 
   static _onSetPermission(event, target) {
     const userId = target.dataset.userId;
     const level = target.dataset.level;
 
     if (level === this.uiState.permissions.default) {
-      // If setting to default, remove from players object
+      
       delete this.uiState.permissions.players[userId];
     } else {
       this.uiState.permissions.players[userId] = level;
@@ -129,30 +139,20 @@ export class TomPermissionEditor extends HandlebarsApplicationMixin(ApplicationV
   }
 
   static _onSave(event, target) {
-    // Apply permissions to character
+    
     this.character.permissions = this.uiState.permissions;
     this.character.canSpawnToken = this.uiState.canSpawnToken;
     Store.saveData();
 
     ui.notifications.info(`Updated permissions for ${this.character.name}`);
     this.close();
-
-    // Refresh GM Panel
-    import('./TomGMPanel.mjs').then(({ TomGMPanel }) => {
-      if (TomGMPanel._instance) {
-        TomGMPanel._instance.render();
-      }
-    });
   }
 
   static _onClose(event, target) {
     this.close();
   }
 
-  /**
-   * Static method to open the permission editor for a character
-   * @param {string} characterId - The character ID
-   */
+  
   static open(characterId) {
     const editor = new TomPermissionEditor(characterId);
     editor.render(true);

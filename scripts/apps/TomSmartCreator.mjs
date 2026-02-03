@@ -7,11 +7,9 @@ export class TomSmartCreator extends HandlebarsApplicationMixin(ApplicationV2) {
   constructor(options = {}) {
     super(options);
     this.uiState = {
-      step: 1,
       data: {
         name: '',
-        tags: [],
-        emotions: {}, // { key: { path, excluded, isDefault } }
+        emotions: {}, 
         defaultEmotion: null
       },
       uploadProgress: 0
@@ -24,19 +22,16 @@ export class TomSmartCreator extends HandlebarsApplicationMixin(ApplicationV2) {
     classes: ['tom-app'],
     window: {
       title: 'Character Creator',
-      icon: 'fas fa-magic',
+      icon: 'fas fa-user-circle',
       resizable: true,
       controls: []
     },
     position: {
-      width: 800,
-      height: 700
+      width: 468,
+      height: 624
     },
     actions: {
-      'next-step': TomSmartCreator._onNextStep,
-      'prev-step': TomSmartCreator._onPrevStep,
       'trigger-upload': TomSmartCreator._onTriggerUpload,
-      'remove-tag': TomSmartCreator._onRemoveTag,
       'toggle-exclude': TomSmartCreator._onToggleExclude,
       'set-default': TomSmartCreator._onSetDefault,
       'rename-emotion': TomSmartCreator._onRenameEmotion,
@@ -50,14 +45,11 @@ export class TomSmartCreator extends HandlebarsApplicationMixin(ApplicationV2) {
     }
   };
 
-  /* ═══════════════════════════════════════════════════════════════
-     RENDER CONTEXT
-     ═══════════════════════════════════════════════════════════════ */
+  
 
   async _prepareContext(options) {
     const hasEmotions = Object.keys(this.uiState.data.emotions).length > 0;
     return {
-      step: this.uiState.step,
       data: this.uiState.data,
       uploadProgress: this.uiState.uploadProgress,
       hasEmotions
@@ -67,99 +59,45 @@ export class TomSmartCreator extends HandlebarsApplicationMixin(ApplicationV2) {
   _onRender(context, options) {
     super._onRender(context, options);
 
-    // Bind Name Input
+    
     const nameInput = this.element.querySelector('input[name="name"]');
     if (nameInput) {
       nameInput.addEventListener('input', (e) => {
         this.uiState.data.name = e.target.value;
       });
     }
-
-    // Bind Tag Input (keydown for Enter key - data-action doesn't work for keydown events)
-    const tagInput = this.element.querySelector('.tom-tag-input');
-    if (tagInput) {
-      tagInput.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') {
-          e.preventDefault();
-
-          // Preserve name before re-render
-          if (nameInput) {
-            this.uiState.data.name = nameInput.value;
-          }
-
-          const tag = e.target.value.trim();
-          if (tag && !this.uiState.data.tags.includes(tag)) {
-            this.uiState.data.tags.push(tag);
-            e.target.value = '';
-            this.render();
-          }
-        }
-      });
-    }
   }
 
-  /* ═══════════════════════════════════════════════════════════════
-     ACTIONS
-     ═══════════════════════════════════════════════════════════════ */
-
-  static _onNextStep(event, target) {
-    // Ensure we capture the name if the user typed and clicked next immediately
-    const nameInput = this.element.querySelector('input[name="name"]');
-    if (nameInput) {
-      this.uiState.data.name = nameInput.value;
-    }
-
-    if (this.uiState.step === 1 && !this.uiState.data.name) {
-      ui.notifications.warn("Please enter a character name.");
-      return;
-    }
-    this.uiState.step = 2;
-    this.render();
-  }
-
-  static _onPrevStep(event, target) {
-    this.uiState.step--;
-    this.render();
-  }
-
-  static _onRemoveTag(event, target) {
-    // Preserve name before re-render
-    const nameInput = this.element.querySelector('input[name="name"]');
-    if (nameInput) {
-      this.uiState.data.name = nameInput.value;
-    }
-
-    const tag = target.dataset.tag;
-    this.uiState.data.tags = this.uiState.data.tags.filter(t => t !== tag);
-    this.render();
-  }
-
-  /* ═══════════════════════════════════════════════════════════════
-     UPLOAD & PARSING LOGIC
-     ═══════════════════════════════════════════════════════════════ */
+  
 
   static _onTriggerUpload(event, target) {
     const input = this.element.querySelector('.tom-file-input');
-    input.click();
 
-    // Bind change event once
     input.onchange = async (e) => {
       const files = Array.from(e.target.files);
       if (files.length === 0) return;
 
       await this._processUpload(files);
     };
+
+    
+    input.value = '';
+    input.click();
   }
 
   async _processUpload(files) {
     const charName = this.uiState.data.name;
-    // Sanitize folder name
+    if (!charName) {
+      ui.notifications.warn("Please enter a character name first.");
+      return;
+    }
+
+    
     const folderName = charName.replace(/[^a-z0-9]/gi, '_').toLowerCase();
     const targetDir = `${CONFIG.UPLOAD_PATH}/${folderName}`;
 
-    // Create Directory Structure
+    
     try {
-      // Split path and ensure each level exists
       const parts = targetDir.split('/');
       let currentPath = "";
       for (const part of parts) {
@@ -176,20 +114,13 @@ export class TomSmartCreator extends HandlebarsApplicationMixin(ApplicationV2) {
     const emotions = {};
 
     for (const file of files) {
-      // Upload File
       try {
-        // Extract basename to avoid subfolder creation on some hosted environments (e.g. Sqyre)
-        // This ensures that even if a folder was selected, we only use the filename itself
         const basename = file.name.split('/').pop().split('\\').pop();
         const cleanFile = new File([file], basename, { type: file.type });
 
-        // We use FilePicker.upload
-        // Note: 'data' source is usually 'user' data.
         await FilePicker.upload('data', targetDir, cleanFile);
 
         const path = `${targetDir}/${basename}`;
-
-        // Smart Parse
         const emotionKey = this._parseEmotionName(file.name);
 
         emotions[emotionKey] = {
@@ -208,7 +139,7 @@ export class TomSmartCreator extends HandlebarsApplicationMixin(ApplicationV2) {
       this.render();
     }
 
-    // Set first as default
+    
     const keys = Object.keys(emotions);
     if (keys.length > 0) {
       emotions[keys[0]].isDefault = true;
@@ -221,15 +152,12 @@ export class TomSmartCreator extends HandlebarsApplicationMixin(ApplicationV2) {
 
   async _ensureDirectory(path) {
     try {
-      // Try to browse first to see if it exists
       await FilePicker.browse('data', path);
     } catch (e) {
-      // If browse fails, try to create it
       console.log(`Tom | Creating directory: ${path}`);
       try {
         await FilePicker.createDirectory('data', path);
       } catch (createError) {
-        // If it already exists, that's fine (though browse should have caught it)
         if (!createError.message.includes("EEXIST") && !createError.message.includes("already exists")) {
           throw createError;
         }
@@ -242,16 +170,12 @@ export class TomSmartCreator extends HandlebarsApplicationMixin(ApplicationV2) {
     const underscoreIndex = nameWithoutExt.indexOf('_');
 
     if (underscoreIndex !== -1) {
-      // "Shura_Happy" -> "Happy"
-      // "Shura_Very_Angry" -> "Very Angry"
       return nameWithoutExt.substring(underscoreIndex + 1).replace(/_/g, ' ').trim();
     }
-    return nameWithoutExt; // Fallback
+    return nameWithoutExt;
   }
 
-  /* ═══════════════════════════════════════════════════════════════
-     REVIEW ACTIONS
-     ═══════════════════════════════════════════════════════════════ */
+  
 
   static _onToggleExclude(event, target) {
     const key = target.dataset.key;
@@ -274,11 +198,6 @@ export class TomSmartCreator extends HandlebarsApplicationMixin(ApplicationV2) {
     const newKey = target.value.trim();
 
     if (newKey && newKey !== originalKey) {
-      // We need to update the key in the object. 
-      // This is tricky because we are iterating over the object in HBS.
-      // Ideally we should have used an array.
-      // For now, let's just update a display property if we had one, but we used the key.
-
       const entry = this.uiState.data.emotions[originalKey];
       delete this.uiState.data.emotions[originalKey];
       entry.key = newKey;
@@ -292,14 +211,17 @@ export class TomSmartCreator extends HandlebarsApplicationMixin(ApplicationV2) {
     }
   }
 
-  /* ═══════════════════════════════════════════════════════════════
-     FINISH
-     ═══════════════════════════════════════════════════════════════ */
+  
 
   static async _onFinish(event, target) {
-    const { name, tags, emotions, defaultEmotion } = this.uiState.data;
+    const { name, emotions, defaultEmotion } = this.uiState.data;
 
-    // Construct States Object
+    if (!name) {
+      ui.notifications.warn("Please enter a character name.");
+      return;
+    }
+
+    
     const finalStates = {};
     for (const [key, data] of Object.entries(emotions)) {
       if (!data.excluded) {
@@ -312,27 +234,20 @@ export class TomSmartCreator extends HandlebarsApplicationMixin(ApplicationV2) {
       return;
     }
 
-    // Create Character
+    
     const character = Store.createCharacter({
       name: name,
       states: finalStates,
       currentState: defaultEmotion || Object.keys(finalStates)[0],
-      tags: tags
+      tags: []
     });
 
     ui.notifications.info(`Character "${name}" created successfully!`);
     this.close();
 
-    // Refresh GM Panel if open
-    // We can emit an event or just rely on the store update if GM Panel is reactive (it isn't fully reactive yet, need to trigger render)
-    // Assuming GMPanel is a singleton we can access
-    const gmPanel = foundry.applications.instances.get('tom-gm-panel');
-    if (gmPanel) {
-      gmPanel.render();
-      // Optional: Select the new character
-      gmPanel.uiState.selectedId = character.id;
-      gmPanel.uiState.inspectorOpen = true;
-      gmPanel.render();
-    }
+    
+    import('../TrayApp.mjs').then(({ TrayApp }) => {
+      if (TrayApp._instance) TrayApp._instance.refreshTomCastPanel();
+    });
   }
 }

@@ -5,10 +5,6 @@ import { TomCharacterEditor } from './TomCharacterEditor.mjs';
 
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
-/**
- * PlayerPanel - A simplified panel for players to manage their assigned characters
- * Shows only characters the player has permission to edit (emotion or full access)
- */
 export class TomPlayerPanel extends HandlebarsApplicationMixin(ApplicationV2) {
   constructor(options = {}) {
     super(options);
@@ -50,9 +46,7 @@ export class TomPlayerPanel extends HandlebarsApplicationMixin(ApplicationV2) {
     }
   };
 
-  /* ═══════════════════════════════════════════════════════════════
-     SINGLETON PATTERN
-     ═══════════════════════════════════════════════════════════════ */
+  
 
   static _instance = null;
 
@@ -68,15 +62,13 @@ export class TomPlayerPanel extends HandlebarsApplicationMixin(ApplicationV2) {
     return this._instance;
   }
 
-  /* ═══════════════════════════════════════════════════════════════
-     RENDER CONTEXT
-     ═══════════════════════════════════════════════════════════════ */
+  
 
   async _prepareContext(options) {
     const userId = game.user.id;
     console.log('Tom | PlayerPanel._prepareContext for userId:', userId);
 
-    // Get all characters the player has permission to edit
+    
     const myCharacters = [];
     Store.characters.forEach((char, id) => {
       console.log(`Tom | Checking character ${char.name}, permissions:`, char.permissions);
@@ -97,7 +89,7 @@ export class TomPlayerPanel extends HandlebarsApplicationMixin(ApplicationV2) {
     });
     console.log('Tom | myCharacters found:', myCharacters.length);
 
-    // Prepare Emotion Picker Context
+    
     let pickerContext = null;
     if (this.uiState.emotionPicker.open && this.uiState.emotionPicker.characterId) {
       const char = Store.characters.get(this.uiState.emotionPicker.characterId);
@@ -126,7 +118,7 @@ export class TomPlayerPanel extends HandlebarsApplicationMixin(ApplicationV2) {
       }
     }
 
-    // Prepare Border Picker Context
+    
     let borderPickerContext = null;
     if (this.uiState.borderPicker.open && this.uiState.borderPicker.characterId) {
       const char = Store.characters.get(this.uiState.borderPicker.characterId);
@@ -174,9 +166,7 @@ export class TomPlayerPanel extends HandlebarsApplicationMixin(ApplicationV2) {
     };
   }
 
-  /* ═══════════════════════════════════════════════════════════════
-     ACTIONS
-     ═══════════════════════════════════════════════════════════════ */
+  
 
   static _onCharacterClick(event, target) {
     const charId = target.dataset.id;
@@ -263,9 +253,7 @@ export class TomPlayerPanel extends HandlebarsApplicationMixin(ApplicationV2) {
     new TomCharacterEditor(charId).render(true);
   }
 
-  /* ═══════════════════════════════════════════════════════════════
-     REFRESH
-     ═══════════════════════════════════════════════════════════════ */
+  
 
   static refresh() {
     if (this._instance) {

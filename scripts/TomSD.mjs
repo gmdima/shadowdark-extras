@@ -1,7 +1,6 @@
 // Scene/Character management and broadcasting system
 
 import { TOM_CONFIG } from './TomConfig.mjs';
-import { TomGMPanel } from './apps/TomGMPanel.mjs';
 import { TomPlayerPanel } from './apps/TomPlayerPanel.mjs';
 import { TomStore } from './data/TomStore.mjs';
 import { TomMigrationService } from './data/TomMigrationService.mjs';
@@ -119,7 +118,7 @@ export class TomSD {
   static _registerKeybindings() {
     game.keybindings.register(this.ID, 'tom-open-panel', {
       name: 'Open Tom',
-      hint: 'Toggle the Tom Panel (GM Panel for GMs, Player Panel for Players)',
+      hint: 'Open the Tom Player Panel',
       editable: [
         { key: 'KeyT', modifiers: [KeyboardManager.MODIFIER_KEYS.CONTROL, KeyboardManager.MODIFIER_KEYS.SHIFT] }
       ],
@@ -148,9 +147,7 @@ export class TomSD {
    * Open the appropriate panel based on user role
    */
   static open() {
-    if (game.user.isGM) {
-      TomGMPanel.show();
-    } else {
+    if (!game.user.isGM) {
       TomPlayerPanel.show();
     }
   }
@@ -159,15 +156,7 @@ export class TomSD {
    * Close all Tom panels
    */
   static close() {
-    if (TomGMPanel._instance) TomGMPanel._instance.close();
     if (TomPlayerPanel._instance) TomPlayerPanel._instance.close();
-  }
-
-  /**
-   * Open GM Panel directly
-   */
-  static openGMPanel() {
-    TomGMPanel.show();
   }
 
   /**

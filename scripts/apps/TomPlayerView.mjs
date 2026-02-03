@@ -3,19 +3,14 @@ import { TomStore as Store } from '../data/TomStore.mjs';
 
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
-/**
- * Get the CSS value for a size preset or custom value
- * @param {string} size - Size preset key or custom vh value
- * @returns {string} CSS value (e.g., '18vh')
- */
 function getSizeValue(size) {
   const preset = CONFIG.SIZE_PRESETS[size];
   if (preset) return preset.value;
-  // If it's a number, assume vh units
+  
   if (typeof size === 'number') return `${size}vh`;
-  // If it already has units, use as-is
+  
   if (typeof size === 'string' && size.match(/^\d+/)) return size;
-  // Default fallback
+  
   return CONFIG.SIZE_PRESETS.medium.value;
 }
 
@@ -27,18 +22,20 @@ export class TomPlayerView extends HandlebarsApplicationMixin(ApplicationV2) {
       sceneId: null,
       emotionPicker: { open: false, characterId: null, x: 0, y: 0 },
       borderPicker: { open: false, characterId: null, x: 0, y: 0 },
-      previousSceneId: null,  // Para detectar troca de cena
-      isSceneTransition: false, // Flag para controlar animações
-      // Cast-Only Mode state (cast without scene background)
+      previousSceneId: null,  
+      isSceneTransition: false, 
+      
       castOnlyMode: false,
       castOnlyCharacterIds: [],
       castOnlyLayoutSettings: null,
-      // Arena tokens state
-      arenaTokens: new Map(), // Map of tokenId -> { characterId, actorId, actorName, image, x, y, ownerId }
-      // Arena assets state (GM-only image assets)
-      arenaAssets: new Map(), // Map of assetId -> { image, x, y, scale }
-      // Z-order counter for stacking tokens/assets (increments on each click)
-      arenaZOrder: 10
+      
+      arenaTokens: new Map(), 
+      
+      arenaAssets: new Map(), 
+      
+      arenaZOrder: 10,
+      
+      ruler: { active: false, startX: 0, startY: 0, endX: 0, endY: 0, startElement: null }
     };
   }
 
@@ -75,25 +72,23 @@ export class TomPlayerView extends HandlebarsApplicationMixin(ApplicationV2) {
     }
   };
 
-  /* ═══════════════════════════════════════════════════════════════
-     RENDER CONTEXT
-     ═══════════════════════════════════════════════════════════════ */
+  
 
   _onRender(context, options) {
     super._onRender(context, options);
 
-    // Calculate and set Foundry UI offset CSS variables to avoid overlap
+    
     this._setFoundryUIOffsets();
 
-    // Ensure video plays (some browsers block autoplay)
+    
     this._ensureVideoPlays();
 
-    // Aplicar animações apenas em transição de cena
+    
     if (this.uiState.isSceneTransition) {
       const background = this.element.querySelector('.tom-pv-bg-media');
       const characters = this.element.querySelectorAll('.tom-pv-character');
 
-      // Animar background
+      
       if (background) {
         background.classList.add('es-transition-fade');
         background.addEventListener('animationend', () => {
@@ -101,7 +96,7 @@ export class TomPlayerView extends HandlebarsApplicationMixin(ApplicationV2) {
         }, { once: true });
       }
 
-      // Animar personagens com delay escalonado
+      
       characters.forEach((char, index) => {
         char.style.setProperty('--char-index', index);
         char.classList.add('es-entering');
@@ -110,14 +105,14 @@ export class TomPlayerView extends HandlebarsApplicationMixin(ApplicationV2) {
         }, { once: true });
       });
 
-      // Reset flag
+      
       this.uiState.isSceneTransition = false;
     }
 
-    // === EMOTION PICKER: SEARCH AND PREVIEW ===
+    
     const emotionPicker = this.element.querySelector('.tom-emotion-picker');
     if (emotionPicker) {
-      // Search input for emotions
+      
       const searchInput = emotionPicker.querySelector('.tom-picker-search-input');
       if (searchInput) {
         searchInput.addEventListener('input', (e) => {
@@ -128,18 +123,18 @@ export class TomPlayerView extends HandlebarsApplicationMixin(ApplicationV2) {
             item.style.display = emotionKey.includes(query) ? '' : 'none';
           });
         });
-        // Focus on the search input when picker opens
+        
         setTimeout(() => searchInput.focus(), 50);
       }
 
-      // Hover preview for emotions - smart positioning above picker
-      // Note: previewPanel is now OUTSIDE the emotionPicker (to avoid transform containment issues)
+      
+      
       const previewPanel = this.element.querySelector('.tom-player-view > .tom-picker-preview');
       const previewImg = previewPanel?.querySelector('img');
       const previewLabel = previewPanel?.querySelector('.tom-picker-preview-label');
       const items = emotionPicker.querySelectorAll('.tom-picker-item');
 
-      // Known preview dimensions (from CSS - PlayerView uses larger preview)
+      
       const PREVIEW_WIDTH = 400;
       const PREVIEW_HEIGHT = 430;
       const MARGIN = 20;
@@ -158,30 +153,30 @@ export class TomPlayerView extends HandlebarsApplicationMixin(ApplicationV2) {
 
             let left, top;
 
-            // Position preview ABOVE the picker
+            
             const spaceAbove = pickerRect.top - MARGIN;
 
-            // Horizontal: center above the picker
+            
             left = pickerRect.left + (pickerRect.width / 2) - (PREVIEW_WIDTH / 2);
 
-            // Clamp horizontal position to viewport bounds
+            
             left = Math.max(MARGIN, Math.min(left, viewportWidth - PREVIEW_WIDTH - MARGIN));
 
-            // Reset position classes
+            
             previewPanel.classList.remove('preview-left', 'preview-below');
 
             if (spaceAbove >= PREVIEW_HEIGHT) {
-              // Fits above the picker
+              
               top = pickerRect.top - PREVIEW_HEIGHT - 16;
               previewPanel.classList.add('preview-above');
             } else {
-              // Not enough space above, place below the picker
+              
               top = pickerRect.bottom + 16;
               previewPanel.classList.remove('preview-above');
               previewPanel.classList.add('preview-below');
             }
 
-            // Clamp vertical position to viewport bounds
+            
             top = Math.max(MARGIN, Math.min(top, viewportHeight - PREVIEW_HEIGHT - MARGIN));
 
             previewPanel.style.left = `${left}px`;
@@ -198,13 +193,14 @@ export class TomPlayerView extends HandlebarsApplicationMixin(ApplicationV2) {
       });
     }
 
-    // === ARENA MODE: DRAG/DROP FOR PORTRAITS ===
+    
     const scene = this.uiState.sceneId ? Store.scenes.get(this.uiState.sceneId) : null;
     if (scene?.isArena) {
       this._setupArenaDragDrop();
+      this._setupArenaRuler();
     }
 
-    // === RIGHT-CLICK TO REMOVE CAST (GM ONLY) ===
+    
     if (game.user.isGM) {
       const castPortraits = this.element.querySelectorAll('.tom-pv-character');
       castPortraits.forEach(portrait => {
@@ -221,9 +217,7 @@ export class TomPlayerView extends HandlebarsApplicationMixin(ApplicationV2) {
     }
   }
 
-  /**
-   * Setup drag/drop functionality for arena mode
-   */
+  
   _setupArenaDragDrop() {
     const portraits = this.element.querySelectorAll('.tom-pv-character');
     const arenaArea = this.element.querySelector('.tom-arena-rings');
@@ -234,7 +228,7 @@ export class TomPlayerView extends HandlebarsApplicationMixin(ApplicationV2) {
       const charId = portrait.dataset.id;
       const character = Store.characters.get(charId);
 
-      // Check if player can spawn tokens for this character
+      
       const canSpawn = game.user.isGM || (character && character.canUserSpawnToken(game.user.id));
 
       if (canSpawn) {
@@ -257,7 +251,7 @@ export class TomPlayerView extends HandlebarsApplicationMixin(ApplicationV2) {
       }
     });
 
-    // Setup drop zone on the entire player view (arena area)
+    
     const playerView = this.element.querySelector('.tom-player-view');
     if (playerView) {
       playerView.addEventListener('dragover', (e) => {
@@ -268,16 +262,16 @@ export class TomPlayerView extends HandlebarsApplicationMixin(ApplicationV2) {
       playerView.addEventListener('drop', async (e) => {
         e.preventDefault();
 
-        // Calculate drop position as percentage of viewport
+        
         const rect = playerView.getBoundingClientRect();
         const x = ((e.clientX - rect.left) / rect.width) * 100;
         const y = ((e.clientY - rect.top) / rect.height) * 100;
 
-        // Get all available data types for debugging
+        
         const types = e.dataTransfer.types;
         console.log('Tom | Drop event - available types:', types);
 
-        // Try to get data from various sources
+        
         const rawData = e.dataTransfer.getData('text/plain');
         const uriData = e.dataTransfer.getData('text/uri-list');
         const htmlData = e.dataTransfer.getData('text/html');
@@ -286,12 +280,12 @@ export class TomPlayerView extends HandlebarsApplicationMixin(ApplicationV2) {
         console.log('Tom | Drop data - text/uri-list:', uriData);
 
         try {
-          // Check for FilePicker image drop (GM only)
+          
           if (game.user.isGM) {
-            // Try different sources for file path
+            
             let filePath = null;
 
-            // Check text/plain for direct file path
+            
             if (rawData && !rawData.startsWith('{') && !rawData.startsWith('[')) {
               const isImage = /\.(webp|png|jpg|jpeg|gif|svg|webm|mp4)$/i.test(rawData);
               if (isImage) {
@@ -299,7 +293,7 @@ export class TomPlayerView extends HandlebarsApplicationMixin(ApplicationV2) {
               }
             }
 
-            // Check text/uri-list
+            
             if (!filePath && uriData) {
               const isImage = /\.(webp|png|jpg|jpeg|gif|svg|webm|mp4)$/i.test(uriData);
               if (isImage) {
@@ -307,7 +301,7 @@ export class TomPlayerView extends HandlebarsApplicationMixin(ApplicationV2) {
               }
             }
 
-            // Check if rawData is JSON with a file path (Foundry Tile format)
+            
             if (!filePath && rawData && rawData.startsWith('{')) {
               try {
                 const parsed = JSON.parse(rawData);
@@ -316,7 +310,7 @@ export class TomPlayerView extends HandlebarsApplicationMixin(ApplicationV2) {
                 } else if (parsed.src || parsed.path || parsed.img) {
                   filePath = parsed.src || parsed.path || parsed.img;
                 }
-              } catch (e) { /* not JSON */ }
+              } catch (e) {  }
             }
 
             if (filePath) {
@@ -328,9 +322,9 @@ export class TomPlayerView extends HandlebarsApplicationMixin(ApplicationV2) {
 
           const data = JSON.parse(rawData);
 
-          // Check if it's a Foundry Actor drop (from sidebar)
+          
           if (data.type === 'Actor' && data.uuid) {
-            // Only GM can drop actors from sidebar
+            
             if (!game.user.isGM) {
               ui.notifications.warn("Only the GM can drop actors from the sidebar.");
               return;
@@ -342,29 +336,29 @@ export class TomPlayerView extends HandlebarsApplicationMixin(ApplicationV2) {
               return;
             }
 
-            // Use actor's portrait image (img, fallback to token texture)
+            
             const image = actor.img || actor.prototypeToken?.texture?.src || 'icons/svg/mystery-man.svg';
 
-            // Spawn the token - GM is the owner, but players with actor ownership can also move it
+            
             this._spawnActorToken(actor, image, x, y);
             return;
           }
 
-          // Otherwise, handle Tom character portrait drop
+          
           const characterId = data.characterId || (data.type === 'character' ? data.id : null);
           if (!characterId) return;
 
           const character = Store.characters.get(characterId);
           if (!character) return;
 
-          // Check permission again
+          
           const canSpawn = game.user.isGM || character.canUserSpawnToken(game.user.id);
           if (!canSpawn) {
             ui.notifications.warn("You don't have permission to spawn tokens for this character.");
             return;
           }
 
-          // Get owned actors
+          
           const ownedActors = game.actors.filter(a => a.isOwner && a.type === 'Player');
 
           if (ownedActors.length === 0) {
@@ -376,12 +370,12 @@ export class TomPlayerView extends HandlebarsApplicationMixin(ApplicationV2) {
           if (ownedActors.length === 1) {
             selectedActor = ownedActors[0];
           } else {
-            // Show actor selection dialog
+            
             selectedActor = await this._showActorSelectionDialog(ownedActors);
-            if (!selectedActor) return; // User cancelled
+            if (!selectedActor) return; 
           }
 
-          // Spawn the token
+          
           this._spawnToken(data.characterId, character.image, selectedActor, x, y);
         } catch (err) {
           console.error('Tom | Error handling drop:', err);
@@ -389,16 +383,14 @@ export class TomPlayerView extends HandlebarsApplicationMixin(ApplicationV2) {
       });
     }
 
-    // Setup dragging for existing arena tokens
+    
     this._setupArenaTokenDragging();
 
-    // Setup dragging/resizing for arena assets (GM only)
+    
     this._setupArenaAssetInteraction();
   }
 
-  /**
-   * Show dialog to select an actor when player owns multiple
-   */
+  
   async _showActorSelectionDialog(actors) {
     return new Promise((resolve) => {
       const content = `
@@ -435,9 +427,7 @@ export class TomPlayerView extends HandlebarsApplicationMixin(ApplicationV2) {
     });
   }
 
-  /**
-   * Spawn a token on the arena (from Tom character portrait)
-   */
+  
   _spawnToken(characterId, image, actor, x, y) {
     const tokenId = foundry.utils.randomID();
 
@@ -455,31 +445,26 @@ export class TomPlayerView extends HandlebarsApplicationMixin(ApplicationV2) {
     });
   }
 
-  /**
-   * Spawn a token on the arena (from Foundry actor sidebar)
-   * GM spawns these, but players with actor ownership can move them
-   */
+  
   _spawnActorToken(actor, image, x, y) {
     const tokenId = foundry.utils.randomID();
 
     import('../data/TomSocketHandler.mjs').then(({ TomSocketHandler }) => {
       TomSocketHandler.emitArenaTokenSpawn({
         tokenId,
-        characterId: null, // No Tom character associated
+        characterId: null, 
         actorId: actor.id,
         actorName: actor.name,
-        actorType: actor.type, // 'Player', 'NPC', etc.
+        actorType: actor.type, 
         image,
         x,
         y,
-        ownerId: actor.id // Use actor ID as owner - checked against actor ownership
+        ownerId: actor.id 
       });
     });
   }
 
-  /**
-   * Spawn an asset on the arena (GM only)
-   */
+  
   _spawnAsset(image, x, y) {
     const assetId = foundry.utils.randomID();
 
@@ -494,9 +479,7 @@ export class TomPlayerView extends HandlebarsApplicationMixin(ApplicationV2) {
     });
   }
 
-  /**
-   * Setup dragging and resizing for arena assets (GM only)
-   */
+  
   _setupArenaAssetInteraction() {
     if (!game.user.isGM) return;
 
@@ -507,7 +490,7 @@ export class TomPlayerView extends HandlebarsApplicationMixin(ApplicationV2) {
       const assetId = asset.dataset.assetId;
       asset.dataset.assetInitialized = 'true';
 
-      // Drag functionality
+      
       const dragState = { isDragging: false };
 
       asset.addEventListener('mousedown', (e) => {
@@ -515,7 +498,7 @@ export class TomPlayerView extends HandlebarsApplicationMixin(ApplicationV2) {
         dragState.isDragging = true;
         asset.classList.add('dragging');
 
-        // Bring to front: increment z-order counter and apply to this element
+        
         this.uiState.arenaZOrder++;
         asset.style.zIndex = this.uiState.arenaZOrder;
 
@@ -536,7 +519,7 @@ export class TomPlayerView extends HandlebarsApplicationMixin(ApplicationV2) {
         asset.style.left = `${clampedX}%`;
         asset.style.top = `${clampedY}%`;
 
-        // Update local state
+        
         const assetData = this.uiState.arenaAssets.get(assetId);
         if (assetData) {
           assetData.x = clampedX;
@@ -561,28 +544,28 @@ export class TomPlayerView extends HandlebarsApplicationMixin(ApplicationV2) {
         });
       });
 
-      // Wheel resize functionality
+      
       asset.addEventListener('wheel', (e) => {
         e.preventDefault();
 
         const assetData = this.uiState.arenaAssets.get(assetId);
         if (!assetData) return;
 
-        // Calculate new scale
+        
         const delta = e.deltaY > 0 ? -0.1 : 0.1;
         const newScale = Math.max(0.2, Math.min(5, (assetData.scale || 1) + delta));
 
-        // Update local state and DOM
+        
         assetData.scale = newScale;
         asset.style.transform = `translate(-50%, -50%) scale(${newScale})`;
 
-        // Emit resize
+        
         import('../data/TomSocketHandler.mjs').then(({ TomSocketHandler }) => {
           TomSocketHandler.emitArenaAssetResize({ assetId, scale: newScale });
         });
       });
 
-      // Right-click to remove
+      
       asset.addEventListener('contextmenu', (e) => {
         e.preventDefault();
         import('../data/TomSocketHandler.mjs').then(({ TomSocketHandler }) => {
@@ -592,9 +575,7 @@ export class TomPlayerView extends HandlebarsApplicationMixin(ApplicationV2) {
     });
   }
 
-  /**
-   * Setup dragging for arena tokens
-   */
+  
   _setupArenaTokenDragging() {
     const tokens = this.element.querySelectorAll('.tom-arena-token:not([data-drag-initialized])');
     const playerView = this.element.querySelector('.tom-player-view');
@@ -603,19 +584,19 @@ export class TomPlayerView extends HandlebarsApplicationMixin(ApplicationV2) {
       const tokenId = token.dataset.tokenId;
       const ownerId = token.dataset.ownerId;
 
-      // Mark as initialized to avoid duplicate listeners
+      
       token.dataset.dragInitialized = 'true';
 
-      // Check permissions - ownerId can be a user ID or an actor ID
+      
       const isUserOwner = game.user.id === ownerId;
-      // Check if ownerId is an actor and user has ownership of that actor
+      
       const actor = game.actors.get(ownerId);
       const isActorOwner = actor ? actor.isOwner : false;
       const isGM = game.user.isGM;
       const canDrag = isUserOwner || isActorOwner || isGM;
       const canRemove = isUserOwner || isActorOwner || isGM;
 
-      // Right-click to remove (owner or GM only) - always set up if can remove
+      
       if (canRemove) {
         token.addEventListener('contextmenu', (e) => {
           e.preventDefault();
@@ -625,18 +606,18 @@ export class TomPlayerView extends HandlebarsApplicationMixin(ApplicationV2) {
         });
       }
 
-      // Only allow owner or GM to drag
+      
       if (!canDrag) return;
 
       token.classList.add('draggable');
 
-      // Use a closure to track drag state per token
+      
       const dragState = { isDragging: false };
 
       const onMouseDown = (e) => {
-        if (e.button !== 0) return; // Left click only
+        if (e.button !== 0) return; 
 
-        // Don't start drag if clicking on interactive elements (HP badge, conditions button, etc.)
+        
         if (e.target.closest('.tom-arena-token-hp, .tom-arena-token-ac, .tom-arena-conditions-btn')) {
           return;
         }
@@ -644,7 +625,7 @@ export class TomPlayerView extends HandlebarsApplicationMixin(ApplicationV2) {
         dragState.isDragging = true;
         token.classList.add('dragging');
 
-        // Bring to front: increment z-order counter and apply to this element
+        
         this.uiState.arenaZOrder++;
         token.style.zIndex = this.uiState.arenaZOrder;
 
@@ -659,15 +640,15 @@ export class TomPlayerView extends HandlebarsApplicationMixin(ApplicationV2) {
         const x = ((e.clientX - rect.left) / rect.width) * 100;
         const y = ((e.clientY - rect.top) / rect.height) * 100;
 
-        // Clamp to bounds
+        
         const clampedX = Math.max(5, Math.min(95, x));
         const clampedY = Math.max(5, Math.min(95, y));
 
-        // Update position locally for smooth dragging
+        
         token.style.left = `${clampedX}%`;
         token.style.top = `${clampedY}%`;
 
-        // Also update local state to persist through re-renders
+        
         const tokenData = this.uiState.arenaTokens.get(tokenId);
         if (tokenData) {
           tokenData.x = clampedX;
@@ -684,11 +665,11 @@ export class TomPlayerView extends HandlebarsApplicationMixin(ApplicationV2) {
         const x = ((e.clientX - rect.left) / rect.width) * 100;
         const y = ((e.clientY - rect.top) / rect.height) * 100;
 
-        // Clamp to bounds
+        
         const clampedX = Math.max(5, Math.min(95, x));
         const clampedY = Math.max(5, Math.min(95, y));
 
-        // Emit position update to all clients
+        
         import('../data/TomSocketHandler.mjs').then(({ TomSocketHandler }) => {
           TomSocketHandler.emitArenaTokenMove({
             tokenId,
@@ -704,13 +685,303 @@ export class TomPlayerView extends HandlebarsApplicationMixin(ApplicationV2) {
     });
   }
 
+  
+  _setupArenaRuler() {
+    const playerView = this.element.querySelector('.tom-player-view');
+    if (!playerView) return;
+
+    
+    if (playerView.dataset.rulerInitialized) return;
+    playerView.dataset.rulerInitialized = 'true';
+
+    const rulerState = this.uiState.ruler;
+    const DRAG_THRESHOLD = 15; 
+
+    
+    
+    const arenaRings = playerView.querySelector('.tom-arena-rings');
+
+    
+    let rulerContainer = playerView.querySelector('.tom-arena-ruler:not(.tom-arena-ruler-remote)');
+    if (!rulerContainer) {
+      rulerContainer = document.createElement('div');
+      rulerContainer.className = 'tom-arena-ruler';
+      rulerContainer.innerHTML = `
+        <div class="ruler-line-container">
+          <div class="ruler-line-bg"></div>
+          <div class="ruler-line"></div>
+        </div>
+        <div class="ruler-label"></div>
+      `;
+      rulerContainer.style.display = 'none';
+      playerView.appendChild(rulerContainer);
+    }
+
+    const rulerLineContainer = rulerContainer.querySelector('.ruler-line-container');
+    const rulerLabel = rulerContainer.querySelector('.ruler-label');
+
+    
+    let rightMouseDown = false;
+    let hasDragged = false;
+    let startTarget = null;
+    
+    let startPx = { x: 0, y: 0 };
+    let endPx = { x: 0, y: 0 };
+
+    
+    let socketHandler = null;
+    import('../data/TomSocketHandler.mjs').then(module => {
+      socketHandler = module.TomSocketHandler;
+    });
+
+    
+    const VIEWBOX_MIN_X = 0;
+    const VIEWBOX_MIN_Y = -50;
+    const VIEWBOX_WIDTH = 1000;
+    const VIEWBOX_HEIGHT = 700;
+    const VIEWBOX_ASPECT = VIEWBOX_WIDTH / VIEWBOX_HEIGHT;
+
+    
+    const getSvgContentBounds = () => {
+      const arenaEl = playerView.querySelector('.tom-arena-rings');
+      if (!arenaEl) return null;
+
+      const svg = arenaEl.querySelector('svg');
+      if (!svg) return null;
+
+      const containerRect = arenaEl.getBoundingClientRect();
+      const containerAspect = containerRect.width / containerRect.height;
+
+      let contentWidth, contentHeight, offsetX, offsetY;
+
+      if (containerAspect > VIEWBOX_ASPECT) {
+        
+        contentHeight = containerRect.height;
+        contentWidth = contentHeight * VIEWBOX_ASPECT;
+        offsetX = (containerRect.width - contentWidth) / 2;
+        offsetY = 0;
+      } else {
+        
+        contentWidth = containerRect.width;
+        contentHeight = contentWidth / VIEWBOX_ASPECT;
+        offsetX = 0;
+        offsetY = (containerRect.height - contentHeight) / 2;
+      }
+
+      return {
+        left: containerRect.left + offsetX,
+        top: containerRect.top + offsetY,
+        width: contentWidth,
+        height: contentHeight,
+        scale: contentWidth / VIEWBOX_WIDTH 
+      };
+    };
+
+    
+    const screenToViewBox = (screenX, screenY) => {
+      const bounds = getSvgContentBounds();
+      if (!bounds) {
+        
+        const rect = playerView.getBoundingClientRect();
+        return {
+          x: ((screenX - rect.left) / rect.width) * VIEWBOX_WIDTH,
+          y: ((screenY - rect.top) / rect.height) * VIEWBOX_HEIGHT + VIEWBOX_MIN_Y
+        };
+      }
+
+      return {
+        x: ((screenX - bounds.left) / bounds.width) * VIEWBOX_WIDTH + VIEWBOX_MIN_X,
+        y: ((screenY - bounds.top) / bounds.height) * VIEWBOX_HEIGHT + VIEWBOX_MIN_Y
+      };
+    };
+
+    
+    const viewBoxToScreen = (viewBoxX, viewBoxY) => {
+      const bounds = getSvgContentBounds();
+      const viewRect = playerView.getBoundingClientRect();
+
+      if (!bounds) {
+        
+        return {
+          x: (viewBoxX / VIEWBOX_WIDTH) * viewRect.width,
+          y: ((viewBoxY - VIEWBOX_MIN_Y) / VIEWBOX_HEIGHT) * viewRect.height
+        };
+      }
+
+      
+      const screenX = ((viewBoxX - VIEWBOX_MIN_X) / VIEWBOX_WIDTH) * bounds.width + bounds.left;
+      const screenY = ((viewBoxY - VIEWBOX_MIN_Y) / VIEWBOX_HEIGHT) * bounds.height + bounds.top;
+
+      return {
+        x: screenX - viewRect.left,
+        y: screenY - viewRect.top
+      };
+    };
+
+    
+    const onMouseDown = (e) => {
+      if (e.button !== 2) return; 
+
+      rightMouseDown = true;
+      hasDragged = false;
+      startTarget = e.target;
+
+      const viewRect = playerView.getBoundingClientRect();
+
+      
+      startPx.x = e.clientX - viewRect.left;
+      startPx.y = e.clientY - viewRect.top;
+      endPx.x = startPx.x;
+      endPx.y = startPx.y;
+
+      
+      const startVB = screenToViewBox(e.clientX, e.clientY);
+      rulerState.startX = startVB.x;
+      rulerState.startY = startVB.y;
+      rulerState.endX = startVB.x;
+      rulerState.endY = startVB.y;
+    };
+
+    
+    const onMouseMove = (e) => {
+      if (!rightMouseDown) return;
+
+      const viewRect = playerView.getBoundingClientRect();
+
+      
+      endPx.x = e.clientX - viewRect.left;
+      endPx.y = e.clientY - viewRect.top;
+
+      
+      const endVB = screenToViewBox(e.clientX, e.clientY);
+      rulerState.endX = endVB.x;
+      rulerState.endY = endVB.y;
+
+      
+      const dx = endPx.x - startPx.x;
+      const dy = endPx.y - startPx.y;
+      const distPx = Math.sqrt(dx * dx + dy * dy);
+
+      
+      if (distPx >= DRAG_THRESHOLD) {
+        hasDragged = true;
+        rulerState.active = true;
+        rulerContainer.style.display = 'block';
+        const { distance, isGreen } = this._updateRuler(rulerLineContainer, rulerLabel, startPx, endPx);
+
+        
+        if (socketHandler) {
+          socketHandler.emitArenaRulerUpdate({
+            startX: rulerState.startX,
+            startY: rulerState.startY,
+            endX: rulerState.endX,
+            endY: rulerState.endY,
+            distance,
+            isGreen
+          });
+        }
+      }
+    };
+
+    
+    const onMouseUp = (e) => {
+      if (e.button !== 2) return;
+      if (!rightMouseDown) return;
+
+      rightMouseDown = false;
+
+      if (hasDragged) {
+        
+        rulerState.active = false;
+        rulerContainer.style.display = 'none';
+
+        
+        if (socketHandler) {
+          socketHandler.emitArenaRulerHide();
+        }
+      }
+      
+
+      startTarget = null;
+    };
+
+    
+    const onContextMenu = (e) => {
+      if (hasDragged) {
+        e.preventDefault();
+        e.stopPropagation();
+        e.stopImmediatePropagation();
+        
+        hasDragged = false;
+        return false;
+      }
+      
+      hasDragged = false;
+    };
+
+    
+    const onLeftClick = (e) => {
+      if (rulerState.active) {
+        rulerState.active = false;
+        rulerContainer.style.display = 'none';
+
+        
+        if (socketHandler) {
+          socketHandler.emitArenaRulerHide();
+        }
+      }
+    };
+
+    playerView.addEventListener('mousedown', onMouseDown);
+    document.addEventListener('mousemove', onMouseMove);
+    document.addEventListener('mouseup', onMouseUp);
+    playerView.addEventListener('contextmenu', onContextMenu, true);
+    playerView.addEventListener('click', onLeftClick);
+  }
+
+  
+  _updateRuler(lineContainer, label, startPx, endPx) {
+    
+    const dx = endPx.x - startPx.x;
+    const dy = endPx.y - startPx.y;
+    const length = Math.sqrt(dx * dx + dy * dy);
+    const angle = Math.atan2(dy, dx) * (180 / Math.PI);
+
+    
+    lineContainer.style.left = `${startPx.x}px`;
+    lineContainer.style.top = `${startPx.y}px`;
+    lineContainer.style.width = `${length}px`;
+    lineContainer.style.transform = `rotate(${angle}deg)`;
+
+    
+    const playerView = this.element?.querySelector('.tom-player-view');
+    const viewRect = playerView?.getBoundingClientRect() || { width: 1000, height: 700 };
+    const diagonal = Math.sqrt(viewRect.width * viewRect.width + viewRect.height * viewRect.height);
+    const distPercent = (length / diagonal) * 100;
+    const distance = Math.round(distPercent);
+
+    
+    const isGreen = distance <= 30;
+
+    
+    const midX = (startPx.x + endPx.x) / 2;
+    const midY = (startPx.y + endPx.y) / 2;
+    const userName = game.user.name;
+    label.textContent = `${userName}: ${distance}`;
+    label.style.left = `${midX}px`;
+    label.style.top = `${midY}px`;
+    label.dataset.color = isGreen ? 'green' : 'red';
+
+    return { distance, isGreen };
+  }
+
   async _prepareContext(options) {
     const scene = this.uiState.sceneId ? Store.scenes.get(this.uiState.sceneId) : null;
 
-    // Determine which cast to use
+    
     let castSource;
     if (this.uiState.castOnlyMode && this.uiState.castOnlyCharacterIds) {
-      // Build cast from character IDs for cast-only mode
+      
       castSource = this.uiState.castOnlyCharacterIds.map(id => {
         const char = Store.characters.get(id);
         return char ? { id: char.id, name: char.name, image: char.image } : null;
@@ -719,22 +990,22 @@ export class TomPlayerView extends HandlebarsApplicationMixin(ApplicationV2) {
       castSource = scene ? scene.cast : [];
     }
 
-    // Prepare cast with current states and border styles
+    
     const cast = castSource.map(charRef => {
       const realChar = Store.characters.get(charRef.id);
       if (realChar) {
         return {
           id: realChar.id,
           name: realChar.name,
-          image: realChar.image, // This uses the getter that checks currentState
+          image: realChar.image, 
           borderStyle: realChar.borderStyle || 'gold',
           locked: realChar.locked || false
         };
       }
-      return { ...charRef, borderStyle: 'gold', locked: false }; // Fallback
+      return { ...charRef, borderStyle: 'gold', locked: false }; 
     });
 
-    // Prepare Emotion Picker Context
+    
     let pickerContext = null;
     if (this.uiState.emotionPicker.open && this.uiState.emotionPicker.characterId) {
       const char = Store.characters.get(this.uiState.emotionPicker.characterId);
@@ -745,7 +1016,7 @@ export class TomPlayerView extends HandlebarsApplicationMixin(ApplicationV2) {
           path,
           isFavorite: favoriteEmotions.has(key)
         }));
-        // Sort: favorites first, then alphabetically
+        
         emotions.sort((a, b) => {
           if (a.isFavorite && !b.isFavorite) return -1;
           if (!a.isFavorite && b.isFavorite) return 1;
@@ -762,7 +1033,7 @@ export class TomPlayerView extends HandlebarsApplicationMixin(ApplicationV2) {
       }
     }
 
-    // Prepare Border Picker Context
+    
     let borderPickerContext = null;
     if (this.uiState.borderPicker.open && this.uiState.borderPicker.characterId) {
       const char = Store.characters.get(this.uiState.borderPicker.characterId);
@@ -770,7 +1041,7 @@ export class TomPlayerView extends HandlebarsApplicationMixin(ApplicationV2) {
         const currentBorder = char.borderStyle || 'gold';
         const presets = CONFIG.BORDER_PRESETS;
 
-        // Organize presets by type
+        
         const solid = [];
         const gradient = [];
         const animated = [];
@@ -808,8 +1079,8 @@ export class TomPlayerView extends HandlebarsApplicationMixin(ApplicationV2) {
       }
     }
 
-    // Determine the correct background to display
-    // If we're in a sequence and have a stored sequence background, use that instead of scene.background
+    
+    
     let background = scene?.background;
     let bgType = scene?.bgType;
 
@@ -818,8 +1089,8 @@ export class TomPlayerView extends HandlebarsApplicationMixin(ApplicationV2) {
       bgType = this.uiState.sequenceBackground.bgType;
     }
 
-    // Prepare layout settings with CSS-ready values
-    // In cast-only mode, use castOnlyLayoutSettings
+    
+    
     const layoutSettings = this.uiState.castOnlyMode && this.uiState.castOnlyLayoutSettings
       ? this.uiState.castOnlyLayoutSettings
       : (scene?.layoutSettings || CONFIG.DEFAULT_LAYOUT);
@@ -843,22 +1114,22 @@ export class TomPlayerView extends HandlebarsApplicationMixin(ApplicationV2) {
       emotionPicker: pickerContext,
       borderPicker: borderPickerContext,
       layout: layoutContext,
-      // Cast-Only Mode flag
+      
       castOnlyMode: this.uiState.castOnlyMode,
-      // Arena Mode flag
+      
       isArena: scene?.isArena || false,
-      // Arena tokens (with computed isNPC flag, ownership, and stats)
+      
       arenaTokens: Array.from(this.uiState.arenaTokens.values()).map(token => {
         const typeLower = token.actorType?.toLowerCase() || '';
         const isNPC = token.actorType && typeLower !== 'player' && typeLower !== 'character';
 
-        // Check ownership
+        
         const isUserOwner = game.user.id === token.ownerId;
         const ownerActor = game.actors.get(token.ownerId);
         const isActorOwner = ownerActor ? ownerActor.isOwner : false;
         const isOwner = isUserOwner || isActorOwner || game.user.isGM;
 
-        // Get actor stats if owner
+        
         let ac = '?';
         let hpValue = 0;
         let hpMax = 0;
@@ -866,7 +1137,7 @@ export class TomPlayerView extends HandlebarsApplicationMixin(ApplicationV2) {
           const actor = game.actors.get(token.actorId) || ownerActor;
           if (actor) {
             ac = actor.system?.attributes?.ac?.value ?? actor.system?.ac?.value ?? '?';
-            // Use token state HP if available (for NPCs with modified HP), otherwise actor HP
+            
             if (token.currentHp !== undefined) {
               hpValue = token.currentHp;
               hpMax = token.maxHp ?? actor.system?.attributes?.hp?.max ?? actor.system?.hp?.max ?? 0;
@@ -886,39 +1157,34 @@ export class TomPlayerView extends HandlebarsApplicationMixin(ApplicationV2) {
           hpMax
         };
       }),
-      // Arena assets (GM-only)
+      
       arenaAssets: Array.from(this.uiState.arenaAssets.values()),
-      // Current user ID for ownership checks
+      
       userId: game.user.id
     };
   }
 
-  /* ═══════════════════════════════════════════════════════════════
-     FOUNDRY UI OFFSET CALCULATION
-     ═══════════════════════════════════════════════════════════════ */
+  
 
-  /**
-   * Calculate Foundry VTT UI element widths and set CSS variables
-   * This prevents cast layouts from overlapping with Foundry's sidebar/controls
-   */
+  
   _setFoundryUIOffsets() {
     const root = this.element;
     if (!root) return;
 
-    // Calculate left offset (scene controls width)
-    // In FoundryVTT, the left controls (#controls) is typically 50-60px wide
-    let leftOffset = 10; // Minimal padding
+    
+    
+    let leftOffset = 10; 
     const controls = document.getElementById('controls');
 
     if (controls) {
       const controlsRect = controls.getBoundingClientRect();
-      // Use the WIDTH of controls, not position
+      
       if (controlsRect.width > 0) {
         leftOffset = controlsRect.width + 15;
       }
     }
 
-    // Calculate right offset (sidebar)
+    
     let rightOffset = 0;
     const sidebar = document.getElementById('sidebar');
     if (sidebar && !sidebar.classList.contains('collapsed')) {
@@ -928,28 +1194,25 @@ export class TomPlayerView extends HandlebarsApplicationMixin(ApplicationV2) {
       }
     }
 
-    // Set CSS variables on the root element
+    
     root.style.setProperty('--foundry-left-offset', `${leftOffset}px`);
     root.style.setProperty('--foundry-right-offset', `${rightOffset}px`);
   }
 
-  /**
-   * Ensure video backgrounds play correctly
-   * Some browsers block autoplay even with muted attribute
-   */
+  
   _ensureVideoPlays() {
     const video = this.element?.querySelector('video.tom-pv-bg-media');
     if (video) {
-      // Force muted state (required for autoplay in most browsers)
+      
       video.muted = true;
 
-      // Try to play the video
+      
       const playPromise = video.play();
       if (playPromise !== undefined) {
         playPromise.catch(error => {
-          if (error.name === 'AbortError') return; // Ignore interruption by re-render
+          if (error.name === 'AbortError') return; 
           console.warn('Tom | Video autoplay was blocked:', error);
-          // Add click handler to play on user interaction
+          
           const playOnClick = () => {
             video.play();
             document.removeEventListener('click', playOnClick);
@@ -960,21 +1223,19 @@ export class TomPlayerView extends HandlebarsApplicationMixin(ApplicationV2) {
     }
   }
 
-  /* ═══════════════════════════════════════════════════════════════
-     ACTIONS
-     ═══════════════════════════════════════════════════════════════ */
+  
 
   static _onCharacterClick(event, target) {
     const charId = target.dataset.id;
     const character = Store.characters.get(charId);
 
-    // Check if character is locked and user is not GM
+    
     if (character?.locked && !game.user.isGM) {
       ui.notifications.warn(`${character.name} is locked. Only the GM can change emotions.`);
       return;
     }
 
-    // Check permission level (GM always has access)
+    
     if (!game.user.isGM && character) {
       const hasPermission = character.hasPermission(game.user.id, 'emotion');
       if (!hasPermission) {
@@ -985,11 +1246,11 @@ export class TomPlayerView extends HandlebarsApplicationMixin(ApplicationV2) {
 
     const rect = target.getBoundingClientRect();
 
-    // Determine if character is near top of screen (picker should appear below)
-    // Use 300px threshold - if character is within 300px of top, show picker below
+    
+    
     const showBelow = rect.top < 300;
 
-    // Position picker above or below character depending on position
+    
     this.uiState.emotionPicker = {
       open: true,
       characterId: charId,
@@ -1009,7 +1270,7 @@ export class TomPlayerView extends HandlebarsApplicationMixin(ApplicationV2) {
     const charId = this.uiState.emotionPicker.characterId;
     const state = target.dataset.state;
 
-    // Emit update to everyone (including GM who will save it)
+    
     import('../data/TomSocketHandler.mjs').then(({ TomSocketHandler }) => {
       TomSocketHandler.emitUpdateEmotion(charId, state);
     });
@@ -1035,12 +1296,10 @@ export class TomPlayerView extends HandlebarsApplicationMixin(ApplicationV2) {
     }
   }
 
-  /* ═══════════════════════════════════════════════════════════════
-     BORDER PICKER ACTIONS
-     ═══════════════════════════════════════════════════════════════ */
+  
 
   static _onOpenBorderPicker(event, target) {
-    // Switch from emotion picker to border picker (keep same position and character)
+    
     const charId = this.uiState.emotionPicker.characterId;
     const x = this.uiState.emotionPicker.x;
     const y = this.uiState.emotionPicker.y;
@@ -1063,7 +1322,7 @@ export class TomPlayerView extends HandlebarsApplicationMixin(ApplicationV2) {
   }
 
   static _onBackToEmotions(event, target) {
-    // Switch back from border picker to emotion picker
+    
     const charId = this.uiState.borderPicker.characterId;
     const x = this.uiState.borderPicker.x;
     const y = this.uiState.borderPicker.y;
@@ -1084,65 +1343,64 @@ export class TomPlayerView extends HandlebarsApplicationMixin(ApplicationV2) {
     const charId = this.uiState.borderPicker.characterId;
     const preset = target.dataset.preset;
 
-    // Emit update to everyone (including GM who will save it)
+    
+    this.element?.querySelectorAll('.tom-border-option').forEach(el => el.classList.remove('active'));
+    target.classList.add('active');
+
+    
     import('../data/TomSocketHandler.mjs').then(({ TomSocketHandler }) => {
       TomSocketHandler.emitUpdateBorder(charId, preset);
     });
-
-    // Keep border picker open so user can see the change
-    this.render();
   }
 
-  /* ═══════════════════════════════════════════════════════════════
-     PUBLIC API & SOCKET HANDLERS
-     ═══════════════════════════════════════════════════════════════ */
+  
 
   static activate(sceneId) {
     if (!this._instance) {
       this._instance = new TomPlayerView();
     }
 
-    // Detectar se é uma nova cena (transição) ou apenas um refresh
+    
     const isNewScene = this._instance.uiState.sceneId !== sceneId;
 
     this._instance.uiState.previousSceneId = this._instance.uiState.sceneId;
     this._instance.uiState.active = true;
     this._instance.uiState.sceneId = sceneId;
-    this._instance.uiState.isSceneTransition = isNewScene; // Só anima se for cena diferente
-    this._instance.uiState.sequenceBackground = null; // Clear sequence background when activating a regular scene
+    this._instance.uiState.isSceneTransition = isNewScene; 
+    this._instance.uiState.sequenceBackground = null; 
 
     this._instance.render(true);
   }
 
   static deactivate() {
     if (this._instance && this._instance.uiState.active) {
-      // Clear arena tokens and assets
+      
       this._instance.uiState.arenaTokens.clear();
       this._instance.uiState.arenaAssets.clear();
-      this._instance.uiState.arenaZOrder = 10; // Reset z-order counter
+      this._instance.uiState.arenaZOrder = 10; 
 
-      // Adicionar classe de saída para animação
+      
       const view = this._instance.element;
       if (view) {
         const playerView = view.querySelector('.tom-player-view');
         if (playerView) {
           playerView.classList.add('closing');
 
-          // Aguardar animação terminar antes de desativar
+          
           setTimeout(() => {
             this._instance.uiState.active = false;
             this._instance.uiState.sceneId = null;
-            this._instance.uiState.sequenceBackground = null; // Clear sequence background
+            this._instance.uiState.sequenceBackground = null; 
             this._instance.render();
           }, 600);
           return;
         }
       }
 
-      // Fallback se não encontrar o elemento
+      
       this._instance.uiState.active = false;
       this._instance.uiState.sceneId = null;
-      this._instance.uiState.sequenceBackground = null; // Clear sequence background
+      this._instance.uiState.sequenceBackground = null; 
       this._instance.render();
     }
   }
@@ -1153,10 +1411,7 @@ export class TomPlayerView extends HandlebarsApplicationMixin(ApplicationV2) {
     }
   }
 
-  /**
-   * Update only a specific character's image without full re-render
-   * This prevents flickering of other characters when one emotion changes
-   */
+  
   static refreshCharacter(characterId) {
     if (!this._instance || !this._instance.uiState.active) return;
 
@@ -1166,13 +1421,13 @@ export class TomPlayerView extends HandlebarsApplicationMixin(ApplicationV2) {
     const character = Store.characters.get(characterId);
     if (!character) return;
 
-    // Find the character element and update only its image
+    
     const charElement = view.querySelector(`.tom-pv-character[data-id="${characterId}"]`);
     if (charElement) {
       const img = charElement.querySelector('.tom-pv-portrait img');
       if (img) {
-        // Always update the src - the browser will handle caching
-        // Using a direct assignment is faster than checking equality
+        
+        
         const newSrc = character.image;
         if (!img.src.endsWith(newSrc) && img.getAttribute('src') !== newSrc) {
           img.src = newSrc;
@@ -1181,33 +1436,26 @@ export class TomPlayerView extends HandlebarsApplicationMixin(ApplicationV2) {
     }
   }
 
-  /**
-   * Update cast (add/remove characters) with minimal re-render
-   * Only re-renders the cast strip, not the entire view
-   */
+  
   static refreshCast() {
     if (!this._instance || !this._instance.uiState.active) return;
-    // For cast changes (add/remove), we need a full render
-    // but we avoid triggering scene transition animations
+    
+    
     this._instance.uiState.isSceneTransition = false;
     this._instance.render();
   }
 
-  /**
-   * Update only a specific character's border without full re-render
-   */
+  
   static refreshCharacterBorder(characterId, borderStyle) {
     if (!this._instance || !this._instance.uiState.active) return;
 
     const view = this._instance.element;
     if (!view) return;
 
-    // Find the character element and update its border class
-    const charElement = view.querySelector(`.tom-pv-character[data-id="${characterId}"]`);
-    if (charElement) {
-      // Remove old border classes and add new one
-      charElement.className = charElement.className.replace(/es-border-\S+/g, '');
-      charElement.classList.add(`es-border-${borderStyle}`);
+    
+    const portrait = view.querySelector(`.tom-pv-character[data-id="${characterId}"] .tom-pv-portrait`);
+    if (portrait) {
+      portrait.dataset.border = borderStyle;
     }
   }
 
@@ -1218,30 +1466,25 @@ export class TomPlayerView extends HandlebarsApplicationMixin(ApplicationV2) {
 
     const isNewScene = this._instance.uiState.sceneId !== sceneId;
 
-    // Update state
+    
     this._instance.uiState.previousSceneId = this._instance.uiState.sceneId;
     this._instance.uiState.active = true;
     this._instance.uiState.sceneId = sceneId;
 
-    // Do full render
+    
     this._instance.uiState.isSceneTransition = isNewScene;
     this._instance.render(true);
   }
 
+  
 
-  /* ═══════════════════════════════════════════════════════════════
-     SCENE SEQUENCE METHODS (Manual navigation by GM)
-     ═══════════════════════════════════════════════════════════════ */
-
-  /**
-   * Activate the player view with a sequence (starts at first background)
-   */
+  
   static activateSequence(sceneId, background, transitionType = 'dissolve', transitionDuration = 1.0) {
     if (!this._instance) {
       this._instance = new TomPlayerView();
     }
 
-    // Store current background info for sequence
+    
     this._instance.uiState.sequenceBackground = background;
 
     this._instance.uiState.previousSceneId = this._instance.uiState.sceneId;
@@ -1252,14 +1495,12 @@ export class TomPlayerView extends HandlebarsApplicationMixin(ApplicationV2) {
     this._instance.render(true);
   }
 
-  /**
-   * Update the background during a sequence without re-rendering everything
-   */
+  
   static updateSequenceBackground(background, transitionType = 'dissolve', transitionDuration = 1.0) {
     const view = this._instance?.element;
     if (!view) return;
 
-    // Store new background
+    
     this._instance.uiState.sequenceBackground = background;
 
     const bgContainer = view.querySelector('.tom-pv-background');
@@ -1268,11 +1509,11 @@ export class TomPlayerView extends HandlebarsApplicationMixin(ApplicationV2) {
     const currentMedia = bgContainer.querySelector('.tom-pv-bg-media:not(.tom-bg-outgoing)');
     const isVideo = background.bgType === 'video';
 
-    // Convert duration from seconds to milliseconds
+    
     const durationMs = transitionType === 'cut' ? 0 : (transitionDuration * 1000);
     const transitionClass = transitionType === 'cut' ? 'es-bg-transition-cut' : 'es-bg-transition-dissolve';
 
-    // Create new background element
+    
     const newMedia = document.createElement(isVideo ? 'video' : 'img');
     newMedia.className = 'es-pv-bg-media es-bg-incoming';
     newMedia.src = background.path;
@@ -1283,15 +1524,15 @@ export class TomPlayerView extends HandlebarsApplicationMixin(ApplicationV2) {
       newMedia.muted = true;
       newMedia.playsInline = true;
       newMedia.disablePictureInPicture = true;
-      // Force play after append
+      
       newMedia.addEventListener('loadeddata', () => {
         newMedia.play().catch(() => { });
       }, { once: true });
     }
 
-    // Handle cut transition (instant)
+    
     if (transitionType === 'cut') {
-      // Just swap immediately
+      
       if (currentMedia) {
         currentMedia.remove();
       }
@@ -1299,7 +1540,7 @@ export class TomPlayerView extends HandlebarsApplicationMixin(ApplicationV2) {
       return;
     }
 
-    // Handle dissolve transition
+    
     newMedia.style.setProperty('--transition-duration', `${durationMs}ms`);
     newMedia.classList.add(transitionClass);
 
@@ -1328,38 +1569,30 @@ export class TomPlayerView extends HandlebarsApplicationMixin(ApplicationV2) {
     });
   }
 
-  /* ═══════════════════════════════════════════════════════════════
-     CAST-ONLY MODE METHODS (Cast without scene background)
-     ═══════════════════════════════════════════════════════════════ */
+  
 
-  /**
-   * Activate Cast-Only Mode
-   * @param {string[]} characterIds - Array of character IDs to display
-   * @param {Object} layoutSettings - Layout settings for cast positioning
-   */
+  
   static activateCastOnly(characterIds, layoutSettings) {
     if (!this._instance) {
       this._instance = new TomPlayerView();
     }
 
-    // Set cast-only mode state
+    
     this._instance.uiState.active = true;
     this._instance.uiState.castOnlyMode = true;
     this._instance.uiState.castOnlyCharacterIds = [...characterIds];
     this._instance.uiState.castOnlyLayoutSettings = layoutSettings || CONFIG.DEFAULT_LAYOUT;
-    this._instance.uiState.sceneId = null; // No scene in cast-only mode
-    this._instance.uiState.isSceneTransition = true; // Trigger entrance animation
+    this._instance.uiState.sceneId = null; 
+    this._instance.uiState.isSceneTransition = true; 
 
     this._instance.render(true);
   }
 
-  /**
-   * Deactivate Cast-Only Mode
-   */
+  
   static deactivateCastOnly() {
     if (!this._instance || !this._instance.uiState.castOnlyMode) return;
 
-    // Animate out
+    
     const view = this._instance.element;
     if (view) {
       const playerView = view.querySelector('.tom-player-view');
@@ -1376,18 +1609,14 @@ export class TomPlayerView extends HandlebarsApplicationMixin(ApplicationV2) {
       }
     }
 
-    // Fallback
+    
     this._instance.uiState.active = false;
     this._instance.uiState.castOnlyMode = false;
     this._instance.uiState.castOnlyCharacterIds = [];
     this._instance.render();
   }
 
-  /**
-   * Update Cast-Only Mode (characters or layout)
-   * @param {string[]} characterIds - Updated character IDs (optional)
-   * @param {Object} layoutSettings - Updated layout settings (optional)
-   */
+  
   static updateCastOnly(characterIds, layoutSettings) {
     if (!this._instance || !this._instance.uiState.castOnlyMode) return;
 
@@ -1398,33 +1627,26 @@ export class TomPlayerView extends HandlebarsApplicationMixin(ApplicationV2) {
       this._instance.uiState.castOnlyLayoutSettings = layoutSettings;
     }
 
-    // Don't trigger scene transition animation
+    
     this._instance.uiState.isSceneTransition = false;
     this._instance.render();
   }
 
-  /**
-   * Refresh a character in Cast-Only Mode
-   * @param {string} characterId - Character ID to refresh
-   */
+  
   static refreshCastOnlyCharacter(characterId) {
     if (!this._instance || !this._instance.uiState.castOnlyMode) return;
     this.refreshCharacter(characterId);
   }
 
-  /* ═══════════════════════════════════════════════════════════════
-     ARENA TOKEN METHODS
-     ═══════════════════════════════════════════════════════════════ */
+  
 
-  /**
-   * Spawn an arena token
-   */
+  
   static spawnArenaToken(data) {
     if (!this._instance || !this._instance.uiState.active) return;
 
     const { tokenId, characterId, actorId, actorName, actorType, image, x, y, ownerId } = data;
 
-    // Add to state
+    
     this._instance.uiState.arenaTokens.set(tokenId, {
       tokenId,
       characterId,
@@ -1437,20 +1659,18 @@ export class TomPlayerView extends HandlebarsApplicationMixin(ApplicationV2) {
       ownerId
     });
 
-    // Create token element directly (faster than full re-render)
+    
     this._createArenaTokenElement(data);
   }
 
-  /**
-   * Create arena token DOM element
-   */
+  
   static _createArenaTokenElement(data) {
     const view = this._instance?.element;
     if (!view) return;
 
     let tokensContainer = view.querySelector('.tom-arena-tokens');
     if (!tokensContainer) {
-      // Create container if it doesn't exist
+      
       const playerView = view.querySelector('.tom-player-view');
       if (!playerView) return;
 
@@ -1460,20 +1680,20 @@ export class TomPlayerView extends HandlebarsApplicationMixin(ApplicationV2) {
     }
 
     const { tokenId, actorId, actorName, actorType, image, x, y, ownerId } = data;
-    // Check ownership - can be user ID or actor ID
+    
     const isUserOwner = game.user.id === ownerId;
     const ownerActor = game.actors.get(ownerId);
     const isActorOwner = ownerActor ? ownerActor.isOwner : false;
     const isOwner = isUserOwner || isActorOwner || game.user.isGM;
 
-    // Get the actual actor for stats (may be different from ownerActor)
+    
     const actor = game.actors.get(actorId) || ownerActor;
 
-    // Determine if NPC for styling (case-insensitive check)
+    
     const actorTypeLower = actorType?.toLowerCase() || '';
     const isNPC = actorType && actorTypeLower !== 'player' && actorTypeLower !== 'character';
 
-    // Get AC and HP - use token state if available (for NPCs with modified HP), otherwise from actor
+    
     const tokenState = this._instance?.uiState.arenaTokens.get(tokenId);
     let ac = '?';
     let hpValue = 0;
@@ -1481,7 +1701,7 @@ export class TomPlayerView extends HandlebarsApplicationMixin(ApplicationV2) {
 
     if (actor) {
       ac = actor.system?.attributes?.ac?.value ?? actor.system?.ac?.value ?? '?';
-      // For NPCs, use token state HP if set, otherwise actor HP
+      
       if (isNPC && tokenState?.currentHp !== undefined) {
         hpValue = tokenState.currentHp;
         hpMax = tokenState.maxHp ?? actor.system?.attributes?.hp?.max ?? actor.system?.hp?.max ?? 0;
@@ -1491,13 +1711,13 @@ export class TomPlayerView extends HandlebarsApplicationMixin(ApplicationV2) {
       }
     }
 
-    // Store HP in token state if not already there
+    
     if (tokenState && tokenState.currentHp === undefined) {
       tokenState.currentHp = hpValue;
       tokenState.maxHp = hpMax;
     }
 
-    // Build badges (only show to owners)
+    
     let acBadge = '';
     let hpBadge = '';
     if (isOwner) {
@@ -1505,7 +1725,7 @@ export class TomPlayerView extends HandlebarsApplicationMixin(ApplicationV2) {
       hpBadge = `<div class="tom-arena-token-hp" data-clickable="true">${hpValue}/${hpMax}</div>`;
     }
 
-    // Get active conditions from token state
+    
     const conditions = tokenState?.conditions || [];
     const conditionsHtml = conditions.map(c => {
       const condDef = this.ARENA_CONDITIONS.find(def => def.id === c);
@@ -1515,7 +1735,7 @@ export class TomPlayerView extends HandlebarsApplicationMixin(ApplicationV2) {
       </div>`;
     }).join('');
 
-    // GM conditions button
+    
     const gmConditionsBtn = game.user.isGM ?
       `<button class="tom-arena-conditions-btn" title="Manage Conditions"><i class="fas fa-heart-crack"></i></button>` : '';
 
@@ -1543,7 +1763,7 @@ export class TomPlayerView extends HandlebarsApplicationMixin(ApplicationV2) {
 
     tokensContainer.appendChild(tokenEl);
 
-    // Setup HP click handler for owners
+    
     if (isOwner) {
       const hpEl = tokenEl.querySelector('.tom-arena-token-hp');
       if (hpEl) {
@@ -1555,7 +1775,7 @@ export class TomPlayerView extends HandlebarsApplicationMixin(ApplicationV2) {
       }
     }
 
-    // Setup conditions button for GM
+    
     if (game.user.isGM) {
       const condBtn = tokenEl.querySelector('.tom-arena-conditions-btn');
       if (condBtn) {
@@ -1567,13 +1787,11 @@ export class TomPlayerView extends HandlebarsApplicationMixin(ApplicationV2) {
       }
     }
 
-    // Setup dragging for this token
+    
     this._instance._setupArenaTokenDragging();
   }
 
-  /**
-   * Available conditions for arena tokens
-   */
+  
   static ARENA_CONDITIONS = [
     { id: 'dead', name: 'Dead', icon: 'fas fa-skull' },
     { id: 'unconscious', name: 'Unconscious', icon: 'fas fa-bed' },
@@ -1601,24 +1819,22 @@ export class TomPlayerView extends HandlebarsApplicationMixin(ApplicationV2) {
     { id: 'marked', name: 'Marked', icon: 'fas fa-crosshairs' }
   ];
 
-  /**
-   * Show conditions picker for a token (GM only)
-   */
+  
   static _showConditionsPicker(tokenId, actorName, activeConditions, tokenEl) {
-    // Remove any existing picker
+    
     document.querySelector('.tom-conditions-picker')?.remove();
 
     const picker = document.createElement('div');
     picker.className = 'tom-conditions-picker';
 
-    // Header
+    
     const header = document.createElement('div');
     header.className = 'tom-conditions-header';
     header.innerHTML = `<span><i class="fas fa-heart-crack"></i> ${actorName}</span>
       <button class="tom-conditions-close"><i class="fas fa-times"></i></button>`;
     picker.appendChild(header);
 
-    // Conditions grid
+    
     const grid = document.createElement('div');
     grid.className = 'tom-conditions-grid';
 
@@ -1634,25 +1850,25 @@ export class TomPlayerView extends HandlebarsApplicationMixin(ApplicationV2) {
       `;
 
       item.addEventListener('click', async () => {
-        // Check current state dynamically (not captured isActive)
+        
         const currentlyActive = item.classList.contains('active');
 
         let newConditions;
         if (currentlyActive) {
-          // Remove condition
+          
           newConditions = activeConditions.filter(c => c !== cond.id);
           const idx = activeConditions.indexOf(cond.id);
           if (idx > -1) activeConditions.splice(idx, 1);
         } else {
-          // Add condition
+          
           newConditions = [...activeConditions, cond.id];
           activeConditions.push(cond.id);
         }
 
-        // Update picker UI
+        
         item.classList.toggle('active');
 
-        // Update via socket
+        
         const { TomSocketHandler } = await import('../data/TomSocketHandler.mjs');
         TomSocketHandler.emitArenaTokenConditionsUpdate({ tokenId, conditions: newConditions });
       });
@@ -1662,13 +1878,13 @@ export class TomPlayerView extends HandlebarsApplicationMixin(ApplicationV2) {
 
     picker.appendChild(grid);
 
-    // Position near the token
+    
     const tokenRect = tokenEl.getBoundingClientRect();
     picker.style.position = 'fixed';
     picker.style.left = `${tokenRect.right + 10}px`;
     picker.style.top = `${tokenRect.top}px`;
 
-    // Adjust if off-screen
+    
     document.body.appendChild(picker);
     const pickerRect = picker.getBoundingClientRect();
     if (pickerRect.right > window.innerWidth) {
@@ -1678,10 +1894,10 @@ export class TomPlayerView extends HandlebarsApplicationMixin(ApplicationV2) {
       picker.style.top = `${window.innerHeight - pickerRect.height - 10}px`;
     }
 
-    // Close button
+    
     header.querySelector('.tom-conditions-close').addEventListener('click', () => picker.remove());
 
-    // Close on click outside
+    
     const closeHandler = (e) => {
       if (!picker.contains(e.target) && !e.target.closest('.tom-arena-conditions-btn')) {
         picker.remove();
@@ -1691,9 +1907,7 @@ export class TomPlayerView extends HandlebarsApplicationMixin(ApplicationV2) {
     setTimeout(() => document.addEventListener('click', closeHandler), 10);
   }
 
-  /**
-   * Show dialog to edit token HP
-   */
+  
   static _showHpEditDialog(tokenId, actorId, isNPC, currentHp, maxHp, actorName) {
     new Dialog({
       title: `Edit HP - ${actorName}`,
@@ -1714,18 +1928,18 @@ export class TomPlayerView extends HandlebarsApplicationMixin(ApplicationV2) {
             const newHp = parseInt(html.find('input[name="hp"]').val()) || 0;
             const clampedHp = Math.max(0, Math.min(newHp, maxHp));
 
-            // Import socket handler
+            
             const { TomSocketHandler } = await import('../data/TomSocketHandler.mjs');
 
             if (isNPC) {
-              // For NPCs, update token state and broadcast
+              
               TomSocketHandler.emitArenaTokenHpUpdate({ tokenId, hp: clampedHp, maxHp });
             } else {
-              // For players, update the actor directly
+              
               const actor = game.actors.get(actorId);
               if (actor) {
                 await actor.update({ 'system.attributes.hp.value': clampedHp });
-                // Broadcast token HP update to sync display
+                
                 TomSocketHandler.emitArenaTokenHpUpdate({ tokenId, hp: clampedHp, maxHp });
               }
             }
@@ -1740,20 +1954,18 @@ export class TomPlayerView extends HandlebarsApplicationMixin(ApplicationV2) {
     }).render(true);
   }
 
-  /**
-   * Move an arena token
-   */
+  
   static moveArenaToken(tokenId, x, y) {
     if (!this._instance) return;
 
-    // Update state
+    
     const token = this._instance.uiState.arenaTokens.get(tokenId);
     if (token) {
       token.x = x;
       token.y = y;
     }
 
-    // Update DOM
+    
     const view = this._instance.element;
     if (!view) return;
 
@@ -1764,16 +1976,14 @@ export class TomPlayerView extends HandlebarsApplicationMixin(ApplicationV2) {
     }
   }
 
-  /**
-   * Remove an arena token
-   */
+  
   static removeArenaToken(tokenId) {
     if (!this._instance) return;
 
-    // Remove from state
+    
     this._instance.uiState.arenaTokens.delete(tokenId);
 
-    // Remove from DOM
+    
     const view = this._instance.element;
     if (!view) return;
 
@@ -1784,20 +1994,18 @@ export class TomPlayerView extends HandlebarsApplicationMixin(ApplicationV2) {
     }
   }
 
-  /**
-   * Update an arena token's HP display
-   */
+  
   static updateArenaTokenHp(tokenId, hp, maxHp) {
     if (!this._instance) return;
 
-    // Update state
+    
     const token = this._instance.uiState.arenaTokens.get(tokenId);
     if (token) {
       token.currentHp = hp;
       token.maxHp = maxHp;
     }
 
-    // Update DOM
+    
     const view = this._instance.element;
     if (!view) return;
 
@@ -1810,19 +2018,17 @@ export class TomPlayerView extends HandlebarsApplicationMixin(ApplicationV2) {
     }
   }
 
-  /**
-   * Update an arena token's conditions display
-   */
+  
   static updateArenaTokenConditions(tokenId, conditions) {
     if (!this._instance) return;
 
-    // Update state
+    
     const token = this._instance.uiState.arenaTokens.get(tokenId);
     if (token) {
       token.conditions = conditions;
     }
 
-    // Update DOM
+    
     const view = this._instance.element;
     if (!view) return;
 
@@ -1842,27 +2048,21 @@ export class TomPlayerView extends HandlebarsApplicationMixin(ApplicationV2) {
     }
   }
 
-  /**
-   * Clear all arena tokens (called when broadcast stops)
-   */
+  
   static clearArenaTokens() {
     if (!this._instance) return;
     this._instance.uiState.arenaTokens.clear();
   }
 
-  /* ═══════════════════════════════════════════════════════════════
-     ARENA ASSET METHODS (GM-only image assets)
-     ═══════════════════════════════════════════════════════════════ */
+  
 
-  /**
-   * Spawn an arena asset
-   */
+  
   static spawnArenaAsset(data) {
     if (!this._instance || !this._instance.uiState.active) return;
 
     const { assetId, image, x, y, scale } = data;
 
-    // Add to state
+    
     this._instance.uiState.arenaAssets.set(assetId, {
       assetId,
       image,
@@ -1871,13 +2071,11 @@ export class TomPlayerView extends HandlebarsApplicationMixin(ApplicationV2) {
       scale: scale || 1
     });
 
-    // Create asset element
+    
     this._createArenaAssetElement(data);
   }
 
-  /**
-   * Create arena asset DOM element
-   */
+  
   static _createArenaAssetElement(data) {
     const view = this._instance?.element;
     if (!view) return;
@@ -1904,13 +2102,11 @@ export class TomPlayerView extends HandlebarsApplicationMixin(ApplicationV2) {
 
     assetsContainer.appendChild(assetEl);
 
-    // Setup interaction (GM only)
+    
     this._instance._setupArenaAssetInteraction();
   }
 
-  /**
-   * Move an arena asset
-   */
+  
   static moveArenaAsset(assetId, x, y) {
     if (!this._instance) return;
 
@@ -1930,9 +2126,7 @@ export class TomPlayerView extends HandlebarsApplicationMixin(ApplicationV2) {
     }
   }
 
-  /**
-   * Resize an arena asset
-   */
+  
   static resizeArenaAsset(assetId, scale) {
     if (!this._instance) return;
 
@@ -1950,9 +2144,7 @@ export class TomPlayerView extends HandlebarsApplicationMixin(ApplicationV2) {
     }
   }
 
-  /**
-   * Remove an arena asset
-   */
+  
   static removeArenaAsset(assetId) {
     if (!this._instance) return;
 
@@ -1968,11 +2160,143 @@ export class TomPlayerView extends HandlebarsApplicationMixin(ApplicationV2) {
     }
   }
 
-  /**
-   * Clear all arena assets
-   */
+  
   static clearArenaAssets() {
     if (!this._instance) return;
     this._instance.uiState.arenaAssets.clear();
+  }
+
+  
+  static showRemoteRuler(data) {
+    if (!this._instance) return;
+    const { userId, userName, startX, startY, endX, endY, distance, isGreen } = data;
+
+    const playerView = this._instance.element?.querySelector('.tom-player-view');
+    if (!playerView) return;
+
+    
+    const VIEWBOX_MIN_X = 0;
+    const VIEWBOX_MIN_Y = -50;
+    const VIEWBOX_WIDTH = 1000;
+    const VIEWBOX_HEIGHT = 700;
+    const VIEWBOX_ASPECT = VIEWBOX_WIDTH / VIEWBOX_HEIGHT;
+
+    
+    const arenaEl = playerView.querySelector('.tom-arena-rings');
+    const svg = arenaEl?.querySelector('svg');
+    const viewRect = playerView.getBoundingClientRect();
+
+    let bounds = null;
+    if (arenaEl && svg) {
+      const containerRect = arenaEl.getBoundingClientRect();
+      const containerAspect = containerRect.width / containerRect.height;
+
+      let contentWidth, contentHeight, offsetX, offsetY;
+
+      if (containerAspect > VIEWBOX_ASPECT) {
+        contentHeight = containerRect.height;
+        contentWidth = contentHeight * VIEWBOX_ASPECT;
+        offsetX = (containerRect.width - contentWidth) / 2;
+        offsetY = 0;
+      } else {
+        contentWidth = containerRect.width;
+        contentHeight = contentWidth / VIEWBOX_ASPECT;
+        offsetX = 0;
+        offsetY = (containerRect.height - contentHeight) / 2;
+      }
+
+      bounds = {
+        left: containerRect.left + offsetX,
+        top: containerRect.top + offsetY,
+        width: contentWidth,
+        height: contentHeight
+      };
+    }
+
+    
+    
+    let startPx, endPx;
+    if (bounds) {
+      const screenStartX = ((startX - VIEWBOX_MIN_X) / VIEWBOX_WIDTH) * bounds.width + bounds.left;
+      const screenStartY = ((startY - VIEWBOX_MIN_Y) / VIEWBOX_HEIGHT) * bounds.height + bounds.top;
+      const screenEndX = ((endX - VIEWBOX_MIN_X) / VIEWBOX_WIDTH) * bounds.width + bounds.left;
+      const screenEndY = ((endY - VIEWBOX_MIN_Y) / VIEWBOX_HEIGHT) * bounds.height + bounds.top;
+
+      startPx = { x: screenStartX - viewRect.left, y: screenStartY - viewRect.top };
+      endPx = { x: screenEndX - viewRect.left, y: screenEndY - viewRect.top };
+    } else {
+      
+      startPx = {
+        x: (startX / VIEWBOX_WIDTH) * viewRect.width,
+        y: ((startY - VIEWBOX_MIN_Y) / VIEWBOX_HEIGHT) * viewRect.height
+      };
+      endPx = {
+        x: (endX / VIEWBOX_WIDTH) * viewRect.width,
+        y: ((endY - VIEWBOX_MIN_Y) / VIEWBOX_HEIGHT) * viewRect.height
+      };
+    }
+
+    
+    const dx = endPx.x - startPx.x;
+    const dy = endPx.y - startPx.y;
+    const length = Math.sqrt(dx * dx + dy * dy);
+    const angle = Math.atan2(dy, dx) * (180 / Math.PI);
+
+    
+    let rulerContainer = playerView.querySelector(`.tom-arena-ruler-remote[data-user-id="${userId}"]`);
+    if (!rulerContainer) {
+      rulerContainer = document.createElement('div');
+      rulerContainer.className = 'tom-arena-ruler tom-arena-ruler-remote';
+      rulerContainer.dataset.userId = userId;
+      rulerContainer.innerHTML = `
+        <div class="ruler-line-container">
+          <div class="ruler-line-bg"></div>
+          <div class="ruler-line"></div>
+        </div>
+        <div class="ruler-label"></div>
+      `;
+      playerView.appendChild(rulerContainer);
+    }
+
+    
+    const lineContainer = rulerContainer.querySelector('.ruler-line-container');
+    const label = rulerContainer.querySelector('.ruler-label');
+
+    lineContainer.style.left = `${startPx.x}px`;
+    lineContainer.style.top = `${startPx.y}px`;
+    lineContainer.style.width = `${length}px`;
+    lineContainer.style.transform = `rotate(${angle}deg)`;
+
+    
+    const midX = (startPx.x + endPx.x) / 2;
+    const midY = (startPx.y + endPx.y) / 2;
+    label.textContent = `${userName}: ${distance}`;
+    label.style.left = `${midX}px`;
+    label.style.top = `${midY}px`;
+    label.dataset.color = isGreen ? 'green' : 'red';
+
+    rulerContainer.style.display = 'block';
+  }
+
+  
+  static hideRemoteRuler(userId) {
+    if (!this._instance) return;
+    const playerView = this._instance.element?.querySelector('.tom-player-view');
+    if (!playerView) return;
+
+    const rulerContainer = playerView.querySelector(`.tom-arena-ruler-remote[data-user-id="${userId}"]`);
+    if (rulerContainer) {
+      rulerContainer.style.display = 'none';
+    }
+  }
+
+  
+  static clearRemoteRulers() {
+    if (!this._instance) return;
+    const playerView = this._instance.element?.querySelector('.tom-player-view');
+    if (!playerView) return;
+
+    const rulers = playerView.querySelectorAll('.tom-arena-ruler-remote');
+    rulers.forEach(r => r.remove());
   }
 }

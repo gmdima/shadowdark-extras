@@ -9,11 +9,11 @@ export class TomSocketHandler {
   }
 
   static _handleSocketMessage(payload) {
-    // Ignore messages from SdxRolls/SocketSD (which share this channel)
+
     if (payload.__$socketOptions) return;
 
-    // Optional: Filter only known Tom message types if needed
-    // if (!payload.type) return;
+
+
 
     console.warn(`${CONFIG.MODULE_NAME} | Socket Message Received:`, payload);
 
@@ -36,24 +36,7 @@ export class TomSocketHandler {
       case 'update-lock':
         this._onUpdateLock(payload.data);
         break;
-      case 'sequence-start':
-        this._onSequenceStart(payload.data);
-        break;
-      case 'sequence-change':
-        this._onSequenceChange(payload.data);
-        break;
-      case 'sequence-stop':
-        this._onSequenceStop();
-        break;
-      case 'cast-only-start':
-        this._onCastOnlyStart(payload.data);
-        break;
-      case 'cast-only-update':
-        this._onCastOnlyUpdate(payload.data);
-        break;
-      case 'cast-only-stop':
-        this._onCastOnlyStop();
-        break;
+
       case 'arena-token-spawn':
         this._onArenaTokenSpawn(payload.data);
         break;
@@ -90,19 +73,23 @@ export class TomSocketHandler {
       case 'overlay-clear':
         this._onOverlayClear();
         break;
+      case 'arena-ruler-update':
+        this._onArenaRulerUpdate(payload.data);
+        break;
+      case 'arena-ruler-hide':
+        this._onArenaRulerHide(payload.data);
+        break;
     }
   }
 
-  /* ═══════════════════════════════════════════════════════════════
-     HANDLERS
-     ═══════════════════════════════════════════════════════════════ */
+
 
   static _onBroadcastScene(data) {
     const { sceneId } = data;
     Store.setActiveScene(sceneId);
     TomPlayerView.activate(sceneId);
 
-    // Show scene switcher button in tray (GM only)
+
     if (game.user.isGM) {
       this._updateTraySceneSwitcher(sceneId);
     }
@@ -112,64 +99,54 @@ export class TomSocketHandler {
     TomPlayerView.deactivate();
     Store.clearActiveScene();
 
-    // Clear any active overlay
+
     this._removeOverlayElement();
     Store.currentOverlay = null;
 
-    // Hide scene switcher button in tray (GM only)
+
     if (game.user.isGM) {
       this._hideTraySceneSwitcher();
     }
   }
 
-  /**
-   * Update or show the tray scene switcher, cast manager, and overlay manager
-   */
+
   static _updateTraySceneSwitcher(sceneId) {
-    // Get tray app instance via static reference
+
     import('../TrayApp.mjs').then(({ TrayApp }) => {
       const trayApp = TrayApp._instance;
       if (!trayApp) return;
 
-      // Check if scene switcher button already exists
-      const existingBtn = document.querySelector(".tom-scene-switcher-btn");
-      if (existingBtn) {
-        // Just update the active scene
-        trayApp.updateTomSceneSwitcher(sceneId);
-      } else {
-        // Show the buttons
-        trayApp.showTomSceneSwitcher(sceneId);
-        trayApp.showTomCastManager();
-        trayApp.showTomOverlayManager();
-      }
+
+      trayApp.updateTomSceneSwitcher(sceneId);
+
+      trayApp.showTomCastManager();
+      trayApp.showTomOverlayManager();
     });
   }
 
-  /**
-   * Hide the tray scene switcher
-   */
+
   static _hideTraySceneSwitcher() {
     import('../TrayApp.mjs').then(({ TrayApp }) => {
       const trayApp = TrayApp._instance;
       if (trayApp) {
-        trayApp.hideTomSceneSwitcher();
+        trayApp.onBroadcastStopped();
       }
     });
   }
 
   static _onUpdateEmotion(data) {
     const { characterId, state, userId } = data;
-    // Update the local store character instance if needed, or just refresh the view
+
     const character = Store.characters.get(characterId);
     if (character) {
-      // Server-side (GM) permission validation for non-GM users
+
       if (game.user.isGM && userId && userId !== game.user.id) {
-        // Check if the user has permission to edit this character
+
         if (!character.hasPermission(userId, 'emotion')) {
           console.warn(`${CONFIG.MODULE_NAME} | User ${userId} attempted unauthorized emotion change on ${character.name}`);
-          return; // Reject the change
+          return;
         }
-        // Also check lock status
+
         if (character.locked) {
           console.warn(`${CONFIG.MODULE_NAME} | User ${userId} attempted to change locked character ${character.name}`);
           return;
@@ -178,37 +155,28 @@ export class TomSocketHandler {
 
       character.currentState = state;
 
-      // If we are the GM, we must persist this change!
+
       if (game.user.isGM) {
         Store.saveData();
       }
 
-      // Refresh only the specific character to avoid flickering other characters
-      TomPlayerView.refreshCharacter(characterId);
 
-      // Also refresh GM Panel if open
-      if (game.user.isGM) {
-        import('../apps/TomGMPanel.mjs').then(({ TomGMPanel }) => {
-          if (TomGMPanel._instance && TomGMPanel._instance.rendered) {
-            TomGMPanel._instance.render();
-          }
-        });
-      }
+      TomPlayerView.refreshCharacter(characterId);
     }
   }
 
   static _onUpdateCast(data) {
-    // Refresh the cast (add/remove characters) without triggering scene transition animations
+
     TomPlayerView.refreshCast();
 
-    // Refresh the tray cast manager if open
+
     import('../TrayApp.mjs').then(({ TrayApp }) => {
       if (TrayApp._instance) {
         TrayApp._instance.refreshTomCastPanel();
       }
     });
 
-    // Re-apply overlay if one was active (refresh may have removed it)
+
     if (Store.currentOverlay) {
       setTimeout(() => {
         this._onOverlaySet({ overlayPath: Store.currentOverlay });
@@ -220,8 +188,8 @@ export class TomSocketHandler {
     const { characterId, borderStyle, userId } = data;
     const character = Store.characters.get(characterId);
     if (character) {
-      // Server-side (GM) permission validation for non-GM users
-      // Border changes require 'full' permission level
+
+
       if (game.user.isGM && userId && userId !== game.user.id) {
         if (!character.hasPermission(userId, 'full')) {
           console.warn(`${CONFIG.MODULE_NAME} | User ${userId} attempted unauthorized border change on ${character.name}`);
@@ -235,22 +203,13 @@ export class TomSocketHandler {
 
       character.borderStyle = borderStyle;
 
-      // If we are the GM, we must persist this change!
+
       if (game.user.isGM) {
         Store.saveData();
       }
 
-      // Refresh only the specific character's border to avoid flickering
-      TomPlayerView.refreshCharacterBorder(characterId, borderStyle);
 
-      // Also refresh GM Panel if open
-      if (game.user.isGM) {
-        import('../apps/TomGMPanel.mjs').then(({ TomGMPanel }) => {
-          if (TomGMPanel._instance && TomGMPanel._instance.rendered) {
-            TomGMPanel._instance.render();
-          }
-        });
-      }
+      TomPlayerView.refreshCharacterBorder(characterId, borderStyle);
     }
   }
 
@@ -260,35 +219,24 @@ export class TomSocketHandler {
     if (character) {
       character.locked = locked;
 
-      // If we are the GM, we must persist this change!
+
       if (game.user.isGM) {
         Store.saveData();
       }
 
-      // Refresh views
+
       TomPlayerView.refresh();
 
-      // Re-apply overlay if one was active (refresh may have removed it)
+
       if (Store.currentOverlay) {
         setTimeout(() => {
           this._onOverlaySet({ overlayPath: Store.currentOverlay });
         }, 100);
       }
-
-      // Also refresh GM Panel if open
-      if (game.user.isGM) {
-        import('../apps/TomGMPanel.mjs').then(({ TomGMPanel }) => {
-          if (TomGMPanel._instance && TomGMPanel._instance.rendered) {
-            TomGMPanel._instance.render();
-          }
-        });
-      }
     }
   }
 
-  /* ═══════════════════════════════════════════════════════════════
-     EMITTERS
-     ═══════════════════════════════════════════════════════════════ */
+
 
   static emitBroadcastScene(sceneId) {
     console.warn(`${CONFIG.MODULE_NAME} | Socket Message Emitted: broadcast-scene`, { sceneId });
@@ -296,7 +244,7 @@ export class TomSocketHandler {
       type: 'broadcast-scene',
       data: { sceneId }
     });
-    // Also trigger locally
+
     this._onBroadcastScene({ sceneId });
   }
 
@@ -343,116 +291,8 @@ export class TomSocketHandler {
   }
 
 
-  /* ═══════════════════════════════════════════════════════════════
-     SCENE SEQUENCE HANDLERS (Manual navigation by GM)
-     ═══════════════════════════════════════════════════════════════ */
-
-  static _onSequenceStart(data) {
-    const { sceneId, backgroundIndex, background, cast, transitionType, transitionDuration } = data;
-    Store.setActiveScene(sceneId);
-    TomPlayerView.activateSequence(sceneId, background, transitionType, transitionDuration);
-  }
-
-  static _onSequenceChange(data) {
-    const { sceneId, backgroundIndex, background, transitionType, transitionDuration } = data;
-    TomPlayerView.updateSequenceBackground(background, transitionType, transitionDuration);
-
-    // Refresh GM Panel to update controls
-    if (game.user.isGM) {
-      import('../apps/TomGMPanel.mjs').then(({ TomGMPanel }) => {
-        if (TomGMPanel._instance && TomGMPanel._instance.rendered) {
-          TomGMPanel._instance.render();
-        }
-      });
-    }
-  }
-
-  static _onSequenceStop() {
-    TomPlayerView.deactivate();
-    Store.clearActiveScene();
-  }
 
 
-  static emitSequenceStart(data) {
-    game.socket.emit(CONFIG.SOCKET_NAME, {
-      type: 'sequence-start',
-      data
-    });
-    this._onSequenceStart(data);
-  }
-
-  static emitSequenceChange(data) {
-    game.socket.emit(CONFIG.SOCKET_NAME, {
-      type: 'sequence-change',
-      data
-    });
-    this._onSequenceChange(data);
-  }
-
-  static emitSequenceStop() {
-    game.socket.emit(CONFIG.SOCKET_NAME, {
-      type: 'sequence-stop',
-      data: {}
-    });
-    this._onSequenceStop();
-  }
-
-
-  static _onCastOnlyStart(data) {
-    const { characterIds, layoutSettings } = data;
-    // Update local store state (non-GM clients)
-    if (!game.user.isGM) {
-      Store.castOnlyState = {
-        isActive: true,
-        characterIds: [...characterIds],
-        layoutSettings: { ...layoutSettings }
-      };
-    }
-    TomPlayerView.activateCastOnly(characterIds, layoutSettings);
-  }
-
-  static _onCastOnlyUpdate(data) {
-    const { characterIds, layoutSettings } = data;
-    // Update local store state
-    if (characterIds) {
-      Store.castOnlyState.characterIds = [...characterIds];
-    }
-    if (layoutSettings) {
-      Store.castOnlyState.layoutSettings = { ...layoutSettings };
-    }
-    TomPlayerView.updateCastOnly(characterIds, layoutSettings);
-  }
-
-  static _onCastOnlyStop() {
-    Store.castOnlyState.isActive = false;
-    Store.castOnlyState.characterIds = [];
-    TomPlayerView.deactivateCastOnly();
-  }
-
-
-  static emitCastOnlyStart(data) {
-    game.socket.emit(CONFIG.SOCKET_NAME, {
-      type: 'cast-only-start',
-      data
-    });
-    this._onCastOnlyStart(data);
-  }
-
-  static emitCastOnlyUpdate(data) {
-    game.socket.emit(CONFIG.SOCKET_NAME, {
-      type: 'cast-only-update',
-      data
-    });
-    this._onCastOnlyUpdate(data);
-  }
-
-  static emitCastOnlyStop() {
-    game.socket.emit(CONFIG.SOCKET_NAME, {
-      type: 'cast-only-stop',
-      data: {}
-    });
-    this._onCastOnlyStop();
-  }
 
   static _onArenaTokenSpawn(data) {
     const { tokenId, characterId, actorId, actorName, actorType, image, x, y, ownerId } = data;
@@ -549,7 +389,7 @@ export class TomSocketHandler {
       type: 'arena-asset-move',
       data
     });
-    // Local state already updated during drag
+
   }
 
   static emitArenaAssetResize(data) {
@@ -557,7 +397,7 @@ export class TomSocketHandler {
       type: 'arena-asset-resize',
       data
     });
-    // Local state already updated during resize
+
   }
 
   static emitArenaAssetRemove(data) {
@@ -571,36 +411,36 @@ export class TomSocketHandler {
   static _onSceneFadeTransition(data) {
     const { sceneId } = data;
 
-    // Create fade overlay
+
     const overlay = document.createElement("div");
     overlay.className = "tom-scene-fade-overlay";
     document.body.appendChild(overlay);
 
-    // Trigger fade in
+
     requestAnimationFrame(() => {
       overlay.classList.add("active");
     });
 
-    // Wait for fade in to complete, then switch scene
+
     setTimeout(() => {
-      // Clear any active video overlay when changing scenes
+
       this._removeOverlayElement();
       Store.currentOverlay = null;
 
-      // Switch to the new scene
+
       Store.setActiveScene(sceneId);
       TomPlayerView.activate(sceneId);
 
-      // Update tray scene switcher for GM
+
       if (game.user.isGM) {
         this._updateTraySceneSwitcher(sceneId);
       }
 
-      // Wait a moment for the new scene to render, then fade out
+
       setTimeout(() => {
         overlay.classList.remove("active");
 
-        // Remove overlay after fade out completes
+
         setTimeout(() => {
           overlay.remove();
         }, 400);
@@ -608,10 +448,7 @@ export class TomSocketHandler {
     }, 400);
   }
 
-  /**
-   * Emit scene fade transition to all clients (GM only)
-   * This broadcasts the fade effect and scene change to everyone
-   */
+
   static emitSceneFadeTransition(sceneId) {
     if (!game.user.isGM) return;
 
@@ -620,35 +457,30 @@ export class TomSocketHandler {
       type: 'scene-fade-transition',
       data: { sceneId }
     });
-    // Also trigger locally
+
     this._onSceneFadeTransition({ sceneId });
   }
 
-  /* ═══════════════════════════════════════════════════════════════
-     OVERLAY HANDLERS (Video overlays on broadcast)
-     ═══════════════════════════════════════════════════════════════ */
 
-  /**
-   * Handle overlay set on all clients
-   * Creates a video overlay above the scene but below tokens
-   */
+
+
   static _onOverlaySet(data) {
     const { overlayPath } = data;
 
-    // Remove existing overlay if any
+
     this._removeOverlayElement();
 
-    // Get the player view container
+
     const playerView = document.querySelector(".tom-player-view");
     if (!playerView) return;
 
-    // Determine video type from file extension
+
     const extension = overlayPath.split('.').pop().toLowerCase();
     const mimeType = extension === 'mp4' ? 'video/mp4' : 'video/webm';
     const isMp4 = extension === 'mp4';
 
-    // Create overlay container
-    // Add 'blend-mode' class for mp4 files (no alpha support, need screen blend)
+
+
     const overlay = document.createElement("div");
     overlay.className = `tom-video-overlay ${isMp4 ? 'blend-mode' : ''}`;
     overlay.innerHTML = `
@@ -657,7 +489,7 @@ export class TomSocketHandler {
       </video>
     `;
 
-    // Insert after the overlay layer but before arena/cast elements
+
     const arenaRings = playerView.querySelector(".tom-arena-rings");
     const arenaAssets = playerView.querySelector(".tom-arena-assets");
     const castLayer = playerView.querySelector(".tom-pv-cast");
@@ -672,29 +504,23 @@ export class TomSocketHandler {
       playerView.appendChild(overlay);
     }
 
-    // Store current overlay path
+
     Store.currentOverlay = overlayPath;
   }
 
-  /**
-   * Handle overlay clear on all clients
-   */
+
   static _onOverlayClear() {
     this._removeOverlayElement();
     Store.currentOverlay = null;
   }
 
-  /**
-   * Remove the overlay DOM element
-   */
+
   static _removeOverlayElement() {
     const existing = document.querySelector(".tom-video-overlay");
     if (existing) existing.remove();
   }
 
-  /**
-   * Emit overlay set to all clients (GM only)
-   */
+
   static emitOverlaySet(overlayPath) {
     if (!game.user.isGM) return;
 
@@ -703,13 +529,11 @@ export class TomSocketHandler {
       type: 'overlay-set',
       data: { overlayPath }
     });
-    // Also trigger locally
+
     this._onOverlaySet({ overlayPath });
   }
 
-  /**
-   * Emit overlay clear to all clients (GM only)
-   */
+
   static emitOverlayClear() {
     if (!game.user.isGM) return;
 
@@ -718,7 +542,48 @@ export class TomSocketHandler {
       type: 'overlay-clear',
       data: {}
     });
-    // Also trigger locally
+
     this._onOverlayClear();
+  }
+
+
+
+
+  static _onArenaRulerUpdate(data) {
+    const { userId, userName, startX, startY, endX, endY, distance, isGreen } = data;
+
+    if (userId === game.user.id) return;
+    TomPlayerView.showRemoteRuler({ userId, userName, startX, startY, endX, endY, distance, isGreen });
+  }
+
+
+  static _onArenaRulerHide(data) {
+    const { userId } = data;
+    if (userId === game.user.id) return;
+    TomPlayerView.hideRemoteRuler(userId);
+  }
+
+
+  static emitArenaRulerUpdate(data) {
+    game.socket.emit(CONFIG.SOCKET_NAME, {
+      type: 'arena-ruler-update',
+      data: {
+        userId: game.user.id,
+        userName: game.user.name,
+        ...data
+      }
+    });
+
+  }
+
+
+  static emitArenaRulerHide() {
+    game.socket.emit(CONFIG.SOCKET_NAME, {
+      type: 'arena-ruler-hide',
+      data: {
+        userId: game.user.id
+      }
+    });
+
   }
 }

@@ -44,6 +44,19 @@
       <span class="tom-hint">Allows players with spawn permission to place tokens on this scene</span>
     </div>
 
+    {{#if scene.isArena}}
+    <div class="form-group tom-arena-type">
+      <label>Arena Grid Style</label>
+      <select name="arenaType">
+        {{#each arenaTypeOptions}}
+        <option value="{{value}}" {{#if (eq ../selectedArenaType value)}}selected{{/if}}>
+          {{label}}
+        </option>
+        {{/each}}
+      </select>
+    </div>
+    {{/if}}
+
     <!-- ═══════════════════════════════════════════════════════════════
          CAST LAYOUT SETTINGS
          ═══════════════════════════════════════════════════════════════ -->
@@ -55,13 +68,10 @@
         <div class="tom-layout-row">
           <div class="form-group">
             <label>Position</label>
-            <select name="layoutPreset">
-              {{#each layoutPresets}}
-              <option value="{{key}}" {{#if selected}}selected{{/if}}>
-                {{name}}
-              </option>
-              {{/each}}
-            </select>
+            <div class="tom-position-switch">
+              <button type="button" class="tom-pos-btn {{#unless isTopPosition}}active{{/unless}}" data-position="bottom-center">Bottom</button>
+              <button type="button" class="tom-pos-btn {{#if isTopPosition}}active{{/if}}" data-position="top-center">Top</button>
+            </div>
           </div>
 
           <div class="form-group">
@@ -81,12 +91,6 @@
             <label>Spacing</label>
             <input type="number" name="layoutSpacing" value="{{layoutSettings.spacing}}" min="0" max="100">
             <span class="tom-hint">Distance (px)</span>
-          </div>
-
-          <div class="form-group">
-            <label>Horiz. Offset</label>
-            <input type="number" name="layoutOffsetX" value="{{layoutSettings.offsetX}}" min="0" max="50">
-            <span class="tom-hint">Edge (%)</span>
           </div>
 
           <div class="form-group">
