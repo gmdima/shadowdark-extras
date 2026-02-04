@@ -456,7 +456,7 @@ body.sdx-dark-mode .dice-roll .dice-total.failure {
 }
 
 body.sdx-dark-mode .dice-roll .dice-total.success {
-    color: var(--lights-out-color-roll-success);
+    color: green !important;
 }
 
 body.sdx-dark-mode #sidebar-content #chat .chat-scroll {
@@ -464,8 +464,14 @@ body.sdx-dark-mode #sidebar-content #chat .chat-scroll {
 }
 
 body.sdx-dark-mode .dice-roll .dice-total.failure {
-    color: var(--lights-out-color-roll-fail);
+    color: white !important;
 }
+
+body.sdx-dark-mode .dice-roll .dice-total.fumble {
+    color: #ff0000 !important;
+}
+
+
 
 body.sdx-dark-mode .dice-roll .dice-result {
     background-color: var(--lights-out-color-chat-message-background-secondary);

@@ -1,7 +1,6 @@
 // Scene/Character management and broadcasting system
 
 import { TOM_CONFIG } from './TomConfig.mjs';
-import { TomPlayerPanel } from './apps/TomPlayerPanel.mjs';
 import { TomStore } from './data/TomStore.mjs';
 import { TomMigrationService } from './data/TomMigrationService.mjs';
 import { TomSocketHandler } from './data/TomSocketHandler.mjs';
@@ -25,6 +24,16 @@ export class TomSD {
 
     // Listen for actor HP changes to update arena tokens
     Hooks.on('updateActor', this._onActorUpdate.bind(this));
+
+    // Hook to fix critical failure styling
+    Hooks.on('renderChatMessage', (message, html, data) => {
+      const diceTotal = html.find('.dice-total.failure');
+      if (diceTotal.length > 0) {
+        if (diceTotal.text().includes('Critical Failure!')) {
+          diceTotal.addClass('fumble');
+        }
+      }
+    });
   }
 
   /**
@@ -147,22 +156,21 @@ export class TomSD {
    * Open the appropriate panel based on user role
    */
   static open() {
-    if (!game.user.isGM) {
-      TomPlayerPanel.show();
-    }
+    // Character management panel has been removed
+    // Players can now only view broadcasting scenes
   }
 
   /**
    * Close all Tom panels
    */
   static close() {
-    if (TomPlayerPanel._instance) TomPlayerPanel._instance.close();
+    // Character management panel has been removed
   }
 
   /**
    * Open Player Panel directly
    */
   static openPlayerPanel() {
-    TomPlayerPanel.show();
+    // Character management panel has been removed
   }
 }

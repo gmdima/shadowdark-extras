@@ -719,7 +719,7 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
             const { TomStore } = await import("./data/TomStore.mjs");
             // Scene switcher and cast manager are always visible for GM
             this.showTomSceneSwitcher(TomStore.activeSceneId || null);
-            this.showTomCastManager();
+
             if (TomStore.activeSceneId) {
                 this.showTomOverlayManager();
             }
@@ -782,42 +782,8 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
         this._tomActiveSceneId = null;
     }
 
-    /**
-     * Show the Tom cast manager button in the tray handle
-     * Called when broadcast starts (after scene switcher)
-     */
-    showTomCastManager() {
-        if (!game.user.isGM) return;
+    // Cast manager button has been removed
 
-        const handle = document.querySelector(".tray-handle-content-container");
-        if (!handle) return;
-
-        // Remove existing if any
-        const existingBtn = document.querySelector(".tom-cast-manager-btn");
-        if (existingBtn) existingBtn.remove();
-
-        // Create the button
-        const btn = document.createElement("button");
-        btn.className = "tray-handle-button-tool tom-cast-manager-btn";
-        btn.dataset.action = "tom-cast-manager";
-        btn.title = "Manage Cast";
-        btn.innerHTML = '<i class="fa-solid fa-users"></i>';
-
-        // Insert after scene switcher button
-        const switcherBtn = handle.querySelector(".tom-scene-switcher-btn");
-        if (switcherBtn) {
-            switcherBtn.after(btn);
-        } else {
-            handle.appendChild(btn);
-        }
-
-        // Add click handler
-        btn.addEventListener("click", (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            this._toggleTomCastPanel();
-        });
-    }
 
     /**
      * Hide the Tom cast manager button
@@ -1050,8 +1016,8 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
         const scene = this._tomActiveSceneId ? TomStore.scenes.get(this._tomActiveSceneId) : null;
         const broadcasting = !!scene;
 
-        const allCharacters = Array.from(TomStore.characters.values());
-        const castIds = broadcasting ? scene.cast.map(c => c.id) : [];
+        // Characters are no longer managed through Tom
+
 
         // Create panel
         const panel = document.createElement("div");
@@ -1067,129 +1033,11 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
         }
         panel.appendChild(header);
 
-        // Create new character button
-        const createCharBtn = document.createElement("button");
-        createCharBtn.className = "tom-switcher-create-btn";
-        createCharBtn.innerHTML = '<i class="fas fa-plus"></i> Create new character';
-        createCharBtn.addEventListener("click", async (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            panel.remove();
-            const { TomSmartCreator } = await import("./apps/TomSmartCreator.mjs");
-            new TomSmartCreator().render(true);
-        });
-        panel.appendChild(createCharBtn);
+        // Character creation has been removed
 
-        // Build character list
-        const list = document.createElement("div");
-        list.className = "tom-cast-list";
 
-        for (const character of allCharacters) {
-            const isInCast = castIds.includes(character.id);
+        // Character list has been removed
 
-            const item = document.createElement("div");
-            item.className = `tom-cast-character ${isInCast ? "in-cast" : ""}`;
-            item.dataset.characterId = character.id;
-
-            // Portrait
-            const portrait = document.createElement("div");
-            portrait.className = "tom-cast-portrait";
-            if (character.image) {
-                portrait.style.backgroundImage = `url('${character.image}')`;
-            }
-
-            // Name
-            const name = document.createElement("div");
-            name.className = "tom-cast-name";
-            name.textContent = character.name;
-
-            // Toggle button — only shown while broadcasting a scene
-            let toggleBtn = null;
-            if (broadcasting) {
-                toggleBtn = document.createElement("button");
-                toggleBtn.className = `tom-cast-toggle ${isInCast ? "remove" : "add"}`;
-                toggleBtn.innerHTML = isInCast
-                    ? '<i class="fas fa-minus"></i>'
-                    : '<i class="fas fa-plus"></i>';
-                toggleBtn.title = isInCast ? "Remove from cast" : "Add to cast";
-            }
-
-            // Edit / Delete action buttons
-            const charActions = document.createElement("div");
-            charActions.className = "tom-switcher-actions";
-
-            const charEditBtn = document.createElement("button");
-            charEditBtn.className = "tom-switcher-action-btn tom-switcher-action-edit";
-            charEditBtn.title = "Edit Character";
-            charEditBtn.innerHTML = '<i class="fas fa-pen-to-square"></i>';
-            charEditBtn.addEventListener("click", async (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                panel.remove();
-                const { TomCharacterEditor } = await import("./apps/TomCharacterEditor.mjs");
-                new TomCharacterEditor(character.id).render(true);
-            });
-
-            const charDeleteBtn = document.createElement("button");
-            charDeleteBtn.className = "tom-switcher-action-btn tom-switcher-action-delete";
-            charDeleteBtn.title = "Delete Character";
-            charDeleteBtn.innerHTML = '<i class="fas fa-trash"></i>';
-            charDeleteBtn.addEventListener("click", async (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                const confirmed = await Dialog.confirm({
-                    title: "Delete Character",
-                    content: `<p>Are you sure you want to delete <strong>${character.name}</strong>?</p><p>This action cannot be undone.</p>`,
-                    yes: () => true,
-                    no: () => false,
-                    defaultYes: false
-                });
-                if (!confirmed) return;
-                panel.remove();
-                TomStore.deleteItem(character.id, "character");
-                ui.notifications.info(`Character "${character.name}" deleted.`);
-            });
-
-            charActions.appendChild(charEditBtn);
-            charActions.appendChild(charDeleteBtn);
-
-            item.appendChild(portrait);
-            item.appendChild(name);
-            if (toggleBtn) item.appendChild(toggleBtn);
-            item.appendChild(charActions);
-            list.appendChild(item);
-
-            // Click handler for toggle (only present while broadcasting)
-            if (toggleBtn) {
-                toggleBtn.addEventListener("click", async (e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-
-                    const { TomSocketHandler } = await import("./data/TomSocketHandler.mjs");
-
-                    if (isInCast) {
-                        TomStore.removeCastMember(this._tomActiveSceneId, character.id);
-                    } else {
-                        TomStore.addCastMember(this._tomActiveSceneId, character.id);
-                    }
-
-                    TomSocketHandler.emitUpdateCast(this._tomActiveSceneId);
-
-                    // Refresh the panel
-                    panel.remove();
-                    this._toggleTomCastPanel();
-                });
-            }
-        }
-
-        if (allCharacters.length === 0) {
-            const empty = document.createElement("div");
-            empty.className = "tom-cast-empty";
-            empty.textContent = "Click above to create a new Character";
-            list.appendChild(empty);
-        }
-
-        panel.appendChild(list);
 
         // Position panel next to button
         const btn = document.querySelector(".tom-cast-manager-btn");
@@ -1268,7 +1116,7 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
             e.preventDefault();
             e.stopPropagation();
             panel.remove();
-            const { TomSceneEditor } = await import("./apps/TomSceneEditor.mjs");
+            const { TomSceneEditor } = await import("./apps/TomEditors.mjs");
             new TomSceneEditor().render(true);
         });
         panel.appendChild(createSceneBtn);
@@ -1329,7 +1177,7 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
                 e.preventDefault();
                 e.stopPropagation();
                 panel.remove();
-                const { TomSceneEditor } = await import("./apps/TomSceneEditor.mjs");
+                const { TomSceneEditor } = await import("./apps/TomEditors.mjs");
                 new TomSceneEditor(scene.id).render(true);
             });
 

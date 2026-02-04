@@ -3585,6 +3585,67 @@ li.entry.sdx-sidebar-unidentified {
 }
 
 /* ============================================
+   SKILLS BOX
+   ============================================ */
+
+.shadowdark.sheet .tab-abilities.sdx-enhanced-abilities .sdx-skills-box .content {
+    padding: 0 !important;
+    margin: 0 !important;
+}
+
+.sdx-skills-add-btn {
+    color: rgba(255, 255, 255, 0.7);
+    cursor: pointer;
+}
+
+.sdx-skills-add-btn:hover {
+    color: rgba(255, 255, 255, 1);
+}
+
+.sdx-skills-list {
+    width: 100%;
+}
+
+.sdx-skill-row {
+    display: flex;
+    align-items: center;
+    padding: 6px 9px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.sdx-skill-row:last-child {
+    border-bottom: none;
+}
+
+.sdx-skill-name {
+    flex: 1;
+    font-size: 15px;
+}
+
+.sdx-skill-ability {
+    font-size: 13px;
+    opacity: 0.6;
+    margin-right: 8px;
+}
+
+.sdx-skill-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.sdx-skill-actions a {
+    color: rgba(255, 255, 255, 0.4);
+    cursor: pointer;
+    font-size: 14px;
+    transition: color 0.15s;
+}
+
+.sdx-skill-actions a:hover {
+    color: rgba(255, 255, 255, 0.95);
+}
+
+/* ============================================
    ENHANCED TALENTS TAB
    ============================================ */
 

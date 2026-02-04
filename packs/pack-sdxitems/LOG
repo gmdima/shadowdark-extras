@@ -1,3 +1,5 @@
-2026/02/03-14:47:09.458 6c68 Recovering log #846
-2026/02/03-14:47:09.467 6c68 Delete type=0 #846
-2026/02/03-14:47:09.467 6c68 Delete type=3 #845
+2026/02/04-00:20:53.158 aef0 Recovering log #851
+2026/02/04-00:20:53.158 aef0 Level-0 table #853: started
+2026/02/04-00:20:53.163 aef0 Level-0 table #853: 20229 bytes OK
+2026/02/04-00:20:53.173 aef0 Delete type=0 #851
+2026/02/04-00:20:53.173 aef0 Delete type=3 #850

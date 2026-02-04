@@ -1,17 +1,27 @@
-<div class="tom-character-editor">
+<div class="tom-character-editor tom-scene-editor-simple">
 
-
-  <header class="tom-editor-header">
-    <div class="tom-editor-title">
-      <input type="text" name="name" value="{{scene.name}}" placeholder="Scene Name" aria-label="Scene Name (required)"
-        required>
-    </div>
+  <header class="tom-editor-header-simple">
+    <input type="text" name="name" value="{{scene.name}}" placeholder="New Scene" aria-label="Scene Name" required>
   </header>
 
+  <section class="tom-editor-content-simple">
 
-  <section class="tom-editor-content">
+    <!-- Scene Preview - Centered -->
+    <div class="tom-scene-preview-centered">
+      {{#if isVideo}}
+      <video src="{{scene.background}}" muted loop autoplay></video>
+      {{else if scene.background}}
+      <img src="{{scene.background}}" alt="Scene preview">
+      {{else}}
+      <div class="tom-scene-placeholder">
+        <i class="fas fa-image"></i>
+        <span>No image selected</span>
+      </div>
+      {{/if}}
+    </div>
 
-    <div class="form-group">
+    <!-- Background Media Input -->
+    <div class="form-group-simple">
       <label>Background Media</label>
       <div class="tom-file-input-wrapper">
         <input type="text" name="background" value="{{scene.background}}" placeholder="Path to image or video...">
@@ -21,31 +31,21 @@
       </div>
     </div>
 
-    <div class="tom-scene-preview">
-      {{#if isVideo}}
-      <video src="{{scene.background}}" muted loop autoplay></video>
-      {{else}}
-      <img src="{{scene.background}}">
-      {{/if}}
-    </div>
-
-
-    <!-- ═══════════════════════════════════════════════════════════════
-         ARENA TOGGLE
-         ═══════════════════════════════════════════════════════════════ -->
-    <div class="form-group tom-arena-toggle">
-      <label class="tom-toggle-label">
+    <!-- Arena Toggle -->
+    <div class="form-group-simple tom-arena-toggle-simple">
+      <label class="tom-toggle-label-simple">
         <input type="checkbox" name="isArena" {{#if scene.isArena}}checked{{/if}}>
-        <span class="tom-toggle-switch"></span>
-        <span class="tom-toggle-text">
+        <span class="tom-toggle-switch-simple"></span>
+        <span class="tom-toggle-text-simple">
           <i class="fas fa-swords"></i> It's an Arena?
         </span>
       </label>
-      <span class="tom-hint">Allows players with spawn permission to place tokens on this scene</span>
+      <span class="tom-hint-simple">Allows players with spawn permission to place tokens on this scene</span>
     </div>
 
+    <!-- Arena Grid Style -->
     {{#if scene.isArena}}
-    <div class="form-group tom-arena-type">
+    <div class="form-group-simple">
       <label>Arena Grid Style</label>
       <select name="arenaType">
         {{#each arenaTypeOptions}}
@@ -57,62 +57,19 @@
     </div>
     {{/if}}
 
-    <!-- ═══════════════════════════════════════════════════════════════
-         CAST LAYOUT SETTINGS
-         ═══════════════════════════════════════════════════════════════ -->
-    <div class="tom-layout-section">
-      <h3><i class="fas fa-th-large"></i> Positionments</h3>
-      <p class="tom-hint tom-section-hint">Controls how character portraits appear during broadcast</p>
-
-      <div class="tom-layout-grid">
-        <div class="tom-layout-row">
-          <div class="form-group">
-            <label>Position</label>
-            <div class="tom-position-switch">
-              <button type="button" class="tom-pos-btn {{#unless isTopPosition}}active{{/unless}}" data-position="bottom-center">Bottom</button>
-              <button type="button" class="tom-pos-btn {{#if isTopPosition}}active{{/if}}" data-position="top-center">Top</button>
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label>Portrait Size</label>
-            <select name="layoutSize">
-              {{#each sizePresets}}
-              <option value="{{key}}" {{#if selected}}selected{{/if}}>
-                {{name}}
-              </option>
-              {{/each}}
-            </select>
-          </div>
-        </div>
-
-        <div class="tom-layout-row">
-          <div class="form-group">
-            <label>Spacing</label>
-            <input type="number" name="layoutSpacing" value="{{layoutSettings.spacing}}" min="0" max="100">
-            <span class="tom-hint">Distance (px)</span>
-          </div>
-
-          <div class="form-group">
-            <label>Vert. Offset</label>
-            <input type="number" name="layoutOffsetY" value="{{layoutSettings.offsetY}}" min="0" max="50">
-            <span class="tom-hint">Bottom (%)</span>
-          </div>
-        </div>
-      </div>
-    </div>
-
   </section>
 
-  <!-- ═══════════════════════════════════════════════════════════════
-       FOOTER
-       ═══════════════════════════════════════════════════════════════ -->
-  <footer class="tom-editor-footer">
-    <button class="tom-btn" data-action="close">Cancel</button>
+  <footer class="tom-editor-footer-simple">
+    <button class="tom-btn-simple tom-btn-cancel" data-action="close">Cancel</button>
     {{#if isCreateMode}}
-    <button class="tom-btn tom-btn-primary" data-action="save"><i class="fas fa-plus"></i> Create Scene</button>
+    <button class="tom-btn-simple tom-btn-primary" data-action="save">
+      <i class="fas fa-save"></i> Save Changes
+    </button>
     {{else}}
-    <button class="tom-btn tom-btn-primary" data-action="save"><i class="fas fa-save"></i> Save Changes</button>
+    <button class="tom-btn-simple tom-btn-primary" data-action="save">
+      <i class="fas fa-save"></i> Save Changes
+    </button>
     {{/if}}
   </footer>
+
 </div>
