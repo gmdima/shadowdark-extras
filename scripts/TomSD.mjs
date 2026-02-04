@@ -33,6 +33,13 @@ export class TomSD {
           diceTotal.addClass('fumble');
         }
       }
+
+      const diceTotalSuccess = html.find('.dice-total.success');
+      if (diceTotalSuccess.length > 0) {
+        if (diceTotalSuccess.text().includes('Critical Success!')) {
+          diceTotalSuccess.addClass('critical');
+        }
+      }
     });
   }
 

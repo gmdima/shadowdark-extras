@@ -464,11 +464,15 @@ body.sdx-dark-mode #sidebar-content #chat .chat-scroll {
 }
 
 body.sdx-dark-mode .dice-roll .dice-total.failure {
-    color: white !important;
+    color: rgb(179, 0, 0) !important;
 }
 
 body.sdx-dark-mode .dice-roll .dice-total.fumble {
-    color: #ff0000 !important;
+    color: #ff4040 !important;
+}
+
+body.sdx-dark-mode .dice-roll .dice-total.critical {
+    color: #41f568 !important;
 }
 
 
