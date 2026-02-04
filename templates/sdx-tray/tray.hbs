@@ -28,12 +28,22 @@
             <button class="tray-handle-button-tool" data-action="pin-list" title="Pin List">
                 <i class="fa-solid fa-list"></i>
             </button>
-            <button class="tray-handle-button-tool" data-action="sdx-roll" title="Sdx Roll">
-                <i class="fa-solid fa-dice-d20"></i>
-            </button>
+
             <button class="tray-handle-button-tool" data-action="light-tracker" title="Light Source Tracker">
                 <i class="fa-solid fa-fire"></i>
             </button>
+
+            <button class="tray-handle-button-tool tom-scene-switcher-btn" data-action="tom-scene-switcher"
+                title="Quick Scene Switch">
+                <i class="fa-solid fa-images"></i>
+            </button>
+
+            {{#if showTomOverlays}}
+            <button class="tray-handle-button-tool tom-overlay-manager-btn" data-action="tom-overlay-manager"
+                title="Video Overlays">
+                <i class="fa-solid fa-film"></i>
+            </button>
+            {{/if}}
             {{/if}}
             <button class="tray-handle-button-tool" data-action="carousing" title="Carousing">
                 <i class="fa-solid fa-beer"></i>

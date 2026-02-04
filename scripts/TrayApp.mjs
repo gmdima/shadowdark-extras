@@ -22,9 +22,7 @@ import { FormationSpawnerSD } from "./FormationSpawnerSD.mjs";
 import { PinPlacer, JournalPinManager, JournalPinRenderer } from "./JournalPinsSD.mjs";
 import { PinStyleEditorApp } from "./PinStyleEditorSD.mjs";
 import { PinListApp } from "./PinListApp.mjs";
-import { GetRollDataSD } from "./sdx-rolls/GetRollDataSD.mjs";
-import { SdxRollSD } from "./sdx-rolls/SdxRollSD.mjs";
-import { getSDXROLLSSetting } from "./sdx-rolls/SdxRollsSD.mjs";
+
 import { PlaceableNotesSD } from "./PlaceableNotesSD.mjs";
 
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
@@ -120,12 +118,24 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
     /**
      * Prepare context data for the template
      */
-    _prepareContext(options) {
+    async _prepareContext(options) {
+        // Tom Broadcast State
+        let activeSceneId = null;
+        try {
+            const { TomStore } = await import("./data/TomStore.mjs");
+            activeSceneId = TomStore.activeSceneId || null;
+        } catch (err) {
+            // Ignore
+        }
+        this._tomActiveSceneId = activeSceneId;
+
         return {
             ...this.trayData,
             isExpanded: this._isExpanded,
             viewMode: getViewMode(),
-            pinSearchTerm: this._pinSearchTerm
+            pinSearchTerm: this._pinSearchTerm,
+            tomActiveSceneId: activeSceneId,
+            showTomOverlays: !!activeSceneId
         };
     }
 
@@ -140,10 +150,7 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
         const elem = document.querySelector(".sdx-tray");
         if (!elem) return;
 
-        // Check for active Tom broadcast and show scene switcher if needed (GM only)
-        if (game.user.isGM) {
-            this._checkTomBroadcastState();
-        }
+
 
         // Toggle button - click to expand/collapse
         elem.querySelector(".tray-handle-button-toggle")?.addEventListener("click", (e) => {
@@ -157,6 +164,19 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
             e.preventDefault();
             e.stopPropagation();
             cycleViewMode();
+        });
+
+        // GM Tools Buttons
+        elem.querySelector(".tray-handle-button-tool[data-action='tom-scene-switcher']")?.addEventListener("click", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            this._toggleTomScenePanel();
+        });
+
+        elem.querySelector(".tray-handle-button-tool[data-action='tom-overlay-manager']")?.addEventListener("click", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            this._toggleTomOverlayPanel();
         });
 
         // GM Tools Buttons
@@ -209,66 +229,7 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
             this.setExpanded(true);
         });
 
-        // SDX Roll Button
-        elem.querySelector(".tray-handle-button-tool[data-action='sdx-roll']")?.addEventListener("click", (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            new GetRollDataSD().render(true);
-        });
 
-        elem.querySelector(".tray-handle-button-tool[data-action='sdx-roll']")?.addEventListener("contextmenu", (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-
-            const btn = e.currentTarget;
-            const existingMenu = document.querySelector(".sdx-recent-rolls");
-            if (existingMenu) {
-                existingMenu.remove();
-                return;
-            }
-
-            const recentRolls = getSDXROLLSSetting("recentRolls");
-            if (!recentRolls || recentRolls.length === 0) return;
-
-            const wrapper = document.createElement("div");
-            const ul = document.createElement("ul");
-            wrapper.appendChild(ul);
-            wrapper.classList.add("sdx-recent-rolls");
-
-            recentRolls.forEach((roll) => {
-                const li = document.createElement("li");
-                li.innerHTML = SdxRollSD.getRollLabel(roll.type, roll.options.DC, roll.contest, roll.options);
-                ul.appendChild(li);
-                li.addEventListener("click", () => {
-                    new GetRollDataSD(roll).render(true);
-                    wrapper.remove();
-                });
-            });
-
-            // Position to the right of the button
-            const rect = btn.getBoundingClientRect();
-            wrapper.style.position = "fixed";
-            wrapper.style.left = `${rect.right + 10}px`;
-            wrapper.style.top = `${rect.top}px`;
-            wrapper.style.bottom = "auto";
-            wrapper.style.right = "auto";
-            wrapper.style.zIndex = "100"; // Ensure visibility
-
-            document.body.appendChild(wrapper);
-
-            const listener = (event) => {
-                if (!wrapper.contains(event.target) && event.target !== btn) {
-                    wrapper.remove();
-                    document.removeEventListener("click", listener);
-                    document.removeEventListener("contextmenu", listener);
-                }
-            };
-
-            setTimeout(() => {
-                document.addEventListener("click", listener);
-                document.addEventListener("contextmenu", listener);
-            }, 10);
-        });
 
         // Light Tracker Button
         elem.querySelector(".tray-handle-button-tool[data-action='light-tracker']")?.addEventListener("click", (e) => {
@@ -710,76 +671,14 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
        TOM SCENE SWITCHER (Quick scene switching during broadcast)
        ═══════════════════════════════════════════════════════════════ */
 
-    /**
-     * Check if Tom is broadcasting and show scene switcher if so
-     * Called on tray render to handle page refresh during broadcast
-     */
-    async _checkTomBroadcastState() {
-        try {
-            const { TomStore } = await import("./data/TomStore.mjs");
-            // Scene switcher and cast manager are always visible for GM
-            this.showTomSceneSwitcher(TomStore.activeSceneId || null);
 
-            if (TomStore.activeSceneId) {
-                this.showTomOverlayManager();
-            }
-        } catch (err) {
-            // TomStore may not be initialized yet, ignore
-        }
-    }
 
     /**
-     * Show the Tom scene switcher button in the tray handle
-     * Called when broadcast starts
-     * @param {string} activeSceneId - Currently broadcasting scene ID
-     */
-    showTomSceneSwitcher(activeSceneId) {
-        if (!game.user.isGM) return;
-
-        const handle = document.querySelector(".tray-handle-content-container");
-        if (!handle) return;
-
-        // Remove existing button if any (avoid duplicates on re-render)
-        document.querySelector(".tom-scene-switcher-btn")?.remove();
-
-        // Create the button
-        const btn = document.createElement("button");
-        btn.className = "tray-handle-button-tool tom-scene-switcher-btn";
-        btn.dataset.action = "tom-scene-switcher";
-        btn.title = "Quick Scene Switch";
-        btn.innerHTML = '<i class="fa-solid fa-images"></i>';
-
-        // Insert before carousing button or at the end of GM tools
-        const carousingBtn = handle.querySelector('[data-action="carousing"]');
-        if (carousingBtn) {
-            carousingBtn.before(btn);
-        } else {
-            handle.appendChild(btn);
-        }
-
-        // Store active scene ID
-        this._tomActiveSceneId = activeSceneId;
-
-        // Add click handler
-        btn.addEventListener("click", (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            this._toggleTomScenePanel();
-        });
-    }
-
-    /**
-     * Handle broadcast stop — keep the scene switcher button visible,
-     * close its panel if open, and hide cast/overlay manager buttons.
+     * Handle broadcast stop — refresh UI to hide overlay manager
      */
     onBroadcastStopped() {
-        // Close any open panels so they refresh with the new state
-        document.querySelector(".tom-scene-switcher-panel")?.remove();
-        document.querySelector(".tom-cast-manager-panel")?.remove();
-
-        this.hideTomOverlayManager();
-
         this._tomActiveSceneId = null;
+        this.render();
     }
 
     // Cast manager button has been removed
@@ -796,59 +695,8 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
         if (panel) panel.remove();
     }
 
-    /**
-     * Show the Tom overlay manager button in the tray handle
-     * Called when broadcast starts (after cast manager)
-     */
-    showTomOverlayManager() {
-        if (!game.user.isGM) return;
 
-        const handle = document.querySelector(".tray-handle-content-container");
-        if (!handle) return;
 
-        // Remove existing if any
-        const existingBtn = document.querySelector(".tom-overlay-manager-btn");
-        if (existingBtn) existingBtn.remove();
-
-        // Create the button
-        const btn = document.createElement("button");
-        btn.className = "tray-handle-button-tool tom-overlay-manager-btn";
-        btn.dataset.action = "tom-overlay-manager";
-        btn.title = "Video Overlays";
-        btn.innerHTML = '<i class="fa-solid fa-film"></i>';
-
-        // Insert after cast manager button
-        const castBtn = handle.querySelector(".tom-cast-manager-btn");
-        if (castBtn) {
-            castBtn.after(btn);
-        } else {
-            // Fallback: insert after scene switcher
-            const switcherBtn = handle.querySelector(".tom-scene-switcher-btn");
-            if (switcherBtn) {
-                switcherBtn.after(btn);
-            } else {
-                handle.appendChild(btn);
-            }
-        }
-
-        // Add click handler
-        btn.addEventListener("click", (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            this._toggleTomOverlayPanel();
-        });
-    }
-
-    /**
-     * Hide the Tom overlay manager button
-     */
-    hideTomOverlayManager() {
-        const btn = document.querySelector(".tom-overlay-manager-btn");
-        if (btn) btn.remove();
-
-        const panel = document.querySelector(".tom-overlay-manager-panel");
-        if (panel) panel.remove();
-    }
 
     /**
      * Toggle the overlay manager panel
@@ -977,7 +825,7 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
         panel.appendChild(list);
 
         // Position panel next to button
-        const btn = document.querySelector(".tom-overlay-manager-btn");
+        const btn = document.querySelector(".tray-handle-button-tool[data-action='tom-overlay-manager']");
         if (btn) {
             const rect = btn.getBoundingClientRect();
             panel.style.position = "fixed";
@@ -989,7 +837,7 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
 
         // Close on click outside
         const closeHandler = (e) => {
-            if (!panel.contains(e.target) && !e.target.closest(".tom-overlay-manager-btn")) {
+            if (!panel.contains(e.target) && !e.target.closest(".tray-handle-button-tool[data-action='tom-overlay-manager']")) {
                 panel.remove();
                 document.removeEventListener("click", closeHandler);
             }
@@ -1245,7 +1093,7 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
         panel.appendChild(list);
 
         // Position panel next to button
-        const btn = document.querySelector(".tom-scene-switcher-btn");
+        const btn = document.querySelector(".tray-handle-button-tool[data-action='tom-scene-switcher']");
         if (btn) {
             const rect = btn.getBoundingClientRect();
             panel.style.position = "fixed";
@@ -1257,7 +1105,7 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
 
         // Close on click outside
         const closeHandler = (e) => {
-            if (!panel.contains(e.target) && !e.target.closest(".tom-scene-switcher-btn")) {
+            if (!panel.contains(e.target) && !e.target.closest(".tray-handle-button-tool[data-action='tom-scene-switcher']")) {
                 panel.remove();
                 document.removeEventListener("click", closeHandler);
             }

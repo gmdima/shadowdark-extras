@@ -31,7 +31,6 @@ import { initTorchAnimations } from "./TorchAnimationSD.mjs";
 import { initWeaponAnimations } from "./WeaponAnimationSD.mjs";
 import { initLevelUpAnimations } from "./LevelUpAnimationSD.mjs";
 import { openWeaponAnimationConfig } from "./WeaponAnimationConfig.mjs";
-import { initSDXROLLS, setupSDXROLLSSockets, injectSdxRollButton } from "./sdx-rolls/SdxRollsSD.mjs";
 import { initFocusSpellTracker, endFocusSpell, linkEffectToFocusSpell, getActiveFocusSpells, isFocusingOnSpell, startDurationSpell, endDurationSpell, registerSpellModification, getActiveDurationSpells } from "./FocusSpellTrackerSD.mjs";
 import { initCarousing, injectCarousingButton, ensureCarousingJournal, ensureCarousingTablesJournal, initCarousingSocket, getCustomCarousingTables, getCarousingTableById, setCarousingTable } from "./CarousingSD.mjs";
 import { openCarousingOverlay, refreshCarousingOverlay } from "./CarousingOverlaySD.mjs";
@@ -6325,22 +6324,107 @@ function openSkillDialog(actor, existingSkill) {
  */
 async function rollSkill(actor, skillName, ability) {
 	const abilityMod = ability !== 'none' ? (actor.system.abilities[ability]?.mod ?? 0) : 0;
-	const formula = abilityMod !== 0 ? `1d20 + ${abilityMod}` : '1d20';
-
-	const roll = await new Roll(formula).evaluate();
 
 	const abilityLabel = ability !== 'none'
 		? ability.charAt(0).toUpperCase() + ability.slice(1)
-		: '';
-	const modStr = abilityMod >= 0 ? `+${abilityMod}` : `${abilityMod}`;
-	const flavor = ability !== 'none'
-		? `<b>${escapeHtmlSkills(skillName)}</b> — ${abilityLabel} mod: ${modStr}`
-		: `<b>${escapeHtmlSkills(skillName)}</b>`;
+		: 'None';
 
-	await roll.toMessage({
-		speaker: ChatMessage.getSpeaker({ actor }),
-		flavor: flavor
+	const dialogContent = `
+		<form>
+			<div class="form-group">
+				<label>Ability (${abilityLabel})</label>
+				<div class="form-fields">
+					<input type="number" disabled value="${abilityMod}" style="text-align: center;">
+				</div>
+			</div>
+			<div class="form-group">
+				<label>Bonus</label>
+				<div class="form-fields">
+					<input type="number" name="bonus" value="0" autofocus style="text-align: center;">
+				</div>
+			</div>
+			<div class="form-group">
+				<label>Rolling Mode</label>
+				<div class="form-fields">
+					<select name="rollMode">
+						<option value="publicroll">Public Roll</option>
+						<option value="gmroll">Private GM Roll</option>
+						<option value="blindroll">Blind GM Roll</option>
+						<option value="selfroll">Self Roll</option>
+					</select>
+				</div>
+			</div>
+		</form>
+	`;
+
+	const dialog = new foundry.applications.api.DialogV2({
+		window: { title: `Roll ${skillName}` },
+		content: dialogContent,
+		buttons: [
+			{
+				action: "advantage",
+				label: "Advantage",
+				callback: (event, button, dialog) => processRoll("advantage", dialog)
+			},
+			{
+				action: "normal",
+				label: "Normal",
+				default: true,
+				callback: (event, button, dialog) => processRoll("normal", dialog)
+			},
+			{
+				action: "disadvantage",
+				label: "Disadvantage",
+				callback: (event, button, dialog) => processRoll("disadvantage", dialog)
+			}
+		],
+		submit: (result) => {
+			// fallback if enter pressed (defaults to normal via default button, but just in case)
+			return "normal";
+		}
 	});
+
+	dialog.render(true);
+
+	async function processRoll(mode, dialogApp) {
+		const bonusInput = dialogApp.element.querySelector('input[name="bonus"]');
+		const rollModeInput = dialogApp.element.querySelector('select[name="rollMode"]');
+		const bonus = parseInt(bonusInput.value) || 0;
+		const rollMode = rollModeInput.value;
+
+		let d20 = "1d20";
+		if (mode === "advantage") d20 = "2d20kh";
+		else if (mode === "disadvantage") d20 = "2d20kl";
+
+		// Construct formula
+		const parts = [d20];
+		if (abilityMod !== 0) parts.push(abilityMod);
+		if (bonus !== 0) parts.push(bonus);
+
+		const formula = parts.join(" + ");
+
+		const roll = await new Roll(formula).evaluate();
+
+		// Flavor text
+		let flavor = `<b>${escapeHtmlSkills(skillName)}</b>`;
+		const flavorParts = [];
+		if (ability !== 'none') flavorParts.push(`${abilityLabel} mod: ${abilityMod >= 0 ? '+' + abilityMod : abilityMod}`);
+		if (bonus !== 0) flavorParts.push(`Bonus: ${bonus >= 0 ? '+' + bonus : bonus}`);
+
+		if (flavorParts.length > 0) {
+			flavor += ` (${flavorParts.join(', ')})`;
+		}
+
+		if (mode === "advantage") flavor += " (Advantage)";
+		else if (mode === "disadvantage") flavor += " (Disadvantage)";
+
+		await roll.toMessage({
+			speaker: ChatMessage.getSpeaker({ actor }),
+			flavor: flavor
+		}, {
+			rollMode: rollMode
+		});
+	}
 }
 
 /**
@@ -9397,8 +9481,7 @@ Hooks.once("init", () => {
 	// Patch CharacterGeneratorSD to show rolls in chat
 	patchCharacterGeneratorRolls();
 
-	// Initialize SDX Rolls
-	initSDXROLLS();
+
 
 	// Register Handlebars helpers
 	Handlebars.registerHelper("numberSigned", (value) => {
@@ -9502,8 +9585,7 @@ Hooks.once("ready", async () => {
 	initializeTradeSocket();
 	patchCanUseMagicItems();
 
-	// Setup SDX Rolls sockets
-	setupSDXROLLSSockets();
+
 
 	// Setup combat socket for damage application (requires socketlib)
 	if (typeof socketlib !== "undefined") {
@@ -9782,12 +9864,7 @@ Hooks.on("preCreateItem", (item, data, options, userId) => {
 	}
 });
 
-// Inject SDX Rolls button into chat controls
-Hooks.on("renderChatLog", (app, html) => {
-	// if (!game.settings.get(MODULE_ID, "tray.enabled")) {
-	// 	injectSdxRollButton();
-	// }
-});
+
 
 // Before party actor is created, ensure proper prototype token settings
 Hooks.on("preCreateActor", (actor, data, options, userId) => {

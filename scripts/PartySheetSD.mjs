@@ -244,7 +244,7 @@ export default class PartySheetSD extends (foundry.appv1?.sheets?.ActorSheet || 
 		);
 
 		// Prepare camping tasks for Travel tab
-		context.useSDXRolls = this.actor.getFlag(MODULE_ID, "travelUseSDXRolls") ?? false;
+
 		context.campingTasks = await this._prepareCampingTasks(context.members);
 
 		// Prepare travel speeds for Travel tab
@@ -883,7 +883,7 @@ export default class PartySheetSD extends (foundry.appv1?.sheets?.ActorSheet || 
 		html.find("[data-action='remove-travel-member']").click(this._onRemoveTravelMember.bind(this));
 
 		// Travel Rolling
-		html.find("[data-action='toggle-travel-sdx']").click(this._onToggleSDXRolls.bind(this));
+
 		html.find(".sdx-task-dc").change(this._onChangeTravelDC.bind(this));
 		html.find(".sdx-task-header").click(this._onRollTravelTask.bind(this));
 		html.find(".sdx-task-member").contextmenu(this._onToggleTravelAbility.bind(this));
@@ -2199,11 +2199,7 @@ export default class PartySheetSD extends (foundry.appv1?.sheets?.ActorSheet || 
 		await this.actor.setFlag(MODULE_ID, "travelDCs", dcs);
 	}
 
-	async _onToggleSDXRolls(event) {
-		event.preventDefault();
-		const current = this.actor.getFlag(MODULE_ID, "travelUseSDXRolls") ?? false;
-		await this.actor.setFlag(MODULE_ID, "travelUseSDXRolls", !current);
-	}
+
 
 	async _onRollTravelTask(event) {
 		event.preventDefault();
@@ -2222,7 +2218,6 @@ export default class PartySheetSD extends (foundry.appv1?.sheets?.ActorSheet || 
 		const dc = dcs[taskKey] ?? 12;
 
 		const selections = this.actor.getFlag(MODULE_ID, "travelSelections") ?? {};
-		const useSDXRolls = this.actor.getFlag(MODULE_ID, "travelUseSDXRolls") ?? false;
 
 		const members = await this.getMembers();
 		const actorsToRoll = assignedIds.map(id => members.find(m => m.id === id || m.uuid === id)).filter(m => m);
@@ -2239,50 +2234,22 @@ export default class PartySheetSD extends (foundry.appv1?.sheets?.ActorSheet || 
 			rolls.push({ actor, ability });
 		}
 
-		console.log("Shadowdark Extras | Rolling Task:", { taskKey, rolls, useSDXRolls });
+		console.log("Shadowdark Extras | Rolling Task:", { taskKey, rolls });
 
-		if (useSDXRolls && globalThis.ui?.SdxRollsSD) {
-			const byAbility = {};
-			rolls.forEach(r => {
-				const ab = r.ability.toLowerCase();
-				if (!byAbility[ab]) byAbility[ab] = [];
-				byAbility[ab].push(r.actor.uuid);
-			});
-
-			for (const [ability, uuids] of Object.entries(byAbility)) {
-				// Use banner image from configured task data
-				const bannerImage = task.bannerImage || undefined;
-
-				const data = {
-					actors: uuids,
-					contestants: [],
-					type: `stat.${ability}`,
-					contest: false,
-					options: {
-						DC: dc,
-						title: `${task.name}`,
-						bannerImage: bannerImage
-					}
-				};
-				console.log("Shadowdark Extras | SDX Banner Request:", { taskKey, bannerImage, data });
-				ui.SdxRollsSD.requestRoll(data);
-			}
-		} else {
-			for (const { actor, ability } of rolls) {
-				const abilityId = ability.toLowerCase();
-				if (actor.rollAbility) {
-					try {
-						const abilityLabel = game.i18n.localize(CONFIG.SHADOWDARK.ABILITIES_LONG[abilityId]);
-						await actor.rollAbility(abilityId, {
-							target: dc,
-							title: `${task.name} Check - ${abilityLabel}`
-						});
-					} catch (err) {
-						console.error("Shadowdark Extras | Error rolling ability:", err);
-					}
-				} else {
-					ui.notifications.warn("Cannot roll ability for actor type: " + actor.type);
+		for (const { actor, ability } of rolls) {
+			const abilityId = ability.toLowerCase();
+			if (actor.rollAbility) {
+				try {
+					const abilityLabel = game.i18n.localize(CONFIG.SHADOWDARK.ABILITIES_LONG[abilityId]);
+					await actor.rollAbility(abilityId, {
+						target: dc,
+						title: `${task.name} Check - ${abilityLabel}`
+					});
+				} catch (err) {
+					console.error("Shadowdark Extras | Error rolling ability:", err);
 				}
+			} else {
+				ui.notifications.warn("Cannot roll ability for actor type: " + actor.type);
 			}
 		}
 	}

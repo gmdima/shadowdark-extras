@@ -17,7 +17,7 @@ export class TomSD {
 
     // Register Settings
     this._registerSettings();
-    this._registerKeybindings();
+
 
     // Register Hooks
     Hooks.on('ready', this._onReady.bind(this));
@@ -115,36 +115,9 @@ export class TomSD {
       type: Array,
       default: []
     });
-
-    game.settings.register(this.ID, TOM_CONFIG.SETTINGS.CHARACTERS, {
-      scope: 'world',
-      config: false,
-      type: Array,
-      default: []
-    });
-
-    game.settings.register(this.ID, TOM_CONFIG.SETTINGS.FOLDERS, {
-      scope: 'world',
-      config: false,
-      type: Array,
-      default: []
-    });
   }
 
-  static _registerKeybindings() {
-    game.keybindings.register(this.ID, 'tom-open-panel', {
-      name: 'Open Tom',
-      hint: 'Open the Tom Player Panel',
-      editable: [
-        { key: 'KeyT', modifiers: [KeyboardManager.MODIFIER_KEYS.CONTROL, KeyboardManager.MODIFIER_KEYS.SHIFT] }
-      ],
-      onDown: () => {
-        TomSD.open();
-      },
-      restricted: false,
-      precedence: CONST.KEYBINDING_PRECEDENCE.NORMAL
-    });
-  }
+
 
   static async _onReady() {
     console.log(`Shadowdark Extras | Tom | Ready`);

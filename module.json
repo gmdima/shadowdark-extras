@@ -1,7 +1,7 @@
 {
   "id": "shadowdark-extras",
   "title": "Shadowdark Extras",
-  "version": "5.81",
+  "version": "5.82",
   "compatibility": {
     "minimum": "13",
     "verified": "13"
@@ -97,9 +97,6 @@
       "src": "styles/travel-tab.css"
     },
     {
-      "src": "styles/sdx-rolls-sd.css"
-    },
-    {
       "src": "styles/token-toolbar.css"
     },
     {
@@ -151,7 +148,7 @@
     }
   ],
   "manifest": "https://github.com/gmdima/shadowdark-extras/releases/latest/download/module.json",
-  "download": "https://github.com/gmdima/shadowdark-extras/releases/download/5.81/module.zip",
+  "download": "https://github.com/gmdima/shadowdark-extras/releases/download/5.82/module.zip",
   "packs": [
     {
       "name": "pack-sdxitems",

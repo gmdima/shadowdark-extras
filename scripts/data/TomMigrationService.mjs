@@ -3,76 +3,25 @@ import { TomStore as Store } from './TomStore.mjs';
 
 export class TomMigrationService {
   static async migrate() {
-    
+
     if (!game.user.isGM) return;
 
-    console.log(`${CONFIG.MODULE_NAME} | Checking for migration...`);
+    if (!CONFIG.SETTINGS.SCENES) return;
 
-    
+    console.log(`${CONFIG.MODULE_NAME} | Checking for data...`);
+
+
     const v4Scenes = game.settings.get(CONFIG.MODULE_ID, CONFIG.SETTINGS.SCENES);
-    const v4Characters = game.settings.get(CONFIG.MODULE_ID, CONFIG.SETTINGS.CHARACTERS);
 
-    let needsSave = false;
 
-    
     if (v4Scenes && v4Scenes.length > 0) {
-      for (const scene of v4Scenes) {
-        if (!scene.layoutSettings) {
-          scene.layoutSettings = {
-            preset: 'bottom-center',
-            size: 'medium',
-            spacing: 24,
-            offsetX: 0,
-            offsetY: 5
-          };
-          needsSave = true;
-        }
-      }
-    }
-
-    
-    if (v4Characters && v4Characters.length > 0) {
-      for (const char of v4Characters) {
-        if (!char.permissions) {
-          char.permissions = {
-            default: 'none',
-            players: {}
-          };
-          needsSave = true;
-        }
-
-        
-        if (char.states) {
-          for (const [key, path] of Object.entries(char.states)) {
-            if (path && path.includes('exalted-scenes/')) {
-              char.states[key] = path.replace('exalted-scenes/', 'Tom/');
-              needsSave = true;
-            }
-          }
-        }
-      }
-    }
-
-    
-    if (needsSave) {
-      console.log(`${CONFIG.MODULE_NAME} | Normalizing data for v4.1 features...`);
-      await game.settings.set(CONFIG.MODULE_ID, CONFIG.SETTINGS.SCENES, v4Scenes);
-      await game.settings.set(CONFIG.MODULE_ID, CONFIG.SETTINGS.CHARACTERS, v4Characters);
-      console.log(`${CONFIG.MODULE_NAME} | Data normalization complete.`);
-      await Store._loadData(); 
-    }
-
-    
-    if (v4Scenes && v4Scenes.length > 0) {
-      console.log(`${CONFIG.MODULE_NAME} | V4 data found. Skipping legacy migration.`);
+      // V4/V5 data exists, no legacy migration needed
       return;
     }
 
-    
-    
-    
 
-    
+    // Check for legacy data (V2/V3) to migrate into Scenes
+
     let legacyData = null;
     try {
       legacyData = game.settings.get(CONFIG.MODULE_ID, 'data-v3');
@@ -80,7 +29,7 @@ export class TomMigrationService {
       try {
         legacyData = game.settings.get(CONFIG.MODULE_ID, 'data-v2');
       } catch (e2) {
-        console.log(`${CONFIG.MODULE_NAME} | No legacy data found.`);
+        // No legacy data
       }
     }
 
@@ -88,9 +37,7 @@ export class TomMigrationService {
 
     console.log(`${CONFIG.MODULE_NAME} | Migrating legacy data...`);
 
-    
-    
-
+    // Migrate Scenes
     if (legacyData.scenes) {
       for (const s of legacyData.scenes) {
         Store.createScene({
@@ -98,27 +45,13 @@ export class TomMigrationService {
           name: s.name,
           background: s.background,
           bgType: s.bgType || 'image',
-          favorite: s.favorite || false,
-          folder: s.folder,
-          cast: s.characters || [] 
-        });
-      }
-    }
-
-    if (legacyData.characters) {
-      for (const c of legacyData.characters) {
-        Store.createCharacter({
-          id: c.id,
-          name: c.name,
-          states: c.states || { normal: c.image },
-          currentState: c.currentState || 'normal',
-          folder: c.folder,
-          favorite: c.favorite || false
+          favorite: s.favorite || false, // Ignored by new model but kept for read safety
+          isArena: s.isArena || false
         });
       }
     }
 
     console.log(`${CONFIG.MODULE_NAME} | Migration Complete.`);
-    ui.notifications.info("Tom: Data migrated successfully to v4.0");
+    ui.notifications.info("Tom: Legacy data migrated.");
   }
 }

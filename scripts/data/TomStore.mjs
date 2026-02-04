@@ -1,4 +1,3 @@
-
 import { TOM_CONFIG as CONFIG } from '../TomConfig.mjs';
 import { TomSocketHandler } from './TomSocketHandler.mjs';
 
@@ -74,7 +73,7 @@ export class TomStoreClass {
 
       const newValue = data.value !== undefined ? data.value : data;
 
-      if (setting.key === `${CONFIG.MODULE_ID}.${CONFIG.SETTINGS.SCENES} `) {
+      if (setting.key === `${CONFIG.MODULE_ID}.${CONFIG.SETTINGS.SCENES}`) {
         this._loadScenes(newValue);
 
         if (this.activeSceneId) {
@@ -139,6 +138,9 @@ export class TomStoreClass {
 
   deleteItem(id, type) {
     if (type === 'scene') {
+      if (this.activeSceneId === id) {
+        TomSocketHandler.emitStopBroadcast();
+      }
       this.scenes.delete(id);
     }
     this.saveData();

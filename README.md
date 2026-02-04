@@ -1,8 +1,9 @@
 # Shadowdark Extras
 <img width="3584" height="1184" alt="Gemini_Generated_Image_tiknyftiknyftikn" src="https://github.com/user-attachments/assets/173d6548-314e-42a6-9e8c-cbd2ca2a4150" />
 
-join my new discord server to have discussions about the module, ask for fixes, new features, and hopefully create a small community driven server where we can share material like Items, macros and automations for Sdx.
-[https://discord.gg/FdQaq4ZSU2](https://discord.gg/ZBtQ9ub7Mn)
+[![Ask for feature / report bug](https://img.shields.io/badge/Ask_for_feature_/_report_bug-Join_Discord-5865F2?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/ZBtQ9ub7Mn)
+
+Join my new discord server to have discussions about the module, ask for fixes, new features, and hopefully create a small community driven server where we can share material like Items, macros and automations for Sdx.
 
 A comprehensive enhancement module for [Shadowdark RPG](https://www.thearcanelibrary.com/pages/shadowdark) in [Foundry VTT](https://foundryvtt.com/). This module adds quality-of-life features, automation, visual enhancements, and expanded gameplay options to elevate your Shadowdark experience. Most of the features can be turned on/off, while others are embedded. **This module was made the improve my own games based on my own taste**. If you would like the request a feature, open a issue enhancement/feature ticket. 
 
@@ -272,13 +273,7 @@ Display weapon and shield images directly on tokens when equipped:
 
 ---
 
-### 🎲 SDX Rolls
 
-Dramatic group roll system with:
-- Customizable intro/success/failure sounds
-- Banner color and image customization
-- Recap messages (GM-only or public)
-- Automatic message cleanup option
 
 
 ---
@@ -334,7 +329,7 @@ Built-in effect library including:
 All features can be individually enabled/disabled in module settings. Settings are organized into logical groups:
 
 - **Configuration Menus** - Combat, Effects, HP Waves, Inventory Styles, Carousing, Creature Types
-- **SDX Rolls** - Sounds, colors, visibility
+
 - **Combat & Spells** - Focus tracker, spell enhancement, wand tracking
 - **Character Sheet** - Enhanced header, renown, journal, conditions
 - **Inventory** - Containers, trading, unidentified items

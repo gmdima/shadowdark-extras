@@ -275,25 +275,7 @@ function injectSidebarButtons($html) {
         }
     });
 
-    // Create SDX Roll button
-    const $sdxRollBtn = $(`
-        <li class="sdx-marching-btn-container">
-            <button type="button" class="ui-control plain icon fa-solid fa-dice-d20 sdx-roll-sidebar-btn"
-                    data-tooltip="${game.i18n.localize("SHADOWDARK_EXTRAS.SDXROLLS.SdxRoll")}" data-tooltip-direction="LEFT">
-            </button>
-        </li>
-    `);
 
-    $settingsBtn.before($sdxRollBtn);
-
-    // Add SDX Roll handler
-    $sdxRollBtn.find("button").on("click", () => {
-        if (ui.SdxRollsSD?.GetRollData) {
-            new ui.SdxRollsSD.GetRollData().render(true);
-        } else {
-            ui.notifications.warn("SDX Rolls system not ready.");
-        }
-    });
 
     // Update button states
     updateButtonStates();
@@ -550,17 +532,16 @@ function onPreUpdateToken(tokenDoc, changes, options, userId) {
     // Allow GM to move any token
     if (game.user.isGM) return true;
 
-    // Check if the token being moved is the leader
-    if (tokenDoc.id === leaderTokenId) {
-        return true;
-    }
+
 
     // Allow players to move their own tokens (to join the formation)
     const token = canvas.tokens.get(tokenDoc.id);
     if (token?.actor?.hasPlayerOwner) {
         const isOwner = token.actor.testUserPermission(game.user, "OWNER");
         if (isOwner) {
-            return true; // Player can move their own token
+            // New logic: BLOCK ALL player movement causing Marching Mode glitch
+            ui.notifications.warn("Only the GM can move tokens in Marching Mode.");
+            return false;
         }
     }
 

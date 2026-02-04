@@ -86,15 +86,17 @@ export class TomSocketHandler {
     import('../TrayApp.mjs').then(({ TrayApp }) => {
       const trayApp = TrayApp._instance;
       if (!trayApp) return;
-      trayApp.updateTomSceneSwitcher(sceneId);
-      trayApp.showTomOverlayManager();
+      // Just render, the state is already in TomStore which the tray reads
+      trayApp.render();
     });
   }
 
 
   static _hideTraySceneSwitcher() {
     import('../TrayApp.mjs').then(({ TrayApp }) => {
-      TrayApp._instance?.onBroadcastStopped();
+      const trayApp = TrayApp._instance;
+      if (!trayApp) return;
+      trayApp.render();
     });
   }
 
