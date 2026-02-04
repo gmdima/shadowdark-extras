@@ -162,13 +162,13 @@ async function playTorchAnimation(token, item) {
 				.name(`${effectName}_impact`)
 				.file(config.impactFile)
 				.atLocation(token)
-				.attachTo(token, { bindRotation: false, bindVisibility: false })
+				.attachTo(token, { bindRotation: false, bindVisibility: true })
 				.scaleToObject(1.2, { considerTokenScale: true })
 				.spriteOffset({
 					x: 0,
 					y: -0.4 * tokenWidth
 				}, { gridUnits: true })
-				.aboveLighting()
+				.aboveLighting(false)
 				.zIndex(1);
 		}
 
@@ -177,7 +177,7 @@ async function playTorchAnimation(token, item) {
 			.name(effectName)
 			.file("jb2a.markers.light.complete.blue")
 			.atLocation(token)
-			.attachTo(token, { bindRotation: false, bindVisibility: false })
+			.attachTo(token, { bindRotation: false, bindVisibility: true })
 			.scaleToObject(0.5, { considerTokenScale: true })
 			.scaleIn(0, 500, { ease: "easeOutElastic" })
 			.scaleOut(0, 250, { ease: "easeOutCubic" })
@@ -185,10 +185,9 @@ async function playTorchAnimation(token, item) {
 				x: 0,
 				y: -0.5 * tokenWidth
 			}, { gridUnits: true })
-			.loopProperty("sprite", "scale.x", { from: 0.95, to: 1.05, duration: 2000, ease: "easeInOutSine", pingPong: true })
 			.loopProperty("sprite", "scale.y", { from: 0.95, to: 1.05, duration: 2000, ease: "easeInOutSine", pingPong: true })
 			.persist()
-			.aboveLighting()
+			.aboveLighting(false)
 			.zIndex(2);
 
 		// Add subtle particle effect around the light
@@ -197,7 +196,7 @@ async function playTorchAnimation(token, item) {
 			.name(effectName)
 			.file("jb2a.particles.outward.greenyellow.01.02")
 			.atLocation(token)
-			.attachTo(token, { bindRotation: false, bindVisibility: false })
+			.attachTo(token, { bindRotation: false, bindVisibility: true })
 			.scaleToObject(0.4, { considerTokenScale: true })
 			.spriteOffset({
 				x: 0,
@@ -205,7 +204,7 @@ async function playTorchAnimation(token, item) {
 			}, { gridUnits: true })
 			.persist()
 			.opacity(0.7)
-			.aboveLighting()
+			.aboveLighting(false)
 			.zIndex(3);
 
 		await seq.play();
@@ -218,7 +217,7 @@ async function playTorchAnimation(token, item) {
 			.name(`${effectName}_impact`)
 			.file(config.impactFile)
 			.atLocation(token)
-			.attachTo(token, { bindRotation: true, local: true, bindVisibility: false })
+			.attachTo(token, { bindRotation: true, local: true, bindVisibility: true })
 			.scaleToObject(0.9, { considerTokenScale: true })
 			.spriteOffset({
 				x: config.flameOffsetX * tokenWidth,
@@ -226,7 +225,7 @@ async function playTorchAnimation(token, item) {
 			}, { gridUnits: true })
 			.spriteRotation(45)
 			.spriteScale({ x: 1.0 / tokenScale.x, y: 1.0 / tokenScale.y })
-			.aboveLighting()
+			.aboveLighting(false)
 			.zIndex(1);
 	}
 
@@ -236,7 +235,7 @@ async function playTorchAnimation(token, item) {
 			.name(effectName)
 			.file(config.torchFile)
 			.atLocation(token)
-			.attachTo(token, { bindRotation: true, local: true, bindVisibility: false })
+			.attachTo(token, { bindRotation: true, local: true, bindVisibility: true })
 			.scaleToObject(config.scale, { considerTokenScale: true })
 			.scaleIn(0, 500, { ease: "easeOutElastic" })
 			.scaleOut(0, 250, { ease: "easeOutCubic" })
@@ -250,7 +249,7 @@ async function playTorchAnimation(token, item) {
 			.animateProperty("sprite", "rotation", { from: 0, to: 30, duration: 250, delay: 200, ease: "easeOutBack" })
 			.loopProperty("sprite", "rotation", { from: 2, to: -2, duration: 1500, ease: "easeOutQuad", pingPong: true })
 			.persist()
-			.aboveLighting()
+			.aboveLighting(false)
 			.zIndex(2);
 	}
 
@@ -269,7 +268,7 @@ async function playTorchAnimation(token, item) {
 		.spriteScale({ x: 1.0 / tokenScale.x, y: 1.0 / tokenScale.y })
 		.loopProperty("sprite", "rotation", { from: config.flameRotation + 2, to: config.flameRotation - 2, duration: 1500, ease: "easeOutQuad", pingPong: true })
 		.persist()
-		.aboveLighting()
+		.aboveLighting(false)
 		.zIndex(3);
 
 	await seq.play();

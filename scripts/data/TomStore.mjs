@@ -10,6 +10,8 @@ class TomSceneModel {
     this.bgType = data.bgType || 'image';
     this.isArena = data.isArena || false;
     this.arenaType = data.arenaType || 'isometric';
+    this.inAnimation = data.inAnimation || 'fade';
+    this.outAnimation = data.outAnimation || 'fade';
   }
 
   get thumbnail() {
@@ -21,7 +23,7 @@ class TomSceneModel {
   }
 
   toJSON() {
-    const { id, name, type, background, bgType, isArena, arenaType } = this;
+    const { id, name, type, background, bgType, isArena, arenaType, inAnimation, outAnimation } = this;
     return {
       id,
       name,
@@ -29,7 +31,9 @@ class TomSceneModel {
       background,
       bgType,
       isArena,
-      arenaType
+      arenaType,
+      inAnimation,
+      outAnimation
     };
   }
 }
@@ -139,10 +143,31 @@ export class TomStoreClass {
   deleteItem(id, type) {
     if (type === 'scene') {
       if (this.activeSceneId === id) {
-        TomSocketHandler.emitStopBroadcast();
+        const scene = this.scenes.get(id);
+        const outAnimation = scene?.outAnimation || 'fade';
+        TomSocketHandler.emitStopBroadcast(outAnimation);
       }
       this.scenes.delete(id);
     }
+    this.saveData();
+  }
+
+  reorderScenes(sceneIds) {
+    // Create a new collection with scenes in the specified order
+    const newScenes = new foundry.utils.Collection();
+
+    // Add scenes in the new order
+    for (const id of sceneIds) {
+      const scene = this.scenes.get(id);
+      if (scene) {
+        newScenes.set(id, scene);
+      }
+    }
+
+    // Replace the scenes collection
+    this.scenes = newScenes;
+
+    // Save the new order
     this.saveData();
   }
 

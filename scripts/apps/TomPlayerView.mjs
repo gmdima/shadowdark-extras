@@ -49,13 +49,29 @@ export class TomPlayerView extends HandlebarsApplicationMixin(ApplicationV2) {
     super._onRender(context, options);
     this._setFoundryUIOffsets();
     this._ensureVideoPlays();
-    if (this.uiState.isSceneTransition) {
-      const background = this.element.querySelector('.tom-pv-bg-media');
-      if (background) {
-        background.classList.add('es-transition-fade');
-        background.addEventListener('animationend', () => {
-          background.classList.remove('es-transition-fade');
-        }, { once: true });
+
+    // Apply in-animation when scene activates
+    if (this.uiState.isSceneTransition && this.uiState.active) {
+      const playerView = this.element.querySelector('.tom-player-view');
+      if (playerView) {
+        // Remove any previous animation classes
+        playerView.className = playerView.className.replace(/anim-(in|out)-[\w-]+/g, '').trim();
+
+        // Apply in animation
+        const inAnimation = this.uiState.inAnimation || 'fade';
+        if (inAnimation && inAnimation !== 'none') {
+          playerView.classList.add(`anim-in-${inAnimation}`);
+
+          // Clean up animation class and transition overlay after it completes
+          playerView.addEventListener('animationend', () => {
+            playerView.classList.remove(`anim-in-${inAnimation}`);
+            // Remove the black transition overlay
+            TomPlayerView._removeTransitionOverlay();
+          }, { once: true });
+        } else {
+          // No animation, remove overlay immediately
+          TomPlayerView._removeTransitionOverlay();
+        }
       }
       this.uiState.isSceneTransition = false;
     }
@@ -850,11 +866,10 @@ export class TomPlayerView extends HandlebarsApplicationMixin(ApplicationV2) {
     }
   }
 
-  static activate(sceneId) {
+  static activate(sceneId, inAnimation = 'fade') {
     if (!this._instance) {
       this._instance = new TomPlayerView();
     }
-
 
     const isNewScene = this._instance.uiState.sceneId !== sceneId;
 
@@ -863,40 +878,108 @@ export class TomPlayerView extends HandlebarsApplicationMixin(ApplicationV2) {
     this._instance.uiState.sceneId = sceneId;
     this._instance.uiState.isSceneTransition = isNewScene;
     this._instance.uiState.sequenceBackground = null;
+    this._instance.uiState.inAnimation = inAnimation;
 
     this._instance.render(true);
   }
 
-  static deactivate() {
-    if (this._instance && this._instance.uiState.active) {
+  static deactivate(outAnimation = 'fade') {
+    return new Promise((resolve) => {
+      if (this._instance && this._instance.uiState.active) {
 
-      this._instance.uiState.arenaTokens.clear();
-      this._instance.uiState.arenaAssets.clear();
-      this._instance.uiState.arenaZOrder = 10;
+        this._instance.uiState.arenaTokens.clear();
+        this._instance.uiState.arenaAssets.clear();
+        this._instance.uiState.arenaZOrder = 10;
 
+        const view = this._instance.element;
+        if (view) {
+          const playerView = view.querySelector('.tom-player-view');
+          if (playerView) {
+            // Remove any previous animation classes
+            playerView.className = playerView.className.replace(/anim-(in|out)-[\w-]+/g, '').trim();
 
-      const view = this._instance.element;
-      if (view) {
-        const playerView = view.querySelector('.tom-player-view');
-        if (playerView) {
-          playerView.classList.add('closing');
+            // Apply out animation
+            if (outAnimation && outAnimation !== 'none') {
+              playerView.classList.add(`anim-out-${outAnimation}`);
 
-
-          setTimeout(() => {
-            this._instance.uiState.active = false;
-            this._instance.uiState.sceneId = null;
-            this._instance.uiState.sequenceBackground = null;
-            this._instance.render();
-          }, 600);
-          return;
+              // Wait for animation to complete
+              const animDuration = 600; // matches CSS --anim-duration
+              setTimeout(() => {
+                this._instance.uiState.active = false;
+                this._instance.uiState.sceneId = null;
+                this._instance.uiState.sequenceBackground = null;
+                this._instance.render();
+                resolve();
+              }, animDuration);
+              return;
+            }
+          }
         }
+
+        // No animation or fallback
+        this._instance.uiState.active = false;
+        this._instance.uiState.sceneId = null;
+        this._instance.uiState.sequenceBackground = null;
+        this._instance.render();
+        resolve();
+      } else {
+        resolve();
+      }
+    });
+  }
+
+  /**
+   * Play out animation without deactivating - used for scene-to-scene transitions
+   * @param {string} outAnimation - Animation type to play
+   * @returns {Promise} Resolves when animation completes
+   */
+  static playOutAnimation(outAnimation = 'fade') {
+    return new Promise((resolve) => {
+      if (!this._instance || !this._instance.uiState.active) {
+        resolve();
+        return;
       }
 
+      const view = this._instance.element;
+      if (!view) {
+        resolve();
+        return;
+      }
 
-      this._instance.uiState.active = false;
-      this._instance.uiState.sceneId = null;
-      this._instance.uiState.sequenceBackground = null;
-      this._instance.render();
+      const playerView = view.querySelector('.tom-player-view');
+      if (!playerView) {
+        resolve();
+        return;
+      }
+
+      // Remove any previous animation classes
+      playerView.className = playerView.className.replace(/anim-(in|out)-[\w-]+/g, '').trim();
+
+      // Apply out animation
+      if (outAnimation && outAnimation !== 'none') {
+        playerView.classList.add(`anim-out-${outAnimation}`);
+
+        // Wait for animation to complete
+        const animDuration = 600; // matches CSS --anim-duration
+        setTimeout(() => {
+          // Remove the out animation class so in animation can play
+          playerView.classList.remove(`anim-out-${outAnimation}`);
+          resolve();
+        }, animDuration);
+      } else {
+        resolve();
+      }
+    });
+  }
+
+  /**
+   * Remove the transition overlay after in-animation completes
+   * (Currently unused - kept for potential future use)
+   */
+  static _removeTransitionOverlay() {
+    const overlay = document.getElementById('tom-scene-transition-overlay');
+    if (overlay) {
+      overlay.remove();
     }
   }
 

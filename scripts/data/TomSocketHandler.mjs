@@ -17,7 +17,7 @@ export class TomSocketHandler {
         this._onBroadcastScene(payload.data);
         break;
       case 'stop-broadcast':
-        this._onStopBroadcast();
+        this._onStopBroadcast(payload.data);
         break;
       case 'arena-token-spawn':
         this._onArenaTokenSpawn(payload.data);
@@ -65,20 +65,28 @@ export class TomSocketHandler {
   }
 
 
+  static async _onBroadcastScene(data) {
+    const { sceneId, inAnimation, outAnimation } = data;
 
-  static _onBroadcastScene(data) {
-    const { sceneId } = data;
+    // If there's an active scene, play its out animation first
+    if (Store.activeSceneId && Store.activeSceneId !== sceneId && outAnimation && outAnimation !== 'none') {
+      await TomPlayerView.playOutAnimation(outAnimation);
+    }
+
     Store.setActiveScene(sceneId);
-    TomPlayerView.activate(sceneId);
+    TomPlayerView.activate(sceneId, inAnimation || 'fade');
     game.user.isGM && this._updateTraySceneSwitcher(sceneId);
+    game.user.isGM && this._showSceneNavBar(sceneId);
   }
 
-  static _onStopBroadcast() {
-    TomPlayerView.deactivate();
+  static async _onStopBroadcast(data = {}) {
+    const { outAnimation } = data;
+    await TomPlayerView.deactivate(outAnimation || 'fade');
     Store.clearActiveScene();
     this._removeOverlayElement();
     Store.currentOverlay = null;
     game.user.isGM && this._hideTraySceneSwitcher();
+    game.user.isGM && this._hideSceneNavBar();
   }
 
 
@@ -100,22 +108,40 @@ export class TomSocketHandler {
     });
   }
 
-  static emitBroadcastScene(sceneId) {
-    console.warn(`${CONFIG.MODULE_NAME} | Socket Message Emitted: broadcast-scene`, { sceneId });
-    game.socket.emit(CONFIG.SOCKET_NAME, {
-      type: 'broadcast-scene',
-      data: { sceneId }
+  static _showSceneNavBar(sceneId) {
+    import('../SceneNavBar.mjs').then(({ SceneNavBar }) => {
+      SceneNavBar.show(sceneId);
     });
-
-    this._onBroadcastScene({ sceneId });
   }
 
-  static emitStopBroadcast() {
+  static _hideSceneNavBar() {
+    import('../SceneNavBar.mjs').then(({ SceneNavBar }) => {
+      SceneNavBar.hide();
+    });
+  }
+
+  static emitBroadcastScene(sceneId, inAnimation = 'fade', outAnimation = null) {
+    // If switching scenes, get the current scene's out animation
+    if (outAnimation === null && Store.activeSceneId && Store.activeSceneId !== sceneId) {
+      const currentScene = Store.scenes.get(Store.activeSceneId);
+      outAnimation = currentScene?.outAnimation || 'fade';
+    }
+
+    console.warn(`${CONFIG.MODULE_NAME} | Socket Message Emitted: broadcast-scene`, { sceneId, inAnimation, outAnimation });
+    game.socket.emit(CONFIG.SOCKET_NAME, {
+      type: 'broadcast-scene',
+      data: { sceneId, inAnimation, outAnimation }
+    });
+
+    this._onBroadcastScene({ sceneId, inAnimation, outAnimation });
+  }
+
+  static emitStopBroadcast(outAnimation = 'fade') {
     game.socket.emit(CONFIG.SOCKET_NAME, {
       type: 'stop-broadcast',
-      data: {}
+      data: { outAnimation }
     });
-    this._onStopBroadcast();
+    this._onStopBroadcast({ outAnimation });
   }
 
   static _onArenaTokenSpawn(data) {
@@ -258,6 +284,7 @@ export class TomSocketHandler {
 
       if (game.user.isGM) {
         this._updateTraySceneSwitcher(sceneId);
+        this._showSceneNavBar(sceneId);
       }
 
 

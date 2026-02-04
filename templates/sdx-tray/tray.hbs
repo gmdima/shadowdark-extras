@@ -33,10 +33,7 @@
                 <i class="fa-solid fa-fire"></i>
             </button>
 
-            <button class="tray-handle-button-tool tom-scene-switcher-btn" data-action="tom-scene-switcher"
-                title="Quick Scene Switch">
-                <i class="fa-solid fa-images"></i>
-            </button>
+
 
             {{#if showTomOverlays}}
             <button class="tray-handle-button-tool tom-overlay-manager-btn" data-action="tom-overlay-manager"
@@ -161,10 +158,17 @@
 
         <!-- TRAY TABS -->
         <div class="tray-view-tabs">
+            {{#if isGM}}
+            <button class="tray-tab-button {{#if (eq viewMode 'scenes')}}active{{/if}}" data-view="scenes"
+                title="Scenes View">
+                <i class="fa-solid fa-images"></i> Scenes
+            </button>
+            {{else}}
             <button class="tray-tab-button {{#if (eq viewMode 'player')}}active{{/if}}" data-view="player"
                 title="Player View">
                 <i class="fa-solid fa-user"></i> Token
             </button>
+            {{/if}}
             {{#if showTabParty}}
             <button class="tray-tab-button {{#if (eq viewMode 'party')}}active{{/if}}" data-view="party"
                 title="Party View">
@@ -239,6 +243,74 @@
                 </div>
                 {{/if}}
             </div>
+
+            <!-- SCENES TAB (GM ONLY) -->
+            {{#if isGM}}
+            <div class="tray-view-content scenes-view {{#unless (eq viewMode 'scenes')}}hidden{{/unless}}"
+                style="overflow-y: hidden; display: flex; flex-direction: column;">
+
+                <!-- Create/Stop Header -->
+                <div class="scenes-header" style="flex: 0 0 auto; padding: 10px;">
+                    <button class="tray-btn-full" data-action="create-scene">
+                        <i class="fas fa-plus"></i> Create New Scene
+                    </button>
+                    {{#if tomActiveSceneId}}
+                    <button class="tray-btn-full danger mt-2" data-action="stop-broadcast">
+                        <i class="fas fa-stop"></i> Stop Broadcasting
+                    </button>
+                    {{/if}}
+                </div>
+
+                <!-- Scenes List -->
+                <div class="scenes-list-scroll"
+                    style="flex: 1; overflow-y: auto; scrollbar-width: thin; padding: 0 10px 10px 10px;">
+
+                    {{#if tomScenes.length}}
+                    <div class="scene-grid">
+                        {{#each tomScenes}}
+                        <div class="scene-card {{#if (eq this.id ../tomActiveSceneId)}}active{{/if}}"
+                            data-scene-id="{{this.id}}" draggable="true">
+                            <div class="scene-card-activate" title="Click to Broadcast">
+                                <div class="scene-card-thumb">
+                                    {{#if this.isVideo}}
+                                    <video src="{{this.background}}" muted loop preload="metadata"
+                                        class="scene-thumb-video"></video>
+                                    {{else}}
+                                    <div class="scene-thumb-image" style="background-image: url('{{this.background}}')">
+                                    </div>
+                                    {{/if}}
+                                    {{#if (eq this.id ../tomActiveSceneId)}}
+                                    <div class="scene-playing-overlay">
+                                        <i class="fas fa-play"></i>
+                                    </div>
+                                    {{/if}}
+                                </div>
+                                <div class="scene-card-info">
+                                    <div class="scene-name">{{this.name}}</div>
+                                    {{#if this.isArena}}
+                                    <div class="scene-tag arena">Arena</div>
+                                    {{/if}}
+                                </div>
+                            </div>
+                            <div class="scene-card-actions">
+                                <button class="scene-action-btn" data-action="edit-scene" title="Edit Scene">
+                                    <i class="fas fa-pen"></i>
+                                </button>
+                                <button class="scene-action-btn danger" data-action="delete-scene" title="Delete Scene">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                        {{/each}}
+                    </div>
+                    {{else}}
+                    <div class="no-content-message">
+                        <p>No Scenes Created</p>
+                    </div>
+                    {{/if}}
+                </div>
+            </div>
+            {{/if}}
 
             <!-- PARTY TAB -->
             <div class="tray-view-content party-view {{#unless (eq viewMode 'party')}}hidden{{/unless}}">

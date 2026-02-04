@@ -102,6 +102,14 @@ export function initTray() {
         }
     });
 
+    // Hook to update tray when Tom scenes are modified
+    Hooks.on("updateSetting", (setting, data, options, userId) => {
+        // Check if the update involves Tom scenes
+        if (setting.key === `${MODULE_ID}.tom-scenes`) {
+            renderTray();
+        }
+    });
+
     console.log("shadowdark-extras | Character Tray initialized");
 }
 
@@ -310,13 +318,22 @@ export function cycleViewMode() {
     const showParty = game.settings.get(MODULE_ID, "tray.showPartyTab");
     const isGM = game.user.isGM;
 
-    const modes = ["player"];
+    const modes = [];
+
+    // GM sees Scenes instead of Token/Player
+    if (isGM) {
+        modes.push("scenes");
+    } else {
+        modes.push("player");
+    }
+
     if (showParty) modes.push("party");
     if (isGM) modes.push("pins");
     modes.push("notes"); // Notes mode for everyone (filtered for players)
 
     const currentIndex = modes.indexOf(_viewMode);
-    const nextIndex = (currentIndex + 1) % modes.length;
+    // If current mode isn't in list (e.g. switched from player to GM view), start at 0
+    const nextIndex = currentIndex === -1 ? 0 : (currentIndex + 1) % modes.length;
     _viewMode = modes[nextIndex];
 
     renderTray();

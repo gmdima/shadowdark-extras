@@ -1212,21 +1212,32 @@ body.sdx-tray-enabled #camera-views.vertical.left {
 }
 
 @keyframes tomSwitcherGlow {
-    0%, 100% {
+
+    0%,
+    100% {
         box-shadow: 0 0 5px rgba(251, 191, 36, 0.5),
-                    0 0 10px rgba(251, 191, 36, 0.3);
+            0 0 10px rgba(251, 191, 36, 0.3);
     }
+
     50% {
         box-shadow: 0 0 10px rgba(251, 191, 36, 0.8),
-                    0 0 20px rgba(251, 191, 36, 0.5),
-                    0 0 30px rgba(251, 191, 36, 0.3);
+            0 0 20px rgba(251, 191, 36, 0.5),
+            0 0 30px rgba(251, 191, 36, 0.3);
     }
 }
 
 @keyframes tomSwitcherBorderGlow {
-    0% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
+    0% {
+        background-position: 0% 50%;
+    }
+
+    50% {
+        background-position: 100% 50%;
+    }
+
+    100% {
+        background-position: 0% 50%;
+    }
 }
 
 /* Scene Switcher Panel */
@@ -1241,7 +1252,7 @@ body.sdx-tray-enabled #camera-views.vertical.left {
     overflow-y: auto;
     z-index: 1000;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.8),
-                0 0 15px rgba(251, 191, 36, 0.2);
+        0 0 15px rgba(251, 191, 36, 0.2);
     animation: tomPanelSlideIn 0.2s ease-out;
 }
 
@@ -1250,6 +1261,7 @@ body.sdx-tray-enabled #camera-views.vertical.left {
         opacity: 0;
         transform: translateX(-10px);
     }
+
     to {
         opacity: 1;
         transform: translateX(0);
@@ -1470,7 +1482,7 @@ body.sdx-tray-enabled #camera-views.vertical.left {
     overflow: hidden;
     z-index: 1000;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.8),
-                0 0 15px rgba(251, 191, 36, 0.2);
+        0 0 15px rgba(251, 191, 36, 0.2);
     animation: tomPanelSlideIn 0.2s ease-out;
     display: flex;
     flex-direction: column;
@@ -1651,7 +1663,7 @@ body.sdx-tray-enabled #camera-views.vertical.left {
     overflow: hidden;
     z-index: 1000;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.8),
-                0 0 15px rgba(251, 191, 36, 0.2);
+        0 0 15px rgba(251, 191, 36, 0.2);
     animation: tomPanelSlideIn 0.2s ease-out;
     display: flex;
     flex-direction: column;
@@ -1794,4 +1806,208 @@ body.sdx-tray-enabled #camera-views.vertical.left {
 
 .tom-scene-fade-overlay.active {
     opacity: 1;
+}
+
+/* SCENES VIEW STYLES */
+.tray-btn-full {
+    width: 100%;
+    padding: 8px;
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid #444;
+    color: #ccc;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: all 0.2s;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.tray-btn-full:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    border-color: #666;
+}
+
+.tray-btn-full.danger {
+    border-color: #7f1d1d;
+    background: rgba(127, 29, 29, 0.2);
+    color: #fca5a5;
+}
+
+.tray-btn-full.danger:hover {
+    background: rgba(127, 29, 29, 0.4);
+    color: #fff;
+}
+
+.mt-2 {
+    margin-top: 8px;
+}
+
+.scene-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.scene-card {
+    display: flex;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid #444;
+    border-radius: 4px;
+    overflow: hidden;
+    transition: all 0.2s;
+}
+
+.scene-card:hover {
+    border-color: #666;
+    background: rgba(0, 0, 0, 0.4);
+}
+
+.scene-card.active {
+    border-color: #f59e0b;
+    box-shadow: 0 0 8px rgba(245, 158, 11, 0.2);
+}
+
+.scene-card-activate {
+    flex: 1;
+    display: flex;
+    cursor: pointer;
+    min-width: 0;
+}
+
+.scene-card-thumb {
+    width: 80px;
+    height: 60px;
+    flex: none;
+    position: relative;
+    border-right: 1px solid #444;
+    overflow: hidden;
+}
+
+.scene-thumb-image {
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: center;
+}
+
+.scene-thumb-video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.scene-playing-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #f59e0b;
+    font-size: 1.5em;
+    animation: pulse-scene 2s infinite;
+}
+
+@keyframes pulse-scene {
+    0% {
+        opacity: 0.7;
+        transform: scale(1);
+    }
+
+    50% {
+        opacity: 1;
+        transform: scale(1.1);
+    }
+
+    100% {
+        opacity: 0.7;
+        transform: scale(1);
+    }
+}
+
+.scene-card-info {
+    flex: 1;
+    padding: 8px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-width: 0;
+}
+
+.scene-name {
+    font-weight: bold;
+    color: #ddd;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 0.95em;
+}
+
+.scene-tag {
+    font-size: 0.75em;
+    padding: 2px 4px;
+    border-radius: 2px;
+    display: inline-block;
+    width: fit-content;
+    margin-top: 4px;
+}
+
+.scene-tag.arena {
+    background: rgba(245, 158, 11, 0.2);
+    color: #fbbf24;
+    border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.scene-card-actions {
+    display: flex;
+    flex-direction: column;
+    border-left: 1px solid #444;
+}
+
+.scene-action-btn {
+    flex: 1;
+    width: 32px;
+    background: transparent;
+    border: none;
+    color: #888;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.scene-action-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+}
+
+.scene-action-btn.danger:hover {
+    background: rgba(220, 38, 38, 0.2);
+    color: #fca5a5;
+}
+
+/* Drag and Drop Styles */
+.scene-card.dragging {
+    opacity: 0.5;
+    cursor: grabbing;
+}
+
+.scene-card.drag-over {
+    border-color: #f59e0b;
+    border-width: 2px;
+    background: rgba(245, 158, 11, 0.1);
+    transform: translateY(-2px);
+}
+
+.scene-card[draggable="true"] {
+    cursor: grab;
+}
+
+.scene-card[draggable="true"]:active {
+    cursor: grabbing;
 }

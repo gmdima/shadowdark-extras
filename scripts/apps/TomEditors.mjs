@@ -17,11 +17,23 @@ export class TomSceneEditor extends HandlebarsApplicationMixin(ApplicationV2) {
                 cast: [],
                 layoutSettings: { ...CONFIG.DEFAULT_LAYOUT },
                 isArena: false,
-                arenaType: 'isometric'
+                arenaType: 'isometric',
+                inAnimation: 'fade',
+                outAnimation: 'fade'
             },
             activeTab: 'general'
         };
 
+        // Ensure animation properties have defaults (for scenes saved before this feature)
+        if (!this.uiState.data.inAnimation) {
+            this.uiState.data.inAnimation = 'fade';
+        }
+        if (!this.uiState.data.outAnimation) {
+            this.uiState.data.outAnimation = 'fade';
+        }
+
+        // Debug: log what animations are loaded
+        console.log(`SDX Scene Editor | Loading scene animations: in=${this.uiState.data.inAnimation}, out=${this.uiState.data.outAnimation}`);
 
         if (!this.uiState.data.layoutSettings) {
             this.uiState.data.layoutSettings = { ...CONFIG.DEFAULT_LAYOUT };
@@ -39,8 +51,8 @@ export class TomSceneEditor extends HandlebarsApplicationMixin(ApplicationV2) {
             controls: []
         },
         position: {
-            width: 600,
-            height: 700
+            width: 500,
+            height: 'auto'
         },
         actions: {
             save: TomSceneEditor._onSave,
@@ -72,6 +84,19 @@ export class TomSceneEditor extends HandlebarsApplicationMixin(ApplicationV2) {
             { value: 'none', label: 'No Grid (None)' }
         ];
 
+        const animationOptions = [
+            { value: 'fade', label: 'Fade' },
+            { value: 'slide-left', label: 'Slide Left' },
+            { value: 'slide-right', label: 'Slide Right' },
+            { value: 'slide-top', label: 'Slide Top' },
+            { value: 'slide-bottom', label: 'Slide Bottom' },
+            { value: 'zoom-in', label: 'Zoom In' },
+            { value: 'zoom-out', label: 'Zoom Out' },
+            { value: 'rotate', label: 'Rotate' },
+            { value: 'blur', label: 'Blur' },
+            { value: 'none', label: 'None (Instant)' }
+        ];
+
         return {
             scene: this.uiState.data,
             activeTab: this.uiState.activeTab,
@@ -79,7 +104,10 @@ export class TomSceneEditor extends HandlebarsApplicationMixin(ApplicationV2) {
             isVideo: this.uiState.data.bgType === 'video',
             isCreateMode: this.isCreateMode,
             arenaTypeOptions,
-            selectedArenaType: this.uiState.data.arenaType
+            selectedArenaType: this.uiState.data.arenaType,
+            animationOptions,
+            selectedInAnimation: this.uiState.data.inAnimation || 'fade',
+            selectedOutAnimation: this.uiState.data.outAnimation || 'fade'
         };
     }
 
@@ -116,6 +144,14 @@ export class TomSceneEditor extends HandlebarsApplicationMixin(ApplicationV2) {
             this.uiState.data.isArena = e.target.checked;
             this.render();
         });
+
+        this.element.querySelector('select[name="inAnimation"]')?.addEventListener('change', (e) => {
+            this.uiState.data.inAnimation = e.target.value;
+        });
+
+        this.element.querySelector('select[name="outAnimation"]')?.addEventListener('change', (e) => {
+            this.uiState.data.outAnimation = e.target.value;
+        });
     }
 
 
@@ -141,14 +177,18 @@ export class TomSceneEditor extends HandlebarsApplicationMixin(ApplicationV2) {
         target.classList.add('es-btn-loading');
 
         try {
+            // Debug: log what we're about to save
+            console.log(`SDX Scene Editor | Saving scene with animations: in=${this.uiState.data.inAnimation}, out=${this.uiState.data.outAnimation}`);
+
             if (this.isCreateMode) {
-                const { name, background, bgType, layoutSettings, isArena, arenaType } = this.uiState.data;
-                const newScene = Store.createScene({ name, background, bgType, layoutSettings, isArena, arenaType });
+                const { name, background, bgType, layoutSettings, isArena, arenaType, inAnimation, outAnimation } = this.uiState.data;
+                const newScene = Store.createScene({ name, background, bgType, layoutSettings, isArena, arenaType, inAnimation, outAnimation });
                 document.querySelector(".tom-scene-switcher-panel")?.remove();
                 this.close();
                 ui.notifications.info(`Created Scene: ${newScene.name}`);
             } else {
                 Object.assign(this.scene, this.uiState.data);
+                console.log(`SDX Scene Editor | After assign, scene has: in=${this.scene.inAnimation}, out=${this.scene.outAnimation}`);
                 Store.saveData();
                 document.querySelector(".tom-scene-switcher-panel")?.remove();
                 this.close();

@@ -57,6 +57,30 @@
     </div>
     {{/if}}
 
+    <!-- Animation Settings -->
+    <div class="tom-animation-settings">
+      <div class="form-group-simple">
+        <label><i class="fas fa-sign-in-alt"></i> In Animation</label>
+        <select name="inAnimation">
+          {{#each animationOptions}}
+          <option value="{{value}}" {{#if (eq ../selectedInAnimation value)}}selected{{/if}}>
+            {{label}}
+          </option>
+          {{/each}}
+        </select>
+      </div>
+      <div class="form-group-simple">
+        <label><i class="fas fa-sign-out-alt"></i> Out Animation</label>
+        <select name="outAnimation">
+          {{#each animationOptions}}
+          <option value="{{value}}" {{#if (eq ../selectedOutAnimation value)}}selected{{/if}}>
+            {{label}}
+          </option>
+          {{/each}}
+        </select>
+      </div>
+    </div>
+
   </section>
 
   <footer class="tom-editor-footer-simple">

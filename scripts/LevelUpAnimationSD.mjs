@@ -120,7 +120,8 @@ export async function playLevelUpAnimation(token) {
             gridUnits: true
         })
         .persist()
-        .aboveLighting()
+        .aboveLighting(false)
+        .xray(false)
         .zIndex(10);
 
     await seq.play();

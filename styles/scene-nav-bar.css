@@ -1,0 +1,85 @@
+/**
+ * Scene Navigation Bar Styles
+ * Black and white newspaper aesthetic with gothic arrows
+ */
+
+.sdx-scene-nav-bar {
+    position: fixed;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 100;
+
+    display: flex;
+    align-items: center;
+    gap: 16px;
+
+    padding: 8px 20px;
+
+    font-family: 'Old Newspaper Font', 'Times New Roman', serif;
+    pointer-events: auto;
+}
+
+.scene-nav-name {
+    font-size: 1.6em;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    color: #000;
+    white-space: nowrap;
+    text-align: center;
+    text-shadow:
+        2px 2px 0 rgba(255, 255, 255, 0.9),
+        -1px -1px 0 rgba(255, 255, 255, 0.9),
+        1px -1px 0 rgba(255, 255, 255, 0.9),
+        -1px 1px 0 rgba(255, 255, 255, 0.9),
+        0 0 8px rgba(255, 255, 255, 0.5);
+}
+
+.scene-nav-btn {
+    width: 48px;
+    height: 48px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    transition: all 0.3s ease;
+    opacity: 0.6;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+.scene-nav-btn:hover {
+    opacity: 1;
+    transform: scale(1.15);
+}
+
+.scene-nav-btn:active {
+    transform: scale(0.95);
+    opacity: 1;
+}
+
+/* Left arrow */
+.scene-nav-prev {
+    background-image: url('../assets/Tom/arrow-left.png');
+}
+
+/* Right arrow - flipped */
+.scene-nav-next {
+    background-image: url('../assets/Tom/arrow-left.png');
+    transform: scaleX(-1);
+}
+
+.scene-nav-next:hover {
+    transform: scaleX(-1) scale(1.15);
+}
+
+.scene-nav-next:active {
+    transform: scaleX(-1) scale(0.95);
+}
+
+/* Hide the icon since we're using images */
+.scene-nav-btn i {
+    display: none;
+}

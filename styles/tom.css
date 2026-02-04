@@ -8208,3 +8208,609 @@ video.tom-pv-bg-media {
   text-shadow: 0 0 6px rgba(239, 68, 68, 0.8), 0 1px 2px rgba(0, 0, 0, 0.8);
   box-shadow: 0 0 12px rgba(239, 68, 68, 0.4), 0 2px 8px rgba(0, 0, 0, 0.5);
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   SCENE EDITOR - SIMPLE VARIANT
+   Clean, organized dialog styling
+   ═══════════════════════════════════════════════════════════════ */
+
+.tom-scene-editor-simple {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  min-width: 400px;
+  max-width: 500px;
+}
+
+/* Ensure window content doesn't hide the footer */
+#tom-scene-editor .window-content {
+  overflow: visible;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Header with scene name input */
+.tom-editor-header-simple {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--tom-border-subtle, #444);
+}
+
+.tom-editor-header-simple input[type="text"] {
+  width: 100%;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid var(--tom-gold-base, #f59e0b);
+  color: var(--tom-text-primary, #fff);
+  font-family: 'Old Newspaper Font', serif;
+  font-size: 1.3rem;
+  padding: 6px 2px;
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+.tom-editor-header-simple input[type="text"]:focus {
+  border-color: var(--tom-gold-bright, #fbbf24);
+}
+
+.tom-editor-header-simple input[type="text"]::placeholder {
+  color: var(--tom-text-muted, #888);
+}
+
+/* Content area */
+.tom-editor-content-simple {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px;
+}
+
+/* Scene Preview - Centered */
+.tom-scene-preview-centered {
+  width: 100%;
+  aspect-ratio: 16/9;
+  background: var(--tom-bg-deep, #1a1a1a);
+  border: 1px solid var(--tom-border-subtle, #444);
+  border-radius: 6px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tom-scene-preview-centered img,
+.tom-scene-preview-centered video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.tom-scene-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: var(--tom-text-muted, #888);
+}
+
+.tom-scene-placeholder i {
+  font-size: 2.5rem;
+  opacity: 0.5;
+}
+
+.tom-scene-placeholder span {
+  font-size: 0.9rem;
+}
+
+/* Form groups */
+.form-group-simple {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-group-simple label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--tom-text-secondary, #aaa);
+}
+
+/* File input wrapper */
+.tom-file-input-wrapper {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.tom-file-input-wrapper input[type="text"] {
+  flex: 1;
+  background: var(--tom-bg-panel, #2a2a2a);
+  border: 1px solid var(--tom-border-subtle, #444);
+  border-radius: 4px;
+  color: var(--tom-text-primary, #fff);
+  padding: 8px 12px;
+  font-size: 0.9rem;
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+.tom-file-input-wrapper input[type="text"]:focus {
+  border-color: var(--tom-gold-base, #f59e0b);
+}
+
+.tom-file-input-wrapper .file-picker {
+  width: 36px;
+  height: 36px;
+  background: var(--tom-bg-hover, #333);
+  border: 1px solid var(--tom-border-subtle, #444);
+  border-radius: 4px;
+  color: var(--tom-text-secondary, #aaa);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.tom-file-input-wrapper .file-picker:hover {
+  background: var(--tom-gold-base, #f59e0b);
+  color: #000;
+  border-color: var(--tom-gold-base, #f59e0b);
+}
+
+/* Arena Toggle */
+.tom-arena-toggle-simple {
+  background: var(--tom-bg-panel, #2a2a2a);
+  border: 1px solid var(--tom-border-subtle, #444);
+  border-radius: 6px;
+  padding: 12px 16px;
+  margin-top: 8px;
+}
+
+.tom-toggle-label-simple {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.tom-toggle-label-simple input[type="checkbox"] {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 20px;
+  height: 20px;
+  background: var(--tom-bg-deep, #1a1a1a);
+  border: 2px solid var(--tom-border-default, #555);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.tom-toggle-label-simple input[type="checkbox"]:checked {
+  background: var(--tom-gold-base, #f59e0b);
+  border-color: var(--tom-gold-base, #f59e0b);
+}
+
+.tom-toggle-label-simple input[type="checkbox"]:checked::after {
+  content: '✓';
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #000;
+  font-size: 0.8rem;
+  font-weight: bold;
+  width: 100%;
+  height: 100%;
+}
+
+.tom-toggle-text-simple {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--tom-text-primary, #fff);
+  font-weight: 500;
+}
+
+.tom-toggle-text-simple i {
+  color: var(--tom-gold-base, #f59e0b);
+}
+
+.tom-hint-simple {
+  display: block;
+  margin-top: 8px;
+  margin-left: 32px;
+  font-size: 0.8rem;
+  color: var(--tom-text-muted, #888);
+  line-height: 1.4;
+}
+
+/* Select dropdown */
+.form-group-simple select {
+  background: var(--tom-bg-panel, #2a2a2a);
+  border: 1px solid var(--tom-border-subtle, #444);
+  border-radius: 4px;
+  color: var(--tom-text-primary, #fff);
+  padding: 8px 12px;
+  font-size: 0.9rem;
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.2s ease;
+}
+
+.form-group-simple select:focus {
+  border-color: var(--tom-gold-base, #f59e0b);
+}
+
+/* Footer with buttons */
+.tom-editor-footer-simple {
+  display: flex;
+  justify-content: flex-start;
+  gap: 12px;
+  padding: 16px;
+  border-top: 1px solid var(--tom-border-subtle, #444);
+  background: var(--tom-bg-deep, #1a1a1a);
+}
+
+.tom-btn-simple {
+  padding: 10px 18px;
+  border-radius: 4px;
+  font-weight: 600;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid transparent;
+}
+
+.tom-btn-cancel {
+  background: transparent;
+  border: 1px solid var(--tom-border-default, #555);
+  color: var(--tom-text-secondary, #aaa);
+}
+
+.tom-btn-cancel:hover {
+  background: var(--tom-bg-hover, #333);
+  color: var(--tom-text-primary, #fff);
+  border-color: var(--tom-text-muted, #888);
+}
+
+.tom-btn-simple.tom-btn-primary {
+  background: rgba(245, 158, 11, 0.15);
+  color: var(--tom-gold-bright, #fbbf24);
+  border: 1px solid var(--tom-gold-base, #f59e0b);
+}
+
+.tom-btn-simple.tom-btn-primary:hover {
+  background: var(--tom-gold-base, #f59e0b);
+  color: #000;
+  box-shadow: 0 0 12px rgba(245, 158, 11, 0.4);
+}
+
+/* Animation settings row in scene editor */
+.tom-animation-settings {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-top: 8px;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   SCENE TRANSITION ANIMATIONS
+   Animations target .tom-pv-background so the black container stays visible
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Animation duration variable */
+.tom-player-view {
+  --anim-duration: 600ms;
+  --anim-ease: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* === FADE === */
+.tom-player-view.anim-in-fade .tom-pv-background {
+  animation: sceneAnimFadeIn var(--anim-duration) var(--anim-ease) forwards;
+}
+
+.tom-player-view.anim-out-fade .tom-pv-background {
+  animation: sceneAnimFadeOut var(--anim-duration) var(--anim-ease) forwards;
+}
+
+@keyframes sceneAnimFadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes sceneAnimFadeOut {
+  from {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0;
+  }
+}
+
+/* === SLIDE LEFT === */
+.tom-player-view.anim-in-slide-left .tom-pv-background {
+  animation: sceneAnimSlideLeftIn var(--anim-duration) var(--anim-ease) forwards;
+}
+
+.tom-player-view.anim-out-slide-left .tom-pv-background {
+  animation: sceneAnimSlideLeftOut var(--anim-duration) var(--anim-ease) forwards;
+}
+
+@keyframes sceneAnimSlideLeftIn {
+  from {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes sceneAnimSlideLeftOut {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+
+  to {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+}
+
+/* === SLIDE RIGHT === */
+.tom-player-view.anim-in-slide-right .tom-pv-background {
+  animation: sceneAnimSlideRightIn var(--anim-duration) var(--anim-ease) forwards;
+}
+
+.tom-player-view.anim-out-slide-right .tom-pv-background {
+  animation: sceneAnimSlideRightOut var(--anim-duration) var(--anim-ease) forwards;
+}
+
+@keyframes sceneAnimSlideRightIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes sceneAnimSlideRightOut {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+
+  to {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}
+
+/* === SLIDE TOP === */
+.tom-player-view.anim-in-slide-top .tom-pv-background {
+  animation: sceneAnimSlideTopIn var(--anim-duration) var(--anim-ease) forwards;
+}
+
+.tom-player-view.anim-out-slide-top .tom-pv-background {
+  animation: sceneAnimSlideTopOut var(--anim-duration) var(--anim-ease) forwards;
+}
+
+@keyframes sceneAnimSlideTopIn {
+  from {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes sceneAnimSlideTopOut {
+  from {
+    transform: translateY(0);
+    opacity: 1;
+  }
+
+  to {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+}
+
+/* === SLIDE BOTTOM === */
+.tom-player-view.anim-in-slide-bottom .tom-pv-background {
+  animation: sceneAnimSlideBottomIn var(--anim-duration) var(--anim-ease) forwards;
+}
+
+.tom-player-view.anim-out-slide-bottom .tom-pv-background {
+  animation: sceneAnimSlideBottomOut var(--anim-duration) var(--anim-ease) forwards;
+}
+
+@keyframes sceneAnimSlideBottomIn {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes sceneAnimSlideBottomOut {
+  from {
+    transform: translateY(0);
+    opacity: 1;
+  }
+
+  to {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+}
+
+/* === ZOOM IN === */
+.tom-player-view.anim-in-zoom-in .tom-pv-background {
+  animation: sceneAnimZoomInEnter var(--anim-duration) var(--anim-ease) forwards;
+}
+
+.tom-player-view.anim-out-zoom-in .tom-pv-background {
+  animation: sceneAnimZoomInExit var(--anim-duration) var(--anim-ease) forwards;
+}
+
+@keyframes sceneAnimZoomInEnter {
+  from {
+    transform: scale(0.5);
+    opacity: 0;
+  }
+
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes sceneAnimZoomInExit {
+  from {
+    transform: scale(1);
+    opacity: 1;
+  }
+
+  to {
+    transform: scale(1.5);
+    opacity: 0;
+  }
+}
+
+/* === ZOOM OUT === */
+.tom-player-view.anim-in-zoom-out .tom-pv-background {
+  animation: sceneAnimZoomOutEnter var(--anim-duration) var(--anim-ease) forwards;
+}
+
+.tom-player-view.anim-out-zoom-out .tom-pv-background {
+  animation: sceneAnimZoomOutExit var(--anim-duration) var(--anim-ease) forwards;
+}
+
+@keyframes sceneAnimZoomOutEnter {
+  from {
+    transform: scale(1.5);
+    opacity: 0;
+  }
+
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes sceneAnimZoomOutExit {
+  from {
+    transform: scale(1);
+    opacity: 1;
+  }
+
+  to {
+    transform: scale(0.5);
+    opacity: 0;
+  }
+}
+
+/* === ROTATE === */
+.tom-player-view.anim-in-rotate .tom-pv-background {
+  animation: sceneAnimRotateIn var(--anim-duration) var(--anim-ease) forwards;
+}
+
+.tom-player-view.anim-out-rotate .tom-pv-background {
+  animation: sceneAnimRotateOut var(--anim-duration) var(--anim-ease) forwards;
+}
+
+@keyframes sceneAnimRotateIn {
+  from {
+    transform: rotate(-180deg) scale(0.5);
+    opacity: 0;
+  }
+
+  to {
+    transform: rotate(0deg) scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes sceneAnimRotateOut {
+  from {
+    transform: rotate(0deg) scale(1);
+    opacity: 1;
+  }
+
+  to {
+    transform: rotate(180deg) scale(0.5);
+    opacity: 0;
+  }
+}
+
+/* === BLUR === */
+.tom-player-view.anim-in-blur .tom-pv-background {
+  animation: sceneAnimBlurIn var(--anim-duration) var(--anim-ease) forwards;
+}
+
+.tom-player-view.anim-out-blur .tom-pv-background {
+  animation: sceneAnimBlurOut var(--anim-duration) var(--anim-ease) forwards;
+}
+
+@keyframes sceneAnimBlurIn {
+  from {
+    filter: blur(20px);
+    opacity: 0;
+  }
+
+  to {
+    filter: blur(0px);
+    opacity: 1;
+  }
+}
+
+@keyframes sceneAnimBlurOut {
+  from {
+    filter: blur(0px);
+    opacity: 1;
+  }
+
+  to {
+    filter: blur(20px);
+    opacity: 0;
+  }
+}
+
+/* === NONE (instant) === */
+.tom-player-view.anim-in-none .tom-pv-background {
+  opacity: 1;
+}
+
+.tom-player-view.anim-out-none .tom-pv-background {
+  opacity: 0;
+}

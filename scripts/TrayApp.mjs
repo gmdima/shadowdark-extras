@@ -135,8 +135,29 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
             viewMode: getViewMode(),
             pinSearchTerm: this._pinSearchTerm,
             tomActiveSceneId: activeSceneId,
-            showTomOverlays: !!activeSceneId
+            showTomOverlays: !!activeSceneId,
+            tomScenes: await this._getTomScenes(),
         };
+    }
+
+    /**
+     * Get list of sections from TomStore
+     */
+    async _getTomScenes() {
+        try {
+            const { TomStore } = await import("./data/TomStore.mjs");
+            const scenes = Array.from(TomStore.scenes.values());
+            // Add isVideo property to each scene for thumbnail rendering
+            return scenes.map(scene => {
+                const sceneData = scene.toJSON ? scene.toJSON() : scene;
+                const bg = sceneData.background || "";
+                const isVideo = /\.(webm|mp4)$/i.test(bg);
+                return { ...sceneData, isVideo };
+            });
+        } catch (err) {
+            console.error("Failed to load TomScenes:", err);
+            return [];
+        }
     }
 
 
@@ -298,6 +319,135 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
                 if (actorId) {
                     switchToActor(actorId);
                 }
+            });
+        });
+
+        /* ------------------------------------------- */
+        /*  SCENES TAB ACTIONS                        */
+        /* ------------------------------------------- */
+
+        // Create Scene
+        elem.querySelector("[data-action='create-scene']")?.addEventListener("click", async (e) => {
+            e.preventDefault();
+            const { TomSceneEditor } = await import("./apps/TomEditors.mjs");
+            new TomSceneEditor().render(true);
+        });
+
+        // Stop Broadcast (Header Button)
+        elem.querySelector("[data-action='stop-broadcast']")?.addEventListener("click", async (e) => {
+            e.preventDefault();
+            const { TomSocketHandler } = await import("./data/TomSocketHandler.mjs");
+            const { TomStore } = await import("./data/TomStore.mjs");
+            const activeSceneId = TomStore.activeSceneId;
+            const activeScene = activeSceneId ? TomStore.scenes.get(activeSceneId) : null;
+            const outAnimation = activeScene?.outAnimation || 'fade';
+            TomSocketHandler.emitStopBroadcast(outAnimation);
+        });
+
+        // Scene Card Actions
+        elem.querySelectorAll(".scene-card").forEach(card => {
+            const sceneId = card.dataset.sceneId;
+
+            // Activate Scene (Broadcast) - Clicking the thumbnail/name
+            card.querySelector(".scene-card-activate")?.addEventListener("click", async (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                const { TomSocketHandler } = await import("./data/TomSocketHandler.mjs");
+                const { TomStore } = await import("./data/TomStore.mjs");
+                const scene = TomStore.scenes.get(sceneId);
+                const inAnimation = scene?.inAnimation || 'fade';
+                TomSocketHandler.emitBroadcastScene(sceneId, inAnimation);
+            });
+
+            // Edit Scene
+            card.querySelector("[data-action='edit-scene']")?.addEventListener("click", async (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                const { TomSceneEditor } = await import("./apps/TomEditors.mjs");
+                new TomSceneEditor(sceneId).render(true);
+            });
+
+            // Delete Scene
+            card.querySelector("[data-action='delete-scene']")?.addEventListener("click", async (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                const sceneName = card.querySelector(".scene-name").textContent;
+
+                const confirmed = await Dialog.confirm({
+                    title: "Delete Scene",
+                    content: `<p>Are you sure you want to delete <strong>${sceneName}</strong>?</p><p>This action cannot be undone.</p>`,
+                    yes: () => true,
+                    no: () => false,
+                    defaultYes: false
+                });
+
+                if (confirmed) {
+                    const { TomStore } = await import("./data/TomStore.mjs");
+                    TomStore.deleteItem(sceneId, "scene");
+                    ui.notifications.info(`Scene "${sceneName}" deleted.`);
+                }
+            });
+
+            // Drag and Drop for Reordering
+            card.addEventListener("dragstart", (e) => {
+                e.stopPropagation();
+                card.classList.add("dragging");
+                e.dataTransfer.effectAllowed = "move";
+                e.dataTransfer.setData("text/plain", sceneId);
+            });
+
+            card.addEventListener("dragend", (e) => {
+                e.stopPropagation();
+                card.classList.remove("dragging");
+                // Remove all drag-over classes
+                elem.querySelectorAll(".scene-card").forEach(c => c.classList.remove("drag-over"));
+            });
+
+            card.addEventListener("dragover", (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                e.dataTransfer.dropEffect = "move";
+
+                const draggingCard = elem.querySelector(".scene-card.dragging");
+                if (draggingCard && draggingCard !== card) {
+                    card.classList.add("drag-over");
+                }
+            });
+
+            card.addEventListener("dragleave", (e) => {
+                e.stopPropagation();
+                if (!card.contains(e.relatedTarget)) {
+                    card.classList.remove("drag-over");
+                }
+            });
+
+            card.addEventListener("drop", async (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                card.classList.remove("drag-over");
+
+                const draggedId = e.dataTransfer.getData("text/plain");
+                const targetId = card.dataset.sceneId;
+
+                if (draggedId === targetId) return;
+
+                // Get current scene order
+                const { TomStore } = await import("./data/TomStore.mjs");
+                const currentScenes = Array.from(TomStore.scenes.values());
+                const sceneIds = currentScenes.map(s => s.id);
+
+                // Find indices
+                const draggedIndex = sceneIds.indexOf(draggedId);
+                const targetIndex = sceneIds.indexOf(targetId);
+
+                if (draggedIndex === -1 || targetIndex === -1) return;
+
+                // Reorder array
+                sceneIds.splice(draggedIndex, 1);
+                sceneIds.splice(targetIndex, 0, draggedId);
+
+                // Update store
+                TomStore.reorderScenes(sceneIds);
             });
         });
 
@@ -980,7 +1130,10 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
                 panel.remove();
 
                 const { TomSocketHandler } = await import("./data/TomSocketHandler.mjs");
-                TomSocketHandler.emitStopBroadcast();
+                const { TomStore } = await import("./data/TomStore.mjs");
+                const activeScene = TomStore.scenes.get(this._tomActiveSceneId);
+                const outAnimation = activeScene?.outAnimation || 'fade';
+                TomSocketHandler.emitStopBroadcast(outAnimation);
             });
             panel.appendChild(stopBtn);
         }
@@ -1069,13 +1222,14 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
                 panel.remove();
 
                 const { TomSocketHandler } = await import("./data/TomSocketHandler.mjs");
+                const inAnimation = scene?.inAnimation || 'fade';
 
                 if (this._tomActiveSceneId) {
                     // Already broadcasting — fade-transition to the new scene
                     TomSocketHandler.emitSceneFadeTransition(scene.id);
                 } else {
                     // Not broadcasting yet — start a new broadcast
-                    TomSocketHandler.emitBroadcastScene(scene.id);
+                    TomSocketHandler.emitBroadcastScene(scene.id, inAnimation);
                 }
 
                 // Update local state
