@@ -19198,7 +19198,26 @@ SDX.templates = {
 
 			// Clear all existing targets before starting template preview
 			// This prevents previously targeted tokens from interfering with template targeting
-			game.user.targets.forEach(t => t.setTarget(false, { user: game.user, releaseOthers: false }));
+			// Helper to force clear targets (bypassing system hook crash)
+			const forceClearTargets = () => {
+				const targets = [...game.user.targets];
+
+				// 1. Try standard detargeting (might fail silently due to system bug)
+				game.user.targets.forEach(t => t.setTarget(false, { user: game.user, releaseOthers: false }).catch(e => { }));
+
+				// 2. Force local cleanup (bypass hooks) to ensure state is clear
+				game.user.targets.clear();
+				for (const t of targets) {
+					if (t.targeted.has(game.user)) {
+						t.targeted.delete(game.user);
+						t.renderFlags.set({ refreshTarget: true });
+					}
+				}
+			};
+
+			// Clear all existing targets before starting template preview
+			// This prevents previously targeted tokens from interfering with template targeting
+			forceClearTargets();
 
 			// Create the template document
 			const doc = new MeasuredTemplateDocument(templateData, { parent: canvas.scene });
@@ -19222,7 +19241,6 @@ SDX.templates = {
 				y: initialPos.y
 			});
 			template.renderFlags.set({ refresh: true });
-
 			// Throttle token highlighting to 15fps for performance
 			let lastHighlightTime = 0;
 			const HIGHLIGHT_THROTTLE = 1000 / 15; // 15fps
@@ -19481,6 +19499,7 @@ SDX.templates = {
 				// Get current direction from the preview template
 				const finalDirection = template.document.direction;
 
+				clearTokenHighlighting(); // Clear visual highlights on placement
 				cleanup();
 
 				// Create the actual template document in the scene
@@ -19599,15 +19618,37 @@ SDX.templates = {
 			tokens = tokens.filter(t => t.id !== excludeCasterTokenId);
 		}
 
-		// Target the tokens
+		// Target the tokens (safely)
+		// We wrap this in try/catch because the shadowdark system targeting hook
+		// has a bug that can crash (TypeError: game.user.updateTokenTargets is not a function)
+		// We must ensure this function returns the tokens even if targeting fails.
+		// Target the tokens (safely)
+		// We wrap EACH call in try/catch to ensure we attempt all tokens
+		console.log(`${MODULE_ID} | placeAndTarget found ${tokens.length} tokens. Targeting...`);
 		for (const token of tokens) {
-			token.setTarget(true, { user: game.user, releaseOthers: false });
+			try {
+				await token.setTarget(true, { user: game.user, releaseOthers: false });
+			} catch (e) {
+				console.warn(`${MODULE_ID} | Safe targeting failed for token ${token.id} (system bug ignored):`, e);
+			}
 		}
 
-		// Clear targets after 1 second to clean up targeting state
+		// Clear targets after 2 seconds to clean up targeting state
+		// Clear targets after 2 seconds to clean up targeting state
 		setTimeout(() => {
-			game.user.targets.forEach(t => t.setTarget(false, { user: game.user, releaseOthers: false }));
-		}, 1000);
+			const targets = [...game.user.targets];
+			// 1. Try standard detargeting
+			game.user.targets.forEach(t => t.setTarget(false, { user: game.user, releaseOthers: false }).catch(e => { }));
+
+			// 2. Force local cleanup
+			game.user.targets.clear();
+			for (const t of targets) {
+				if (t.targeted.has(game.user)) {
+					t.targeted.delete(game.user);
+					t.renderFlags.set({ refreshTarget: true });
+				}
+			}
+		}, 2000);
 
 		return { template, tokens };
 	}
