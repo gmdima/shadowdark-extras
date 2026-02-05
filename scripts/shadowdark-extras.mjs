@@ -18288,6 +18288,7 @@ Hooks.once("ready", () => {
 			}
 		});
 
+
 		macroExecuteSocket.register("applyWrathWeaponAsGM", async (weaponUuid, casterUuid, itemUuid, targetActorUuid, targetTokenUuid) => {
 			const weapon = await fromUuid(weaponUuid);
 			const casterActor = await fromUuid(casterUuid);
@@ -18300,6 +18301,18 @@ Hooks.once("ready", () => {
 				const module = game.modules.get(MODULE_ID);
 				if (module?.api?.applyWrathWeapon) {
 					await module.api.applyWrathWeapon(weapon, casterActor, casterItem, targetActor, targetToken);
+				}
+			}
+		});
+
+		macroExecuteSocket.register("applyWrathToAllWeaponsAsGM", async (casterUuid, itemUuid, isCritical) => {
+			const casterActor = await fromUuid(casterUuid);
+			const casterItem = await fromUuid(itemUuid);
+
+			if (casterActor && casterItem) {
+				const module = game.modules.get(MODULE_ID);
+				if (module?.api?.applyWrathToAllWeapons) {
+					await module.api.applyWrathToAllWeapons(casterActor, casterItem, null, isCritical);
 				}
 			}
 		});
@@ -19105,7 +19118,8 @@ SDX.templates = {
 			texture = null,
 			textureOpacity = 0.5,
 			tmfxPreset = null,
-			tmfxTint = null
+			tmfxTint = null,
+			excludeCasterTokenId = null  // Token ID to exclude from highlighting
 		} = options;
 
 		// Build template data based on type
@@ -19182,6 +19196,10 @@ SDX.templates = {
 			let highlightedTokens = new Set(); // Track highlighted tokens
 			let currentElevation = originFromCaster?.elevation || 0; // Track template elevation
 
+			// Clear all existing targets before starting template preview
+			// This prevents previously targeted tokens from interfering with template targeting
+			game.user.targets.forEach(t => t.setTarget(false, { user: game.user, releaseOthers: false }));
+
 			// Create the template document
 			const doc = new MeasuredTemplateDocument(templateData, { parent: canvas.scene });
 
@@ -19209,7 +19227,44 @@ SDX.templates = {
 			let lastHighlightTime = 0;
 			const HIGHLIGHT_THROTTLE = 1000 / 15; // 15fps
 
+			// Function to add visual-only highlight effect to a token (does NOT add to game.user.targets)
+			const addPreviewHighlight = (token) => {
+				if (!token || token._sdxPreviewHighlight) return;
+
+				// Create a graphics object for the highlight border
+				const highlight = new PIXI.Graphics();
+				const bounds = token.bounds;
+				const padding = 4;
+
+				// Draw a pulsing orange border around the token
+				highlight.lineStyle(3, 0xff6600, 0.9);
+				highlight.drawRoundedRect(
+					-token.document.width * canvas.grid.size / 2 - padding,
+					-token.document.height * canvas.grid.size / 2 - padding,
+					token.document.width * canvas.grid.size + padding * 2,
+					token.document.height * canvas.grid.size + padding * 2,
+					8
+				);
+
+				// Position at token center
+				highlight.position.set(token.document.width * canvas.grid.size / 2, token.document.height * canvas.grid.size / 2);
+
+				// Add to token and track
+				token.addChild(highlight);
+				token._sdxPreviewHighlight = highlight;
+			};
+
+			// Function to remove visual highlight effect from a token
+			const removePreviewHighlight = (token) => {
+				if (!token || !token._sdxPreviewHighlight) return;
+
+				token.removeChild(token._sdxPreviewHighlight);
+				token._sdxPreviewHighlight.destroy();
+				token._sdxPreviewHighlight = null;
+			};
+
 			// Function to highlight tokens inside the template preview
+			// Uses visual-only highlighting that does NOT affect game.user.targets
 			const updateTokenHighlighting = () => {
 				if (!template.shape) return;
 
@@ -19217,6 +19272,9 @@ SDX.templates = {
 
 				// Find all tokens inside the template
 				for (const token of canvas.tokens.placeables) {
+					// Skip caster token if excludeCasterTokenId is set
+					if (excludeCasterTokenId && token.id === excludeCasterTokenId) continue;
+
 					// Skip tokens at different elevation
 					const tokenElevation = token.document.elevation || 0;
 					if (tokenElevation !== currentElevation) continue;
@@ -19228,9 +19286,9 @@ SDX.templates = {
 					if (template.shape.contains(localX, localY)) {
 						tokensInTemplate.add(token.id);
 
-						// Highlight the token if not already highlighted
+						// Add visual highlight if not already highlighted
 						if (!highlightedTokens.has(token.id)) {
-							token.setTarget(true, { user: game.user, releaseOthers: false, groupSelection: true });
+							addPreviewHighlight(token);
 							highlightedTokens.add(token.id);
 						}
 					}
@@ -19241,19 +19299,19 @@ SDX.templates = {
 					if (!tokensInTemplate.has(tokenId)) {
 						const token = canvas.tokens.get(tokenId);
 						if (token) {
-							token.setTarget(false, { user: game.user, releaseOthers: false, groupSelection: true });
+							removePreviewHighlight(token);
 						}
 						highlightedTokens.delete(tokenId);
 					}
 				}
 			};
 
-			// Clear all token highlighting
+			// Clear all token highlighting (visual only)
 			const clearTokenHighlighting = () => {
 				for (const tokenId of highlightedTokens) {
 					const token = canvas.tokens.get(tokenId);
 					if (token) {
-						token.setTarget(false, { user: game.user, releaseOthers: false, groupSelection: true });
+						removePreviewHighlight(token);
 					}
 				}
 				highlightedTokens.clear();
@@ -19520,9 +19578,11 @@ SDX.templates = {
 	 * Also targets the tokens automatically
 	 * @param {Object} options - Same options as place(), plus:
 	 * @param {number} [options.autoDelete] - Auto-delete template after X ms (e.g., 3000)
+	 * @param {string} [options.excludeCasterTokenId] - Token ID to exclude from targeting
 	 * @returns {Promise<{template: MeasuredTemplateDocument|null, tokens: Token[]}>}
 	 */
 	async placeAndTarget(options = {}) {
+		const { excludeCasterTokenId } = options;
 		const template = await this.place(options);
 
 		if (!template) {
@@ -19532,12 +19592,22 @@ SDX.templates = {
 		// Wait a tick for the template object to be ready
 		await new Promise(r => setTimeout(r, 100));
 
-		const tokens = this.getTokensInTemplate(template);
+		let tokens = this.getTokensInTemplate(template);
+
+		// Filter out caster if excludeCasterTokenId is set
+		if (excludeCasterTokenId) {
+			tokens = tokens.filter(t => t.id !== excludeCasterTokenId);
+		}
 
 		// Target the tokens
 		for (const token of tokens) {
 			token.setTarget(true, { user: game.user, releaseOthers: false });
 		}
+
+		// Clear targets after 1 second to clean up targeting state
+		setTimeout(() => {
+			game.user.targets.forEach(t => t.setTarget(false, { user: game.user, releaseOthers: false }));
+		}, 1000);
 
 		return { template, tokens };
 	}

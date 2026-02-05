@@ -940,7 +940,7 @@ export function setupCombatSocket() {
 	// when executing macros with runAsGm enabled
 
 	// Handler: Show Holy Weapon dialog on player's client
-	socketlibSocket.register("showHolyWeaponDialogForUser", async ({ casterActorId, casterItemId, targetActorId, targetTokenId }) => {
+	socketlibSocket.register("showHolyWeaponDialogForUser", async ({ casterActorId, casterItemId, targetActorId, targetTokenId, isCritical }) => {
 		const casterActor = game.actors.get(casterActorId);
 		const casterItem = casterActor?.items.get(casterItemId);
 		const targetActor = game.actors.get(targetActorId);
@@ -953,7 +953,7 @@ export function setupCombatSocket() {
 
 		const sdxModule = game.modules.get(MODULE_ID);
 		if (sdxModule?.api?.showHolyWeaponDialog) {
-			await sdxModule.api.showHolyWeaponDialog(casterActor, casterItem, targetActor, targetToken);
+			await sdxModule.api.showHolyWeaponDialog(casterActor, casterItem, targetActor, targetToken, null, isCritical);
 		}
 	});
 
@@ -976,7 +976,7 @@ export function setupCombatSocket() {
 	});
 
 	// Handler: Show Cleansing Weapon dialog on player's client
-	socketlibSocket.register("showCleansingWeaponDialogForUser", async ({ casterActorId, casterItemId, targetActorId, targetTokenId }) => {
+	socketlibSocket.register("showCleansingWeaponDialogForUser", async ({ casterActorId, casterItemId, targetActorId, targetTokenId, isCritical }) => {
 		const casterActor = game.actors.get(casterActorId);
 		const casterItem = casterActor?.items.get(casterItemId);
 		const targetActor = game.actors.get(targetActorId);
@@ -989,25 +989,23 @@ export function setupCombatSocket() {
 
 		const sdxModule = game.modules.get(MODULE_ID);
 		if (sdxModule?.api?.showCleansingWeaponDialog) {
-			await sdxModule.api.showCleansingWeaponDialog(casterActor, casterItem, targetActor, targetToken);
+			await sdxModule.api.showCleansingWeaponDialog(casterActor, casterItem, targetActor, targetToken, null, isCritical);
 		}
 	});
 
-	// Handler: Show Wrath dialog on player's client
-	socketlibSocket.register("showWrathWeaponDialogForUser", async ({ casterActorId, casterItemId, targetActorId, targetTokenId }) => {
+	// Handler: Apply Wrath to all weapons on player's client
+	socketlibSocket.register("showWrathWeaponDialogForUser", async ({ casterActorId, casterItemId, targetActorId, targetTokenId, isCritical }) => {
 		const casterActor = game.actors.get(casterActorId);
 		const casterItem = casterActor?.items.get(casterItemId);
-		const targetActor = game.actors.get(targetActorId);
-		const targetToken = targetTokenId ? canvas.tokens?.get(targetTokenId) : null;
 
-		if (!casterActor || !casterItem || !targetActor) {
+		if (!casterActor || !casterItem) {
 			console.warn(`${MODULE_ID} | showWrathWeaponDialogForUser: Missing data`);
 			return;
 		}
 
 		const sdxModule = game.modules.get(MODULE_ID);
-		if (sdxModule?.api?.showWrathWeaponDialog) {
-			await sdxModule.api.showWrathWeaponDialog(casterActor, casterItem, targetActor);
+		if (sdxModule?.api?.applyWrathToAllWeapons) {
+			await sdxModule.api.applyWrathToAllWeapons(casterActor, casterItem, null, isCritical);
 		}
 	});
 
@@ -1940,7 +1938,8 @@ export async function injectDamageCard(message, html, data) {
 							texture: tmTexture || null,
 							textureOpacity: tmOpacity,
 							tmfxPreset: tmPreset,
-							tmfxTint: tmTint
+							tmfxTint: tmTint,
+							excludeCasterTokenId: excludeCaster ? casterTokenId : null
 						});
 					}
 				} else if (placement === 'caster') {
@@ -1960,7 +1959,8 @@ export async function injectDamageCard(message, html, data) {
 							texture: tmTexture || null,
 							textureOpacity: tmOpacity,
 							tmfxPreset: tmPreset,
-							tmfxTint: tmTint
+							tmfxTint: tmTint,
+							excludeCasterTokenId: excludeCaster ? casterTokenId : null
 						});
 					} else {
 						// No caster token found, fall back to choose location
@@ -1973,7 +1973,8 @@ export async function injectDamageCard(message, html, data) {
 							texture: tmTexture || null,
 							textureOpacity: tmOpacity,
 							tmfxPreset: tmPreset,
-							tmfxTint: tmTint
+							tmfxTint: tmTint,
+							excludeCasterTokenId: excludeCaster ? speaker?.token : null
 						});
 					}
 				} else {
@@ -1986,7 +1987,8 @@ export async function injectDamageCard(message, html, data) {
 						texture: tmTexture || null,
 						textureOpacity: tmOpacity,
 						tmfxPreset: tmPreset,
-						tmfxTint: tmTint
+						tmfxTint: tmTint,
+						excludeCasterTokenId: excludeCaster ? speaker?.token : null
 					});
 				}
 
