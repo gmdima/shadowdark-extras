@@ -97,6 +97,45 @@ Hooks.once("init", () => {
 		console.error("Shadowdark Extras | Failed to register GSAP PixiPlugin:", err);
 	}
 
+	// Monkeypatch: Fix system's removeTorchTimer error when chat messages don't have .light-source element
+	// The system hook at hooks.mjs:168 calls html.querySelector(".light-source").remove() without null checking
+	// We patch Element.prototype.querySelector to return a safe dummy when called with ".light-source" on chat messages
+	const originalQuerySelector = Element.prototype.querySelector;
+	Element.prototype.querySelector = function (selector) {
+		const result = originalQuerySelector.call(this, selector);
+		// If looking for .light-source and it doesn't exist, check if this is a chat message
+		if (!result && selector === ".light-source" && this.classList?.contains("chat-message")) {
+			// Return a dummy element that can be safely removed
+			const dummy = document.createElement("div");
+			dummy.remove = () => { }; // No-op remove
+			return dummy;
+		}
+		return result;
+	};
+
+	// Monkeypatch: Fix system's targeting.mjs error - game.user.updateTokenTargets doesn't exist in modern Foundry
+	// The system hook at targeting.mjs:11 calls game.user.updateTokenTargets([token.id]) which is deprecated/removed
+	// We add a polyfill that implements the expected behavior
+	// ALSO: The system restricts players to 1 target, which breaks template spells. We add a bypass flag.
+	Hooks.once("ready", () => {
+		// Add a bypass flag for template targeting to allow multi-targeting for players
+		game.shadowdarkExtras = game.shadowdarkExtras || {};
+		game.shadowdarkExtras.allowMultiTarget = false;
+
+		if (typeof game.user.updateTokenTargets !== "function") {
+			game.user.updateTokenTargets = function (tokenIds = []) {
+				// If the bypass flag is set, don't restrict targeting
+				if (game.shadowdarkExtras?.allowMultiTarget) {
+					return;
+				}
+				// Clear current targets and set new ones
+				const tokens = tokenIds.map(id => canvas.tokens.get(id)).filter(t => t);
+				canvas.tokens.targetObjects(Object.fromEntries(tokens.map(t => [t.id, true])), { releaseOthers: true });
+			};
+			console.log("Shadowdark Extras | Added polyfill for game.user.updateTokenTargets");
+		}
+	});
+
 	initMysteriousCasting();
 	SheetLockManager.init();
 	TomSD.initialize();
@@ -17706,6 +17745,24 @@ Hooks.once("ready", () => {
 			await macro.execute(context);
 		});
 
+		// Register handler to sync template targets to GM
+		macroExecuteSocket.register("syncTargetsToGM", async (tokenIds) => {
+			// This runs on the GM's client - target the same tokens the player targeted
+			if (!game.user.isGM) return;
+			console.log(`${MODULE_ID} | GM syncing targets from player:`, tokenIds);
+
+			// Clear current GM targets first
+			game.user.targets.forEach(t => t.setTarget(false, { user: game.user, releaseOthers: false }));
+
+			// Target each token
+			for (const tokenId of tokenIds) {
+				const token = canvas.tokens.get(tokenId);
+				if (token) {
+					await token.setTarget(true, { user: game.user, releaseOthers: false });
+				}
+			}
+		});
+
 		//console.log(`${MODULE_ID} | Socketlib integration enabled for macro execution`);
 	}
 });
@@ -19625,30 +19682,36 @@ SDX.templates = {
 		// Target the tokens (safely)
 		// We wrap EACH call in try/catch to ensure we attempt all tokens
 		console.log(`${MODULE_ID} | placeAndTarget found ${tokens.length} tokens. Targeting...`);
-		for (const token of tokens) {
-			try {
-				await token.setTarget(true, { user: game.user, releaseOthers: false });
-			} catch (e) {
-				console.warn(`${MODULE_ID} | Safe targeting failed for token ${token.id} (system bug ignored):`, e);
+
+		// Enable multi-target bypass for players during template targeting
+		if (game.shadowdarkExtras) game.shadowdarkExtras.allowMultiTarget = true;
+		try {
+			for (const token of tokens) {
+				try {
+					await token.setTarget(true, { user: game.user, releaseOthers: false });
+				} catch (e) {
+					console.warn(`${MODULE_ID} | Safe targeting failed for token ${token.id} (system bug ignored):`, e);
+				}
+			}
+		} finally {
+			// Always reset the bypass flag
+			if (game.shadowdarkExtras) game.shadowdarkExtras.allowMultiTarget = false;
+		}
+
+		// Sync targets to GM via socket (so GM can interact with the damage card)
+		if (!game.user.isGM && tokens.length > 0) {
+			const module = game.modules.get(MODULE_ID);
+			if (module?.socket) {
+				const tokenIds = tokens.map(t => t.id);
+				console.log(`${MODULE_ID} | Syncing targets to GM:`, tokenIds);
+				module.socket.executeAsGM("syncTargetsToGM", tokenIds);
 			}
 		}
 
-		// Clear targets after 2 seconds to clean up targeting state
-		// Clear targets after 2 seconds to clean up targeting state
+		// Clear targets after 8 seconds to clean up targeting state
 		setTimeout(() => {
-			const targets = [...game.user.targets];
-			// 1. Try standard detargeting
-			game.user.targets.forEach(t => t.setTarget(false, { user: game.user, releaseOthers: false }).catch(e => { }));
-
-			// 2. Force local cleanup
-			game.user.targets.clear();
-			for (const t of targets) {
-				if (t.targeted.has(game.user)) {
-					t.targeted.delete(game.user);
-					t.renderFlags.set({ refreshTarget: true });
-				}
-			}
-		}, 2000);
+			canvas.tokens.setTargets([])
+		}, 8000);
 
 		return { template, tokens };
 	}
