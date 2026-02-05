@@ -930,7 +930,7 @@ video.tom-pv-bg-media {
 .tom-arena-token-portrait {
   width: 80px;
   height: 100px;
-  border: 3px solid #d4a84b;
+  border: 3px solid #ebebeb;
   border-radius: 6px;
   overflow: hidden;
   background: #f5f5f5;
@@ -982,7 +982,7 @@ video.tom-pv-bg-media {
 }
 
 .tom-arena-token-name {
-  background: linear-gradient(135deg, #8b2929, #6b1f1f);
+  background: linear-gradient(135deg, #000000, #1a1a1a);
   color: #fff;
   font-family: var(--tom-font-display, 'Cinzel', serif);
   font-size: 10px;
@@ -991,7 +991,7 @@ video.tom-pv-bg-media {
   border-radius: 3px;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-  border: 1px solid #a33;
+  border: 1px solid #efefef;
 }
 
 .tom-arena-token-ac,
@@ -1120,6 +1120,121 @@ video.tom-pv-bg-media {
   color: white;
   transform: scale(1.1);
   box-shadow: 0 0 10px rgba(239, 68, 68, 0.5);
+}
+
+/* Toggle Button - Subtle, appears on hover */
+.tom-arena-token-toggle-btn {
+  position: absolute;
+  bottom: 4px;
+  right: 4px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 8px;
+  cursor: pointer;
+  opacity: 0;
+  transition: all 0.2s ease;
+  z-index: 15;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+.tom-arena-token:hover .tom-arena-token-toggle-btn {
+  opacity: 0.5;
+}
+
+.tom-arena-token-toggle-btn:hover {
+  opacity: 1 !important;
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.4);
+  color: #fff;
+  transform: scale(1.15);
+}
+
+/* Compact Mode - Round token card, 2x size, name-only */
+.tom-arena-token.compact .tom-arena-token-portrait {
+  width: 160px;
+  height: 160px;
+  border-radius: 50%;
+}
+
+.tom-arena-token.compact .tom-arena-token-portrait img {
+  object-position: center;
+}
+
+.tom-arena-token.compact .tom-arena-token-info {
+  bottom: -16px;
+}
+
+.tom-arena-token.compact .tom-arena-token-ac,
+.tom-arena-token.compact .tom-arena-token-hp {
+  display: none;
+}
+
+.tom-arena-token.compact .tom-arena-token-name {
+  font-size: 16px;
+  padding: 1px 5px;
+}
+
+/* NPC compact mode with red border */
+.tom-arena-token.compact.npc .tom-arena-token-portrait {
+  border-color: #efefef;
+  box-shadow:
+    0 6px 20px rgba(0, 0, 0, 0.7),
+    0 0 30px rgba(220, 38, 38, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+/* Compact mode button positioning - outside the portrait */
+.tom-arena-token.compact .tom-arena-token-toggle-btn {
+  bottom: 14px;
+  right: -20px;
+  top: auto;
+}
+
+.tom-arena-token.compact .tom-arena-token-sheet-btn {
+  bottom: 35px;
+  right: -20px;
+  top: auto;
+}
+
+/* Sheet Button - Similar to toggle, appears on hover */
+.tom-arena-token-sheet-btn {
+  position: absolute;
+  bottom: 24px;
+  right: 4px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 8px;
+  cursor: pointer;
+  opacity: 0;
+  transition: all 0.2s ease;
+  z-index: 15;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+.tom-arena-token:hover .tom-arena-token-sheet-btn {
+  opacity: 0.5;
+}
+
+.tom-arena-token-sheet-btn:hover {
+  opacity: 1 !important;
+  background: rgba(59, 130, 246, 0.3);
+  border-color: rgba(59, 130, 246, 0.6);
+  color: #60a5fa;
+  transform: scale(1.15);
 }
 
 /* Conditions Picker Panel */

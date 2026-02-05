@@ -34,6 +34,9 @@ export class TomSocketHandler {
       case 'arena-token-conditions-update':
         this._onArenaTokenConditionsUpdate(payload.data);
         break;
+      case 'arena-token-compact-toggle':
+        this._onArenaTokenCompactToggle(payload.data);
+        break;
       case 'arena-asset-spawn':
         this._onArenaAssetSpawn(payload.data);
         break;
@@ -208,6 +211,19 @@ export class TomSocketHandler {
       data
     });
     this._onArenaTokenConditionsUpdate(data);
+  }
+
+  static _onArenaTokenCompactToggle(data) {
+    const { tokenId, isCompact } = data;
+    TomPlayerView.updateArenaTokenCompact(tokenId, isCompact);
+  }
+
+  static emitArenaTokenCompactToggle(data) {
+    game.socket.emit(CONFIG.SOCKET_NAME, {
+      type: 'arena-token-compact-toggle',
+      data
+    });
+    // Note: local update already done in click handler, so we don't call _onArenaTokenCompactToggle here
   }
 
   static _onArenaAssetSpawn(data) {

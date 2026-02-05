@@ -388,7 +388,7 @@ export class TomPlayerView extends HandlebarsApplicationMixin(ApplicationV2) {
         if (e.button !== 0) return;
 
 
-        if (e.target.closest('.tom-arena-token-hp, .tom-arena-token-ac, .tom-arena-conditions-btn')) {
+        if (e.target.closest('.tom-arena-token-hp, .tom-arena-token-ac, .tom-arena-conditions-btn, .tom-arena-token-toggle-btn, .tom-arena-token-sheet-btn')) {
           return;
         }
 
@@ -1103,8 +1103,11 @@ export class TomPlayerView extends HandlebarsApplicationMixin(ApplicationV2) {
     const gmConditionsBtn = game.user.isGM ?
       `<button class="tom-arena-conditions-btn" title="Manage Conditions"><i class="fas fa-heart-crack"></i></button>` : '';
 
+    // Check if token should be in compact mode
+    const isCompact = tokenState?.isCompact || false;
+
     const tokenEl = document.createElement('div');
-    tokenEl.className = `tom-arena-token ${isOwner ? 'draggable' : ''} ${isNPC ? 'npc' : ''}`;
+    tokenEl.className = `tom-arena-token ${isOwner ? 'draggable' : ''} ${isNPC ? 'npc' : ''} ${isCompact ? 'compact' : ''}`;
     tokenEl.dataset.tokenId = tokenId;
     tokenEl.dataset.ownerId = ownerId;
     tokenEl.dataset.actorId = actorId || '';
@@ -1112,11 +1115,16 @@ export class TomPlayerView extends HandlebarsApplicationMixin(ApplicationV2) {
     tokenEl.dataset.isNpc = isNPC ? 'true' : 'false';
     tokenEl.style.left = `${x}%`;
     tokenEl.style.top = `${y}%`;
+    // Sheet button - only shown if user owns the actor
+    const sheetBtnHtml = isOwner ? `<button class="tom-arena-token-sheet-btn" title="Open Character Sheet"><i class="fas fa-user"></i></button>` : '';
+
     tokenEl.innerHTML = `
       <div class="tom-arena-token-portrait">
         <img src="${image}" alt="${actorName}">
         <div class="tom-arena-conditions">${conditionsHtml}</div>
         ${gmConditionsBtn}
+        <button class="tom-arena-token-toggle-btn" title="Toggle compact view"><i class="fas ${isCompact ? 'fa-compress' : 'fa-expand'}"></i></button>
+        ${sheetBtnHtml}
       </div>
       <div class="tom-arena-token-info">
         ${acBadge}
@@ -1151,6 +1159,40 @@ export class TomPlayerView extends HandlebarsApplicationMixin(ApplicationV2) {
       }
     }
 
+    // Toggle button click handler (for all users)
+    const toggleBtn = tokenEl.querySelector('.tom-arena-token-toggle-btn');
+    if (toggleBtn) {
+      toggleBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const newCompact = !tokenEl.classList.contains('compact');
+        tokenEl.classList.toggle('compact', newCompact);
+        // Update icon
+        const icon = toggleBtn.querySelector('i');
+        if (icon) {
+          icon.className = `fas ${newCompact ? 'fa-compress' : 'fa-expand'}`;
+        }
+        // Update state and sync via socket
+        if (tokenState) tokenState.isCompact = newCompact;
+        import('../data/TomSocketHandler.mjs').then(({ TomSocketHandler }) => {
+          TomSocketHandler.emitArenaTokenCompactToggle({ tokenId, isCompact: newCompact });
+        });
+      });
+    }
+
+    // Sheet button click handler (for owners)
+    const sheetBtn = tokenEl.querySelector('.tom-arena-token-sheet-btn');
+    if (sheetBtn && isOwner) {
+      sheetBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        // Get the actor and render its sheet
+        const sheetActor = game.actors.get(actorId) || game.actors.get(ownerId);
+        if (sheetActor) {
+          sheetActor.sheet.render(true);
+        }
+      });
+    }
 
     this._instance._setupArenaTokenDragging();
   }
@@ -1401,6 +1443,30 @@ export class TomPlayerView extends HandlebarsApplicationMixin(ApplicationV2) {
           </div>`;
         }).join('');
         conditionsContainer.innerHTML = conditionsHtml;
+      }
+    }
+  }
+
+  static updateArenaTokenCompact(tokenId, isCompact) {
+    if (!this._instance) return;
+
+    // Update state
+    const token = this._instance.uiState.arenaTokens.get(tokenId);
+    if (token) {
+      token.isCompact = isCompact;
+    }
+
+    // Update DOM
+    const view = this._instance.element;
+    if (!view) return;
+
+    const tokenEl = view.querySelector(`.tom-arena-token[data-token-id="${tokenId}"]`);
+    if (tokenEl) {
+      tokenEl.classList.toggle('compact', isCompact);
+      // Update toggle button icon
+      const toggleBtn = tokenEl.querySelector('.tom-arena-token-toggle-btn i');
+      if (toggleBtn) {
+        toggleBtn.className = `fas ${isCompact ? 'fa-compress' : 'fa-expand'}`;
       }
     }
   }
