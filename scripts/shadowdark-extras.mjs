@@ -57,6 +57,7 @@ import AmmunitionSelector from "./AmmunitionSelector.mjs";
 import StaffSpellManager from "./StaffSpellManager.mjs";
 import { initJournalNarration } from "./JournalNarrationSD.mjs";
 import { initMedkit } from "./MedkitSD.mjs";
+import { LightTrackerAppSD, initLightTrackerApp } from "./LightTrackerAppSD.mjs";
 import { initMarchingMode } from "./MarchingModeSD.mjs";
 import { SceneExporter } from "./SceneExporter.mjs";
 import { SceneImporter } from "./SceneImporter.mjs";
@@ -121,6 +122,9 @@ Hooks.once("init", () => {
 		// Add a bypass flag for template targeting to allow multi-targeting for players
 		game.shadowdarkExtras = game.shadowdarkExtras || {};
 		game.shadowdarkExtras.allowMultiTarget = false;
+
+		// Initialize Light Tracker AppV2
+		initLightTrackerApp();
 
 		if (typeof game.user.updateTokenTargets !== "function") {
 			game.user.updateTokenTargets = function (tokenIds = []) {

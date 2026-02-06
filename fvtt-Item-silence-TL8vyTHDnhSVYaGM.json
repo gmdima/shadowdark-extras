@@ -1,0 +1,406 @@
+{
+  "effects": [],
+  "folder": "j31KVTdvjKEJIChN",
+  "img": "icons/magic/control/mouth-smile-deception-purple.webp",
+  "name": "Silence",
+  "system": {
+    "description": "<p>You magically mute sound in a near cube within the spell’s range. Creatures inside the area are deafened, and any sounds they create cannot be heard.</p><p>@UUID[Compendium.shadowdark.spell-effects.aAdqy5QwVJrT8JWE]{Spell Effect: Deaf}</p>",
+    "source": {
+      "title": "core-rules"
+    },
+    "class": [
+      "Compendium.shadowdark.classes.Item.035nuVkU9q2wtMPs"
+    ],
+    "duration": {
+      "type": "focus",
+      "value": 1
+    },
+    "range": "far",
+    "tier": 2,
+    "lost": false,
+    "magicItem": false,
+    "predefinedEffects": ""
+  },
+  "type": "Spell",
+  "_stats": {
+    "coreVersion": "13.348",
+    "systemId": "shadowdark",
+    "systemVersion": "3.6.1",
+    "createdTime": 1770329823490,
+    "modifiedTime": 1770329823490,
+    "lastModifiedBy": "lDQovrTY32fJwPBR",
+    "exportSource": {
+      "worldId": "bbb",
+      "uuid": "Item.TL8vyTHDnhSVYaGM",
+      "coreVersion": "13.348",
+      "systemId": "shadowdark",
+      "systemVersion": "3.6.1"
+    }
+  },
+  "flags": {
+    "shadowdark-extras": {
+      "spellDamage": {
+        "enabled": false,
+        "damageType": "",
+        "numDice": 0,
+        "dieType": "d4",
+        "effects": "[{\"uuid\":\"Compendium.shadowdark-extras.pack-sdxitems.Item.vNu0r2jQbXulxDh8\",\"duration\":{}}]",
+        "damageRequirement": "",
+        "damageRequirementFailAction": "zero",
+        "formulaType": "basic",
+        "bonus": null,
+        "scaling": "none",
+        "scalingDice": null,
+        "formula": "undefined",
+        "tieredFormula": "",
+        "criticalEffects": "[]",
+        "effectsRequirement": "",
+        "effectsApplyToTarget": true,
+        "effectSelectionMode": "all",
+        "trackDuration": true,
+        "perTurnTrigger": "start",
+        "perTurnDamage": "",
+        "reapplyEffects": false
+      },
+      "summoning": {
+        "enabled": false,
+        "profiles": "[]",
+        "deleteAtExpiry": false
+      },
+      "itemGive": {
+        "enabled": false,
+        "profiles": "[]"
+      },
+      "targeting": {
+        "mode": "template",
+        "template": {
+          "size": 15,
+          "type": "rect",
+          "fillColor": "#958bb7",
+          "placement": "choose",
+          "deleteMode": "none",
+          "hideOutline": false,
+          "excludeCaster": false,
+          "tokenMagic": {
+            "texture": "",
+            "opacity": 0.5,
+            "preset": "NOFX"
+          }
+        }
+      },
+      "templateEffects": {
+        "enabled": true,
+        "triggers": {
+          "onEnter": true,
+          "onLeave": true,
+          "onTurnStart": false,
+          "onTurnEnd": false
+        },
+        "applyConfiguredEffects": true,
+        "damage": {
+          "formula": "",
+          "type": ""
+        },
+        "save": {
+          "enabled": false,
+          "dc": "12",
+          "ability": "dex",
+          "halfOnSuccess": true
+        },
+        "runItemMacro": false
+      },
+      "alignment": "",
+      "auraEffects": {
+        "enabled": false,
+        "attachTo": "caster",
+        "radius": 30,
+        "triggers": {
+          "onEnter": false,
+          "onLeave": false,
+          "onSourceTurnStart": false,
+          "onSourceTurnEnd": false,
+          "onTargetTurnStart": false,
+          "onTargetTurnEnd": false
+        },
+        "damage": {
+          "formula": "",
+          "type": ""
+        },
+        "damageTriggers": {
+          "onEnter": false,
+          "onLeave": false,
+          "onSourceTurnStart": false,
+          "onSourceTurnEnd": false,
+          "onTargetTurnStart": false,
+          "onTargetTurnEnd": false
+        },
+        "save": {
+          "enabled": false,
+          "dc": 12,
+          "ability": "con",
+          "halfOnSuccess": false
+        },
+        "disposition": "all",
+        "includeSelf": false,
+        "applyToOriginator": true,
+        "checkVisibility": false,
+        "animation": {
+          "enabled": true,
+          "style": "circle",
+          "tint": "#4488ff",
+          "scaleMultiplier": 1,
+          "opacity": 0.6
+        },
+        "tokenFilters": {
+          "enabled": false,
+          "preset": ""
+        },
+        "applyConfiguredEffects": false,
+        "effectsTriggers": {
+          "onEnter": false,
+          "onLeave": false,
+          "onSourceTurnStart": false,
+          "onSourceTurnEnd": false,
+          "onTargetTurnStart": false,
+          "onTargetTurnEnd": false
+        },
+        "runItemMacro": false,
+        "macroTriggers": {
+          "onEnter": false,
+          "onLeave": false,
+          "onSourceTurnStart": false,
+          "onSourceTurnEnd": false,
+          "onTargetTurnStart": false,
+          "onTargetTurnEnd": false
+        }
+      }
+    },
+    "autoanimations": {
+      "id": "5bba2484-10a7-469f-b836-5a8e2e1d757e",
+      "label": "Silence",
+      "levels3d": {
+        "type": "explosion",
+        "data": {
+          "color01": "#FFFFFF",
+          "color02": "#FFFFFF",
+          "spritePath": "modules/levels-3d-preview/assets/particles/dust.png"
+        },
+        "sound": {
+          "enable": false
+        },
+        "secondary": {
+          "enable": false,
+          "data": {
+            "color01": "#FFFFFF",
+            "color02": "#FFFFFF",
+            "spritePath": "modules/levels-3d-preview/assets/particles/dust.png"
+          }
+        }
+      },
+      "macro": {
+        "enable": false
+      },
+      "meleeSwitch": {
+        "video": {
+          "dbSection": "range",
+          "menuType": "weapon",
+          "animation": "arrow",
+          "variant": "regular",
+          "color": "regular"
+        },
+        "sound": {
+          "enable": false,
+          "delay": 0,
+          "repeat": 1,
+          "repeatDelay": 250,
+          "startTime": 0,
+          "volume": 0.75
+        },
+        "options": {
+          "detect": "automatic",
+          "range": 2,
+          "returning": false,
+          "switchType": "on"
+        }
+      },
+      "menu": "melee",
+      "primary": {
+        "video": {
+          "dbSection": "melee",
+          "menuType": "weapon",
+          "animation": "club",
+          "variant": "01",
+          "color": "white",
+          "enableCustom": false,
+          "customPath": ""
+        },
+        "sound": {
+          "enable": false,
+          "delay": 0,
+          "repeat": 1,
+          "repeatDelay": 250,
+          "startTime": 0,
+          "volume": 0.75
+        },
+        "options": {
+          "contrast": 0,
+          "delay": 0,
+          "elevation": 1000,
+          "isWait": false,
+          "opacity": 1,
+          "playbackRate": 1,
+          "repeat": 1,
+          "repeatDelay": 250,
+          "saturate": 0,
+          "size": 1,
+          "tint": false,
+          "tintColor": "#FFFFFF",
+          "zIndex": 1
+        }
+      },
+      "secondary": {
+        "enable": false,
+        "video": {
+          "dbSection": "static",
+          "menuType": "spell",
+          "animation": "curewounds",
+          "variant": "01",
+          "color": "blue",
+          "enableCustom": false,
+          "customPath": ""
+        },
+        "sound": {
+          "enable": false,
+          "delay": 0,
+          "repeat": 1,
+          "repeatDelay": 250,
+          "startTime": 0,
+          "volume": 0.75
+        },
+        "options": {
+          "addTokenWidth": false,
+          "anchor": "0.5",
+          "contrast": 0,
+          "delay": 0,
+          "elevation": 1000,
+          "fadeIn": 250,
+          "fadeOut": 500,
+          "isMasked": false,
+          "isRadius": true,
+          "isWait": false,
+          "opacity": 1,
+          "repeat": 1,
+          "repeatDelay": 250,
+          "saturate": 0,
+          "size": 1.5,
+          "tint": false,
+          "tintColor": "#FFFFFF",
+          "zIndex": 1
+        }
+      },
+      "soundOnly": {
+        "sound": {
+          "enable": false,
+          "delay": 0,
+          "repeat": 1,
+          "repeatDelay": 250,
+          "startTime": 0,
+          "volume": 0.75
+        }
+      },
+      "source": {
+        "enable": false,
+        "video": {
+          "dbSection": "static",
+          "menuType": "spell",
+          "animation": "curewounds",
+          "variant": "01",
+          "color": "blue",
+          "enableCustom": false,
+          "customPath": ""
+        },
+        "sound": {
+          "enable": false,
+          "delay": 0,
+          "repeat": 1,
+          "repeatDelay": 250,
+          "startTime": 0,
+          "volume": 0.75
+        },
+        "options": {
+          "addTokenWidth": false,
+          "anchor": "0.5",
+          "contrast": 0,
+          "delay": 0,
+          "elevation": 1000,
+          "fadeIn": 250,
+          "fadeOut": 500,
+          "isMasked": false,
+          "isRadius": false,
+          "isWait": true,
+          "opacity": 1,
+          "repeat": 1,
+          "repeatDelay": 250,
+          "saturate": 0,
+          "size": 1,
+          "tint": false,
+          "tintColor": "#FFFFFF",
+          "zIndex": 1
+        }
+      },
+      "target": {
+        "enable": false,
+        "video": {
+          "dbSection": "static",
+          "menuType": "spell",
+          "animation": "curewounds",
+          "variant": "01",
+          "color": "blue",
+          "enableCustom": false,
+          "customPath": ""
+        },
+        "sound": {
+          "enable": false,
+          "delay": 0,
+          "repeat": 1,
+          "repeatDelay": 250,
+          "startTime": 0,
+          "volume": 0.75
+        },
+        "options": {
+          "addTokenWidth": false,
+          "anchor": "0.5",
+          "contrast": 0,
+          "delay": 0,
+          "elevation": 1000,
+          "fadeIn": 250,
+          "fadeOut": 500,
+          "isMasked": false,
+          "isRadius": false,
+          "opacity": 1,
+          "persistent": false,
+          "repeat": 1,
+          "repeatDelay": 250,
+          "saturate": 0,
+          "size": 1,
+          "tint": false,
+          "tintColor": "#FFFFFF",
+          "unbindAlpha": false,
+          "unbindVisibility": false,
+          "zIndex": 1
+        }
+      },
+      "isEnabled": false,
+      "isCustomized": false,
+      "fromAmmo": false,
+      "version": 5
+    },
+    "scene-packer": {
+      "hash": "54bb43e54263cbdcbe40428a93a5b3256c540a79",
+      "sourceId": "Item.TL8vyTHDnhSVYaGM"
+    }
+  },
+  "ownership": {
+    "default": 0
+  }
+}

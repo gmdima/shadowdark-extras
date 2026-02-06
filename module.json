@@ -140,6 +140,9 @@
     },
     {
       "src": "styles/scene-nav-bar.css"
+    },
+    {
+      "src": "styles/light-tracker.css"
     }
   ],
   "languages": [

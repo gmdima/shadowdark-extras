@@ -195,7 +195,7 @@ export async function playWeaponAnimation(token, item) {
         .name(effectName)
         .file(animConfig.imagePath)
         .atLocation(token)
-        .attachTo(token, { bindRotation: true, local: true, bindVisibility: false })
+        .attachTo(token, { bindRotation: true, local: true, bindVisibility: true })
         .scaleToObject(animConfig.scale ?? 1.0, { considerTokenScale: true })
         .scaleIn(0, 300, { ease: "easeOutBack" })
         .scaleOut(0, 200, { ease: "easeOutCubic" })
@@ -247,7 +247,6 @@ export async function playWeaponAnimation(token, item) {
     }
 
     effect.persist()
-        .aboveLighting()
         .zIndex(5);
 
     // Apply selected animation type

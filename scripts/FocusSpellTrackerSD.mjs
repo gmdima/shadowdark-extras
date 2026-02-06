@@ -2086,6 +2086,33 @@ export async function endFocusSpell(casterId, spellId, reason = "manual") {
 		}
 	}
 
+	// Delete any templates associated with this focus spell
+	// Templates store casterActorId and spellId in their templateEffects config
+	try {
+		const scene = canvas.scene;
+		if (scene) {
+			const templatesToDelete = scene.templates.filter(template => {
+				const config = template.flags?.[MODULE_ID]?.templateEffects;
+				return config?.casterActorId === casterId && config?.spellId === spellId;
+			});
+
+			if (templatesToDelete.length > 0) {
+				console.log(`shadowdark-extras | Deleting ${templatesToDelete.length} template(s) associated with focus spell ${focusEntry.spellName}`);
+
+				for (const template of templatesToDelete) {
+					try {
+						await template.delete();
+						console.log(`shadowdark-extras | Deleted template ${template.id}`);
+					} catch (err) {
+						console.warn(`shadowdark-extras | Failed to delete template ${template.id}:`, err);
+					}
+				}
+			}
+		}
+	} catch (err) {
+		console.warn(`shadowdark-extras | Error cleaning up templates:`, err);
+	}
+
 	// Remove the focus entry from tracking
 	activeFocus.splice(focusIndex, 1);
 	await caster.setFlag(MODULE_ID, FOCUS_SPELL_FLAG, activeFocus);

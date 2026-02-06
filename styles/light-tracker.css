@@ -1,0 +1,232 @@
+/* Light Tracker AppV2 Styles */
+
+.sdx-light-tracker-window {
+    --lt-bg: #1a1a2e;
+    --lt-border: #3a3a4e;
+    --lt-text: #e0e0e0;
+    --lt-accent: #f39c12;
+    --lt-danger: #e74c3c;
+    --lt-success: #2ecc71;
+    --lt-muted: #888;
+}
+
+.sdx-lt-container {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 10px;
+    background: var(--lt-bg);
+    color: var(--lt-text);
+}
+
+/* Header */
+.sdx-lt-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--lt-border);
+}
+
+.sdx-lt-status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.sdx-lt-status-label {
+    font-weight: bold;
+    color: var(--lt-muted);
+}
+
+.sdx-lt-status-value {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.sdx-lt-status-value.active {
+    color: var(--lt-success);
+}
+
+.sdx-lt-status-value.paused {
+    color: var(--lt-accent);
+}
+
+/* Buttons */
+.sdx-lt-btn {
+    padding: 6px 12px;
+    border: 1px solid var(--lt-border);
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--lt-text);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.sdx-lt-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: var(--lt-accent);
+}
+
+.sdx-lt-btn.danger {
+    border-color: var(--lt-danger);
+    color: var(--lt-danger);
+}
+
+.sdx-lt-btn.danger:hover {
+    background: rgba(231, 76, 60, 0.2);
+}
+
+/* Grid */
+.sdx-lt-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+/* Character Card */
+.sdx-lt-character {
+    display: grid;
+    grid-template-columns: 64px 1fr;
+    grid-template-rows: auto auto;
+    gap: 8px;
+    padding: 10px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--lt-border);
+    border-radius: 6px;
+}
+
+.sdx-lt-portrait {
+    grid-row: span 2;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.sdx-lt-portrait:hover {
+    transform: scale(1.05);
+}
+
+.sdx-lt-portrait img {
+    width: 64px;
+    height: 64px;
+    border-radius: 4px;
+    object-fit: cover;
+    border: 2px solid var(--lt-border);
+}
+
+.sdx-lt-actor-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    align-self: end;
+}
+
+.sdx-lt-name {
+    font-weight: bold;
+    font-size: 1.1em;
+    color: var(--lt-text);
+}
+
+.sdx-lt-actor-douse {
+    color: var(--lt-muted);
+    cursor: pointer;
+    padding: 4px;
+    transition: color 0.2s ease;
+}
+
+.sdx-lt-actor-douse:hover {
+    color: var(--lt-danger);
+}
+
+.sdx-lt-lights {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.sdx-lt-light {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 8px;
+    background: rgba(243, 156, 18, 0.1);
+    border-radius: 4px;
+}
+
+.sdx-lt-light-toggle {
+    color: var(--lt-accent);
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+
+.sdx-lt-light-toggle:hover {
+    color: var(--lt-danger);
+}
+
+.sdx-lt-light-toggle .flame {
+    animation: flicker 0.5s infinite alternate;
+}
+
+@keyframes flicker {
+    0% {
+        opacity: 0.8;
+        transform: scale(1);
+    }
+
+    100% {
+        opacity: 1;
+        transform: scale(1.1);
+    }
+}
+
+.sdx-lt-light-name {
+    flex: 1;
+}
+
+.sdx-lt-light-time {
+    color: var(--lt-muted);
+    font-size: 0.9em;
+}
+
+.sdx-lt-no-light {
+    color: var(--lt-muted);
+    font-style: italic;
+    font-size: 0.9em;
+}
+
+/* Empty State */
+.sdx-lt-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 30px;
+    color: var(--lt-muted);
+}
+
+.sdx-lt-empty i {
+    font-size: 2em;
+    margin-bottom: 10px;
+}
+
+/* Error State */
+.sdx-lt-error {
+    padding: 15px;
+    background: rgba(231, 76, 60, 0.2);
+    border: 1px solid var(--lt-danger);
+    border-radius: 4px;
+    color: var(--lt-danger);
+    text-align: center;
+}
+
+/* Footer */
+.sdx-lt-footer {
+    padding-top: 10px;
+    border-top: 1px solid var(--lt-border);
+    display: flex;
+    justify-content: center;
+}

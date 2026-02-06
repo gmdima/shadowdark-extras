@@ -256,10 +256,13 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
         elem.querySelector(".tray-handle-button-tool[data-action='light-tracker']")?.addEventListener("click", (e) => {
             e.preventDefault();
             e.stopPropagation();
-            if (game.shadowdark?.lightSourceTracker?.toggleInterface) {
+            // Use SDX AppV2 Light Tracker if available, fallback to system tracker
+            if (game.shadowdarkExtras?.lightTracker?.toggle) {
+                game.shadowdarkExtras.lightTracker.toggle();
+            } else if (game.shadowdark?.lightSourceTracker?.toggleInterface) {
                 game.shadowdark.lightSourceTracker.toggleInterface();
             } else {
-                ui.notifications.warn("Light Source Tracker not found. Ensure the system is updated.");
+                ui.notifications.warn("Light Source Tracker not found.");
             }
         });
 

@@ -553,6 +553,7 @@ export function setupCombatSocket() {
 
 	// Register socket handler for applying conditions/effects
 	socketlibSocket.register("applyTokenCondition", async (data) => {
+		console.log("%c[SDX SOCKET] applyTokenCondition called with:", "color: magenta; font-weight: bold", data);
 		const token = canvas.tokens.get(data.tokenId);
 		if (!token || !token.actor) {
 			console.warn("shadowdark-extras | Token not found for condition:", data.tokenId);
@@ -5254,6 +5255,8 @@ function attachDamageCardListeners(html, messageId) {
 				effects = effectsJson;
 			}
 
+			console.log("%c[SDX APPLY CONDITION] Effects to apply:", "color: cyan; font-weight: bold", effects);
+
 
 			if (effects.length === 0) {
 				ui.notifications.warn("No conditions to apply");
@@ -5330,6 +5333,7 @@ function attachDamageCardListeners(html, messageId) {
 			// Get card targets (enemies shown in the card)
 			const $cardTargets = $card.find('.sdx-target-item');
 			const cardTargets = $cardTargets.map((i, el) => canvas.tokens.get($(el).data('token-id'))).get().filter(t => t);
+			console.log("%c[SDX APPLY CONDITION] Card targets found:", "color: lime; font-weight: bold", cardTargets.map(t => ({ id: t.id, name: t.name })));
 
 			// Get caster token using the stored token ID (the actual token that attacked/cast)
 			const casterTokenId = $card.data('caster-token-id');
@@ -5407,6 +5411,7 @@ function attachDamageCardListeners(html, messageId) {
 
 
 					// Use socketlib to apply condition via GM
+					console.log("%c[SDX APPLY CONDITION] Applying to target:", "color: orange; font-weight: bold", { targetId: target.id, targetName: target.name, effectUuid });
 					if (socketlibSocket) {
 						try {
 							const success = await socketlibSocket.executeAsGM("applyTokenCondition", {

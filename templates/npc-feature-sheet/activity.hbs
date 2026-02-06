@@ -6,6 +6,10 @@
     <details class="potion-details-group" open>
         <summary><i class="fas fa-book-open"></i> Spell Details</summary>
         <fieldset class="potion-fieldset">
+            <div class="form-group spell-dc">
+                <label>{{localize 'SHADOWDARK.class-ability.dc.label'}}</label>
+                <input type="number" name="system.dc" value="{{system.dc}}" placeholder="&mdash;" />
+            </div>
             <div class="form-group">
                 <label>{{localize 'SHADOWDARK.item.spell_duration'}}</label>
                 <div class="duration-controls" style="flex: 1;">
