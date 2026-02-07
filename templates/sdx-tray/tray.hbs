@@ -185,6 +185,12 @@
                 title="Placeable Notes">
                 <i class="fa-solid fa-sticky-note"></i> Notes
             </button>
+            {{#if isGM}}
+            <button class="tray-tab-button {{#if (eq viewMode 'hexes')}}active{{/if}}" data-view="hexes"
+                title="Hex Painter">
+                <i class="fas fa-border-all"></i> Hexes
+            </button>
+            {{/if}}
         </div>
 
         <!-- PANELS -->
@@ -682,5 +688,76 @@
                 {{/if}}
 
             </div>
+
+            <!-- HEXES TAB (GM ONLY) -->
+            {{#if isGM}}
+            <div class="tray-view-content hexes-view {{#unless (eq viewMode 'hexes')}}hidden{{/unless}}"
+                style="overflow-y: hidden; display: flex; flex-direction: column;">
+
+                <!-- Format Map Controls -->
+                <div class="hex-format-section">
+                    <button class="hex-format-btn" data-action="hex-format-scene">
+                        <i class="fas fa-ruler-combined"></i> Format Map
+                    </button>
+                    <div class="hex-format-controls hidden">
+                        <div class="hex-slider-row">
+                            <label>Width</label>
+                            <input type="range" name="hex-columns" min="5" max="50" step="1" value="{{hexColumns}}">
+                            <span class="hex-slider-value">{{hexColumns}}</span>
+                        </div>
+                        <div class="hex-slider-row">
+                            <label>Height</label>
+                            <input type="range" name="hex-rows" min="5" max="50" step="1" value="{{hexRows}}">
+                            <span class="hex-slider-value">{{hexRows}}</span>
+                        </div>
+                        <button class="hex-apply-btn" data-action="hex-apply-format">
+                            <i class="fas fa-check"></i> Apply
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Tile Search Filter -->
+                <div class="hex-search-section">
+                    <input type="text" class="hex-search-input" placeholder="Search tiles..." value="{{hexSearchFilter}}" />
+                </div>
+
+                <!-- Effect Toggles -->
+                <div class="hex-effects-section">
+                    <!-- Water Effect Toggle -->
+                    <div class="hex-water-toggle-section">
+                        <label class="hex-water-toggle">
+                            <input type="checkbox" class="hex-water-checkbox" />
+                            <span class="hex-water-label"><i class="fas fa-water"></i> Water</span>
+                        </label>
+                    </div>
+
+                    <!-- Wind Effect Toggle -->
+                    <div class="hex-wind-toggle-section">
+                        <label class="hex-wind-toggle">
+                            <input type="checkbox" class="hex-wind-checkbox" />
+                            <span class="hex-wind-label"><i class="fas fa-wind"></i> Wind</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Tile Grid -->
+                <div class="hex-tile-scroll" style="flex: 1; overflow-y: auto; scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.2) rgba(0,0,0,0.1);">
+                    <div class="hex-tile-grid">
+                        {{#each hexTiles}}
+                        <div class="hex-tile-thumb {{#if this.active}}active{{/if}}"
+                            data-tile="{{this.path}}" title="{{this.label}}">
+                            <img src="{{this.path}}" alt="{{this.label}}" />
+                            <span class="hex-tile-label">{{this.label}}</span>
+                        </div>
+                        {{/each}}
+                    </div>
+                </div>
+
+                <!-- Usage hints -->
+                <div class="tray-footer-message">
+                    Drag to paint · Shift+Drag to erase
+                </div>
+            </div>
+            {{/if}}
         </div>
     </div>

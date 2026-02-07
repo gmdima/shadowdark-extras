@@ -15,7 +15,8 @@ import {
     selectPartyTokens,
     clearTokenSelection,
     switchToActor,
-    getHealthOverlayHeight
+    getHealthOverlayHeight,
+    renderTray
 } from "./TraySD.mjs";
 import { showLeaderDialog, showMovementModeDialog } from "./MarchingModeSD.mjs";
 import { FormationSpawnerSD } from "./FormationSpawnerSD.mjs";
@@ -24,6 +25,7 @@ import { PinStyleEditorApp } from "./PinStyleEditorSD.mjs";
 import { PinListApp } from "./PinListApp.mjs";
 
 import { PlaceableNotesSD } from "./PlaceableNotesSD.mjs";
+import { setMapDimension, formatActiveScene, enablePainting, disablePainting, toggleTileSelection, setSearchFilter, toggleWaterEffect, toggleWindEffect } from "./HexPainterSD.mjs";
 
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
@@ -104,6 +106,12 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
         const elem = document.querySelector(".sdx-tray");
         if (elem) {
             elem.classList.toggle("expanded", this._isExpanded);
+        }
+
+        if (this._isExpanded && getViewMode() === "hexes") {
+            enablePainting();
+        } else {
+            disablePainting();
         }
     }
 
@@ -899,6 +907,9 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
                 this._filterPins(this._pinSearchTerm);
             }
         }
+
+        // Hex Painter tab bindings
+        this._bindHexPainterEvents(elem);
     }
 
     /**
@@ -921,6 +932,73 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
             } else {
                 entry.style.display = "none";
             }
+        });
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+       HEX PAINTER TAB
+       ═══════════════════════════════════════════════════════════════ */
+
+    _bindHexPainterEvents(elem) {
+        // Format Map toggle
+        const formatBtn = elem.querySelector(".hex-format-btn");
+        const formatControls = elem.querySelector(".hex-format-controls");
+        if (formatBtn && formatControls) {
+            formatBtn.addEventListener("click", (e) => {
+                e.preventDefault();
+                formatControls.classList.toggle("hidden");
+            });
+        }
+
+        // Dimension sliders
+        elem.querySelectorAll(".hex-slider-row input[type='range']").forEach(slider => {
+            slider.addEventListener("input", (e) => {
+                const val = parseInt(e.target.value);
+                const display = e.target.parentElement.querySelector(".hex-slider-value");
+                if (display) display.textContent = val;
+                const axis = e.target.name === "hex-columns" ? "columns" : "rows";
+                setMapDimension(axis, val);
+            });
+        });
+
+        // Apply format button
+        elem.querySelector(".hex-apply-btn")?.addEventListener("click", async (e) => {
+            e.preventDefault();
+            await formatActiveScene();
+        });
+
+        // Search filter (client-side filtering without re-render)
+        elem.querySelector(".hex-search-input")?.addEventListener("input", (e) => {
+            const searchTerm = e.target.value.toLowerCase();
+            setSearchFilter(searchTerm);
+
+            const tiles = elem.querySelectorAll(".hex-tile-thumb");
+            tiles.forEach(tile => {
+                const label = tile.getAttribute("title").toLowerCase();
+                tile.style.display = label.includes(searchTerm) ? "" : "none";
+            });
+        });
+
+        // Water effect toggle
+        elem.querySelector(".hex-water-checkbox")?.addEventListener("change", (e) => {
+            toggleWaterEffect();
+        });
+
+        // Wind effect toggle
+        elem.querySelector(".hex-wind-checkbox")?.addEventListener("change", (e) => {
+            toggleWindEffect();
+        });
+
+        // Tile selection (multi-select)
+        elem.querySelectorAll(".hex-tile-thumb").forEach(thumb => {
+            thumb.addEventListener("click", (e) => {
+                e.preventDefault();
+                const tilePath = thumb.dataset.tile;
+                if (!tilePath) return;
+                toggleTileSelection(tilePath);
+
+                thumb.classList.toggle("active");
+            });
         });
     }
 

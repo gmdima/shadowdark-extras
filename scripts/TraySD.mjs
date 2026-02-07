@@ -10,6 +10,7 @@
 
 import { TrayApp } from "./TrayApp.mjs";
 import { JournalPinManager } from "./JournalPinsSD.mjs";
+import { getHexPainterData, loadTileAssets, bindCanvasEvents, enablePainting, disablePainting, isPainting } from "./HexPainterSD.mjs";
 
 const MODULE_ID = "shadowdark-extras";
 
@@ -46,6 +47,12 @@ export function initTray() {
     // Initial render
     renderTray();
 
+    // Load hex tile assets for the painter tab
+    loadTileAssets().then(() => renderTray());
+
+    // Bind canvas events now if canvas is already ready (page refresh)
+    if (canvas?.stage) bindCanvasEvents();
+
     // Hook into token selection changes
     Hooks.on("controlToken", async () => {
         await renderTray();
@@ -81,13 +88,16 @@ export function initTray() {
     // Hook into other placeables for notes
     const placeableHooks = ["AmbientLight", "AmbientSound", "Wall", "Tile"];
     placeableHooks.forEach(type => {
-        Hooks.on(`create${type}`, async () => await renderTray());
-        Hooks.on(`update${type}`, async () => await renderTray());
-        Hooks.on(`delete${type}`, async () => await renderTray());
+        Hooks.on(`create${type}`, async () => { if (!isPainting()) await renderTray(); });
+        Hooks.on(`update${type}`, async () => { if (!isPainting()) await renderTray(); });
+        Hooks.on(`delete${type}`, async () => { if (!isPainting()) await renderTray(); });
     });
 
     // Hook into scene changes
-    Hooks.on("canvasReady", async () => await renderTray());
+    Hooks.on("canvasReady", async () => {
+        bindCanvasEvents();
+        await renderTray();
+    });
 
     // Hook into Map Notes
     Hooks.on("createNote", async () => await renderTray());
@@ -300,6 +310,9 @@ export function getHealthOverlayHeight(hp) {
  */
 export function setViewMode(mode) {
     _viewMode = mode;
+    // Toggle hex painting based on active tab
+    if (mode === "hexes") enablePainting();
+    else disablePainting();
     renderTray();
 }
 
@@ -330,11 +343,16 @@ export function cycleViewMode() {
     if (showParty) modes.push("party");
     if (isGM) modes.push("pins");
     modes.push("notes"); // Notes mode for everyone (filtered for players)
+    if (isGM) modes.push("hexes");
 
     const currentIndex = modes.indexOf(_viewMode);
     // If current mode isn't in list (e.g. switched from player to GM view), start at 0
     const nextIndex = currentIndex === -1 ? 0 : (currentIndex + 1) % modes.length;
     _viewMode = modes[nextIndex];
+
+    // Toggle hex painting based on active tab
+    if (_viewMode === "hexes") enablePainting();
+    else disablePainting();
 
     renderTray();
 }
@@ -405,6 +423,9 @@ export async function renderTray() {
 
         // Notes Data
         notes: await getNotesData(),
+
+        // Hex Painter Data
+        ...getHexPainterData(),
 
         // Active Effects
         activeEffects: (() => {

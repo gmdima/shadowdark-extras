@@ -1,5 +1,13 @@
-2026/02/07-01:43:16.666 76e4 Log #913: 0 ops saved to Table #914 OK
-2026/02/07-01:43:16.667 76e4 Archiving C:\Users\gmdim\AppData\Local\FoundryVTT\Data\modules\shadowdark-extras\packs\pack-sdxitems/000913.log: OK
-2026/02/07-01:43:16.673 76e4 Table #907: 263 entries OK
-2026/02/07-01:43:16.678 76e4 Archiving C:\Users\gmdim\AppData\Local\FoundryVTT\Data\modules\shadowdark-extras\packs\pack-sdxitems/MANIFEST-000912: OK
-2026/02/07-01:43:16.684 76e4 **** Repaired leveldb C:\Users\gmdim\AppData\Local\FoundryVTT\Data\modules\shadowdark-extras\packs\pack-sdxitems; recovered 1 files; 182488 bytes. Some data may have been lost. ****
+2026/02/07-02:22:18.571 79b8 Recovering log #916
+2026/02/07-02:22:18.581 79b8 Delete type=0 #916
+2026/02/07-02:22:18.581 79b8 Delete type=3 #915
+2026/02/07-04:07:36.712 8370 Level-0 table #920: started
+2026/02/07-04:07:36.712 8370 Level-0 table #920: 0 bytes OK
+2026/02/07-04:07:36.717 8370 Delete type=0 #918
+2026/02/07-04:07:36.717 8370 Manual compaction at level-0 from '!folders!F3AKMIJQch1KV4FP' @ 72057594037927935 : 1 .. '!items.effects!zqCuFAr8GhvpF3x2.EjglH7c4lr0267Hu' @ 0 : 0; will stop at '!items.effects!zqCuFAr8GhvpF3x2.EjglH7c4lr0267Hu' @ 591 : 1
+2026/02/07-04:07:36.717 8370 Compacting 1@0 + 0@1 files
+2026/02/07-04:07:36.732 8370 Generated table #921@0: 263 keys, 182488 bytes
+2026/02/07-04:07:36.732 8370 Compacted 1@0 + 0@1 files => 182488 bytes
+2026/02/07-04:07:36.737 8370 compacted to: files[ 0 1 0 0 0 0 0 ]
+2026/02/07-04:07:36.737 8370 Delete type=2 #907
+2026/02/07-04:07:36.737 8370 Manual compaction at level-0 from '!items.effects!zqCuFAr8GhvpF3x2.EjglH7c4lr0267Hu' @ 591 : 1 .. '!items.effects!zqCuFAr8GhvpF3x2.EjglH7c4lr0267Hu' @ 0 : 0; will stop at (end)
