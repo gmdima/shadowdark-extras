@@ -1,3 +1,7 @@
-2026/02/06-00:04:43.275 7ca4 Recovering log #844
-2026/02/06-00:04:43.285 7ca4 Delete type=0 #844
-2026/02/06-00:04:43.285 7ca4 Delete type=3 #843
+2026/02/06-23:02:40.004 4c88 Recovering log #853
+2026/02/06-23:02:40.015 4c88 Delete type=0 #853
+2026/02/06-23:02:40.015 4c88 Delete type=3 #851
+2026/02/06-23:49:46.366 4c8 Level-0 table #859: started
+2026/02/06-23:49:46.366 4c8 Level-0 table #859: 0 bytes OK
+2026/02/06-23:49:46.371 4c8 Delete type=0 #857
+2026/02/06-23:49:46.376 4c8 Manual compaction at level-0 from '!actors!X2leBdJeqwKWrTlE' @ 72057594037927935 : 1 .. '!actors!X2leBdJeqwKWrTlE' @ 0 : 0; will stop at (end)

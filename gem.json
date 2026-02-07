@@ -1,0 +1,55 @@
+{
+  "name": "Gem",
+  "type": "Gem",
+  "img": "icons/commodities/gems/gem-faceted-navette-red.webp",
+  "system": {
+    "description": "",
+    "source": {
+      "title": ""
+    },
+    "broken": false,
+    "canBeEquipped": false,
+    "cost": {
+      "cp": 0,
+      "gp": 0,
+      "sp": 0
+    },
+    "equipped": false,
+    "isAmmunition": false,
+    "isPhysical": true,
+    "magicItem": false,
+    "quantity": 1,
+    "slots": {
+      "free_carry": 0,
+      "per_slot": 10,
+      "slots_used": 1
+    },
+    "stashed": false
+  },
+  "effects": [],
+  "folder": null,
+  "flags": {
+    "scene-packer": {
+      "hash": "02219b730556e355a5d313e8b3fe14d35dac6f92",
+      "sourceId": "Item.RFf0pDI0HdEf9HwB"
+    }
+  },
+  "_stats": {
+    "coreVersion": "13.348",
+    "systemId": "shadowdark",
+    "systemVersion": "3.6.1",
+    "createdTime": 1770427659762,
+    "modifiedTime": 1770427659762,
+    "lastModifiedBy": "lDQovrTY32fJwPBR",
+    "exportSource": {
+      "worldId": "bbb",
+      "uuid": "Item.RFf0pDI0HdEf9HwB",
+      "coreVersion": "13.348",
+      "systemId": "shadowdark",
+      "systemVersion": "3.6.1"
+    }
+  },
+  "ownership": {
+    "default": 0
+  }
+}

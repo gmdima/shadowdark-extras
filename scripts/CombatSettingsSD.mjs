@@ -1657,11 +1657,15 @@ export async function injectDamageCard(message, html, data) {
 		}
 
 		// Check if this is a failed weapon attack - if setting is enabled, skip damage card
+		// and also hide the base Shadowdark system's damage roll section from the chat card
 		if (settings.hideDamageCardOnFailedAttack && item && item.type === "Weapon") {
 			// Check the attack success from the shadowdark flags
 			// The success flag is at the root level: message.flags.shadowdark.success
 			const attackSuccess = message.flags?.shadowdark?.success;
 			if (attackSuccess === false) {
+				// Hide the base system damage roll section (.card-damage-rolls)
+				// This is the default damage roll that Shadowdark renders in the chat card
+				html.find('.card-damage-rolls').hide();
 				// Weapon attack failed, skip damage card injection
 				return;
 			}
@@ -4702,10 +4706,12 @@ function attachDamageCardListeners(html, messageId) {
 		const $chevron = $header.find('.fa-chevron-down, .fa-chevron-up');
 		const $content = $card.find('.sdx-damage-card-content');
 		const $tabs = $card.find('.sdx-damage-card-tabs');
+		const $rollBreakdown = $card.find('.sdx-roll-breakdown');
 
 		// Toggle content visibility
 		$content.slideToggle(200);
 		$tabs.slideToggle(200);
+		$rollBreakdown.slideToggle(200);
 
 		// Toggle chevron direction
 		if ($chevron.hasClass('fa-chevron-down')) {

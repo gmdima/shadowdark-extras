@@ -3708,11 +3708,11 @@ function applySheetDecorationStyles() {
 		detailsRowColor = game.settings.get(MODULE_ID, "detailsRowColor") || "#ffffff";
 		luckContainerColor = game.settings.get(MODULE_ID, "luckContainerColor") || "#ffffff";
 		actorNameColor = game.settings.get(MODULE_ID, "actorNameColor") || "#ffffff";
-		windowHeaderColor = game.settings.get(MODULE_ID, "windowHeaderColor") || "#ffffff";
-		navBackgroundColor = game.settings.get(MODULE_ID, "navBackgroundColor") || "#ffffff";
+		windowHeaderColor = game.settings.get(MODULE_ID, "windowHeaderColor") || "#0000000";
+		navBackgroundColor = game.settings.get(MODULE_ID, "navBackgroundColor") || "#000000";
 		navBorderColor = game.settings.get(MODULE_ID, "navBorderColor") || "rgba(0, 0, 0, 0.5)";
 		effectsTextColor = game.settings.get(MODULE_ID, "effectsTextColor") || "#ffffff";
-		talentsTextColor = game.settings.get(MODULE_ID, "talentsTextColor") || "#000000";
+		talentsTextColor = game.settings.get(MODULE_ID, "talentsTextColor") || "#ffffff";
 		xpRowColor = game.settings.get(MODULE_ID, "xpRowColor") || "#ffffff";
 		windowTitleBarBackgroundColor = game.settings.get(MODULE_ID, "windowTitleBarBackgroundColor") || "#ffffff";
 		statsLabelColor = game.settings.get(MODULE_ID, "statsLabelColor") || "#ffffff";
@@ -3733,7 +3733,7 @@ function applySheetDecorationStyles() {
 		borderImageRepeat = "stretch";
 		borderImageRepeat = "stretch";
 		borderBackgroundColor = "";
-		sheetHeaderBackgroundColor = "";
+		sheetHeaderBackgroundColor = "#000000ff";
 		borderTransparencyWidth = 10;
 		boxBorder = "panel-border-001.png";
 		boxBorderImageWidth = 16;
@@ -3760,12 +3760,12 @@ function applySheetDecorationStyles() {
 		luckContainerColor = "#ffffff";
 		actorNameColor = "#ffffff";
 		windowHeaderColor = "#ffffff";
-		navBackgroundColor = "#ffffff";
+		navBackgroundColor = "#000000ff";
 		navBorderColor = "rgba(0, 0, 0, 0.5)";
 		effectsTextColor = "#ffffff";
 		talentsTextColor = "#000000";
 		xpRowColor = "#ffffff";
-		windowTitleBarBackgroundColor = "#ffffff";
+		windowTitleBarBackgroundColor = "#000000";
 		statsLabelColor = "#ffffff";
 		actorNameShadowColor = "#000000";
 		actorNameShadowAlpha = 0.8;
@@ -4326,7 +4326,7 @@ function registerSettings() {
 		name: game.i18n.localize("SHADOWDARK_EXTRAS.sheetEditor.sheetHeaderBackgroundColor"),
 		scope: "world",
 		config: false,
-		default: "",
+		default: "#000000",
 		type: String,
 		onChange: () => applySheetDecorationStyles()
 	});
@@ -4353,7 +4353,7 @@ function registerSettings() {
 		name: game.i18n.localize("SHADOWDARK_EXTRAS.sheetEditor.windowHeaderColor"),
 		scope: "world",
 		config: false,
-		default: "#ffffff",
+		default: "#000000ff",
 		type: String,
 		onChange: () => applySheetDecorationStyles()
 	});
@@ -4362,7 +4362,7 @@ function registerSettings() {
 		name: game.i18n.localize("SHADOWDARK_EXTRAS.sheetEditor.navBackgroundColor"),
 		scope: "world",
 		config: false,
-		default: "#ffffff",
+		default: "#000000ff",
 		type: String,
 		onChange: () => applySheetDecorationStyles()
 	});
@@ -4389,7 +4389,7 @@ function registerSettings() {
 		name: game.i18n.localize("SHADOWDARK_EXTRAS.sheetEditor.talentsTextColor"),
 		scope: "world",
 		config: false,
-		default: "#000000",
+		default: "#ffffffff",
 		type: String,
 		onChange: () => applySheetDecorationStyles()
 	});

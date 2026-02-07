@@ -254,6 +254,9 @@
                     <button class="tray-btn-full" data-action="create-scene">
                         <i class="fas fa-plus"></i> Create New Scene
                     </button>
+                    <button class="tray-btn-full folder-create-btn" data-action="create-folder">
+                        <i class="fas fa-folder-plus"></i> Create New Folder
+                    </button>
                     {{#if tomActiveSceneId}}
                     <button class="tray-btn-full danger mt-2" data-action="stop-broadcast">
                         <i class="fas fa-stop"></i> Stop Broadcasting
@@ -265,49 +268,119 @@
                 <div class="scenes-list-scroll"
                     style="flex: 1; overflow-y: auto; scrollbar-width: thin; padding: 0 10px 10px 10px;">
 
-                    {{#if tomScenes.length}}
-                    <div class="scene-grid">
-                        {{#each tomScenes}}
-                        <div class="scene-card {{#if (eq this.id ../tomActiveSceneId)}}active{{/if}}"
-                            data-scene-id="{{this.id}}" draggable="true">
-                            <div class="scene-card-activate" title="Click to Broadcast">
-                                <div class="scene-card-thumb">
-                                    {{#if this.isVideo}}
-                                    <video src="{{this.background}}" muted loop preload="metadata"
-                                        class="scene-thumb-video"></video>
-                                    {{else}}
-                                    <div class="scene-thumb-image" style="background-image: url('{{this.background}}')">
-                                    </div>
-                                    {{/if}}
-                                    {{#if (eq this.id ../tomActiveSceneId)}}
-                                    <div class="scene-playing-overlay">
-                                        <i class="fas fa-play"></i>
-                                    </div>
-                                    {{/if}}
-                                </div>
-                                <div class="scene-card-info">
-                                    <div class="scene-name">{{this.name}}</div>
-                                    {{#if this.isArena}}
-                                    <div class="scene-tag arena">Arena</div>
-                                    {{/if}}
-                                </div>
-                            </div>
-                            <div class="scene-card-actions">
-                                <button class="scene-action-btn" data-action="edit-scene" title="Edit Scene">
+                    {{!-- Render Folders --}}
+                    {{#each tomFolders}}
+                    <div class="scene-folder" data-folder-id="{{this.id}}">
+                        <div class="scene-folder-header {{#if this.collapsed}}collapsed{{/if}}" data-action="toggle-folder" data-folder-id="{{this.id}}">
+                            <i class="fas {{#if this.collapsed}}fa-caret-right{{else}}fa-caret-down{{/if}} scene-folder-chevron"></i>
+                            <i class="fas {{#if this.collapsed}}fa-folder{{else}}fa-folder-open{{/if}} scene-folder-icon"></i>
+                            <span class="scene-folder-name">{{this.name}}</span>
+                            <span class="scene-folder-count">({{this.scenes.length}})</span>
+                            <div class="scene-folder-actions">
+                                <button class="scene-action-btn" data-action="rename-folder" data-folder-id="{{this.id}}" data-folder-name="{{this.name}}" title="Rename Folder">
                                     <i class="fas fa-pen"></i>
                                 </button>
-                                <button class="scene-action-btn danger" data-action="delete-scene" title="Delete Scene">
+                                <button class="scene-action-btn danger" data-action="delete-folder" data-folder-id="{{this.id}}" data-folder-name="{{this.name}}" title="Delete Folder">
                                     <i class="fas fa-trash"></i>
                                 </button>
                             </div>
                         </div>
-                        {{/each}}
+                        <div class="scene-folder-content {{#if this.collapsed}}hidden{{/if}}" data-folder-id="{{this.id}}">
+                            {{#if this.scenes.length}}
+                            {{#each this.scenes}}
+                            <div class="scene-card {{#if (eq this.id ../../tomActiveSceneId)}}active{{/if}}"
+                                data-scene-id="{{this.id}}" draggable="true">
+                                <div class="scene-card-activate" title="Click to Broadcast">
+                                    <div class="scene-card-thumb">
+                                        {{#if this.isVideo}}
+                                        <video src="{{this.background}}" muted loop preload="metadata"
+                                            class="scene-thumb-video"></video>
+                                        {{else}}
+                                        <div class="scene-thumb-image" style="background-image: url('{{this.background}}')">
+                                        </div>
+                                        {{/if}}
+                                        {{#if (eq this.id ../../tomActiveSceneId)}}
+                                        <div class="scene-playing-overlay">
+                                            <i class="fas fa-play"></i>
+                                        </div>
+                                        {{/if}}
+                                    </div>
+                                    <div class="scene-card-info">
+                                        <div class="scene-name">{{this.name}}</div>
+                                        {{#if this.isArena}}
+                                        <div class="scene-tag arena">Arena</div>
+                                        {{/if}}
+                                    </div>
+                                </div>
+                                <div class="scene-card-actions">
+                                    <button class="scene-action-btn" data-action="edit-scene" title="Edit Scene">
+                                        <i class="fas fa-pen"></i>
+                                    </button>
+                                    <button class="scene-action-btn danger" data-action="delete-scene" title="Delete Scene">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            {{/each}}
+                            {{else}}
+                            <div class="scene-folder-empty">Drag scenes here</div>
+                            {{/if}}
+                        </div>
                     </div>
-                    {{else}}
+                    {{/each}}
+
+                    {{!-- Uncategorized Scenes (no folderId) --}}
+                    {{#if tomFolders.length}}
+                    <div class="scene-uncat-header">Uncategorized</div>
+                    {{/if}}
+                    <div class="scene-uncat-container" data-folder-id="">
+                    {{#each tomScenes}}
+                    {{#unless this.folderId}}
+                    <div class="scene-card {{#if (eq this.id ../tomActiveSceneId)}}active{{/if}}"
+                        data-scene-id="{{this.id}}" draggable="true">
+                        <div class="scene-card-activate" title="Click to Broadcast">
+                            <div class="scene-card-thumb">
+                                {{#if this.isVideo}}
+                                <video src="{{this.background}}" muted loop preload="metadata"
+                                    class="scene-thumb-video"></video>
+                                {{else}}
+                                <div class="scene-thumb-image" style="background-image: url('{{this.background}}')">
+                                </div>
+                                {{/if}}
+                                {{#if (eq this.id ../tomActiveSceneId)}}
+                                <div class="scene-playing-overlay">
+                                    <i class="fas fa-play"></i>
+                                </div>
+                                {{/if}}
+                            </div>
+                            <div class="scene-card-info">
+                                <div class="scene-name">{{this.name}}</div>
+                                {{#if this.isArena}}
+                                <div class="scene-tag arena">Arena</div>
+                                {{/if}}
+                            </div>
+                        </div>
+                        <div class="scene-card-actions">
+                            <button class="scene-action-btn" data-action="edit-scene" title="Edit Scene">
+                                <i class="fas fa-pen"></i>
+                            </button>
+                            <button class="scene-action-btn danger" data-action="delete-scene" title="Delete Scene">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                    {{/unless}}
+                    {{/each}}
+                    </div>
+
+                    {{!-- Empty state --}}
+                    {{#unless tomScenes.length}}
+                    {{#unless tomFolders.length}}
                     <div class="no-content-message">
                         <p>No Scenes Created</p>
                     </div>
-                    {{/if}}
+                    {{/unless}}
+                    {{/unless}}
                 </div>
             </div>
             {{/if}}

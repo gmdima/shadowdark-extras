@@ -115,6 +115,14 @@ export class TomSD {
       type: Array,
       default: []
     });
+
+    game.settings.register(this.ID, 'tom-folders', {
+      name: 'Tom Scene Folders',
+      scope: 'world',
+      config: false,
+      type: Array,
+      default: []
+    });
   }
 
 

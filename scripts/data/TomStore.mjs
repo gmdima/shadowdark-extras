@@ -12,6 +12,7 @@ class TomSceneModel {
     this.arenaType = data.arenaType || 'isometric';
     this.inAnimation = data.inAnimation || 'fade';
     this.outAnimation = data.outAnimation || 'fade';
+    this.folderId = data.folderId || null;
   }
 
   get thumbnail() {
@@ -23,7 +24,7 @@ class TomSceneModel {
   }
 
   toJSON() {
-    const { id, name, type, background, bgType, isArena, arenaType, inAnimation, outAnimation } = this;
+    const { id, name, type, background, bgType, isArena, arenaType, inAnimation, outAnimation, folderId } = this;
     return {
       id,
       name,
@@ -33,7 +34,8 @@ class TomSceneModel {
       isArena,
       arenaType,
       inAnimation,
-      outAnimation
+      outAnimation,
+      folderId
     };
   }
 }
@@ -41,6 +43,7 @@ class TomSceneModel {
 export class TomStoreClass {
   constructor() {
     this.scenes = new foundry.utils.Collection();
+    this.folders = [];
     this.activeSceneId = null;
     this.currentOverlay = null;
     this.isInitialized = false;
@@ -86,6 +89,13 @@ export class TomStoreClass {
           });
         }
       }
+
+      if (setting.key === `${CONFIG.MODULE_ID}.tom-folders`) {
+        const parsed = this._parseData(newValue);
+        if (Array.isArray(parsed)) {
+          this.folders = parsed;
+        }
+      }
     });
   }
 
@@ -118,15 +128,26 @@ export class TomStoreClass {
     this.scenes.clear();
     scenesData.forEach(d => this.scenes.set(d.id, new TomSceneModel(d)));
 
-    console.log(`${CONFIG.MODULE_NAME} | Loaded ${this.scenes.size} scenes.`);
+    // Load folders
+    try {
+      this.folders = game.settings.get(CONFIG.MODULE_ID, 'tom-folders') || [];
+    } catch (e) {
+      this.folders = [];
+    }
+
+    console.log(`${CONFIG.MODULE_NAME} | Loaded ${this.scenes.size} scenes, ${this.folders.length} folders.`);
   }
 
   async saveData() {
     if (!this.isInitialized) return;
 
     const scenesData = this.scenes.map(s => s.toJSON());
-
     await game.settings.set(CONFIG.MODULE_ID, CONFIG.SETTINGS.SCENES, scenesData);
+  }
+
+  async saveFolders() {
+    if (!this.isInitialized) return;
+    await game.settings.set(CONFIG.MODULE_ID, 'tom-folders', foundry.utils.deepClone(this.folders));
   }
 
   getScenes() {
@@ -169,6 +190,98 @@ export class TomStoreClass {
 
     // Save the new order
     this.saveData();
+  }
+
+  // ── Folder Management ──────────────────────────────────────────
+
+  /**
+   * Create a new folder
+   * @param {string} name - Folder name
+   * @returns {object} The created folder { id, name, collapsed }
+   */
+  createFolder(name = 'New Folder') {
+    const folder = {
+      id: foundry.utils.randomID(),
+      name,
+      collapsed: false
+    };
+    this.folders.push(folder);
+    this.saveFolders();
+    return folder;
+  }
+
+  /**
+   * Rename a folder
+   * @param {string} folderId
+   * @param {string} newName
+   */
+  renameFolder(folderId, newName) {
+    const folder = this.folders.find(f => f.id === folderId);
+    if (folder) {
+      folder.name = newName;
+      this.saveFolders();
+    }
+  }
+
+  /**
+   * Delete a folder (scenes inside become uncategorized)
+   * @param {string} folderId
+   */
+  deleteFolder(folderId) {
+    this.folders = this.folders.filter(f => f.id !== folderId);
+    // Unassign all scenes that were in this folder
+    for (const scene of this.scenes.values()) {
+      if (scene.folderId === folderId) {
+        scene.folderId = null;
+      }
+    }
+    this.saveFolders();
+    this.saveData();
+  }
+
+  /**
+   * Toggle folder collapsed state
+   * @param {string} folderId
+   */
+  toggleFolderCollapsed(folderId) {
+    const folder = this.folders.find(f => f.id === folderId);
+    if (folder) {
+      folder.collapsed = !folder.collapsed;
+      this.saveFolders();
+    }
+  }
+
+  /**
+   * Move a scene into a folder (or null to uncategorize)
+   * @param {string} sceneId
+   * @param {string|null} folderId
+   */
+  moveSceneToFolder(sceneId, folderId) {
+    const scene = this.scenes.get(sceneId);
+    if (scene) {
+      scene.folderId = folderId;
+      this.saveData();
+    }
+  }
+
+  /**
+   * Get all scenes in a specific folder
+   * @param {string|null} folderId - Folder ID, or null for uncategorized
+   * @returns {Array} Array of TomSceneModel
+   */
+  getScenesInFolder(folderId) {
+    return this.scenes.filter(s => (s.folderId || null) === folderId);
+  }
+
+  /**
+   * Get the folder a scene belongs to
+   * @param {string} sceneId
+   * @returns {object|null} The folder object, or null if uncategorized
+   */
+  getSceneFolder(sceneId) {
+    const scene = this.scenes.get(sceneId);
+    if (!scene || !scene.folderId) return null;
+    return this.folders.find(f => f.id === scene.folderId) || null;
   }
 
 }

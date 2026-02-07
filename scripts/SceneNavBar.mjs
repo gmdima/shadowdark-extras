@@ -62,7 +62,7 @@ export class SceneNavBar {
     }
 
     /**
-     * Navigate to previous or next scene
+     * Navigate to previous or next scene within the same folder
      * @param {number} direction - -1 for previous, 1 for next
      */
     static async _navigateScene(direction) {
@@ -72,18 +72,23 @@ export class SceneNavBar {
         const currentSceneId = this._container?.dataset.sceneId;
         if (!currentSceneId) return;
 
-        const scenes = Array.from(TomStore.scenes.values());
-        if (scenes.length === 0) return;
+        const currentScene = TomStore.scenes.get(currentSceneId);
+        if (!currentScene) return;
 
-        const currentIndex = scenes.findIndex(s => s.id === currentSceneId);
+        // Get scenes in the same folder (or uncategorized if no folder)
+        const folderId = currentScene.folderId || null;
+        const folderScenes = TomStore.getScenesInFolder(folderId);
+        if (folderScenes.length === 0) return;
+
+        const currentIndex = folderScenes.findIndex(s => s.id === currentSceneId);
         if (currentIndex === -1) return;
 
-        // Calculate next index with wrapping
+        // Calculate next index with wrapping within the folder
         let nextIndex = currentIndex + direction;
-        if (nextIndex < 0) nextIndex = scenes.length - 1;
-        if (nextIndex >= scenes.length) nextIndex = 0;
+        if (nextIndex < 0) nextIndex = folderScenes.length - 1;
+        if (nextIndex >= folderScenes.length) nextIndex = 0;
 
-        const nextScene = scenes[nextIndex];
+        const nextScene = folderScenes[nextIndex];
         if (nextScene) {
             const inAnimation = nextScene.inAnimation || 'fade';
             TomSocketHandler.emitBroadcastScene(nextScene.id, inAnimation);

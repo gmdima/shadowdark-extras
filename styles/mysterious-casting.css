@@ -1,0 +1,37 @@
+/* ============================================
+   MYSTERIOUS CASTING TOGGLE
+   ============================================ */
+
+/* Ensure header has positioning context for the toggle */
+.shadowdark.sheet.npc .SD-header {
+    position: relative;
+}
+
+/* Toggle icon in the NPC sheet header */
+.SD-header .sdx-mysterious-toggle {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    border-radius: 4px;
+    cursor: pointer;
+    opacity: 0.35;
+    transition: opacity 0.2s ease, color 0.2s ease, text-shadow 0.2s ease;
+    font-size: 16px;
+    color: #c9c9c9;
+    z-index: 10;
+}
+
+.SD-header .sdx-mysterious-toggle:hover {
+    opacity: 0.8;
+}
+
+.SD-header .sdx-mysterious-toggle.active {
+    opacity: 1;
+    color: #c520e0;
+    text-shadow: 0 0 8px rgba(197, 32, 224, 0.7);
+}

@@ -1,122 +1,157 @@
 export const MODULE_ID = "shadowdark-extras";
 
+// In-memory set of actor IDs with mysterious mode enabled.
+// Using a Set instead of actor flags avoids the linked/unlinked token mismatch
+// where setFlag on a synthetic token actor is invisible to game.actors.get().
+const _mysteriousActors = new Set();
+
+/**
+ * Get the base (world) actor ID for any actor, whether it's a
+ * world actor or a synthetic token actor.
+ */
+function getBaseActorId(actor) {
+    if (!actor) return null;
+    // Synthetic token actors: get the base actor ID from the token document
+    if (actor.isToken) {
+        return actor.token?.actorId ?? actor.id;
+    }
+    return actor.id;
+}
+
 export function initMysteriousCasting() {
     // Register Settings
-    game.settings.register(MODULE_ID, "mysteriousCastingModifier", {
-        name: "Mysterious Casting Modifier",
-        hint: "Hold this key when clicking a spell to cast it mysteriously (hides name and description).",
-        scope: "client",
-        config: true,
-        type: String,
-        choices: {
-            "none": "None",
-            "Control": "Ctrl",
-            "Shift": "Shift",
-            "Alt": "Alt"
-        },
-        default: "Control"
-    });
-
     game.settings.register(MODULE_ID, "mysteriousCastingMessage", {
         name: "Mysterious Casting Message",
-        hint: "The text to display when a spell is cast mysteriously.",
+        hint: "The text to display when a spell or attack is used mysteriously.",
         scope: "world",
         config: true,
         type: String,
         default: "The creature casts a mysterious spell..."
     });
 
-    // Hook into chat message creation
+    // ── Inject toggle into NPC sheet header ──
+    Hooks.on("renderNpcSheetSD", (app, html, data) => {
+        if (!game.user.isGM) return;
+        if (app.actor?.type !== "NPC") return;
+
+        const actor = app.actor;
+        const baseId = getBaseActorId(actor);
+        const isActive = _mysteriousActors.has(baseId);
+        const activeClass = isActive ? "active" : "";
+        const tooltip = isActive
+            ? "Mysterious Mode: ON — rolls will be hidden from players"
+            : "Mysterious Mode: OFF — rolls shown normally";
+
+        const $header = html.find('.SD-header');
+        if (!$header.length) return;
+        if ($header.find('.sdx-mysterious-toggle').length) return;
+
+        const toggleHtml = `
+            <a class="sdx-mysterious-toggle ${activeClass}"
+               data-tooltip="${tooltip}"
+               title="${tooltip}">
+                <i class="fas fa-mask"></i>
+            </a>`;
+
+        $header.append(toggleHtml);
+
+        // Click handler
+        $header.find('.sdx-mysterious-toggle').on('click', async (event) => {
+            event.preventDefault();
+            event.stopPropagation();
+
+            if (_mysteriousActors.has(baseId)) {
+                _mysteriousActors.delete(baseId);
+            } else {
+                _mysteriousActors.add(baseId);
+            }
+
+            // Re-render the sheet to update the toggle visual
+            app.render(false);
+        });
+    });
+
+    // ── Hook into chat message creation ──
     Hooks.on("preCreateChatMessage", (messageDoc, data, options, userId) => {
         // Only relevant for GMs
         if (!game.user.isGM) return true;
 
-        // Check if it's an item roll (usually type 'other' or via specific flags)
-        // Shadowdark system usually puts item data in flags.shadowdark
-        const itemData = messageDoc.flags?.shadowdark?.itemData ?? messageDoc.flags?.data?.itemData;
+        const content = messageDoc.content ?? "";
 
-        // We really only care if it "looks" like a spell card or item usage
-        if (!itemData && !data.content?.includes("item-card")) return true;
+        // Check if it's an item card
+        if (!content.includes("item-card")) return true;
 
-        // Check Modifier Key
-        const modifier = game.settings.get(MODULE_ID, "mysteriousCastingModifier");
-        if (modifier === "none") return true;
+        // Skip ability check rolls — those should always be visible
+        if (content.includes("card-ability-roll")) return true;
 
-        // We need to check the *actual* keyboard state at the moment of the event
-        // But preCreateChatMessage happens *after* the click, possibly async?
-        // Actually, Foundry's `game.keyboard` tracks active modifiers nicely.
-        const isModifierActive = game.keyboard.isModifierActive(KeyboardManager.MODIFIER_KEYS[modifier.toUpperCase()]);
+        // Get the actor from the speaker
+        const actorId = messageDoc.speaker?.actor;
+        if (!actorId) return true;
 
-        if (!isModifierActive) return true;
+        // Check if mysterious mode is enabled for this actor
+        if (!_mysteriousActors.has(actorId)) return true;
 
         // IT IS MYSTERIOUS!
-        // We want to hide the original content but keep it in the DOM so that
-        // scripts (like CombatSettingsSD.mjs) that search for keywords (like "Damage")
-        // or parse the HTML can still function.
+        const isAttack = content.includes("card-attack-roll") ||
+            content.includes("card-damage-roll") ||
+            messageDoc.flags?.shadowdark?.rolls?.damage;
+        const mysteriousLabel = isAttack ? "Unknown Attack" : "Unknown Spell";
+
         const mysteriousText = game.settings.get(MODULE_ID, "mysteriousCastingMessage");
         const mysteriousIcon = "icons/magic/symbols/question-stone-yellow.webp";
 
-        // Extract potential buttons from original content to show them visibly
+        // Extract potential buttons from original content
         let buttonsHtml = "";
-        const buttonsMatch = data.content.match(/<div class="[^"]*card-buttons[^"]*">[\s\S]*?<\/div>/i);
+        const buttonsMatch = content.match(/<div class="[^"]*card-buttons[^"]*">[\s\S]*?<\/div>/i);
         if (buttonsMatch) {
             buttonsHtml = buttonsMatch[0];
         } else {
-            const actionButtons = data.content.match(/<button\s+[^>]*data-action[^>]*>[\s\S]*?<\/button>/gi);
+            const actionButtons = content.match(/<button\s+[^>]*data-action[^>]*>[\s\S]*?<\/button>/gi);
             if (actionButtons) {
                 buttonsHtml = `<div class="card-buttons">${actionButtons.join("")}</div>`;
             }
         }
 
-        // 1. EXTRACT ATTRIBUTES
-        // We must preserve all attributes (data-actor-id, data-item-id, data-spell-tier, class, etc.)
-        // so that logic relying on them (like injectDamageCard) works on the wrapper.
+        // Preserve wrapper attributes (data-actor-id, data-item-id, etc.)
         let wrapperAttributes = "";
-        const attributesMatch = data.content.match(/^<div\s+([^>]+)>/i);
+        const attributesMatch = content.match(/^<div\s+([^>]+)>/i);
         if (attributesMatch) {
             wrapperAttributes = attributesMatch[1];
         } else {
-            // Fallback
-            wrapperAttributes = `class="shadowdark chat-card item-card" data-actor-id="${messageDoc.speaker.actor}"`;
+            wrapperAttributes = `class="shadowdark chat-card item-card" data-actor-id="${actorId}"`;
         }
 
-        // 2. SAFE HIDDEN CONTENT
-        // We must modify the original content's class so it is NOT found by 
-        // injectDamageCard as a ".chat-card". Replacing 'chat-card' with 'hidden-content' works.
-        // We use a regex global replace just in case.
-        const safeHiddenContent = data.content.replace(/class="([^"]*)"/, (match, classes) => {
+        // Hide original content from ".chat-card" selectors
+        const safeHiddenContent = content.replace(/class="([^"]*)"/, (match, classes) => {
             return `class="${classes.replace(/chat-card/g, "hidden-content")}"`;
         });
 
         const newContent = `
             <div ${wrapperAttributes}>
-                <!-- Visible Mysterious Header -->
                 <header class="card-header flexrow">
-                    <img src="${mysteriousIcon}" title="Mysterious Spell" width="36" height="36"/>
-                    <h3 class="item-name">Unknown Spell</h3>
+                    <img src="${mysteriousIcon}" title="${mysteriousLabel}" width="36" height="36"/>
+                    <h3 class="item-name">${mysteriousLabel}</h3>
                 </header>
-                
-                <!-- Visible Mysterious Description -->
                 <div class="card-content">
                     <p><em>${mysteriousText}</em></p>
                 </div>
-
-                <!-- Visible Extracted Buttons (if any) -->
                 ${buttonsHtml}
-
-                <!-- HIDDEN ORIGINAL CONTENT -->
                 <div style="display:none;">
                     ${safeHiddenContent}
                 </div>
             </div>
         `;
 
-        messageDoc.updateSource({
+        const updateData = {
             content: newContent,
             "flags.shadowdark.isMysterious": true
-        });
+        };
 
-        // Return true to allow creation
+        if (messageDoc.flavor) {
+            updateData.flavor = mysteriousLabel;
+        }
+
+        messageDoc.updateSource(updateData);
         return true;
     });
 }

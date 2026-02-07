@@ -137,6 +137,7 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
             tomActiveSceneId: activeSceneId,
             showTomOverlays: !!activeSceneId,
             tomScenes: await this._getTomScenes(),
+            tomFolders: await this._getTomFolders(),
         };
     }
 
@@ -156,6 +157,30 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
             });
         } catch (err) {
             console.error("Failed to load TomScenes:", err);
+            return [];
+        }
+    }
+
+    /**
+     * Get folder data from TomStore, with scenes grouped inside each folder
+     * @returns {Array} Array of { id, name, collapsed, scenes: [] }
+     */
+    async _getTomFolders() {
+        try {
+            const { TomStore } = await import("./data/TomStore.mjs");
+            const folders = TomStore.folders || [];
+            return folders.map(folder => {
+                const folderScenes = TomStore.getScenesInFolder(folder.id);
+                const scenes = folderScenes.map(scene => {
+                    const sceneData = scene.toJSON ? scene.toJSON() : scene;
+                    const bg = sceneData.background || "";
+                    const isVideo = /\.(webm|mp4)$/i.test(bg);
+                    return { ...sceneData, isVideo };
+                });
+                return { ...folder, scenes };
+            });
+        } catch (err) {
+            console.error("Failed to load TomFolders:", err);
             return [];
         }
     }
@@ -336,6 +361,16 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
             new TomSceneEditor().render(true);
         });
 
+        // Create Folder
+        elem.querySelector("[data-action='create-folder']")?.addEventListener("click", async (e) => {
+            e.preventDefault();
+            const name = await this._promptFolderName("Create Folder", "New Folder");
+            if (!name) return;
+            const { TomStore } = await import("./data/TomStore.mjs");
+            TomStore.createFolder(name);
+            this.render();
+        });
+
         // Stop Broadcast (Header Button)
         elem.querySelector("[data-action='stop-broadcast']")?.addEventListener("click", async (e) => {
             e.preventDefault();
@@ -345,6 +380,105 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
             const activeScene = activeSceneId ? TomStore.scenes.get(activeSceneId) : null;
             const outAnimation = activeScene?.outAnimation || 'fade';
             TomSocketHandler.emitStopBroadcast(outAnimation);
+        });
+
+        // Folder Actions
+        elem.querySelectorAll("[data-action='toggle-folder']").forEach(header => {
+            header.addEventListener("click", async (e) => {
+                // Don't toggle if clicking an action button inside the header
+                if (e.target.closest("[data-action='rename-folder']") || e.target.closest("[data-action='delete-folder']")) return;
+                e.preventDefault();
+                const folderId = header.dataset.folderId;
+                const { TomStore } = await import("./data/TomStore.mjs");
+                TomStore.toggleFolderCollapsed(folderId);
+                this.render();
+            });
+        });
+
+        elem.querySelectorAll("[data-action='rename-folder']").forEach(btn => {
+            btn.addEventListener("click", async (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                const folderId = btn.dataset.folderId;
+                const currentName = btn.dataset.folderName;
+                const newName = await this._promptFolderName("Rename Folder", currentName);
+                if (!newName) return;
+                const { TomStore } = await import("./data/TomStore.mjs");
+                TomStore.renameFolder(folderId, newName);
+                this.render();
+            });
+        });
+
+        elem.querySelectorAll("[data-action='delete-folder']").forEach(btn => {
+            btn.addEventListener("click", async (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                const folderId = btn.dataset.folderId;
+                const folderName = btn.dataset.folderName;
+                const confirmed = await Dialog.confirm({
+                    title: "Delete Folder",
+                    content: `<p>Delete folder <strong>${folderName}</strong>?</p><p>Scenes inside will become uncategorized.</p>`,
+                    yes: () => true,
+                    no: () => false,
+                    defaultYes: false
+                });
+                if (!confirmed) return;
+                const { TomStore } = await import("./data/TomStore.mjs");
+                TomStore.deleteFolder(folderId);
+            });
+        });
+
+        // Drag-drop onto folders and uncategorized container
+        elem.querySelectorAll(".scene-folder, .scene-uncat-container").forEach(dropZone => {
+            const folderId = dropZone.dataset.folderId || null;
+
+            dropZone.addEventListener("dragover", (e) => {
+                e.preventDefault();
+                e.dataTransfer.dropEffect = "move";
+                dropZone.classList.add("drag-over");
+            });
+            dropZone.addEventListener("dragleave", (e) => {
+                if (!dropZone.contains(e.relatedTarget)) {
+                    dropZone.classList.remove("drag-over");
+                }
+            });
+            dropZone.addEventListener("drop", async (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                dropZone.classList.remove("drag-over");
+
+                const draggedSceneId = e.dataTransfer.getData("text/plain");
+                if (!draggedSceneId) return;
+
+                // Check if this is a reorder within the same container or a folder move
+                const targetCard = e.target.closest(".scene-card");
+                const targetFolderId = folderId || null;
+
+                const { TomStore } = await import("./data/TomStore.mjs");
+                const draggedScene = TomStore.scenes.get(draggedSceneId);
+                if (!draggedScene) return;
+
+                const currentFolderId = draggedScene.folderId || null;
+
+                if (currentFolderId !== targetFolderId) {
+                    // Moving to a different folder
+                    TomStore.moveSceneToFolder(draggedSceneId, targetFolderId);
+                } else if (targetCard) {
+                    // Same folder — reorder
+                    const targetId = targetCard.dataset.sceneId;
+                    if (draggedSceneId === targetId) return;
+
+                    const currentScenes = Array.from(TomStore.scenes.values());
+                    const sceneIds = currentScenes.map(s => s.id);
+                    const draggedIndex = sceneIds.indexOf(draggedSceneId);
+                    const targetIndex = sceneIds.indexOf(targetId);
+                    if (draggedIndex === -1 || targetIndex === -1) return;
+
+                    sceneIds.splice(draggedIndex, 1);
+                    sceneIds.splice(targetIndex, 0, draggedSceneId);
+                    TomStore.reorderScenes(sceneIds);
+                }
+            });
         });
 
         // Scene Card Actions
@@ -391,7 +525,7 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
                 }
             });
 
-            // Drag and Drop for Reordering
+            // Drag and Drop — set data for folder-level drop handler
             card.addEventListener("dragstart", (e) => {
                 e.stopPropagation();
                 card.classList.add("dragging");
@@ -402,15 +536,14 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
             card.addEventListener("dragend", (e) => {
                 e.stopPropagation();
                 card.classList.remove("dragging");
-                // Remove all drag-over classes
                 elem.querySelectorAll(".scene-card").forEach(c => c.classList.remove("drag-over"));
+                elem.querySelectorAll(".scene-folder, .scene-uncat-container").forEach(z => z.classList.remove("drag-over"));
             });
 
             card.addEventListener("dragover", (e) => {
                 e.preventDefault();
                 e.stopPropagation();
                 e.dataTransfer.dropEffect = "move";
-
                 const draggingCard = elem.querySelector(".scene-card.dragging");
                 if (draggingCard && draggingCard !== card) {
                     card.classList.add("drag-over");
@@ -422,35 +555,6 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
                 if (!card.contains(e.relatedTarget)) {
                     card.classList.remove("drag-over");
                 }
-            });
-
-            card.addEventListener("drop", async (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                card.classList.remove("drag-over");
-
-                const draggedId = e.dataTransfer.getData("text/plain");
-                const targetId = card.dataset.sceneId;
-
-                if (draggedId === targetId) return;
-
-                // Get current scene order
-                const { TomStore } = await import("./data/TomStore.mjs");
-                const currentScenes = Array.from(TomStore.scenes.values());
-                const sceneIds = currentScenes.map(s => s.id);
-
-                // Find indices
-                const draggedIndex = sceneIds.indexOf(draggedId);
-                const targetIndex = sceneIds.indexOf(targetId);
-
-                if (draggedIndex === -1 || targetIndex === -1) return;
-
-                // Reorder array
-                sceneIds.splice(draggedIndex, 1);
-                sceneIds.splice(targetIndex, 0, draggedId);
-
-                // Update store
-                TomStore.reorderScenes(sceneIds);
             });
         });
 
@@ -1101,9 +1205,10 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
             return;
         }
 
-        // Get Tom scenes from store
+        // Get Tom scenes and folders from store
         const { TomStore } = await import("./data/TomStore.mjs");
         const scenes = Array.from(TomStore.scenes.values());
+        const folders = TomStore.folders || [];
 
         // Create panel
         const panel = document.createElement("div");
@@ -1122,6 +1227,22 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
         });
         panel.appendChild(createSceneBtn);
 
+        // Create new folder button
+        const createFolderBtn = document.createElement("button");
+        createFolderBtn.className = "tom-switcher-create-folder-btn";
+        createFolderBtn.innerHTML = '<i class="fas fa-folder-plus"></i> Create new folder';
+        createFolderBtn.addEventListener("click", async (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            const name = await this._promptFolderName("Create Folder", "New Folder");
+            if (!name) return;
+            TomStore.createFolder(name);
+            // Re-open panel to refresh
+            panel.remove();
+            this._toggleTomScenePanel();
+        });
+        panel.appendChild(createFolderBtn);
+
         // Stop Broadcasting button — only shown while actively broadcasting
         if (this._tomActiveSceneId) {
             const stopBtn = document.createElement("button");
@@ -1133,7 +1254,6 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
                 panel.remove();
 
                 const { TomSocketHandler } = await import("./data/TomSocketHandler.mjs");
-                const { TomStore } = await import("./data/TomStore.mjs");
                 const activeScene = TomStore.scenes.get(this._tomActiveSceneId);
                 const outAnimation = activeScene?.outAnimation || 'fade';
                 TomSocketHandler.emitStopBroadcast(outAnimation);
@@ -1141,14 +1261,26 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
             panel.appendChild(stopBtn);
         }
 
-        // Build scene list
+        // Build scene list container
         const list = document.createElement("div");
         list.className = "tom-switcher-list";
 
-        for (const scene of scenes) {
+        // Helper to create a scene item element
+        const createSceneItem = (scene) => {
             const item = document.createElement("div");
             item.className = `tom-switcher-scene ${scene.id === this._tomActiveSceneId ? "active" : ""}`;
             item.dataset.sceneId = scene.id;
+            item.draggable = true;
+
+            // Drag start — store scene ID
+            item.addEventListener("dragstart", (e) => {
+                e.dataTransfer.setData("text/plain", JSON.stringify({ type: "tom-scene", sceneId: scene.id }));
+                e.dataTransfer.effectAllowed = "move";
+                item.classList.add("dragging");
+            });
+            item.addEventListener("dragend", () => {
+                item.classList.remove("dragging");
+            });
 
             // Thumbnail
             const thumb = document.createElement("div");
@@ -1161,6 +1293,15 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
             const name = document.createElement("div");
             name.className = "tom-switcher-name";
             name.textContent = scene.name;
+
+            // Arena tag
+            if (scene.isArena) {
+                const tag = document.createElement("span");
+                tag.className = "tom-switcher-tag";
+                tag.textContent = "Arena";
+                name.appendChild(document.createElement("br"));
+                name.appendChild(tag);
+            }
 
             // Playing indicator
             if (scene.id === this._tomActiveSceneId) {
@@ -1201,7 +1342,6 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
                 });
                 if (!confirmed) return;
                 panel.remove();
-                const { TomStore } = await import("./data/TomStore.mjs");
                 TomStore.deleteItem(scene.id, "scene");
                 ui.notifications.info(`Scene "${scene.name}" deleted.`);
             });
@@ -1212,35 +1352,196 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
             item.appendChild(thumb);
             item.appendChild(name);
             item.appendChild(actions);
-            list.appendChild(item);
 
-            // Click handler
+            // Click handler — broadcast scene
             item.addEventListener("click", async (e) => {
                 e.preventDefault();
                 e.stopPropagation();
 
                 if (scene.id === this._tomActiveSceneId) return; // Already playing
 
-                // Close the panel first
                 panel.remove();
 
                 const { TomSocketHandler } = await import("./data/TomSocketHandler.mjs");
                 const inAnimation = scene?.inAnimation || 'fade';
 
                 if (this._tomActiveSceneId) {
-                    // Already broadcasting — fade-transition to the new scene
                     TomSocketHandler.emitSceneFadeTransition(scene.id);
                 } else {
-                    // Not broadcasting yet — start a new broadcast
                     TomSocketHandler.emitBroadcastScene(scene.id, inAnimation);
                 }
 
-                // Update local state
                 this._tomActiveSceneId = scene.id;
             });
+
+            return item;
+        };
+
+        // Helper to set up drag-drop on a folder container (accepts scenes)
+        const setupFolderDrop = (dropTarget, folderId) => {
+            dropTarget.addEventListener("dragover", (e) => {
+                e.preventDefault();
+                e.dataTransfer.dropEffect = "move";
+                dropTarget.classList.add("drag-over");
+            });
+            dropTarget.addEventListener("dragleave", (e) => {
+                // Only remove if leaving the actual target, not entering a child
+                if (!dropTarget.contains(e.relatedTarget)) {
+                    dropTarget.classList.remove("drag-over");
+                }
+            });
+            dropTarget.addEventListener("drop", async (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                dropTarget.classList.remove("drag-over");
+                try {
+                    const data = JSON.parse(e.dataTransfer.getData("text/plain"));
+                    if (data.type === "tom-scene" && data.sceneId) {
+                        TomStore.moveSceneToFolder(data.sceneId, folderId);
+                        // Refresh panel
+                        panel.remove();
+                        this._toggleTomScenePanel();
+                    }
+                } catch (err) { /* ignore non-scene drops */ }
+            });
+        };
+
+        // Render folders with their scenes
+        for (const folder of folders) {
+            const folderContainer = document.createElement("div");
+            folderContainer.className = "tom-switcher-folder";
+            folderContainer.dataset.folderId = folder.id;
+
+            // Folder header
+            const folderHeader = document.createElement("div");
+            folderHeader.className = `tom-switcher-folder-header ${folder.collapsed ? "collapsed" : ""}`;
+
+            const folderChevron = document.createElement("i");
+            folderChevron.className = `fas ${folder.collapsed ? "fa-caret-right" : "fa-caret-down"} tom-folder-chevron`;
+
+            const folderIcon = document.createElement("i");
+            folderIcon.className = `fas ${folder.collapsed ? "fa-folder" : "fa-folder-open"} tom-folder-icon`;
+
+            const folderName = document.createElement("span");
+            folderName.className = "tom-switcher-folder-name";
+            folderName.textContent = folder.name;
+
+            const folderCount = document.createElement("span");
+            folderCount.className = "tom-switcher-folder-count";
+            const sceneCount = TomStore.getScenesInFolder(folder.id).length;
+            folderCount.textContent = `(${sceneCount})`;
+
+            // Folder actions
+            const folderActions = document.createElement("div");
+            folderActions.className = "tom-switcher-folder-actions";
+
+            const renameBtn = document.createElement("button");
+            renameBtn.className = "tom-switcher-action-btn";
+            renameBtn.title = "Rename Folder";
+            renameBtn.innerHTML = '<i class="fas fa-pen"></i>';
+            renameBtn.addEventListener("click", async (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                const newName = await this._promptFolderName("Rename Folder", folder.name);
+                if (!newName) return;
+                TomStore.renameFolder(folder.id, newName);
+                panel.remove();
+                this._toggleTomScenePanel();
+            });
+
+            const deleteFolderBtn = document.createElement("button");
+            deleteFolderBtn.className = "tom-switcher-action-btn tom-switcher-action-delete";
+            deleteFolderBtn.title = "Delete Folder";
+            deleteFolderBtn.innerHTML = '<i class="fas fa-trash"></i>';
+            deleteFolderBtn.addEventListener("click", async (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                const confirmed = await Dialog.confirm({
+                    title: "Delete Folder",
+                    content: `<p>Delete folder <strong>${folder.name}</strong>?</p><p>Scenes inside will become uncategorized.</p>`,
+                    yes: () => true,
+                    no: () => false,
+                    defaultYes: false
+                });
+                if (!confirmed) return;
+                TomStore.deleteFolder(folder.id);
+                panel.remove();
+                this._toggleTomScenePanel();
+            });
+
+            folderActions.appendChild(renameBtn);
+            folderActions.appendChild(deleteFolderBtn);
+
+            folderHeader.appendChild(folderChevron);
+            folderHeader.appendChild(folderIcon);
+            folderHeader.appendChild(folderName);
+            folderHeader.appendChild(folderCount);
+            folderHeader.appendChild(folderActions);
+
+            // Toggle collapse on header click
+            folderHeader.addEventListener("click", (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                TomStore.toggleFolderCollapsed(folder.id);
+                panel.remove();
+                this._toggleTomScenePanel();
+            });
+
+            folderContainer.appendChild(folderHeader);
+
+            // Folder content (scenes)
+            const folderContent = document.createElement("div");
+            folderContent.className = "tom-switcher-folder-content";
+            if (folder.collapsed) {
+                folderContent.style.display = "none";
+            }
+
+            const folderScenes = TomStore.getScenesInFolder(folder.id);
+            for (const scene of folderScenes) {
+                folderContent.appendChild(createSceneItem(scene));
+            }
+
+            if (folderScenes.length === 0) {
+                const emptyHint = document.createElement("div");
+                emptyHint.className = "tom-switcher-folder-empty";
+                emptyHint.textContent = "Drag scenes here";
+                folderContent.appendChild(emptyHint);
+            }
+
+            folderContainer.appendChild(folderContent);
+
+            // Make the entire folder a drop target
+            setupFolderDrop(folderContainer, folder.id);
+
+            list.appendChild(folderContainer);
         }
 
-        if (scenes.length === 0) {
+        // Uncategorized scenes (no folderId)
+        const uncategorized = scenes.filter(s => !s.folderId);
+        if (uncategorized.length > 0 || folders.length > 0) {
+            // Only show "Uncategorized" header if folders exist
+            if (folders.length > 0) {
+                const uncatHeader = document.createElement("div");
+                uncatHeader.className = "tom-switcher-uncat-header";
+                uncatHeader.textContent = "Uncategorized";
+                list.appendChild(uncatHeader);
+            }
+
+            const uncatContainer = document.createElement("div");
+            uncatContainer.className = "tom-switcher-uncat-container";
+
+            for (const scene of uncategorized) {
+                uncatContainer.appendChild(createSceneItem(scene));
+            }
+
+            // Uncategorized is also a drop target (to remove from folder)
+            setupFolderDrop(uncatContainer, null);
+
+            list.appendChild(uncatContainer);
+        }
+
+        // If no scenes at all
+        if (scenes.length === 0 && folders.length === 0) {
             const empty = document.createElement("div");
             empty.className = "tom-switcher-empty";
             empty.textContent = "Click above to create a new Scene";
@@ -1268,6 +1569,41 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
             }
         };
         setTimeout(() => document.addEventListener("click", closeHandler), 10);
+    }
+
+    /**
+     * Prompt user for a folder name via a simple dialog
+     * @param {string} title - Dialog title
+     * @param {string} defaultName - Default name
+     * @returns {Promise<string|null>} The entered name, or null if cancelled
+     */
+    async _promptFolderName(title, defaultName = "") {
+        return new Promise((resolve) => {
+            new Dialog({
+                title,
+                content: `<div class="form-group"><label>Folder Name</label><input type="text" name="folderName" value="${defaultName}" autofocus></div>`,
+                buttons: {
+                    ok: {
+                        icon: '<i class="fas fa-check"></i>',
+                        label: "OK",
+                        callback: (html) => {
+                            const name = html.find('[name="folderName"]').val()?.trim();
+                            resolve(name || null);
+                        }
+                    },
+                    cancel: {
+                        icon: '<i class="fas fa-times"></i>',
+                        label: "Cancel",
+                        callback: () => resolve(null)
+                    }
+                },
+                default: "ok",
+                render: (html) => {
+                    // Auto-select text in input
+                    html.find('[name="folderName"]').select();
+                }
+            }).render(true);
+        });
     }
 }
 

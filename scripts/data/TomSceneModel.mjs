@@ -9,6 +9,7 @@ export class TomSceneModel {
     this.arenaType = data.arenaType || 'isometric';
     this.inAnimation = data.inAnimation || 'fade';
     this.outAnimation = data.outAnimation || 'fade';
+    this.folderId = data.folderId || null;
   }
 
   get thumbnail() {
@@ -20,7 +21,7 @@ export class TomSceneModel {
   }
 
   toJSON() {
-    const { id, name, type, background, bgType, isArena, arenaType, inAnimation, outAnimation } = this;
+    const { id, name, type, background, bgType, isArena, arenaType, inAnimation, outAnimation, folderId } = this;
     const result = {
       id,
       name,
@@ -30,9 +31,9 @@ export class TomSceneModel {
       isArena,
       arenaType,
       inAnimation,
-      outAnimation
+      outAnimation,
+      folderId
     };
-    console.log(`SDX TomSceneModel.toJSON() | Scene "${name}" returning: in=${inAnimation}, out=${outAnimation}`);
     return result;
   }
 }

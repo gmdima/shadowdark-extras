@@ -1248,7 +1248,7 @@ body.sdx-tray-enabled #camera-views.vertical.left {
     padding: 8px;
     min-width: 280px;
     max-width: 350px;
-    max-height: 400px;
+    max-height: 500px;
     overflow-y: auto;
     z-index: 1000;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.8),
@@ -1446,6 +1446,197 @@ body.sdx-tray-enabled #camera-views.vertical.left {
     background: rgba(180, 40, 40, 0.7);
     border-color: rgba(239, 68, 68, 0.5);
     color: #ef4444;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   TOM SCENE FOLDERS
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Create folder button */
+.tom-switcher-create-folder-btn {
+    width: 100%;
+    padding: 6px 12px;
+    margin-bottom: 8px;
+    background: rgba(139, 92, 246, 0.15);
+    border: 1px solid rgba(139, 92, 246, 0.4);
+    border-radius: 6px;
+    color: #a78bfa;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+
+.tom-switcher-create-folder-btn:hover {
+    background: rgba(139, 92, 246, 0.3);
+    border-color: rgba(167, 139, 250, 0.7);
+    color: #c4b5fd;
+    box-shadow: 0 0 10px rgba(139, 92, 246, 0.25);
+}
+
+.tom-switcher-create-folder-btn i {
+    font-size: 10px;
+}
+
+/* Folder container */
+.tom-switcher-folder {
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 6px;
+    margin-bottom: 6px;
+    background: rgba(30, 30, 30, 0.4);
+    transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.tom-switcher-folder.drag-over {
+    border-color: rgba(251, 191, 36, 0.6);
+    background: rgba(251, 191, 36, 0.08);
+}
+
+/* Folder header */
+.tom-switcher-folder-header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 8px;
+    cursor: pointer;
+    transition: background 0.15s ease;
+    border-radius: 6px 6px 0 0;
+    user-select: none;
+}
+
+.tom-switcher-folder-header:hover {
+    background: rgba(60, 60, 60, 0.6);
+}
+
+.tom-switcher-folder-header.collapsed {
+    border-radius: 6px;
+}
+
+.tom-folder-chevron {
+    font-size: 10px;
+    color: #888;
+    width: 10px;
+    text-align: center;
+    transition: color 0.15s ease;
+}
+
+.tom-folder-icon {
+    font-size: 12px;
+    color: #fbbf24;
+}
+
+.tom-switcher-folder-name {
+    flex: 1;
+    font-size: 12px;
+    font-weight: 600;
+    color: #d4d4d4;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.tom-switcher-folder-count {
+    font-size: 10px;
+    color: #737373;
+    margin-right: auto;
+}
+
+/* Folder action buttons */
+.tom-switcher-folder-actions {
+    display: flex;
+    gap: 3px;
+    opacity: 0;
+    transition: opacity 0.15s ease;
+    flex-shrink: 0;
+}
+
+.tom-switcher-folder-header:hover .tom-switcher-folder-actions {
+    opacity: 1;
+}
+
+.tom-switcher-folder-actions .tom-switcher-action-btn {
+    width: 22px;
+    height: 22px;
+    font-size: 9px;
+}
+
+/* Folder content (scenes inside) */
+.tom-switcher-folder-content {
+    padding: 2px 4px 4px 4px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.tom-switcher-folder-content .tom-switcher-scene {
+    padding: 4px 6px;
+}
+
+.tom-switcher-folder-content .tom-switcher-thumb {
+    width: 60px;
+    height: 34px;
+}
+
+/* Empty folder hint */
+.tom-switcher-folder-empty {
+    text-align: center;
+    padding: 8px;
+    color: #525252;
+    font-size: 10px;
+    font-style: italic;
+    border: 1px dashed rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    margin: 2px;
+}
+
+/* Uncategorized header */
+.tom-switcher-uncat-header {
+    font-size: 11px;
+    font-weight: 600;
+    color: #737373;
+    padding: 6px 4px 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    margin-top: 4px;
+}
+
+/* Uncategorized drop zone */
+.tom-switcher-uncat-container {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-height: 10px;
+    border-radius: 4px;
+    transition: background 0.2s ease, border-color 0.2s ease;
+    border: 1px solid transparent;
+    padding: 2px;
+}
+
+.tom-switcher-uncat-container.drag-over {
+    border-color: rgba(251, 191, 36, 0.4);
+    background: rgba(251, 191, 36, 0.05);
+}
+
+/* Dragging state */
+.tom-switcher-scene.dragging {
+    opacity: 0.4;
+}
+
+/* Arena tag on scene items */
+.tom-switcher-tag {
+    display: inline-block;
+    font-size: 9px;
+    padding: 1px 6px;
+    border-radius: 3px;
+    background: rgba(251, 191, 36, 0.2);
+    color: #fbbf24;
+    font-weight: 600;
+    line-height: 1.4;
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -2010,4 +2201,154 @@ body.sdx-tray-enabled #camera-views.vertical.left {
 
 .scene-card[draggable="true"]:active {
     cursor: grabbing;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   TRAY SCENE FOLDERS (Expanded tray Scenes tab)
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Create Folder Button */
+.folder-create-btn {
+    margin-top: 4px;
+    background: rgba(139, 92, 246, 0.15) !important;
+    border-color: rgba(139, 92, 246, 0.4) !important;
+    color: #a78bfa !important;
+}
+
+.folder-create-btn:hover {
+    background: rgba(139, 92, 246, 0.3) !important;
+    border-color: rgba(167, 139, 250, 0.7) !important;
+    color: #c4b5fd !important;
+}
+
+/* Folder Container */
+.scene-folder {
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 6px;
+    margin-bottom: 8px;
+    background: rgba(30, 30, 30, 0.4);
+    transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.scene-folder.drag-over {
+    border-color: rgba(251, 191, 36, 0.6);
+    background: rgba(251, 191, 36, 0.08);
+}
+
+/* Folder Header */
+.scene-folder-header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 10px;
+    cursor: pointer;
+    transition: background 0.15s ease;
+    border-radius: 6px 6px 0 0;
+    user-select: none;
+}
+
+.scene-folder-header:hover {
+    background: rgba(60, 60, 60, 0.6);
+}
+
+.scene-folder-header.collapsed {
+    border-radius: 6px;
+}
+
+.scene-folder-chevron {
+    font-size: 10px;
+    color: #888;
+    width: 10px;
+    text-align: center;
+}
+
+.scene-folder-icon {
+    font-size: 13px;
+    color: #fbbf24;
+}
+
+.scene-folder-name {
+    flex: 1;
+    font-size: 13px;
+    font-weight: 600;
+    color: #d4d4d4;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.scene-folder-count {
+    font-size: 11px;
+    color: #737373;
+    margin-right: auto;
+}
+
+/* Folder Action Buttons */
+.scene-folder-actions {
+    display: flex;
+    gap: 4px;
+    opacity: 0;
+    transition: opacity 0.15s ease;
+    flex-shrink: 0;
+}
+
+.scene-folder-header:hover .scene-folder-actions {
+    opacity: 1;
+}
+
+.scene-folder-actions .scene-action-btn {
+    width: 24px;
+    height: 24px;
+    font-size: 10px;
+}
+
+/* Folder Content */
+.scene-folder-content {
+    padding: 4px 6px 6px 6px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.scene-folder-content.hidden {
+    display: none;
+}
+
+.scene-folder-empty {
+    text-align: center;
+    padding: 12px 8px;
+    color: #525252;
+    font-size: 11px;
+    font-style: italic;
+    border: 1px dashed rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    margin: 2px;
+}
+
+/* Uncategorized Section */
+.scene-uncat-header {
+    font-size: 11px;
+    font-weight: 600;
+    color: #737373;
+    padding: 8px 0 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    margin-top: 4px;
+}
+
+.scene-uncat-container {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-height: 20px;
+    border-radius: 4px;
+    transition: background 0.2s ease, border-color 0.2s ease;
+    border: 1px solid #737373ab;
+    padding: 2px;
+}
+
+.scene-uncat-container.drag-over {
+    border-color: rgba(251, 191, 36, 0.4);
+    background: rgba(251, 191, 36, 0.05);
 }
