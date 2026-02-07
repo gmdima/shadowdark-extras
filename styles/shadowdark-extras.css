@@ -18144,3 +18144,29 @@ div.window-app.shadowdark.sheet.player .window-header {
     font-size: var(--font-size-14, 14px);
     margin-right: 0;
 }
+
+/* ============================================
+   GEM ENHANCEMENTS
+   ============================================ */
+
+/* Gem item sheet - quantity box */
+.sdx-gem-quantity-box {
+    margin-top: 4px;
+}
+
+.sdx-gem-quantity-box .SD-grid {
+    grid-template-columns: 1fr auto;
+    gap: 4px;
+    align-items: center;
+}
+
+.sdx-gem-qty-input {
+    width: 60px;
+    text-align: center;
+}
+
+/* Gem Bag - quantity column */
+.sdx-gem-qty-col {
+    flex: 0 0 40px;
+    text-align: center;
+}
