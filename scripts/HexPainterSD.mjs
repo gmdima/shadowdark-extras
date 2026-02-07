@@ -9,6 +9,7 @@ let _chosenTiles = new Set();
 let _searchFilter = "";
 let _waterEffect = false;
 let _windEffect = false;
+let _fogAnimation = false;
 let _brushActive = false;
 let _lastCell = null;
 let _paintEnabled = false;
@@ -99,6 +100,14 @@ export function toggleWindEffect() {
 
 export function isWindEffect() {
     return _windEffect;
+}
+
+export function toggleFogAnimation() {
+    _fogAnimation = !_fogAnimation;
+}
+
+export function isFogAnimation() {
+    return _fogAnimation;
 }
 
 export function setMapDimension(axis, value) {
@@ -345,6 +354,44 @@ async function _stampAtPointer(ev) {
                             }
                         },
                         "rank": 10000,
+                        "enabled": true
+                    }
+                );
+            }
+
+            if (_fogAnimation) {
+                allParams.push(
+                    {
+                        "filterType": "smoke",
+                        "filterId": "Fog",
+                        "color": 16777215,
+                        "time": 0,
+                        "blend": 2,
+                        "dimX": 0.01,
+                        "dimY": 1,
+                        "animated": {
+                            "time": {
+                                "active": true,
+                                "speed": 0.001,
+                                "animType": "move",
+                                "val1": 24136.1,
+                                "val2": 10186.3,
+                                "loopDuration": 32740,
+                                "syncShift": 0.76,
+                                "loops": null
+                            },
+                            "dimX": {
+                                "active": true,
+                                "animType": "cosOscillation",
+                                "speed": 0.0000025,
+                                "val1": -0.03,
+                                "val2": 0.03,
+                                "loopDuration": 5000,
+                                "syncShift": 0,
+                                "loops": null
+                            }
+                        },
+                        "rank": 10002,
                         "enabled": true
                     }
                 );

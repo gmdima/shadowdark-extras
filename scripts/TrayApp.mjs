@@ -25,7 +25,7 @@ import { PinStyleEditorApp } from "./PinStyleEditorSD.mjs";
 import { PinListApp } from "./PinListApp.mjs";
 
 import { PlaceableNotesSD } from "./PlaceableNotesSD.mjs";
-import { setMapDimension, formatActiveScene, enablePainting, disablePainting, toggleTileSelection, setSearchFilter, toggleWaterEffect, toggleWindEffect } from "./HexPainterSD.mjs";
+import { setMapDimension, formatActiveScene, enablePainting, disablePainting, toggleTileSelection, setSearchFilter, toggleWaterEffect, toggleWindEffect, toggleFogAnimation } from "./HexPainterSD.mjs";
 
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
@@ -987,6 +987,11 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
         // Wind effect toggle
         elem.querySelector(".hex-wind-checkbox")?.addEventListener("change", (e) => {
             toggleWindEffect();
+        });
+
+        // Fog animation toggle
+        elem.querySelector(".hex-fog-checkbox")?.addEventListener("change", (e) => {
+            toggleFogAnimation();
         });
 
         // Tile selection (multi-select)

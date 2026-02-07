@@ -9136,40 +9136,63 @@ async function transferCoinsToPlayer(sourceActor, coins, targetActorId) {
 	}
 
 	try {
-		//console.log(`${MODULE_ID} | Transferring coins from ${sourceActor.name} to ${targetActor.name}:`, coins);
+		// Check if target is a party actor (coins stored as module flags, not system.coins)
+		const isPartyTarget = targetActor.type === "NPC" && targetActor.getFlag(MODULE_ID, "isParty");
 
-		// Build attributes for Item Piles transferAttributes API
-		const attributes = {};
-		if (coins.gp > 0) attributes["system.coins.gp"] = coins.gp;
-		if (coins.sp > 0) attributes["system.coins.sp"] = coins.sp;
-		if (coins.cp > 0) attributes["system.coins.cp"] = coins.cp;
+		if (isPartyTarget) {
+			// Party actors store coins as module flags — manually subtract from source and add to party
+			const sourceGp = Math.max(0, (parseInt(sourceCoins.gp) || 0) - (coins.gp || 0));
+			const sourceSp = Math.max(0, (parseInt(sourceCoins.sp) || 0) - (coins.sp || 0));
+			const sourceCp = Math.max(0, (parseInt(sourceCoins.cp) || 0) - (coins.cp || 0));
 
-		// Use Item Piles API to transfer the currency
-		const result = await game.itempiles.API.transferAttributes(
-			sourceActor,
-			targetActor,
-			attributes,
-			{ interactionId: false }
-		);
+			await sourceActor.update({
+				"system.coins.gp": sourceGp,
+				"system.coins.sp": sourceSp,
+				"system.coins.cp": sourceCp
+			});
 
-		if (result) {
-			// Build a human-readable coins string
-			const coinParts = [];
-			if (coins.gp > 0) coinParts.push(`${coins.gp} GP`);
-			if (coins.sp > 0) coinParts.push(`${coins.sp} SP`);
-			if (coins.cp > 0) coinParts.push(`${coins.cp} CP`);
-			const coinsStr = coinParts.join(", ");
+			// Add coins to party treasury flags
+			const partyGp = (parseInt(targetActor.getFlag(MODULE_ID, "coins.gp")) || 0) + (coins.gp || 0);
+			const partySp = (parseInt(targetActor.getFlag(MODULE_ID, "coins.sp")) || 0) + (coins.sp || 0);
+			const partyCp = (parseInt(targetActor.getFlag(MODULE_ID, "coins.cp")) || 0) + (coins.cp || 0);
 
-			ui.notifications.info(
-				game.i18n.format("SHADOWDARK_EXTRAS.notifications.coins_transferred", {
-					coins: coinsStr,
-					target: targetActor.name
-				})
-			);
+			await targetActor.setFlag(MODULE_ID, "coins.gp", partyGp);
+			await targetActor.setFlag(MODULE_ID, "coins.sp", partySp);
+			await targetActor.setFlag(MODULE_ID, "coins.cp", partyCp);
 		} else {
-			console.warn(`${MODULE_ID} | Coin transfer returned no results`);
-			ui.notifications.warn("Transfer may not have completed successfully.");
+			// Regular player-to-player transfer via Item Piles API
+			const attributes = {};
+			if (coins.gp > 0) attributes["system.coins.gp"] = coins.gp;
+			if (coins.sp > 0) attributes["system.coins.sp"] = coins.sp;
+			if (coins.cp > 0) attributes["system.coins.cp"] = coins.cp;
+
+			const result = await game.itempiles.API.transferAttributes(
+				sourceActor,
+				targetActor,
+				attributes,
+				{ interactionId: false }
+			);
+
+			if (!result) {
+				console.warn(`${MODULE_ID} | Coin transfer returned no results`);
+				ui.notifications.warn("Transfer may not have completed successfully.");
+				return;
+			}
 		}
+
+		// Build a human-readable coins string
+		const coinParts = [];
+		if (coins.gp > 0) coinParts.push(`${coins.gp} GP`);
+		if (coins.sp > 0) coinParts.push(`${coins.sp} SP`);
+		if (coins.cp > 0) coinParts.push(`${coins.cp} CP`);
+		const coinsStr = coinParts.join(", ");
+
+		ui.notifications.info(
+			game.i18n.format("SHADOWDARK_EXTRAS.notifications.coins_transferred", {
+				coins: coinsStr,
+				target: targetActor.name
+			})
+		);
 	} catch (error) {
 		console.error(`${MODULE_ID} | Error during coin transfer:`, error);
 		ui.notifications.error(
@@ -21426,6 +21449,54 @@ function initCarouselDrag() {
 
 // Initialize carousel drag
 initCarouselDrag();
+
+// ============================================
+// CRAWL-HELPER: Override rollDeathTimer to let
+// the player roll the d4 death timer instead of GM
+// ============================================
+Hooks.once("ready", () => {
+	if (!game.modules.get("shadowdark-crawl-helper")?.active) return;
+
+	const crawlerModel = CONFIG.Combatant?.dataModels?.["shadowdark-crawl-helper.crawler"];
+	if (!crawlerModel) {
+		console.warn(`${MODULE_ID} | Could not find crawl-helper combatant data model to override rollDeathTimer`);
+		return;
+	}
+
+	crawlerModel.prototype.rollDeathTimer = async function () {
+		const actor = this.parent.actor;
+		const user = game.users.find(u => (u.character?.id === actor.id) && u.active) ?? game.users.activeGM;
+
+		// Prompt the player to roll their death timer
+		const defaultFormula = "d4 +" + actor.system.abilities.con.mod;
+		const fields = foundry.applications.fields;
+		const textInput = fields.createTextInput({name: "formula", value: defaultFormula});
+		const textGroup = fields.createFormGroup({input: textInput, label: "Roll:"});
+
+		const response = await user.query("dialog", {
+			config: {
+				window: {title: "Roll Death Timer"},
+				content: `${textGroup.outerHTML}`,
+				modal: true
+			},
+			type: "input"
+		});
+
+		const formula = Roll.validate(response?.formula) ? response.formula : defaultFormula;
+		let roll = await new Roll(formula).evaluate();
+		const total = Math.max(roll.total, 1);
+		const msg = await ChatMessage.create({
+			content: `<div class="shadowdark"><h3 style="color: white;">${actor.name} will die in ${total} rounds</h3><br>${await roll.render()}</div>`,
+			speaker: {actor: actor.id},
+			user: user,
+			rolls: [roll.toJSON()]
+		});
+		if (game.dice3d) await game.dice3d.waitFor3DAnimationByMessageID(msg.id);
+		await this.parent.update({"system.dyingRounds": total});
+	};
+
+	console.log(`${MODULE_ID} | Overrode crawl-helper rollDeathTimer to let player roll`);
+});
 
 // Initialize Placeable Notes
 Hooks.once("ready", () => {

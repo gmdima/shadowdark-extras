@@ -2561,6 +2561,52 @@ body.sdx-tray-enabled #camera-views.vertical.left {
     color: #60a5fa;
 }
 
+.sdx-tray .hex-fog-toggle-section {
+    flex: 1;
+    min-width: 0;
+}
+
+.sdx-tray .hex-fog-toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 8px;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(159, 146, 117, 0.3);
+    border-radius: 4px;
+    cursor: pointer;
+    user-select: none;
+    width: 100%;
+}
+
+.sdx-tray .hex-fog-toggle:hover {
+    background: rgba(0, 0, 0, 0.4);
+    border-color: rgba(159, 146, 117, 0.5);
+}
+
+.sdx-tray .hex-fog-checkbox {
+    width: 14px;
+    height: 14px;
+    cursor: pointer;
+    accent-color: #a78bfa;
+}
+
+.sdx-tray .hex-fog-label {
+    font-size: 0.85em;
+    color: #e8dcc8;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.sdx-tray .hex-fog-checkbox:checked + .hex-fog-label {
+    color: #a78bfa;
+}
+
+.sdx-tray .hex-fog-checkbox:checked + .hex-fog-label i {
+    color: #a78bfa;
+}
+
 /* Tile Grid */
 .sdx-tray .hex-tile-grid {
     display: grid;
