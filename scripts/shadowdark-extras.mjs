@@ -68,6 +68,8 @@ import "./SpellMacrosSD.mjs";
 import { initMysteriousCasting } from "./MysteriousCasting.mjs";
 import { TomSD } from "./TomSD.mjs";
 import { WallContextMenuSD } from "./WallContextMenuSD.mjs";
+import { sdxDrawingTool } from "./SDXDrawingTool.mjs";
+import { sdxDrawingToolbar } from "./SDXDrawingToolbar.mjs";
 
 import { PixiPlugin } from "/scripts/greensock/esm/all.js";
 
@@ -122,6 +124,11 @@ Hooks.once("init", () => {
 		// Add a bypass flag for template targeting to allow multi-targeting for players
 		game.shadowdarkExtras = game.shadowdarkExtras || {};
 		game.shadowdarkExtras.allowMultiTarget = false;
+
+		// Initialize Drawing Tools
+		game.shadowdarkExtras.drawingTool = sdxDrawingTool;
+		game.shadowdarkExtras.drawingToolbar = sdxDrawingToolbar;
+		sdxDrawingTool.initialize();
 
 		// Initialize Light Tracker AppV2
 		initLightTrackerApp();
@@ -4786,6 +4793,87 @@ function registerSettings() {
 
 	// Pin Style Editor settings
 	registerPinStyleSettings();
+
+	// ═══════════════════════════════════════════════════════════════
+	// 12. DRAWING TOOLS
+	// ═══════════════════════════════════════════════════════════════
+
+	game.settings.register(MODULE_ID, "drawing.enablePlayerDrawing", {
+		name: "Allow Player Drawing",
+		hint: "When enabled, players can use the drawing tools to mark up the map.",
+		scope: "world",
+		config: true,
+		default: true,
+		type: Boolean,
+	});
+
+	game.settings.register(MODULE_ID, "drawing.timedEraseTimeout", {
+		name: "Timed Erase Timeout (seconds)",
+		hint: "How long drawings persist before fading when Timed Erase is enabled.",
+		scope: "world",
+		config: true,
+		default: 30,
+		type: Number,
+		range: { min: 5, max: 120, step: 5 },
+	});
+
+	game.settings.register(MODULE_ID, "drawing.hotkeyEnabled", {
+		name: "Enable Drawing Hotkey",
+		hint: "Allow using a hotkey (hold) to quickly draw without opening the toolbar.",
+		scope: "client",
+		config: true,
+		default: true,
+		type: Boolean,
+	});
+
+	game.settings.register(MODULE_ID, "drawing.blockWhenTyping", {
+		name: "Block Drawing While Typing",
+		hint: "Prevent the drawing hotkey from activating while typing in text fields.",
+		scope: "client",
+		config: true,
+		default: true,
+		type: Boolean,
+	});
+
+	// Hidden toolbar state settings (persist between sessions)
+	game.settings.register(MODULE_ID, "drawing.toolbar.drawingMode", { scope: "client", config: false, default: "sketch", type: String });
+	game.settings.register(MODULE_ID, "drawing.toolbar.stampStyle", { scope: "client", config: false, default: "plus", type: String });
+	game.settings.register(MODULE_ID, "drawing.toolbar.symbolSize", { scope: "client", config: false, default: "medium", type: String });
+	game.settings.register(MODULE_ID, "drawing.toolbar.lineWidth", { scope: "client", config: false, default: 6, type: Number });
+	game.settings.register(MODULE_ID, "drawing.toolbar.lineStyle", { scope: "client", config: false, default: "solid", type: String });
+	game.settings.register(MODULE_ID, "drawing.toolbar.color", { scope: "client", config: false, default: "", type: String });
+	game.settings.register(MODULE_ID, "drawing.toolbar.timedEraseEnabled", { scope: "client", config: false, default: false, type: Boolean });
+	game.settings.register(MODULE_ID, "drawing.toolbar.opacity", { scope: "client", config: false, default: 1.0, type: Number });
+	game.settings.register(MODULE_ID, "drawing.toolbar.position", { scope: "client", config: false, default: "", type: String });
+
+	// Keybinding: Hold to draw
+	game.keybindings.register(MODULE_ID, "drawHotkey", {
+		name: "Drawing Tool Hotkey (Hold)",
+		hint: "Hold this key to draw on the canvas. Release to finish the stroke.",
+		editable: [{ key: "KeyL" }],
+		onDown: () => {
+			if (!game.settings.get(MODULE_ID, "drawing.hotkeyEnabled")) return false;
+			if (game.settings.get(MODULE_ID, "drawing.blockWhenTyping")) {
+				const active = document.activeElement;
+				if (active && (active.tagName === "INPUT" || active.tagName === "TEXTAREA" || active.isContentEditable)) return false;
+			}
+			if (!canvas?.ready) return false;
+			if (game.shadowdarkExtras?.drawingTool) {
+				game.shadowdarkExtras.drawingTool.onHoldKeyDown();
+				return true;
+			}
+			return false;
+		},
+		onUp: () => {
+			if (game.shadowdarkExtras?.drawingTool) {
+				game.shadowdarkExtras.drawingTool.onHoldKeyUp();
+				return true;
+			}
+			return false;
+		},
+		restricted: false,
+		precedence: CONST.KEYBINDING_PRECEDENCE.NORMAL,
+	});
 }
 
 /**
@@ -4893,6 +4981,13 @@ function setupSettingsOrganization() {
 			'[name="shadowdark-extras.tokenToolbar.enabled"]',
 			game.i18n.localize("SHADOWDARK_EXTRAS.settings.headers.token_toolbar"),
 			"fas fa-id-badge"
+		);
+
+		// 10. DRAWING TOOLS - First is Enable Player Drawing
+		insertHeaderBefore(
+			'[name="shadowdark-extras.drawing.enablePlayerDrawing"]',
+			"Drawing Tools",
+			"fas fa-pencil"
 		);
 	});
 }
@@ -15234,6 +15329,64 @@ Hooks.on("renderItemSheet", (app, html, data) => {
 		enhanceGemSheet(app, html);
 	} catch (err) {
 		console.error(`${MODULE_ID} | Failed to enhance gem sheet`, err);
+	}
+});
+
+// ═══════════════════════════════════════════════════════════════════
+// V1/V2 Header Button Bridge
+// SDX registers AppV2 item sheets (NPC Attack, NPC Feature, etc.).
+// Modules like Automated Animations inject header buttons with the
+// V1 hook "getItemSheetHeaderButtons" which doesn't fire for V2 apps.
+// This bridge fires that hook for our V2 sheets and injects the
+// resulting buttons into the window header so they render properly.
+// ═══════════════════════════════════════════════════════════════════
+const _SDX_V2_ITEM_SHEETS = new Set([
+	"NPCAttackSheetSD",
+	"NPCFeatureSheetSD",
+	"NPCSpecialAttackSheetSD",
+	"PotionSheetSD",
+	"BackgroundSheetSD"
+]);
+
+Hooks.on("renderApplicationV2", (app, element, options) => {
+	try {
+		if (!_SDX_V2_ITEM_SHEETS.has(app.constructor.name)) return;
+		if (!app.document || app.document.documentName !== "Item") return;
+
+		// Collect V1-style header buttons from other modules
+		const v1Buttons = [];
+		Hooks.callAll("getItemSheetHeaderButtons", app, v1Buttons);
+		if (!v1Buttons.length) return;
+
+		const header = element?.querySelector?.(".window-header")
+			?? app.element?.querySelector?.(".window-header");
+		if (!header) return;
+
+		for (const btn of v1Buttons) {
+			// Skip if already injected (prevents duplicates on re-render)
+			if (btn.class && header.querySelector(`.${btn.class}`)) continue;
+
+			const button = document.createElement("button");
+			button.type = "button";
+			button.className = `header-control ${btn.class || ""}`.trim();
+			button.title = btn.label || "";
+			button.innerHTML = `<i class="${btn.icon}"></i>`;
+			if (btn.onclick) {
+				button.addEventListener("click", (e) => {
+					e.preventDefault();
+					e.stopPropagation();
+					btn.onclick(e);
+				});
+			}
+
+			// Insert before the close button
+			const closeBtn = header.querySelector('[data-action="close"]')
+				|| header.querySelector(".close");
+			if (closeBtn) header.insertBefore(button, closeBtn);
+			else header.appendChild(button);
+		}
+	} catch (err) {
+		console.error(`${MODULE_ID} | V1/V2 header button bridge error`, err);
 	}
 });
 

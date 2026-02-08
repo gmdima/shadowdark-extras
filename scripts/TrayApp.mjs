@@ -310,6 +310,17 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
             }
         });
 
+        // Drawing Tools Button
+        elem.querySelector(".tray-handle-button-tool[data-action='sdx-drawing']")?.addEventListener("click", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            if (game.shadowdarkExtras?.drawingToolbar?.toggle) {
+                game.shadowdarkExtras.drawingToolbar.toggle();
+            } else {
+                ui.notifications.warn("Drawing tools not ready.");
+            }
+        });
+
         // Tab buttons
         elem.querySelectorAll(".tray-tab-button").forEach(btn => {
             btn.addEventListener("click", (e) => {

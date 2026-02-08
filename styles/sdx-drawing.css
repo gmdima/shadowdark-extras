@@ -1,0 +1,457 @@
+/* ═══════════════════════════════════════════════════════════════════
+   SDX Drawing Toolbar Styles
+   Frameless, draggable, vertical, semi-transparent floating toolbar
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ── Container ────────────────────────────────────────────────── */
+.sdx-drawing-toolbar {
+    position: fixed;
+    top: 60px;
+    right: 18px;
+    z-index: 10001;           /* above TOM conditions-picker (10000) */
+    display: none;
+    flex-direction: column;
+    gap: 2px;
+    padding: 6px 5px;
+    border-radius: 8px;
+    background: rgba(20, 20, 20, 0.72);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.50);
+    pointer-events: auto;
+    user-select: none;
+    width: 40px;
+    max-height: calc(100vh - 80px);
+    overflow-y: auto;
+    overflow-x: hidden;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255,255,255,0.15) transparent;
+}
+
+.sdx-drawing-toolbar.sdx-drawing-toolbar-visible {
+    display: flex;
+}
+
+/* ── Drag handle ──────────────────────────────────────────────── */
+.sdx-dt-handle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 18px;
+    cursor: grab;
+    color: rgba(255, 255, 255, 0.35);
+    font-size: 10px;
+    margin-bottom: 2px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+.sdx-dt-handle:active { cursor: grabbing; }
+
+/* ── Groups ───────────────────────────────────────────────────── */
+.sdx-dt-group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1px;
+    padding: 3px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+.sdx-dt-group:last-child { border-bottom: none; }
+
+.sdx-dt-group-label {
+    font-size: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: rgba(255, 255, 255, 0.30);
+    margin-bottom: 2px;
+    line-height: 1;
+    text-align: center;
+    width: 100%;
+}
+
+/* ── Buttons ──────────────────────────────────────────────────── */
+.sdx-dt-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    border: none;
+    border-radius: 5px;
+    background: transparent;
+    color: rgba(255, 255, 255, 0.55);
+    font-size: 13px;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s, box-shadow 0.15s;
+    padding: 0;
+    margin: 0;
+    line-height: 1;
+}
+
+.sdx-dt-btn:hover {
+    background: rgba(255, 255, 255, 0.10);
+    color: rgba(255, 255, 255, 0.90);
+}
+
+.sdx-dt-btn.sdx-dt-active {
+    background: rgba(200, 160, 80, 0.30);
+    color: #f0d090;
+    box-shadow: inset 0 0 0 1.5px rgba(200, 160, 80, 0.40);
+}
+
+/* ── Line-weight visual distinction ──────────────────────────── */
+.sdx-dt-lw.sdx-lw-thin i {
+    font-size: 10px;
+    transform: scaleY(0.4);
+}
+.sdx-dt-lw.sdx-lw-medium i {
+    font-size: 13px;
+    transform: scaleY(0.7);
+}
+.sdx-dt-lw.sdx-lw-thick i {
+    font-size: 16px;
+    transform: scaleY(1.2);
+}
+
+/* ── Color swatches ───────────────────────────────────────────── */
+.sdx-dt-color {
+    position: relative;
+}
+.sdx-dt-swatch {
+    display: block;
+    width: 16px;
+    height: 16px;
+    border-radius: 3px;
+    border: 1.5px solid rgba(255, 255, 255, 0.18);
+}
+.sdx-dt-color.sdx-dt-active .sdx-dt-swatch {
+    border-color: #f0d090;
+    box-shadow: 0 0 4px rgba(200, 160, 80, 0.5);
+}
+
+/* ── Stamp dropdown overlay ────────────────────────────────── */
+.sdx-dt-stamp-overlay {
+    position: fixed;
+    z-index: 10002;
+    background: rgba(20, 20, 20, 0.88);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.10);
+    border-radius: 8px;
+    padding: 6px 8px;
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.60);
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    animation: sdx-overlay-in 0.12s ease-out;
+    pointer-events: auto;
+}
+
+@keyframes sdx-overlay-in {
+    from { opacity: 0; transform: translateX(6px); }
+    to   { opacity: 1; transform: translateX(0); }
+}
+
+.sdx-dt-overlay-section {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.sdx-dt-overlay-label {
+    font-size: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: rgba(255, 255, 255, 0.35);
+    text-align: center;
+    line-height: 1;
+    margin-bottom: 1px;
+}
+
+.sdx-dt-overlay-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 30px);
+    gap: 2px;
+}
+
+/* ── Color picker overlay grid ────────────────────────────────── */
+.sdx-dt-color-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 26px);
+    gap: 3px;
+}
+.sdx-dt-color-cell {
+    width: 26px;
+    height: 26px;
+    border: 2px solid rgba(255, 255, 255, 0.12);
+    border-radius: 4px;
+    cursor: pointer;
+    transition: border-color 0.15s, transform 0.1s, box-shadow 0.15s;
+    padding: 0;
+    outline: none;
+}
+.sdx-dt-color-cell:hover {
+    border-color: rgba(255, 255, 255, 0.50);
+    transform: scale(1.12);
+    z-index: 1;
+}
+.sdx-dt-color-cell.sdx-dt-active {
+    border-color: #f0d090;
+    box-shadow: 0 0 6px rgba(200, 160, 80, 0.55);
+}
+.sdx-dt-color-cell.sdx-dt-color-player {
+    background-image: linear-gradient(135deg, rgba(255,255,255,0.15) 25%, transparent 25%, transparent 50%, rgba(255,255,255,0.15) 50%, rgba(255,255,255,0.15) 75%, transparent 75%);
+    background-size: 6px 6px;
+}
+
+/* ── Opacity badge on button ──────────────────────────────────── */
+.sdx-dt-opacity-badge {
+    position: absolute;
+    bottom: 1px;
+    right: 1px;
+    font-size: 7px;
+    line-height: 1;
+    color: rgba(255, 255, 255, 0.55);
+    pointer-events: none;
+    font-weight: 600;
+}
+.sdx-dt-btn[data-action="opacity"] {
+    position: relative;
+}
+
+/* ── Opacity slider row ──────────────────────────────────────── */
+.sdx-dt-opacity-slider-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 2px 0;
+}
+.sdx-dt-opacity-range {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100px;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 2px;
+    outline: none;
+    cursor: pointer;
+}
+.sdx-dt-opacity-range::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #f0d090;
+    border: 1.5px solid rgba(200, 160, 80, 0.6);
+    cursor: pointer;
+}
+.sdx-dt-opacity-range::-moz-range-thumb {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #f0d090;
+    border: 1.5px solid rgba(200, 160, 80, 0.6);
+    cursor: pointer;
+}
+.sdx-dt-opacity-value {
+    font-size: 10px;
+    color: rgba(255, 255, 255, 0.60);
+    min-width: 30px;
+    text-align: right;
+}
+
+/* ── Scrollbar ────────────────────────────────────────────────── */
+.sdx-drawing-toolbar::-webkit-scrollbar {
+    width: 4px;
+}
+.sdx-drawing-toolbar::-webkit-scrollbar-track {
+    background: transparent;
+}
+.sdx-drawing-toolbar::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.12);
+    border-radius: 2px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   Drawing Inspector Panel
+   ═══════════════════════════════════════════════════════════════════ */
+.sdx-dt-inspector {
+    position: fixed;
+    z-index: 10002;
+    background: rgba(20, 20, 20, 0.92);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.10);
+    border-radius: 8px;
+    padding: 0;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.65);
+    width: 220px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    animation: sdx-overlay-in 0.15s ease-out;
+    pointer-events: auto;
+}
+.sdx-dt-inspector-header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 8px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.03);
+    user-select: none;
+}
+.sdx-dt-inspector-title {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: rgba(255, 255, 255, 0.55);
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+.sdx-dt-inspector-title i {
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.40);
+}
+.sdx-dt-inspector-count {
+    font-size: 10px;
+    font-weight: 700;
+    color: #f0d090;
+    background: rgba(200, 160, 80, 0.20);
+    padding: 1px 5px;
+    border-radius: 8px;
+    min-width: 18px;
+    text-align: center;
+}
+.sdx-dt-inspector-close {
+    width: 20px;
+    height: 20px;
+    border: none;
+    border-radius: 4px;
+    background: transparent;
+    color: rgba(255, 255, 255, 0.35);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    transition: background 0.15s, color 0.15s;
+    padding: 0;
+}
+.sdx-dt-inspector-close:hover {
+    background: rgba(255, 80, 80, 0.25);
+    color: rgba(255, 120, 120, 0.9);
+}
+.sdx-dt-inspector-list {
+    overflow-y: auto;
+    overflow-x: hidden;
+    max-height: 100%;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255,255,255,0.12) transparent;
+    padding: 2px 0;
+}
+.sdx-dt-inspector-list::-webkit-scrollbar { width: 4px; }
+.sdx-dt-inspector-list::-webkit-scrollbar-track { background: transparent; }
+.sdx-dt-inspector-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.10); border-radius: 2px; }
+
+.sdx-dt-inspector-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 8px;
+    cursor: default;
+    transition: background 0.12s;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+}
+.sdx-dt-inspector-item:last-child { border-bottom: none; }
+.sdx-dt-inspector-item:hover {
+    background: rgba(200, 160, 80, 0.12);
+}
+.sdx-dt-inspector-type-icon {
+    font-size: 10px;
+    color: rgba(255, 255, 255, 0.40);
+    width: 14px;
+    text-align: center;
+    flex-shrink: 0;
+}
+.sdx-dt-inspector-item:hover .sdx-dt-inspector-type-icon {
+    color: #f0d090;
+}
+.sdx-dt-inspector-info {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+.sdx-dt-inspector-type-label {
+    font-size: 9px;
+    color: rgba(255, 255, 255, 0.65);
+    text-transform: capitalize;
+    line-height: 1.2;
+}
+.sdx-dt-inspector-user {
+    font-size: 8px;
+    color: rgba(255, 255, 255, 0.30);
+    line-height: 1.2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.sdx-dt-inspector-meta {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-shrink: 0;
+}
+.sdx-dt-inspector-time {
+    font-size: 8px;
+    color: rgba(255, 255, 255, 0.25);
+}
+.sdx-dt-inspector-opacity {
+    font-size: 7px;
+    color: rgba(255, 255, 255, 0.35);
+    background: rgba(255, 255, 255, 0.05);
+    padding: 0 3px;
+    border-radius: 3px;
+}
+.sdx-dt-inspector-perm {
+    font-size: 8px;
+    color: #f0d090;
+}
+.sdx-dt-inspector-delete {
+    width: 18px;
+    height: 18px;
+    border: none;
+    border-radius: 3px;
+    background: transparent;
+    color: rgba(255, 255, 255, 0.15);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 9px;
+    transition: background 0.12s, color 0.12s, opacity 0.12s;
+    padding: 0;
+    flex-shrink: 0;
+    opacity: 0;
+}
+.sdx-dt-inspector-item:hover .sdx-dt-inspector-delete {
+    opacity: 1;
+    color: rgba(255, 255, 255, 0.40);
+}
+.sdx-dt-inspector-delete:hover {
+    background: rgba(255, 60, 60, 0.30);
+    color: rgba(255, 120, 120, 0.90);
+}
+.sdx-dt-inspector-empty {
+    text-align: center;
+    padding: 12px 8px;
+    font-size: 9px;
+    color: rgba(255, 255, 255, 0.25);
+    font-style: italic;
+}

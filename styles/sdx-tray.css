@@ -942,7 +942,7 @@ body.sdx-tray-enabled #camera-views.vertical.left {
 }
 
 .sdx-tray .pin-list-scroll-container {
-    padding: 8px;
+    padding: 1px;
 }
 
 /* Active Effects on Handle */
