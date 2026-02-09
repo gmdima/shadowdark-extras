@@ -321,6 +321,14 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
             }
         });
 
+        // SDX Roller Button
+        elem.querySelector(".tray-handle-button-tool[data-action='sdx-roller']")?.addEventListener("click", async (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            const { SDXRollerApp } = await import("./SDXRollerApp.mjs");
+            new SDXRollerApp().render(true);
+        });
+
         // Tab buttons
         elem.querySelectorAll(".tray-tab-button").forEach(btn => {
             btn.addEventListener("click", (e) => {

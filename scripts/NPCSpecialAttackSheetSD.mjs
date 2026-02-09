@@ -165,9 +165,52 @@ export default class NPCSpecialAttackSheetSD extends NPCFeatureSheetSD {
         // Range checkboxes
         this._setupRangeHandlers(html);
 
-        // Attack stats manual handling (if needed, though form submission handles simple inputs)
-        // NPCAttackSheetSD uses explicit listeners for some reason, maybe to handle numbers correctly?
-        // We'll trust submitOnChange for now unless issues arise, but let's emulate the range/extraDamage ones.
+        // Setup ProseMirror save handler for description
+        this._setupProseMirrorSaveHandler(html);
+    }
+
+    /**
+     * Setup ProseMirror save handler to manually save description changes
+     */
+    _setupProseMirrorSaveHandler(html) {
+        // Listen for ProseMirror save button clicks
+        const proseMirrorEditor = html.querySelector("prose-mirror[name='system.description']");
+        if (!proseMirrorEditor) return;
+
+        // Observer to wait for the ProseMirror toolbar to be ready
+        const observer = new MutationObserver(() => {
+            const saveButton = proseMirrorEditor.querySelector(".editor-save, button[data-action='save']");
+            if (saveButton && !saveButton.dataset.sdxHandled) {
+                saveButton.dataset.sdxHandled = "true";
+                saveButton.addEventListener("click", async (event) => {
+                    // Get the ProseMirror content
+                    const editorContent = proseMirrorEditor.querySelector(".ProseMirror");
+                    if (editorContent) {
+                        const htmlContent = editorContent.innerHTML;
+                        await this.item.update({ "system.description": htmlContent });
+                        ui.notifications.info("Description saved");
+                    }
+                });
+            }
+        });
+
+        observer.observe(proseMirrorEditor, { childList: true, subtree: true });
+
+        // Also check if it's already rendered
+        setTimeout(() => {
+            const saveButton = proseMirrorEditor.querySelector(".editor-save, button[data-action='save']");
+            if (saveButton && !saveButton.dataset.sdxHandled) {
+                saveButton.dataset.sdxHandled = "true";
+                saveButton.addEventListener("click", async (event) => {
+                    const editorContent = proseMirrorEditor.querySelector(".ProseMirror");
+                    if (editorContent) {
+                        const htmlContent = editorContent.innerHTML;
+                        await this.item.update({ "system.description": htmlContent });
+                        ui.notifications.info("Description saved");
+                    }
+                });
+            }
+        }, 100);
     }
 
     /**
@@ -297,5 +340,16 @@ export default class NPCSpecialAttackSheetSD extends NPCFeatureSheetSD {
         }
 
         return submitData;
+    }
+
+    /**
+     * Process the form submission and update the document
+     * @override
+     */
+    async _processSubmitData(event, form, submitData) {
+        // Explicitly update the document with the prepared submit data
+        if (submitData && Object.keys(submitData).length > 0) {
+            await this.document.update(submitData);
+        }
     }
 }

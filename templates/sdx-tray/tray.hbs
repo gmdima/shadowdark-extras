@@ -48,6 +48,11 @@
             <button class="tray-handle-button-tool" data-action="sdx-drawing" title="Drawing Tools">
                 <i class="fa-solid fa-pencil"></i>
             </button>
+            {{#if isGM}}
+            <button class="tray-handle-button-tool" data-action="sdx-roller" title="SDX Roller">
+                <i class="fa-solid fa-dice"></i>
+            </button>
+            {{/if}}
 
             <div class="tray-handle-content-wrapper">
                 {{#if (eq viewMode 'player')}}

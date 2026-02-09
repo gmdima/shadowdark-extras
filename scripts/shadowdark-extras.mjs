@@ -70,6 +70,7 @@ import { TomSD } from "./TomSD.mjs";
 import { WallContextMenuSD } from "./WallContextMenuSD.mjs";
 import { sdxDrawingTool } from "./SDXDrawingTool.mjs";
 import { sdxDrawingToolbar } from "./SDXDrawingToolbar.mjs";
+import { SDXRollerApp } from "./SDXRollerApp.mjs";
 
 import { PixiPlugin } from "/scripts/greensock/esm/all.js";
 
@@ -10167,6 +10168,13 @@ Hooks.once("ready", async () => {
 	await ensureCarousingJournal();
 	await ensureCarousingTablesJournal();
 	initCarousingSocket();
+
+	// SDX Roller socket listener
+	game.socket.on(`module.${MODULE_ID}`, (data) => {
+		if (data.action?.startsWith("sdxRoller")) {
+			SDXRollerApp.handleSocketMessage(data);
+		}
+	});
 
 	// Register global callback for carousing overlay refresh
 	window.sdxCarousingOverlayRefresh = refreshCarousingOverlay;

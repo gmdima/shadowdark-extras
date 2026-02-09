@@ -1,0 +1,90 @@
+<div class="sdx-roller-config">
+
+    {{!-- Actor portraits strip --}}
+    <div class="sdx-roller-section">
+        <label class="sdx-roller-heading">Actors (Right click to make it a contestant)</label>
+        <input type="text" class="sdx-roller-filter-input" placeholder="Filter search" value="{{filter}}">
+        <div class="sdx-roller-portraits">
+            {{#each actors}}
+            <div class="sdx-roller-actor-portrait" data-uuid="{{this.uuid}}" data-name="{{this.name}}" title="{{this.name}}">
+                <img src="{{this.img}}" alt="{{this.name}}">
+            </div>
+            {{/each}}
+        </div>
+    </div>
+
+    {{!-- Participants --}}
+    <div class="sdx-roller-section">
+        <label class="sdx-roller-heading">Participants</label>
+        <div class="sdx-roller-participants-list">
+            {{#each participants}}
+            <div class="sdx-roller-participant-row">
+                <span class="sdx-roller-participant-dot participant-color"></span>
+                <span class="sdx-roller-participant-name">{{this.name}}</span>
+                <button class="sdx-roller-remove-participant" data-uuid="{{this.uuid}}" title="Remove">&times;</button>
+            </div>
+            {{/each}}
+
+            {{#if contestants.length}}
+            <div class="sdx-roller-vs-divider">
+                <hr><span>Vs</span><hr>
+            </div>
+            {{/if}}
+
+            {{#each contestants}}
+            <div class="sdx-roller-participant-row contestant-row">
+                <span class="sdx-roller-participant-dot contestant-color"></span>
+                <span class="sdx-roller-participant-name">{{this.name}}</span>
+                <button class="sdx-roller-remove-participant" data-uuid="{{this.uuid}}" title="Remove">&times;</button>
+            </div>
+            {{/each}}
+        </div>
+    </div>
+
+    {{!-- Roll Type --}}
+    <div class="sdx-roller-row">
+        <label class="sdx-roller-row-label">Roll Type</label>
+        <select class="sdx-roller-ability-select">
+            {{#each abilities}}
+            <option value="{{this.key}}" {{#if this.selected}}selected{{/if}}>{{this.label}}</option>
+            {{/each}}
+        </select>
+    </div>
+
+    {{!-- DC --}}
+    <div class="sdx-roller-row">
+        <label class="sdx-roller-row-label">DC</label>
+        <input type="number" class="sdx-roller-dc-input" value="{{dc}}" min="0">
+    </div>
+
+    {{!-- Toggles --}}
+    <div class="sdx-roller-row">
+        <label class="sdx-roller-row-label">Show DC</label>
+        <button class="sdx-roller-toggle sdx-roller-toggle-showdc {{#if showDc}}active{{/if}}">
+            <span class="sdx-toggle-knob"></span>
+        </button>
+        <label class="sdx-roller-row-label">Hide names</label>
+        <button class="sdx-roller-toggle sdx-roller-toggle-hidenames {{#if hideNames}}active{{/if}}">
+            <span class="sdx-toggle-knob"></span>
+        </button>
+    </div>
+
+    <div class="sdx-roller-row">
+        <label class="sdx-roller-row-label">Use Average</label>
+        <button class="sdx-roller-toggle sdx-roller-toggle-useavg {{#if useAverage}}active{{/if}}">
+            <span class="sdx-toggle-knob"></span>
+        </button>
+    </div>
+
+    {{!-- Custom label --}}
+    <div class="sdx-roller-section">
+        <label class="sdx-roller-heading">Custom label</label>
+        <input type="text" class="sdx-roller-label-input" value="{{customLabel}}">
+    </div>
+
+    {{!-- Action buttons --}}
+    <div class="sdx-roller-actions">
+        <button class="sdx-roller-btn-roll">Roll</button>
+        <button class="sdx-roller-btn-cancel">Cancel</button>
+    </div>
+</div>

@@ -1,0 +1,95 @@
+<div id="sdx-roller-overlay">
+
+    {{!-- GM close button --}}
+    {{#if isGM}}
+    <div class="sdx-overlay-close" title="Close">
+        <i class="fas fa-times"></i>
+    </div>
+    {{/if}}
+
+    <button class="sdx-overlay-complete sdx-hidden-vis">Complete Roll</button>
+
+    <div class="sdx-overlay-stripe"></div>
+
+    <div class="sdx-overlay-stage">
+
+        {{!-- Intro text (animated then removed) --}}
+        <h1 class="sdx-overlay-intro-label">{{introLabel}}</h1>
+
+        {{!-- Outro verdict --}}
+        <h1 class="sdx-overlay-outro-label sdx-hidden"></h1>
+
+        {{!-- Actor tiles --}}
+        <div class="sdx-overlay-tiles sdx-hidden">
+            {{#each actors}}
+            <div class="sdx-overlay-tile" data-uuid="{{this.uuid}}">
+                <div class="sdx-tile-portrait">
+                    <img src="{{this.img}}" alt="{{this.name}}">
+                    <span class="sdx-tile-mod-badge">{{this.modLabel}}</span>
+                </div>
+                <div class="sdx-tile-name">
+                    {{#if this.isOwner}}
+                        {{this.name}}
+                    {{else}}
+                        {{#if ../options.hideNames}}???{{else}}{{this.name}}{{/if}}
+                    {{/if}}
+                </div>
+                <div class="sdx-tile-controls">
+                    {{#if this.isOwner}}
+                    <button class="sdx-adv-btn" data-mode="disadvantage" title="Disadvantage">Dis</button>
+                    {{/if}}
+                    <div class="sdx-tile-badge">
+                        {{#if this.isOwner}}
+                        <i class="sdx-roll-btn fas fa-dice-d20"></i>
+                        {{/if}}
+                        <span class="sdx-result-value sdx-hidden"></span>
+                    </div>
+                    {{#if this.isOwner}}
+                    <button class="sdx-adv-btn" data-mode="advantage" title="Advantage">Adv</button>
+                    {{/if}}
+                </div>
+                <span class="sdx-tile-mod-result sdx-hidden"></span>
+            </div>
+            {{/each}}
+
+            {{#if contestants.length}}
+            <div class="sdx-overlay-tile sdx-vs-tile">
+                <span>VS</span>
+            </div>
+            {{/if}}
+
+            {{#each contestants}}
+            <div class="sdx-overlay-tile" data-uuid="{{this.uuid}}">
+                <div class="sdx-tile-portrait">
+                    <img src="{{this.img}}" alt="{{this.name}}">
+                    <span class="sdx-tile-mod-badge">{{this.modLabel}}</span>
+                </div>
+                <div class="sdx-tile-name">
+                    {{#if this.isOwner}}
+                        {{this.name}}
+                    {{else}}
+                        {{#if ../options.hideNames}}???{{else}}{{this.name}}{{/if}}
+                    {{/if}}
+                </div>
+                <div class="sdx-tile-controls">
+                    {{#if this.isOwner}}
+                    <button class="sdx-adv-btn" data-mode="disadvantage" title="Disadvantage">Dis</button>
+                    {{/if}}
+                    <div class="sdx-tile-badge">
+                        {{#if this.isOwner}}
+                        <i class="sdx-roll-btn fas fa-dice-d20"></i>
+                        {{/if}}
+                        <span class="sdx-result-value sdx-hidden"></span>
+                    </div>
+                    {{#if this.isOwner}}
+                    <button class="sdx-adv-btn" data-mode="advantage" title="Advantage">Adv</button>
+                    {{/if}}
+                </div>
+                <span class="sdx-tile-mod-result sdx-hidden"></span>
+            </div>
+            {{/each}}
+        </div>
+
+    </div>
+
+</div>

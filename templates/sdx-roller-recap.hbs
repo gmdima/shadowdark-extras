@@ -1,0 +1,51 @@
+<div class="sdx-roller-recap">
+    <div class="sdx-recap-header">{{label}}</div>
+
+    {{#each actors}}
+    <div class="sdx-recap-entry">
+        <img class="sdx-recap-portrait" src="{{this.img}}" alt="{{this.name}}">
+        <span class="sdx-recap-name">{{this.name}}</span>
+        {{#if this.showDice}}
+        <span class="sdx-recap-dice">
+            {{#each this.diceResults}}<span class="sdx-recap-die {{this.css}}">{{this.value}}</span>{{/each}}
+        </span>
+        {{/if}}
+        <span class="sdx-recap-mod">{{this.modLabel}}</span>
+        <span class="sdx-recap-result">{{this.result}}</span>
+        {{#if this.showPass}}
+            {{#if this.pass}}
+            <i class="fas fa-check sdx-recap-pass"></i>
+            {{else}}
+            <i class="fas fa-times sdx-recap-fail"></i>
+            {{/if}}
+        {{/if}}
+    </div>
+    {{/each}}
+
+    {{#if contestants.length}}
+    <div class="sdx-recap-vs">VS</div>
+    {{/if}}
+
+    {{#each contestants}}
+    <div class="sdx-recap-entry">
+        <img class="sdx-recap-portrait" src="{{this.img}}" alt="{{this.name}}">
+        <span class="sdx-recap-name">{{this.name}}</span>
+        {{#if this.showDice}}
+        <span class="sdx-recap-dice">
+            {{#each this.diceResults}}<span class="sdx-recap-die {{this.css}}">{{this.value}}</span>{{/each}}
+        </span>
+        {{/if}}
+        <span class="sdx-recap-mod">{{this.modLabel}}</span>
+        <span class="sdx-recap-result">{{this.result}}</span>
+    </div>
+    {{/each}}
+
+    {{#if dc}}
+    <div class="sdx-recap-footer {{#if success}}sdx-recap-success{{else}}sdx-recap-failure{{/if}}">
+        <span class="sdx-recap-dc">DC {{dc}}</span>
+        {{#if successLabel}}
+        <span class="sdx-recap-verdict">{{successLabel}}</span>
+        {{/if}}
+    </div>
+    {{/if}}
+</div>
