@@ -85,12 +85,26 @@ export function initTray() {
     Hooks.on("deleteToken", async () => await renderTray());
     Hooks.on("updateToken", async () => await renderTray());
 
-    // Hook into other placeables for notes
+    // Hook into other placeables for notes — debounced to survive bulk operations
+    let _placeableRenderTimer = null;
+    function debouncedPlaceableRender() {
+        if (_placeableRenderTimer) clearTimeout(_placeableRenderTimer);
+        _placeableRenderTimer = setTimeout(async () => {
+            _placeableRenderTimer = null;
+            // If painting is active, we don't need to re-render the tray for every tile placement.
+            // This prevents massive lag and scroll resetting issues.
+            // The only downside is if you place a tile that SHOULD trigger a note update, it won't show until you stop painting.
+
+            // Double check: if isPainting() is true OR if we are in hexes view (which implies painting mode)
+            // This makes the check more robust against state desyncs
+            if (!isPainting() && getViewMode() !== "hexes") await renderTray();
+        }, 300);
+    }
     const placeableHooks = ["AmbientLight", "AmbientSound", "Wall", "Tile"];
     placeableHooks.forEach(type => {
-        Hooks.on(`create${type}`, async () => { if (!isPainting()) await renderTray(); });
-        Hooks.on(`update${type}`, async () => { if (!isPainting()) await renderTray(); });
-        Hooks.on(`delete${type}`, async () => { if (!isPainting()) await renderTray(); });
+        Hooks.on(`create${type}`, debouncedPlaceableRender);
+        Hooks.on(`update${type}`, debouncedPlaceableRender);
+        Hooks.on(`delete${type}`, debouncedPlaceableRender);
     });
 
     // Hook into scene changes
@@ -171,6 +185,21 @@ export function registerTraySettings() {
         config: true,
         type: Boolean,
         default: true
+    });
+
+    // Hidden settings for hex painter (not shown in config)
+    game.settings.register(MODULE_ID, "hexPainter.customTileWidth", {
+        scope: "client",
+        config: false,
+        type: Number,
+        default: 296
+    });
+
+    game.settings.register(MODULE_ID, "hexPainter.customTileHeight", {
+        scope: "client",
+        config: false,
+        type: Number,
+        default: 256
     });
 }
 
@@ -317,8 +346,8 @@ export function setViewMode(mode) {
 }
 
 /**
- * Get the current view mode
- * @returns {string}
+ * Get the current view mode/**
+ * Get current view mode
  */
 export function getViewMode() {
     return _viewMode;

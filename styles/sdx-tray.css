@@ -2463,148 +2463,77 @@ body.sdx-tray-enabled #camera-views.vertical.left {
 }
 
 .sdx-tray .hex-effects-section {
-    display: flex;
-    gap: 6px;
     padding: 6px 2px;
     margin-bottom: 6px;
 }
 
-.sdx-tray .hex-water-toggle-section {
-    flex: 1;
-    min-width: 0;
+.sdx-tray .hex-effects-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 4px;
 }
 
-.sdx-tray .hex-water-toggle {
+.sdx-tray .hex-fx-toggle {
     display: flex;
     align-items: center;
-    gap: 8px;
-    padding: 6px 8px;
+    justify-content: center;
+    gap: 4px;
+    padding: 6px 4px;
     background: rgba(0, 0, 0, 0.3);
     border: 1px solid rgba(159, 146, 117, 0.3);
     border-radius: 4px;
     cursor: pointer;
     user-select: none;
-    width: 100%;
+    font-size: 0.75em;
+    color: #e8dcc8;
 }
 
-.sdx-tray .hex-water-toggle:hover {
+.sdx-tray .hex-fx-toggle:hover {
     background: rgba(0, 0, 0, 0.4);
     border-color: rgba(159, 146, 117, 0.5);
 }
 
-.sdx-tray .hex-water-checkbox {
-    width: 14px;
-    height: 14px;
-    cursor: pointer;
-    accent-color: #4ade80;
+.sdx-tray .hex-fx-toggle input[type="checkbox"] {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
 }
 
-.sdx-tray .hex-water-label {
-    font-size: 0.85em;
-    color: #e8dcc8;
+.sdx-tray .hex-fx-toggle span {
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 4px;
 }
 
-.sdx-tray .hex-water-checkbox:checked + .hex-water-label {
+/* Water - green */
+.sdx-tray .hex-fx-toggle:has(.hex-water-checkbox:checked) {
+    border-color: #4ade80;
     color: #4ade80;
 }
 
-.sdx-tray .hex-water-checkbox:checked + .hex-water-label i {
-    color: #4ade80;
-}
-
-.sdx-tray .hex-wind-toggle-section {
-    flex: 1;
-    min-width: 0;
-}
-
-.sdx-tray .hex-wind-toggle {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 6px 8px;
-    background: rgba(0, 0, 0, 0.3);
-    border: 1px solid rgba(159, 146, 117, 0.3);
-    border-radius: 4px;
-    cursor: pointer;
-    user-select: none;
-    width: 100%;
-}
-
-.sdx-tray .hex-wind-toggle:hover {
-    background: rgba(0, 0, 0, 0.4);
-    border-color: rgba(159, 146, 117, 0.5);
-}
-
-.sdx-tray .hex-wind-checkbox {
-    width: 14px;
-    height: 14px;
-    cursor: pointer;
-    accent-color: #60a5fa;
-}
-
-.sdx-tray .hex-wind-label {
-    font-size: 0.85em;
-    color: #e8dcc8;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-}
-
-.sdx-tray .hex-wind-checkbox:checked + .hex-wind-label {
+/* Wind - blue */
+.sdx-tray .hex-fx-toggle:has(.hex-wind-checkbox:checked) {
+    border-color: #60a5fa;
     color: #60a5fa;
 }
 
-.sdx-tray .hex-wind-checkbox:checked + .hex-wind-label i {
-    color: #60a5fa;
-}
-
-.sdx-tray .hex-fog-toggle-section {
-    flex: 1;
-    min-width: 0;
-}
-
-.sdx-tray .hex-fog-toggle {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 6px 8px;
-    background: rgba(0, 0, 0, 0.3);
-    border: 1px solid rgba(159, 146, 117, 0.3);
-    border-radius: 4px;
-    cursor: pointer;
-    user-select: none;
-    width: 100%;
-}
-
-.sdx-tray .hex-fog-toggle:hover {
-    background: rgba(0, 0, 0, 0.4);
-    border-color: rgba(159, 146, 117, 0.5);
-}
-
-.sdx-tray .hex-fog-checkbox {
-    width: 14px;
-    height: 14px;
-    cursor: pointer;
-    accent-color: #a78bfa;
-}
-
-.sdx-tray .hex-fog-label {
-    font-size: 0.85em;
-    color: #e8dcc8;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-}
-
-.sdx-tray .hex-fog-checkbox:checked + .hex-fog-label {
+/* Fog - purple */
+.sdx-tray .hex-fx-toggle:has(.hex-fog-checkbox:checked) {
+    border-color: #a78bfa;
     color: #a78bfa;
 }
 
-.sdx-tray .hex-fog-checkbox:checked + .hex-fog-label i {
-    color: #a78bfa;
+/* Tinted - orange */
+.sdx-tray .hex-fx-toggle:has(.hex-tint-checkbox:checked) {
+    border-color: #fb923c;
+    color: #fb923c;
+}
+
+/* B&W - gray */
+.sdx-tray .hex-fx-toggle:has(.hex-bw-checkbox:checked) {
+    border-color: #9ca3af;
+    color: #9ca3af;
 }
 
 /* Tile Grid */
@@ -2657,5 +2586,362 @@ body.sdx-tray-enabled #camera-views.vertical.left {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+}
+
+/* ═══════════════════════════════════════════════════════
+   HEX PROCEDURAL GENERATOR
+   ═══════════════════════════════════════════════════════ */
+
+.sdx-tray .hex-generator-section {
+    margin-bottom: 6px;
+    padding: 0 2px;
+}
+
+.sdx-tray .hex-generator-toggle-btn {
+    width: 100%;
+    padding: 6px 10px;
+    background: rgba(159, 146, 117, 0.25);
+    border: 1px solid rgba(159, 146, 117, 0.4);
+    color: #e8dcc8;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.85em;
+    font-weight: bold;
+    text-transform: uppercase;
+    transition: background 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+
+.sdx-tray .hex-generator-toggle-btn:hover {
+    background: rgba(159, 146, 117, 0.4);
+}
+
+.sdx-tray .hex-generator-controls {
+    margin-top: 6px;
+    padding: 8px;
+    background: rgba(0, 0, 0, 0.25);
+    border-radius: 4px;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.sdx-tray .hex-generator-controls.hidden {
+    display: none;
+}
+
+.sdx-tray .hex-gen-slider-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 6px;
+}
+
+.sdx-tray .hex-gen-slider-row label {
+    width: 80px;
+    font-size: 0.8em;
+    color: #9f9275;
+    text-transform: uppercase;
+    font-weight: bold;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.sdx-tray .hex-gen-slider-row label i {
+    width: 14px;
+    text-align: center;
+    font-size: 0.9em;
+}
+
+.sdx-tray .hex-gen-slider-row input[type="range"] {
+    flex: 1;
+    accent-color: #9f9275;
+    height: 4px;
+}
+
+.sdx-tray .hex-gen-slider-value {
+    width: 28px;
+    text-align: center;
+    font-size: 0.85em;
+    color: #e8dcc8;
+    font-weight: bold;
+    flex-shrink: 0;
+}
+
+.sdx-tray .hex-gen-seed-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.sdx-tray .hex-gen-seed-row label {
+    width: 80px;
+    font-size: 0.8em;
+    color: #9f9275;
+    text-transform: uppercase;
+    font-weight: bold;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.sdx-tray .hex-gen-seed-row label i {
+    width: 14px;
+    text-align: center;
+    font-size: 0.9em;
+}
+
+.sdx-tray .hex-gen-seed-input {
+    flex: 1;
+    padding: 4px 8px;
+    border: 1px solid rgba(159, 146, 117, 0.3);
+    border-radius: 4px;
+    background: rgba(0, 0, 0, 0.3);
+    color: #e8dcc8;
+    font-size: 0.85em;
+}
+
+.sdx-tray .hex-gen-seed-input::placeholder {
+    color: rgba(232, 220, 200, 0.4);
+    font-style: italic;
+}
+
+.sdx-tray .hex-gen-seed-input:focus {
+    outline: none;
+    border-color: rgba(159, 146, 117, 0.6);
+    box-shadow: 0 0 4px rgba(159, 146, 117, 0.2);
+}
+
+.sdx-tray .hex-gen-buttons {
+    display: flex;
+    gap: 6px;
+}
+
+.sdx-tray .hex-gen-btn {
+    flex: 1;
+    padding: 5px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.8em;
+    font-weight: bold;
+    text-transform: uppercase;
+    transition: background 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+}
+
+.sdx-tray .hex-gen-generate-btn {
+    background: rgba(74, 222, 128, 0.2);
+    border: 1px solid rgba(74, 222, 128, 0.35);
+    color: #4ade80;
+}
+
+.sdx-tray .hex-gen-generate-btn:hover {
+    background: rgba(74, 222, 128, 0.35);
+}
+
+.sdx-tray .hex-gen-clear-btn {
+    background: rgba(248, 113, 113, 0.2);
+    border: 1px solid rgba(248, 113, 113, 0.35);
+    color: #f87171;
+}
+
+.sdx-tray .hex-gen-clear-btn:hover {
+    background: rgba(248, 113, 113, 0.35);
+}
+
+/* Use Custom Tiles Toggle */
+.sdx-tray .hex-gen-custom-toggle {
+    margin-bottom: 8px;
+    padding: 6px 8px;
+    background: rgba(139, 92, 246, 0.15);
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    border-radius: 4px;
+}
+
+.sdx-tray .hex-gen-custom-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    font-size: 0.8em;
+    color: #a78bfa;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.sdx-tray .hex-gen-custom-label input[type="checkbox"] {
+    accent-color: #a78bfa;
+}
+
+.sdx-tray .hex-gen-custom-label span {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+/* ═══════════════════════════════════════════════════════
+   TILE TABS (Default / Custom)
+   ═══════════════════════════════════════════════════════ */
+
+.sdx-tray .hex-tile-tabs {
+    display: flex;
+    gap: 4px;
+    margin: 6px 2px;
+    padding: 3px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
+}
+
+.sdx-tray .hex-tile-tab {
+    flex: 1;
+    padding: 6px 8px;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 3px;
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 0.75em;
+    font-weight: bold;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.15s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+}
+
+.sdx-tray .hex-tile-tab:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.sdx-tray .hex-tile-tab.active {
+    background: rgba(159, 146, 117, 0.25);
+    border-color: rgba(159, 146, 117, 0.4);
+    color: #e8dcc8;
+}
+
+.sdx-tray .hex-tile-tab-count {
+    font-size: 0.85em;
+    opacity: 0.7;
+}
+
+/* ═══════════════════════════════════════════════════════
+   CUSTOM TILE SIZE CONTROLS
+   ═══════════════════════════════════════════════════════ */
+
+.sdx-tray .hex-custom-size-section {
+    padding: 8px;
+    margin: 0 2px 6px 2px;
+    background: rgba(139, 92, 246, 0.1);
+    border: 1px solid rgba(139, 92, 246, 0.25);
+    border-radius: 4px;
+}
+
+.sdx-tray .hex-custom-size-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    justify-content: center;
+}
+
+.sdx-tray .hex-custom-size-row label {
+    font-size: 0.75em;
+    color: #a78bfa;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.sdx-tray .hex-custom-size-input {
+    width: 60px;
+    padding: 4px 6px;
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    border-radius: 3px;
+    background: rgba(0, 0, 0, 0.3);
+    color: #e8dcc8;
+    font-size: 0.85em;
+    text-align: center;
+}
+
+.sdx-tray .hex-custom-size-input:focus {
+    outline: none;
+    border-color: rgba(139, 92, 246, 0.6);
+    box-shadow: 0 0 4px rgba(139, 92, 246, 0.2);
+}
+
+.sdx-tray .hex-custom-folder-hint {
+    margin-top: 6px;
+    font-size: 0.7em;
+    color: rgba(255, 255, 255, 0.4);
+    text-align: center;
+}
+
+.sdx-tray .hex-custom-folder-hint i {
+    margin-right: 4px;
+}
+
+.sdx-tray .hex-custom-folder-hint code {
+    background: rgba(0, 0, 0, 0.3);
+    padding: 1px 4px;
+    border-radius: 2px;
+    color: #a78bfa;
+}
+
+/* ═══════════════════════════════════════════════════════
+   CUSTOM TILES - BIOME BADGE
+   ═══════════════════════════════════════════════════════ */
+
+.sdx-tray .hex-tile-biome {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    padding: 1px 4px;
+    background: rgba(139, 92, 246, 0.7);
+    color: #fff;
+    font-size: 0.55em;
+    font-weight: bold;
+    text-transform: uppercase;
+    border-radius: 2px;
+}
+
+/* ═══════════════════════════════════════════════════════
+   NO CUSTOM TILES PLACEHOLDER
+   ═══════════════════════════════════════════════════════ */
+
+.sdx-tray .hex-no-custom-tiles {
+    grid-column: 1 / -1;
+    padding: 20px;
+    text-align: center;
+    color: rgba(255, 255, 255, 0.4);
+}
+
+.sdx-tray .hex-no-custom-tiles p {
+    margin: 8px 0;
+}
+
+.sdx-tray .hex-no-custom-tiles i {
+    font-size: 2em;
+    opacity: 0.3;
+}
+
+.sdx-tray .hex-custom-hint {
+    font-size: 0.75em;
+    color: rgba(255, 255, 255, 0.35);
+}
+
+.sdx-tray .hex-custom-hint code {
+    background: rgba(0, 0, 0, 0.3);
+    padding: 1px 4px;
+    border-radius: 2px;
+    color: #a78bfa;
+    font-size: 0.9em;
 }
 

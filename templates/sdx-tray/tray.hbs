@@ -285,21 +285,27 @@
                     {{!-- Render Folders --}}
                     {{#each tomFolders}}
                     <div class="scene-folder" data-folder-id="{{this.id}}">
-                        <div class="scene-folder-header {{#if this.collapsed}}collapsed{{/if}}" data-action="toggle-folder" data-folder-id="{{this.id}}">
-                            <i class="fas {{#if this.collapsed}}fa-caret-right{{else}}fa-caret-down{{/if}} scene-folder-chevron"></i>
-                            <i class="fas {{#if this.collapsed}}fa-folder{{else}}fa-folder-open{{/if}} scene-folder-icon"></i>
+                        <div class="scene-folder-header {{#if this.collapsed}}collapsed{{/if}}"
+                            data-action="toggle-folder" data-folder-id="{{this.id}}">
+                            <i
+                                class="fas {{#if this.collapsed}}fa-caret-right{{else}}fa-caret-down{{/if}} scene-folder-chevron"></i>
+                            <i
+                                class="fas {{#if this.collapsed}}fa-folder{{else}}fa-folder-open{{/if}} scene-folder-icon"></i>
                             <span class="scene-folder-name">{{this.name}}</span>
                             <span class="scene-folder-count">({{this.scenes.length}})</span>
                             <div class="scene-folder-actions">
-                                <button class="scene-action-btn" data-action="rename-folder" data-folder-id="{{this.id}}" data-folder-name="{{this.name}}" title="Rename Folder">
+                                <button class="scene-action-btn" data-action="rename-folder"
+                                    data-folder-id="{{this.id}}" data-folder-name="{{this.name}}" title="Rename Folder">
                                     <i class="fas fa-pen"></i>
                                 </button>
-                                <button class="scene-action-btn danger" data-action="delete-folder" data-folder-id="{{this.id}}" data-folder-name="{{this.name}}" title="Delete Folder">
+                                <button class="scene-action-btn danger" data-action="delete-folder"
+                                    data-folder-id="{{this.id}}" data-folder-name="{{this.name}}" title="Delete Folder">
                                     <i class="fas fa-trash"></i>
                                 </button>
                             </div>
                         </div>
-                        <div class="scene-folder-content {{#if this.collapsed}}hidden{{/if}}" data-folder-id="{{this.id}}">
+                        <div class="scene-folder-content {{#if this.collapsed}}hidden{{/if}}"
+                            data-folder-id="{{this.id}}">
                             {{#if this.scenes.length}}
                             {{#each this.scenes}}
                             <div class="scene-card {{#if (eq this.id ../../tomActiveSceneId)}}active{{/if}}"
@@ -310,7 +316,8 @@
                                         <video src="{{this.background}}" muted loop preload="metadata"
                                             class="scene-thumb-video"></video>
                                         {{else}}
-                                        <div class="scene-thumb-image" style="background-image: url('{{this.background}}')">
+                                        <div class="scene-thumb-image"
+                                            style="background-image: url('{{this.background}}')">
                                         </div>
                                         {{/if}}
                                         {{#if (eq this.id ../../tomActiveSceneId)}}
@@ -330,7 +337,8 @@
                                     <button class="scene-action-btn" data-action="edit-scene" title="Edit Scene">
                                         <i class="fas fa-pen"></i>
                                     </button>
-                                    <button class="scene-action-btn danger" data-action="delete-scene" title="Delete Scene">
+                                    <button class="scene-action-btn danger" data-action="delete-scene"
+                                        title="Delete Scene">
                                         <i class="fas fa-trash"></i>
                                     </button>
                                 </div>
@@ -348,43 +356,43 @@
                     <div class="scene-uncat-header">Uncategorized</div>
                     {{/if}}
                     <div class="scene-uncat-container" data-folder-id="">
-                    {{#each tomScenes}}
-                    {{#unless this.folderId}}
-                    <div class="scene-card {{#if (eq this.id ../tomActiveSceneId)}}active{{/if}}"
-                        data-scene-id="{{this.id}}" draggable="true">
-                        <div class="scene-card-activate" title="Click to Broadcast">
-                            <div class="scene-card-thumb">
-                                {{#if this.isVideo}}
-                                <video src="{{this.background}}" muted loop preload="metadata"
-                                    class="scene-thumb-video"></video>
-                                {{else}}
-                                <div class="scene-thumb-image" style="background-image: url('{{this.background}}')">
+                        {{#each tomScenes}}
+                        {{#unless this.folderId}}
+                        <div class="scene-card {{#if (eq this.id ../tomActiveSceneId)}}active{{/if}}"
+                            data-scene-id="{{this.id}}" draggable="true">
+                            <div class="scene-card-activate" title="Click to Broadcast">
+                                <div class="scene-card-thumb">
+                                    {{#if this.isVideo}}
+                                    <video src="{{this.background}}" muted loop preload="metadata"
+                                        class="scene-thumb-video"></video>
+                                    {{else}}
+                                    <div class="scene-thumb-image" style="background-image: url('{{this.background}}')">
+                                    </div>
+                                    {{/if}}
+                                    {{#if (eq this.id ../tomActiveSceneId)}}
+                                    <div class="scene-playing-overlay">
+                                        <i class="fas fa-play"></i>
+                                    </div>
+                                    {{/if}}
                                 </div>
-                                {{/if}}
-                                {{#if (eq this.id ../tomActiveSceneId)}}
-                                <div class="scene-playing-overlay">
-                                    <i class="fas fa-play"></i>
+                                <div class="scene-card-info">
+                                    <div class="scene-name">{{this.name}}</div>
+                                    {{#if this.isArena}}
+                                    <div class="scene-tag arena">Arena</div>
+                                    {{/if}}
                                 </div>
-                                {{/if}}
                             </div>
-                            <div class="scene-card-info">
-                                <div class="scene-name">{{this.name}}</div>
-                                {{#if this.isArena}}
-                                <div class="scene-tag arena">Arena</div>
-                                {{/if}}
+                            <div class="scene-card-actions">
+                                <button class="scene-action-btn" data-action="edit-scene" title="Edit Scene">
+                                    <i class="fas fa-pen"></i>
+                                </button>
+                                <button class="scene-action-btn danger" data-action="delete-scene" title="Delete Scene">
+                                    <i class="fas fa-trash"></i>
+                                </button>
                             </div>
                         </div>
-                        <div class="scene-card-actions">
-                            <button class="scene-action-btn" data-action="edit-scene" title="Edit Scene">
-                                <i class="fas fa-pen"></i>
-                            </button>
-                            <button class="scene-action-btn danger" data-action="delete-scene" title="Delete Scene">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </div>
-                    </div>
-                    {{/unless}}
-                    {{/each}}
+                        {{/unless}}
+                        {{/each}}
                     </div>
 
                     {{!-- Empty state --}}
@@ -726,46 +734,211 @@
 
                 <!-- Tile Search Filter -->
                 <div class="hex-search-section">
-                    <input type="text" class="hex-search-input" placeholder="Search tiles..." value="{{hexSearchFilter}}" />
+                    <input type="text" class="hex-search-input" placeholder="Search tiles..."
+                        value="{{hexSearchFilter}}" />
                 </div>
 
                 <!-- Effect Toggles -->
                 <div class="hex-effects-section">
-                    <!-- Water Effect Toggle -->
-                    <div class="hex-water-toggle-section">
-                        <label class="hex-water-toggle">
-                            <input type="checkbox" class="hex-water-checkbox" />
-                            <span class="hex-water-label"><i class="fas fa-water"></i> Water</span>
+                    <div class="hex-effects-grid">
+                        <label class="hex-fx-toggle">
+                            <input type="checkbox" class="hex-water-checkbox" {{#if waterEffect}}checked{{/if}} />
+                            <span><i class="fas fa-water"></i> Water</span>
                         </label>
-                    </div>
-
-                    <!-- Wind Effect Toggle -->
-                    <div class="hex-wind-toggle-section">
-                        <label class="hex-wind-toggle">
-                            <input type="checkbox" class="hex-wind-checkbox" />
-                            <span class="hex-wind-label"><i class="fas fa-wind"></i> Wind</span>
+                        <label class="hex-fx-toggle">
+                            <input type="checkbox" class="hex-wind-checkbox" {{#if windEffect}}checked{{/if}} />
+                            <span><i class="fas fa-wind"></i> Wind</span>
                         </label>
-                    </div>
-
-                    <!-- Fog Animation Toggle -->
-                    <div class="hex-fog-toggle-section">
-                        <label class="hex-fog-toggle">
-                            <input type="checkbox" class="hex-fog-checkbox" />
-                            <span class="hex-fog-label"><i class="fas fa-cloud"></i> Fog</span>
+                        <label class="hex-fx-toggle">
+                            <input type="checkbox" class="hex-fog-checkbox" {{#if fogAnimation}}checked{{/if}} />
+                            <span><i class="fas fa-cloud"></i> Fog</span>
+                        </label>
+                        <label class="hex-fx-toggle">
+                            <input type="checkbox" class="hex-tint-checkbox" {{#if tintEnabled}}checked{{/if}} />
+                            <span><i class="fas fa-palette"></i> Tinted</span>
+                        </label>
+                        <label class="hex-fx-toggle">
+                            <input type="checkbox" class="hex-bw-checkbox" {{#if bwEffect}}checked{{/if}} />
+                            <span><i class="fas fa-adjust"></i> B&W</span>
                         </label>
                     </div>
                 </div>
 
                 <!-- Tile Grid -->
-                <div class="hex-tile-scroll" style="flex: 1; overflow-y: auto; scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.2) rgba(0,0,0,0.1);">
-                    <div class="hex-tile-grid">
+                <div class="hex-tile-scroll"
+                    style="flex: 1; overflow-y: auto; scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.2) rgba(0,0,0,0.1);">
+
+                    <!-- Procedural Generator (hidden on symbols tab) -->
+                    <div class="hex-generator-section {{#if (eq activeTileTab 'symbols')}}hidden{{/if}}">
+                        <button class="hex-generator-toggle-btn" data-action="hex-generator-toggle">
+                            <i class="fas fa-dice-d20"></i> Procedural Generator
+                        </button>
+                        <div class="hex-generator-controls hidden">
+                            <div class="hex-gen-slider-row">
+                                <label><i class="fas fa-water"></i> Water</label>
+                                <input type="range" name="hex-gen-water" min="-50" max="50" step="5" value="0">
+                                <span class="hex-gen-slider-value">0</span>
+                            </div>
+                            <div class="hex-gen-slider-row">
+                                <label><i class="fas fa-tree"></i> Vegetation</label>
+                                <input type="range" name="hex-gen-green" min="-50" max="50" step="5" value="0">
+                                <span class="hex-gen-slider-value">0</span>
+                            </div>
+                            <div class="hex-gen-slider-row">
+                                <label><i class="fas fa-mountain"></i> Mountains</label>
+                                <input type="range" name="hex-gen-mountain" min="-50" max="50" step="5" value="0">
+                                <span class="hex-gen-slider-value">0</span>
+                            </div>
+                            <div class="hex-gen-slider-row">
+                                <label><i class="fas fa-sun"></i> Desert</label>
+                                <input type="range" name="hex-gen-desert" min="-50" max="50" step="5" value="0">
+                                <span class="hex-gen-slider-value">0</span>
+                            </div>
+                            <div class="hex-gen-slider-row">
+                                <label><i class="fas fa-frog"></i> Swamp</label>
+                                <input type="range" name="hex-gen-swamp" min="-50" max="50" step="5" value="0">
+                                <span class="hex-gen-slider-value">0</span>
+                            </div>
+                            <div class="hex-gen-slider-row">
+                                <label><i class="fas fa-skull"></i> Badlands</label>
+                                <input type="range" name="hex-gen-badlands" min="-50" max="50" step="5" value="0">
+                                <span class="hex-gen-slider-value">0</span>
+                            </div>
+                            <div class="hex-gen-slider-row">
+                                <label><i class="fas fa-snowflake"></i> Snow</label>
+                                <input type="range" name="hex-gen-snow" min="-50" max="50" step="5" value="0">
+                                <span class="hex-gen-slider-value">0</span>
+                            </div>
+                            <div class="hex-gen-seed-row">
+                                <label><i class="fas fa-seedling"></i> Seed</label>
+                                <input type="text" name="hex-gen-seed" class="hex-gen-seed-input" placeholder="Random"
+                                    value="">
+                            </div>
+                            <div class="hex-gen-buttons">
+                                <button class="hex-gen-btn hex-gen-generate-btn" data-action="hex-generate">
+                                    <i class="fas fa-magic"></i> Generate
+                                </button>
+                                <button class="hex-gen-btn hex-gen-clear-btn" data-action="hex-clear">
+                                    <i class="fas fa-trash"></i> Clear
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tile Tabs -->
+                    <div class="hex-tile-tabs">
+                        <button class="hex-tile-tab {{#if (eq activeTileTab 'default')}}active{{/if}}" data-tile-tab="default">Default</button>
+                        <button class="hex-tile-tab {{#if (eq activeTileTab 'colored')}}active{{/if}}" data-tile-tab="colored">Colored</button>
+                        <button class="hex-tile-tab {{#if (eq activeTileTab 'custom')}}active{{/if}}" data-tile-tab="custom">Custom</button>
+                        <button class="hex-tile-tab {{#if (eq activeTileTab 'symbols')}}active{{/if}}" data-tile-tab="symbols">POI</button>
+                    </div>
+
+                    <!-- Colored Tile Info (only shown on colored tab) -->
+                    {{#if (eq activeTileTab 'colored')}}
+                    <div class="hex-custom-size-section">
+                        <div class="hex-custom-folder-hint">
+                            <i class="fas fa-info-circle"></i> Size: {{coloredTileWidth}}×{{coloredTileHeight}}
+                        </div>
+                    </div>
+                    {{/if}}
+
+                    <!-- POI Tile Info (only shown on symbols tab) -->
+                    {{#if (eq activeTileTab 'symbols')}}
+                    <div class="hex-custom-size-section">
+                        <div class="hex-custom-folder-hint">
+                            <i class="fas fa-info-circle"></i> POI paint on top, don't replace tiles
+                        </div>
+                    </div>
+                    {{/if}}
+
+                    <!-- Custom Tile Size Controls (only shown on custom tab) -->
+                    {{#if (eq activeTileTab 'custom')}}
+                    <div class="hex-custom-size-section">
+                        <div class="hex-custom-size-row">
+                            <label>W:</label>
+                            <input type="number" class="hex-custom-size-input" name="custom-tile-width"
+                                   min="50" max="1000" step="1" value="{{customTileWidth}}">
+                            <label>H:</label>
+                            <input type="number" class="hex-custom-size-input" name="custom-tile-height"
+                                   min="50" max="1000" step="1" value="{{customTileHeight}}">
+                        </div>
+                        <div class="hex-custom-folder-hint">
+                            <i class="fas fa-info-circle"></i> Add tiles to <code>Data/hexes/</code>
+                        </div>
+                    </div>
+                    {{/if}}
+
+                    <!-- Default Tiles Grid -->
+                    <div class="hex-tile-grid {{#unless (eq activeTileTab 'default')}}hidden{{/unless}}" data-tile-panel="default">
                         {{#each hexTiles}}
-                        <div class="hex-tile-thumb {{#if this.active}}active{{/if}}"
-                            data-tile="{{this.path}}" title="{{this.label}}">
+                        <div class="hex-tile-thumb {{#if this.active}}active{{/if}}" data-tile="{{this.path}}"
+                            title="{{this.label}}">
                             <img src="{{this.path}}" alt="{{this.label}}" />
                             <span class="hex-tile-label">{{this.label}}</span>
                         </div>
                         {{/each}}
+                    </div>
+
+                    <!-- Colored Tiles Grid -->
+                    <div class="hex-tile-grid {{#unless (eq activeTileTab 'colored')}}hidden{{/unless}}" data-tile-panel="colored">
+                        {{#if hexColoredTiles.length}}
+                            {{#each hexColoredTiles}}
+                            <div class="hex-tile-thumb {{#if this.active}}active{{/if}}" data-tile="{{this.path}}"
+                                title="{{this.label}}{{#if this.biome}} ({{this.biome}}){{/if}}">
+                                <img src="{{this.path}}" alt="{{this.label}}" />
+                                <span class="hex-tile-label">{{this.label}}</span>
+                                {{#if this.biome}}<span class="hex-tile-biome">{{this.biome}}</span>{{/if}}
+                            </div>
+                            {{/each}}
+                        {{else}}
+                            <div class="hex-no-custom-tiles">
+                                <p><i class="fas fa-palette"></i></p>
+                                <p>No colored tiles found</p>
+                            </div>
+                        {{/if}}
+                    </div>
+
+                    <!-- Custom Tiles Grid -->
+                    <div class="hex-tile-grid {{#unless (eq activeTileTab 'custom')}}hidden{{/unless}}" data-tile-panel="custom">
+                        {{#if hexCustomTiles.length}}
+                            {{#each hexCustomTiles}}
+                            <div class="hex-tile-thumb {{#if this.active}}active{{/if}}" data-tile="{{this.path}}"
+                                title="{{this.label}}{{#if this.biome}} ({{this.biome}}){{/if}}">
+                                <img src="{{this.path}}" alt="{{this.label}}" />
+                                <span class="hex-tile-label">{{this.label}}</span>
+                                {{#if this.biome}}<span class="hex-tile-biome">{{this.biome}}</span>{{/if}}
+                            </div>
+                            {{/each}}
+                        {{else}}
+                            <div class="hex-no-custom-tiles">
+                                <p><i class="fas fa-folder-open"></i></p>
+                                <p>No custom tiles found</p>
+                                <p class="hex-custom-hint">Add .png or .webp files to:<br><code>Data/hexes/</code></p>
+                                <p class="hex-custom-hint">Biome folders:<br>
+                                    <code>water</code>, <code>vegetation</code>, <code>mountains</code>,<br>
+                                    <code>desert</code>, <code>swamp</code>, <code>badlands</code>
+                                </p>
+                            </div>
+                        {{/if}}
+                    </div>
+
+                    <!-- Symbol Tiles Grid -->
+                    <div class="hex-tile-grid {{#unless (eq activeTileTab 'symbols')}}hidden{{/unless}}" data-tile-panel="symbols">
+                        {{#if hexSymbolTiles.length}}
+                            {{#each hexSymbolTiles}}
+                            <div class="hex-tile-thumb {{#if this.active}}active{{/if}}" data-tile="{{this.path}}"
+                                title="{{this.label}}{{#if this.category}} ({{this.category}}){{/if}}">
+                                <img src="{{this.path}}" alt="{{this.label}}" />
+                                <span class="hex-tile-label">{{this.label}}</span>
+                                {{#if this.category}}<span class="hex-tile-biome">{{this.category}}</span>{{/if}}
+                            </div>
+                            {{/each}}
+                        {{else}}
+                            <div class="hex-no-custom-tiles">
+                                <p><i class="fas fa-map-marker-alt"></i></p>
+                                <p>No symbol tiles found</p>
+                            </div>
+                        {{/if}}
                     </div>
                 </div>
 

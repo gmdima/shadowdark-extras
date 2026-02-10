@@ -44,10 +44,10 @@ export class TokenToolbarApp extends HandlebarsApplicationMixin(ApplicationV2) {
      * Update the toolbar data and re-render
      * @param {Object} data - Token/actor data
      */
-    updateData(data) {
+    async updateData(data) {
         this.tokenData = data;
+        await this.render();
         this.show();
-        this.render();
     }
 
     /**
@@ -58,7 +58,6 @@ export class TokenToolbarApp extends HandlebarsApplicationMixin(ApplicationV2) {
         if (elem) {
             elem.classList.remove("sdx-toolbar-hidden");
             elem.classList.add("sdx-toolbar-visible");
-            elem.style.pointerEvents = "auto";
         }
     }
 
@@ -70,7 +69,6 @@ export class TokenToolbarApp extends HandlebarsApplicationMixin(ApplicationV2) {
         if (elem) {
             elem.classList.remove("sdx-toolbar-visible");
             elem.classList.add("sdx-toolbar-hidden");
-            elem.style.pointerEvents = "none";
         }
     }
 
@@ -262,6 +260,29 @@ export class TokenToolbarApp extends HandlebarsApplicationMixin(ApplicationV2) {
                         await actor.rollAttack(itemId);
                     } else if (typeof item.roll === "function") {
                         await item.roll();
+                    }
+                } else if (itemType === "NPC Attack") {
+                    // NPC Attack - roll using actor's rollNpcAttack or displayCard
+                    if (typeof actor.rollNpcAttack === "function") {
+                        await actor.rollNpcAttack(itemId);
+                    } else if (typeof item.displayCard === "function") {
+                        await item.displayCard();
+                    } else {
+                        item.sheet.render(true);
+                    }
+                } else if (itemType === "NPC Special Attack") {
+                    // NPC Special Attack - display card or open sheet
+                    if (typeof item.displayCard === "function") {
+                        await item.displayCard();
+                    } else {
+                        item.sheet.render(true);
+                    }
+                } else if (itemType === "NPC Feature") {
+                    // NPC Feature - display card or open sheet
+                    if (typeof item.displayCard === "function") {
+                        await item.displayCard();
+                    } else {
+                        item.sheet.render(true);
                     }
                 } else {
                     // For other items, open the item sheet

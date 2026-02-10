@@ -31,13 +31,15 @@
     font-weight: 500;
     color: var(--sdx-toolbar-text);
     padding-bottom: 1rem;
-    pointer-events: all;
+    padding-bottom: 1rem;
+    pointer-events: none;
     transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
 }
 
 #sdx-token-toolbar.sdx-toolbar-visible {
     opacity: 1;
     transform: translateY(0);
+    pointer-events: auto;
 }
 
 #sdx-token-toolbar.sdx-toolbar-hidden {

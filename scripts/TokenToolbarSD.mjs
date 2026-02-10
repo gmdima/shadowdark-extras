@@ -314,9 +314,21 @@ function getEquippedItems(actor) {
     if (!actor?.items) return [];
 
     const items = [];
+    const isNPC = actor.type === "NPC";
+
+    // NPC item types that should always be shown
+    const npcItemTypes = ["NPC Attack", "NPC Special Attack", "NPC Feature"];
+
     for (const item of actor.items) {
-        // Only show equipped items (weapons, armor, etc.)
-        if (!item.system?.equipped) continue;
+        // For NPCs: show NPC Attack, NPC Special Attack, NPC Feature
+        // For Players: show equipped items (weapons, armor, etc.)
+        const isNpcItem = npcItemTypes.includes(item.type);
+        
+        if (isNPC) {
+            if (!isNpcItem) continue;
+        } else {
+            if (!item.system?.equipped) continue;
+        }
 
         // Build description based on item type
         let description = "";
@@ -335,6 +347,24 @@ function getEquippedItems(actor) {
         // For armor - show AC
         if (item.type === "Armor" && item.system.ac?.modifier) {
             description = `AC +${item.system.ac.modifier}`;
+        }
+
+        // For NPC Attack - show damage and attack count
+        if (item.type === "NPC Attack") {
+            const dmg = item.system.damage?.value || "";
+            const attackNum = item.system.attack?.num || "1";
+            description = dmg ? `${attackNum}× ${dmg}` : `${attackNum}×`;
+        }
+
+        // For NPC Special Attack - show attack count
+        if (item.type === "NPC Special Attack") {
+            const attackNum = item.system.attack?.num || "1";
+            description = `${attackNum}×`;
+        }
+
+        // For NPC Feature - no description needed
+        if (item.type === "NPC Feature") {
+            description = "";
         }
 
         items.push({

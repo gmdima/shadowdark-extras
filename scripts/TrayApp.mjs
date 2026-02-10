@@ -25,7 +25,8 @@ import { PinStyleEditorApp } from "./PinStyleEditorSD.mjs";
 import { PinListApp } from "./PinListApp.mjs";
 
 import { PlaceableNotesSD } from "./PlaceableNotesSD.mjs";
-import { setMapDimension, formatActiveScene, enablePainting, disablePainting, toggleTileSelection, setSearchFilter, toggleWaterEffect, toggleWindEffect, toggleFogAnimation } from "./HexPainterSD.mjs";
+import { setMapDimension, formatActiveScene, enablePainting, disablePainting, toggleTileSelection, setSearchFilter, toggleWaterEffect, toggleWindEffect, toggleFogAnimation, toggleTintEnabled, toggleBwEffect, isTintEnabled, setActiveTileTab, setCustomTileDimension } from "./HexPainterSD.mjs";
+import { generateHexMap, clearGeneratedTiles } from "./HexGeneratorSD.mjs";
 
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
@@ -59,6 +60,7 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
         this.trayData = data;
         this._isExpanded = false;
         this._pinSearchTerm = "";
+        this._scrollPositions = {}; // Store scroll positions for tile grids
 
         // Store static reference
         TrayApp._instance = this;
@@ -69,8 +71,44 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
      * @param {Object} data - Tray data
      */
     updateData(data) {
+        this._saveScrollPositions();
         this.trayData = data;
         this.render();
+    }
+
+    /**
+     * Save scroll positions of tile grids
+     */
+    _saveScrollPositions() {
+        // Can't query inside this.element because it might not be rendered/attached yet in the way we expect if we use standard AppV2 accessors, 
+        // but for now we look at the DOM since we are doing a re-render
+        const elem = document.querySelector(".sdx-tray");
+        if (!elem) return;
+
+        elem.querySelectorAll(".hex-tile-grid").forEach(grid => {
+            // Use dataset.tilePanel as key (e.g. "default", "colored", "custom")
+            // If strictly needed, we could also use ID if they had one, but tilePanel specific enough?
+            // Actually multiple grids exist, only visible one matters but saving all is safer.
+            const key = grid.dataset.tilePanel;
+            if (key) {
+                this._scrollPositions[key] = grid.scrollTop;
+            }
+        });
+    }
+
+    /**
+     * Restore scroll positions of tile grids
+     */
+    _restoreScrollPositions() {
+        const elem = document.querySelector(".sdx-tray");
+        if (!elem) return;
+
+        elem.querySelectorAll(".hex-tile-grid").forEach(grid => {
+            const key = grid.dataset.tilePanel;
+            if (key && this._scrollPositions[key] !== undefined) {
+                grid.scrollTop = this._scrollPositions[key];
+            }
+        });
     }
 
     /**
@@ -146,6 +184,7 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
             showTomOverlays: !!activeSceneId,
             tomScenes: await this._getTomScenes(),
             tomFolders: await this._getTomFolders(),
+            tintEnabled: isTintEnabled()
         };
     }
 
@@ -200,6 +239,7 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
      */
     _onRender(context, options) {
         super._onRender(context, options);
+        this._restoreScrollPositions();
 
         const elem = document.querySelector(".sdx-tray");
         if (!elem) return;
@@ -1013,6 +1053,16 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
             toggleFogAnimation();
         });
 
+        // Manual tint toggle
+        elem.querySelector(".hex-tint-checkbox")?.addEventListener("change", (e) => {
+            toggleTintEnabled();
+        });
+
+        // Black & White effect toggle
+        elem.querySelector(".hex-bw-checkbox")?.addEventListener("change", (e) => {
+            toggleBwEffect();
+        });
+
         // Tile selection (multi-select)
         elem.querySelectorAll(".hex-tile-thumb").forEach(thumb => {
             thumb.addEventListener("click", (e) => {
@@ -1024,12 +1074,91 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
                 thumb.classList.toggle("active");
             });
         });
+
+        // ── Procedural Generator ──
+
+        // Toggle generator panel
+        elem.querySelector(".hex-generator-toggle-btn")?.addEventListener("click", (e) => {
+            e.preventDefault();
+            const controls = elem.querySelector(".hex-generator-controls");
+            if (controls) controls.classList.toggle("hidden");
+        });
+
+        // Generator sliders - update display value
+        elem.querySelectorAll(".hex-gen-slider-row input[type='range']").forEach(slider => {
+            slider.addEventListener("input", (e) => {
+                const display = e.target.parentElement.querySelector(".hex-gen-slider-value");
+                if (display) display.textContent = e.target.value;
+            });
+        });
+
+        // Generate button
+        elem.querySelector(".hex-gen-generate-btn")?.addEventListener("click", async (e) => {
+            e.preventDefault();
+            const water = parseInt(elem.querySelector("input[name='hex-gen-water']")?.value || 0) / 100;
+            const green = parseInt(elem.querySelector("input[name='hex-gen-green']")?.value || 0) / 100;
+            const mountain = parseInt(elem.querySelector("input[name='hex-gen-mountain']")?.value || 0) / 100;
+            const desert = parseInt(elem.querySelector("input[name='hex-gen-desert']")?.value || 0) / 100;
+            const swamp = parseInt(elem.querySelector("input[name='hex-gen-swamp']")?.value || 0) / 100;
+            const badlands = parseInt(elem.querySelector("input[name='hex-gen-badlands']")?.value || 0) / 100;
+            const snow = parseInt(elem.querySelector("input[name='hex-gen-snow']")?.value || 0) / 100;
+            const seed = elem.querySelector("input[name='hex-gen-seed']")?.value || "";
+
+            await generateHexMap({ seed, water, green, mountain, desert, swamp, badlands, snow });
+        });
+
+        // Clear button
+        elem.querySelector(".hex-gen-clear-btn")?.addEventListener("click", async (e) => {
+            e.preventDefault();
+            await clearGeneratedTiles();
+        });
+
+        // Tile tabs (Default / Colored / Custom)
+        elem.querySelectorAll(".hex-tile-tab").forEach(tab => {
+            tab.addEventListener("click", (e) => {
+                e.preventDefault();
+                const tabName = tab.dataset.tileTab;
+                if (!tabName) return;
+
+                setActiveTileTab(tabName);
+
+                // Update tab active states
+                elem.querySelectorAll(".hex-tile-tab").forEach(t => t.classList.remove("active"));
+                tab.classList.add("active");
+
+                // Show/hide tile panels
+                elem.querySelectorAll(".hex-tile-grid[data-tile-panel]").forEach(panel => {
+                    if (panel.dataset.tilePanel === tabName) {
+                        panel.classList.remove("hidden");
+                    } else {
+                        panel.classList.add("hidden");
+                    }
+                });
+
+                // Show/hide custom size section
+                const customSizeSection = elem.querySelector(".hex-custom-size-section");
+                if (customSizeSection) {
+                    customSizeSection.style.display = tabName === "custom" ? "" : "none";
+                }
+
+                // Re-render to update state properly
+                renderTray();
+            });
+        });
+
+        // Custom tile size inputs
+        elem.querySelectorAll(".hex-custom-size-input").forEach(input => {
+            input.addEventListener("change", (e) => {
+                const val = parseInt(e.target.value);
+                const axis = e.target.name === "custom-tile-width" ? "width" : "height";
+                setCustomTileDimension(axis, val);
+            });
+        });
     }
 
     /* ═══════════════════════════════════════════════════════════════
        TOM SCENE SWITCHER (Quick scene switching during broadcast)
        ═══════════════════════════════════════════════════════════════ */
-
 
 
     /**
