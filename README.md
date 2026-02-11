@@ -373,3 +373,6 @@ This module is provided under the MIT License.
 - **Issues**: [GitHub Issues](https://github.com/gmdima/shadowdark-extras/issues)
 - **Discord**: Find me on the Shadowdark or Foundry VTT Discord servers
 
+
+
+Hexes tiles and POI are from https://2minutetabletop.com/product/world-map-hex-tiles/ licensed under CC by-nc 4.0
