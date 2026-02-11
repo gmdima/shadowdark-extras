@@ -9,59 +9,60 @@ const MODULE_ID = "shadowdark-extras";
 
 // ── Button definitions ──────────────────────────────────────────
 const DRAWING_MODES = [
-    { id: "sketch",  icon: "fa-pen-fancy",  label: "Sketch" },
-    { id: "line",    icon: "fa-minus",       label: "Line" },
-    { id: "box",     icon: "fa-vector-square",label: "Box" },
-    { id: "ellipse", icon: "fa-circle",      label: "Ellipse" },
-    { id: "stamp",   icon: "fa-stamp",       label: "Stamp" },
+    { id: "sketch", icon: "fa-pen-fancy", label: "Sketch" },
+    { id: "line", icon: "fa-minus", label: "Line" },
+    { id: "box", icon: "fa-vector-square", label: "Box" },
+    { id: "ellipse", icon: "fa-circle", label: "Ellipse" },
+    { id: "stamp", icon: "fa-stamp", label: "Stamp" },
 ];
 
 const STAMP_STYLES = [
-    { id: "plus",       icon: "fa-plus",           label: "Plus" },
-    { id: "x",          icon: "fa-xmark",          label: "X Mark" },
-    { id: "dot",        icon: "fa-circle",         label: "Dot" },
-    { id: "arrow",      icon: "fa-arrow-right",    label: "Arrow Right" },
-    { id: "arrow-up",   icon: "fa-arrow-up",       label: "Arrow Up" },
-    { id: "arrow-down", icon: "fa-arrow-down",     label: "Arrow Down" },
-    { id: "arrow-left", icon: "fa-arrow-left",     label: "Arrow Left" },
-    { id: "square",     icon: "fa-square",         label: "Square" },
+    { id: "plus", icon: "fa-plus", label: "Plus" },
+    { id: "x", icon: "fa-xmark", label: "X Mark" },
+    { id: "dot", icon: "fa-circle", label: "Dot" },
+    { id: "arrow", icon: "fa-arrow-right", label: "Arrow Right" },
+    { id: "arrow-up", icon: "fa-arrow-up", label: "Arrow Up" },
+    { id: "arrow-down", icon: "fa-arrow-down", label: "Arrow Down" },
+    { id: "arrow-left", icon: "fa-arrow-left", label: "Arrow Left" },
+    { id: "square", icon: "fa-square", label: "Square" },
+    { id: "hex-outline", icon: "fa-draw-polygon", label: "Hex Outline" },
 ];
 
 const SYMBOL_SIZES = [
-    { id: "small",  icon: "fa-compress",   label: "Small" },
+    { id: "small", icon: "fa-compress", label: "Small" },
     { id: "medium", icon: "fa-arrows-alt", label: "Medium" },
-    { id: "large",  icon: "fa-expand",     label: "Large" },
+    { id: "large", icon: "fa-expand", label: "Large" },
 ];
 
 const LINE_WEIGHTS = [
-    { id: 3,  icon: "fa-minus",          label: "Thin",   css: "sdx-lw-thin" },
-    { id: 6,  icon: "fa-minus",          label: "Medium", css: "sdx-lw-medium" },
-    { id: 12, icon: "fa-minus",          label: "Thick",  css: "sdx-lw-thick" },
+    { id: 3, icon: "fa-minus", label: "Thin", css: "sdx-lw-thin" },
+    { id: 6, icon: "fa-minus", label: "Medium", css: "sdx-lw-medium" },
+    { id: 12, icon: "fa-minus", label: "Thick", css: "sdx-lw-thick" },
 ];
 
 const LINE_STYLES = [
-    { id: "solid",  icon: "fa-minus",    label: "Solid" },
+    { id: "solid", icon: "fa-minus", label: "Solid" },
     { id: "dotted", icon: "fa-ellipsis", label: "Dotted" },
     { id: "dashed", icon: "fa-grip-lines-vertical", label: "Dashed" },
 ];
 
 const COLOR_DEFS = [
-    { id: "player",  hex: null,      label: "Player Color" },
-    { id: "black",   hex: "#262626", label: "Black" },
-    { id: "white",   hex: "#DCDCDC", label: "White" },
-    { id: "gray",    hex: "#808080", label: "Gray" },
-    { id: "red",     hex: "#BA3C31", label: "Red" },
+    { id: "player", hex: null, label: "Player Color" },
+    { id: "black", hex: "#262626", label: "Black" },
+    { id: "white", hex: "#DCDCDC", label: "White" },
+    { id: "gray", hex: "#808080", label: "Gray" },
+    { id: "red", hex: "#BA3C31", label: "Red" },
     { id: "crimson", hex: "#A01E32", label: "Crimson" },
-    { id: "orange",  hex: "#E67E22", label: "Orange" },
-    { id: "yellow",  hex: "#DB820C", label: "Yellow" },
-    { id: "lime",    hex: "#78C32E", label: "Lime" },
-    { id: "green",   hex: "#036929", label: "Green" },
-    { id: "cyan",    hex: "#34ACBA", label: "Cyan" },
-    { id: "blue",    hex: "#4C93CC", label: "Blue" },
-    { id: "navy",    hex: "#2C3E6E", label: "Navy" },
-    { id: "purple",  hex: "#8E44AD", label: "Purple" },
-    { id: "pink",    hex: "#D2648C", label: "Pink" },
-    { id: "brown",   hex: "#8B5A2B", label: "Brown" },
+    { id: "orange", hex: "#E67E22", label: "Orange" },
+    { id: "yellow", hex: "#DB820C", label: "Yellow" },
+    { id: "lime", hex: "#78C32E", label: "Lime" },
+    { id: "green", hex: "#036929", label: "Green" },
+    { id: "cyan", hex: "#34ACBA", label: "Cyan" },
+    { id: "blue", hex: "#4C93CC", label: "Blue" },
+    { id: "navy", hex: "#2C3E6E", label: "Navy" },
+    { id: "purple", hex: "#8E44AD", label: "Purple" },
+    { id: "pink", hex: "#D2648C", label: "Pink" },
+    { id: "brown", hex: "#8B5A2B", label: "Brown" },
 ];
 
 // ── Toolbar Class ───────────────────────────────────────────────
@@ -292,7 +293,7 @@ export class SDXDrawingToolbar {
         const cur = sdxDrawingTool.state.brushSettings.color;
         for (const c of COLOR_DEFS) {
             if (c.id === "player") {
-                try { if (cur === sdxDrawingTool._getPlayerColor()) return this._getPlayerHex(); } catch {}
+                try { if (cur === sdxDrawingTool._getPlayerColor()) return this._getPlayerHex(); } catch { }
             } else if (COLORS[c.id] && cur === COLORS[c.id]) {
                 return c.hex;
             }
@@ -332,7 +333,7 @@ export class SDXDrawingToolbar {
                 } else if (typeof game.user.color === "string") hex = game.user.color;
                 else if (typeof game.user.color === "number") hex = "#" + game.user.color.toString(16).padStart(6, "0");
             }
-        } catch {}
+        } catch { }
         return hex;
     }
 
@@ -755,7 +756,7 @@ export class SDXDrawingToolbar {
     _savePosition() {
         if (!this._el) return;
         const pos = { left: this._el.style.left, top: this._el.style.top };
-        try { game.settings.set(MODULE_ID, "drawing.toolbar.position", JSON.stringify(pos)); } catch {}
+        try { game.settings.set(MODULE_ID, "drawing.toolbar.position", JSON.stringify(pos)); } catch { }
     }
 
     _restorePosition() {
@@ -768,7 +769,7 @@ export class SDXDrawingToolbar {
                 if (pos.top) this._el.style.top = pos.top;
                 this._el.style.right = "auto";
             }
-        } catch {}
+        } catch { }
     }
 }
 

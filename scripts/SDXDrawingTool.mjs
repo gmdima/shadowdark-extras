@@ -9,21 +9,21 @@ const SOCKET_NAME = "module.shadowdark-extras";
 
 // ─── Color Palette ───────────────────────────────────────────────
 const COLORS = {
-    black:  "rgba(38, 38, 38, 0.7)",
-    red:    "rgba(186, 60, 49, 0.7)",
-    blue:   "rgba(76, 147, 204, 0.7)",
-    green:  "rgba(3, 105, 41, 0.7)",
+    black: "rgba(38, 38, 38, 0.7)",
+    red: "rgba(186, 60, 49, 0.7)",
+    blue: "rgba(76, 147, 204, 0.7)",
+    green: "rgba(3, 105, 41, 0.7)",
     yellow: "rgba(219, 130, 12, 0.7)",
-    white:  "rgba(220, 220, 220, 0.7)",
-    gray:   "rgba(128, 128, 128, 0.7)",
-    brown:  "rgba(139, 90, 43, 0.7)",
+    white: "rgba(220, 220, 220, 0.7)",
+    gray: "rgba(128, 128, 128, 0.7)",
+    brown: "rgba(139, 90, 43, 0.7)",
     orange: "rgba(230, 126, 34, 0.7)",
-    pink:   "rgba(210, 100, 140, 0.7)",
+    pink: "rgba(210, 100, 140, 0.7)",
     purple: "rgba(142, 68, 173, 0.7)",
-    cyan:   "rgba(52, 172, 186, 0.7)",
-    lime:   "rgba(120, 195, 46, 0.7)",
-    navy:   "rgba(44, 62, 110, 0.7)",
-    crimson:"rgba(160, 30, 50, 0.7)",
+    cyan: "rgba(52, 172, 186, 0.7)",
+    lime: "rgba(120, 195, 46, 0.7)",
+    navy: "rgba(44, 62, 110, 0.7)",
+    crimson: "rgba(160, 30, 50, 0.7)",
 };
 
 // ─── Stamp sizes (px square) ────────────────────────────────────
@@ -104,15 +104,15 @@ class SDXDrawingTool {
                 catch { return fallback; }
             };
             const dm = s("drawing.toolbar.drawingMode", "sketch");
-            if (["sketch","line","box","ellipse","stamp"].includes(dm)) this.state.drawingMode = dm;
+            if (["sketch", "line", "box", "ellipse", "stamp"].includes(dm)) this.state.drawingMode = dm;
             const ss = s("drawing.toolbar.stampStyle", "plus");
-            if (["plus","x","dot","arrow","arrow-up","arrow-down","arrow-left","square"].includes(ss)) this.state.stampStyle = ss;
+            if (["plus", "x", "dot", "arrow", "arrow-up", "arrow-down", "arrow-left", "square", "hex-outline"].includes(ss)) this.state.stampStyle = ss;
             const sz = s("drawing.toolbar.symbolSize", "medium");
-            if (["small","medium","large"].includes(sz)) this.state.symbolSize = sz;
+            if (["small", "medium", "large"].includes(sz)) this.state.symbolSize = sz;
             const lw = s("drawing.toolbar.lineWidth", 6);
             if (typeof lw === "number" && lw > 0) this.state.brushSettings.size = lw;
             const ls = s("drawing.toolbar.lineStyle", "solid");
-            if (["solid","dotted","dashed"].includes(ls)) this.state.lineStyle = ls;
+            if (["solid", "dotted", "dashed"].includes(ls)) this.state.lineStyle = ls;
             const cl = s("drawing.toolbar.color", "");
             if (cl) this.state.brushSettings.color = cl;
             else this.state.brushSettings.color = this._getPlayerColor();
@@ -262,7 +262,7 @@ class SDXDrawingTool {
                 self._stampSymbol(self.state.stampStyle, e);
                 return;
             }
-            if (["sketch","line","box","ellipse"].includes(self.state.drawingMode)) {
+            if (["sketch", "line", "box", "ellipse"].includes(self.state.drawingMode)) {
                 e.preventDefault(); e.stopPropagation();
             }
         };
@@ -526,7 +526,7 @@ class SDXDrawingTool {
         this._removePreviewSymbol();
         const g = new PIXI.Graphics();
         const sqSize = STAMP_SIZES[this.state.symbolSize] || STAMP_SIZES.medium;
-        const sw = sqSize * 0.30;
+        const sw = (this.state.stampStyle === "hex-outline") ? this.state.brushSettings.size : sqSize * 0.30;
         const color = this._cssToPixi(this.state.brushSettings.color);
         const half = sqSize / 2;
         const pad = sqSize * 0.1;
@@ -604,7 +604,7 @@ class SDXDrawingTool {
         if (!this.canvasLayer) return;
         const g = new PIXI.Graphics();
         const sqSize = STAMP_SIZES[this.state.symbolSize] || STAMP_SIZES.medium;
-        const sw = sqSize * 0.30;
+        const sw = (symbolType === "hex-outline") ? this.state.brushSettings.size : sqSize * 0.30;
         const color = this._cssToPixi(this.state.brushSettings.color);
         const half = sqSize / 2;
         const pad = sqSize * 0.1;
@@ -629,9 +629,9 @@ class SDXDrawingTool {
             const dotR = sw * 0.4, dotSp = sw * 4;
             let total = 0; const segs = [];
             for (let i = 0; i < pts.length - 1; i++) {
-                const dx = pts[i+1][0] - pts[i][0], dy = pts[i+1][1] - pts[i][1];
-                const d = Math.sqrt(dx*dx + dy*dy);
-                if (d > 0) { segs.push({ x1: sx+pts[i][0], y1: sy+pts[i][1], dx, dy, dist: d }); total += d; }
+                const dx = pts[i + 1][0] - pts[i][0], dy = pts[i + 1][1] - pts[i][1];
+                const d = Math.sqrt(dx * dx + dy * dy);
+                if (d > 0) { segs.push({ x1: sx + pts[i][0], y1: sy + pts[i][1], dx, dy, dist: d }); total += d; }
             }
             let cur = 0;
             while (cur < total) {
@@ -652,9 +652,9 @@ class SDXDrawingTool {
             const dashL = sw * 6, gapL = sw * 2;
             let total = 0; const segs = [];
             for (let i = 0; i < pts.length - 1; i++) {
-                const dx = pts[i+1][0] - pts[i][0], dy = pts[i+1][1] - pts[i][1];
-                const d = Math.sqrt(dx*dx + dy*dy);
-                if (d > 0) { segs.push({ x1: sx+pts[i][0], y1: sy+pts[i][1], x2: sx+pts[i+1][0], y2: sy+pts[i+1][1], dx, dy, dist: d }); total += d; }
+                const dx = pts[i + 1][0] - pts[i][0], dy = pts[i + 1][1] - pts[i][1];
+                const d = Math.sqrt(dx * dx + dy * dy);
+                if (d > 0) { segs.push({ x1: sx + pts[i][0], y1: sy + pts[i][1], x2: sx + pts[i + 1][0], y2: sy + pts[i + 1][1], dx, dy, dist: d }); total += d; }
             }
             let cur = 0, drawing = true;
             while (cur < total) {
@@ -682,10 +682,10 @@ class SDXDrawingTool {
         } else {
             const sw = this.state.brushSettings.size;
             const color = this._cssToPixi(this.state.brushSettings.color);
-            this._drawLineWithStyle(g, [[0,0],[w,0]], x, y, sw, color, 1.0, style);
-            this._drawLineWithStyle(g, [[0,0],[0,h]], x+w, y, sw, color, 1.0, style);
-            this._drawLineWithStyle(g, [[0,0],[-w,0]], x+w, y+h, sw, color, 1.0, style);
-            this._drawLineWithStyle(g, [[0,0],[0,-h]], x, y+h, sw, color, 1.0, style);
+            this._drawLineWithStyle(g, [[0, 0], [w, 0]], x, y, sw, color, 1.0, style);
+            this._drawLineWithStyle(g, [[0, 0], [0, h]], x + w, y, sw, color, 1.0, style);
+            this._drawLineWithStyle(g, [[0, 0], [-w, 0]], x + w, y + h, sw, color, 1.0, style);
+            this._drawLineWithStyle(g, [[0, 0], [0, -h]], x, y + h, sw, color, 1.0, style);
         }
     }
 
@@ -705,7 +705,7 @@ class SDXDrawingTool {
             }
             for (let i = 0; i < segs; i++) {
                 const [x0, y0] = pts[i], [x1, y1] = pts[i + 1];
-                this._drawLineWithStyle(g, [[0,0],[x1-x0,y1-y0]], x0, y0, sw, color, 1.0, style);
+                this._drawLineWithStyle(g, [[0, 0], [x1 - x0, y1 - y0]], x0, y0, sw, color, 1.0, style);
             }
         }
     }
@@ -742,12 +742,12 @@ class SDXDrawingTool {
             }
             case "arrow": case "arrow-up": case "arrow-down": case "arrow-left": {
                 const sf = 0.70, sh = (half - pad) * sf;
-                let base = [cx-sh, cy-sh, cx-sh+(2*sh*0.25), cy, cx-sh, cy+sh, cx+sh, cy];
-                let angle = type === "arrow-up" ? -Math.PI/2 : type === "arrow-down" ? Math.PI/2 : type === "arrow-left" ? Math.PI : 0;
+                let base = [cx - sh, cy - sh, cx - sh + (2 * sh * 0.25), cy, cx - sh, cy + sh, cx + sh, cy];
+                let angle = type === "arrow-up" ? -Math.PI / 2 : type === "arrow-down" ? Math.PI / 2 : type === "arrow-left" ? Math.PI : 0;
                 let rot = [];
                 for (let i = 0; i < base.length; i += 2) {
-                    const tx = base[i]-cx, ty = base[i+1]-cy;
-                    rot.push(tx*Math.cos(angle)-ty*Math.sin(angle)+cx, tx*Math.sin(angle)+ty*Math.cos(angle)+cy);
+                    const tx = base[i] - cx, ty = base[i + 1] - cy;
+                    rot.push(tx * Math.cos(angle) - ty * Math.sin(angle) + cx, tx * Math.sin(angle) + ty * Math.cos(angle) + cy);
                 }
                 let shadow = rot.map((v, i) => v + shadowOff);
                 // Fix: shadow needs alternating offsets
@@ -761,8 +761,53 @@ class SDXDrawingTool {
             case "square": {
                 const sf = 0.85, sh = (half - pad) * sf, sz = sh * 2, cr = sz * 0.08;
                 g.lineStyle(0);
-                g.beginFill(shadowColor, shadowAlpha); g.drawRoundedRect(cx-sh+shadowOff, cy-sh+shadowOff, sz, sz, cr); g.endFill();
-                g.beginFill(color, alpha); g.drawRoundedRect(cx-sh, cy-sh, sz, sz, cr); g.endFill();
+                g.beginFill(shadowColor, shadowAlpha); g.drawRoundedRect(cx - sh + shadowOff, cy - sh + shadowOff, sz, sz, cr); g.endFill();
+                g.beginFill(color, alpha); g.drawRoundedRect(cx - sh, cy - sh, sz, sz, cr); g.endFill();
+                break;
+            }
+            case "hex-outline": {
+                // Determine size tier from half (derived from STAMP_SIZES: small=40, medium=80, large=140)
+                // half values: 20, 40, 70
+                let tier = "small";
+                if (half >= 35 && half < 60) tier = "medium";
+                else if (half >= 60) tier = "large";
+
+                const points = this._getHexClusterOutline(tier, cx, cy);
+                if (points && points.length > 6) {
+                    // Draw the outline path
+                    g.lineStyle(sw, shadowColor, shadowAlpha);
+                    g.moveTo(points[0] + shadowOff, points[1] + shadowOff);
+                    for (let i = 2; i < points.length; i += 2) {
+                        g.lineTo(points[i] + shadowOff, points[i + 1] + shadowOff);
+                    }
+                    g.closePath();
+                    g.lineStyle(sw, color, alpha);
+                    g.moveTo(points[0], points[1]);
+                    for (let i = 2; i < points.length; i += 2) {
+                        g.lineTo(points[i], points[i + 1]);
+                    }
+                    g.closePath();
+                } else {
+                    // Fallback: Draw single hex using grid size
+                    const gridSize = canvas?.grid?.size || 100;
+                    // Detect orientation
+                    const grid = canvas?.grid;
+                    let pointyTop = false;
+                    if (grid?.columns !== undefined) pointyTop = grid.columns;
+                    else if (grid?.type !== undefined) pointyTop = (grid.type === 2 || grid.type === 3);
+                    // Detection inverted: pointyTop=true → flat hex, pointyTop=false → pointy hex
+                    const r = (gridSize / 2) * 1.155; // Scale to match grid
+                    const angleOffset = pointyTop ? 0 : Math.PI / 6;
+                    const verts = [];
+                    for (let i = 0; i < 6; i++) {
+                        const angle = angleOffset + (Math.PI / 3) * i;
+                        verts.push(cx + r * Math.cos(angle), cy + r * Math.sin(angle));
+                    }
+                    g.lineStyle(sw, shadowColor, shadowAlpha);
+                    g.drawPolygon(verts.map((v, i) => v + shadowOff));
+                    g.lineStyle(sw, color, alpha);
+                    g.drawPolygon(verts);
+                }
                 break;
             }
         }
@@ -836,7 +881,7 @@ class SDXDrawingTool {
     _createRemoteSymbol(data) {
         const g = new PIXI.Graphics();
         const sqSize = STAMP_SIZES[data.symbolSize] || STAMP_SIZES.medium;
-        const sw = sqSize * 0.30;
+        const sw = data.strokeWidth || sqSize * 0.30;
         const color = this._cssToPixi(data.strokeColor);
         const half = sqSize / 2, pad = sqSize * 0.1;
         this._drawSymbolShape(g, data.symbolType, data.x, data.y, half, pad, sw, color, 1.0, 0x000000, 0.3, 2);
@@ -902,7 +947,7 @@ class SDXDrawingTool {
         this._permanentDrawings = [];
         this._lastPermanentDrawing = null;
         if (game.user.isGM && canvas.scene) {
-            try { await canvas.scene.setFlag(MODULE_ID, "permanentDrawings", []); } catch {}
+            try { await canvas.scene.setFlag(MODULE_ID, "permanentDrawings", []); } catch { }
         }
         if (broadcast) this._broadcast("sdx-permanent-cleared", { userId: game.user.id });
     }
@@ -919,7 +964,7 @@ class SDXDrawingTool {
                 const saved = canvas.scene.getFlag(MODULE_ID, "permanentDrawings") || [];
                 const updated = saved.filter(s => s.drawingId !== d.id);
                 await canvas.scene.setFlag(MODULE_ID, "permanentDrawings", updated);
-            } catch {}
+            } catch { }
         }
         this._broadcast("sdx-drawing-deleted", { userId: game.user.id, drawingId: d.id, permanent: true });
     }
@@ -963,7 +1008,7 @@ class SDXDrawingTool {
     _getExpiration() {
         if (!this.state.timedEraseEnabled) return null;
         let timeout = 30;
-        try { timeout = game.settings.get(MODULE_ID, "drawing.timedEraseTimeout"); } catch {}
+        try { timeout = game.settings.get(MODULE_ID, "drawing.timedEraseTimeout"); } catch { }
         return timeout > 0 ? Date.now() + timeout * 1000 : null;
     }
 
@@ -1240,27 +1285,198 @@ class SDXDrawingTool {
                     const saved = canvas.scene.getFlag(MODULE_ID, "permanentDrawings") || [];
                     const updated = saved.filter(s => s.drawingId !== id);
                     await canvas.scene.setFlag(MODULE_ID, "permanentDrawings", updated);
-                } catch {}
+                } catch { }
             }
             this._broadcast("sdx-drawing-deleted", { userId: game.user.id, drawingId: id, permanent: true });
         }
     }
 
     // ── Public setters (called by toolbar) ──────────────────────
-    setDrawingMode(mode) { if (["sketch","line","box","ellipse","stamp"].includes(mode)) { this.state.drawingMode = mode; try { game.settings.set(MODULE_ID, "drawing.toolbar.drawingMode", mode); } catch {} } }
-    setStampStyle(style) { const v = ["plus","x","dot","arrow","arrow-up","arrow-down","arrow-left","square"]; if (v.includes(style)) { this.state.stampStyle = style; try { game.settings.set(MODULE_ID, "drawing.toolbar.stampStyle", style); } catch {} } }
-    setSymbolSize(size) { if (["small","medium","large"].includes(size)) { this.state.symbolSize = size; try { game.settings.set(MODULE_ID, "drawing.toolbar.symbolSize", size); } catch {} } }
-    setLineStyle(style) { if (["solid","dotted","dashed"].includes(style)) { this.state.lineStyle = style; try { game.settings.set(MODULE_ID, "drawing.toolbar.lineStyle", style); } catch {} } }
-    setBrushSize(size) { this.state.brushSettings.size = Math.max(1, Math.min(20, size)); try { game.settings.set(MODULE_ID, "drawing.toolbar.lineWidth", this.state.brushSettings.size); } catch {} }
-    setBrushColor(color) { this.state.brushSettings.color = color; try { game.settings.set(MODULE_ID, "drawing.toolbar.color", color); } catch {} }
+    setDrawingMode(mode) { if (["sketch", "line", "box", "ellipse", "stamp"].includes(mode)) { this.state.drawingMode = mode; try { game.settings.set(MODULE_ID, "drawing.toolbar.drawingMode", mode); } catch { } } }
+    setStampStyle(style) { const v = ["plus", "x", "dot", "arrow", "arrow-up", "arrow-down", "arrow-left", "square", "hex-outline"]; if (v.includes(style)) { this.state.stampStyle = style; try { game.settings.set(MODULE_ID, "drawing.toolbar.stampStyle", style); } catch { } } }
+    setSymbolSize(size) { if (["small", "medium", "large"].includes(size)) { this.state.symbolSize = size; try { game.settings.set(MODULE_ID, "drawing.toolbar.symbolSize", size); } catch { } } }
+    setLineStyle(style) { if (["solid", "dotted", "dashed"].includes(style)) { this.state.lineStyle = style; try { game.settings.set(MODULE_ID, "drawing.toolbar.lineStyle", style); } catch { } } }
+    setBrushSize(size) { this.state.brushSettings.size = Math.max(1, Math.min(20, size)); try { game.settings.set(MODULE_ID, "drawing.toolbar.lineWidth", this.state.brushSettings.size); } catch { } }
+    setBrushColor(color) { this.state.brushSettings.color = color; try { game.settings.set(MODULE_ID, "drawing.toolbar.color", color); } catch { } }
     setTimedErase(enabled) {
         this.state.timedEraseEnabled = enabled;
-        try { game.settings.set(MODULE_ID, "drawing.toolbar.timedEraseEnabled", enabled); } catch {}
+        try { game.settings.set(MODULE_ID, "drawing.toolbar.timedEraseEnabled", enabled); } catch { }
         if (this._cleanupInterval) { clearInterval(this._cleanupInterval); this._cleanupInterval = null; }
         if (this._pixiDrawings.length) this._scheduleCleanup();
     }
     setPermanentMode(enabled) { this.state.permanentMode = !!enabled; }
-    setOpacity(val) { this.state.opacity = Math.max(0.1, Math.min(1.0, Number(val) || 1.0)); try { game.settings.set(MODULE_ID, "drawing.toolbar.opacity", this.state.opacity); } catch {} }
+    setOpacity(val) { this.state.opacity = Math.max(0.1, Math.min(1.0, Number(val) || 1.0)); try { game.settings.set(MODULE_ID, "drawing.toolbar.opacity", this.state.opacity); } catch { } }
+
+    // ── Hex Outline Helper ──────────────────────────────────────
+    _getHexClusterOutline(tier, centerX, centerY) {
+        // Get grid size - this determines hex dimensions
+        const gridSize = canvas?.grid?.size || canvas?.dimensions?.size || 100;
+
+        // Check if it's a hex grid and determine orientation
+        const grid = canvas?.grid;
+        let isPointyTop = false; // Default to flat-top
+        if (grid) {
+            // V12+: grid.columns means pointy-top (columnar)
+            // V11: grid.type 2,3 = columns (pointy), 4,5 = rows (flat)
+            if (grid.columns !== undefined) {
+                isPointyTop = grid.columns;
+            } else if (grid.type !== undefined) {
+                isPointyTop = (grid.type === 2 || grid.type === 3);
+            }
+        }
+
+        // Calculate hex radius (distance from center to vertex)
+        // Scale factor to match actual grid hex size (2/sqrt(3) ≈ 1.155)
+        const sqrt3 = Math.sqrt(3);
+        const scaleFactor = 1.155;
+        const r = (gridSize / 2) * scaleFactor;
+
+        // Generate vertices for a single hex centered at origin, then offset to (hx, hy)
+        const getHexVertices = (hx, hy) => {
+            const verts = [];
+            for (let i = 0; i < 6; i++) {
+                // For flat-top hex (rows): start at 30° so flat edges are at top/bottom
+                // For pointy-top hex (columns): start at 0° so vertices are at top/bottom
+                // Note: grid.columns detection seems inverted, so we flip the logic
+                const angleOffset = isPointyTop ? 0 : Math.PI / 6;
+                const angle = angleOffset + (Math.PI / 3) * i;
+                verts.push({
+                    x: hx + r * Math.cos(angle),
+                    y: hy + r * Math.sin(angle)
+                });
+            }
+            return verts;
+        };
+
+        // Calculate hex center positions using axial coordinates (q, r)
+        // Apply same scale factor to spacing so vertices align properly
+        const axialToPixel = (q, ar) => {
+            if (isPointyTop) {
+                // Actually flat-top: horizontal = 1.5*r, vertical = sqrt(3)*r
+                return {
+                    x: gridSize * 0.75 * scaleFactor * q,
+                    y: gridSize * (sqrt3 / 2) * scaleFactor * (ar + q / 2)
+                };
+            } else {
+                // Actually pointy-top: horizontal = sqrt(3)*r, vertical = 1.5*r
+                return {
+                    x: gridSize * (sqrt3 / 2) * scaleFactor * (q + ar / 2),
+                    y: gridSize * 0.75 * scaleFactor * ar
+                };
+            }
+        };
+
+        // Define which hexes to include based on tier
+        // Using axial coordinates (q, r)
+        let hexAxialCoords = [{ q: 0, r: 0 }]; // Center hex
+
+        if (tier === "medium" || tier === "large") {
+            // Ring 1: 6 neighbors (flower pattern)
+            const ring1 = [
+                { q: 1, r: 0 }, { q: 1, r: -1 }, { q: 0, r: -1 },
+                { q: -1, r: 0 }, { q: -1, r: 1 }, { q: 0, r: 1 }
+            ];
+            hexAxialCoords.push(...ring1);
+        }
+
+        if (tier === "large") {
+            // Ring 2: 12 more hexes
+            const ring2 = [
+                { q: 2, r: 0 }, { q: 2, r: -1 }, { q: 2, r: -2 },
+                { q: 1, r: -2 }, { q: 0, r: -2 }, { q: -1, r: -1 },
+                { q: -2, r: 0 }, { q: -2, r: 1 }, { q: -2, r: 2 },
+                { q: -1, r: 2 }, { q: 0, r: 2 }, { q: 1, r: 1 }
+            ];
+            hexAxialCoords.push(...ring2);
+        }
+
+        // Collect all edges from all hexes
+        // Use a map to track edges - shared edges (internal) will be added twice and removed
+        const allEdges = [];
+
+        // Round coordinates to avoid floating point issues (snap to 0.5 precision)
+        const snap = (v) => Math.round(v * 2) / 2;
+        const pointKey = (p) => `${snap(p.x)},${snap(p.y)}`;
+
+        for (const axial of hexAxialCoords) {
+            const pixelPos = axialToPixel(axial.q, axial.r);
+            const verts = getHexVertices(centerX + pixelPos.x, centerY + pixelPos.y);
+
+            for (let i = 0; i < 6; i++) {
+                const p1 = { x: snap(verts[i].x), y: snap(verts[i].y) };
+                const p2 = { x: snap(verts[(i + 1) % 6].x), y: snap(verts[(i + 1) % 6].y) };
+                allEdges.push({ p1, p2, key: `${pointKey(p1)}|${pointKey(p2)}` });
+            }
+        }
+
+        // Remove shared edges (edges that appear in both directions)
+        const edgeCounts = new Map();
+        for (const edge of allEdges) {
+            const revKey = `${pointKey(edge.p2)}|${pointKey(edge.p1)}`;
+            if (edgeCounts.has(revKey)) {
+                edgeCounts.set(revKey, edgeCounts.get(revKey) + 1);
+            } else if (edgeCounts.has(edge.key)) {
+                edgeCounts.set(edge.key, edgeCounts.get(edge.key) + 1);
+            } else {
+                edgeCounts.set(edge.key, 1);
+            }
+        }
+
+        // Keep only edges that appear once (outer edges)
+        const outerEdges = allEdges.filter(edge => {
+            const revKey = `${pointKey(edge.p2)}|${pointKey(edge.p1)}`;
+            const count = edgeCounts.get(edge.key) || edgeCounts.get(revKey) || 0;
+            return count === 1;
+        });
+
+        if (outerEdges.length === 0) return null;
+
+        // Stitch edges into a continuous path
+        const path = [];
+        const used = new Set();
+
+        // Start with first edge
+        let current = outerEdges[0];
+        used.add(current.key);
+        path.push(current.p1.x, current.p1.y);
+
+        let cursor = current.p2;
+        const startPoint = current.p1;
+
+        let iterations = 0;
+        const maxIterations = outerEdges.length + 10;
+
+        while (iterations < maxIterations) {
+            path.push(cursor.x, cursor.y);
+
+            // Check if we've closed the loop
+            const distToStart = Math.abs(cursor.x - startPoint.x) + Math.abs(cursor.y - startPoint.y);
+            if (distToStart < 2) {
+                break;
+            }
+
+            // Find next edge that starts at cursor
+            let found = false;
+            const cursorKey = pointKey(cursor);
+
+            for (const edge of outerEdges) {
+                if (used.has(edge.key)) continue;
+
+                // Check if this edge starts at cursor
+                if (pointKey(edge.p1) === cursorKey) {
+                    used.add(edge.key);
+                    cursor = edge.p2;
+                    found = true;
+                    break;
+                }
+            }
+
+            if (!found) break;
+            iterations++;
+        }
+
+        return path.length > 6 ? path : null;
+    }
 }
 
 // ── Singleton ───────────────────────────────────────────────────
