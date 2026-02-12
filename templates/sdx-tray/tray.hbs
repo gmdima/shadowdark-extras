@@ -54,13 +54,16 @@
             </button>
             {{#if (eq viewMode 'hexes')}}
             {{#if (eq activeTileTab 'symbols')}}
-            <button class="tray-handle-button-tool poi-undo-btn {{#unless canUndoPoi}}disabled{{/unless}}" data-action="poi-undo" title="Undo Last POI">
+            <button class="tray-handle-button-tool poi-undo-btn {{#unless canUndoPoi}}disabled{{/unless}}"
+                data-action="poi-undo" title="Undo Last POI">
                 <i class="fa-solid fa-rotate-left"></i>
             </button>
-            <button class="tray-handle-button-tool poi-redo-btn {{#unless canRedoPoi}}disabled{{/unless}}" data-action="poi-redo" title="Redo POI">
+            <button class="tray-handle-button-tool poi-redo-btn {{#unless canRedoPoi}}disabled{{/unless}}"
+                data-action="poi-redo" title="Redo POI">
                 <i class="fa-solid fa-rotate-right"></i>
             </button>
-            <button class="tray-handle-button-tool poi-scale-btn" data-action="poi-scale-down" title="Decrease POI Size">
+            <button class="tray-handle-button-tool poi-scale-btn" data-action="poi-scale-down"
+                title="Decrease POI Size">
                 <i class="fa-solid fa-minus"></i>
             </button>
             <button class="tray-handle-button-tool poi-scale-btn" data-action="poi-scale-up" title="Increase POI Size">
@@ -69,10 +72,12 @@
             <button class="tray-handle-button-tool poi-transform-btn" data-action="poi-rotate-left" title="Rotate Left">
                 <i class="fa-solid fa-rotate-left"></i>
             </button>
-            <button class="tray-handle-button-tool poi-transform-btn" data-action="poi-rotate-right" title="Rotate Right">
+            <button class="tray-handle-button-tool poi-transform-btn" data-action="poi-rotate-right"
+                title="Rotate Right">
                 <i class="fa-solid fa-rotate-right"></i>
             </button>
-            <button class="tray-handle-button-tool poi-transform-btn {{#if poiMirror}}active{{/if}}" data-action="poi-mirror" title="Mirror Horizontal">
+            <button class="tray-handle-button-tool poi-transform-btn {{#if poiMirror}}active{{/if}}"
+                data-action="poi-mirror" title="Mirror Horizontal">
                 <i class="fa-solid fa-left-right"></i>
             </button>
             {{/if}}

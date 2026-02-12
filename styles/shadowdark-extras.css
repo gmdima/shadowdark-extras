@@ -18170,3 +18170,29 @@ div.window-app.shadowdark.sheet.player .window-header {
     flex: 0 0 40px;
     text-align: center;
 }
+
+/* ============================================
+   TILE FLATTEN HUD BUTTON
+   ============================================ */
+
+#tile-hud .sdx-flatten-tiles {
+    position: relative;
+}
+
+#tile-hud .sdx-flatten-tiles:hover {
+    box-shadow: 0 0 6px rgba(100, 200, 255, 0.6);
+}
+
+#tile-hud .sdx-flatten-tiles.disabled {
+    opacity: 0.4;
+    pointer-events: none;
+}
+
+#tile-hud .sdx-flatten-tiles i {
+    color: #ddd;
+}
+
+#tile-hud .sdx-flatten-tiles:hover i {
+    color: #fff;
+    text-shadow: 0 0 4px rgba(100, 200, 255, 0.8);
+}
