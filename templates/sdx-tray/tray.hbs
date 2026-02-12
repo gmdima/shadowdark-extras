@@ -52,6 +52,31 @@
             <button class="tray-handle-button-tool" data-action="sdx-roller" title="SDX Roller">
                 <i class="fa-solid fa-dice"></i>
             </button>
+            {{#if (eq viewMode 'hexes')}}
+            {{#if (eq activeTileTab 'symbols')}}
+            <button class="tray-handle-button-tool poi-undo-btn {{#unless canUndoPoi}}disabled{{/unless}}" data-action="poi-undo" title="Undo Last POI">
+                <i class="fa-solid fa-rotate-left"></i>
+            </button>
+            <button class="tray-handle-button-tool poi-redo-btn {{#unless canRedoPoi}}disabled{{/unless}}" data-action="poi-redo" title="Redo POI">
+                <i class="fa-solid fa-rotate-right"></i>
+            </button>
+            <button class="tray-handle-button-tool poi-scale-btn" data-action="poi-scale-down" title="Decrease POI Size">
+                <i class="fa-solid fa-minus"></i>
+            </button>
+            <button class="tray-handle-button-tool poi-scale-btn" data-action="poi-scale-up" title="Increase POI Size">
+                <i class="fa-solid fa-plus"></i>
+            </button>
+            <button class="tray-handle-button-tool poi-transform-btn" data-action="poi-rotate-left" title="Rotate Left">
+                <i class="fa-solid fa-rotate-left"></i>
+            </button>
+            <button class="tray-handle-button-tool poi-transform-btn" data-action="poi-rotate-right" title="Rotate Right">
+                <i class="fa-solid fa-rotate-right"></i>
+            </button>
+            <button class="tray-handle-button-tool poi-transform-btn {{#if poiMirror}}active{{/if}}" data-action="poi-mirror" title="Mirror Horizontal">
+                <i class="fa-solid fa-left-right"></i>
+            </button>
+            {{/if}}
+            {{/if}}
             {{/if}}
 
             <div class="tray-handle-content-wrapper">
@@ -827,10 +852,14 @@
 
                     <!-- Tile Tabs -->
                     <div class="hex-tile-tabs">
-                        <button class="hex-tile-tab {{#if (eq activeTileTab 'default')}}active{{/if}}" data-tile-tab="default">Default</button>
-                        <button class="hex-tile-tab {{#if (eq activeTileTab 'colored')}}active{{/if}}" data-tile-tab="colored">Colored</button>
-                        <button class="hex-tile-tab {{#if (eq activeTileTab 'custom')}}active{{/if}}" data-tile-tab="custom">Custom</button>
-                        <button class="hex-tile-tab {{#if (eq activeTileTab 'symbols')}}active{{/if}}" data-tile-tab="symbols">POI</button>
+                        <button class="hex-tile-tab {{#if (eq activeTileTab 'default')}}active{{/if}}"
+                            data-tile-tab="default">Default</button>
+                        <button class="hex-tile-tab {{#if (eq activeTileTab 'colored')}}active{{/if}}"
+                            data-tile-tab="colored">Colored</button>
+                        <button class="hex-tile-tab {{#if (eq activeTileTab 'custom')}}active{{/if}}"
+                            data-tile-tab="custom">Custom</button>
+                        <button class="hex-tile-tab {{#if (eq activeTileTab 'symbols')}}active{{/if}}"
+                            data-tile-tab="symbols">POI</button>
                     </div>
 
                     <!-- Colored Tile Info (only shown on colored tab) -->
@@ -844,9 +873,9 @@
 
                     <!-- POI Tile Info (only shown on symbols tab) -->
                     {{#if (eq activeTileTab 'symbols')}}
-                    <div class="hex-custom-size-section">
+                    <div class="hex-custom-size-section poi-info-section">
                         <div class="hex-custom-folder-hint">
-                            <i class="fas fa-info-circle"></i> POI paint on top, don't replace tiles
+                            <i class="fas fa-info-circle"></i> POI paint on top · Scale: {{poiScalePercent}}%
                         </div>
                     </div>
                     {{/if}}
@@ -856,11 +885,11 @@
                     <div class="hex-custom-size-section">
                         <div class="hex-custom-size-row">
                             <label>W:</label>
-                            <input type="number" class="hex-custom-size-input" name="custom-tile-width"
-                                   min="50" max="1000" step="1" value="{{customTileWidth}}">
+                            <input type="number" class="hex-custom-size-input" name="custom-tile-width" min="50"
+                                max="1000" step="1" value="{{customTileWidth}}">
                             <label>H:</label>
-                            <input type="number" class="hex-custom-size-input" name="custom-tile-height"
-                                   min="50" max="1000" step="1" value="{{customTileHeight}}">
+                            <input type="number" class="hex-custom-size-input" name="custom-tile-height" min="50"
+                                max="1000" step="1" value="{{customTileHeight}}">
                         </div>
                         <div class="hex-custom-folder-hint">
                             <i class="fas fa-info-circle"></i> Add tiles to <code>Data/hexes/</code>
@@ -869,7 +898,8 @@
                     {{/if}}
 
                     <!-- Default Tiles Grid -->
-                    <div class="hex-tile-grid {{#unless (eq activeTileTab 'default')}}hidden{{/unless}}" data-tile-panel="default">
+                    <div class="hex-tile-grid {{#unless (eq activeTileTab 'default')}}hidden{{/unless}}"
+                        data-tile-panel="default">
                         {{#each hexTiles}}
                         <div class="hex-tile-thumb {{#if this.active}}active{{/if}}" data-tile="{{this.path}}"
                             title="{{this.label}}">
@@ -879,72 +909,107 @@
                         {{/each}}
                     </div>
 
-                    <!-- Colored Tiles Grid -->
-                    <div class="hex-tile-grid {{#unless (eq activeTileTab 'colored')}}hidden{{/unless}}" data-tile-panel="colored">
-                        {{#if hexColoredTiles.length}}
-                            {{#each hexColoredTiles}}
-                            <div class="hex-tile-thumb {{#if this.active}}active{{/if}}" data-tile="{{this.path}}"
-                                title="{{this.label}}{{#if this.biome}} ({{this.biome}}){{/if}}">
-                                <img src="{{this.path}}" alt="{{this.label}}" />
-                                <span class="hex-tile-label">{{this.label}}</span>
-                                {{#if this.biome}}<span class="hex-tile-biome">{{this.biome}}</span>{{/if}}
+                    <!-- Colored Tiles Grid (folder-based) -->
+                    <div class="hex-tile-colored-panel {{#unless (eq activeTileTab 'colored')}}hidden{{/unless}}"
+                        data-tile-panel="colored">
+                        {{#if hexColoredFolders.length}}
+                        {{#each hexColoredFolders}}
+                        <div class="hex-colored-folder" data-folder="{{this.folder}}">
+                            <div class="hex-colored-folder-header {{#if this.collapsed}}collapsed{{/if}}"
+                                data-action="toggle-colored-folder" data-folder="{{this.folder}}">
+                                <i
+                                    class="fas {{#if this.collapsed}}fa-caret-right{{else}}fa-caret-down{{/if}} hex-folder-chevron"></i>
+                                <i
+                                    class="fas {{#if this.collapsed}}fa-folder{{else}}fa-folder-open{{/if}} hex-folder-icon"></i>
+                                <span class="hex-folder-name">{{this.label}}</span>
+                                <span class="hex-folder-count">({{this.tiles.length}})</span>
                             </div>
-                            {{/each}}
+                            <div class="hex-tile-grid hex-colored-folder-content {{#if this.collapsed}}hidden{{/if}}">
+                                {{#each this.tiles}}
+                                <div class="hex-tile-thumb {{#if this.active}}active{{/if}}" data-tile="{{this.path}}"
+                                    title="{{this.label}}{{#if this.biome}} ({{this.biome}}){{/if}}">
+                                    <img src="{{this.path}}" alt="{{this.label}}" />
+                                    <span class="hex-tile-label">{{this.label}}</span>
+                                </div>
+                                {{/each}}
+                            </div>
+                        </div>
+                        {{/each}}
                         {{else}}
-                            <div class="hex-no-custom-tiles">
-                                <p><i class="fas fa-palette"></i></p>
-                                <p>No colored tiles found</p>
-                            </div>
+                        <div class="hex-no-custom-tiles">
+                            <p><i class="fas fa-palette"></i></p>
+                            <p>No colored tiles found</p>
+                        </div>
                         {{/if}}
                     </div>
 
                     <!-- Custom Tiles Grid -->
-                    <div class="hex-tile-grid {{#unless (eq activeTileTab 'custom')}}hidden{{/unless}}" data-tile-panel="custom">
+                    <div class="hex-tile-grid {{#unless (eq activeTileTab 'custom')}}hidden{{/unless}}"
+                        data-tile-panel="custom">
                         {{#if hexCustomTiles.length}}
-                            {{#each hexCustomTiles}}
-                            <div class="hex-tile-thumb {{#if this.active}}active{{/if}}" data-tile="{{this.path}}"
-                                title="{{this.label}}{{#if this.biome}} ({{this.biome}}){{/if}}">
-                                <img src="{{this.path}}" alt="{{this.label}}" />
-                                <span class="hex-tile-label">{{this.label}}</span>
-                                {{#if this.biome}}<span class="hex-tile-biome">{{this.biome}}</span>{{/if}}
-                            </div>
-                            {{/each}}
+                        {{#each hexCustomTiles}}
+                        <div class="hex-tile-thumb {{#if this.active}}active{{/if}}" data-tile="{{this.path}}"
+                            title="{{this.label}}{{#if this.biome}} ({{this.biome}}){{/if}}">
+                            <img src="{{this.path}}" alt="{{this.label}}" />
+                            <span class="hex-tile-label">{{this.label}}</span>
+                            {{#if this.biome}}<span class="hex-tile-biome">{{this.biome}}</span>{{/if}}
+                        </div>
+                        {{/each}}
                         {{else}}
-                            <div class="hex-no-custom-tiles">
-                                <p><i class="fas fa-folder-open"></i></p>
-                                <p>No custom tiles found</p>
-                                <p class="hex-custom-hint">Add .png or .webp files to:<br><code>Data/hexes/</code></p>
-                                <p class="hex-custom-hint">Biome folders:<br>
-                                    <code>water</code>, <code>vegetation</code>, <code>mountains</code>,<br>
-                                    <code>desert</code>, <code>swamp</code>, <code>badlands</code>
-                                </p>
-                            </div>
+                        <div class="hex-no-custom-tiles">
+                            <p><i class="fas fa-folder-open"></i></p>
+                            <p>No custom tiles found</p>
+                            <p class="hex-custom-hint">Add .png or .webp files to:<br><code>Data/hexes/</code></p>
+                            <p class="hex-custom-hint">Biome folders:<br>
+                                <code>water</code>, <code>vegetation</code>, <code>mountains</code>,<br>
+                                <code>desert</code>, <code>swamp</code>, <code>badlands</code>
+                            </p>
+                        </div>
                         {{/if}}
                     </div>
 
-                    <!-- Symbol Tiles Grid -->
-                    <div class="hex-tile-grid {{#unless (eq activeTileTab 'symbols')}}hidden{{/unless}}" data-tile-panel="symbols">
-                        {{#if hexSymbolTiles.length}}
-                            {{#each hexSymbolTiles}}
-                            <div class="hex-tile-thumb {{#if this.active}}active{{/if}}" data-tile="{{this.path}}"
-                                title="{{this.label}}{{#if this.category}} ({{this.category}}){{/if}}">
-                                <img src="{{this.path}}" alt="{{this.label}}" />
-                                <span class="hex-tile-label">{{this.label}}</span>
-                                {{#if this.category}}<span class="hex-tile-biome">{{this.category}}</span>{{/if}}
+                    <!-- Symbol Tiles Grid (folder-based) -->
+                    <div class="hex-tile-symbols-panel {{#unless (eq activeTileTab 'symbols')}}hidden{{/unless}}"
+                        data-tile-panel="symbols">
+                        {{#if hexSymbolFolders.length}}
+                        {{#each hexSymbolFolders}}
+                        <div class="hex-symbol-folder" data-folder="{{this.folder}}">
+                            <div class="hex-symbol-folder-header {{#if this.collapsed}}collapsed{{/if}}"
+                                data-action="toggle-symbol-folder" data-folder="{{this.folder}}">
+                                <i
+                                    class="fas {{#if this.collapsed}}fa-caret-right{{else}}fa-caret-down{{/if}} hex-folder-chevron"></i>
+                                <i
+                                    class="fas {{#if this.collapsed}}fa-folder{{else}}fa-folder-open{{/if}} hex-folder-icon"></i>
+                                <span class="hex-folder-name">{{this.label}}</span>
+                                <span class="hex-folder-count">({{this.tiles.length}})</span>
                             </div>
-                            {{/each}}
+                            <div class="hex-tile-grid hex-symbol-folder-content {{#if this.collapsed}}hidden{{/if}}">
+                                {{#each this.tiles}}
+                                <div class="hex-tile-thumb {{#if this.active}}active{{/if}}" data-tile="{{this.path}}"
+                                    title="{{this.label}}{{#if this.category}} ({{this.category}}){{/if}}">
+                                    <img src="{{this.path}}" alt="{{this.label}}" />
+                                    <span class="hex-tile-label">{{this.label}}</span>
+                                </div>
+                                {{/each}}
+                            </div>
+                        </div>
+                        {{/each}}
                         {{else}}
-                            <div class="hex-no-custom-tiles">
-                                <p><i class="fas fa-map-marker-alt"></i></p>
-                                <p>No symbol tiles found</p>
-                            </div>
+                        <div class="hex-no-custom-tiles">
+                            <p><i class="fas fa-map-marker-alt"></i></p>
+                            <p>No symbol tiles found</p>
+                        </div>
                         {{/if}}
                     </div>
                 </div>
 
                 <!-- Usage hints -->
                 <div class="tray-footer-message">
+                    {{#if (eq activeTileTab 'symbols')}}
+                    Drag to paint · Shift+Drag to erase · Right-click to cycle · +/- to resize
+                    {{else}}
                     Drag to paint · Shift+Drag to erase
+                    {{/if}}
                 </div>
             </div>
             {{/if}}

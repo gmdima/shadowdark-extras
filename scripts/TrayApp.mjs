@@ -18,6 +18,7 @@ import {
     getHealthOverlayHeight,
     renderTray
 } from "./TraySD.mjs";
+// Note: renderTray imported above is used by POI undo/redo handlers
 import { showLeaderDialog, showMovementModeDialog } from "./MarchingModeSD.mjs";
 import { FormationSpawnerSD } from "./FormationSpawnerSD.mjs";
 import { PinPlacer, JournalPinManager, JournalPinRenderer } from "./JournalPinsSD.mjs";
@@ -25,7 +26,7 @@ import { PinStyleEditorApp } from "./PinStyleEditorSD.mjs";
 import { PinListApp } from "./PinListApp.mjs";
 
 import { PlaceableNotesSD } from "./PlaceableNotesSD.mjs";
-import { setMapDimension, formatActiveScene, enablePainting, disablePainting, toggleTileSelection, setSearchFilter, toggleWaterEffect, toggleWindEffect, toggleFogAnimation, toggleTintEnabled, toggleBwEffect, isTintEnabled, setActiveTileTab, setCustomTileDimension } from "./HexPainterSD.mjs";
+import { setMapDimension, formatActiveScene, enablePainting, disablePainting, toggleTileSelection, setSearchFilter, toggleWaterEffect, toggleWindEffect, toggleFogAnimation, toggleTintEnabled, toggleBwEffect, isTintEnabled, setActiveTileTab, setCustomTileDimension, toggleColoredFolderCollapsed, toggleSymbolFolderCollapsed, undoLastPoi, redoLastPoi, getPoiScale, enablePreview, disablePreview, getActiveTileTab, adjustPoiScale, rotatePoiLeft, rotatePoiRight, togglePoiMirror } from "./HexPainterSD.mjs";
 import { generateHexMap, clearGeneratedTiles } from "./HexGeneratorSD.mjs";
 
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
@@ -80,15 +81,19 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
      * Save scroll positions of tile grids
      */
     _saveScrollPositions() {
-        // Can't query inside this.element because it might not be rendered/attached yet in the way we expect if we use standard AppV2 accessors, 
+        // Can't query inside this.element because it might not be rendered/attached yet in the way we expect if we use standard AppV2 accessors,
         // but for now we look at the DOM since we are doing a re-render
         const elem = document.querySelector(".sdx-tray");
         if (!elem) return;
 
+        // Save scroll position of the main hex tile scroll container
+        const hexTileScroll = elem.querySelector(".hex-tile-scroll");
+        if (hexTileScroll) {
+            this._scrollPositions["hex-tile-scroll"] = hexTileScroll.scrollTop;
+        }
+
+        // Also save individual grid scroll positions if needed
         elem.querySelectorAll(".hex-tile-grid").forEach(grid => {
-            // Use dataset.tilePanel as key (e.g. "default", "colored", "custom")
-            // If strictly needed, we could also use ID if they had one, but tilePanel specific enough?
-            // Actually multiple grids exist, only visible one matters but saving all is safer.
             const key = grid.dataset.tilePanel;
             if (key) {
                 this._scrollPositions[key] = grid.scrollTop;
@@ -103,6 +108,13 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
         const elem = document.querySelector(".sdx-tray");
         if (!elem) return;
 
+        // Restore main hex tile scroll container position
+        const hexTileScroll = elem.querySelector(".hex-tile-scroll");
+        if (hexTileScroll && this._scrollPositions["hex-tile-scroll"] !== undefined) {
+            hexTileScroll.scrollTop = this._scrollPositions["hex-tile-scroll"];
+        }
+
+        // Restore individual grid scroll positions
         elem.querySelectorAll(".hex-tile-grid").forEach(grid => {
             const key = grid.dataset.tilePanel;
             if (key && this._scrollPositions[key] !== undefined) {
@@ -148,8 +160,13 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
 
         if (this._isExpanded && getViewMode() === "hexes") {
             enablePainting();
+            // Enable POI preview if on symbols tab
+            if (getActiveTileTab() === "symbols") {
+                enablePreview();
+            }
         } else {
             disablePainting();
+            disablePreview();
         }
     }
 
@@ -175,6 +192,10 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
         }
         this._tomActiveSceneId = activeSceneId;
 
+        // Calculate POI scale percentage for display
+        const poiScale = getPoiScale();
+        const poiScalePercent = Math.round(poiScale * 100);
+
         return {
             ...this.trayData,
             isExpanded: this._isExpanded,
@@ -184,7 +205,9 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
             showTomOverlays: !!activeSceneId,
             tomScenes: await this._getTomScenes(),
             tomFolders: await this._getTomFolders(),
-            tintEnabled: isTintEnabled()
+            tintEnabled: isTintEnabled(),
+            poiScale: poiScale,
+            poiScalePercent: poiScalePercent
         };
     }
 
@@ -239,7 +262,8 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
      */
     _onRender(context, options) {
         super._onRender(context, options);
-        this._restoreScrollPositions();
+        // Use requestAnimationFrame to ensure DOM is fully rendered before restoring scroll
+        requestAnimationFrame(() => this._restoreScrollPositions());
 
         const elem = document.querySelector(".sdx-tray");
         if (!elem) return;
@@ -369,13 +393,81 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
             new SDXRollerApp().render(true);
         });
 
+        // POI Undo Button
+        elem.querySelector(".tray-handle-button-tool[data-action='poi-undo']")?.addEventListener("click", async (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            await undoLastPoi();
+            renderTray();
+        });
+
+        // POI Redo Button
+        elem.querySelector(".tray-handle-button-tool[data-action='poi-redo']")?.addEventListener("click", async (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            await redoLastPoi();
+            renderTray();
+        });
+
+        // POI Scale Down Button
+        elem.querySelector(".tray-handle-button-tool[data-action='poi-scale-down']")?.addEventListener("click", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            adjustPoiScale(-0.1);
+            renderTray();
+        });
+
+        // POI Scale Up Button
+        elem.querySelector(".tray-handle-button-tool[data-action='poi-scale-up']")?.addEventListener("click", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            adjustPoiScale(0.1);
+            renderTray();
+        });
+
+        // POI Rotate Left Button
+        elem.querySelector(".tray-handle-button-tool[data-action='poi-rotate-left']")?.addEventListener("click", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            rotatePoiLeft();
+            renderTray();
+        });
+
+        // POI Rotate Right Button
+        elem.querySelector(".tray-handle-button-tool[data-action='poi-rotate-right']")?.addEventListener("click", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            rotatePoiRight();
+            renderTray();
+        });
+
+        // POI Mirror Button
+        elem.querySelector(".tray-handle-button-tool[data-action='poi-mirror']")?.addEventListener("click", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            togglePoiMirror();
+            renderTray();
+        });
+
         // Tab buttons
         elem.querySelectorAll(".tray-tab-button").forEach(btn => {
             btn.addEventListener("click", (e) => {
                 e.preventDefault();
                 e.stopPropagation();
                 const view = btn.dataset.view;
-                if (view) setViewMode(view);
+                if (view) {
+                    setViewMode(view);
+                    // Enable/disable painting based on view
+                    if (view === "hexes" && this._isExpanded) {
+                        enablePainting();
+                        if (getActiveTileTab() === "symbols") {
+                            enablePreview();
+                        }
+                    } else {
+                        disablePainting();
+                        disablePreview();
+                    }
+                }
             });
         });
 
@@ -1031,10 +1123,43 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
             const searchTerm = e.target.value.toLowerCase();
             setSearchFilter(searchTerm);
 
-            const tiles = elem.querySelectorAll(".hex-tile-thumb");
+            // Filter flat tile thumbs (default/custom/symbols)
+            const tiles = elem.querySelectorAll(".hex-tile-grid .hex-tile-thumb");
             tiles.forEach(tile => {
                 const label = tile.getAttribute("title").toLowerCase();
                 tile.style.display = label.includes(searchTerm) ? "" : "none";
+            });
+
+            // Filter colored tile folders: hide folders that have no visible tiles
+            elem.querySelectorAll(".hex-colored-folder").forEach(folder => {
+                const thumbs = folder.querySelectorAll(".hex-tile-thumb");
+                let visibleCount = 0;
+                thumbs.forEach(tile => {
+                    const label = tile.getAttribute("title").toLowerCase();
+                    const show = label.includes(searchTerm);
+                    tile.style.display = show ? "" : "none";
+                    if (show) visibleCount++;
+                });
+                folder.style.display = visibleCount > 0 ? "" : "none";
+                // Update count display
+                const countEl = folder.querySelector(".hex-folder-count");
+                if (countEl) countEl.textContent = `(${visibleCount})`;
+            });
+
+            // Filter symbol tile folders: hide folders that have no visible tiles
+            elem.querySelectorAll(".hex-symbol-folder").forEach(folder => {
+                const thumbs = folder.querySelectorAll(".hex-tile-thumb");
+                let visibleCount = 0;
+                thumbs.forEach(tile => {
+                    const label = tile.getAttribute("title").toLowerCase();
+                    const show = label.includes(searchTerm);
+                    tile.style.display = show ? "" : "none";
+                    if (show) visibleCount++;
+                });
+                folder.style.display = visibleCount > 0 ? "" : "none";
+                // Update count display
+                const countEl = folder.querySelector(".hex-folder-count");
+                if (countEl) countEl.textContent = `(${visibleCount})`;
             });
         });
 
@@ -1127,7 +1252,7 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
                 tab.classList.add("active");
 
                 // Show/hide tile panels
-                elem.querySelectorAll(".hex-tile-grid[data-tile-panel]").forEach(panel => {
+                elem.querySelectorAll("[data-tile-panel]").forEach(panel => {
                     if (panel.dataset.tilePanel === tabName) {
                         panel.classList.remove("hidden");
                     } else {
@@ -1141,6 +1266,13 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
                     customSizeSection.style.display = tabName === "custom" ? "" : "none";
                 }
 
+                // Enable/disable POI preview based on tab
+                if (tabName === "symbols" && this._isExpanded) {
+                    enablePreview();
+                } else {
+                    disablePreview();
+                }
+
                 // Re-render to update state properly
                 renderTray();
             });
@@ -1152,6 +1284,72 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
                 const val = parseInt(e.target.value);
                 const axis = e.target.name === "custom-tile-width" ? "width" : "height";
                 setCustomTileDimension(axis, val);
+            });
+        });
+
+        // Colored tile folder toggle (expand/collapse)
+        elem.querySelectorAll(".hex-colored-folder-header").forEach(header => {
+            header.addEventListener("click", (e) => {
+                e.preventDefault();
+                const folderKey = header.dataset.folder;
+                if (!folderKey) return;
+
+                toggleColoredFolderCollapsed(folderKey);
+
+                // Toggle content visibility
+                const folderEl = header.closest(".hex-colored-folder");
+                const content = folderEl?.querySelector(".hex-colored-folder-content");
+                if (content) content.classList.toggle("hidden");
+
+                // Toggle chevron icon
+                const chevron = header.querySelector(".hex-folder-chevron");
+                if (chevron) {
+                    chevron.classList.toggle("fa-caret-right");
+                    chevron.classList.toggle("fa-caret-down");
+                }
+
+                // Toggle folder icon
+                const folderIcon = header.querySelector(".hex-folder-icon");
+                if (folderIcon) {
+                    folderIcon.classList.toggle("fa-folder");
+                    folderIcon.classList.toggle("fa-folder-open");
+                }
+
+                // Toggle header collapsed class
+                header.classList.toggle("collapsed");
+            });
+        });
+
+        // Symbol tile folder toggle (expand/collapse)
+        elem.querySelectorAll(".hex-symbol-folder-header").forEach(header => {
+            header.addEventListener("click", (e) => {
+                e.preventDefault();
+                const folderKey = header.dataset.folder;
+                if (!folderKey) return;
+
+                toggleSymbolFolderCollapsed(folderKey);
+
+                // Toggle content visibility
+                const folderEl = header.closest(".hex-symbol-folder");
+                const content = folderEl?.querySelector(".hex-symbol-folder-content");
+                if (content) content.classList.toggle("hidden");
+
+                // Toggle chevron icon
+                const chevron = header.querySelector(".hex-folder-chevron");
+                if (chevron) {
+                    chevron.classList.toggle("fa-caret-right");
+                    chevron.classList.toggle("fa-caret-down");
+                }
+
+                // Toggle folder icon
+                const folderIcon = header.querySelector(".hex-folder-icon");
+                if (folderIcon) {
+                    folderIcon.classList.toggle("fa-folder");
+                    folderIcon.classList.toggle("fa-folder-open");
+                }
+
+                // Toggle header collapsed class
+                header.classList.toggle("collapsed");
             });
         });
     }

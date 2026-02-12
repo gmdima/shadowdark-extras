@@ -19,6 +19,7 @@ let leaderTokenId = null;
 let leaderMovementPath = []; // Array of {x, y, gridPos} points
 let tokenFollowers = new Map(); // tokenId -> {marchPosition, moving}
 let processingCongaMovement = false;
+let congaMovementPending = false; // Flag to re-trigger conga after current cycle
 let scheduledTimeouts = new Set(); // Track pending timeouts for cleanup
 
 /**
@@ -417,6 +418,8 @@ async function setLeader(tokenId) {
 
         // Cancel any pending movements
         clearScheduledTimeouts();
+        processingCongaMovement = false;
+        congaMovementPending = false;
 
         // If marching mode is enabled and we have a new leader, recalculate marching order
         if (marchingModeEnabled && newLeaderId) {
@@ -467,6 +470,8 @@ async function setMovementMode(enabled) {
         leaderMovementPath = [];
         tokenFollowers.clear();
         clearScheduledTimeouts(); // Cancel any pending follower movements
+        processingCongaMovement = false;
+        congaMovementPending = false;
     }
 
     // Save state
@@ -571,9 +576,8 @@ async function onUpdateToken(tokenDoc, changes, options, userId) {
 
     // Check if this is the leader moving
     if (tokenDoc.id === leaderTokenId) {
-        // Cancel any pending follower movements - this handles waypoint sequences
-        // Each waypoint triggers updateToken, so we cancel previous movements and schedule new ones
-        clearScheduledTimeouts();
+        // Don't cancel pending follower movements — let in-progress conga movements finish.
+        // New path points are prepended, so the next processing cycle will pick them up.
 
         // Record the leader's movement path
         const startPosition = {
@@ -700,9 +704,10 @@ function processCongaMovement() {
     if (leaderMovementPath.length < 2) return;
     if (tokenFollowers.size === 0) return;
 
-    // Guard against overlapping processing (e.g., from rapid waypoint movements)
+    // If already processing, signal that new path points need processing after current cycle
     if (processingCongaMovement) {
-        console.log(`${MODULE_ID} | Skipping conga movement - already processing`);
+        congaMovementPending = true;
+        console.log(`${MODULE_ID} | Conga movement already processing - flagged as pending`);
         return;
     }
 
@@ -760,6 +765,13 @@ function processCongaMovement() {
                 leaderMovementPath = leaderMovementPath.slice(0, highestIndex + 1);
             }
             processingCongaMovement = false;
+
+            // If new path points were added during processing, re-trigger
+            if (congaMovementPending) {
+                congaMovementPending = false;
+                console.log(`${MODULE_ID} | Re-triggering conga movement for pending waypoints`);
+                processCongaMovement();
+            }
             return;
         }
 

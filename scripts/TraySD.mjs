@@ -118,6 +118,9 @@ export function initTray() {
     Hooks.on("updateNote", async () => await renderTray());
     Hooks.on("deleteNote", async () => await renderTray());
 
+    // Hook for POI placement to update undo/redo buttons
+    Hooks.on("sdx.poiPlaced", async () => await renderTray());
+
     // Hook to update tray when pins change on scene
     Hooks.on("updateScene", (document, change, options, userId) => {
         // Check if the update involves the flags for this module (pins)
@@ -200,6 +203,13 @@ export function registerTraySettings() {
         config: false,
         type: Number,
         default: 256
+    });
+
+    game.settings.register(MODULE_ID, "hexPainter.poiScale", {
+        scope: "client",
+        config: false,
+        type: Number,
+        default: 0.5
     });
 }
 

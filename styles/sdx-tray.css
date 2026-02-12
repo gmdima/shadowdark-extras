@@ -129,6 +129,37 @@ body.sdx-tray-enabled #camera-views.vertical.left {
     color: #fff;
 }
 
+/* POI Undo/Redo/Scale/Transform buttons */
+.sdx-tray[data-position="left"] .tray-handle-button-tool.poi-undo-btn,
+.sdx-tray[data-position="left"] .tray-handle-button-tool.poi-redo-btn,
+.sdx-tray[data-position="left"] .tray-handle-button-tool.poi-scale-btn,
+.sdx-tray[data-position="left"] .tray-handle-button-tool.poi-transform-btn {
+    color: rgba(159, 146, 117, 0.7);
+}
+
+.sdx-tray[data-position="left"] .tray-handle-button-tool.poi-undo-btn:hover,
+.sdx-tray[data-position="left"] .tray-handle-button-tool.poi-redo-btn:hover,
+.sdx-tray[data-position="left"] .tray-handle-button-tool.poi-scale-btn:hover,
+.sdx-tray[data-position="left"] .tray-handle-button-tool.poi-transform-btn:hover {
+    color: #9f9275;
+}
+
+.sdx-tray[data-position="left"] .tray-handle-button-tool.poi-transform-btn.active {
+    color: #9f9275;
+    background: rgba(159, 146, 117, 0.3);
+}
+
+.sdx-tray[data-position="left"] .tray-handle-button-tool.disabled {
+    color: rgba(255, 255, 255, 0.15);
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+.sdx-tray[data-position="left"] .tray-handle-button-tool.disabled:hover {
+    background: none;
+    color: rgba(255, 255, 255, 0.15);
+}
+
 /* CHEVRON BUTTON */
 .sdx-tray[data-position="left"] .tray-handle-button-toggle i {
     transition: transform 0.3s ease;
@@ -2896,8 +2927,86 @@ body.sdx-tray-enabled #camera-views.vertical.left {
 }
 
 /* ═══════════════════════════════════════════════════════
-   CUSTOM TILES - BIOME BADGE
+   COLORED TILES - FOLDER STRUCTURE
    ═══════════════════════════════════════════════════════ */
+
+.sdx-tray .hex-tile-colored-panel {
+    padding: 2px;
+}
+
+.sdx-tray .hex-tile-colored-panel.hidden {
+    display: none;
+}
+
+.sdx-tray .hex-colored-folder {
+    border: 1px solid rgba(159, 146, 117, 0.15);
+    border-radius: 5px;
+    margin-bottom: 6px;
+    background: rgba(20, 18, 14, 0.3);
+    transition: border-color 0.2s ease;
+}
+
+.sdx-tray .hex-colored-folder:hover {
+    border-color: rgba(159, 146, 117, 0.3);
+}
+
+.sdx-tray .hex-colored-folder-header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 8px;
+    cursor: pointer;
+    transition: background 0.15s ease;
+    border-radius: 5px 5px 0 0;
+    user-select: none;
+}
+
+.sdx-tray .hex-colored-folder-header:hover {
+    background: rgba(159, 146, 117, 0.12);
+}
+
+.sdx-tray .hex-colored-folder-header.collapsed {
+    border-radius: 5px;
+}
+
+.sdx-tray .hex-folder-chevron {
+    font-size: 10px;
+    color: #9f9275;
+    width: 10px;
+    text-align: center;
+    transition: transform 0.15s ease;
+}
+
+.sdx-tray .hex-folder-icon {
+    font-size: 12px;
+    color: #c8a24e;
+}
+
+.sdx-tray .hex-folder-name {
+    flex: 1;
+    font-size: 0.8em;
+    font-weight: 600;
+    color: #d4c8a8;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.sdx-tray .hex-folder-count {
+    font-size: 0.7em;
+    color: #7a7056;
+    flex-shrink: 0;
+}
+
+.sdx-tray .hex-colored-folder-content {
+    padding: 4px;
+}
+
+.sdx-tray .hex-colored-folder-content.hidden {
+    display: none;
+}
 
 .sdx-tray .hex-tile-biome {
     position: absolute;
@@ -2944,4 +3053,3 @@ body.sdx-tray-enabled #camera-views.vertical.left {
     color: #a78bfa;
     font-size: 0.9em;
 }
-

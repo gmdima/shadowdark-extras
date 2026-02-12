@@ -17,8 +17,8 @@ const BIOME_SUBDIRS = ["water", "vegetation", "mountains", "desert", "swamp", "b
 // Biome subdirectories for colored tiles (from assets/Hexes)
 const COLORED_BIOME_SUBDIRS = ["Water", "Vegetation", "Mountains", "Desert", "swamp", "Badlands", "snow", "Specials"];
 
-// Subdirectories for symbol tiles (from assets/symbols)
-const SYMBOLS_SUBDIRS = ["Banners", "Buildings", "Details", "Foliage", "Mountains", "Symbols"];
+
+
 
 let _tiles = null;           // Default tiles from module
 let _customTiles = null;     // Custom tiles from data/hexes
@@ -31,6 +31,8 @@ let _windEffect = false;
 let _fogAnimation = false;
 let _tintEnabled = false;
 let _bwEffect = false;
+let _coloredFoldersCollapsed = {}; // Track collapsed state of colored tile folders
+let _symbolFoldersCollapsed = {};  // Track collapsed state of symbol tile folders
 let _brushActive = false;
 let _lastCell = null;
 let _paintEnabled = false;
@@ -47,6 +49,17 @@ let _customTileHeight = 256;
 // Active tile tab ("default", "custom", or "colored")
 let _activeTileTab = "default";
 
+// POI (Symbol) tile state
+let _poiScale = 0.5;             // Scale factor for POI tiles (0.1 - 2.0)
+let _poiRotation = 0;            // Rotation in degrees (0, 90, 180, 270)
+let _poiMirror = false;          // Horizontal mirror
+let _poiUndoStack = [];          // Stack of placed POI tile IDs and data
+let _poiRedoStack = [];          // Stack of tile data for redo
+let _previewSprite = null;       // PIXI sprite for preview
+let _previewContainer = null;    // Container for preview sprite
+let _previewEnabled = false;     // Whether preview is active
+let _currentPreviewIndex = 0;    // Index for cycling through selected tiles
+
 // Use custom tiles for generation
 let _useCustomForGeneration = false;
 
@@ -55,6 +68,9 @@ export async function loadTileAssets() {
 
     // Load saved custom tile dimensions
     loadCustomTileDimensions();
+
+    // Load saved POI scale
+    loadPoiScale();
 
     try {
         const listing = await FilePicker.browse("data", TILE_FOLDER);
@@ -204,11 +220,12 @@ async function loadColoredTileAssets() {
             });
         }
 
-        // Load tiles from each biome subdirectory
-        for (const biome of COLORED_BIOME_SUBDIRS) {
-            const biomePath = `${COLORED_TILE_FOLDER}/${biome}`;
+        // Dynamically discover and load tiles from all subdirectories
+        const subdirs = mainListing.dirs || [];
+        for (const dirPath of subdirs) {
+            const biome = dirPath.split("/").pop();
             try {
-                const biomeListing = await FilePicker.browse("data", biomePath);
+                const biomeListing = await FilePicker.browse("data", dirPath);
                 const biomePngFiles = (biomeListing.files || []).filter(f => f.endsWith(".png") || f.endsWith(".webp"));
 
                 for (const path of biomePngFiles) {
@@ -222,12 +239,12 @@ async function loadColoredTileAssets() {
                     });
                 }
             } catch (err) {
-                // Subdirectory might not exist, that's okay
+                // Subdirectory might not be accessible, that's okay
             }
         }
 
         _coloredTiles.sort((a, b) => a.key.localeCompare(b.key));
-        console.log(`${MODULE_ID} | Loaded ${_coloredTiles.length} colored tiles`);
+        console.log(`${MODULE_ID} | Loaded ${_coloredTiles.length} colored tiles from ${subdirs.length} folders`);
     } catch (err) {
         console.warn(`${MODULE_ID} | Could not load colored tiles:`, err);
         _coloredTiles = [];
@@ -256,11 +273,12 @@ async function loadSymbolTileAssets() {
             });
         }
 
-        // Load tiles from each subdirectory
-        for (const category of SYMBOLS_SUBDIRS) {
-            const categoryPath = `${SYMBOLS_TILE_FOLDER}/${category}`;
+        // Dynamically discover and load tiles from all subdirectories
+        const subdirs = mainListing.dirs || [];
+        for (const dirPath of subdirs) {
+            const category = dirPath.split("/").pop();
             try {
-                const categoryListing = await FilePicker.browse("data", categoryPath);
+                const categoryListing = await FilePicker.browse("data", dirPath);
                 const categoryPngFiles = (categoryListing.files || []).filter(f => f.endsWith(".png") || f.endsWith(".webp"));
 
                 for (const path of categoryPngFiles) {
@@ -274,12 +292,12 @@ async function loadSymbolTileAssets() {
                     });
                 }
             } catch (err) {
-                // Subdirectory might not exist, that's okay
+                // Subdirectory might not be accessible, that's okay
             }
         }
 
         _symbolTiles.sort((a, b) => a.key.localeCompare(b.key));
-        console.log(`${MODULE_ID} | Loaded ${_symbolTiles.length} symbol tiles`);
+        console.log(`${MODULE_ID} | Loaded ${_symbolTiles.length} symbol tiles from ${subdirs.length} folders`);
     } catch (err) {
         console.warn(`${MODULE_ID} | Could not load symbol tiles:`, err);
         _symbolTiles = [];
@@ -444,6 +462,44 @@ export function setActiveTileTab(tab) {
 }
 
 /**
+ * Get current POI scale
+ */
+export function getPoiScale() {
+    return _poiScale;
+}
+
+/**
+ * Set POI scale and persist to settings
+ */
+export function setPoiScale(scale) {
+    _poiScale = Math.max(0.1, Math.min(2.0, scale));
+    try {
+        game.settings.set(MODULE_ID, "hexPainter.poiScale", _poiScale);
+    } catch (e) {
+        // Settings might not be registered yet
+    }
+    // Update preview if active
+    if (_previewSprite && _previewEnabled) {
+        _updatePreviewTransform();
+    }
+}
+
+/**
+ * Load POI scale from settings
+ */
+export function loadPoiScale() {
+    try {
+        const saved = game.settings.get(MODULE_ID, "hexPainter.poiScale");
+        if (saved !== undefined) {
+            _poiScale = saved;
+        }
+    } catch (e) {
+        // Settings not registered yet, use default
+        _poiScale = 0.5;
+    }
+}
+
+/**
  * Get colored tiles array
  */
 export function getColoredTiles() {
@@ -457,6 +513,114 @@ export function getFilteredColoredTiles() {
     if (!_coloredTiles) return [];
     if (!_searchFilter) return _coloredTiles;
     return _coloredTiles.filter(t => t.label.toLowerCase().includes(_searchFilter));
+}
+
+/**
+ * Get colored tiles grouped by folder for the tray UI.
+ * Returns an array of { folder, label, collapsed, tiles[] } objects.
+ */
+export function getColoredTileFolders() {
+    const filtered = getFilteredColoredTiles();
+    if (!filtered.length) return [];
+
+    // Group tiles by biome (folder)
+    const folderMap = new Map();
+
+    for (const tile of filtered) {
+        const folderKey = tile.biome || "__root__";
+        if (!folderMap.has(folderKey)) {
+            folderMap.set(folderKey, []);
+        }
+        folderMap.get(folderKey).push({
+            key: tile.key,
+            label: tile.label,
+            path: tile.path,
+            active: _chosenTiles.has(tile.path),
+            biome: tile.biome
+        });
+    }
+
+    // Build folder array, sorted alphabetically (root first if it exists)
+    const folders = [];
+    for (const [key, tiles] of folderMap) {
+        const label = key === "__root__" ? "Root" : key.charAt(0).toUpperCase() + key.slice(1);
+        folders.push({
+            folder: key,
+            label,
+            collapsed: !!_coloredFoldersCollapsed[key],
+            tiles
+        });
+    }
+
+    // Sort: root first, then alphabetically
+    folders.sort((a, b) => {
+        if (a.folder === "__root__") return -1;
+        if (b.folder === "__root__") return 1;
+        return a.label.localeCompare(b.label);
+    });
+
+    return folders;
+}
+
+/**
+ * Toggle collapsed state of a colored tile folder
+ */
+export function toggleColoredFolderCollapsed(folderKey) {
+    _coloredFoldersCollapsed[folderKey] = !_coloredFoldersCollapsed[folderKey];
+}
+
+/**
+ * Get symbol tiles grouped by folder for the tray UI.
+ * Returns an array of { folder, label, collapsed, tiles[] } objects.
+ */
+export function getSymbolTileFolders() {
+    const filtered = getFilteredSymbolTiles();
+    if (!filtered.length) return [];
+
+    // Group tiles by category (folder)
+    const folderMap = new Map();
+
+    for (const tile of filtered) {
+        const folderKey = tile.category || "__root__";
+        if (!folderMap.has(folderKey)) {
+            folderMap.set(folderKey, []);
+        }
+        folderMap.get(folderKey).push({
+            key: tile.key,
+            label: tile.label,
+            path: tile.path,
+            active: _chosenTiles.has(tile.path),
+            category: tile.category
+        });
+    }
+
+    // Build folder array, sorted alphabetically (root first if it exists)
+    const folders = [];
+    for (const [key, tiles] of folderMap) {
+        const label = key === "__root__" ? "Root" : key.charAt(0).toUpperCase() + key.slice(1);
+        folders.push({
+            folder: key,
+            label,
+            collapsed: !!_symbolFoldersCollapsed[key],
+            tiles
+        });
+    }
+
+    // Sort: root first, then alphabetically
+    folders.sort((a, b) => {
+        if (a.folder === "__root__") return -1;
+        if (b.folder === "__root__") return 1;
+        return a.label.localeCompare(b.label);
+    });
+
+    return folders;
+}
+
+/**
+ * Toggle collapsed state of a symbol tile folder
+ */
+export function toggleSymbolFolderCollapsed(folderKey) {
+    _symbolFoldersCollapsed[folderKey] = !_symbolFoldersCollapsed[folderKey];
 }
 
 /**
@@ -484,11 +648,18 @@ export function getHexPainterData() {
         hasCustomTiles: false,
         hasColoredTiles: false,
         hasSymbolTiles: false,
+        hexColoredFolders: [],
+        hexSymbolFolders: [],
         waterEffect: _waterEffect,
         windEffect: _windEffect,
         fogAnimation: _fogAnimation,
         tintEnabled: _tintEnabled,
-        bwEffect: _bwEffect
+        bwEffect: _bwEffect,
+        poiScale: _poiScale,
+        poiRotation: _poiRotation,
+        poiMirror: _poiMirror,
+        canUndoPoi: _poiUndoStack.length > 0,
+        canRedoPoi: _poiRedoStack.length > 0
     };
 
     const filteredTiles = getFilteredTiles();
@@ -529,11 +700,19 @@ export function getHexPainterData() {
         category: t.category
     }));
 
+    // Build colored tile folders
+    const hexColoredFolders = getColoredTileFolders();
+
+    // Build symbol tile folders
+    const hexSymbolFolders = getSymbolTileFolders();
+
     return {
         hexTiles,
         hexCustomTiles,
         hexColoredTiles,
         hexSymbolTiles,
+        hexColoredFolders,
+        hexSymbolFolders,
         hexColumns: _mapColumns,
         hexRows: _mapRows,
         hexSearchFilter: _searchFilter,
@@ -550,7 +729,12 @@ export function getHexPainterData() {
         windEffect: _windEffect,
         fogAnimation: _fogAnimation,
         tintEnabled: _tintEnabled,
-        bwEffect: _bwEffect
+        bwEffect: _bwEffect,
+        poiScale: _poiScale,
+        poiRotation: _poiRotation,
+        poiMirror: _poiMirror,
+        canUndoPoi: _poiUndoStack.length > 0,
+        canRedoPoi: _poiRedoStack.length > 0
     };
 }
 
@@ -565,6 +749,35 @@ export function toggleTileSelection(tilePath) {
         _chosenTiles.delete(tilePath);
     } else {
         _chosenTiles.add(tilePath);
+    }
+
+    // Update preview when selecting/deselecting POI tiles
+    if (_activeTileTab === "symbols") {
+        const availableTiles = _getAvailablePoiTiles();
+        if (availableTiles.length > 0) {
+            // Reset index if out of bounds
+            if (_currentPreviewIndex >= availableTiles.length) {
+                _currentPreviewIndex = 0;
+            }
+            // Create or update preview (if painting is enabled)
+            if (_paintEnabled) {
+                if (!_previewEnabled) {
+                    createPreview();
+                } else if (_previewSprite) {
+                    // Update texture to current tile
+                    const currentPath = availableTiles[_currentPreviewIndex % availableTiles.length];
+                    loadTexture(currentPath).then(texture => {
+                        if (texture && _previewSprite) {
+                            _previewSprite.texture = texture;
+                            _previewSprite._sdxTexturePath = currentPath;
+                        }
+                    });
+                }
+            }
+        } else {
+            // No tiles selected, destroy preview
+            destroyPreview();
+        }
     }
 }
 
@@ -691,6 +904,9 @@ export function disablePainting() {
     _brushActive = false;
     _lastCell = null;
     _chosenTiles.clear();
+    // Clean up POI-related state
+    destroyPreview();
+    clearPoiHistory();
 }
 
 export function bindCanvasEvents() {
@@ -700,11 +916,83 @@ export function bindCanvasEvents() {
     canvas.stage.off("mousemove", _onPointerMove);
     canvas.stage.off("mouseup", _onPointerUp);
     canvas.stage.off("mouseupoutside", _onPointerUp);
+    canvas.stage.off("rightclick", _onRightClick);
 
     canvas.stage.on("mousedown", _onPointerDown);
     canvas.stage.on("mousemove", _onPointerMove);
     canvas.stage.on("mouseup", _onPointerUp);
     canvas.stage.on("mouseupoutside", _onPointerUp);
+    canvas.stage.on("rightclick", _onRightClick);
+}
+
+/**
+ * Adjust POI scale by a delta amount
+ */
+export function adjustPoiScale(delta) {
+    const newScale = Math.max(0.1, Math.min(2.0, _poiScale + delta));
+    if (newScale !== _poiScale) {
+        setPoiScale(newScale);
+    }
+}
+
+/**
+ * Get current POI rotation
+ */
+export function getPoiRotation() {
+    return _poiRotation;
+}
+
+/**
+ * Rotate POI left (counter-clockwise 90 degrees)
+ */
+export function rotatePoiLeft() {
+    _poiRotation = (_poiRotation - 90 + 360) % 360;
+    _updatePreviewTransform();
+}
+
+/**
+ * Rotate POI right (clockwise 90 degrees)
+ */
+export function rotatePoiRight() {
+    _poiRotation = (_poiRotation + 90) % 360;
+    _updatePreviewTransform();
+}
+
+/**
+ * Get current POI mirror state
+ */
+export function getPoiMirror() {
+    return _poiMirror;
+}
+
+/**
+ * Toggle POI horizontal mirror
+ */
+export function togglePoiMirror() {
+    _poiMirror = !_poiMirror;
+    _updatePreviewTransform();
+}
+
+/**
+ * Reset POI transform (rotation and mirror)
+ */
+export function resetPoiTransform() {
+    _poiRotation = 0;
+    _poiMirror = false;
+    _updatePreviewTransform();
+}
+
+/**
+ * Update preview sprite transform (rotation, mirror, scale)
+ */
+function _updatePreviewTransform() {
+    if (_previewSprite) {
+        _previewSprite.rotation = (_poiRotation * Math.PI) / 180;
+        _previewSprite.scale.set(
+            _poiMirror ? -_poiScale : _poiScale,
+            _poiScale
+        );
+    }
 }
 
 function _isToolActive() {
@@ -725,12 +1013,45 @@ function _onPointerDown(ev) {
 
 function _onPointerMove(ev) {
     if (_brushActive) _stampAtPointer(ev, false);
+
+    // Update preview position if enabled
+    if (_previewEnabled && _previewContainer) {
+        const pos = ev.data?.getLocalPosition?.(canvas.stage);
+        if (pos) {
+            updatePreviewPosition(pos);
+        }
+    }
 }
 
 function _onPointerUp() {
     _brushActive = false;
     _isPainting = false;
     _lastCell = null;
+}
+
+function _onRightClick(ev) {
+    if (!_isToolActive()) return;
+    if (_activeTileTab !== "symbols") return;
+
+    const availableTiles = _getAvailablePoiTiles();
+    if (availableTiles.length <= 1) return; // No point cycling with 0 or 1 tile
+
+    // Prevent context menu
+    ev.data?.originalEvent?.preventDefault?.();
+
+    // Advance to next tile
+    advancePreviewIndex();
+
+    // Update preview texture
+    if (_previewEnabled && _previewSprite) {
+        const nextPath = availableTiles[_currentPreviewIndex % availableTiles.length];
+        loadTexture(nextPath).then(texture => {
+            if (texture && _previewSprite) {
+                _previewSprite.texture = texture;
+                _previewSprite._sdxTexturePath = nextPath;
+            }
+        });
+    }
 }
 
 async function _stampAtPointer(ev, forceStamp = false) {
@@ -802,7 +1123,13 @@ async function _stampAtPointer(ev, forceStamp = false) {
         return;
     }
 
-    const chosenTile = availableTiles[Math.floor(Math.random() * availableTiles.length)];
+    // For symbols (POI), use deterministic cycling; for other tiles, use random selection
+    let chosenTile;
+    if (_activeTileTab === "symbols") {
+        chosenTile = availableTiles[_currentPreviewIndex % availableTiles.length];
+    } else {
+        chosenTile = availableTiles[Math.floor(Math.random() * availableTiles.length)];
+    }
 
     // Check if the chosen tile is a symbol, custom, or colored tile
     const isSymbolTile = _symbolTiles && _symbolTiles.some(t => t.path === chosenTile);
@@ -817,15 +1144,15 @@ async function _stampAtPointer(ev, forceStamp = false) {
     // Determine tile dimensions based on type
     let tw, th;
     if (isSymbolTile) {
-        // For symbols, get original image size and scale by 0.5
+        // For symbols, get original image size and scale by _poiScale
         try {
             const img = await loadTexture(chosenTile);
-            tw = Math.floor(img.width * 0.5);
-            th = Math.floor(img.height * 0.5);
+            tw = Math.floor(img.width * _poiScale);
+            th = Math.floor(img.height * _poiScale);
         } catch (e) {
             // Fallback to default size if image can't be loaded
-            tw = 128;
-            th = 128;
+            tw = Math.floor(256 * _poiScale);
+            th = Math.floor(256 * _poiScale);
         }
     } else if (isColoredTile) {
         tw = COLORED_HEX_TILE_W;
@@ -884,12 +1211,15 @@ async function _stampAtPointer(ev, forceStamp = false) {
     const tileData = {
         texture: {
             src: chosenTile,
-            tint: tintData
+            tint: tintData,
+            scaleX: isSymbolTile && _poiMirror ? -1 : 1,
+            scaleY: 1
         },
         x: (isSymbolTile ? pos.x : center.x) - tw / 2,
         y: (isSymbolTile ? pos.y : center.y) - th / 2 - verticalNudge,
         width: tw,
         height: th,
+        rotation: isSymbolTile ? _poiRotation : 0,
         // Symbols get a much higher sort value to appear on top of hex tiles
         sort: isSymbolTile ? Math.floor(center.y) + 100000 : Math.floor(center.y),
         flags: {
@@ -906,6 +1236,29 @@ async function _stampAtPointer(ev, forceStamp = false) {
     } catch (err) {
         console.error(`${MODULE_ID} | Failed to create tile:`, err);
         return;
+    }
+
+    // Track POI tiles for undo/redo
+    if (isSymbolTile && createdTiles && createdTiles.length > 0) {
+        _poiUndoStack.push({ id: createdTiles[0].id });
+        _poiRedoStack = []; // Clear redo stack on new placement
+        // Advance to next tile in cycle
+        advancePreviewIndex();
+        // Update preview texture
+        if (_previewEnabled && _previewSprite) {
+            const availablePoiTiles = _getAvailablePoiTiles();
+            if (availablePoiTiles.length > 0) {
+                const nextPath = availablePoiTiles[_currentPreviewIndex % availablePoiTiles.length];
+                loadTexture(nextPath).then(texture => {
+                    if (texture && _previewSprite) {
+                        _previewSprite.texture = texture;
+                        _previewSprite._sdxTexturePath = nextPath;
+                    }
+                });
+            }
+        }
+        // Trigger tray re-render to update undo/redo button states
+        Hooks.callAll("sdx.poiPlaced");
     }
 
     if (window.TokenMagic && createdTiles && createdTiles.length > 0) {
@@ -1076,4 +1429,223 @@ function _formatLabel(key) {
         .split("-")
         .map(w => w.charAt(0).toUpperCase() + w.slice(1))
         .join(" ");
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   POI UNDO/REDO
+   ═══════════════════════════════════════════════════════════════ */
+
+/**
+ * Check if undo is available
+ */
+export function canUndoPoi() {
+    return _poiUndoStack.length > 0;
+}
+
+/**
+ * Check if redo is available
+ */
+export function canRedoPoi() {
+    return _poiRedoStack.length > 0;
+}
+
+/**
+ * Clear POI history (both stacks)
+ */
+export function clearPoiHistory() {
+    _poiUndoStack = [];
+    _poiRedoStack = [];
+}
+
+/**
+ * Undo the last POI tile placement
+ */
+export async function undoLastPoi() {
+    if (_poiUndoStack.length === 0) return false;
+
+    const lastEntry = _poiUndoStack.pop();
+    if (!lastEntry) return false;
+
+    // Find and delete the tile
+    const tile = canvas.tiles.get(lastEntry.id);
+    if (tile) {
+        // Store the full tile data for redo
+        const tileData = tile.document.toObject();
+        _poiRedoStack.push(tileData);
+
+        // Delete the tile
+        await canvas.scene.deleteEmbeddedDocuments("Tile", [lastEntry.id]);
+        return true;
+    }
+
+    return false;
+}
+
+/**
+ * Redo the last undone POI tile
+ */
+export async function redoLastPoi() {
+    if (_poiRedoStack.length === 0) return false;
+
+    const tileData = _poiRedoStack.pop();
+    if (!tileData) return false;
+
+    // Recreate the tile
+    try {
+        const created = await canvas.scene.createEmbeddedDocuments("Tile", [tileData]);
+        if (created && created.length > 0) {
+            // Add to undo stack
+            _poiUndoStack.push({ id: created[0].id });
+            return true;
+        }
+    } catch (err) {
+        console.error(`${MODULE_ID} | Failed to redo POI tile:`, err);
+    }
+
+    return false;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   POI PREVIEW
+   ═══════════════════════════════════════════════════════════════ */
+
+/**
+ * Create preview sprite for POI painting
+ */
+export async function createPreview() {
+    // Destroy existing preview first
+    destroyPreview();
+
+    if (!canvas.stage) return;
+
+    // Get available symbol tiles
+    const availableTiles = _getAvailablePoiTiles();
+    if (availableTiles.length === 0) return;
+
+    // Create container for preview
+    _previewContainer = new PIXI.Container();
+    _previewContainer.name = "sdx-poi-preview";
+    _previewContainer.eventMode = "none";
+    _previewContainer.interactiveChildren = false;
+
+    // Load texture for the first tile
+    const tilePath = availableTiles[_currentPreviewIndex % availableTiles.length];
+    try {
+        const texture = await loadTexture(tilePath);
+        if (texture) {
+            _previewSprite = new PIXI.Sprite(texture);
+            _previewSprite.anchor.set(0.5, 0.5);
+            _previewSprite.alpha = 0.6;
+            _previewSprite.rotation = (_poiRotation * Math.PI) / 180;
+            _previewSprite.scale.set(
+                _poiMirror ? -_poiScale : _poiScale,
+                _poiScale
+            );
+            _previewSprite._sdxTexturePath = tilePath;
+            _previewContainer.addChild(_previewSprite);
+            // Add to interface layer so it renders above tiles but below UI
+            const targetLayer = canvas.interface || canvas.stage;
+            targetLayer.addChild(_previewContainer);
+            _previewEnabled = true;
+        }
+    } catch (e) {
+        console.warn(`${MODULE_ID} | Failed to create POI preview:`, e);
+    }
+}
+
+/**
+ * Update preview position and texture
+ */
+export async function updatePreviewPosition(pos) {
+    if (!_previewEnabled || !_previewContainer || !_previewSprite) return;
+
+    // Update position
+    _previewContainer.position.set(pos.x, pos.y);
+
+    // Check if we need to update texture (if tiles changed)
+    const availableTiles = _getAvailablePoiTiles();
+    if (availableTiles.length === 0) {
+        destroyPreview();
+        return;
+    }
+
+    // Update texture if needed
+    const currentPath = availableTiles[_currentPreviewIndex % availableTiles.length];
+    if (_previewSprite._sdxTexturePath !== currentPath) {
+        try {
+            const texture = await loadTexture(currentPath);
+            if (texture) {
+                _previewSprite.texture = texture;
+                _previewSprite._sdxTexturePath = currentPath;
+            }
+        } catch (e) {
+            // Ignore texture load errors
+        }
+    }
+}
+
+/**
+ * Destroy preview sprite
+ */
+export function destroyPreview() {
+    if (_previewContainer) {
+        if (_previewContainer.parent) {
+            _previewContainer.parent.removeChild(_previewContainer);
+        }
+        _previewContainer.destroy({ children: true });
+        _previewContainer = null;
+    }
+    _previewSprite = null;
+    _previewEnabled = false;
+}
+
+/**
+ * Enable preview
+ */
+export function enablePreview() {
+    if (!_previewEnabled) {
+        createPreview();
+    }
+}
+
+/**
+ * Disable preview
+ */
+export function disablePreview() {
+    destroyPreview();
+}
+
+/**
+ * Check if preview is enabled
+ */
+export function isPreviewEnabled() {
+    return _previewEnabled;
+}
+
+/**
+ * Advance to the next tile in the cycle
+ */
+export function advancePreviewIndex() {
+    const availableTiles = _getAvailablePoiTiles();
+    if (availableTiles.length > 0) {
+        _currentPreviewIndex = (_currentPreviewIndex + 1) % availableTiles.length;
+    }
+}
+
+/**
+ * Get current preview index
+ */
+export function getCurrentPreviewIndex() {
+    return _currentPreviewIndex;
+}
+
+/**
+ * Get array of available POI tiles from chosen tiles
+ */
+function _getAvailablePoiTiles() {
+    if (_activeTileTab !== "symbols") return [];
+
+    return Array.from(_chosenTiles).filter(path =>
+        _symbolTiles && _symbolTiles.some(t => t.path === path)
+    );
 }
