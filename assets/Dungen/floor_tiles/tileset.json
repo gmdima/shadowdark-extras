@@ -1,0 +1,36 @@
+{
+    "tiles": [
+        {
+            "id": "stone_slab",
+            "name": "Stone Slab",
+            "role": [
+                "primary",
+                "room"
+            ],
+            "pattern": "solid",
+            "tone": "neutral",
+            "preview": "modules/instant_dungeons/assets/floor_tiles/stone_slab_00.png",
+            "variations": [
+                "modules/instant_dungeons/assets/floor_tiles/stone_slab_00.png",
+                "modules/instant_dungeons/assets/floor_tiles/stone_slab_01.png",
+                "modules/instant_dungeons/assets/floor_tiles/stone_slab_02.png",
+                "modules/instant_dungeons/assets/floor_tiles/stone_slab_03.png",
+                "modules/instant_dungeons/assets/floor_tiles/stone_slab_04.png"
+            ]
+        },
+
+        {
+            "id": "marble_diamond",
+            "name": "Marble Diamond",
+            "role": [
+                "room"
+            ],
+            "pattern": "checkered",
+            "tone": "light",
+            "preview": "modules/instant_dungeons/assets/floor_tiles/marble_diamond_00.png",
+            "variations": [
+                "modules/instant_dungeons/assets/floor_tiles/marble_diamond_00.png"
+            ]
+        }
+    ]
+}

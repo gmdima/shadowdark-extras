@@ -11,6 +11,18 @@
 import { TrayApp } from "./TrayApp.mjs";
 import { JournalPinManager } from "./JournalPinsSD.mjs";
 import { getHexPainterData, loadTileAssets, bindCanvasEvents, enablePainting, disablePainting, isPainting } from "./HexPainterSD.mjs";
+import {
+    getDungeonPainterData,
+    loadDungeonAssets,
+    bindDungeonCanvasEvents,
+    enableDungeonPainting,
+    disableDungeonPainting,
+    isDungeonPainting,
+    setDungeonMode,
+    getDungeonMode,
+    selectFloorTile,
+    cleanupDungeonPainting
+} from "./DungeonPainterSD.mjs";
 
 const MODULE_ID = "shadowdark-extras";
 
@@ -53,18 +65,28 @@ export function initTray() {
     // Load hex tile assets for the painter tab
     loadTileAssets().then(() => renderTray());
 
+    // Load dungeon tile assets
+    loadDungeonAssets().then(() => renderTray());
+
     // Bind canvas events now if canvas is already ready (page refresh)
-    if (canvas?.stage) bindCanvasEvents();
+    if (canvas?.stage) {
+        bindCanvasEvents();
+        bindDungeonCanvasEvents();
+    }
 
     // Hook into token selection changes
     Hooks.on("controlToken", async () => {
         await renderTray();
     });
 
-    // Hook into actor updates (HP, etc.)
+    // Hook into actor updates (HP, etc.) - debounced to handle rapid updates
+    let _actorUpdateTimer = null;
     Hooks.on("updateActor", async (actor) => {
-        // Re-render if this actor is visible in the tray
-        await renderTray();
+        if (_actorUpdateTimer) clearTimeout(_actorUpdateTimer);
+        _actorUpdateTimer = setTimeout(async () => {
+            _actorUpdateTimer = null;
+            await renderTray();
+        }, 100);
     });
 
     // Hook into effect changes
@@ -86,7 +108,26 @@ export function initTray() {
     // Hook into token creation/deletion for party view & notes
     Hooks.on("createToken", async () => await renderTray());
     Hooks.on("deleteToken", async () => await renderTray());
-    Hooks.on("updateToken", async () => await renderTray());
+
+    // Debounced token update handler to prevent lag during token movement
+    // Token movement triggers many updateToken events per second - we only need to update
+    // the tray for HP changes, not position changes
+    let _tokenUpdateTimer = null;
+    Hooks.on("updateToken", async (tokenDoc, changes) => {
+        // Skip position-only updates (token movement) - these don't affect tray content
+        const isPositionOnly = ("x" in changes || "y" in changes || "rotation" in changes || "elevation" in changes)
+            && !("actorData" in changes)
+            && !("name" in changes)
+            && !("texture" in changes);
+        if (isPositionOnly) return;
+
+        // Debounce other updates
+        if (_tokenUpdateTimer) clearTimeout(_tokenUpdateTimer);
+        _tokenUpdateTimer = setTimeout(async () => {
+            _tokenUpdateTimer = null;
+            await renderTray();
+        }, 100);
+    });
 
     // Hook into other placeables for notes — debounced to survive bulk operations
     let _placeableRenderTimer = null;
@@ -98,21 +139,43 @@ export function initTray() {
             // This prevents massive lag and scroll resetting issues.
             // The only downside is if you place a tile that SHOULD trigger a note update, it won't show until you stop painting.
 
-            // Double check: if isPainting() is true OR if we are in hexes view (which implies painting mode)
+            // Double check: if isPainting() is true OR if we are in hexes/dungeons view (which implies painting mode)
             // This makes the check more robust against state desyncs
-            if (!isPainting() && getViewMode() !== "hexes") await renderTray();
+            if (!isPainting() && !isDungeonPainting() && getViewMode() !== "hexes" && getViewMode() !== "dungeons") {
+                await renderTray();
+            }
         }, 300);
     }
-    const placeableHooks = ["AmbientLight", "AmbientSound", "Wall", "Tile"];
+
+    // Wall updates need special handling - door state changes (open/close) don't affect tray
+    Hooks.on("createWall", debouncedPlaceableRender);
+    Hooks.on("deleteWall", debouncedPlaceableRender);
+    Hooks.on("updateWall", (wallDoc, changes) => {
+        // Skip door state changes (ds = door state) - opening/closing doors doesn't affect tray content
+        const isDoorStateOnly = ("ds" in changes)
+            && !("c" in changes)  // wall coordinates
+            && !("flags" in changes);  // flags might contain notes
+        if (isDoorStateOnly) return;
+        debouncedPlaceableRender();
+    });
+
+    // Other placeables
+    const placeableHooks = ["AmbientLight", "AmbientSound", "Tile"];
     placeableHooks.forEach(type => {
         Hooks.on(`create${type}`, debouncedPlaceableRender);
         Hooks.on(`update${type}`, debouncedPlaceableRender);
         Hooks.on(`delete${type}`, debouncedPlaceableRender);
     });
 
+    // Hook into canvas teardown (before scene change) to clean up
+    Hooks.on("canvasTearDown", () => {
+        cleanupDungeonPainting();
+    });
+
     // Hook into scene changes
     Hooks.on("canvasReady", async () => {
         bindCanvasEvents();
+        bindDungeonCanvasEvents();
         await renderTray();
     });
 
@@ -138,6 +201,20 @@ export function initTray() {
         if (setting.key === `${MODULE_ID}.tom-scenes`) {
             renderTray();
         }
+    });
+
+    // Keyboard shortcut: Ctrl to toggle Tiles/Doors mode in Dungeons tab
+    document.addEventListener("keydown", (event) => {
+        // Only respond to Ctrl key without other modifiers
+        if (event.key !== "Control" || event.shiftKey || event.altKey) return;
+
+        // Only when in dungeons view and tray is expanded
+        if (_viewMode !== "dungeons" || !_trayApp?._isExpanded) return;
+
+        // Toggle mode
+        const currentMode = getDungeonMode();
+        setDungeonMode(currentMode === "tiles" ? "doors" : "tiles");
+        renderTray();
     });
 
     console.log("shadowdark-extras | Character Tray initialized");
@@ -367,8 +444,16 @@ export function getHealthOverlayHeight(hp) {
 export function setViewMode(mode) {
     _viewMode = mode;
     // Toggle hex painting based on active tab
-    if (mode === "hexes") enablePainting();
-    else disablePainting();
+    if (mode === "hexes") {
+        enablePainting();
+        disableDungeonPainting();
+    } else if (mode === "dungeons") {
+        disablePainting();
+        enableDungeonPainting();
+    } else {
+        disablePainting();
+        disableDungeonPainting();
+    }
     renderTray();
 }
 
@@ -423,9 +508,17 @@ export function cycleViewMode() {
     const nextIndex = currentIndex === -1 ? 0 : (currentIndex + 1) % modes.length;
     _viewMode = modes[nextIndex];
 
-    // Toggle hex painting based on active tab
-    if (_viewMode === "hexes") enablePainting();
-    else disablePainting();
+    // Toggle painting based on active tab
+    if (_viewMode === "hexes") {
+        enablePainting();
+        disableDungeonPainting();
+    } else if (_viewMode === "dungeons") {
+        disablePainting();
+        enableDungeonPainting();
+    } else {
+        disablePainting();
+        disableDungeonPainting();
+    }
 
     renderTray();
 }
@@ -500,6 +593,9 @@ export async function renderTray() {
 
         // Hex Painter Data
         ...getHexPainterData(),
+
+        // Dungeon Painter Data
+        ...getDungeonPainterData(),
 
         // Active Effects
         activeEffects: (() => {

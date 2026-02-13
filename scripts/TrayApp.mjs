@@ -30,6 +30,7 @@ import { PlaceableNotesSD } from "./PlaceableNotesSD.mjs";
 import { setMapDimension, formatActiveScene, enablePainting, disablePainting, toggleTileSelection, setSearchFilter, toggleWaterEffect, toggleWindEffect, toggleFogAnimation, toggleTintEnabled, toggleBwEffect, isTintEnabled, setActiveTileTab, setCustomTileDimension, toggleColoredFolderCollapsed, toggleSymbolFolderCollapsed, undoLastPoi, redoLastPoi, getPoiScale, enablePreview, disablePreview, getActiveTileTab, adjustPoiScale, rotatePoiLeft, rotatePoiRight, togglePoiMirror } from "./HexPainterSD.mjs";
 import { generateHexMap, clearGeneratedTiles } from "./HexGeneratorSD.mjs";
 import { flattenTiles } from "./TileFlattenSD.mjs";
+import { setDungeonMode, selectFloorTile, selectDoorTile, enableDungeonPainting, disableDungeonPainting } from "./DungeonPainterSD.mjs";
 
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
@@ -173,15 +174,23 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
             elem.classList.toggle("expanded", this._isExpanded);
         }
 
-        if (this._isExpanded && getViewMode() === "hexes") {
+        const viewMode = getViewMode();
+
+        if (this._isExpanded && viewMode === "hexes") {
             enablePainting();
+            disableDungeonPainting();
             // Enable POI preview if on symbols tab
             if (getActiveTileTab() === "symbols") {
                 enablePreview();
             }
+        } else if (this._isExpanded && viewMode === "dungeons") {
+            disablePainting();
+            disablePreview();
+            enableDungeonPainting();
         } else {
             disablePainting();
             disablePreview();
+            disableDungeonPainting();
         }
     }
 
@@ -475,13 +484,62 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
                     // Enable/disable painting based on view
                     if (view === "hexes" && this._isExpanded) {
                         enablePainting();
+                        disableDungeonPainting();
                         if (getActiveTileTab() === "symbols") {
                             enablePreview();
                         }
+                    } else if (view === "dungeons" && this._isExpanded) {
+                        disablePainting();
+                        disablePreview();
+                        enableDungeonPainting();
                     } else {
                         disablePainting();
                         disablePreview();
+                        disableDungeonPainting();
                     }
+                }
+            });
+        });
+
+        /* ------------------------------------------- */
+        /*  DUNGEON PAINTER TAB ACTIONS               */
+        /* ------------------------------------------- */
+
+        // Dungeon mode tabs (Tiles / Doors)
+        elem.querySelectorAll(".dungeon-mode-tab").forEach(tab => {
+            tab.addEventListener("click", (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                const mode = tab.dataset.dungeonMode;
+                if (mode) {
+                    setDungeonMode(mode);
+                    renderTray();
+                }
+            });
+        });
+
+        // Dungeon floor tile selection
+        elem.querySelectorAll(".dungeon-tile-thumb[data-dungeon-tile]").forEach(tile => {
+            tile.addEventListener("click", (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                const tilePath = tile.dataset.dungeonTile;
+                if (tilePath) {
+                    selectFloorTile(tilePath);
+                    renderTray();
+                }
+            });
+        });
+
+        // Dungeon door tile selection
+        elem.querySelectorAll(".dungeon-tile-thumb[data-dungeon-door]").forEach(tile => {
+            tile.addEventListener("click", (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                const tilePath = tile.dataset.dungeonDoor;
+                if (tilePath) {
+                    selectDoorTile(tilePath);
+                    renderTray();
                 }
             });
         });

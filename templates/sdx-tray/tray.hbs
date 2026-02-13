@@ -1038,10 +1038,83 @@
             <div class="tray-view-content dungeons-view {{#unless (eq viewMode 'dungeons')}}hidden{{/unless}}"
                 style="overflow-y: hidden; display: flex; flex-direction: column;">
 
-                <div class="dungeons-placeholder" style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; text-align: center;">
-                    <i class="fas fa-dungeon" style="font-size: 3em; color: #9f9275; margin-bottom: 10px;"></i>
-                    <p style="color: #9f9275; font-size: 1.1em; margin: 0;">Dungeon Tools</p>
-                    <p style="color: #666; font-size: 0.9em; margin-top: 8px;">Coming Soon</p>
+                <!-- Mode Tabs -->
+                <div class="dungeon-mode-tabs">
+                    <button class="dungeon-mode-tab {{#if (eq dungeonMode 'tiles')}}active{{/if}}" data-dungeon-mode="tiles">
+                        <i class="fas fa-th"></i> Tiles
+                    </button>
+                    <button class="dungeon-mode-tab {{#if (eq dungeonMode 'doors')}}active{{/if}}" data-dungeon-mode="doors">
+                        <i class="fas fa-door-open"></i> Doors
+                    </button>
+                </div>
+
+                <!-- Tiles Grid (shows floor tiles or door tiles depending on mode) -->
+                <div class="dungeon-tile-scroll"
+                    style="flex: 1; overflow-y: auto; scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.2) rgba(0,0,0,0.1);">
+
+                    {{#if (eq dungeonMode 'tiles')}}
+                    <!-- Floor Tiles -->
+                    {{#if hasFloorTiles}}
+                    <div class="dungeon-tile-grid">
+                        {{#each floorTiles}}
+                        <div class="dungeon-tile-thumb {{#if this.active}}active{{/if}}" data-dungeon-tile="{{this.path}}"
+                            title="{{this.label}}">
+                            <img src="{{this.path}}" alt="{{this.label}}" />
+                        </div>
+                        {{/each}}
+                    </div>
+                    {{else}}
+                    <div class="dungeon-no-tiles">
+                        <p><i class="fas fa-dungeon"></i></p>
+                        <p>No floor tiles found</p>
+                        <p class="dungeon-hint">Add tiles to:<br><code>assets/Dungeon/floor_tiles/</code></p>
+                    </div>
+                    {{/if}}
+                    {{else}}
+                    <!-- Door Tiles -->
+                    {{#if hasDoorTiles}}
+                    <div class="dungeon-tile-grid dungeon-door-grid">
+                        {{#each doorTiles}}
+                        <div class="dungeon-tile-thumb dungeon-door-thumb {{#if this.active}}active{{/if}}" data-dungeon-door="{{this.path}}"
+                            title="{{this.label}}">
+                            <img src="{{this.path}}" alt="{{this.label}}" />
+                            <span class="dungeon-tile-label">{{this.label}}</span>
+                        </div>
+                        {{/each}}
+                    </div>
+                    {{else}}
+                    <div class="dungeon-no-tiles">
+                        <p><i class="fas fa-door-open"></i></p>
+                        <p>No door tiles found</p>
+                        <p class="dungeon-hint">Add tiles to:<br><code>assets/Dungeon/door_tiles/</code></p>
+                    </div>
+                    {{/if}}
+                    {{/if}}
+                </div>
+
+                <!-- Usage hints -->
+                <div class="tray-footer-message dungeon-hints">
+                    {{#if (eq dungeonMode 'tiles')}}
+                    <div class="dungeon-hint-row">
+                        <i class="fas fa-expand-arrows-alt"></i> <span>Drag</span> to fill rectangle
+                    </div>
+                    <div class="dungeon-hint-row">
+                        <i class="fas fa-eraser"></i> <span>Shift+Drag</span> to delete
+                    </div>
+                    {{else}}
+                    <div class="dungeon-hint-row">
+                        <i class="fas fa-mouse-pointer"></i> <span>Click</span> on edge to add door
+                    </div>
+                    <div class="dungeon-hint-row">
+                        <i class="fas fa-eraser"></i> <span>Shift+Click</span> to remove door
+                    </div>
+                    {{/if}}
+                    <div class="dungeon-hint-row">
+                        <i class="fas fa-sync-alt"></i> <span>Ctrl</span> to switch mode
+                    </div>
+                    <div class="dungeon-hint-info">
+                        Walls auto-rebuild on release
+                    </div>
                 </div>
 
             </div>
