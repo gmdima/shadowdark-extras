@@ -224,14 +224,16 @@
                 <i class="fa-solid fa-sticky-note"></i> Notes
             </button>
         </div>
-        {{#if isGM}}
+        {{#if (or isGM canPlayerPaint)}}
         <div class="tray-view-tabs tray-view-tabs-row2">
+            {{#if isGM}}
             <button class="tray-tab-button {{#if (eq viewMode 'hexes')}}active{{/if}}" data-view="hexes"
                 title="Hex Painter">
                 <i class="fas fa-border-all"></i> Hexes
             </button>
+            {{/if}}
             <button class="tray-tab-button {{#if (eq viewMode 'dungeons')}}active{{/if}}" data-view="dungeons"
-                title="Dungeon Painter">
+                title="Dungeon Painter{{#unless isGM}} (GM Online){{/unless}}">
                 <i class="fas fa-dungeon"></i> Dungeons
             </button>
         </div>
@@ -1033,8 +1035,10 @@
                     {{/if}}
                 </div>
             </div>
+            {{/if}}
 
-            <!-- DUNGEONS TAB (GM ONLY) -->
+            <!-- DUNGEONS TAB (GM or Player with GM online) -->
+            {{#if (or isGM canPlayerPaint)}}
             <div class="tray-view-content dungeons-view {{#unless (eq viewMode 'dungeons')}}hidden{{/unless}}"
                 style="overflow-y: hidden; display: flex; flex-direction: column;">
 
@@ -1048,12 +1052,28 @@
                     </button>
                 </div>
 
+                <!-- Options (GM only) -->
+                {{#if isGM}}
+                <div class="dungeon-options-section">
+                    <label class="dungeon-option-toggle">
+                        <input type="checkbox" class="dungeon-no-walls-checkbox" {{#if noFoundryWalls}}checked{{/if}} />
+                        <span><i class="fas fa-border-none"></i> No Foundry Walls</span>
+                    </label>
+                </div>
+                {{else}}
+                <!-- Player info -->
+                <div class="dungeon-player-info">
+                    <i class="fas fa-satellite-dish"></i> Painting via GM connection
+                </div>
+                {{/if}}
+
                 <!-- Tiles Grid (shows floor tiles or door tiles depending on mode) -->
                 <div class="dungeon-tile-scroll"
                     style="flex: 1; overflow-y: auto; scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.2) rgba(0,0,0,0.1);">
 
                     {{#if (eq dungeonMode 'tiles')}}
                     <!-- Floor Tiles -->
+                    <div class="dungeon-section-label"><i class="fas fa-th"></i> Floor Tiles</div>
                     {{#if hasFloorTiles}}
                     <div class="dungeon-tile-grid">
                         {{#each floorTiles}}
@@ -1068,6 +1088,25 @@
                         <p><i class="fas fa-dungeon"></i></p>
                         <p>No floor tiles found</p>
                         <p class="dungeon-hint">Add tiles to:<br><code>assets/Dungeon/floor_tiles/</code></p>
+                    </div>
+                    {{/if}}
+
+                    <!-- Wall Tiles -->
+                    <div class="dungeon-section-label"><i class="fas fa-border-all"></i> Wall Tiles</div>
+                    {{#if hasWallTiles}}
+                    <div class="dungeon-tile-grid dungeon-wall-grid">
+                        {{#each wallTiles}}
+                        <div class="dungeon-tile-thumb dungeon-wall-thumb {{#if this.active}}active{{/if}}" data-dungeon-wall="{{this.path}}"
+                            title="{{this.label}}">
+                            <img src="{{this.path}}" alt="{{this.label}}" />
+                        </div>
+                        {{/each}}
+                    </div>
+                    {{else}}
+                    <div class="dungeon-no-tiles dungeon-no-walls">
+                        <p><i class="fas fa-border-all"></i></p>
+                        <p>No wall tiles found</p>
+                        <p class="dungeon-hint">Add tiles to:<br><code>assets/Dungeon/wall_tiles/</code></p>
                     </div>
                     {{/if}}
                     {{else}}

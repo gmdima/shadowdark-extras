@@ -14,6 +14,7 @@ import { getHexPainterData, loadTileAssets, bindCanvasEvents, enablePainting, di
 import {
     getDungeonPainterData,
     loadDungeonAssets,
+    reloadDungeonAssets,
     bindDungeonCanvasEvents,
     enableDungeonPainting,
     disableDungeonPainting,
@@ -21,7 +22,10 @@ import {
     setDungeonMode,
     getDungeonMode,
     selectFloorTile,
-    cleanupDungeonPainting
+    cleanupDungeonPainting,
+    initDungeonSocket,
+    isGMOnline,
+    canPlayerPaint
 } from "./DungeonPainterSD.mjs";
 
 const MODULE_ID = "shadowdark-extras";
@@ -65,7 +69,10 @@ export function initTray() {
     // Load hex tile assets for the painter tab
     loadTileAssets().then(() => renderTray());
 
-    // Load dungeon tile assets
+    // Initialize dungeon socket FIRST (so players can request tiles from GM)
+    initDungeonSocket();
+
+    // Load dungeon tile assets (after socket init so players can request from GM)
     loadDungeonAssets().then(() => renderTray());
 
     // Bind canvas events now if canvas is already ready (page refresh)
@@ -199,6 +206,16 @@ export function initTray() {
     Hooks.on("updateSetting", (setting, data, options, userId) => {
         // Check if the update involves Tom scenes
         if (setting.key === `${MODULE_ID}.tom-scenes`) {
+            renderTray();
+        }
+    });
+
+    // Hook to reload dungeon tiles when GM comes online (for players)
+    Hooks.on("userConnected", async (user, connected) => {
+        if (!game.user.isGM && user.isGM && connected) {
+            // GM just came online - try to reload dungeon tiles
+            console.log(`${MODULE_ID} | GM connected, reloading dungeon tiles...`);
+            await reloadDungeonAssets();
             renderTray();
         }
     });
@@ -441,7 +458,7 @@ export function getHealthOverlayHeight(hp) {
  * Set the current view mode
  * @param {string} mode - "player" or "party"
  */
-export function setViewMode(mode) {
+export async function setViewMode(mode) {
     _viewMode = mode;
     // Toggle hex painting based on active tab
     if (mode === "hexes") {
@@ -450,6 +467,13 @@ export function setViewMode(mode) {
     } else if (mode === "dungeons") {
         disablePainting();
         enableDungeonPainting();
+        // If player switching to dungeons and no tiles loaded, try to reload
+        if (!game.user.isGM && canPlayerPaint()) {
+            const data = getDungeonPainterData();
+            if (!data.hasFloorTiles) {
+                await reloadDungeonAssets();
+            }
+        }
     } else {
         disablePainting();
         disableDungeonPainting();
@@ -501,7 +525,7 @@ export function cycleViewMode() {
     if (isGM) modes.push("pins");
     modes.push("notes"); // Notes mode for everyone (filtered for players)
     if (isGM) modes.push("hexes");
-    if (isGM) modes.push("dungeons");
+    if (isGM || canPlayerPaint()) modes.push("dungeons");
 
     const currentIndex = modes.indexOf(_viewMode);
     // If current mode isn't in list (e.g. switched from player to GM view), start at 0

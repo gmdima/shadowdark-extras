@@ -30,7 +30,7 @@ import { PlaceableNotesSD } from "./PlaceableNotesSD.mjs";
 import { setMapDimension, formatActiveScene, enablePainting, disablePainting, toggleTileSelection, setSearchFilter, toggleWaterEffect, toggleWindEffect, toggleFogAnimation, toggleTintEnabled, toggleBwEffect, isTintEnabled, setActiveTileTab, setCustomTileDimension, toggleColoredFolderCollapsed, toggleSymbolFolderCollapsed, undoLastPoi, redoLastPoi, getPoiScale, enablePreview, disablePreview, getActiveTileTab, adjustPoiScale, rotatePoiLeft, rotatePoiRight, togglePoiMirror } from "./HexPainterSD.mjs";
 import { generateHexMap, clearGeneratedTiles } from "./HexGeneratorSD.mjs";
 import { flattenTiles } from "./TileFlattenSD.mjs";
-import { setDungeonMode, selectFloorTile, selectDoorTile, enableDungeonPainting, disableDungeonPainting } from "./DungeonPainterSD.mjs";
+import { setDungeonMode, selectFloorTile, selectWallTile, selectDoorTile, enableDungeonPainting, disableDungeonPainting, setNoFoundryWalls } from "./DungeonPainterSD.mjs";
 
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
@@ -364,10 +364,10 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
             }
         });
 
-        elem.querySelector(".tray-handle-button-tool[data-action='pin-list']")?.addEventListener("click", (e) => {
+        elem.querySelector(".tray-handle-button-tool[data-action='pin-list']")?.addEventListener("click", async (e) => {
             e.preventDefault();
             e.stopPropagation();
-            setViewMode("pins");
+            await setViewMode("pins");
             this.setExpanded(true);
         });
 
@@ -475,12 +475,12 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
 
         // Tab buttons
         elem.querySelectorAll(".tray-tab-button").forEach(btn => {
-            btn.addEventListener("click", (e) => {
+            btn.addEventListener("click", async (e) => {
                 e.preventDefault();
                 e.stopPropagation();
                 const view = btn.dataset.view;
                 if (view) {
-                    setViewMode(view);
+                    await setViewMode(view);
                     // Enable/disable painting based on view
                     if (view === "hexes" && this._isExpanded) {
                         enablePainting();
@@ -543,6 +543,28 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
                 }
             });
         });
+
+        // Dungeon wall tile selection
+        elem.querySelectorAll(".dungeon-tile-thumb[data-dungeon-wall]").forEach(tile => {
+            tile.addEventListener("click", (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                const tilePath = tile.dataset.dungeonWall;
+                if (tilePath) {
+                    selectWallTile(tilePath);
+                    renderTray();
+                }
+            });
+        });
+
+        // Dungeon "No Foundry Walls" toggle
+        const noWallsCheckbox = elem.querySelector(".dungeon-no-walls-checkbox");
+        if (noWallsCheckbox) {
+            noWallsCheckbox.addEventListener("change", (e) => {
+                setNoFoundryWalls(e.target.checked);
+                renderTray();
+            });
+        }
 
         // Party card clicks
         elem.querySelectorAll(".party-card").forEach(card => {

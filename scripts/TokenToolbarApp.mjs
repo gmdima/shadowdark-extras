@@ -262,16 +262,36 @@ export class TokenToolbarApp extends HandlebarsApplicationMixin(ApplicationV2) {
                         await item.roll();
                     }
                 } else if (itemType === "NPC Attack") {
-                    // NPC Attack - roll using actor's rollNpcAttack or displayCard
-                    if (typeof actor.rollNpcAttack === "function") {
-                        await actor.rollNpcAttack(itemId);
+                    // Check if it's a special attack which shouldn't be rolled via rollNpcAttack
+                    // This mirrors logic in NpcSheetSD._onRollItem
+                    if (item.system.attackType === "special") {
+                        if (typeof item.displayCard === "function") {
+                            await item.displayCard();
+                        } else {
+                            item.sheet.render(true);
+                        }
+                        return;
+                    }
+
+                    // Prepare data for rollNpcAttack
+                    const data = {
+                        item: item,
+                        actor: actor,
+                    };
+                    const parts = ["1d20", "@attackBonus"];
+                    data.attackBonus = item.system.bonuses.attackBonus;
+                    data.damageParts = ["@damageBonus"];
+                    data.damageBonus = item.system.bonuses.damageBonus;
+
+                    if (typeof item.rollNpcAttack === "function") {
+                        await item.rollNpcAttack(parts, data);
                     } else if (typeof item.displayCard === "function") {
                         await item.displayCard();
                     } else {
                         item.sheet.render(true);
                     }
                 } else if (itemType === "NPC Special Attack") {
-                    // NPC Special Attack - display card or open sheet
+                    // NPC Special Attack - these are generally not rolled, just displayed
                     if (typeof item.displayCard === "function") {
                         await item.displayCard();
                     } else {
