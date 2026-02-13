@@ -16,7 +16,8 @@ import {
     clearTokenSelection,
     switchToActor,
     getHealthOverlayHeight,
-    renderTray
+    renderTray,
+    toggleHideNpcsFromPlayers
 } from "./TraySD.mjs";
 // Note: renderTray imported above is used by POI undo/redo handlers
 import { showLeaderDialog, showMovementModeDialog } from "./MarchingModeSD.mjs";
@@ -28,6 +29,7 @@ import { PinListApp } from "./PinListApp.mjs";
 import { PlaceableNotesSD } from "./PlaceableNotesSD.mjs";
 import { setMapDimension, formatActiveScene, enablePainting, disablePainting, toggleTileSelection, setSearchFilter, toggleWaterEffect, toggleWindEffect, toggleFogAnimation, toggleTintEnabled, toggleBwEffect, isTintEnabled, setActiveTileTab, setCustomTileDimension, toggleColoredFolderCollapsed, toggleSymbolFolderCollapsed, undoLastPoi, redoLastPoi, getPoiScale, enablePreview, disablePreview, getActiveTileTab, adjustPoiScale, rotatePoiLeft, rotatePoiRight, togglePoiMirror } from "./HexPainterSD.mjs";
 import { generateHexMap, clearGeneratedTiles } from "./HexGeneratorSD.mjs";
+import { flattenTiles } from "./TileFlattenSD.mjs";
 
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
@@ -62,6 +64,7 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
         this._isExpanded = false;
         this._pinSearchTerm = "";
         this._scrollPositions = {}; // Store scroll positions for tile grids
+        this._generatorExpanded = false; // Store procedural generator panel state
 
         // Store static reference
         TrayApp._instance = this;
@@ -78,7 +81,7 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
     }
 
     /**
-     * Save scroll positions of tile grids
+     * Save scroll positions of tile grids and other UI state
      */
     _saveScrollPositions() {
         // Can't query inside this.element because it might not be rendered/attached yet in the way we expect if we use standard AppV2 accessors,
@@ -99,10 +102,16 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
                 this._scrollPositions[key] = grid.scrollTop;
             }
         });
+
+        // Save procedural generator panel expanded state
+        const generatorControls = elem.querySelector(".hex-generator-controls");
+        if (generatorControls) {
+            this._generatorExpanded = !generatorControls.classList.contains("hidden");
+        }
     }
 
     /**
-     * Restore scroll positions of tile grids
+     * Restore scroll positions of tile grids and other UI state
      */
     _restoreScrollPositions() {
         const elem = document.querySelector(".sdx-tray");
@@ -121,6 +130,12 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
                 grid.scrollTop = this._scrollPositions[key];
             }
         });
+
+        // Restore procedural generator panel expanded state
+        const generatorControls = elem.querySelector(".hex-generator-controls");
+        if (generatorControls && this._generatorExpanded) {
+            generatorControls.classList.remove("hidden");
+        }
     }
 
     /**
@@ -723,6 +738,13 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
             selectPartyTokens();
         });
 
+        // Toggle NPC visibility for players (GM only)
+        elem.querySelector('[data-action="toggle-npc-visibility"]')?.addEventListener("click", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            toggleHideNpcsFromPlayers();
+        });
+
         // Clear selection button
         elem.querySelector(".button-clear")?.addEventListener("click", (e) => {
             e.preventDefault();
@@ -1118,6 +1140,36 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
             await formatActiveScene();
         });
 
+        // Flatten all tiles button
+        elem.querySelector(".hex-flatten-btn")?.addEventListener("click", async (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+
+            // Get all tiles on the scene
+            const allTiles = canvas?.tiles?.placeables || [];
+            if (allTiles.length < 2) {
+                ui.notifications.warn("Need at least 2 tiles on the scene to flatten.");
+                return;
+            }
+
+            // Get all tile documents
+            const tileDocs = allTiles.map(p => p.document).filter(d => d);
+
+            // Ask for confirmation
+            const confirmed = await Dialog.confirm({
+                title: "Flatten All Tiles",
+                content: `<p>This will flatten all <strong>${tileDocs.length}</strong> tiles on the scene into a single image.</p><p>You can unflatten later from the Tile HUD.</p>`,
+                yes: () => true,
+                no: () => false,
+                defaultYes: false
+            });
+
+            if (!confirmed) return;
+
+            // Call the flatten function
+            await flattenTiles(tileDocs);
+        });
+
         // Search filter (client-side filtering without re-render)
         elem.querySelector(".hex-search-input")?.addEventListener("input", (e) => {
             const searchTerm = e.target.value.toLowerCase();
@@ -1206,7 +1258,11 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
         elem.querySelector(".hex-generator-toggle-btn")?.addEventListener("click", (e) => {
             e.preventDefault();
             const controls = elem.querySelector(".hex-generator-controls");
-            if (controls) controls.classList.toggle("hidden");
+            if (controls) {
+                controls.classList.toggle("hidden");
+                // Store the expanded state so it persists across tab switches
+                this._generatorExpanded = !controls.classList.contains("hidden");
+            }
         });
 
         // Generator sliders - update display value
@@ -2068,5 +2124,24 @@ Hooks.once("init", () => {
     // Helper for default values
     Handlebars.registerHelper("default", function (value, defaultValue) {
         return value ?? defaultValue;
+    });
+
+    // Helper for logical NOT
+    Handlebars.registerHelper("not", function (value) {
+        return !value;
+    });
+
+    // Helper for logical OR
+    Handlebars.registerHelper("or", function (...args) {
+        // Remove the Handlebars options object from the end
+        args.pop();
+        return args.some(Boolean);
+    });
+
+    // Helper for logical AND
+    Handlebars.registerHelper("and", function (...args) {
+        // Remove the Handlebars options object from the end
+        args.pop();
+        return args.every(Boolean);
     });
 });

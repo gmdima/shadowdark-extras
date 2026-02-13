@@ -394,6 +394,45 @@
     text-transform: capitalize;
     line-height: 1.2;
 }
+.sdx-dt-inspector-name {
+    font-size: 9px;
+    color: rgba(255, 255, 255, 0.65);
+    line-height: 1.2;
+    cursor: pointer;
+    padding: 1px 2px;
+    margin: -1px -2px;
+    border-radius: 2px;
+    transition: background 0.12s, color 0.12s;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100px;
+}
+.sdx-dt-inspector-name:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: rgba(255, 255, 255, 0.85);
+}
+.sdx-dt-inspector-name.sdx-dt-inspector-name-editing {
+    padding: 0;
+    margin: 0;
+    background: transparent;
+}
+.sdx-dt-inspector-name-input {
+    width: 90px;
+    font-size: 9px;
+    line-height: 1.2;
+    padding: 2px 4px;
+    border: 1px solid rgba(200, 160, 80, 0.50);
+    border-radius: 3px;
+    background: rgba(0, 0, 0, 0.40);
+    color: rgba(255, 255, 255, 0.90);
+    outline: none;
+    font-family: inherit;
+}
+.sdx-dt-inspector-name-input:focus {
+    border-color: #f0d090;
+    box-shadow: 0 0 4px rgba(200, 160, 80, 0.30);
+}
 .sdx-dt-inspector-user {
     font-size: 8px;
     color: rgba(255, 255, 255, 0.30);
@@ -454,4 +493,46 @@
     font-size: 9px;
     color: rgba(255, 255, 255, 0.25);
     font-style: italic;
+}
+
+/* ── Visibility toggle button ──────────────────────────────────── */
+.sdx-dt-inspector-visibility {
+    width: 18px;
+    height: 18px;
+    border: none;
+    border-radius: 3px;
+    background: transparent;
+    color: rgba(255, 255, 255, 0.15);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 9px;
+    transition: background 0.12s, color 0.12s, opacity 0.12s;
+    padding: 0;
+    flex-shrink: 0;
+    opacity: 0;
+}
+.sdx-dt-inspector-item:hover .sdx-dt-inspector-visibility {
+    opacity: 1;
+    color: rgba(255, 255, 255, 0.40);
+}
+.sdx-dt-inspector-visibility:hover {
+    background: rgba(100, 180, 255, 0.25);
+    color: rgba(150, 200, 255, 0.90);
+}
+
+/* Hidden drawing row styling */
+.sdx-dt-inspector-item.sdx-dt-inspector-hidden {
+    opacity: 0.5;
+}
+.sdx-dt-inspector-item.sdx-dt-inspector-hidden .sdx-dt-inspector-type-icon {
+    color: rgba(255, 255, 255, 0.20);
+}
+.sdx-dt-inspector-item.sdx-dt-inspector-hidden:hover .sdx-dt-inspector-type-icon {
+    color: rgba(200, 160, 80, 0.60);
+}
+.sdx-dt-inspector-item.sdx-dt-inspector-hidden .sdx-dt-inspector-visibility {
+    opacity: 0.8;
+    color: rgba(255, 180, 100, 0.60);
 }

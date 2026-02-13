@@ -181,6 +181,10 @@ class SDXDrawingTool {
                 this._handleRemoteDeletion(payload.data);
             } else if (payload.type === "sdx-permanent-cleared") {
                 this._handleRemotePermanentClear();
+            } else if (payload.type === "sdx-drawing-visibility") {
+                this._handleRemoteVisibilityChange(payload.data);
+            } else if (payload.type === "sdx-drawing-renamed") {
+                this._handleRemoteRename(payload.data);
             }
         });
     }
@@ -1154,6 +1158,10 @@ class SDXDrawingTool {
             }
             if (g) {
                 if (data.opacity !== undefined) g.alpha = data.opacity;
+                // Respect hidden state for non-GM users
+                if (data.hidden && !game.user.isGM) {
+                    g.visible = false;
+                }
                 this.canvasLayer.addChild(g);
                 this._permanentDrawings.push({
                     id: data.drawingId,
@@ -1161,7 +1169,9 @@ class SDXDrawingTool {
                     permanent: true,
                     createdAt: data.createdAt || Date.now(),
                     userId: data.userId,
-                    userName: data.userName
+                    userName: data.userName,
+                    hidden: data.hidden || false,
+                    name: data.name || null
                 });
                 this._lastPermanentDrawing = this._permanentDrawings[this._permanentDrawings.length - 1];
             }
@@ -1178,6 +1188,81 @@ class SDXDrawingTool {
         this._lastPermanentDrawing = null;
     }
 
+    _handleRemoteVisibilityChange(data) {
+        if (!data?.drawingId) return;
+        const entry = this._permanentDrawings.find(d => d.id === data.drawingId);
+        if (!entry) return;
+        entry.hidden = data.hidden;
+        // For non-GM users, show/hide the drawing based on visibility
+        if (!game.user.isGM && entry.graphics) {
+            entry.graphics.visible = !data.hidden;
+        }
+    }
+
+    async toggleDrawingVisibility(id) {
+        if (!game.user.isGM) return;
+        const entry = this._permanentDrawings.find(d => d.id === id);
+        if (!entry) return;
+        const newHidden = !entry.hidden;
+        entry.hidden = newHidden;
+        // Update scene flag
+        if (canvas.scene) {
+            try {
+                const saved = canvas.scene.getFlag(MODULE_ID, "permanentDrawings") || [];
+                const idx = saved.findIndex(s => s.drawingId === id);
+                if (idx !== -1) {
+                    saved[idx].hidden = newHidden;
+                    await canvas.scene.setFlag(MODULE_ID, "permanentDrawings", saved);
+                }
+            } catch { }
+        }
+        // Broadcast to other clients
+        this._broadcast("sdx-drawing-visibility", { drawingId: id, hidden: newHidden, userId: game.user.id });
+    }
+
+    _handleRemoteRename(data) {
+        if (!data?.drawingId) return;
+        // Check permanent drawings
+        const permEntry = this._permanentDrawings.find(d => d.id === data.drawingId);
+        if (permEntry) {
+            permEntry.name = data.name;
+            return;
+        }
+        // Check temporary drawings
+        const tempEntry = this._pixiDrawings.find(d => d.id === data.drawingId);
+        if (tempEntry) {
+            tempEntry.name = data.name;
+        }
+    }
+
+    async renameDrawing(id, newName) {
+        if (!game.user.isGM) return;
+        // Try permanent drawings first
+        const permEntry = this._permanentDrawings.find(d => d.id === id);
+        if (permEntry) {
+            permEntry.name = newName;
+            // Update scene flag
+            if (canvas.scene) {
+                try {
+                    const saved = canvas.scene.getFlag(MODULE_ID, "permanentDrawings") || [];
+                    const idx = saved.findIndex(s => s.drawingId === id);
+                    if (idx !== -1) {
+                        saved[idx].name = newName;
+                        await canvas.scene.setFlag(MODULE_ID, "permanentDrawings", saved);
+                    }
+                } catch { }
+            }
+            this._broadcast("sdx-drawing-renamed", { drawingId: id, name: newName, userId: game.user.id });
+            return;
+        }
+        // Try temporary drawings
+        const tempEntry = this._pixiDrawings.find(d => d.id === id);
+        if (tempEntry) {
+            tempEntry.name = newName;
+            this._broadcast("sdx-drawing-renamed", { drawingId: id, name: newName, userId: game.user.id });
+        }
+    }
+
     // ── Inspector helpers ────────────────────────────────────────
     getAllDrawingEntries() {
         const entries = [];
@@ -1185,6 +1270,7 @@ class SDXDrawingTool {
             entries.push({
                 id: d.id,
                 type: this._inferType(d),
+                name: d.name || null,
                 userName: d.userName || 'Unknown',
                 userId: d.userId,
                 createdAt: d.createdAt || Date.now(),
@@ -1197,12 +1283,14 @@ class SDXDrawingTool {
             entries.push({
                 id: d.id,
                 type: this._inferType(d),
+                name: d.name || null,
                 userName: d.userName || 'Unknown',
                 userId: d.userId,
                 createdAt: d.createdAt || Date.now(),
                 expiresAt: null,
                 permanent: true,
                 opacity: d.graphics?.alpha ?? 1,
+                hidden: d.hidden || false,
             });
         }
         entries.sort((a, b) => b.createdAt - a.createdAt);
@@ -1225,33 +1313,105 @@ class SDXDrawingTool {
         this.unhighlightDrawing();
         const entry = this._pixiDrawings.find(d => d.id === id) || this._permanentDrawings.find(d => d.id === id);
         if (!entry?.graphics?.parent) return;
-        const bounds = entry.graphics.getLocalBounds();
-        if (bounds.width < 1 && bounds.height < 1) return;
-        const pad = 10;
-        const h = new PIXI.Graphics();
-        h.lineStyle(3, 0xf0d090, 0.8);
-        h.drawRoundedRect(bounds.x - pad, bounds.y - pad, bounds.width + pad * 2, bounds.height + pad * 2, 4);
-        h.lineStyle(1, 0xffffff, 0.4);
-        h.drawRoundedRect(bounds.x - pad + 2, bounds.y - pad + 2, bounds.width + pad * 2 - 4, bounds.height + pad * 2 - 4, 3);
-        this.canvasLayer.addChild(h);
-        this._highlightGraphics = h;
+
+        // Store reference to the highlighted entry
+        this._highlightedEntry = entry;
         this._highlightPulse = Date.now();
+
+        // Create a blue glow filter
+        // Try to use GlowFilter if available, otherwise use a custom approach
+        const glowColor = 0x4dabf7; // Nice blue color
+        const glowDistance = 8;
+        const glowQuality = 0.3;
+
+        try {
+            // Check if GlowFilter is available (pixi-filters)
+            if (typeof PIXI.filters?.GlowFilter === "function") {
+                const glow = new PIXI.filters.GlowFilter({
+                    distance: glowDistance,
+                    outerStrength: 3,
+                    innerStrength: 1,
+                    color: glowColor,
+                    quality: glowQuality
+                });
+                entry.graphics.filters = [glow];
+                this._highlightFilter = glow;
+            } else if (typeof PIXI.filters?.OutlineFilter === "function") {
+                // Fallback to OutlineFilter
+                const outline = new PIXI.filters.OutlineFilter(4, glowColor, 1);
+                entry.graphics.filters = [outline];
+                this._highlightFilter = outline;
+            } else {
+                // Final fallback: use ColorMatrixFilter for a blue tint effect
+                const colorMatrix = new PIXI.ColorMatrixFilter();
+                // Shift towards blue and increase brightness
+                colorMatrix.matrix = [
+                    0.6, 0, 0.4, 0, 0.2,
+                    0, 0.6, 0.4, 0, 0.3,
+                    0, 0, 1.2, 0, 0.5,
+                    0, 0, 0, 1, 0
+                ];
+                entry.graphics.filters = [colorMatrix];
+                this._highlightFilter = colorMatrix;
+            }
+        } catch (e) {
+            console.warn("SDX Drawing | Could not apply glow filter:", e);
+            // Fallback: simple alpha pulse without filter
+            this._highlightFilter = null;
+        }
+
+        // Store original alpha for animation
+        this._highlightOriginalAlpha = entry.graphics.alpha;
+
+        // Animate the glow intensity
         const animate = () => {
-            if (this._highlightGraphics !== h) return;
-            const t = (Date.now() - this._highlightPulse) / 600;
-            h.alpha = 0.4 + 0.6 * Math.abs(Math.sin(t * Math.PI));
+            if (!this._highlightedEntry || this._highlightedEntry !== entry) return;
+            const t = (Date.now() - this._highlightPulse) / 500;
+            const pulse = 0.5 + 0.5 * Math.sin(t * Math.PI);
+
+            if (this._highlightFilter) {
+                // Animate filter intensity based on filter type
+                if (this._highlightFilter.outerStrength !== undefined) {
+                    // GlowFilter
+                    this._highlightFilter.outerStrength = 2 + pulse * 3;
+                } else if (this._highlightFilter.thickness !== undefined) {
+                    // OutlineFilter
+                    this._highlightFilter.thickness = 3 + pulse * 3;
+                } else if (this._highlightFilter.matrix !== undefined) {
+                    // ColorMatrixFilter - animate the blue channel intensity
+                    const intensity = 0.3 + pulse * 0.4;
+                    this._highlightFilter.matrix[12] = 0.3 + pulse * 0.3; // Blue offset
+                }
+            }
+
+            // Also do a subtle alpha pulse
+            entry.graphics.alpha = this._highlightOriginalAlpha * (0.85 + 0.15 * pulse);
+
             requestAnimationFrame(animate);
         };
         requestAnimationFrame(animate);
     }
 
     unhighlightDrawing() {
+        if (this._highlightedEntry?.graphics) {
+            // Remove filters
+            this._highlightedEntry.graphics.filters = null;
+            // Restore original alpha
+            if (this._highlightOriginalAlpha !== undefined) {
+                this._highlightedEntry.graphics.alpha = this._highlightOriginalAlpha;
+            }
+        }
+        this._highlightedEntry = null;
+        this._highlightFilter = null;
+        this._highlightPulse = null;
+        this._highlightOriginalAlpha = undefined;
+
+        // Clean up legacy highlight graphics if any
         if (this._highlightGraphics?.parent) {
             this._highlightGraphics.parent.removeChild(this._highlightGraphics);
             this._highlightGraphics.destroy();
         }
         this._highlightGraphics = null;
-        this._highlightPulse = null;
     }
 
     async deleteAnyDrawing(id) {

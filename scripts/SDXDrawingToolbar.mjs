@@ -582,6 +582,21 @@ export class SDXDrawingToolbar {
         el.addEventListener("click", (e) => {
             const closeBtn = e.target.closest(".sdx-dt-inspector-close");
             if (closeBtn) { this._closeInspector(); return; }
+            const nameEl = e.target.closest(".sdx-dt-inspector-name");
+            if (nameEl && !nameEl.classList.contains("sdx-dt-inspector-name-editing")) {
+                const item = nameEl.closest(".sdx-dt-inspector-item");
+                if (item) this._startRenameInline(item, nameEl);
+                return;
+            }
+            const visBtn = e.target.closest(".sdx-dt-inspector-visibility");
+            if (visBtn) {
+                const item = visBtn.closest(".sdx-dt-inspector-item");
+                if (item) {
+                    sdxDrawingTool.toggleDrawingVisibility(item.dataset.drawingId);
+                    this._refreshInspector();
+                }
+                return;
+            }
             const delBtn = e.target.closest(".sdx-dt-inspector-delete");
             if (delBtn) {
                 const item = delBtn.closest(".sdx-dt-inspector-item");
@@ -622,7 +637,8 @@ export class SDXDrawingToolbar {
         if (!list) return;
         const entries = sdxDrawingTool.getAllDrawingEntries();
         // Build a signature to avoid unnecessary DOM thrashing (which kills hover)
-        const sig = entries.map(e => e.id).join(',') + '|' + entries.length;
+        // Include hidden state and name so changes trigger refresh
+        const sig = entries.map(e => `${e.id}:${e.hidden}:${e.name || ''}`).join(',') + '|' + entries.length;
         if (sig === this._inspectorSnapshot) {
             // Only update timed countdowns in-place
             for (const e of entries) {
@@ -695,10 +711,14 @@ export class SDXDrawingToolbar {
         const icon = icons[e.type] || icons.drawing;
         const permBadge = e.permanent ? `<span class="sdx-dt-inspector-perm" title="Permanent"><i class="fa-solid fa-thumbtack"></i></span>` : '';
         const opStr = Math.round(e.opacity * 100);
-        let h = `<div class="sdx-dt-inspector-item" data-drawing-id="${e.id}">`;
+        const hiddenClass = e.hidden ? ' sdx-dt-inspector-hidden' : '';
+        const eyeIcon = e.hidden ? 'fa-eye-slash' : 'fa-eye';
+        const eyeTitle = e.hidden ? 'Reveal to Players' : 'Hide from Players';
+        const displayName = e.name || this._capitalizeFirst(e.type);
+        let h = `<div class="sdx-dt-inspector-item${hiddenClass}" data-drawing-id="${e.id}">`;
         h += `<i class="fa-solid ${icon} sdx-dt-inspector-type-icon"></i>`;
         h += `<div class="sdx-dt-inspector-info">`;
-        h += `<span class="sdx-dt-inspector-type-label">${e.type}</span>`;
+        h += `<span class="sdx-dt-inspector-name" title="Click to rename">${this._escapeHtml(displayName)}</span>`;
         h += `<span class="sdx-dt-inspector-user">${e.userName}</span>`;
         h += `</div>`;
         h += `<div class="sdx-dt-inspector-meta">`;
@@ -706,6 +726,9 @@ export class SDXDrawingToolbar {
         if (opStr < 100) h += `<span class="sdx-dt-inspector-opacity" title="Opacity: ${opStr}%">${opStr}%</span>`;
         h += permBadge;
         h += `</div>`;
+        if (e.permanent) {
+            h += `<button class="sdx-dt-inspector-visibility" title="${eyeTitle}"><i class="fa-solid ${eyeIcon}"></i></button>`;
+        }
         h += `<button class="sdx-dt-inspector-delete" title="Delete (or right-click row)"><i class="fa-solid fa-trash-can"></i></button>`;
         h += `</div>`;
         return h;
@@ -726,6 +749,60 @@ export class SDXDrawingToolbar {
         if (m < 60) return `${m}m`;
         const h = Math.floor(m / 60);
         return `${h}h`;
+    }
+
+    _capitalizeFirst(str) {
+        if (!str) return '';
+        return str.charAt(0).toUpperCase() + str.slice(1);
+    }
+
+    _escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    _startRenameInline(itemEl, nameEl) {
+        if (!game.user.isGM) return;
+        const drawingId = itemEl.dataset.drawingId;
+        const currentName = nameEl.textContent;
+
+        // Create input
+        const input = document.createElement("input");
+        input.type = "text";
+        input.className = "sdx-dt-inspector-name-input";
+        input.value = currentName;
+        input.maxLength = 32;
+
+        // Replace name element with input
+        nameEl.classList.add("sdx-dt-inspector-name-editing");
+        nameEl.innerHTML = '';
+        nameEl.appendChild(input);
+        input.focus();
+        input.select();
+
+        const finishRename = async (save) => {
+            const newName = input.value.trim();
+            if (save && newName && newName !== currentName) {
+                await sdxDrawingTool.renameDrawing(drawingId, newName);
+            }
+            // Force refresh to restore normal display
+            this._inspectorSnapshot = '';
+            this._refreshInspector();
+        };
+
+        input.addEventListener("keydown", (e) => {
+            if (e.key === "Enter") {
+                e.preventDefault();
+                finishRename(true);
+            } else if (e.key === "Escape") {
+                e.preventDefault();
+                finishRename(false);
+            }
+        });
+
+        input.addEventListener("blur", () => {
+            finishRename(true);
+        });
     }
 
     // ── Dragging ────────────────────────────────────────────────

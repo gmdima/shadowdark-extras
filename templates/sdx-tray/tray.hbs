@@ -223,13 +223,19 @@
                 title="Placeable Notes">
                 <i class="fa-solid fa-sticky-note"></i> Notes
             </button>
-            {{#if isGM}}
+        </div>
+        {{#if isGM}}
+        <div class="tray-view-tabs tray-view-tabs-row2">
             <button class="tray-tab-button {{#if (eq viewMode 'hexes')}}active{{/if}}" data-view="hexes"
                 title="Hex Painter">
                 <i class="fas fa-border-all"></i> Hexes
             </button>
-            {{/if}}
+            <button class="tray-tab-button {{#if (eq viewMode 'dungeons')}}active{{/if}}" data-view="dungeons"
+                title="Dungeon Painter">
+                <i class="fas fa-dungeon"></i> Dungeons
+            </button>
         </div>
+        {{/if}}
 
         <!-- PANELS -->
         <div class="tray-panel-wrapper">
@@ -516,10 +522,15 @@
                 {{/each}}
 
                 <!-- MONSTER AND NPC CHARACTERS -->
-                {{#if isGM}}
+                {{#if (or isGM (and npcTokens.length (not hideNpcsFromPlayers)))}}
                 {{#if npcTokens.length}}
                 <div class="section-divider">
                     <span class="divider-text">MONSTERS & NPCs</span>
+                    {{#if isGM}}
+                    <button class="npc-visibility-toggle" data-action="toggle-npc-visibility" title="{{#if hideNpcsFromPlayers}}Show NPCs to Players{{else}}Hide NPCs from Players{{/if}}">
+                        <i class="fas {{#if hideNpcsFromPlayers}}fa-eye-slash{{else}}fa-eye{{/if}}"></i>
+                    </button>
+                    {{/if}}
                 </div>
 
                 {{#each npcTokens as |npc|}}
@@ -742,9 +753,14 @@
 
                 <!-- Format Map Controls -->
                 <div class="hex-format-section">
-                    <button class="hex-format-btn" data-action="hex-format-scene">
-                        <i class="fas fa-ruler-combined"></i> Format Map
-                    </button>
+                    <div class="hex-format-buttons">
+                        <button class="hex-format-btn" data-action="hex-format-scene">
+                            <i class="fas fa-ruler-combined"></i> Format Map
+                        </button>
+                        <button class="hex-flatten-btn" data-action="hex-flatten-all">
+                            <i class="fas fa-layer-group"></i> Flatten Hexagons
+                        </button>
+                    </div>
                     <div class="hex-format-controls hidden">
                         <div class="hex-slider-row">
                             <label>Width</label>
@@ -1016,6 +1032,18 @@
                     Drag to paint · Shift+Drag to erase
                     {{/if}}
                 </div>
+            </div>
+
+            <!-- DUNGEONS TAB (GM ONLY) -->
+            <div class="tray-view-content dungeons-view {{#unless (eq viewMode 'dungeons')}}hidden{{/unless}}"
+                style="overflow-y: hidden; display: flex; flex-direction: column;">
+
+                <div class="dungeons-placeholder" style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; text-align: center;">
+                    <i class="fas fa-dungeon" style="font-size: 3em; color: #9f9275; margin-bottom: 10px;"></i>
+                    <p style="color: #9f9275; font-size: 1.1em; margin: 0;">Dungeon Tools</p>
+                    <p style="color: #666; font-size: 0.9em; margin-top: 8px;">Coming Soon</p>
+                </div>
+
             </div>
             {{/if}}
         </div>

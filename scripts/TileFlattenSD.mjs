@@ -661,3 +661,6 @@ Hooks.on('renderTileHUD', (hud, html) => {
         console.error(`${MODULE_ID} | TileHUD flatten button error:`, error);
     }
 });
+
+// Export for use by other modules (e.g., TrayApp)
+export { flattenTiles };

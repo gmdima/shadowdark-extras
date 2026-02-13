@@ -421,9 +421,14 @@ body.sdx-tray-enabled #camera-views.vertical.left {
     display: flex;
     background: rgba(0, 0, 0, 0.0);
     overflow: hidden;
-    margin-bottom: 8px;
+    margin-bottom: 4px;
     margin-right: 6px;
     border-radius: 4px 4px 0px 0px;
+}
+
+.sdx-tray .tray-view-tabs-row2 {
+    margin-top: 0;
+    margin-bottom: 8px;
 }
 
 .sdx-tray .tray-tab-button {
@@ -830,6 +835,35 @@ body.sdx-tray-enabled #camera-views.vertical.left {
     font-size: 0.7em;
     font-weight: bold;
     letter-spacing: 1px;
+}
+
+.sdx-tray .npc-visibility-toggle {
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(20, 20, 20, 0.9);
+    border: 1px solid rgba(159, 146, 117, 0.3);
+    border-radius: 4px;
+    color: #9f9275;
+    padding: 4px 8px;
+    font-size: 0.75em;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.sdx-tray .npc-visibility-toggle:hover {
+    background: rgba(40, 40, 40, 0.9);
+    border-color: rgba(159, 146, 117, 0.5);
+    color: #e8dcc8;
+}
+
+.sdx-tray .npc-visibility-toggle .fa-eye {
+    color: #4ade80;
+}
+
+.sdx-tray .npc-visibility-toggle .fa-eye-slash {
+    color: #f87171;
 }
 
 /* NPC Cards */
@@ -2394,8 +2428,13 @@ body.sdx-tray-enabled #camera-views.vertical.left {
     padding: 0 2px;
 }
 
+.sdx-tray .hex-format-buttons {
+    display: flex;
+    gap: 6px;
+}
+
 .sdx-tray .hex-format-btn {
-    width: 100%;
+    flex: 1;
     padding: 6px 10px;
     background: rgba(159, 146, 117, 0.25);
     border: 1px solid rgba(159, 146, 117, 0.4);
@@ -2466,6 +2505,24 @@ body.sdx-tray-enabled #camera-views.vertical.left {
 
 .sdx-tray .hex-apply-btn:hover {
     background: rgba(74, 222, 128, 0.35);
+}
+
+.sdx-tray .hex-flatten-btn {
+    flex: 1;
+    padding: 6px 10px;
+    background: rgba(251, 191, 36, 0.2);
+    border: 1px solid rgba(251, 191, 36, 0.35);
+    color: #fbbf24;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.85em;
+    font-weight: bold;
+    text-transform: uppercase;
+    transition: background 0.2s;
+}
+
+.sdx-tray .hex-flatten-btn:hover {
+    background: rgba(251, 191, 36, 0.35);
 }
 
 .sdx-tray .hex-search-section {

@@ -20,6 +20,9 @@ let _trayApp = null;
 // Current view mode
 let _viewMode = "player"; // "player" or "party"
 
+// Hide NPCs from players toggle (GM only)
+let _hideNpcsFromPlayers = true;
+
 // Current actor/token being displayed
 let _currentActor = null;
 let _currentToken = null;
@@ -293,6 +296,20 @@ export function getPartyTokens() {
                 isNPC: true,
                 isSelected: canvas.tokens.controlled.some(t => t.id === token.id)
             });
+        } else if (!game.user.isGM && !_hideNpcsFromPlayers && !actor.hasPlayerOwner) {
+            // NPCs visible to players when GM allows it
+            npcTokens.push({
+                token: token,
+                actor: actor,
+                id: token.id,
+                name: token.name,
+                img: actor.img,
+                hp: getActorHP(actor),
+                healthbarStatus: getHealthbarStatus(actor),
+                isOwner: false,
+                isNPC: true,
+                isSelected: canvas.tokens.controlled.some(t => t.id === token.id)
+            });
         }
     }
 
@@ -364,6 +381,22 @@ export function getViewMode() {
 }
 
 /**
+ * Toggle whether NPCs are hidden from players
+ */
+export function toggleHideNpcsFromPlayers() {
+    _hideNpcsFromPlayers = !_hideNpcsFromPlayers;
+    renderTray();
+    return _hideNpcsFromPlayers;
+}
+
+/**
+ * Get whether NPCs are hidden from players
+ */
+export function getHideNpcsFromPlayers() {
+    return _hideNpcsFromPlayers;
+}
+
+/**
  * Cycle to the next view mode
  */
 export function cycleViewMode() {
@@ -383,6 +416,7 @@ export function cycleViewMode() {
     if (isGM) modes.push("pins");
     modes.push("notes"); // Notes mode for everyone (filtered for players)
     if (isGM) modes.push("hexes");
+    if (isGM) modes.push("dungeons");
 
     const currentIndex = modes.indexOf(_viewMode);
     // If current mode isn't in list (e.g. switched from player to GM view), start at 0
@@ -438,6 +472,7 @@ export async function renderTray() {
         isGM: game.user.isGM,
         partyName: partyName,
         showHealthBars: showHealthBars,
+        hideNpcsFromPlayers: _hideNpcsFromPlayers,
 
         // Party data
         partyTokens: partyTokens,
