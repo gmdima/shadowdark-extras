@@ -529,7 +529,8 @@
                 <div class="section-divider">
                     <span class="divider-text">MONSTERS & NPCs</span>
                     {{#if isGM}}
-                    <button class="npc-visibility-toggle" data-action="toggle-npc-visibility" title="{{#if hideNpcsFromPlayers}}Show NPCs to Players{{else}}Hide NPCs from Players{{/if}}">
+                    <button class="npc-visibility-toggle" data-action="toggle-npc-visibility"
+                        title="{{#if hideNpcsFromPlayers}}Show NPCs to Players{{else}}Hide NPCs from Players{{/if}}">
                         <i class="fas {{#if hideNpcsFromPlayers}}fa-eye-slash{{else}}fa-eye{{/if}}"></i>
                     </button>
                     {{/if}}
@@ -812,78 +813,78 @@
                     </div>
                 </div>
 
+                <!-- Procedural Generator (hidden on symbols tab) -->
+                <div class="hex-generator-section {{#if (eq activeTileTab 'symbols')}}hidden{{/if}}">
+                    <button class="hex-generator-toggle-btn" data-action="hex-generator-toggle">
+                        <i class="fas fa-dice-d20"></i> Procedural Generator
+                    </button>
+                    <div class="hex-generator-controls hidden">
+                        <div class="hex-gen-slider-row">
+                            <label><i class="fas fa-water"></i> Water</label>
+                            <input type="range" name="hex-gen-water" min="-50" max="50" step="5" value="0">
+                            <span class="hex-gen-slider-value">0</span>
+                        </div>
+                        <div class="hex-gen-slider-row">
+                            <label><i class="fas fa-tree"></i> Vegetation</label>
+                            <input type="range" name="hex-gen-green" min="-50" max="50" step="5" value="0">
+                            <span class="hex-gen-slider-value">0</span>
+                        </div>
+                        <div class="hex-gen-slider-row">
+                            <label><i class="fas fa-mountain"></i> Mountains</label>
+                            <input type="range" name="hex-gen-mountain" min="-50" max="50" step="5" value="0">
+                            <span class="hex-gen-slider-value">0</span>
+                        </div>
+                        <div class="hex-gen-slider-row">
+                            <label><i class="fas fa-sun"></i> Desert</label>
+                            <input type="range" name="hex-gen-desert" min="-50" max="50" step="5" value="0">
+                            <span class="hex-gen-slider-value">0</span>
+                        </div>
+                        <div class="hex-gen-slider-row">
+                            <label><i class="fas fa-frog"></i> Swamp</label>
+                            <input type="range" name="hex-gen-swamp" min="-50" max="50" step="5" value="0">
+                            <span class="hex-gen-slider-value">0</span>
+                        </div>
+                        <div class="hex-gen-slider-row">
+                            <label><i class="fas fa-skull"></i> Badlands</label>
+                            <input type="range" name="hex-gen-badlands" min="-50" max="50" step="5" value="0">
+                            <span class="hex-gen-slider-value">0</span>
+                        </div>
+                        <div class="hex-gen-slider-row">
+                            <label><i class="fas fa-snowflake"></i> Snow</label>
+                            <input type="range" name="hex-gen-snow" min="-50" max="50" step="5" value="0">
+                            <span class="hex-gen-slider-value">0</span>
+                        </div>
+                        <div class="hex-gen-seed-row">
+                            <label><i class="fas fa-seedling"></i> Seed</label>
+                            <input type="text" name="hex-gen-seed" class="hex-gen-seed-input" placeholder="Random"
+                                value="">
+                        </div>
+                        <div class="hex-gen-buttons">
+                            <button class="hex-gen-btn hex-gen-generate-btn" data-action="hex-generate">
+                                <i class="fas fa-magic"></i> Generate
+                            </button>
+                            <button class="hex-gen-btn hex-gen-clear-btn" data-action="hex-clear">
+                                <i class="fas fa-trash"></i> Clear
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tile Tabs -->
+                <div class="hex-tile-tabs">
+                    <button class="hex-tile-tab {{#if (eq activeTileTab 'default')}}active{{/if}}"
+                        data-tile-tab="default">Default</button>
+                    <button class="hex-tile-tab {{#if (eq activeTileTab 'colored')}}active{{/if}}"
+                        data-tile-tab="colored">Colored</button>
+                    <button class="hex-tile-tab {{#if (eq activeTileTab 'custom')}}active{{/if}}"
+                        data-tile-tab="custom">Custom</button>
+                    <button class="hex-tile-tab {{#if (eq activeTileTab 'symbols')}}active{{/if}}"
+                        data-tile-tab="symbols">POI</button>
+                </div>
+
                 <!-- Tile Grid -->
                 <div class="hex-tile-scroll"
                     style="flex: 1; overflow-y: auto; scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.2) rgba(0,0,0,0.1);">
-
-                    <!-- Procedural Generator (hidden on symbols tab) -->
-                    <div class="hex-generator-section {{#if (eq activeTileTab 'symbols')}}hidden{{/if}}">
-                        <button class="hex-generator-toggle-btn" data-action="hex-generator-toggle">
-                            <i class="fas fa-dice-d20"></i> Procedural Generator
-                        </button>
-                        <div class="hex-generator-controls hidden">
-                            <div class="hex-gen-slider-row">
-                                <label><i class="fas fa-water"></i> Water</label>
-                                <input type="range" name="hex-gen-water" min="-50" max="50" step="5" value="0">
-                                <span class="hex-gen-slider-value">0</span>
-                            </div>
-                            <div class="hex-gen-slider-row">
-                                <label><i class="fas fa-tree"></i> Vegetation</label>
-                                <input type="range" name="hex-gen-green" min="-50" max="50" step="5" value="0">
-                                <span class="hex-gen-slider-value">0</span>
-                            </div>
-                            <div class="hex-gen-slider-row">
-                                <label><i class="fas fa-mountain"></i> Mountains</label>
-                                <input type="range" name="hex-gen-mountain" min="-50" max="50" step="5" value="0">
-                                <span class="hex-gen-slider-value">0</span>
-                            </div>
-                            <div class="hex-gen-slider-row">
-                                <label><i class="fas fa-sun"></i> Desert</label>
-                                <input type="range" name="hex-gen-desert" min="-50" max="50" step="5" value="0">
-                                <span class="hex-gen-slider-value">0</span>
-                            </div>
-                            <div class="hex-gen-slider-row">
-                                <label><i class="fas fa-frog"></i> Swamp</label>
-                                <input type="range" name="hex-gen-swamp" min="-50" max="50" step="5" value="0">
-                                <span class="hex-gen-slider-value">0</span>
-                            </div>
-                            <div class="hex-gen-slider-row">
-                                <label><i class="fas fa-skull"></i> Badlands</label>
-                                <input type="range" name="hex-gen-badlands" min="-50" max="50" step="5" value="0">
-                                <span class="hex-gen-slider-value">0</span>
-                            </div>
-                            <div class="hex-gen-slider-row">
-                                <label><i class="fas fa-snowflake"></i> Snow</label>
-                                <input type="range" name="hex-gen-snow" min="-50" max="50" step="5" value="0">
-                                <span class="hex-gen-slider-value">0</span>
-                            </div>
-                            <div class="hex-gen-seed-row">
-                                <label><i class="fas fa-seedling"></i> Seed</label>
-                                <input type="text" name="hex-gen-seed" class="hex-gen-seed-input" placeholder="Random"
-                                    value="">
-                            </div>
-                            <div class="hex-gen-buttons">
-                                <button class="hex-gen-btn hex-gen-generate-btn" data-action="hex-generate">
-                                    <i class="fas fa-magic"></i> Generate
-                                </button>
-                                <button class="hex-gen-btn hex-gen-clear-btn" data-action="hex-clear">
-                                    <i class="fas fa-trash"></i> Clear
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Tile Tabs -->
-                    <div class="hex-tile-tabs">
-                        <button class="hex-tile-tab {{#if (eq activeTileTab 'default')}}active{{/if}}"
-                            data-tile-tab="default">Default</button>
-                        <button class="hex-tile-tab {{#if (eq activeTileTab 'colored')}}active{{/if}}"
-                            data-tile-tab="colored">Colored</button>
-                        <button class="hex-tile-tab {{#if (eq activeTileTab 'custom')}}active{{/if}}"
-                            data-tile-tab="custom">Custom</button>
-                        <button class="hex-tile-tab {{#if (eq activeTileTab 'symbols')}}active{{/if}}"
-                            data-tile-tab="symbols">POI</button>
-                    </div>
 
                     <!-- Colored Tile Info (only shown on colored tab) -->
                     {{#if (eq activeTileTab 'colored')}}
@@ -1044,10 +1045,12 @@
 
                 <!-- Mode Tabs -->
                 <div class="dungeon-mode-tabs">
-                    <button class="dungeon-mode-tab {{#if (eq dungeonMode 'tiles')}}active{{/if}}" data-dungeon-mode="tiles">
+                    <button class="dungeon-mode-tab {{#if (eq dungeonMode 'tiles')}}active{{/if}}"
+                        data-dungeon-mode="tiles">
                         <i class="fas fa-th"></i> Tiles
                     </button>
-                    <button class="dungeon-mode-tab {{#if (eq dungeonMode 'doors')}}active{{/if}}" data-dungeon-mode="doors">
+                    <button class="dungeon-mode-tab {{#if (eq dungeonMode 'doors')}}active{{/if}}"
+                        data-dungeon-mode="doors">
                         <i class="fas fa-door-open"></i> Doors
                     </button>
                 </div>
@@ -1078,41 +1081,49 @@
                         <div class="dgen-section-title">Layout</div>
                         <div class="dgen-row">
                             <label>Rooms</label>
-                            <input type="range" class="dgen-rooms" min="3" max="20" value="{{generatorSettings.rooms}}" step="1">
+                            <input type="range" class="dgen-rooms" min="3" max="20" value="{{generatorSettings.rooms}}"
+                                step="1">
                             <span class="dgen-value">{{generatorSettings.rooms}}</span>
                         </div>
                         <div class="dgen-row">
                             <label>Density</label>
-                            <input type="range" class="dgen-density" min="0" max="1" value="{{generatorSettings.density}}" step="0.1">
+                            <input type="range" class="dgen-density" min="0" max="1"
+                                value="{{generatorSettings.density}}" step="0.1">
                             <span class="dgen-value">{{generatorSettings.density}}</span>
                         </div>
                         <div class="dgen-row">
                             <label>Branching</label>
-                            <input type="range" class="dgen-branching" min="0" max="1" value="{{generatorSettings.branching}}" step="0.1">
+                            <input type="range" class="dgen-branching" min="0" max="1"
+                                value="{{generatorSettings.branching}}" step="0.1">
                             <span class="dgen-value">{{generatorSettings.branching}}</span>
                         </div>
                         <div class="dgen-row">
                             <label>Room Size</label>
-                            <input type="range" class="dgen-roomsize" min="0" max="1" value="{{generatorSettings.roomSize}}" step="0.1">
+                            <input type="range" class="dgen-roomsize" min="0" max="1"
+                                value="{{generatorSettings.roomSize}}" step="0.1">
                             <span class="dgen-value">{{generatorSettings.roomSize}}</span>
                         </div>
                         <div class="dgen-row dgen-checkbox-row">
                             <label>Symmetry</label>
-                            <input type="checkbox" class="dgen-symmetry" {{#if generatorSettings.symmetry}}checked{{/if}}>
+                            <input type="checkbox" class="dgen-symmetry" {{#if
+                                generatorSettings.symmetry}}checked{{/if}}>
                         </div>
                         <div class="dgen-row">
                             <label>Stairs Up</label>
-                            <input type="range" class="dgen-stairs" min="0" max="20" value="{{generatorSettings.stairs}}" step="1">
+                            <input type="range" class="dgen-stairs" min="0" max="20"
+                                value="{{generatorSettings.stairs}}" step="1">
                             <span class="dgen-value">{{generatorSettings.stairs}}</span>
                         </div>
                         <div class="dgen-row">
                             <label>Stairs Down</label>
-                            <input type="range" class="dgen-stairsdown" min="0" max="20" value="{{generatorSettings.stairsDown}}" step="1">
+                            <input type="range" class="dgen-stairsdown" min="0" max="20"
+                                value="{{generatorSettings.stairsDown}}" step="1">
                             <span class="dgen-value">{{generatorSettings.stairsDown}}</span>
                         </div>
                         <div class="dgen-row">
                             <label>Clutter</label>
-                            <input type="range" class="dgen-clutter" min="0" max="10" value="{{generatorSettings.clutter}}" step="1">
+                            <input type="range" class="dgen-clutter" min="0" max="10"
+                                value="{{generatorSettings.clutter}}" step="1">
                             <span class="dgen-value">{{generatorSettings.clutter}}</span>
                         </div>
                     </div>
@@ -1121,7 +1132,8 @@
                         <div class="dgen-section-title">Walls</div>
                         <div class="dgen-row dgen-checkbox-row">
                             <label>Textured</label>
-                            <input type="checkbox" class="dgen-textured" {{#if generatorSettings.textured}}checked{{/if}}>
+                            <input type="checkbox" class="dgen-textured" {{#if
+                                generatorSettings.textured}}checked{{/if}}>
                         </div>
                         <div class="dgen-row dgen-color-row">
                             <label>Color</label>
@@ -1129,7 +1141,8 @@
                         </div>
                         <div class="dgen-row dgen-slider-row">
                             <label>Thickness</label>
-                            <input type="range" class="dgen-thickness" min="5" max="40" value="{{generatorSettings.thickness}}" step="5">
+                            <input type="range" class="dgen-thickness" min="5" max="40"
+                                value="{{generatorSettings.thickness}}" step="5">
                             <span class="dgen-value">{{generatorSettings.thickness}}</span>
                         </div>
                     </div>
@@ -1165,8 +1178,8 @@
                     {{#if hasFloorTiles}}
                     <div class="dungeon-tile-grid">
                         {{#each floorTiles}}
-                        <div class="dungeon-tile-thumb {{#if this.active}}active{{/if}}" data-dungeon-tile="{{this.path}}"
-                            title="{{this.label}}">
+                        <div class="dungeon-tile-thumb {{#if this.active}}active{{/if}}"
+                            data-dungeon-tile="{{this.path}}" title="{{this.label}}">
                             <img src="{{this.path}}" alt="{{this.label}}" />
                         </div>
                         {{/each}}
@@ -1184,8 +1197,8 @@
                     {{#if hasWallTiles}}
                     <div class="dungeon-tile-grid dungeon-wall-grid">
                         {{#each wallTiles}}
-                        <div class="dungeon-tile-thumb dungeon-wall-thumb {{#if this.active}}active{{/if}}" data-dungeon-wall="{{this.path}}"
-                            title="{{this.label}}">
+                        <div class="dungeon-tile-thumb dungeon-wall-thumb {{#if this.active}}active{{/if}}"
+                            data-dungeon-wall="{{this.path}}" title="{{this.label}}">
                             <img src="{{this.path}}" alt="{{this.label}}" />
                         </div>
                         {{/each}}
@@ -1202,8 +1215,8 @@
                     {{#if hasDoorTiles}}
                     <div class="dungeon-tile-grid dungeon-door-grid">
                         {{#each doorTiles}}
-                        <div class="dungeon-tile-thumb dungeon-door-thumb {{#if this.active}}active{{/if}}" data-dungeon-door="{{this.path}}"
-                            title="{{this.label}}">
+                        <div class="dungeon-tile-thumb dungeon-door-thumb {{#if this.active}}active{{/if}}"
+                            data-dungeon-door="{{this.path}}" title="{{this.label}}">
                             <img src="{{this.path}}" alt="{{this.label}}" />
                             <span class="dungeon-tile-label">{{this.label}}</span>
                         </div>
