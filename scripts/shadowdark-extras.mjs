@@ -3541,35 +3541,309 @@ function patchCtrlMoveOnActorSheetDrops() {
 	};
 }
 
-// Additional light sources to add to the system
-const EXTRA_LIGHT_SOURCES = {
-	candle: {
-		lang: "SHADOWDARK_EXTRAS.light_source.candle",
-		light: {
-			alpha: 0.2,
-			angle: 360,
-			animation: {
-				speed: 1,
-				intensity: 1,
-				reverse: false,
-				type: "torch"
-			},
-			attenuation: 0.5,
-			bright: 5,
-			color: "#d1c846",
-			coloration: 1,
-			contrast: 0,
-			darkness: {
-				min: 0,
-				max: 1
-			},
-			dim: 5,
-			luminosity: 0.5,
-			saturation: 0,
-			shadows: 0
+// Default light templates (replacing hardcoded EXTRA_LIGHT_SOURCES)
+const DEFAULT_LIGHT_TEMPLATES = [
+	{
+		key: "candle",
+		name: "Candle",
+		bright: 5,
+		dim: 5,
+		angle: 360,
+		color: "#d1c846",
+		alpha: 0.2,
+		animationType: "torch",
+		animationSpeed: 1,
+		animationIntensity: 1,
+		animationReverse: false,
+		coloration: 1,
+		attenuation: 0.5,
+		luminosity: 0.5,
+		saturation: 0,
+		contrast: 0,
+		shadows: 0,
+		darknessMin: 0,
+		darknessMax: 1,
+		priority: 0,
+		negative: false
+	}
+];
+
+/**
+ * Get custom light sources from settings
+ * @returns {Object} object with keys as template IDs and values as template data
+ */
+export function getCustomLightSources() {
+	const templates = game.settings.get(MODULE_ID, "customLightTemplates") || DEFAULT_LIGHT_TEMPLATES;
+
+	const sources = {};
+	for (const t of templates) {
+		sources[t.key] = {
+			lang: t.name, // Used for dropdown label
+			light: {
+				alpha: t.alpha,
+				angle: t.angle,
+				animation: {
+					speed: t.animationSpeed,
+					intensity: t.animationIntensity,
+					reverse: t.animationReverse,
+					type: t.animationType
+				},
+				attenuation: t.attenuation,
+				bright: t.bright,
+				color: t.color,
+				coloration: t.coloration,
+				contrast: t.contrast,
+				darkness: {
+					min: t.darknessMin,
+					max: t.darknessMax
+				},
+				dim: t.dim,
+				luminosity: t.luminosity,
+				saturation: t.saturation,
+				shadows: t.shadows,
+				priority: t.priority,
+				negative: t.negative
+			}
+		};
+	}
+
+	return sources;
+}
+
+/**
+ * Application for editing custom light templates
+ */
+class LightTemplateEditor extends FormApplication {
+	constructor(object, options) {
+		super(object, options);
+		this.editData = null; // Data for the template currently being edited
+	}
+
+	static get defaultOptions() {
+		return foundry.utils.mergeObject(super.defaultOptions, {
+			id: "sdx-light-editor",
+			title: "Light Template Editor",
+			template: `modules/${MODULE_ID}/templates/light-template-editor.hbs`,
+			classes: ["shadowdark-extras", "light-editor"],
+			width: 600,
+			height: "auto",
+			resizable: true,
+			closeOnSubmit: false,
+			submitOnChange: false // Only submit when Save is clicked
+		});
+	}
+
+	getData() {
+		const templates = game.settings.get(MODULE_ID, "customLightTemplates") || foundry.utils.deepClone(DEFAULT_LIGHT_TEMPLATES);
+
+		// Animation types for select dropdown
+		const animationTypes = {
+			"": "None",
+			"torch": "Torch",
+			"pulse": "Pulse",
+			"chroma": "Chroma",
+			"wave": "Wave",
+			"fog": "Fog",
+			"sunburst": "Sunburst",
+			"dome": "Light Dome",
+			"emanation": "Mysterious Emanation",
+			"hexa": "Hexa Dome",
+			"ghost": "Ghostly Light",
+			"energy": "Energy Field",
+			"roiling": "Roiling Mass",
+			"hole": "Black Hole"
+		};
+		// Add more from core if needed, but these are common
+
+		// Coloration techniques
+		const colorationTechniques = {
+			0: "Legacy Coloration",
+			1: "Adaptive Luminance",
+			2: "Internal Halo",
+			3: "External Halo",
+			4: "Color Burn",
+			5: "Internal Color Burn",
+			6: "External Color Burn",
+			7: "Low Absorption",
+			8: "High Absorption",
+			9: "Invert Absorption",
+			10: "Natural Light"
+		};
+
+		return {
+			templates,
+			isEditing: !!this.editData,
+			editData: this.editData,
+			animationTypes,
+			colorationTechniques
+		};
+	}
+
+	activateListeners(html) {
+		super.activateListeners(html);
+
+		// Add Template
+		html.find('[data-action="addTemplate"]').on('click', () => {
+			this.editData = {
+				key: "",
+				name: "",
+				bright: 10,
+				dim: 20,
+				angle: 360,
+				color: "#ffffff",
+				alpha: 0.5,
+				animationType: "",
+				animationSpeed: 5,
+				animationIntensity: 5,
+				animationReverse: false,
+				coloration: 1,
+				attenuation: 0.5,
+				luminosity: 0.5,
+				saturation: 0,
+				contrast: 0,
+				shadows: 0,
+				darknessMin: 0,
+				darknessMax: 1,
+				priority: 0,
+				negative: false
+			};
+			this.render(true);
+		});
+
+		// Edit Template
+		html.find('[data-action="editTemplate"]').on('click', (ev) => {
+			const index = $(ev.currentTarget).data('index');
+			const templates = game.settings.get(MODULE_ID, "customLightTemplates") || DEFAULT_LIGHT_TEMPLATES;
+			this.editData = { ...templates[index], id: index }; // Use index as ID for update
+			this.render(true);
+		});
+
+		// Duplicate Template
+		html.find('[data-action="duplicateTemplate"]').on('click', async (ev) => {
+			const index = $(ev.currentTarget).data('index');
+			const templates = game.settings.get(MODULE_ID, "customLightTemplates") || DEFAULT_LIGHT_TEMPLATES;
+			const template = foundry.utils.deepClone(templates[index]);
+
+			template.name = `${template.name} (Copy)`;
+			template.key = `${template.key}_copy`;
+
+			const newTemplates = [...templates, template];
+			await game.settings.set(MODULE_ID, "customLightTemplates", newTemplates);
+			this.render(true);
+		});
+
+		// Delete Template
+		html.find('[data-action="deleteTemplate"]').on('click', async (ev) => {
+			const index = $(ev.currentTarget).data('index');
+			const templates = game.settings.get(MODULE_ID, "customLightTemplates") || DEFAULT_LIGHT_TEMPLATES;
+
+			const confirmed = await Dialog.confirm({
+				title: "Delete Light Template",
+				content: `<p>Are you sure you want to delete <strong>${templates[index].name}</strong>?</p>`,
+				yes: () => true,
+				no: () => false,
+				defaultYes: false
+			});
+
+			if (confirmed) {
+				const newTemplates = templates.filter((_, i) => i !== index);
+				await game.settings.set(MODULE_ID, "customLightTemplates", newTemplates);
+				this.render(true);
+			}
+		});
+
+		// Cancel Edit
+		html.find('[data-action="cancelEdit"]').on('click', () => {
+			this.editData = null;
+			this.render(true);
+		});
+
+		// Tab navigation
+		if (this.editData) {
+			const tabs = new Tabs({
+				navSelector: ".sheet-tabs",
+				contentSelector: ".content",
+				initial: "basic",
+				callback: () => { }
+			});
+			tabs.bind(html[0]);
 		}
 	}
-};
+
+	async _updateObject(event, formData) {
+		if (!this.editData) return; // Only process submit in edit mode
+
+		const templates = game.settings.get(MODULE_ID, "customLightTemplates") || foundry.utils.deepClone(DEFAULT_LIGHT_TEMPLATES);
+
+		// Helper to properly handle checkboxes and numbers
+		const processFormData = (data) => {
+			// Auto-generate key from name if empty
+			let key = data.key;
+
+			// If key is undefined (disabled input during edit), use existing key
+			if (key === undefined && this.editData.id !== undefined) {
+				key = this.editData.key;
+			}
+
+			if (!key && data.name) {
+				key = data.name.toLowerCase()
+					.replace(/[^a-z0-9]+/g, "_")
+					.replace(/^_+|_+$/g, "");
+			}
+
+			return {
+				key: key,
+				name: data.name,
+				bright: Number(data.bright),
+				dim: Number(data.dim),
+				angle: Number(data.angle),
+				color: data.color,
+				alpha: Number(data.alpha),
+				priority: Number(data.priority),
+				negative: Boolean(data.negative),
+				animationType: data.animationType,
+				animationSpeed: Number(data.animationSpeed),
+				animationIntensity: Number(data.animationIntensity),
+				animationReverse: Boolean(data.animationReverse),
+				coloration: Number(data.coloration),
+				attenuation: Number(data.attenuation),
+				luminosity: Number(data.luminosity),
+				saturation: Number(data.saturation),
+				contrast: Number(data.contrast),
+				shadows: Number(data.shadows),
+				darknessMin: 0, // Hidden fields kept default
+				darknessMax: 1
+			};
+		};
+
+		const newTemplateData = processFormData(formData);
+
+		// Validate Key
+		if (!newTemplateData.key.match(/^[a-zA-Z0-9_]+$/)) {
+			ui.notifications.error("Invalid Key. Only alphanumeric characters and underscores are allowed.");
+			return;
+		}
+
+		if (this.editData.id !== undefined) {
+			// Update existing
+			templates[this.editData.id] = newTemplateData;
+		} else {
+			// Check for duplicate key
+			if (templates.some(t => t.key === newTemplateData.key)) {
+				ui.notifications.error(`Template with key "${newTemplateData.key}" already exists.`);
+				return;
+			}
+			// Add new
+			templates.push(newTemplateData);
+		}
+
+		await game.settings.set(MODULE_ID, "customLightTemplates", templates);
+
+		// Return to list view
+		this.editData = null;
+		this.render(true);
+	}
+}
 
 // Item types that count as physical inventory for NPCs
 const NPC_INVENTORY_TYPES = [
@@ -3923,6 +4197,25 @@ function registerSettings() {
 		default: true,
 		type: Boolean,
 		requiresReload: true
+	});
+
+	// Custom Light Templates data setting (hidden)
+	game.settings.register(MODULE_ID, "customLightTemplates", {
+		name: "Custom Light Templates",
+		scope: "world",
+		config: false,
+		type: Array,
+		default: foundry.utils.deepClone(DEFAULT_LIGHT_TEMPLATES)
+	});
+
+	// Custom Light Templates Menu
+	game.settings.registerMenu(MODULE_ID, "customLightTemplatesMenu", {
+		name: "Light Templates",
+		label: "Light Templates",
+		hint: "Configure custom light templates for items.",
+		icon: "fas fa-lightbulb",
+		type: LightTemplateEditor,
+		restricted: true
 	});
 
 	game.settings.register(MODULE_ID, "enableWandUses", {
@@ -5398,13 +5691,20 @@ async function openJournalPageEditor(actor, pageId, sheetApp) {
 }
 
 /**
- * Add candle to the light source options
+ * Add custom light templates to the light source options
  */
 function extendLightSources() {
 	// Add to the config for dropdown options
 	if (CONFIG.SHADOWDARK?.LIGHT_SETTING_NAMES) {
-		// Add the localized string directly since setup has already run
-		CONFIG.SHADOWDARK.LIGHT_SETTING_NAMES.candle = game.i18n.localize("SHADOWDARK_EXTRAS.light_source.candle");
+		const customSources = getCustomLightSources();
+		for (const [key, source] of Object.entries(customSources)) {
+			// If lang key starts with SHADOWDARK_EXTRAS, try to localize it, otherwise use raw string
+			const label = source.lang.startsWith("SHADOWDARK_EXTRAS.")
+				? game.i18n.localize(source.lang)
+				: source.lang;
+
+			CONFIG.SHADOWDARK.LIGHT_SETTING_NAMES[key] = label;
+		}
 	}
 }
 
@@ -5417,10 +5717,11 @@ function patchLightSourceMappings() {
 
 	CONFIG.Actor.documentClass.prototype.turnLightOn = async function (itemId) {
 		const item = this.items.get(itemId);
+		const customSources = getCustomLightSources();
 
 		// Check if this is one of our custom light sources
-		if (item?.system?.light?.template && EXTRA_LIGHT_SOURCES[item.system.light.template]) {
-			const lightData = EXTRA_LIGHT_SOURCES[item.system.light.template].light;
+		if (item?.system?.light?.template && customSources[item.system.light.template]) {
+			const lightData = customSources[item.system.light.template].light;
 			await this.changeLightSettings(lightData);
 			return;
 		}
@@ -21631,12 +21932,12 @@ Hooks.once("ready", () => {
 		// Prompt the player to roll their death timer
 		const defaultFormula = "d4 +" + actor.system.abilities.con.mod;
 		const fields = foundry.applications.fields;
-		const textInput = fields.createTextInput({name: "formula", value: defaultFormula});
-		const textGroup = fields.createFormGroup({input: textInput, label: "Roll:"});
+		const textInput = fields.createTextInput({ name: "formula", value: defaultFormula });
+		const textGroup = fields.createFormGroup({ input: textInput, label: "Roll:" });
 
 		const response = await user.query("dialog", {
 			config: {
-				window: {title: "Roll Death Timer"},
+				window: { title: "Roll Death Timer" },
 				content: `${textGroup.outerHTML}`,
 				modal: true
 			},
@@ -21648,12 +21949,12 @@ Hooks.once("ready", () => {
 		const total = Math.max(roll.total, 1);
 		const msg = await ChatMessage.create({
 			content: `<div class="shadowdark"><h3 style="color: white;">${actor.name} will die in ${total} rounds</h3><br>${await roll.render()}</div>`,
-			speaker: {actor: actor.id},
+			speaker: { actor: actor.id },
 			user: user,
 			rolls: [roll.toJSON()]
 		});
 		if (game.dice3d) await game.dice3d.waitFor3DAnimationByMessageID(msg.id);
-		await this.parent.update({"system.dyingRounds": total});
+		await this.parent.update({ "system.dyingRounds": total });
 	};
 
 	console.log(`${MODULE_ID} | Overrode crawl-helper rollDeathTimer to let player roll`);

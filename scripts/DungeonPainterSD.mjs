@@ -36,7 +36,7 @@ let _dungeonSocket = null;
  * Get current elevation from Levels module if available
  * Checks various Levels module APIs to find the currently selected elevation
  */
-function getCurrentElevation() {
+export function getCurrentElevation() {
     try {
         // Check if Levels is active
         if (game.modules.get("levels")?.active) {
@@ -375,6 +375,13 @@ export function selectDoorTile(tilePath) {
  */
 export function getSelectedFloorTile() {
     return _selectedFloorTile;
+}
+
+/**
+ * Get selected wall tile path
+ */
+export function getSelectedWallTile() {
+    return _selectedWallTile;
 }
 
 /**

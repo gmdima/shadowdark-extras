@@ -283,8 +283,17 @@ export class TokenToolbarApp extends HandlebarsApplicationMixin(ApplicationV2) {
                     data.damageParts = ["@damageBonus"];
                     data.damageBonus = item.system.bonuses.damageBonus;
 
+                    // Get the first targeted token to enable "VS" display and hit/miss checking
+                    const options = {};
+                    const targets = game.user.targets;
+                    if (targets.size > 0) {
+                        options.targetToken = targets.values().next().value;
+                        // Set the target AC for hit/miss checking
+                        options.target = options.targetToken.actor.system.attributes.ac.value;
+                    }
+
                     if (typeof item.rollNpcAttack === "function") {
-                        await item.rollNpcAttack(parts, data);
+                        await item.rollNpcAttack(parts, data, options);
                     } else if (typeof item.displayCard === "function") {
                         await item.displayCard();
                     } else {

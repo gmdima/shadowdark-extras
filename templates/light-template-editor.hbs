@@ -1,0 +1,260 @@
+<form autocomplete="off" spellcheck="off">
+    <div class="sdx-light-editor">
+        {{#if isEditing}}
+        {{!-- Edit View --}}
+        <div class="sdx-light-edit-form">
+            <header class="sdx-light-header">
+                <h3><i class="fas fa-edit"></i> {{#if editData.id}}Edit{{else}}New{{/if}} Light Template</h3>
+                <button type="button" class="sdx-light-back-btn" data-action="cancelEdit">
+                    <i class="fas fa-arrow-left"></i> Back
+                </button>
+            </header>
+
+            <div class="form-group">
+                <label>Template Name</label>
+                <div class="form-fields">
+                    <input type="text" name="name" value="{{editData.name}}" placeholder="e.g. Magic Torch" required>
+                </div>
+                <p class="hint">The display name for this light source in dropdowns.</p>
+            </div>
+
+            <div class="form-group">
+                <label>Template Key</label>
+                <div class="form-fields">
+                    <input type="text" name="key" value="{{editData.key}}" placeholder="e.g. magic_torch" {{#if
+                        editData.id}}disabled{{/if}} required pattern="[a-zA-Z0-9_]+">
+                </div>
+                <p class="hint">Unique internal ID (alphanumeric and underscores only). Cannot be changed after
+                    creation.</p>
+            </div>
+
+            <nav class="sheet-tabs tabs" data-group="main">
+                <a class="item" data-tab="basic"><i class="fas fa-lightbulb"></i> Basic</a>
+                <a class="item" data-tab="animation"><i class="fas fa-film"></i> Animation</a>
+                <a class="item" data-tab="advanced"><i class="fas fa-cogs"></i> Advanced</a>
+            </nav>
+
+            <section class="content">
+                {{!-- Basic Configuration --}}
+                <div class="tab" data-tab="basic" data-group="main">
+                    <fieldset>
+                        <legend>Basic Configuration</legend>
+                        <div class="form-group slim">
+                            <label>Light Radius <span class="units">(ft)</span></label>
+                            <div class="form-fields">
+                                <label>Dim</label>
+                                <input type="number" name="dim" value="{{editData.dim}}" min="0" step="0.1">
+                                <label>Bright</label>
+                                <input type="number" name="bright" value="{{editData.bright}}" min="0" step="0.1">
+                            </div>
+                            <p class="hint">Configure the distance of light emission from this source.</p>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Emission Angle <span class="units">(Degrees)</span></label>
+                            <div class="form-fields">
+                                <input type="number" name="angle" value="{{editData.angle}}" min="0" max="360" step="1">
+                            </div>
+                            <p class="hint">Limit the angle of emission for this light source.</p>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Light Color</label>
+                            <div class="form-fields">
+                                {{colorPicker name="color" value=editData.color}}
+                            </div>
+                            <p class="hint">Apply coloration to this light source.</p>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Color Intensity</label>
+                            <div class="form-fields">
+                                {{rangePicker name="alpha" value=editData.alpha min=0 max=1 step=0.05}}
+                            </div>
+                            <p class="hint">Modify the intensity of color emitted by this light source.</p>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Priority</label>
+                            <div class="form-fields">
+                                <input type="number" name="priority" value="{{editData.priority}}" min="0" step="1">
+                            </div>
+                            <p class="hint">Higher priority light repels lower priority darkness.</p>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Is Darkness Source</label>
+                            <div class="form-fields">
+                                <input type="checkbox" name="negative" {{checked editData.negative}}>
+                            </div>
+                            <p class="hint">A darkness source blocks light and vision.</p>
+                        </div>
+                    </fieldset>
+                </div>
+
+                {{!-- Light Animation --}}
+                <div class="tab" data-tab="animation" data-group="main">
+                    <fieldset>
+                        <legend>Light Animation</legend>
+                        <div class="form-group">
+                            <label>Light Animation Type</label>
+                            <div class="form-fields">
+                                <select name="animationType">
+                                    {{selectOptions animationTypes selected=editData.animationType blank="None"}}
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Animation Speed</label>
+                            <div class="form-fields">
+                                {{rangePicker name="animationSpeed" value=editData.animationSpeed min=0 max=10 step=1}}
+                            </div>
+                            <p class="hint">Increases the speed of the animation.</p>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Reverse Direction</label>
+                            <div class="form-fields">
+                                <input type="checkbox" name="animationReverse" {{checked editData.animationReverse}}>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Animation Intensity</label>
+                            <div class="form-fields">
+                                {{rangePicker name="animationIntensity" value=editData.animationIntensity min=1 max=10
+                                step=1}}
+                            </div>
+                            <p class="hint">Increases the intensity or magnitude of the animation.</p>
+                        </div>
+                    </fieldset>
+                </div>
+
+                {{!-- Advanced Options --}}
+                <div class="tab" data-tab="advanced" data-group="main">
+                    <fieldset>
+                        <legend>Advanced Options</legend>
+                        <div class="form-group">
+                            <label>Coloration Technique</label>
+                            <div class="form-fields">
+                                <select name="coloration">
+                                    {{selectOptions colorationTechniques selected=editData.coloration}}
+                                </select>
+                            </div>
+                            <p class="hint">The coloration technique applied to the light source.</p>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Luminosity</label>
+                            <div class="form-fields">
+                                {{rangePicker name="luminosity" value=editData.luminosity min=0 max=1 step=0.05}}
+                            </div>
+                            <p class="hint">Adjust the brightness of this light source. Default: 0.5.</p>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Attenuation</label>
+                            <div class="form-fields">
+                                {{rangePicker name="attenuation" value=editData.attenuation min=0 max=1 step=0.05}}
+                            </div>
+                            <p class="hint">Transition illumination gradually between bright, dim, and dark.</p>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Saturation</label>
+                            <div class="form-fields">
+                                {{rangePicker name="saturation" value=editData.saturation min=-1 max=1 step=0.05}}
+                            </div>
+                            <p class="hint">Adjust the saturation of illuminated surfaces. Default: 0.</p>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Contrast</label>
+                            <div class="form-fields">
+                                {{rangePicker name="contrast" value=editData.contrast min=-1 max=1 step=0.05}}
+                            </div>
+                            <p class="hint">Adjust the contrast of illuminated surfaces. Default: 0.</p>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Shadows</label>
+                            <div class="form-fields">
+                                {{rangePicker name="shadows" value=editData.shadows min=0 max=1 step=0.05}}
+                            </div>
+                            <p class="hint">Enhance the intensity of shadows. Default: 0.</p>
+                        </div>
+                    </fieldset>
+                </div>
+            </section>
+
+            <footer class="sheet-footer">
+                <button type="submit" name="submit">
+                    <i class="fas fa-save"></i> Save Template
+                </button>
+            </footer>
+        </div>
+
+        {{else}}
+        {{!-- List View --}}
+        <div class="sdx-light-list">
+            <div class="sdx-light-list-header">
+                <h3><i class="fas fa-lightbulb"></i> Light Templates</h3>
+                <button type="button" class="sdx-light-add-btn" data-action="addTemplate">
+                    <i class="fas fa-plus"></i> Add
+                </button>
+            </div>
+
+            {{#if templates.length}}
+            <table class="sdx-light-table">
+                <thead>
+                    <tr>
+                        <th class="col-color"></th>
+                        <th class="col-key">Key</th>
+                        <th class="col-name">Name</th>
+                        <th class="col-bright">Bright</th>
+                        <th class="col-dim">Dim</th>
+                        <th class="col-anim">Animation</th>
+                        <th class="col-actions">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{#each templates}}
+                    <tr data-index="{{@index}}">
+                        <td class="col-color">
+                            <span class="sdx-light-color-swatch" style="background-color: {{this.color}}"></span>
+                        </td>
+                        <td class="col-key"><code>{{this.key}}</code></td>
+                        <td class="col-name">{{this.name}}</td>
+                        <td class="col-bright">{{this.bright}}</td>
+                        <td class="col-dim">{{this.dim}}</td>
+                        <td class="col-anim">{{this.animationType}}</td>
+                        <td class="col-actions">
+                            <a class="sdx-light-action" data-action="editTemplate" data-index="{{@index}}" title="Edit">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <a class="sdx-light-action" data-action="duplicateTemplate" data-index="{{@index}}"
+                                title="Duplicate">
+                                <i class="fas fa-copy"></i>
+                            </a>
+                            <a class="sdx-light-action sdx-light-action-danger" data-action="deleteTemplate"
+                                data-index="{{@index}}" title="Delete">
+                                <i class="fas fa-trash"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {{/each}}
+                </tbody>
+            </table>
+            {{else}}
+            <p class="sdx-light-empty">No light templates defined. Click <strong>Add</strong> to create one.</p>
+            {{/if}}
+
+            <p class="sdx-light-note">
+                <i class="fas fa-info-circle"></i>
+                Changes require a <strong>page refresh</strong> to take effect in dropdowns.
+            </p>
+        </div>
+        {{/if}}
+    </div>
+</form>

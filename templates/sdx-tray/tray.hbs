@@ -1060,6 +1060,94 @@
                         <span><i class="fas fa-border-none"></i> No Foundry Walls</span>
                     </label>
                 </div>
+
+                <!-- Generator Button -->
+                <label class="dungeon-option-toggle dungeon-generator-toggle">
+                    <span><i class="fas fa-magic"></i> Generator</span>
+                </label>
+
+                <!-- Generator Panel (collapsible) -->
+                {{#if generatorExpanded}}
+                <div class="dungeon-generator-panel">
+                    <div class="dungeon-generator-header">
+                        <span>Procedural Dungeon</span>
+                        <button class="dungeon-generator-close"><i class="fas fa-times"></i></button>
+                    </div>
+
+                    <div class="dgen-section">
+                        <div class="dgen-section-title">Layout</div>
+                        <div class="dgen-row">
+                            <label>Rooms</label>
+                            <input type="range" class="dgen-rooms" min="3" max="20" value="{{generatorSettings.rooms}}" step="1">
+                            <span class="dgen-value">{{generatorSettings.rooms}}</span>
+                        </div>
+                        <div class="dgen-row">
+                            <label>Density</label>
+                            <input type="range" class="dgen-density" min="0" max="1" value="{{generatorSettings.density}}" step="0.1">
+                            <span class="dgen-value">{{generatorSettings.density}}</span>
+                        </div>
+                        <div class="dgen-row">
+                            <label>Branching</label>
+                            <input type="range" class="dgen-branching" min="0" max="1" value="{{generatorSettings.branching}}" step="0.1">
+                            <span class="dgen-value">{{generatorSettings.branching}}</span>
+                        </div>
+                        <div class="dgen-row">
+                            <label>Room Size</label>
+                            <input type="range" class="dgen-roomsize" min="0" max="1" value="{{generatorSettings.roomSize}}" step="0.1">
+                            <span class="dgen-value">{{generatorSettings.roomSize}}</span>
+                        </div>
+                        <div class="dgen-row dgen-checkbox-row">
+                            <label>Symmetry</label>
+                            <input type="checkbox" class="dgen-symmetry" {{#if generatorSettings.symmetry}}checked{{/if}}>
+                        </div>
+                        <div class="dgen-row">
+                            <label>Stairs Up</label>
+                            <input type="range" class="dgen-stairs" min="0" max="20" value="{{generatorSettings.stairs}}" step="1">
+                            <span class="dgen-value">{{generatorSettings.stairs}}</span>
+                        </div>
+                        <div class="dgen-row">
+                            <label>Stairs Down</label>
+                            <input type="range" class="dgen-stairsdown" min="0" max="20" value="{{generatorSettings.stairsDown}}" step="1">
+                            <span class="dgen-value">{{generatorSettings.stairsDown}}</span>
+                        </div>
+                        <div class="dgen-row">
+                            <label>Clutter</label>
+                            <input type="range" class="dgen-clutter" min="0" max="10" value="{{generatorSettings.clutter}}" step="1">
+                            <span class="dgen-value">{{generatorSettings.clutter}}</span>
+                        </div>
+                    </div>
+
+                    <div class="dgen-section">
+                        <div class="dgen-section-title">Walls</div>
+                        <div class="dgen-row dgen-checkbox-row">
+                            <label>Textured</label>
+                            <input type="checkbox" class="dgen-textured" {{#if generatorSettings.textured}}checked{{/if}}>
+                        </div>
+                        <div class="dgen-row dgen-color-row">
+                            <label>Color</label>
+                            <input type="color" class="dgen-wall-color" value="{{generatorSettings.wallColor}}">
+                        </div>
+                        <div class="dgen-row dgen-slider-row">
+                            <label>Thickness</label>
+                            <input type="range" class="dgen-thickness" min="5" max="40" value="{{generatorSettings.thickness}}" step="5">
+                            <span class="dgen-value">{{generatorSettings.thickness}}</span>
+                        </div>
+                    </div>
+
+                    <div class="dgen-section dgen-section-inline">
+                        <div class="dgen-section-title">Seed</div>
+                        <div class="dgen-seed-row">
+                            <input type="text" class="dgen-seed" value="{{generatorSeed}}">
+                            <button class="dgen-seed-refresh" title="Randomize"><i class="fas fa-sync-alt"></i></button>
+                        </div>
+                    </div>
+
+                    <button class="dgen-apply">
+                        <i class="fas fa-wand-magic-sparkles"></i> Generate
+                    </button>
+                </div>
+                {{/if}}
+
                 {{else}}
                 <!-- Player info -->
                 <div class="dungeon-player-info">

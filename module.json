@@ -1,10 +1,10 @@
 {
   "id": "shadowdark-extras",
   "title": "Shadowdark Extras",
-  "version": "6.02",
+  "version": "6.03",
   "compatibility": {
-    "minimum": "11",
-    "verified": "12"
+    "minimum": "13",
+    "verified": "13"
   },
   "description": "<p>Adds extra features to the Shadowdark RPG system: Party management sheet, Renown tracking for players, additional light sources (Candle), and Inventory tab for NPCs.</p>",
   "authors": [
@@ -164,11 +164,7 @@
     }
   ],
   "manifest": "https://github.com/gmdima/shadowdark-extras/releases/latest/download/module.json",
-<<<<<<< HEAD
-  "download": "https://github.com/gmdima/shadowdark-extras/releases/download/6.02/module.zip",
-=======
-  "download": "https://github.com/gmdima/shadowdark-extras/releases/download/6.01/module.zip",
->>>>>>> 584e2ecce11ee2a2d9d3a4aaef2ffa41240a933b
+  "download": "https://github.com/gmdima/shadowdark-extras/releases/download/6.03/module.zip",
   "packs": [
     {
       "name": "pack-sdxitems",

@@ -6,6 +6,7 @@
 import { getHpWaveColor, isHpWavesEnabled } from "./HpWavesSettingsSD.mjs";
 import { getTravelActivities } from "./TravelActivitiesSettingsSD.mjs";
 import { getTravelSpeeds } from "./TravelSpeedsSettingsSD.mjs";
+import { getCustomLightSources } from "./shadowdark-extras.mjs";
 
 const MODULE_ID = "shadowdark-extras";
 
@@ -2405,10 +2406,16 @@ export async function getBrightestPartyLight(partyActor) {
 					const FALLBACK_TEMPLATES = {
 						"torch": { bright: 5, dim: 30, color: "#d1c846", alpha: 0.2, angle: 360 },
 						"lantern": { bright: 15, dim: 60, color: "#d1c846", alpha: 0.2, angle: 360 },
-						"candle": { bright: 5, dim: 5, color: "#d1c846", alpha: 0.2, angle: 360 }, // From EXTRA_LIGHT_SOURCES
 						"lightSpellNear": { bright: 30, dim: 0, color: null, alpha: 0.2, angle: 360 },
 						"lightSpellDouble": { bright: 60, dim: 0, color: null, alpha: 0.2, angle: 360 },
 					};
+
+					// Merge custom templates
+					const customSources = getCustomLightSources();
+					for (const [key, source] of Object.entries(customSources)) {
+						FALLBACK_TEMPLATES[key] = source.light;
+					}
+
 					lightTemplate = FALLBACK_TEMPLATES[templateName];
 				}
 

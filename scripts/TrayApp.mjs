@@ -31,6 +31,7 @@ import { setMapDimension, formatActiveScene, enablePainting, disablePainting, to
 import { generateHexMap, clearGeneratedTiles } from "./HexGeneratorSD.mjs";
 import { flattenTiles } from "./TileFlattenSD.mjs";
 import { setDungeonMode, selectFloorTile, selectWallTile, selectDoorTile, enableDungeonPainting, disableDungeonPainting, setNoFoundryWalls } from "./DungeonPainterSD.mjs";
+import { toggleGeneratorPanel, isGeneratorExpanded, generateDungeon, generateRandomSeed, getGeneratorSeed, setGeneratorSeed, getGeneratorSettings, setGeneratorSettings } from "./DungeonGeneratorSD.mjs";
 
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
@@ -96,6 +97,12 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
             this._scrollPositions["hex-tile-scroll"] = hexTileScroll.scrollTop;
         }
 
+        // Save scroll position of the dungeon tile scroll container
+        const dungeonTileScroll = elem.querySelector(".dungeon-tile-scroll");
+        if (dungeonTileScroll) {
+            this._scrollPositions["dungeon-tile-scroll"] = dungeonTileScroll.scrollTop;
+        }
+
         // Also save individual grid scroll positions if needed
         elem.querySelectorAll(".hex-tile-grid").forEach(grid => {
             const key = grid.dataset.tilePanel;
@@ -122,6 +129,12 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
         const hexTileScroll = elem.querySelector(".hex-tile-scroll");
         if (hexTileScroll && this._scrollPositions["hex-tile-scroll"] !== undefined) {
             hexTileScroll.scrollTop = this._scrollPositions["hex-tile-scroll"];
+        }
+
+        // Restore dungeon tile scroll container position
+        const dungeonTileScroll = elem.querySelector(".dungeon-tile-scroll");
+        if (dungeonTileScroll && this._scrollPositions["dungeon-tile-scroll"] !== undefined) {
+            dungeonTileScroll.scrollTop = this._scrollPositions["dungeon-tile-scroll"];
         }
 
         // Restore individual grid scroll positions
@@ -231,7 +244,10 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
             tomFolders: await this._getTomFolders(),
             tintEnabled: isTintEnabled(),
             poiScale: poiScale,
-            poiScalePercent: poiScalePercent
+            poiScalePercent: poiScalePercent,
+            generatorExpanded: isGeneratorExpanded(),
+            generatorSeed: getGeneratorSeed(),
+            generatorSettings: getGeneratorSettings()
         };
     }
 
@@ -526,7 +542,8 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
                 const tilePath = tile.dataset.dungeonTile;
                 if (tilePath) {
                     selectFloorTile(tilePath);
-                    renderTray();
+                    elem.querySelectorAll(".dungeon-tile-thumb[data-dungeon-tile]").forEach(t => t.classList.remove("active"));
+                    tile.classList.add("active");
                 }
             });
         });
@@ -539,7 +556,8 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
                 const tilePath = tile.dataset.dungeonDoor;
                 if (tilePath) {
                     selectDoorTile(tilePath);
-                    renderTray();
+                    elem.querySelectorAll(".dungeon-tile-thumb[data-dungeon-door]").forEach(t => t.classList.remove("active"));
+                    tile.classList.add("active");
                 }
             });
         });
@@ -552,7 +570,8 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
                 const tilePath = tile.dataset.dungeonWall;
                 if (tilePath) {
                     selectWallTile(tilePath);
-                    renderTray();
+                    elem.querySelectorAll(".dungeon-tile-thumb[data-dungeon-wall]").forEach(t => t.classList.remove("active"));
+                    tile.classList.add("active");
                 }
             });
         });
@@ -565,6 +584,101 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
                 renderTray();
             });
         }
+
+        // Dungeon Generator toggle
+        elem.querySelector(".dungeon-generator-toggle")?.addEventListener("click", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            toggleGeneratorPanel();
+            renderTray();
+        });
+
+        // Dungeon Generator close button
+        elem.querySelector(".dungeon-generator-close")?.addEventListener("click", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            toggleGeneratorPanel();
+            renderTray();
+        });
+
+        // Generator slider value displays
+        elem.querySelectorAll(".dgen-row input[type='range']").forEach(slider => {
+            slider.addEventListener("input", (e) => {
+                const valueSpan = e.target.closest(".dgen-row").querySelector(".dgen-value");
+                if (valueSpan) valueSpan.textContent = e.target.value;
+            });
+        });
+
+        // Generator textured toggle - hide/show color row and thickness
+        const texturedCheckbox = elem.querySelector(".dgen-textured");
+        const colorRow = elem.querySelector(".dgen-color-row");
+        const thicknessRow = elem.querySelector(".dgen-thickness")?.closest(".dgen-row");
+        if (texturedCheckbox) {
+            const updateTexturedVisibility = (checked) => {
+                if (colorRow) colorRow.style.display = checked ? "none" : "";
+                if (thicknessRow) thicknessRow.style.display = checked ? "none" : "";
+            };
+            updateTexturedVisibility(texturedCheckbox.checked);
+            texturedCheckbox.addEventListener("change", (e) => {
+                updateTexturedVisibility(e.target.checked);
+            });
+        }
+
+        // Generator seed refresh
+        elem.querySelector(".dgen-seed-refresh")?.addEventListener("click", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            const newSeed = generateRandomSeed();
+            setGeneratorSeed(newSeed);
+            const seedInput = elem.querySelector(".dgen-seed");
+            if (seedInput) seedInput.value = newSeed;
+        });
+
+        // Generator apply button
+        elem.querySelector(".dgen-apply")?.addEventListener("click", async (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+
+            const seedInput = elem.querySelector(".dgen-seed");
+            const seed = seedInput?.value || getGeneratorSeed();
+            setGeneratorSeed(seed);
+
+            const isTextured = elem.querySelector(".dgen-textured")?.checked ?? false;
+            const rooms = parseInt(elem.querySelector(".dgen-rooms")?.value || "10");
+            const dens = parseFloat(elem.querySelector(".dgen-density")?.value || "0.8");
+            const branch = parseFloat(elem.querySelector(".dgen-branching")?.value || "0.5");
+            const roomSz = parseFloat(elem.querySelector(".dgen-roomsize")?.value || "0.5");
+            const sym = elem.querySelector(".dgen-symmetry")?.checked ?? true;
+            const stairsVal = parseInt(elem.querySelector(".dgen-stairs")?.value || "0");
+            const stairsDownVal = parseInt(elem.querySelector(".dgen-stairsdown")?.value || "0");
+            const clutterVal = parseInt(elem.querySelector(".dgen-clutter")?.value || "0");
+            const wColor = elem.querySelector(".dgen-wall-color")?.value || "#5C3D3D";
+            const thick = isTextured ? 20 : parseInt(elem.querySelector(".dgen-thickness")?.value || "20");
+
+            // Persist settings
+            setGeneratorSettings({
+                rooms, density: dens, branching: branch, roomSize: roomSz,
+                symmetry: sym, stairs: stairsVal, stairsDown: stairsDownVal, clutter: clutterVal,
+                textured: isTextured, wallColor: wColor, thickness: thick
+            });
+
+            const config = {
+                seed,
+                roomCount: rooms,
+                density: dens,
+                branching: branch,
+                roomSizeBias: roomSz,
+                symmetry: sym,
+                stairs: stairsVal,
+                stairsDown: stairsDownVal,
+                clutter: clutterVal,
+                useTexture: isTextured,
+                wallColor: wColor,
+                wallThickness: thick
+            };
+
+            await generateDungeon(config);
+        });
 
         // Party card clicks
         elem.querySelectorAll(".party-card").forEach(card => {

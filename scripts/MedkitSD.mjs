@@ -68,6 +68,9 @@ export class MedkitApp extends HandlebarsApplicationMixin(ApplicationV2) {
         // Get index with UUID
         const index = await pack.getIndex();
 
+        // Get actor's class for spell filtering
+        const actorClassUuid = this.actor.system?.class;
+
         const updatesAvailable = [];
         const upToDate = [];
 
@@ -76,12 +79,33 @@ export class MedkitApp extends HandlebarsApplicationMixin(ApplicationV2) {
             // Restrict to Spells only per user request
             if (item.type !== "Spell") continue;
 
-            // Find match by name and type
+            // Find all matches by name and type
             // We strip whitespace and ignore case for broader matching
-            const match = index.find(i =>
+            const allMatches = index.filter(i =>
                 i.name.trim().toLowerCase() === item.name.trim().toLowerCase() &&
                 i.type === item.type
             );
+
+            if (allMatches.length === 0) continue;
+
+            let match = null;
+
+            // For spells, try to find a class-specific match
+            if (item.type === "Spell" && actorClassUuid && allMatches.length > 1) {
+                // Need to fetch full documents to check class arrays
+                for (const indexMatch of allMatches) {
+                    const compendiumItem = await pack.getDocument(indexMatch._id);
+                    if (compendiumItem?.system?.class?.includes(actorClassUuid)) {
+                        match = indexMatch;
+                        break;
+                    }
+                }
+            }
+
+            // If no class-specific match found, use the first match
+            if (!match) {
+                match = allMatches[0];
+            }
 
             if (match) {
                 const sourceId = item.getFlag("shadowdark-extras", "sourceId") || item.getFlag("core", "sourceId");
