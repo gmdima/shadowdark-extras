@@ -375,4 +375,8 @@ This module is provided under the MIT License.
 
 
 
-Hexes tiles and POI are from https://2minutetabletop.com/product/world-map-hex-tiles/ licensed under CC by-nc 4.0
+some Hexes tiles and POI are from https://2minutetabletop.com/product/world-map-hex-tiles/ licensed under CC by-nc 4.0
+some b&w poi assets from https://cartographyassets.com/assets/6626/gogotsmaps-black-and-white-assets/ under cal_by_nc licence.
+Dyson style dungeon assets from Thomas Seliger
+https://github.com/neovatar/dungeondraft-dysonesque
+
