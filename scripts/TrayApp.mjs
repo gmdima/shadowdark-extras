@@ -27,7 +27,7 @@ import { PinStyleEditorApp } from "./PinStyleEditorSD.mjs";
 import { PinListApp } from "./PinListApp.mjs";
 
 import { PlaceableNotesSD } from "./PlaceableNotesSD.mjs";
-import { setMapDimension, formatActiveScene, enablePainting, disablePainting, toggleTileSelection, setSearchFilter, toggleWaterEffect, toggleWindEffect, toggleFogAnimation, toggleTintEnabled, toggleBwEffect, isTintEnabled, setActiveTileTab, setCustomTileDimension, toggleColoredFolderCollapsed, toggleSymbolFolderCollapsed, undoLastPoi, redoLastPoi, getPoiScale, enablePreview, disablePreview, getActiveTileTab, adjustPoiScale, rotatePoiLeft, rotatePoiRight, togglePoiMirror } from "./HexPainterSD.mjs";
+import { setMapDimension, formatActiveScene, enablePainting, disablePainting, toggleTileSelection, setSearchFilter, toggleWaterEffect, toggleWindEffect, toggleFogAnimation, toggleTintEnabled, toggleBwEffect, isTintEnabled, setActiveTileTab, setCustomTileDimension, toggleColoredFolderCollapsed, toggleSymbolFolderCollapsed, undoLastPoi, redoLastPoi, canUndoPoi, canRedoPoi, getPoiScale, enablePreview, disablePreview, getActiveTileTab, adjustPoiScale, rotatePoiLeft, rotatePoiRight, togglePoiMirror, getPoiMirror, setDecorSearchFilter, toggleDecorFolderCollapsed, setDecorMode, setDecorElevation, setDecorSort } from "./HexPainterSD.mjs";
 import { generateHexMap, clearGeneratedTiles } from "./HexGeneratorSD.mjs";
 import { flattenTiles } from "./TileFlattenSD.mjs";
 import { setDungeonMode, selectFloorTile, selectWallTile, selectDoorTile, enableDungeonPainting, disableDungeonPainting, setNoFoundryWalls } from "./DungeonPainterSD.mjs";
@@ -103,6 +103,12 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
             this._scrollPositions["dungeon-tile-scroll"] = dungeonTileScroll.scrollTop;
         }
 
+        // Save scroll position of the decor tile scroll container
+        const decorTileScroll = elem.querySelector(".decor-tile-scroll");
+        if (decorTileScroll) {
+            this._scrollPositions["decor-tile-scroll"] = decorTileScroll.scrollTop;
+        }
+
         // Also save individual grid scroll positions if needed
         elem.querySelectorAll(".hex-tile-grid").forEach(grid => {
             const key = grid.dataset.tilePanel;
@@ -135,6 +141,12 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
         const dungeonTileScroll = elem.querySelector(".dungeon-tile-scroll");
         if (dungeonTileScroll && this._scrollPositions["dungeon-tile-scroll"] !== undefined) {
             dungeonTileScroll.scrollTop = this._scrollPositions["dungeon-tile-scroll"];
+        }
+
+        // Restore decor tile scroll container position
+        const decorTileScroll = elem.querySelector(".decor-tile-scroll");
+        if (decorTileScroll && this._scrollPositions["decor-tile-scroll"] !== undefined) {
+            decorTileScroll.scrollTop = this._scrollPositions["decor-tile-scroll"];
         }
 
         // Restore individual grid scroll positions
@@ -196,6 +208,11 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
             if (getActiveTileTab() === "symbols") {
                 enablePreview();
             }
+        } else if (this._isExpanded && viewMode === "decor") {
+            setDecorMode(true);
+            enablePainting();
+            disableDungeonPainting();
+            enablePreview();
         } else if (this._isExpanded && viewMode === "dungeons") {
             disablePainting();
             disablePreview();
@@ -438,7 +455,8 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
             e.preventDefault();
             e.stopPropagation();
             await undoLastPoi();
-            renderTray();
+            elem.querySelector(".poi-undo-btn")?.classList.toggle("disabled", !canUndoPoi());
+            elem.querySelector(".poi-redo-btn")?.classList.toggle("disabled", !canRedoPoi());
         });
 
         // POI Redo Button
@@ -446,7 +464,8 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
             e.preventDefault();
             e.stopPropagation();
             await redoLastPoi();
-            renderTray();
+            elem.querySelector(".poi-undo-btn")?.classList.toggle("disabled", !canUndoPoi());
+            elem.querySelector(".poi-redo-btn")?.classList.toggle("disabled", !canRedoPoi());
         });
 
         // POI Scale Down Button
@@ -454,7 +473,7 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
             e.preventDefault();
             e.stopPropagation();
             adjustPoiScale(-0.1);
-            renderTray();
+            this._updatePoiScaleDisplay();
         });
 
         // POI Scale Up Button
@@ -462,7 +481,7 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
             e.preventDefault();
             e.stopPropagation();
             adjustPoiScale(0.1);
-            renderTray();
+            this._updatePoiScaleDisplay();
         });
 
         // POI Rotate Left Button
@@ -470,7 +489,6 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
             e.preventDefault();
             e.stopPropagation();
             rotatePoiLeft();
-            renderTray();
         });
 
         // POI Rotate Right Button
@@ -478,7 +496,6 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
             e.preventDefault();
             e.stopPropagation();
             rotatePoiRight();
-            renderTray();
         });
 
         // POI Mirror Button
@@ -486,7 +503,7 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
             e.preventDefault();
             e.stopPropagation();
             togglePoiMirror();
-            renderTray();
+            e.currentTarget.classList.toggle("active", getPoiMirror());
         });
 
         // Tab buttons
@@ -504,6 +521,11 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
                         if (getActiveTileTab() === "symbols") {
                             enablePreview();
                         }
+                    } else if (view === "decor" && this._isExpanded) {
+                        setDecorMode(true);
+                        enablePainting();
+                        disableDungeonPainting();
+                        enablePreview();
                     } else if (view === "dungeons" && this._isExpanded) {
                         disablePainting();
                         disablePreview();
@@ -1302,6 +1324,23 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
         });
     }
 
+    /**
+     * Update POI scale percentage display in the DOM without re-rendering
+     */
+    _updatePoiScaleDisplay() {
+        const elem = document.querySelector(".sdx-tray");
+        if (!elem) return;
+        const pct = Math.round(getPoiScale() * 100);
+        elem.querySelectorAll(".poi-info-section .hex-custom-folder-hint").forEach(hint => {
+            const icon = hint.querySelector("i");
+            if (icon) {
+                hint.textContent = "";
+                hint.appendChild(icon);
+                hint.append(` ${hint.closest(".decor-view") ? "Decor" : "POI"} paint on top · Scale: ${pct}%`);
+            }
+        });
+    }
+
     /* ═══════════════════════════════════════════════════════════════
        HEX PAINTER TAB
        ═══════════════════════════════════════════════════════════════ */
@@ -1434,8 +1473,8 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
             toggleBwEffect();
         });
 
-        // Tile selection (multi-select)
-        elem.querySelectorAll(".hex-tile-thumb").forEach(thumb => {
+        // Tile selection (multi-select) - exclude decor tiles (handled separately)
+        elem.querySelectorAll(".hex-tile-thumb:not(.decor-tile-thumb)").forEach(thumb => {
             thumb.addEventListener("click", (e) => {
                 e.preventDefault();
                 const tilePath = thumb.dataset.tile;
@@ -1571,7 +1610,7 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
         });
 
         // Symbol tile folder toggle (expand/collapse)
-        elem.querySelectorAll(".hex-symbol-folder-header").forEach(header => {
+        elem.querySelectorAll(".hex-symbol-folder-header:not(.decor-folder-header)").forEach(header => {
             header.addEventListener("click", (e) => {
                 e.preventDefault();
                 const folderKey = header.dataset.folder;
@@ -1601,6 +1640,88 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
                 // Toggle header collapsed class
                 header.classList.toggle("collapsed");
             });
+        });
+
+        /* ─── DECOR TAB ─── */
+
+        // Decor tile selection (multi-select, same as hex-tile-thumb but for decor)
+        elem.querySelectorAll(".decor-tile-thumb").forEach(thumb => {
+            thumb.addEventListener("click", (e) => {
+                e.preventDefault();
+                const tilePath = thumb.dataset.tile;
+                if (!tilePath) return;
+                toggleTileSelection(tilePath);
+                thumb.classList.toggle("active");
+            });
+        });
+
+        // Decor search filter (client-side filtering without re-render)
+        elem.querySelector(".decor-search-input")?.addEventListener("input", (e) => {
+            const searchTerm = e.target.value.toLowerCase();
+            setDecorSearchFilter(searchTerm);
+
+            // Filter tiles within decor view
+            const decorView = elem.querySelector(".decor-view");
+            if (!decorView) return;
+
+            decorView.querySelectorAll(".hex-symbol-folder").forEach(folder => {
+                const thumbs = folder.querySelectorAll(".hex-tile-thumb");
+                let visibleCount = 0;
+                thumbs.forEach(tile => {
+                    const label = tile.getAttribute("title").toLowerCase();
+                    const show = label.includes(searchTerm);
+                    tile.style.display = show ? "" : "none";
+                    if (show) visibleCount++;
+                });
+                folder.style.display = visibleCount > 0 ? "" : "none";
+                const countEl = folder.querySelector(".hex-folder-count");
+                if (countEl) countEl.textContent = `(${visibleCount})`;
+            });
+        });
+
+        // Decor folder toggle (expand/collapse)
+        elem.querySelectorAll(".decor-folder-header").forEach(header => {
+            header.addEventListener("click", (e) => {
+                e.preventDefault();
+                const folderKey = header.dataset.folder;
+                if (!folderKey) return;
+
+                toggleDecorFolderCollapsed(folderKey);
+
+                // Toggle content visibility
+                const folderEl = header.closest(".hex-symbol-folder");
+                const content = folderEl?.querySelector(".hex-symbol-folder-content");
+                if (content) content.classList.toggle("hidden");
+
+                // Toggle chevron icon
+                const chevron = header.querySelector(".hex-folder-chevron");
+                if (chevron) {
+                    chevron.classList.toggle("fa-caret-right");
+                    chevron.classList.toggle("fa-caret-down");
+                }
+
+                // Toggle folder icon
+                const folderIcon = header.querySelector(".hex-folder-icon");
+                if (folderIcon) {
+                    folderIcon.classList.toggle("fa-folder");
+                    folderIcon.classList.toggle("fa-folder-open");
+                }
+
+                // Toggle header collapsed class
+                header.classList.toggle("collapsed");
+            });
+        });
+
+        // Decor elevation input
+        elem.querySelector(".decor-elevation-input")?.addEventListener("change", (e) => {
+            setDecorElevation(parseFloat(e.target.value) || 0);
+        });
+
+        // Decor sort input
+        elem.querySelector(".decor-sort-input")?.addEventListener("change", (e) => {
+            const intVal = parseInt(e.target.value, 10) || 0;
+            e.target.value = intVal;
+            setDecorSort(intVal);
         });
     }
 

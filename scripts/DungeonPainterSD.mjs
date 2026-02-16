@@ -307,7 +307,7 @@ export function getDungeonPainterData() {
             // Clean up the label to remove "horizontal" suffix
             label: t.label.replace(/\s*horizontal\s*/i, "").trim(),
             active: t.path === _selectedWallTile ||
-                    t.path === _selectedWallTile?.replace("vertical", "horizontal")
+                t.path === _selectedWallTile?.replace("vertical", "horizontal")
         }));
 
     return {

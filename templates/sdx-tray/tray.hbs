@@ -52,8 +52,7 @@
             <button class="tray-handle-button-tool" data-action="sdx-roller" title="SDX Roller">
                 <i class="fa-solid fa-dice"></i>
             </button>
-            {{#if (eq viewMode 'hexes')}}
-            {{#if (eq activeTileTab 'symbols')}}
+            {{#if (or (and (eq viewMode 'hexes') (eq activeTileTab 'symbols')) (eq viewMode 'decor'))}}
             <button class="tray-handle-button-tool poi-undo-btn {{#unless canUndoPoi}}disabled{{/unless}}"
                 data-action="poi-undo" title="Undo Last POI">
                 <i class="fa-solid fa-rotate-left"></i>
@@ -80,7 +79,6 @@
                 data-action="poi-mirror" title="Mirror Horizontal">
                 <i class="fa-solid fa-left-right"></i>
             </button>
-            {{/if}}
             {{/if}}
             {{/if}}
 
@@ -236,6 +234,12 @@
                 title="Dungeon Painter{{#unless isGM}} (GM Online){{/unless}}">
                 <i class="fas fa-dungeon"></i> Dungeons
             </button>
+            {{#if isGM}}
+            <button class="tray-tab-button {{#if (eq viewMode 'decor')}}active{{/if}}" data-view="decor"
+                title="Decor Painter">
+                <i class="fas fa-couch"></i> Decor
+            </button>
+            {{/if}}
         </div>
         {{/if}}
 
@@ -1257,6 +1261,72 @@
                     </div>
                 </div>
 
+            </div>
+            {{/if}}
+
+            <!-- DECOR TAB (GM ONLY) -->
+            {{#if isGM}}
+            <div class="tray-view-content decor-view {{#unless (eq viewMode 'decor')}}hidden{{/unless}}"
+                style="overflow-y: hidden; display: flex; flex-direction: column;">
+
+                <!-- Search -->
+                <div class="hex-search-section">
+                    <input type="text" class="decor-search-input" placeholder="Search decor tiles..."
+                        value="{{decorSearchFilter}}" />
+                </div>
+
+                <!-- POI info -->
+                <div class="hex-custom-size-section poi-info-section">
+                    <div class="hex-custom-folder-hint">
+                        <i class="fas fa-info-circle"></i> Decor paint on top · Scale: {{poiScalePercent}}%
+                    </div>
+                    <div class="decor-fields-row" style="display:flex; gap:8px; align-items:center; margin-top:4px; font-size:11px;">
+                        <label style="display:flex; align-items:center; gap:3px; color:#aaa;">
+                            Elev <input type="number" class="decor-elevation-input" value="{{decorElevation}}" step="0.1" style="width:50px; padding:1px 4px; background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.15); border-radius:3px; color:#ddd; font-size:11px;" />
+                        </label>
+                        <label style="display:flex; align-items:center; gap:3px; color:#aaa;">
+                            Sort <input type="number" class="decor-sort-input" value="{{decorSort}}" step="1" style="width:50px; padding:1px 4px; background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.15); border-radius:3px; color:#ddd; font-size:11px;" />
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Decor folder grid -->
+                <div class="hex-tile-scroll decor-tile-scroll"
+                    style="flex:1; overflow-y:auto; scrollbar-width:thin; scrollbar-color:rgba(255,255,255,0.2) rgba(0,0,0,0.1);">
+                    {{#if decorFolders.length}}
+                    {{#each decorFolders}}
+                    <div class="hex-symbol-folder" data-folder="{{this.folder}}">
+                        <div class="decor-folder-header hex-symbol-folder-header {{#if this.collapsed}}collapsed{{/if}}"
+                            data-action="toggle-decor-folder" data-folder="{{this.folder}}">
+                            <i class="fas {{#if this.collapsed}}fa-caret-right{{else}}fa-caret-down{{/if}} hex-folder-chevron"></i>
+                            <i class="fas {{#if this.collapsed}}fa-folder{{else}}fa-folder-open{{/if}} hex-folder-icon"></i>
+                            <span class="hex-folder-name">{{this.label}}</span>
+                            <span class="hex-folder-count">({{this.tiles.length}})</span>
+                        </div>
+                        <div class="hex-tile-grid hex-symbol-folder-content {{#if this.collapsed}}hidden{{/if}}">
+                            {{#each this.tiles}}
+                            <div class="hex-tile-thumb decor-tile-thumb {{#if this.active}}active{{/if}}"
+                                data-tile="{{this.path}}"
+                                title="{{this.label}}{{#if this.category}} ({{this.category}}){{/if}}">
+                                <img src="{{this.path}}" alt="{{this.label}}" />
+                                <span class="hex-tile-label">{{this.label}}</span>
+                            </div>
+                            {{/each}}
+                        </div>
+                    </div>
+                    {{/each}}
+                    {{else}}
+                    <div class="hex-no-custom-tiles">
+                        <p><i class="fas fa-couch"></i></p>
+                        <p>No decor tiles found</p>
+                    </div>
+                    {{/if}}
+                </div>
+
+                <!-- Footer hint -->
+                <div class="tray-footer-message">
+                    Click to place · +/- to resize · Right-click to cycle
+                </div>
             </div>
             {{/if}}
         </div>

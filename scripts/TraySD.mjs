@@ -10,7 +10,7 @@
 
 import { TrayApp } from "./TrayApp.mjs";
 import { JournalPinManager } from "./JournalPinsSD.mjs";
-import { getHexPainterData, loadTileAssets, bindCanvasEvents, enablePainting, disablePainting, isPainting } from "./HexPainterSD.mjs";
+import { getHexPainterData, loadTileAssets, bindCanvasEvents, enablePainting, disablePainting, isPainting, setDecorMode, canUndoPoi, canRedoPoi } from "./HexPainterSD.mjs";
 import {
     getDungeonPainterData,
     loadDungeonAssets,
@@ -148,7 +148,7 @@ export function initTray() {
 
             // Double check: if isPainting() is true OR if we are in hexes/dungeons view (which implies painting mode)
             // This makes the check more robust against state desyncs
-            if (!isPainting() && !isDungeonPainting() && getViewMode() !== "hexes" && getViewMode() !== "dungeons") {
+            if (!isPainting() && !isDungeonPainting() && getViewMode() !== "hexes" && getViewMode() !== "dungeons" && getViewMode() !== "decor") {
                 await renderTray();
             }
         }, 300);
@@ -191,8 +191,13 @@ export function initTray() {
     Hooks.on("updateNote", async () => await renderTray());
     Hooks.on("deleteNote", async () => await renderTray());
 
-    // Hook for POI placement to update undo/redo buttons
-    Hooks.on("sdx.poiPlaced", async () => await renderTray());
+    // Hook for POI placement to update undo/redo buttons (DOM-only, no full re-render)
+    Hooks.on("sdx.poiPlaced", () => {
+        const elem = document.querySelector(".sdx-tray");
+        if (!elem) return;
+        elem.querySelector(".poi-undo-btn")?.classList.toggle("disabled", !canUndoPoi());
+        elem.querySelector(".poi-redo-btn")?.classList.toggle("disabled", !canRedoPoi());
+    });
 
     // Hook to update tray when pins change on scene
     Hooks.on("updateScene", (document, change, options, userId) => {
@@ -462,9 +467,11 @@ export async function setViewMode(mode) {
     _viewMode = mode;
     // Toggle hex painting based on active tab
     if (mode === "hexes") {
+        setDecorMode(false);
         enablePainting();
         disableDungeonPainting();
     } else if (mode === "dungeons") {
+        setDecorMode(false);
         disablePainting();
         enableDungeonPainting();
         // If player switching to dungeons and no tiles loaded, try to reload
@@ -474,7 +481,12 @@ export async function setViewMode(mode) {
                 await reloadDungeonAssets();
             }
         }
+    } else if (mode === "decor") {
+        setDecorMode(true);
+        enablePainting();
+        disableDungeonPainting();
     } else {
+        setDecorMode(false);
         disablePainting();
         disableDungeonPainting();
     }
@@ -526,6 +538,7 @@ export function cycleViewMode() {
     modes.push("notes"); // Notes mode for everyone (filtered for players)
     if (isGM) modes.push("hexes");
     if (isGM || canPlayerPaint()) modes.push("dungeons");
+    if (isGM) modes.push("decor");
 
     const currentIndex = modes.indexOf(_viewMode);
     // If current mode isn't in list (e.g. switched from player to GM view), start at 0
@@ -534,12 +547,19 @@ export function cycleViewMode() {
 
     // Toggle painting based on active tab
     if (_viewMode === "hexes") {
+        setDecorMode(false);
         enablePainting();
         disableDungeonPainting();
     } else if (_viewMode === "dungeons") {
+        setDecorMode(false);
         disablePainting();
         enableDungeonPainting();
+    } else if (_viewMode === "decor") {
+        setDecorMode(true);
+        enablePainting();
+        disableDungeonPainting();
     } else {
+        setDecorMode(false);
         disablePainting();
         disableDungeonPainting();
     }

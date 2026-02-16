@@ -39,6 +39,13 @@ let _paintEnabled = false;
 let _isPainting = false;
 let _isGenerating = false;
 
+// Decor tab state
+let _decorSearchFilter = "";
+let _decorFoldersCollapsed = {};
+let _decorMode = false; // Whether we're in decor painting mode
+let _decorElevation = 0.1;
+let _decorSort = 0;
+
 let _mapColumns = 15;
 let _mapRows = 15;
 
@@ -313,11 +320,16 @@ export function getSymbolTiles() {
 
 /**
  * Get filtered symbol tiles (by search filter)
+ * @param {string[]} excludeCategories - Categories to exclude
  */
-export function getFilteredSymbolTiles() {
+export function getFilteredSymbolTiles(excludeCategories = []) {
     if (!_symbolTiles) return [];
-    if (!_searchFilter) return _symbolTiles;
-    return _symbolTiles.filter(t => t.label.toLowerCase().includes(_searchFilter));
+    let tiles = _symbolTiles;
+    if (excludeCategories.length) {
+        tiles = tiles.filter(t => !excludeCategories.includes(t.category));
+    }
+    if (!_searchFilter) return tiles;
+    return tiles.filter(t => t.label.toLowerCase().includes(_searchFilter));
 }
 
 /**
@@ -574,7 +586,7 @@ export function toggleColoredFolderCollapsed(folderKey) {
  * Returns an array of { folder, label, collapsed, tiles[] } objects.
  */
 export function getSymbolTileFolders() {
-    const filtered = getFilteredSymbolTiles();
+    const filtered = getFilteredSymbolTiles(["dysonstyle"]);
     if (!filtered.length) return [];
 
     // Group tiles by category (folder)
@@ -623,6 +635,82 @@ export function toggleSymbolFolderCollapsed(folderKey) {
     _symbolFoldersCollapsed[folderKey] = !_symbolFoldersCollapsed[folderKey];
 }
 
+/* ═══════════════════════════════════════════════════════════════
+   DECOR TAB
+   ═══════════════════════════════════════════════════════════════ */
+
+/**
+ * Set decor search filter
+ */
+export function setDecorSearchFilter(term) {
+    _decorSearchFilter = term.toLowerCase();
+}
+
+/**
+ * Get decor search filter
+ */
+export function getDecorSearchFilter() {
+    return _decorSearchFilter;
+}
+
+/**
+ * Toggle collapsed state of a decor tile folder
+ */
+export function toggleDecorFolderCollapsed(folderKey) {
+    _decorFoldersCollapsed[folderKey] = !_decorFoldersCollapsed[folderKey];
+}
+
+/**
+ * Set decor painting mode
+ */
+export function setDecorMode(enabled) {
+    _decorMode = !!enabled;
+    if (enabled) {
+        _activeTileTab = "symbols"; // Decor uses symbol tile placement logic
+    }
+}
+
+/**
+ * Check if decor mode is active
+ */
+export function isDecorMode() {
+    return _decorMode;
+}
+
+export function getDecorElevation() { return _decorElevation; }
+export function setDecorElevation(v) { _decorElevation = parseFloat(v) || 0; }
+export function getDecorSort() { return _decorSort; }
+export function setDecorSort(v) { _decorSort = parseInt(v, 10) || 0; }
+
+/**
+ * Get decor tiles grouped by folder for the tray UI.
+ * Only includes Dysonstyle category tiles.
+ */
+export function getDecorTileFolders() {
+    let tiles = (_symbolTiles || []).filter(t => t.category === "dysonstyle");
+    if (_decorSearchFilter) {
+        tiles = tiles.filter(t => t.label.toLowerCase().includes(_decorSearchFilter));
+    }
+    if (!tiles.length) return [];
+
+    const folderMap = new Map();
+    for (const tile of tiles) {
+        const folderKey = tile.category || "__root__";
+        if (!folderMap.has(folderKey)) folderMap.set(folderKey, []);
+        folderMap.get(folderKey).push({
+            key: tile.key, label: tile.label, path: tile.path,
+            active: _chosenTiles.has(tile.path), category: tile.category
+        });
+    }
+
+    const folders = [];
+    for (const [key, folderTiles] of folderMap) {
+        const label = key === "__root__" ? "Root" : key.charAt(0).toUpperCase() + key.slice(1);
+        folders.push({ folder: key, label, collapsed: !!_decorFoldersCollapsed[key], tiles: folderTiles });
+    }
+    return folders;
+}
+
 /**
  * Get custom tiles array
  */
@@ -659,7 +747,11 @@ export function getHexPainterData() {
         poiRotation: _poiRotation,
         poiMirror: _poiMirror,
         canUndoPoi: _poiUndoStack.length > 0,
-        canRedoPoi: _poiRedoStack.length > 0
+        canRedoPoi: _poiRedoStack.length > 0,
+        decorFolders: [],
+        decorSearchFilter: _decorSearchFilter,
+        decorElevation: _decorElevation,
+        decorSort: _decorSort
     };
 
     const filteredTiles = getFilteredTiles();
@@ -690,8 +782,8 @@ export function getHexPainterData() {
         biome: t.biome
     }));
 
-    // Filter symbol tiles
-    const filteredSymbolTiles = getFilteredSymbolTiles();
+    // Filter symbol tiles (exclude dysonstyle - those are in the Decor tab)
+    const filteredSymbolTiles = getFilteredSymbolTiles(["dysonstyle"]);
     const hexSymbolTiles = filteredSymbolTiles.map(t => ({
         key: t.key,
         label: t.label,
@@ -734,7 +826,11 @@ export function getHexPainterData() {
         poiRotation: _poiRotation,
         poiMirror: _poiMirror,
         canUndoPoi: _poiUndoStack.length > 0,
-        canRedoPoi: _poiRedoStack.length > 0
+        canRedoPoi: _poiRedoStack.length > 0,
+        decorFolders: getDecorTileFolders(),
+        decorSearchFilter: _decorSearchFilter,
+        decorElevation: _decorElevation,
+        decorSort: _decorSort
     };
 }
 
@@ -752,7 +848,7 @@ export function toggleTileSelection(tilePath) {
     }
 
     // Update preview when selecting/deselecting POI tiles
-    if (_activeTileTab === "symbols") {
+    if (_activeTileTab === "symbols" || _decorMode) {
         const availableTiles = _getAvailablePoiTiles();
         if (availableTiles.length > 0) {
             // Reset index if out of bounds
@@ -904,6 +1000,7 @@ export function disablePainting() {
     _brushActive = false;
     _lastCell = null;
     _chosenTiles.clear();
+    _decorMode = false;
     // Clean up POI-related state
     destroyPreview();
     clearPoiHistory();
@@ -1031,7 +1128,7 @@ function _onPointerUp() {
 
 function _onRightClick(ev) {
     if (!_isToolActive()) return;
-    if (_activeTileTab !== "symbols") return;
+    if (_activeTileTab !== "symbols" && !_decorMode) return;
 
     const availableTiles = _getAvailablePoiTiles();
     if (availableTiles.length <= 1) return; // No point cycling with 0 or 1 tile
@@ -1101,7 +1198,7 @@ async function _stampAtPointer(ev, forceStamp = false) {
     // Filter chosen tiles based on active tab
     let availableTiles = Array.from(_chosenTiles);
 
-    if (_activeTileTab === "symbols") {
+    if (_activeTileTab === "symbols" || _decorMode) {
         availableTiles = availableTiles.filter(path => _symbolTiles && _symbolTiles.some(t => t.path === path));
     } else if (_activeTileTab === "custom") {
         availableTiles = availableTiles.filter(path => _customTiles && _customTiles.some(t => t.path === path));
@@ -1125,7 +1222,7 @@ async function _stampAtPointer(ev, forceStamp = false) {
 
     // For symbols (POI), use deterministic cycling; for other tiles, use random selection
     let chosenTile;
-    if (_activeTileTab === "symbols") {
+    if (_activeTileTab === "symbols" || _decorMode) {
         chosenTile = availableTiles[_currentPreviewIndex % availableTiles.length];
     } else {
         chosenTile = availableTiles[Math.floor(Math.random() * availableTiles.length)];
@@ -1219,9 +1316,10 @@ async function _stampAtPointer(ev, forceStamp = false) {
         y: (isSymbolTile ? pos.y : center.y) - th / 2 - verticalNudge,
         width: tw,
         height: th,
+        elevation: isSymbolTile ? (_decorMode ? _decorElevation : 0.1) : 0,
         rotation: isSymbolTile ? _poiRotation : 0,
         // Symbols get a much higher sort value to appear on top of hex tiles
-        sort: isSymbolTile ? Math.floor(center.y) + 100000 : Math.floor(center.y),
+        sort: isSymbolTile ? (_decorMode ? _decorSort : Math.floor(center.y) + 100000) : Math.floor(center.y),
         flags: {
             [MODULE_ID]: {
                 painted: true,
@@ -1236,6 +1334,17 @@ async function _stampAtPointer(ev, forceStamp = false) {
     } catch (err) {
         console.error(`${MODULE_ID} | Failed to create tile:`, err);
         return;
+    }
+
+    // In decor mode, re-apply elevation/sort after creation to override Levels module hooks
+    if (_decorMode && isSymbolTile && createdTiles && createdTiles.length > 0) {
+        const tile = createdTiles[0];
+        const updates = {};
+        if (tile.elevation !== _decorElevation) updates.elevation = _decorElevation;
+        if (tile.sort !== _decorSort) updates.sort = _decorSort;
+        if (Object.keys(updates).length) {
+            await tile.update(updates);
+        }
     }
 
     // Track POI tiles for undo/redo
@@ -1643,7 +1752,7 @@ export function getCurrentPreviewIndex() {
  * Get array of available POI tiles from chosen tiles
  */
 function _getAvailablePoiTiles() {
-    if (_activeTileTab !== "symbols") return [];
+    if (_activeTileTab !== "symbols" && !_decorMode) return [];
 
     return Array.from(_chosenTiles).filter(path =>
         _symbolTiles && _symbolTiles.some(t => t.path === path)
