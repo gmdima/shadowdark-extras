@@ -1,5 +1,7 @@
 # Shadowdark Extras
 
+If you enjoy what I do, consider supporting me on Ko-fi! Every little bit means the world! https://ko-fi.com/kaleth
+
 [![Ask for feature / report bug](https://img.shields.io/badge/Ask_for_feature_/_report_bug-Join_Discord-5865F2?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/ZBtQ9ub7Mn)
 
 <img width="3584" height="1184" alt="Gemini_Generated_Image_tiknyftiknyftikn" src="https://github.com/user-attachments/assets/173d6548-314e-42a6-9e8c-cbd2ca2a4150" />
