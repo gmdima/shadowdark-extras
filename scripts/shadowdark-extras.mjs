@@ -50,6 +50,7 @@ import NPCAttackSheetSD from "./NPCAttackSheetSD.mjs";
 import NPCSpecialAttackSheetSD from "./NPCSpecialAttackSheetSD.mjs";
 import { initPlaceableNotes } from "./PlaceableNotesSD.mjs";
 import NPCFeatureSheetSD from "./NPCFeatureSheetSD.mjs";
+import ClassAbilitySheetSD from "./ClassAbilitySheetSD.mjs";
 import { initTokenToolbar, registerTokenToolbarSettings } from "./TokenToolbarSD.mjs";
 import { initTray, registerTraySettings } from "./TraySD.mjs";
 import { initAppearanceSettings } from "./AppearanceSettingsSD.mjs";
@@ -4231,7 +4232,15 @@ function registerSettings() {
 	// ═══════════════════════════════════════════════════════════════
 	// 3. CHARACTER SHEET
 	// ═══════════════════════════════════════════════════════════════
-
+game.settings.register(MODULE_ID, "showMedkitIcon", {
+    name: game.i18n.localize("SHADOWDARK_EXTRAS.settings.show_medkit_icon.name"),
+    hint: game.i18n.localize("SHADOWDARK_EXTRAS.settings.show_medkit_icon.hint"),
+    scope: "world",
+    config: true,
+    default: true,
+    type: Boolean,
+    requiresReload: false,
+});
 	game.settings.register(MODULE_ID, "enableEnhancedHeader", {
 		name: game.i18n.localize("SHADOWDARK_EXTRAS.settings.enable_enhanced_header.name"),
 		hint: game.i18n.localize("SHADOWDARK_EXTRAS.settings.enable_enhanced_header.hint"),
@@ -9206,6 +9215,17 @@ function registerNPCFeatureSheet() {
 }
 
 /**
+ * Register the AppV2 Class Ability item sheet
+ */
+function registerClassAbilitySheet() {
+	Items.registerSheet(MODULE_ID, ClassAbilitySheetSD, {
+		types: ["Class Ability"],
+		makeDefault: true,
+		label: "Shadowdark Extras: Class Ability Sheet"
+	});
+}
+
+/**
  * Add Party option to actor creation dialog
  */
 function extendActorCreationDialog() {
@@ -10051,6 +10071,35 @@ function patchPlayerSheetForTransfers() {
 }
 
 // ============================================
+// FIX: PlayerSheetSD._onUseAbility missing methods
+// ============================================
+
+/**
+ * Patch PlayerSheetSD._onUseAbility to fix missing getSkipPrompt/getAdvantage methods
+ * The system calls this.getSkipPrompt() and this.getAdvantage() which don't exist on the sheet.
+ * Other sheets correctly use this.actor.buildOptionsForSkipPrompt(event) instead.
+ */
+function patchPlayerSheetUseAbility() {
+	const PlayerSheetSD = CONFIG.Actor.sheetClasses.Player?.["shadowdark.PlayerSheetSD"]?.cls;
+	if (!PlayerSheetSD) {
+		console.warn(`${MODULE_ID} | Could not find PlayerSheetSD class to patch _onUseAbility`);
+		return;
+	}
+
+	// Only patch if getSkipPrompt is missing (i.e. the bug exists in this system version)
+	if (typeof PlayerSheetSD.prototype.getSkipPrompt === "function") return;
+
+	PlayerSheetSD.prototype._onUseAbility = async function(event) {
+		event.preventDefault();
+		const itemId = $(event.currentTarget).data("item-id");
+		const options = this.actor.buildOptionsForSkipPrompt(event);
+		this.actor.useAbility(itemId, options);
+	};
+
+	console.log(`${MODULE_ID} | Patched PlayerSheetSD._onUseAbility (getSkipPrompt fix)`);
+}
+
+// ============================================
 // CHARACTER GENERATOR ROLL PATCH
 // ============================================
 
@@ -10226,7 +10275,12 @@ Hooks.once("init", () => {
 		`modules/${MODULE_ID}/templates/npc-attack-sheet/details.hbs`,
 		`modules/${MODULE_ID}/templates/npc-attack-sheet/description.hbs`,
 		`modules/${MODULE_ID}/templates/npc-attack-sheet/source.hbs`,
-		`modules/${MODULE_ID}/templates/staff-spell-config.hbs`
+		`modules/${MODULE_ID}/templates/staff-spell-config.hbs`,
+		`modules/${MODULE_ID}/templates/class-ability-sheet/header.hbs`,
+		`modules/${MODULE_ID}/templates/class-ability-sheet/tabs.hbs`,
+		`modules/${MODULE_ID}/templates/class-ability-sheet/details.hbs`,
+		`modules/${MODULE_ID}/templates/class-ability-sheet/description.hbs`,
+		`modules/${MODULE_ID}/templates/class-ability-sheet/macro.hbs`
 	]);
 
 	// Register the Party sheet early
@@ -10243,6 +10297,9 @@ Hooks.once("init", () => {
 
 	// Register the NPC Feature sheet
 	registerNPCFeatureSheet();
+
+	// Register the Class Ability sheet
+	registerClassAbilitySheet();
 
 	// Wrap Actor.create to handle Party type conversion
 	wrapActorCreate();
@@ -10293,6 +10350,7 @@ Hooks.once("ready", async () => {
 	extendActorCreationDialog();
 	patchCtrlMoveOnActorSheetDrops();
 	patchPlayerSheetForTransfers();
+	patchPlayerSheetUseAbility();
 	initializeTradeSocket();
 	patchCanUseMagicItems();
 
@@ -19879,6 +19937,203 @@ Hooks.once("ready", () => {
 
 //console.log(`${MODULE_ID} | Module loaded - NPC Feature item macro hooks registered`);
 
+
+// ============================================
+// CLASS ABILITY ITEM MACRO EXECUTION
+// ============================================
+
+/**
+ * Execute the item macro for a Class Ability when used
+ * @param {Item} item - The Class Ability item
+ * @param {Actor} actor - The actor using the item
+ * @param {Object} context - Additional context (rollResult, success, critical)
+ */
+async function executeClassAbilityItemMacro(item, actor, context = {}) {
+	if (!game.modules.get("itemacro")?.active) return;
+
+	const macroConfig = item.getFlag(MODULE_ID, "itemMacro") || {};
+	const macroTrigger = macroConfig.macroTrigger ?? "all";
+
+	// Check if the macro should run based on the trigger condition
+	const { success, critical } = context;
+	const rolled = context.rolled ?? false;
+
+	if (rolled && macroTrigger !== "all") {
+		const isCriticalSuccess = critical === "success";
+		const isSuccess = success === true;
+		const isFailure = success === false;
+
+		if (macroTrigger === "onSuccess" && !isSuccess) return;
+		if (macroTrigger === "onCritical" && !isCriticalSuccess) return;
+		if (macroTrigger === "onFailure" && !isFailure) return;
+	}
+
+	// Check if the item has a macro
+	if (typeof item.hasMacro !== "function" || !item.hasMacro()) return;
+
+	const selectedTokens = canvas.tokens?.controlled || [];
+	const token = selectedTokens.find(t => t.actor?.id === actor.id) || null;
+	const targets = Array.from(game.user?.targets || []);
+
+	const scope = {
+		actor,
+		token,
+		item,
+		targets,
+		target: targets[0] || null,
+		targetActor: targets[0]?.actor || null,
+		speaker: ChatMessage.getSpeaker({ actor }),
+		flags: item.flags?.[MODULE_ID] || {},
+		success,
+		critical,
+		rolled,
+		...context
+	};
+
+	// If running as GM and we're not the GM, send via socket
+	if (macroConfig.runAsGm && !game.user.isGM) {
+		const serializedContext = {
+			actorId: actor.id,
+			itemId: item.id,
+			tokenUuid: token?.document?.uuid,
+			targetUuids: targets.map(t => t.document.uuid),
+			originatingUserId: game.user.id,
+			success,
+			critical,
+			rolled
+		};
+
+		if (macroExecuteSocket) {
+			await macroExecuteSocket.executeAsGM("executeClassAbilityMacroAsGM", serializedContext);
+		}
+		return;
+	}
+
+	// Execute the macro directly
+	try {
+		const macroCommand = item.getFlag("itemacro", "macro.command");
+		if (!macroCommand) return;
+
+		const AsyncFunction = Object.getPrototypeOf(async function () { }).constructor;
+		const macroFn = new AsyncFunction("actor", "token", "item", "targets", "target", "targetActor", "speaker", "flags",
+			macroCommand);
+
+		await macroFn.call(scope, scope.actor, scope.token, scope.item, scope.targets, scope.target, scope.targetActor, scope.speaker, scope.flags);
+	} catch (error) {
+		console.error(`${MODULE_ID} | Error executing Class Ability Item Macro:`, error);
+		ui.notifications.error("There was an error in your macro syntax. See the console (F12) for details");
+	}
+}
+
+// Register socket handler for GM execution of Class Ability Item Macros
+Hooks.once("ready", () => {
+	if (macroExecuteSocket) {
+		macroExecuteSocket.register("executeClassAbilityMacroAsGM", async (serializedContext) => {
+			const actor = game.actors.get(serializedContext.actorId);
+			if (!actor) return;
+
+			const item = actor.items.get(serializedContext.itemId);
+			if (!item) return;
+
+			const tokenDoc = serializedContext.tokenUuid ? await fromUuid(serializedContext.tokenUuid) : null;
+			const token = tokenDoc?.object || null;
+
+			const targets = [];
+			if (serializedContext.targetUuids) {
+				for (const uuid of serializedContext.targetUuids) {
+					const tDoc = await fromUuid(uuid);
+					if (tDoc?.object) targets.push(tDoc.object);
+				}
+			}
+
+			const scope = {
+				actor,
+				token,
+				item,
+				targets,
+				target: targets[0] || null,
+				targetActor: targets[0]?.actor || null,
+				speaker: ChatMessage.getSpeaker({ actor }),
+				flags: item.flags?.[MODULE_ID] || {},
+				originatingUserId: serializedContext.originatingUserId,
+				success: serializedContext.success,
+				critical: serializedContext.critical,
+				rolled: serializedContext.rolled
+			};
+
+			try {
+				if (typeof item.executeMacro === "function") {
+					await item.executeMacro(scope);
+				} else {
+					const macroCommand = item.getFlag("itemacro", "macro.command");
+					if (macroCommand) {
+						const AsyncFunction = Object.getPrototypeOf(async function () { }).constructor;
+						const macroFn = new AsyncFunction("actor", "token", "item", "targets", "target", "targetActor", "speaker", "flags",
+							macroCommand);
+						await macroFn.call(scope, scope.actor, scope.token, scope.item, scope.targets, scope.target, scope.targetActor, scope.speaker, scope.flags);
+					}
+				}
+			} catch (error) {
+				console.error(`${MODULE_ID} | GM execution of Class Ability Item Macro failed:`, error);
+			}
+		});
+	}
+});
+
+// Patch ActorSD.useAbility to execute Class Ability item macros
+Hooks.once("ready", () => {
+	setTimeout(() => {
+		const actorDocClass = CONFIG.Actor.documentClass;
+		if (!actorDocClass?.prototype?.useAbility) {
+			console.warn(`${MODULE_ID} | ActorSD.useAbility not found, cannot patch Class Ability macro execution`);
+			return;
+		}
+
+		const originalUseAbility = actorDocClass.prototype.useAbility;
+
+		actorDocClass.prototype.useAbility = async function (itemId, options = {}) {
+			const item = this.items.get(itemId);
+
+			// Only intercept Class Ability items
+			if (!item || item.type !== "Class Ability") {
+				return originalUseAbility.call(this, itemId, options);
+			}
+
+			// Call original method first
+			const result = await originalUseAbility.call(this, itemId, options);
+
+			// If the ability had a roll check, determine the outcome
+			let rolled = false;
+			let success = true;
+			let critical = null;
+
+			if (item.system.ability) {
+				rolled = true;
+				// Re-derive success from the same logic the system uses:
+				// useAbility calls rollAbility which returns { rolls: { main: { success, critical } } }
+				// But the result from useAbility is the chat message, not the roll result.
+				// We need to check the most recent chat message for this actor's roll result.
+				const recentMessages = game.messages.contents.slice(-5);
+				for (let i = recentMessages.length - 1; i >= 0; i--) {
+					const msg = recentMessages[i];
+					const rollData = msg.flags?.shadowdark?.rolls?.main;
+					if (rollData && msg.speaker?.actor === this.id) {
+						success = rollData.success ?? true;
+						critical = rollData.critical ?? null;
+						break;
+					}
+				}
+			}
+
+			// Execute the macro
+			await executeClassAbilityItemMacro(item, this, { rolled, success, critical });
+
+			return result;
+		};
+
+		console.log(`${MODULE_ID} | Patched ActorSD.useAbility for Class Ability macro execution`);
+	}, 100);
+});
 
 
 // ============================================

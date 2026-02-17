@@ -1,4 +1,5 @@
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
+const MODULE_ID = "shadowdark-extras";
 
 /**
  * Medkit Application for Shadowdark
@@ -9,6 +10,14 @@ export function initMedkit() {
     Hooks.on("getActorSheetHeaderButtons", (sheet, buttons) => {
         // Only show for actor owners
         if (!sheet.actor.isOwner) return;
+
+        // Check if medkit icon should be shown
+        try {
+            if (!game.settings.get(MODULE_ID, "showMedkitIcon")) return;
+        } catch {
+            // Setting not registered yet, don't show button
+            return;
+        }
 
         buttons.unshift({
             label: "Medkit",
