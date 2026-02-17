@@ -1011,13 +1011,21 @@ export function setupCombatSocket() {
 	});
 
 	// Handler: Show Shapechanger dialog on player's client
-	socketlibSocket.register("showShapechangerDialogForUser", async ({ casterActorId, casterItemId, isCritical, options }) => {
+	socketlibSocket.register("showShapechangerDialogForUser", async ({ casterActorId, casterItemId, isCritical, options, targetActorId, targetTokenId }) => {
 		const casterActor = game.actors.get(casterActorId);
 		const casterItem = casterActor?.items.get(casterItemId);
 
 		if (!casterActor || !casterItem) {
 			console.warn(`${MODULE_ID} | showShapechangerDialogForUser: Missing data`);
 			return;
+		}
+
+		// If a target token was specified (Polymorph), set the player's target to that token
+		if (targetTokenId) {
+			const targetToken = canvas.tokens?.get(targetTokenId);
+			if (targetToken) {
+				targetToken.setTarget(true, { releaseOthers: true });
+			}
 		}
 
 		const sdxModule = game.modules.get(MODULE_ID);
@@ -1041,15 +1049,23 @@ export function setupCombatSocket() {
 	});
 
 	// Handler: Apply Shapechanger as GM (when player doesn't have ownership)
-	socketlibSocket.register("applyShapechangerAsGM", async (actorUuid, itemUuid, npcUuid, isCritical, opts) => {
+	socketlibSocket.register("applyShapechangerAsGM", async (actorUuid, itemUuid, npcUuid, isCritical, opts, targetActorUuid, targetTokenUuid) => {
 		const casterActor = await fromUuid(actorUuid);
 		const casterItem = await fromUuid(itemUuid);
 		const npcDoc = await fromUuid(npcUuid);
 
+		// Resolve target actor/token for Polymorph
+		let targetActor = targetActorUuid ? await fromUuid(targetActorUuid) : null;
+		let targetToken = null;
+		if (targetTokenUuid) {
+			const tokenDoc = await fromUuid(targetTokenUuid);
+			targetToken = tokenDoc?.object || null; // .object gets the Token placeable from TokenDocument
+		}
+
 		if (casterActor && casterItem && npcDoc) {
 			const sdxModule = game.modules.get(MODULE_ID);
 			if (sdxModule?.api?.applyShapechanger) {
-				await sdxModule.api.applyShapechanger(casterActor, casterItem, npcDoc, isCritical, opts || {});
+				await sdxModule.api.applyShapechanger(casterActor, casterItem, npcDoc, isCritical, opts || {}, targetActor, targetToken);
 			}
 		}
 	});

@@ -19195,9 +19195,12 @@ Hooks.on("renderChatMessage", (message, html, data) => {
 
 		const btn = event.currentTarget;
 		const actorId = btn.dataset.actorId;
+		const tokenId = btn.dataset.tokenId;
 		if (!actorId) return;
 
-		const actor = game.actors.get(actorId);
+		// Try token-based resolution first (unlinked tokens), then world actor
+		let actor = tokenId ? canvas.tokens?.get(tokenId)?.actor : null;
+		if (!actor) actor = game.actors.get(actorId);
 		if (!actor) {
 			ui.notifications.error("Could not find the actor for this transformation.");
 			return;
