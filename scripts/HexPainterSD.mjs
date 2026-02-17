@@ -1,3 +1,4 @@
+import { cache } from "./SDXCache.mjs";
 import { BIOME_TILES, BIOME_TINTS } from "./HexGeneratorSD.mjs";
 
 const MODULE_ID = "shadowdark-extras";
@@ -79,39 +80,51 @@ export async function loadTileAssets() {
     // Load saved POI scale
     loadPoiScale();
 
-    try {
-        const listing = await FilePicker.browse("data", TILE_FOLDER);
-        const pngFiles = (listing.files || []).filter(f => f.endsWith(".png"));
+    // Metadata cache
+    const metadataKey = `hex_tiles_metadata_default`;
+    const cached = await cache.getMetadata(metadataKey);
 
-        _tiles = pngFiles
-            .map(path => {
-                const filename = path.split("/").pop().replace(".png", "");
-                const raw = filename.replace(/^hex-tile-/, "");
-                return {
-                    key: raw,
-                    label: _formatLabel(raw),
-                    path,
-                    isCustom: false
-                };
-            })
-            .sort((a, b) => a.key.localeCompare(b.key));
-
+    if (cached) {
+        _tiles = cached;
         if (_tiles.length && _chosenTiles.size === 0) {
             _chosenTiles.add(_tiles[0].path);
         }
-    } catch (err) {
-        console.error(`${MODULE_ID} | Failed to discover hex tiles:`, err);
-        _tiles = [];
+    } else {
+        try {
+            const listing = await FilePicker.browse("data", TILE_FOLDER);
+            const pngFiles = (listing.files || []).filter(f => f.endsWith(".png"));
+
+            _tiles = pngFiles
+                .map(path => {
+                    const filename = path.split("/").pop().replace(".png", "");
+                    const raw = filename.replace(/^hex-tile-/, "");
+                    return {
+                        key: raw,
+                        label: _formatLabel(raw),
+                        path,
+                        isCustom: false
+                    };
+                })
+                .sort((a, b) => a.key.localeCompare(b.key));
+
+            if (_tiles.length && _chosenTiles.size === 0) {
+                _chosenTiles.add(_tiles[0].path);
+            }
+
+            await cache.setMetadata(metadataKey, _tiles);
+        } catch (err) {
+            console.error(`${MODULE_ID} | Failed to discover hex tiles:`, err);
+            _tiles = [];
+        }
     }
 
-    // Load custom tiles
+    // Load other tiles
     await loadCustomTileAssets();
-
-    // Load colored tiles
     await loadColoredTileAssets();
-
-    // Load symbol tiles
     await loadSymbolTileAssets();
+
+    // Start background preloading
+    preloadHexImages();
 }
 
 /**
@@ -156,8 +169,16 @@ async function ensureCustomFolderStructure() {
 async function loadCustomTileAssets() {
     _customTiles = [];
 
+    const metadataKey = `hex_tiles_metadata_custom`;
+    const cached = await cache.getMetadata(metadataKey);
+    if (cached) {
+        _customTiles = cached;
+        return;
+    }
+
     // First ensure the folder structure exists
     await ensureCustomFolderStructure();
+    // ... (rest of loading logic) ...
 
     try {
         // Load tiles from main hexes folder
@@ -211,6 +232,13 @@ async function loadCustomTileAssets() {
 async function loadColoredTileAssets() {
     _coloredTiles = [];
 
+    const metadataKey = `hex_tiles_metadata_colored`;
+    const cached = await cache.getMetadata(metadataKey);
+    if (cached) {
+        _coloredTiles = cached;
+        return;
+    }
+
     try {
         // Load tiles from main Hexes folder
         const mainListing = await FilePicker.browse("data", COLORED_TILE_FOLDER);
@@ -251,6 +279,7 @@ async function loadColoredTileAssets() {
         }
 
         _coloredTiles.sort((a, b) => a.key.localeCompare(b.key));
+        await cache.setMetadata(metadataKey, _coloredTiles);
         console.log(`${MODULE_ID} | Loaded ${_coloredTiles.length} colored tiles from ${subdirs.length} folders`);
     } catch (err) {
         console.warn(`${MODULE_ID} | Could not load colored tiles:`, err);
@@ -263,6 +292,13 @@ async function loadColoredTileAssets() {
  */
 async function loadSymbolTileAssets() {
     _symbolTiles = [];
+
+    const metadataKey = `hex_tiles_metadata_symbol`;
+    const cached = await cache.getMetadata(metadataKey);
+    if (cached) {
+        _symbolTiles = cached;
+        return;
+    }
 
     try {
         // Load tiles from main symbols folder
@@ -304,6 +340,7 @@ async function loadSymbolTileAssets() {
         }
 
         _symbolTiles.sort((a, b) => a.key.localeCompare(b.key));
+        await cache.setMetadata(metadataKey, _symbolTiles);
         console.log(`${MODULE_ID} | Loaded ${_symbolTiles.length} symbol tiles from ${subdirs.length} folders`);
     } catch (err) {
         console.warn(`${MODULE_ID} | Could not load symbol tiles:`, err);
@@ -531,7 +568,7 @@ export function getFilteredColoredTiles() {
  * Get colored tiles grouped by folder for the tray UI.
  * Returns an array of { folder, label, collapsed, tiles[] } objects.
  */
-export function getColoredTileFolders() {
+export async function getColoredTileFolders() {
     const filtered = getFilteredColoredTiles();
     if (!filtered.length) return [];
 
@@ -556,11 +593,17 @@ export function getColoredTileFolders() {
     const folders = [];
     for (const [key, tiles] of folderMap) {
         const label = key === "__root__" ? "Root" : key.charAt(0).toUpperCase() + key.slice(1);
+
+        const processedTiles = await Promise.all(tiles.map(async t => ({
+            ...t,
+            src: await cache.getCachedSrc(t.path)
+        })));
+
         folders.push({
             folder: key,
             label,
             collapsed: !!_coloredFoldersCollapsed[key],
-            tiles
+            tiles: processedTiles
         });
     }
 
@@ -585,7 +628,7 @@ export function toggleColoredFolderCollapsed(folderKey) {
  * Get symbol tiles grouped by folder for the tray UI.
  * Returns an array of { folder, label, collapsed, tiles[] } objects.
  */
-export function getSymbolTileFolders() {
+export async function getSymbolTileFolders() {
     const filtered = getFilteredSymbolTiles(["dysonstyle"]);
     if (!filtered.length) return [];
 
@@ -610,11 +653,17 @@ export function getSymbolTileFolders() {
     const folders = [];
     for (const [key, tiles] of folderMap) {
         const label = key === "__root__" ? "Root" : key.charAt(0).toUpperCase() + key.slice(1);
+
+        const processedTiles = await Promise.all(tiles.map(async t => ({
+            ...t,
+            src: await cache.getCachedSrc(t.path)
+        })));
+
         folders.push({
             folder: key,
             label,
             collapsed: !!_symbolFoldersCollapsed[key],
-            tiles
+            tiles: processedTiles
         });
     }
 
@@ -686,7 +735,7 @@ export function setDecorSort(v) { _decorSort = parseInt(v, 10) || 0; }
  * Get decor tiles grouped by folder for the tray UI.
  * Only includes Dysonstyle category tiles.
  */
-export function getDecorTileFolders() {
+export async function getDecorTileFolders() {
     let tiles = (_symbolTiles || []).filter(t => t.category === "dysonstyle");
     if (_decorSearchFilter) {
         tiles = tiles.filter(t => t.label.toLowerCase().includes(_decorSearchFilter));
@@ -706,7 +755,13 @@ export function getDecorTileFolders() {
     const folders = [];
     for (const [key, folderTiles] of folderMap) {
         const label = key === "__root__" ? "Root" : key.charAt(0).toUpperCase() + key.slice(1);
-        folders.push({ folder: key, label, collapsed: !!_decorFoldersCollapsed[key], tiles: folderTiles });
+
+        const processedTiles = await Promise.all(folderTiles.map(async t => ({
+            ...t,
+            src: await cache.getCachedSrc(t.path)
+        })));
+
+        folders.push({ folder: key, label, collapsed: !!_decorFoldersCollapsed[key], tiles: processedTiles });
     }
     return folders;
 }
@@ -718,7 +773,7 @@ export function getCustomTiles() {
     return _customTiles || [];
 }
 
-export function getHexPainterData() {
+export async function getHexPainterData() {
     if (!_tiles) return {
         hexTiles: [],
         hexCustomTiles: [],
@@ -754,49 +809,59 @@ export function getHexPainterData() {
         decorSort: _decorSort
     };
 
+    const processTiles = async (tiles) => {
+        return Promise.all(tiles.map(async t => ({
+            ...t,
+            src: await cache.getCachedSrc(t.path)
+        })));
+    };
+
     const filteredTiles = getFilteredTiles();
-    const hexTiles = filteredTiles.map(t => ({
+    const hexTiles = await processTiles(filteredTiles.map(t => ({
         key: t.key,
         label: t.label,
         path: t.path,
         active: _chosenTiles.has(t.path)
-    }));
+    })));
 
     // Filter custom tiles
     const filteredCustomTiles = getFilteredCustomTiles();
-    const hexCustomTiles = filteredCustomTiles.map(t => ({
+    const hexCustomTiles = await processTiles(filteredCustomTiles.map(t => ({
         key: t.key,
         label: t.label,
         path: t.path,
         active: _chosenTiles.has(t.path),
         biome: t.biome
-    }));
+    })));
 
     // Filter colored tiles
     const filteredColoredTiles = getFilteredColoredTiles();
-    const hexColoredTiles = filteredColoredTiles.map(t => ({
+    const hexColoredTiles = await processTiles(filteredColoredTiles.map(t => ({
         key: t.key,
         label: t.label,
         path: t.path,
         active: _chosenTiles.has(t.path),
         biome: t.biome
-    }));
+    })));
 
     // Filter symbol tiles (exclude dysonstyle - those are in the Decor tab)
     const filteredSymbolTiles = getFilteredSymbolTiles(["dysonstyle"]);
-    const hexSymbolTiles = filteredSymbolTiles.map(t => ({
+    const hexSymbolTiles = await processTiles(filteredSymbolTiles.map(t => ({
         key: t.key,
         label: t.label,
         path: t.path,
         active: _chosenTiles.has(t.path),
         category: t.category
-    }));
+    })));
 
     // Build colored tile folders
-    const hexColoredFolders = getColoredTileFolders();
+    const hexColoredFolders = await getColoredTileFolders();
 
     // Build symbol tile folders
-    const hexSymbolFolders = getSymbolTileFolders();
+    const hexSymbolFolders = await getSymbolTileFolders();
+
+    // Build decor tile folders
+    const decorFolders = await getDecorTileFolders();
 
     return {
         hexTiles,
@@ -827,7 +892,7 @@ export function getHexPainterData() {
         poiMirror: _poiMirror,
         canUndoPoi: _poiUndoStack.length > 0,
         canRedoPoi: _poiRedoStack.length > 0,
-        decorFolders: getDecorTileFolders(),
+        decorFolders,
         decorSearchFilter: _decorSearchFilter,
         decorElevation: _decorElevation,
         decorSort: _decorSort
@@ -1757,4 +1822,30 @@ function _getAvailablePoiTiles() {
     return Array.from(_chosenTiles).filter(path =>
         _symbolTiles && _symbolTiles.some(t => t.path === path)
     );
+}
+/**
+ * Background preloading of images into IndexedDB
+ */
+async function preloadHexImages() {
+    const allTiles = [
+        ...(_tiles || []),
+        ...(_customTiles || []),
+        ...(_coloredTiles || []),
+        ...(_symbolTiles || [])
+    ];
+
+    // Preload process: fetch image and store as blob in cache if not already there
+    // Limit concurrency or use a small delay to avoid freezing the UI
+    for (const tile of allTiles) {
+        try {
+            const cached = await cache.getBinary(tile.path);
+            if (!cached) {
+                const response = await fetch(tile.path);
+                if (response.ok) {
+                    const blob = await response.blob();
+                    await cache.setBinary(tile.path, blob);
+                }
+            }
+        } catch (err) { }
+    }
 }

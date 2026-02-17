@@ -30,7 +30,7 @@ import { PlaceableNotesSD } from "./PlaceableNotesSD.mjs";
 import { setMapDimension, formatActiveScene, enablePainting, disablePainting, toggleTileSelection, setSearchFilter, toggleWaterEffect, toggleWindEffect, toggleFogAnimation, toggleTintEnabled, toggleBwEffect, isTintEnabled, setActiveTileTab, setCustomTileDimension, toggleColoredFolderCollapsed, toggleSymbolFolderCollapsed, undoLastPoi, redoLastPoi, canUndoPoi, canRedoPoi, getPoiScale, enablePreview, disablePreview, getActiveTileTab, adjustPoiScale, rotatePoiLeft, rotatePoiRight, togglePoiMirror, getPoiMirror, setDecorSearchFilter, toggleDecorFolderCollapsed, setDecorMode, setDecorElevation, setDecorSort } from "./HexPainterSD.mjs";
 import { generateHexMap, clearGeneratedTiles } from "./HexGeneratorSD.mjs";
 import { flattenTiles } from "./TileFlattenSD.mjs";
-import { setDungeonMode, selectFloorTile, selectWallTile, selectDoorTile, enableDungeonPainting, disableDungeonPainting, setNoFoundryWalls } from "./DungeonPainterSD.mjs";
+import { setDungeonMode, selectFloorTile, selectWallTile, selectDoorTile, enableDungeonPainting, disableDungeonPainting, setNoFoundryWalls, setDungeonBackground } from "./DungeonPainterSD.mjs";
 import { toggleGeneratorPanel, isGeneratorExpanded, generateDungeon, generateRandomSeed, getGeneratorSeed, setGeneratorSeed, getGeneratorSettings, setGeneratorSettings } from "./DungeonGeneratorSD.mjs";
 
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
@@ -379,23 +379,7 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
             PinPlacer.activate();
         });
 
-        elem.querySelector("[data-action='add-condition']")?.addEventListener("click", async (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            const actor = this.trayData?.actor;
-            if (!actor) return;
 
-            // Use the Shadowdark Extras API to show the condition selector
-            const moduleApi = game.modules.get("shadowdark-extras")?.api;
-            if (moduleApi && moduleApi.getConditionsData && moduleApi.showConditionsModal) {
-                const conditionData = await moduleApi.getConditionsData();
-                const theme = game.settings.get("shadowdark-extras", "conditionsTheme") || "parchment";
-                moduleApi.showConditionsModal(actor, conditionData, theme);
-            } else {
-                console.warn("Shadowdark Extras Tray | Condition toggler API not found.");
-                ui.notifications.warn("Condition toggler API not found. Please reload.");
-            }
-        });
 
         elem.querySelector(".tray-handle-button-tool[data-action='pin-list']")?.addEventListener("click", async (e) => {
             e.preventDefault();
@@ -607,6 +591,14 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
             });
         }
 
+        // Dungeon background select
+        const bgSelect = elem.querySelector(".dungeon-background-select");
+        if (bgSelect) {
+            bgSelect.addEventListener("change", (e) => {
+                setDungeonBackground(e.target.value);
+            });
+        }
+
         // Dungeon Generator toggle
         elem.querySelector(".dungeon-generator-toggle")?.addEventListener("click", (e) => {
             e.preventDefault();
@@ -702,43 +694,7 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
             await generateDungeon(config);
         });
 
-        // Party card clicks
-        elem.querySelectorAll(".party-card").forEach(card => {
-            card.addEventListener("click", (e) => {
-                // Don't trigger if clicking a specific action button
-                if (e.target.closest(".party-card-actions")) return;
 
-                const tokenId = card.dataset.tokenId;
-                if (tokenId) {
-                    selectToken(tokenId);
-                }
-            });
-        });
-
-        // Open sheet buttons
-        elem.querySelectorAll(".open-sheet").forEach(btn => {
-            btn.addEventListener("click", (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                const card = btn.closest(".party-card");
-                const tokenId = card?.dataset.tokenId;
-                if (tokenId) {
-                    openTokenSheet(tokenId);
-                }
-            });
-        });
-
-        // Party member icons (switch actor)
-        elem.querySelectorAll(".handle-partymember-icon.clickable").forEach(icon => {
-            icon.addEventListener("click", (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                const actorId = icon.dataset.actorId;
-                if (actorId) {
-                    switchToActor(actorId);
-                }
-            });
-        });
 
         /* ------------------------------------------- */
         /*  SCENES TAB ACTIONS                        */
@@ -969,13 +925,7 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
 
 
 
-        // Character panel click to open sheet
-        elem.querySelector('.panel-container[data-panel="character"]')?.addEventListener("click", (e) => {
-            const actor = this.trayData?.actor;
-            if (actor) {
-                actor.sheet.render(true);
-            }
-        });
+
 
         // Pin/Note List Pan Action
         elem.querySelectorAll(".pin-control").forEach(btn => {

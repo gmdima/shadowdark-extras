@@ -82,108 +82,7 @@
             {{/if}}
             {{/if}}
 
-            <div class="tray-handle-content-wrapper">
-                {{#if (eq viewMode 'player')}}
-                <!-- PLAYER HANDLE -->
-                {{#if actor}}
-                <div class="handle-info-container">
-                    <span class="handle-info-title">{{default actorDisplayName actor.name}}</span>
-                </div>
-                <span class="tray-handle-separator spacer"></span>
-                <div class="handle-partymembers">
-                    <div class="handle-character-icon" data-actor-id="{{actor.id}}">
-                        <img src="{{actor.img}}" alt="{{actor.name}}" />
-                    </div>
-                    {{#if showHealthBars}}
-                    <div class="handle-healthbar" title="{{actorHP.value}}/{{actorHP.max}} HP">
-                        <div class="handle-healthbar-fill {{actorHealthbarStatus}}"
-                            style="height: {{actorHP.percent}}%"></div>
-                        <span class="handle-healthbar-value">{{actorHP.value}}</span>
-                        <span class="handle-healthbar-icon {{actorHealthbarStatus}}"><i
-                                class="fa-solid fa-skull"></i></span>
-                    </div>
-                    {{/if}}
-                </div>
-
-                {{#if activeEffects}}
-                <span class="tray-handle-separator spacer"></span>
-                <div class="tray-handle-effects">
-                    {{#each activeEffects}}
-                    <div class="tray-effect-icon" data-effect-id="{{this.id}}" data-tooltip="{{this.name}}">
-                        <img src="{{this.img}}" alt="{{this.name}}" />
-                    </div>
-                    {{/each}}
-                    <div class="tray-effect-add" data-action="add-condition" data-tooltip="Add Condition">
-                        <i class="fas fa-plus"></i>
-                    </div>
-                </div>
-                {{else}}
-                <span class="tray-handle-separator spacer"></span>
-                <div class="tray-handle-effects">
-                    <div class="tray-effect-add" data-action="add-condition" data-tooltip="Add Condition">
-                        <i class="fas fa-plus"></i>
-                    </div>
-                </div>
-                {{/if}}
-
-                <span class="tray-handle-separator line-ridge-thin"></span>
-                {{else}}
-                <div class="handle-info-container">
-                    <span class="handle-info-title">Select a Character</span>
-                </div>
-                <span class="tray-handle-separator spacer"></span>
-                {{/if}}
-                {{else}}
-                <!-- PARTY HANDLE -->
-                <div class="handle-info-container">
-                    <span class="handle-info-title">{{#if partyName}}{{partyName}}{{else}}Party{{/if}}</span>
-                </div>
-                <span class="tray-handle-separator spacer"></span>
-
-                {{#if actor}}
-                <div class="handle-partymembers">
-                    <div class="handle-character-icon" data-actor-id="{{actor.id}}">
-                        <img src="{{actor.img}}" alt="{{actor.name}}" />
-                    </div>
-                    {{#if showHealthBars}}
-                    <div class="handle-healthbar" title="{{actorHP.value}}/{{actorHP.max}} HP">
-                        <div class="handle-healthbar-fill {{actorHealthbarStatus}}"
-                            style="height: {{actorHP.percent}}%"></div>
-                        <span class="handle-healthbar-value">{{actorHP.value}}</span>
-                        <span class="handle-healthbar-icon {{actorHealthbarStatus}}"><i
-                                class="fa-solid fa-skull"></i></span>
-                    </div>
-                    {{/if}}
-                </div>
-                <span class="tray-handle-separator line-ridge-thin"></span>
-                {{/if}}
-
-                {{#if otherPartyMembers}}
-                {{#each otherPartyMembers as |member|}}
-                {{#unless @first}}<span class="tray-handle-separator line-dotted-thin"></span>{{/unless}}
-                <div class="handle-partymembers">
-                    <div class="handle-partymember-icon {{#if member.isOwner}}clickable{{/if}}" {{#if
-                        member.isOwner}}data-tooltip="Switch to {{member.name}}" {{/if}}
-                        data-actor-id="{{member.actor.id}}">
-                        <img src="{{member.img}}" alt="{{member.name}}" />
-                    </div>
-                    {{#if ../showHealthBars}}
-                    <div class="handle-healthbar party" title="{{member.hp.value}}/{{member.hp.max}} HP">
-                        <div class="handle-healthbar-fill {{member.healthbarStatus}}"
-                            style="height: {{member.hp.percent}}%"></div>
-                        <span class="handle-healthbar-value {{member.healthbarStatus}}">{{member.hp.value}}</span>
-                        <span class="handle-healthbar-icon {{member.healthbarStatus}}"><i
-                                class="fa-solid fa-skull"></i></span>
-                    </div>
-                    {{/if}}
-                </div>
-                {{/each}}
-                <span class="tray-handle-separator line-ridge-thin"></span>
-                {{/if}}
-                {{/if}}
-            </div>
         </div>
-        <div class="tray-handle-fade-bottom"></div>
     </div>
 
     <!-- TRAY CONTENT -->
@@ -931,7 +830,7 @@
                         {{#each hexTiles}}
                         <div class="hex-tile-thumb {{#if this.active}}active{{/if}}" data-tile="{{this.path}}"
                             title="{{this.label}}">
-                            <img src="{{this.path}}" alt="{{this.label}}" />
+                            <img src="{{this.src}}" alt="{{this.label}}" loading="lazy" />
                             <span class="hex-tile-label">{{this.label}}</span>
                         </div>
                         {{/each}}
@@ -956,7 +855,7 @@
                                 {{#each this.tiles}}
                                 <div class="hex-tile-thumb {{#if this.active}}active{{/if}}" data-tile="{{this.path}}"
                                     title="{{this.label}}{{#if this.biome}} ({{this.biome}}){{/if}}">
-                                    <img src="{{this.path}}" alt="{{this.label}}" />
+                                    <img src="{{this.src}}" alt="{{this.label}}" loading="lazy" />
                                     <span class="hex-tile-label">{{this.label}}</span>
                                 </div>
                                 {{/each}}
@@ -978,7 +877,7 @@
                         {{#each hexCustomTiles}}
                         <div class="hex-tile-thumb {{#if this.active}}active{{/if}}" data-tile="{{this.path}}"
                             title="{{this.label}}{{#if this.biome}} ({{this.biome}}){{/if}}">
-                            <img src="{{this.path}}" alt="{{this.label}}" />
+                            <img src="{{this.src}}" alt="{{this.label}}" loading="lazy" />
                             <span class="hex-tile-label">{{this.label}}</span>
                             {{#if this.biome}}<span class="hex-tile-biome">{{this.biome}}</span>{{/if}}
                         </div>
@@ -1015,7 +914,7 @@
                                 {{#each this.tiles}}
                                 <div class="hex-tile-thumb {{#if this.active}}active{{/if}}" data-tile="{{this.path}}"
                                     title="{{this.label}}{{#if this.category}} ({{this.category}}){{/if}}">
-                                    <img src="{{this.path}}" alt="{{this.label}}" />
+                                    <img src="{{this.src}}" alt="{{this.label}}" loading="lazy" />
                                     <span class="hex-tile-label">{{this.label}}</span>
                                 </div>
                                 {{/each}}
@@ -1061,6 +960,16 @@
 
                 <!-- Options (GM only) -->
                 {{#if isGM}}
+                <div class="dungeon-bg-select">
+                    <label>
+                        <i class="fas fa-image"></i>
+                        <select class="dungeon-background-select">
+                            {{#each backgroundOptions}}
+                            <option value="{{this.value}}" {{#if this.active}}selected{{/if}}>{{this.label}}</option>
+                            {{/each}}
+                        </select>
+                    </label>
+                </div>
                 <div class="dungeon-options-section">
                     <label class="dungeon-option-toggle">
                         <input type="checkbox" class="dungeon-no-walls-checkbox" {{#if noFoundryWalls}}checked{{/if}} />
@@ -1184,7 +1093,7 @@
                         {{#each floorTiles}}
                         <div class="dungeon-tile-thumb {{#if this.active}}active{{/if}}"
                             data-dungeon-tile="{{this.path}}" title="{{this.label}}">
-                            <img src="{{this.path}}" alt="{{this.label}}" />
+                            <img src="{{this.src}}" alt="{{this.label}}" loading="lazy" />
                         </div>
                         {{/each}}
                     </div>
@@ -1203,7 +1112,7 @@
                         {{#each wallTiles}}
                         <div class="dungeon-tile-thumb dungeon-wall-thumb {{#if this.active}}active{{/if}}"
                             data-dungeon-wall="{{this.path}}" title="{{this.label}}">
-                            <img src="{{this.path}}" alt="{{this.label}}" />
+                            <img src="{{this.src}}" alt="{{this.label}}" loading="lazy" />
                         </div>
                         {{/each}}
                     </div>
@@ -1221,7 +1130,7 @@
                         {{#each doorTiles}}
                         <div class="dungeon-tile-thumb dungeon-door-thumb {{#if this.active}}active{{/if}}"
                             data-dungeon-door="{{this.path}}" title="{{this.label}}">
-                            <img src="{{this.path}}" alt="{{this.label}}" />
+                            <img src="{{this.src}}" alt="{{this.label}}" loading="lazy" />
                             <span class="dungeon-tile-label">{{this.label}}</span>
                         </div>
                         {{/each}}
@@ -1280,12 +1189,16 @@
                     <div class="hex-custom-folder-hint">
                         <i class="fas fa-info-circle"></i> Decor paint on top · Scale: {{poiScalePercent}}%
                     </div>
-                    <div class="decor-fields-row" style="display:flex; gap:8px; align-items:center; margin-top:4px; font-size:11px;">
+                    <div class="decor-fields-row"
+                        style="display:flex; gap:8px; align-items:center; margin-top:4px; font-size:11px;">
                         <label style="display:flex; align-items:center; gap:3px; color:#aaa;">
-                            Elev <input type="number" class="decor-elevation-input" value="{{decorElevation}}" step="0.1" style="width:50px; padding:1px 4px; background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.15); border-radius:3px; color:#ddd; font-size:11px;" />
+                            Elev <input type="number" class="decor-elevation-input" value="{{decorElevation}}"
+                                step="0.1"
+                                style="width:50px; padding:1px 4px; background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.15); border-radius:3px; color:#ddd; font-size:11px;" />
                         </label>
                         <label style="display:flex; align-items:center; gap:3px; color:#aaa;">
-                            Sort <input type="number" class="decor-sort-input" value="{{decorSort}}" step="1" style="width:50px; padding:1px 4px; background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.15); border-radius:3px; color:#ddd; font-size:11px;" />
+                            Sort <input type="number" class="decor-sort-input" value="{{decorSort}}" step="1"
+                                style="width:50px; padding:1px 4px; background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.15); border-radius:3px; color:#ddd; font-size:11px;" />
                         </label>
                     </div>
                 </div>
@@ -1298,8 +1211,10 @@
                     <div class="hex-symbol-folder" data-folder="{{this.folder}}">
                         <div class="decor-folder-header hex-symbol-folder-header {{#if this.collapsed}}collapsed{{/if}}"
                             data-action="toggle-decor-folder" data-folder="{{this.folder}}">
-                            <i class="fas {{#if this.collapsed}}fa-caret-right{{else}}fa-caret-down{{/if}} hex-folder-chevron"></i>
-                            <i class="fas {{#if this.collapsed}}fa-folder{{else}}fa-folder-open{{/if}} hex-folder-icon"></i>
+                            <i
+                                class="fas {{#if this.collapsed}}fa-caret-right{{else}}fa-caret-down{{/if}} hex-folder-chevron"></i>
+                            <i
+                                class="fas {{#if this.collapsed}}fa-folder{{else}}fa-folder-open{{/if}} hex-folder-icon"></i>
                             <span class="hex-folder-name">{{this.label}}</span>
                             <span class="hex-folder-count">({{this.tiles.length}})</span>
                         </div>
@@ -1308,7 +1223,7 @@
                             <div class="hex-tile-thumb decor-tile-thumb {{#if this.active}}active{{/if}}"
                                 data-tile="{{this.path}}"
                                 title="{{this.label}}{{#if this.category}} ({{this.category}}){{/if}}">
-                                <img src="{{this.path}}" alt="{{this.label}}" />
+                                <img src="{{this.src}}" alt="{{this.label}}" />
                                 <span class="hex-tile-label">{{this.label}}</span>
                             </div>
                             {{/each}}

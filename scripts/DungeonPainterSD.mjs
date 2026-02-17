@@ -1,3 +1,4 @@
+import { cache } from "./SDXCache.mjs";
 /**
  * SDX Dungeon Painter - Room/Dungeon mapping tool
  * Paints floor tiles, auto-generates walls and wall visuals, and supports doors
@@ -8,6 +9,7 @@ const MODULE_ID = "shadowdark-extras";
 const FLOOR_TILE_FOLDER = `modules/${MODULE_ID}/assets/Dungeon/floor_tiles`;
 const WALL_TILE_FOLDER = `modules/${MODULE_ID}/assets/Dungeon/wall_tiles`;
 const DOOR_TILE_FOLDER = `modules/${MODULE_ID}/assets/Dungeon/door_tiles`;
+const BG_TILE_FOLDER = `modules/${MODULE_ID}/assets/Dungeon/backgrounds`;
 
 // Grid size for dungeon tiles (matches scene grid)
 const GRID_SIZE = 100;
@@ -28,6 +30,8 @@ let _isShiftHeld = false;
 let _selectionRect = null;
 let _rebuildTimeout = null;
 let _noFoundryWalls = false; // Toggle to skip creating Foundry wall documents (but keep visuals)
+let _backgroundTiles = null;
+let _selectedBackground = "none";
 
 // Socket reference for player -> GM communication
 let _dungeonSocket = null;
@@ -152,7 +156,8 @@ function _gmGetTileList() {
     return {
         floorTiles: _floorTiles || [],
         wallTiles: _wallTiles || [],
-        doorTiles: _doorTiles || []
+        doorTiles: _doorTiles || [],
+        backgroundTiles: _backgroundTiles || []
     };
 }
 
@@ -176,20 +181,57 @@ export function canPlayerPaint() {
 export async function loadDungeonAssets() {
     if (_floorTiles) return;
 
-    // Ensure folder structure exists
-    await ensureDungeonFolders();
+    // Try to load from cache first
+    const metadataKey = `dungeon_tiles_metadata`;
+    const cachedMetadata = await cache.getMetadata(metadataKey);
 
-    // Load floor tiles
-    _floorTiles = await loadTilesFromFolder(FLOOR_TILE_FOLDER, "floor");
+    if (cachedMetadata) {
+        _floorTiles = cachedMetadata.floorTiles || [];
+        _wallTiles = cachedMetadata.wallTiles || [];
+        _doorTiles = cachedMetadata.doorTiles || [];
+        _backgroundTiles = cachedMetadata.backgroundTiles || [];
 
-    // Load wall tiles
-    _wallTiles = await loadTilesFromFolder(WALL_TILE_FOLDER, "wall");
+        // Always re-scan backgrounds from folder for GM (small folder, may have new images)
+        if (game.user.isGM) {
+            const freshBg = await loadTilesFromFolder(BG_TILE_FOLDER, "background");
+            if (freshBg.length !== _backgroundTiles.length ||
+                freshBg.some((t, i) => t.path !== _backgroundTiles[i]?.path)) {
+                _backgroundTiles = freshBg;
+                await cache.setMetadata(metadataKey, {
+                    floorTiles: _floorTiles,
+                    wallTiles: _wallTiles,
+                    doorTiles: _doorTiles,
+                    backgroundTiles: _backgroundTiles
+                });
+            }
+        }
+    } else if (game.user.isGM) {
+        // Ensure folder structure exists
+        await ensureDungeonFolders();
 
-    // Load door tiles
-    _doorTiles = await loadTilesFromFolder(DOOR_TILE_FOLDER, "door");
+        // Load floor tiles
+        _floorTiles = await loadTilesFromFolder(FLOOR_TILE_FOLDER, "floor");
+
+        // Load wall tiles
+        _wallTiles = await loadTilesFromFolder(WALL_TILE_FOLDER, "wall");
+
+        // Load door tiles
+        _doorTiles = await loadTilesFromFolder(DOOR_TILE_FOLDER, "door");
+
+        // Load background tiles
+        _backgroundTiles = await loadTilesFromFolder(BG_TILE_FOLDER, "background");
+
+        // Save to cache
+        await cache.setMetadata(metadataKey, {
+            floorTiles: _floorTiles,
+            wallTiles: _wallTiles,
+            doorTiles: _doorTiles,
+            backgroundTiles: _backgroundTiles
+        });
+    }
 
     // If player couldn't load tiles (no browse permission), request from GM
-    if (!game.user.isGM && _floorTiles.length === 0 && _dungeonSocket && isGMOnline()) {
+    if (!game.user.isGM && (!_floorTiles || _floorTiles.length === 0) && _dungeonSocket && isGMOnline()) {
         console.log(`${MODULE_ID} | Player requesting tile list from GM...`);
         try {
             const tileData = await _dungeonSocket.executeAsGM("dungeonGetTileList");
@@ -197,6 +239,7 @@ export async function loadDungeonAssets() {
                 _floorTiles = tileData.floorTiles || [];
                 _wallTiles = tileData.wallTiles || [];
                 _doorTiles = tileData.doorTiles || [];
+                _backgroundTiles = tileData.backgroundTiles || [];
                 console.log(`${MODULE_ID} | Received tile list from GM: ${_floorTiles.length} floor, ${_wallTiles.length} wall, ${_doorTiles.length} door tiles`);
             }
         } catch (err) {
@@ -220,7 +263,38 @@ export async function loadDungeonAssets() {
         _selectedDoorTile = horizontalDoor ? horizontalDoor.path : _doorTiles[0].path;
     }
 
-    console.log(`${MODULE_ID} | Loaded ${_floorTiles.length} floor tiles, ${_wallTiles.length} wall tiles, ${_doorTiles.length} door tiles`);
+    console.log(`${MODULE_ID} | Loaded ${_floorTiles.length} floor tiles, ${_wallTiles.length} wall tiles, ${_doorTiles.length} door tiles, ${(_backgroundTiles || []).length} background tiles`);
+
+    // Start background preloading of images into binary cache
+    preloadDungeonImages();
+}
+
+/**
+ * Background preloading of images into IndexedDB
+ */
+async function preloadDungeonImages() {
+    const allTiles = [
+        ...(_floorTiles || []),
+        ...(_wallTiles || []),
+        ...(_doorTiles || []),
+        ...(_backgroundTiles || [])
+    ];
+
+    // Preload process: fetch image and store as blob in cache if not already there
+    for (const tile of allTiles) {
+        try {
+            const cached = await cache.getBinary(tile.path);
+            if (!cached) {
+                const response = await fetch(tile.path);
+                if (response.ok) {
+                    const blob = await response.blob();
+                    await cache.setBinary(tile.path, blob);
+                }
+            }
+        } catch (err) {
+            // Silently fail preloads
+        }
+    }
 }
 
 /**
@@ -230,9 +304,12 @@ export async function reloadDungeonAssets() {
     _floorTiles = null;
     _wallTiles = null;
     _doorTiles = null;
+    _backgroundTiles = null;
     _selectedFloorTile = null;
     _selectedWallTile = null;
     _selectedDoorTile = null;
+    // Clear cached metadata so loadDungeonAssets re-scans folders
+    await cache.setMetadata("dungeon_tiles_metadata", null);
     await loadDungeonAssets();
 }
 
@@ -241,7 +318,7 @@ export async function reloadDungeonAssets() {
  */
 async function ensureDungeonFolders() {
     const basePath = `modules/${MODULE_ID}/assets/Dungeon`;
-    const folders = ["floor_tiles", "wall_tiles", "door_tiles"];
+    const folders = ["floor_tiles", "wall_tiles", "door_tiles", "backgrounds"];
 
     for (const folder of folders) {
         try {
@@ -297,37 +374,66 @@ function formatLabel(key) {
 /**
  * Get dungeon painter data for template
  */
-export function getDungeonPainterData() {
-    // Filter wall tiles to show only horizontal variants (or non-directional ones)
-    // The code will automatically use vertical variants for vertical walls
-    const displayWallTiles = (_wallTiles || [])
-        .filter(t => !t.key.toLowerCase().includes("vertical"))
-        .map(t => ({
+/**
+ * Get dungeon painter data for template
+ */
+export async function getDungeonPainterData() {
+    // Helper to process tiles with caching
+    const processTiles = async (tiles, selectedPath) => {
+        if (!tiles) return [];
+        return Promise.all(tiles.map(async t => ({
             ...t,
-            // Clean up the label to remove "horizontal" suffix
-            label: t.label.replace(/\s*horizontal\s*/i, "").trim(),
-            active: t.path === _selectedWallTile ||
-                t.path === _selectedWallTile?.replace("vertical", "horizontal")
-        }));
+            src: await cache.getCachedSrc(t.path),
+            active: t.path === selectedPath
+        })));
+    };
+
+    // Filter and process wall tiles
+    // The code will automatically use vertical variants for vertical walls
+    const wallTilesList = (_wallTiles || [])
+        .filter(t => !t.key.toLowerCase().includes("vertical"));
+
+    const displayWallTiles = await Promise.all(wallTilesList.map(async t => ({
+        ...t,
+        // Clean up the label to remove "horizontal" suffix
+        label: t.label.replace(/\s*horizontal\s*/i, "").trim(),
+        src: await cache.getCachedSrc(t.path),
+        active: t.path === _selectedWallTile ||
+            t.path === _selectedWallTile?.replace("vertical", "horizontal")
+    })));
+
+    // Build background options
+    const backgroundOptions = [
+        { value: "none", label: "None", active: _selectedBackground === "none" },
+        { value: "color-black", label: "Black", active: _selectedBackground === "color-black" },
+        { value: "color-white", label: "White", active: _selectedBackground === "color-white" },
+        { value: "color-gray", label: "Gray", active: _selectedBackground === "color-gray" }
+    ];
+    for (const bg of (_backgroundTiles || [])) {
+        backgroundOptions.push({
+            value: bg.path,
+            label: bg.label,
+            active: _selectedBackground === bg.path
+        });
+    }
+
+    const floorTiles = await processTiles(_floorTiles, _selectedFloorTile);
+    const doorTiles = await processTiles(_doorTiles, _selectedDoorTile);
 
     return {
         dungeonMode: _dungeonMode,
-        floorTiles: (_floorTiles || []).map(t => ({
-            ...t,
-            active: t.path === _selectedFloorTile
-        })),
+        floorTiles,
         wallTiles: displayWallTiles,
-        doorTiles: (_doorTiles || []).map(t => ({
-            ...t,
-            active: t.path === _selectedDoorTile
-        })),
+        doorTiles,
         selectedFloorTile: _selectedFloorTile,
         selectedWallTile: _selectedWallTile,
         selectedDoorTile: _selectedDoorTile,
-        hasFloorTiles: (_floorTiles && _floorTiles.length > 0),
+        hasFloorTiles: (floorTiles.length > 0),
         hasWallTiles: (displayWallTiles.length > 0),
-        hasDoorTiles: (_doorTiles && _doorTiles.length > 0),
+        hasDoorTiles: (doorTiles.length > 0),
         noFoundryWalls: _noFoundryWalls,
+        backgroundOptions,
+        selectedBackground: _selectedBackground,
         canPlayerPaint: canPlayerPaint(),
         isGMOnline: isGMOnline()
     };
@@ -403,6 +509,20 @@ export function setNoFoundryWalls(value) {
  */
 export function getNoFoundryWalls() {
     return _noFoundryWalls;
+}
+
+/**
+ * Set dungeon background selection
+ */
+export function setDungeonBackground(value) {
+    _selectedBackground = value;
+}
+
+/**
+ * Get dungeon background selection
+ */
+export function getDungeonBackground() {
+    return _selectedBackground;
 }
 
 /**
@@ -661,6 +781,105 @@ function destroySelectionRect() {
 }
 
 /**
+ * Ensure a full-scene background Drawing exists at the given elevation
+ */
+async function ensureBackgroundDrawing(scene, elevation, backgroundSetting) {
+    if (!backgroundSetting || backgroundSetting === "none") return;
+
+    const bgElevation = elevation - 1;
+    const rangeTop = elevation;
+
+    // Check if a background drawing already exists at this elevation
+    const existing = scene.drawings.find(d =>
+        d.flags?.[MODULE_ID]?.dungeonBackground &&
+        d.elevation === bgElevation
+    );
+
+    // Parse background setting
+    let fillType, fillColor, fillAlpha, texturePath;
+
+    if (backgroundSetting === "color-black") {
+        fillType = 1;
+        fillColor = "#000000";
+        fillAlpha = 0.8;
+        texturePath = null;
+    } else if (backgroundSetting === "color-white") {
+        fillType = 1;
+        fillColor = "#ffffff";
+        fillAlpha = 0.8;
+        texturePath = null;
+    } else if (backgroundSetting === "color-gray") {
+        fillType = 1;
+        fillColor = "#808080";
+        fillAlpha = 0.8;
+        texturePath = null;
+    } else {
+        // Image path
+        fillType = 2;
+        fillColor = "#ffffff";
+        fillAlpha = 1.0;
+        texturePath = backgroundSetting;
+    }
+
+    // If a background already exists at this elevation, update it to the new setting
+    if (existing) {
+        const updateData = {
+            _id: existing.id,
+            fillType: fillType,
+            fillColor: fillColor,
+            fillAlpha: fillAlpha,
+            texture: texturePath || ""
+        };
+        await scene.updateEmbeddedDocuments("Drawing", [updateData]);
+        console.log(`${MODULE_ID} | Updated background drawing at elevation ${bgElevation}`);
+        return;
+    }
+
+    // Get scene playable area
+    const dims = canvas.dimensions;
+    const sceneX = dims.sceneX;
+    const sceneY = dims.sceneY;
+    const sceneWidth = dims.sceneWidth;
+    const sceneHeight = dims.sceneHeight;
+
+    const drawingData = {
+        author: game.user.id,
+        x: sceneX,
+        y: sceneY,
+        locked: true,
+        shape: {
+            type: "r",
+            width: sceneWidth,
+            height: sceneHeight
+        },
+        strokeWidth: 0,
+        strokeAlpha: 0,
+        fillType: fillType,
+        fillColor: fillColor,
+        fillAlpha: fillAlpha,
+        flags: {
+            [MODULE_ID]: { dungeonBackground: true },
+            levels: { rangeTop: rangeTop }
+        }
+    };
+
+    if (texturePath) {
+        drawingData.texture = texturePath;
+    }
+
+    // Create the drawing, then update elevation (Levels may override during creation)
+    const created = await scene.createEmbeddedDocuments("Drawing", [drawingData]);
+    if (created && created.length > 0 && created[0].elevation !== bgElevation) {
+        await scene.updateEmbeddedDocuments("Drawing", [{
+            _id: created[0].id,
+            elevation: bgElevation
+        }]);
+    }
+
+    console.log(`${MODULE_ID} | Created background drawing at elevation ${bgElevation}`);
+}
+
+/**
  * Handle rectangle fill (add or delete tiles)
  */
 async function handleRectangleFill(startPos, endPos, isDeleting) {
@@ -701,7 +920,8 @@ async function handleRectangleFill(startPos, endPos, isDeleting) {
                 minGx, maxGx, minGy, maxGy,
                 floorTilePath: _selectedFloorTile,
                 wallTilePath: _selectedWallTile,
-                noWalls: _noFoundryWalls
+                noWalls: _noFoundryWalls,
+                backgroundSetting: _selectedBackground
             });
         }
         return;
@@ -845,6 +1065,9 @@ async function handleRectangleFill(startPos, endPos, isDeleting) {
         if (tilesToUpdate.length > 0) {
             await scene.updateEmbeddedDocuments("Tile", tilesToUpdate);
         }
+
+        // Create background drawing if configured
+        await ensureBackgroundDrawing(scene, currentElevation, _selectedBackground);
     }
 
     // Rebuild walls
@@ -1102,10 +1325,27 @@ async function rebuildWalls(scene) {
         }
     }
 
-    // Get all unique elevations
-    const elevations = Array.from(floorsByElevation.keys()).sort((a, b) => a - b);
+    // Get all unique elevations from floor tiles
+    const floorElevations = new Set(floorsByElevation.keys());
 
-    console.log(`${MODULE_ID} | Found ${elevations.length} elevation levels: [${elevations.join(', ')}]`);
+    // Also collect elevations from existing dungeon walls and wall drawings
+    // so orphaned ones (where all floor tiles were deleted) get cleaned up
+    const allDungeonElevations = new Set(floorElevations);
+
+    for (const w of scene.walls) {
+        if (w.door && w.door > 0) continue;
+        const bottom = w.flags?.["wall-height"]?.bottom;
+        if (bottom !== undefined) allDungeonElevations.add(bottom);
+    }
+    for (const d of scene.drawings) {
+        if (d.flags?.[MODULE_ID]?.dungeonWall) {
+            allDungeonElevations.add(d.elevation ?? 0);
+        }
+    }
+
+    const elevations = Array.from(allDungeonElevations).sort((a, b) => a - b);
+
+    console.log(`${MODULE_ID} | Found ${floorElevations.size} floor elevation levels, ${elevations.length} total dungeon elevations: [${elevations.join(', ')}]`);
     for (const [elev, floors] of floorsByElevation) {
         console.log(`${MODULE_ID} |   Elevation ${elev}: ${floors.size} floor tiles`);
     }
@@ -1535,11 +1775,27 @@ function generateWallVisualsWithElevation(floors, entranceSet, gridSize, thickne
  * GM handler: Fill rectangle with floor tiles
  */
 async function _gmFillRectangle(data) {
-    const { sceneId, minGx, maxGx, minGy, maxGy, floorTilePath, wallTilePath, noWalls } = data;
+    const { sceneId, minGx, maxGx, minGy, maxGy, floorTilePath, wallTilePath, noWalls, backgroundSetting } = data;
     const scene = game.scenes.get(sceneId);
     if (!scene) return { success: false, error: "Scene not found" };
 
     const gridSize = scene.grid.size || GRID_SIZE;
+
+    // Detect elevation via probe tile (same pattern as handleRectangleFill)
+    let elevation = 0;
+    const probeTile = await scene.createEmbeddedDocuments("Tile", [{
+        texture: { src: floorTilePath },
+        x: minGx * gridSize,
+        y: minGy * gridSize,
+        width: gridSize,
+        height: gridSize,
+        hidden: true,
+        flags: { [MODULE_ID]: { dungeonFloor: true } }
+    }]);
+    if (probeTile && probeTile.length > 0) {
+        elevation = probeTile[0].elevation ?? 0;
+        await scene.deleteEmbeddedDocuments("Tile", [probeTile[0].id]);
+    }
 
     const tilesToCreate = [];
     const tilesToUpdate = [];
@@ -1574,6 +1830,11 @@ async function _gmFillRectangle(data) {
     }
     if (tilesToUpdate.length > 0) {
         await scene.updateEmbeddedDocuments("Tile", tilesToUpdate);
+    }
+
+    // Create background drawing if configured
+    if (backgroundSetting) {
+        await ensureBackgroundDrawing(scene, elevation, backgroundSetting);
     }
 
     // Rebuild walls with the provided settings
@@ -1765,10 +2026,27 @@ async function _gmRebuildWallsInternal(scene, wallTilePath, noWalls) {
         }
     }
 
-    // Get all unique elevations
-    const elevations = Array.from(floorsByElevation.keys()).sort((a, b) => a - b);
+    // Get all unique elevations from floor tiles
+    const floorElevations = new Set(floorsByElevation.keys());
 
-    console.log(`${MODULE_ID} | [Socket] Found ${elevations.length} elevation levels: [${elevations.join(', ')}]`);
+    // Also collect elevations from existing dungeon walls and wall drawings
+    // so orphaned ones (where all floor tiles were deleted) get cleaned up
+    const allDungeonElevations = new Set(floorElevations);
+
+    for (const w of scene.walls) {
+        if (w.door && w.door > 0) continue;
+        const bottom = w.flags?.["wall-height"]?.bottom;
+        if (bottom !== undefined) allDungeonElevations.add(bottom);
+    }
+    for (const d of scene.drawings) {
+        if (d.flags?.[MODULE_ID]?.dungeonWall) {
+            allDungeonElevations.add(d.elevation ?? 0);
+        }
+    }
+
+    const elevations = Array.from(allDungeonElevations).sort((a, b) => a - b);
+
+    console.log(`${MODULE_ID} | [Socket] Found ${floorElevations.size} floor elevation levels, ${elevations.length} total dungeon elevations: [${elevations.join(', ')}]`);
 
     // 2. Delete existing dungeon walls (non-doors) at matching elevations
     if (!noWalls) {

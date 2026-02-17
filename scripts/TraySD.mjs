@@ -476,7 +476,7 @@ export async function setViewMode(mode) {
         enableDungeonPainting();
         // If player switching to dungeons and no tiles loaded, try to reload
         if (!game.user.isGM && canPlayerPaint()) {
-            const data = getDungeonPainterData();
+            const data = await getDungeonPainterData();
             if (!data.hasFloorTiles) {
                 await reloadDungeonAssets();
             }
@@ -636,10 +636,10 @@ export async function renderTray() {
         notes: await getNotesData(),
 
         // Hex Painter Data
-        ...getHexPainterData(),
+        ...(await getHexPainterData()),
 
         // Dungeon Painter Data
-        ...getDungeonPainterData(),
+        ...(await getDungeonPainterData()),
 
         // Active Effects
         activeEffects: (() => {
