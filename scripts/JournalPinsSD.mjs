@@ -1684,7 +1684,6 @@ class JournalPinGraphics extends PIXI.Container {
         this.on("pointerenter", this._onPointerEnter, this);
         this.on("pointerleave", this._onPointerLeave, this);
         this.on("pointerdown", this._onPointerDown, this);
-        this.on("globalpointermove", this._onPointerMove, this);
         this.on("pointerup", this._onPointerUp, this);
         this.on("pointerupoutside", this._onPointerUp, this);
     }
@@ -1693,9 +1692,9 @@ class JournalPinGraphics extends PIXI.Container {
         this.off("pointerenter", this._onPointerEnter, this);
         this.off("pointerleave", this._onPointerLeave, this);
         this.off("pointerdown", this._onPointerDown, this);
-        this.off("globalpointermove", this._onPointerMove, this);
         this.off("pointerup", this._onPointerUp, this);
         this.off("pointerupoutside", this._onPointerUp, this);
+        this.off("globalpointermove", this._onPointerMove, this);
     }
 
     _onPointerEnter(event) {
@@ -1779,6 +1778,7 @@ class JournalPinGraphics extends PIXI.Container {
                 this._dragOffset.y = this.position.y - local.y;
                 this._dragStartPos.x = this.position.x;
                 this._dragStartPos.y = this.position.y;
+                this.on("globalpointermove", this._onPointerMove, this);
             }
             JournalPinTooltip.hide();
         } else if (button === 2) {
@@ -1834,6 +1834,7 @@ class JournalPinGraphics extends PIXI.Container {
             }
         }
 
+        this.off("globalpointermove", this._onPointerMove, this);
         this._isDragging = false;
         this._hasDragged = false;
     }
@@ -2180,7 +2181,7 @@ class JournalPinRenderer {
         return this._container;
     }
 
-    static loadScenePins(sceneId, pins) {
+    static loadScenePins(sceneId, pins, { visibilityOnly = false } = {}) {
         if (!this._container) {
             console.warn("SDX Journal Pins | Container not initialized");
             return;
@@ -2206,7 +2207,14 @@ class JournalPinRenderer {
 
         // 2. Add or Update pins
         for (const pinData of incomingPins) {
-            this.updatePin(pinData); // updatePin handles adding if missing
+            if (visibilityOnly) {
+                // Only add pins that are newly visible; skip already-rendered ones
+                if (!this._pins.has(pinData.id)) {
+                    this._addPinGraphics(pinData);
+                }
+            } else {
+                this.updatePin(pinData); // updatePin handles adding if missing
+            }
         }
     }
 
@@ -2484,10 +2492,10 @@ function initJournalPins() {
     // Refresh pins when tokens move (for vision-based visibility)
     Hooks.on("updateToken", (tokenDoc, changes) => {
         if (changes.x !== undefined || changes.y !== undefined) {
-            // Token moved, refresh pins for all users
+            // Token moved, only update visibility (add/remove), don't rebuild existing pins
             if (canvas?.scene) {
                 const pins = JournalPinManager.list({ sceneId: canvas.scene.id });
-                JournalPinRenderer.loadScenePins(canvas.scene.id, pins);
+                JournalPinRenderer.loadScenePins(canvas.scene.id, pins, { visibilityOnly: true });
             }
         }
     });
@@ -2496,8 +2504,9 @@ function initJournalPins() {
     // Debounce to prevent flickering during animation
     Hooks.on("sightRefresh", foundry.utils.debounce(() => {
         if (canvas?.scene) {
+            // Only update visibility (add/remove), don't rebuild existing pin graphics
             const pins = JournalPinManager.list({ sceneId: canvas.scene.id });
-            JournalPinRenderer.loadScenePins(canvas.scene.id, pins);
+            JournalPinRenderer.loadScenePins(canvas.scene.id, pins, { visibilityOnly: true });
         }
     }, 100));
 

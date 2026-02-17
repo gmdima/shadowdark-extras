@@ -1,0 +1,75 @@
+{{!-- Details Tab --}}
+<section class="tab-content {{#if tab.active}}active{{/if}}" data-tab="details">
+
+    {{!-- Ability Check Section --}}
+    <fieldset class="potion-fieldset">
+        <legend><i class="fas fa-dice-d20"></i> Ability Check</legend>
+        <div class="form-group">
+            <label>Ability</label>
+            <select name="system.ability">
+                <option value="" {{#unless system.ability}}selected{{/unless}}>None</option>
+                {{#each abilities}}
+                <option value="{{@key}}" {{#if (eq @key ../system.ability)}}selected{{/if}}>
+                    {{this}}
+                </option>
+                {{/each}}
+            </select>
+        </div>
+        <div class="form-group">
+            <label>DC</label>
+            <input type="number" name="system.dc" value="{{system.dc}}" min="0" />
+        </div>
+    </fieldset>
+
+    {{!-- Ability Group Section --}}
+    <fieldset class="potion-fieldset">
+        <legend><i class="fas fa-layer-group"></i> Ability Group</legend>
+        <div class="form-group">
+            <label>Group</label>
+            <input type="text" name="system.group" value="{{system.group}}" placeholder="e.g. Backstab, Spellcasting" />
+        </div>
+    </fieldset>
+
+    {{!-- Options Section --}}
+    <fieldset class="potion-fieldset">
+        <legend><i class="fas fa-cog"></i> Options</legend>
+        <div class="form-group">
+            <label>Lose on Failure</label>
+            <div class="form-fields">
+                <input type="checkbox" name="system.loseOnFailure" {{#if system.loseOnFailure}}checked{{/if}} />
+            </div>
+        </div>
+        <div class="form-group">
+            <label>Limited Uses</label>
+            <div class="form-fields">
+                <input type="checkbox" name="system.limitedUses" {{#if system.limitedUses}}checked{{/if}} />
+            </div>
+        </div>
+        <div class="uses-fields" style="{{#unless system.limitedUses}}display:none;{{/unless}}">
+            <div class="form-group">
+                <label>Available</label>
+                <input type="number" name="system.uses.available" value="{{system.uses.available}}" min="0" />
+            </div>
+            <div class="form-group">
+                <label>Max</label>
+                <input type="number" name="system.uses.max" value="{{system.uses.max}}" min="0" />
+            </div>
+        </div>
+    </fieldset>
+
+    {{!-- Source Section --}}
+    <fieldset class="potion-fieldset">
+        <legend><i class="fas fa-book"></i> Source</legend>
+        <div class="form-group">
+            <label>Source</label>
+            <select name="system.source.title">
+                <option value="">&nbsp;</option>
+                {{#each sources}}
+                <option value="{{uuid}}" {{#if (eq ../system.source.title uuid)}}selected{{/if}}>
+                    {{name}}
+                </option>
+                {{/each}}
+            </select>
+        </div>
+    </fieldset>
+</section>

@@ -1,0 +1,18 @@
+{{!-- Description Tab --}}
+<section class="tab-content {{#if tab.active}}active{{/if}}" data-tab="description">
+
+    {{!-- Main Description --}}
+    <fieldset class="potion-fieldset description-fieldset">
+        <legend><i class="fas fa-scroll"></i> Description</legend>
+        <div class="editor-wrapper">
+            {{#if isEditable}}
+            <prose-mirror name="system.description" value="{{source.system.description}}" document-uuid="{{item.uuid}}"
+                class="sized" compact>{{{enrichedDescription}}}</prose-mirror>
+            {{else}}
+            <div class="editor editor-content">
+                {{{enrichedDescription}}}
+            </div>
+            {{/if}}
+        </div>
+    </fieldset>
+</section>

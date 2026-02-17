@@ -4,7 +4,9 @@
       "Bash(ls:*)",
       "Bash(grep:*)",
       "mcp__ide__getDiagnostics",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(dir:*)",
+      "WebSearch"
     ]
   }
 }

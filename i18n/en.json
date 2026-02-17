@@ -18,6 +18,8 @@
   "SHADOWDARK_EXTRAS.sheet_lock.hp": "Lock HP",
   "SHADOWDARK_EXTRAS.sheet_lock.stats": "Lock Stats (Ability Scores)",
   "SHADOWDARK_EXTRAS.sheet_lock.luck": "Lock Luck",
+  "SHADOWDARK_EXTRAS.settings.show_medkit_icon.name": "Show Medkit Icon",
+"SHADOWDARK_EXTRAS.settings.show_medkit_icon.hint": "Show the Medkit button on actor sheets for owners to update items from the Shadowdark Extras compendium",
   "SHADOWDARK_EXTRAS.sheet_lock.equipped": "Lock Equipped State",
   "SHADOWDARK_EXTRAS.sheet_lock.equipped_hint": "Prevents equipping or un-equipping items.",
   "SHADOWDARK_EXTRAS.sheet_lock.inventory": "Lock Inventory Management",
