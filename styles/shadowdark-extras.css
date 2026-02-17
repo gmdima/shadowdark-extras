@@ -17404,6 +17404,227 @@ body:not(.game-master) .sdx-carousing-chat .sdx-player-only {
     border-radius: 4px;
 }
 
+/* Shapechanger Theme - Nature/Wild Green */
+.sdx-shapechanger-theme .sdx-spell-header {
+    color: #4ade80;
+    text-shadow: 0 0 10px rgba(74, 222, 128, 0.5);
+}
+
+.sdx-shapechanger-theme .sdx-spell-header i {
+    color: #22c55e;
+}
+
+.sdx-shapechanger-theme .sdx-spell-weapon-item:hover {
+    border-color: rgba(74, 222, 128, 0.5);
+    background: rgba(25, 40, 30, 0.9);
+    box-shadow: 0 4px 12px rgba(74, 222, 128, 0.2);
+}
+
+.sdx-shapechanger-theme .sdx-spell-weapon-item.selected {
+    border-color: #4ade80;
+    background: rgba(30, 50, 35, 0.95);
+    box-shadow: 0 0 15px rgba(74, 222, 128, 0.4),
+        inset 0 0 20px rgba(74, 222, 128, 0.1);
+}
+
+/* Shapechanger search bar */
+.sdx-shapechanger-search {
+    margin-bottom: 12px;
+}
+
+.sdx-shapechanger-search input {
+    width: 100%;
+    padding: 6px 10px;
+    border-radius: 6px;
+    border: 1px solid rgba(74, 222, 128, 0.3);
+    background: rgba(0, 0, 0, 0.3);
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 13px;
+}
+
+.sdx-shapechanger-search input:focus {
+    border-color: rgba(74, 222, 128, 0.6);
+    outline: none;
+    box-shadow: 0 0 8px rgba(74, 222, 128, 0.2);
+}
+
+/* Shapechanger grid - more columns for monster list */
+.sdx-shapechanger-grid {
+    max-height: 400px;
+}
+
+/* Shapechanger badge - level display */
+.sdx-shapechanger-npc-item .sdx-weapon-badge {
+    width: auto;
+    height: auto;
+    padding: 1px 5px;
+    border-radius: 4px;
+    font-size: 9px;
+    font-weight: bold;
+    background: rgba(74, 222, 128, 0.8);
+    color: #0a2010;
+}
+
+/* Chat Card Styling - Shapechanger */
+.sdx-shapechanger-chat .card-header {
+    background: linear-gradient(135deg, rgba(74, 222, 128, 0.2), transparent);
+    border-bottom: 1px solid rgba(74, 222, 128, 0.3);
+}
+
+.sdx-shapechanger-chat .item-image {
+    max-width: 48px;
+    border-radius: 6px;
+    box-shadow: 0 0 10px rgba(74, 222, 128, 0.4);
+}
+
+.sdx-shapechanger-chat h3 {
+    color: #4ade80;
+    margin: 0;
+}
+
+.sdx-shapechanger-chat h3 i {
+    margin-right: 6px;
+}
+
+.sdx-shapechanger-chat .spell-effect {
+    color: rgba(255, 255, 255, 0.8);
+    padding: 8px;
+    background: rgba(74, 222, 128, 0.1);
+    border-left: 3px solid rgba(74, 222, 128, 0.5);
+    border-radius: 4px;
+}
+
+.sdx-shapechanger-chat .sdx-revert-shape-btn {
+    background: rgba(74, 222, 128, 0.15);
+    border: 1px solid rgba(74, 222, 128, 0.4);
+    color: #4ade80;
+    padding: 6px 12px;
+    border-radius: 4px;
+    font-size: 12px;
+    transition: all 0.2s ease;
+}
+
+.sdx-shapechanger-chat .sdx-revert-shape-btn:hover {
+    background: rgba(74, 222, 128, 0.3);
+    border-color: #4ade80;
+    box-shadow: 0 0 8px rgba(74, 222, 128, 0.3);
+}
+
+.sdx-shapechanger-chat .sdx-revert-shape-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.sdx-shapechanger-chat .sdx-shapechanger-ability {
+    display: inline-block;
+    margin-right: 4px;
+}
+
+/* Shapechanger Abilities - Player Sheet Injection */
+.sdx-shapechanger-abilities {
+    margin-bottom: 12px;
+    border: 1px solid rgba(74, 222, 128, 0.3);
+    border-radius: 6px;
+    background: rgba(74, 222, 128, 0.05);
+    overflow: hidden;
+}
+
+.sdx-sc-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 10px;
+    background: rgba(74, 222, 128, 0.15);
+    border-bottom: 1px solid rgba(74, 222, 128, 0.2);
+    font-weight: bold;
+    font-size: 13px;
+    color: #4ade80;
+}
+
+.sdx-sc-header i {
+    font-size: 14px;
+}
+
+.sdx-sc-header span {
+    flex: 1;
+}
+
+.sdx-sc-revert-btn {
+    padding: 2px 8px;
+    font-size: 11px;
+    border: 1px solid rgba(74, 222, 128, 0.4);
+    background: rgba(74, 222, 128, 0.1);
+    color: #4ade80;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.sdx-sc-revert-btn:hover {
+    background: rgba(74, 222, 128, 0.25);
+    border-color: #4ade80;
+}
+
+.sdx-sc-section {
+    padding: 4px 8px;
+}
+
+.sdx-sc-section-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: rgba(74, 222, 128, 0.6);
+    margin-bottom: 2px;
+    padding-left: 2px;
+}
+
+.sdx-sc-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 6px;
+    border-radius: 4px;
+    margin-bottom: 2px;
+    transition: background 0.15s ease;
+}
+
+.sdx-sc-item-rollable {
+    cursor: pointer;
+}
+
+.sdx-sc-item-rollable:hover {
+    background: rgba(74, 222, 128, 0.1);
+}
+
+.sdx-sc-item-img {
+    width: 28px;
+    height: 28px;
+    border-radius: 4px;
+    object-fit: cover;
+    border: 1px solid rgba(100, 100, 100, 0.4);
+    flex-shrink: 0;
+}
+
+.sdx-sc-item-info {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.sdx-sc-item-name {
+    font-size: 12px;
+    font-weight: 600;
+    color: #fff;
+}
+
+.sdx-sc-item-detail {
+    font-size: 10px;
+    color: rgba(255, 255, 255, 0.6);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
 /* ============================================ */
 /* CAROUSING BUTTON (Tongue Style) */
 /* ============================================ */

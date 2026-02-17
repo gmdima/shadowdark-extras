@@ -19183,6 +19183,38 @@ Hooks.once("ready", () => {
 });
 
 /**
+ * Hook into chat message rendering to bind Shapechanger revert button
+ */
+Hooks.on("renderChatMessage", (message, html, data) => {
+	const revertBtn = html.find(".sdx-revert-shape-btn");
+	if (revertBtn.length === 0) return;
+
+	revertBtn.on("click", async (event) => {
+		event.preventDefault();
+		event.stopPropagation();
+
+		const btn = event.currentTarget;
+		const actorId = btn.dataset.actorId;
+		if (!actorId) return;
+
+		const actor = game.actors.get(actorId);
+		if (!actor) {
+			ui.notifications.error("Could not find the actor for this transformation.");
+			return;
+		}
+
+		// Disable button to prevent double-clicks
+		btn.disabled = true;
+		btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Reverting...';
+
+		const sdxModule = game.modules.get(MODULE_ID);
+		if (sdxModule?.api?.revertShapechanger) {
+			await sdxModule.api.revertShapechanger(actor);
+		}
+	});
+});
+
+/**
  * Hook into spell cast messages to trigger Item Macros
  */
 Hooks.on("renderChatMessage", async (message, html, data) => {
@@ -20474,6 +20506,7 @@ Hooks.on("setup", () => {
 	if (module) {
 		module.api = {
 			startDurationSpell: startDurationSpell,
+			endDurationSpell: endDurationSpell,
 			registerSpellModification: registerSpellModification,
 			getActiveDurationSpells: getActiveDurationSpells,
 			showConditionsModal: showConditionsModal,

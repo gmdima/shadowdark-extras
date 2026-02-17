@@ -35,6 +35,13 @@ import {
     applyWrathToAllWeapons
 } from "./macros/wrath.mjs";
 
+// Import Shapechanger spell functions
+import {
+    showShapechangerDialog,
+    applyShapechanger,
+    revertShapechanger
+} from "./macros/shapechanger.mjs";
+
 // Re-export all functions for backward compatibility
 export {
     // Identify spell
@@ -52,7 +59,11 @@ export {
     // Wrath spell
     showWrathWeaponDialog,
     applyWrathWeapon,
-    applyWrathToAllWeapons
+    applyWrathToAllWeapons,
+    // Shapechanger spell
+    showShapechangerDialog,
+    applyShapechanger,
+    revertShapechanger
 };
 
 // ============================================
@@ -79,6 +90,10 @@ Hooks.once("ready", () => {
         module.api.showWrathWeaponDialog = showWrathWeaponDialog;
         module.api.applyWrathWeapon = applyWrathWeapon;
         module.api.applyWrathToAllWeapons = applyWrathToAllWeapons;
+        // Shapechanger spell
+        module.api.showShapechangerDialog = showShapechangerDialog;
+        module.api.applyShapechanger = applyShapechanger;
+        module.api.revertShapechanger = revertShapechanger;
         console.log(`${MODULE_ID} | Spell Macros API registered`);
     }
 });

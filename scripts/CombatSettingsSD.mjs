@@ -1010,6 +1010,50 @@ export function setupCombatSocket() {
 		}
 	});
 
+	// Handler: Show Shapechanger dialog on player's client
+	socketlibSocket.register("showShapechangerDialogForUser", async ({ casterActorId, casterItemId, isCritical, options }) => {
+		const casterActor = game.actors.get(casterActorId);
+		const casterItem = casterActor?.items.get(casterItemId);
+
+		if (!casterActor || !casterItem) {
+			console.warn(`${MODULE_ID} | showShapechangerDialogForUser: Missing data`);
+			return;
+		}
+
+		const sdxModule = game.modules.get(MODULE_ID);
+		if (sdxModule?.api?.showShapechangerDialog) {
+			await sdxModule.api.showShapechangerDialog(casterActor, casterItem, null, isCritical, options || {});
+		}
+	});
+
+	// Handler: Revert Shapechanger as GM (when player doesn't have ownership)
+	socketlibSocket.register("revertShapechangerAsGM", async (actorUuid) => {
+		const actor = await fromUuid(actorUuid);
+		if (!actor) {
+			console.warn(`${MODULE_ID} | revertShapechangerAsGM: Actor not found: ${actorUuid}`);
+			return;
+		}
+
+		const sdxModule = game.modules.get(MODULE_ID);
+		if (sdxModule?.api?.revertShapechanger) {
+			await sdxModule.api.revertShapechanger(actor);
+		}
+	});
+
+	// Handler: Apply Shapechanger as GM (when player doesn't have ownership)
+	socketlibSocket.register("applyShapechangerAsGM", async (actorUuid, itemUuid, npcUuid, isCritical, opts) => {
+		const casterActor = await fromUuid(actorUuid);
+		const casterItem = await fromUuid(itemUuid);
+		const npcDoc = await fromUuid(npcUuid);
+
+		if (casterActor && casterItem && npcDoc) {
+			const sdxModule = game.modules.get(MODULE_ID);
+			if (sdxModule?.api?.applyShapechanger) {
+				await sdxModule.api.applyShapechanger(casterActor, casterItem, npcDoc, isCritical, opts || {});
+			}
+		}
+	});
+
 	// --- Spell Modification Reversion Socket Handlers ---
 	// These handle reverting spell modifications when the player doesn't own the target item
 

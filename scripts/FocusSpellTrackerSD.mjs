@@ -433,8 +433,11 @@ export async function registerSpellModification(caster, spell, targetItem, chang
 	const modifiedPaths = Object.keys(changes);
 
 	for (const path of modifiedPaths) {
-		// Deep get the current value at this path
-		originalState[path] = foundry.utils.getProperty(targetItem, path) ?? null;
+		// Deep get the current value at this path and deep clone to avoid reference mutation
+		const value = foundry.utils.getProperty(targetItem, path) ?? null;
+		originalState[path] = value !== null && typeof value === "object"
+			? foundry.utils.deepClone(value)
+			: value;
 	}
 
 	// Generate unique instance ID that matches duration tracking
@@ -504,7 +507,9 @@ async function revertSpellModifications(spellId, casterId) {
 
 				// Restore each path to its original value
 				for (const path of mod.modifiedPaths) {
-					const originalValue = mod.originalState[path];
+					// Use getProperty to handle Foundry expanding dot-notation keys into nested objects
+					const originalValue = foundry.utils.getProperty(mod.originalState, path)
+						?? mod.originalState[path]; // fallback to flat key access
 					// Use null instead of undefined for proper deletion, or use the original value
 					updates[path] = originalValue === undefined ? null : originalValue;
 				}
@@ -846,6 +851,10 @@ export async function endDurationSpell(casterId, instanceId, reason = "expired")
 
 	ui.notifications.info(`${durationEntry.spellName} has ${reason === "expired" ? "expired" : "ended"}`);
 	caster.sheet?.render(false);
+
+	// Fire hook for spells that need custom end behavior (e.g. Shapechanger auto-revert)
+	// Placed at the end so all duration tracking cleanup is complete before handlers run
+	Hooks.callAll("sdx.durationSpellEnded", caster, durationEntry, reason);
 }
 
 /**
