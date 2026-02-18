@@ -1,7 +1,7 @@
 {
   "id": "shadowdark-extras",
   "title": "Shadowdark Extras",
-  "version": "6.09",
+  "version": "6.10",
   "compatibility": {
     "minimum": "13",
     "verified": "13"
@@ -164,7 +164,7 @@
     }
   ],
   "manifest": "https://github.com/gmdima/shadowdark-extras/releases/latest/download/module.json",
-  "download": "https://github.com/gmdima/shadowdark-extras/releases/download/6.09/module.zip",
+  "download": "https://github.com/gmdima/shadowdark-extras/releases/download/6.10/module.zip",
   "packs": [
     {
       "name": "pack-sdxitems",

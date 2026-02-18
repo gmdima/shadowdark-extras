@@ -19971,8 +19971,8 @@ async function executeClassAbilityItemMacro(item, actor, context = {}) {
 	// Check if the item has a macro
 	if (typeof item.hasMacro !== "function" || !item.hasMacro()) return;
 
-	const selectedTokens = canvas.tokens?.controlled || [];
-	const token = selectedTokens.find(t => t.actor?.id === actor.id) || null;
+	const token = canvas.tokens?.placeables?.find(t => t.actor?.id === actor.id)
+		|| canvas.tokens?.controlled?.find(t => t.actor?.id === actor.id) || null;
 	const targets = Array.from(game.user?.targets || []);
 
 	const scope = {
@@ -19987,6 +19987,8 @@ async function executeClassAbilityItemMacro(item, actor, context = {}) {
 		success,
 		critical,
 		rolled,
+		scene: canvas.scene,
+		game,
 		...context
 	};
 
@@ -20015,10 +20017,16 @@ async function executeClassAbilityItemMacro(item, actor, context = {}) {
 		if (!macroCommand) return;
 
 		const AsyncFunction = Object.getPrototypeOf(async function () { }).constructor;
-		const macroFn = new AsyncFunction("actor", "token", "item", "targets", "target", "targetActor", "speaker", "flags",
-			macroCommand);
+		const macroFn = new AsyncFunction(
+			"actor", "token", "item", "targets", "target", "targetActor",
+			"speaker", "flags", "success", "critical", "rolled", "scene", "game",
+			macroCommand
+		);
 
-		await macroFn.call(scope, scope.actor, scope.token, scope.item, scope.targets, scope.target, scope.targetActor, scope.speaker, scope.flags);
+		await macroFn.call(scope,
+			scope.actor, scope.token, scope.item, scope.targets, scope.target, scope.targetActor,
+			scope.speaker, scope.flags, scope.success, scope.critical, scope.rolled, scope.scene, scope.game
+		);
 	} catch (error) {
 		console.error(`${MODULE_ID} | Error executing Class Ability Item Macro:`, error);
 		ui.notifications.error("There was an error in your macro syntax. See the console (F12) for details");
@@ -20058,7 +20066,9 @@ Hooks.once("ready", () => {
 				originatingUserId: serializedContext.originatingUserId,
 				success: serializedContext.success,
 				critical: serializedContext.critical,
-				rolled: serializedContext.rolled
+				rolled: serializedContext.rolled,
+				scene: canvas.scene,
+				game
 			};
 
 			try {
@@ -20068,9 +20078,15 @@ Hooks.once("ready", () => {
 					const macroCommand = item.getFlag("itemacro", "macro.command");
 					if (macroCommand) {
 						const AsyncFunction = Object.getPrototypeOf(async function () { }).constructor;
-						const macroFn = new AsyncFunction("actor", "token", "item", "targets", "target", "targetActor", "speaker", "flags",
-							macroCommand);
-						await macroFn.call(scope, scope.actor, scope.token, scope.item, scope.targets, scope.target, scope.targetActor, scope.speaker, scope.flags);
+						const macroFn = new AsyncFunction(
+							"actor", "token", "item", "targets", "target", "targetActor",
+							"speaker", "flags", "success", "critical", "rolled", "scene", "game",
+							macroCommand
+						);
+						await macroFn.call(scope,
+							scope.actor, scope.token, scope.item, scope.targets, scope.target, scope.targetActor,
+							scope.speaker, scope.flags, scope.success, scope.critical, scope.rolled, scope.scene, scope.game
+						);
 					}
 				}
 			} catch (error) {

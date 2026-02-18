@@ -551,6 +551,8 @@ class JournalPinGraphics extends PIXI.Container {
         this._labelOffset = { x: 0, y: 0 };
         this._labelContainer = null;
         this._buildId = 0;
+        this._cachedTexture = null;
+        this.cullable = true;
 
         // Do NOT call _init() here, we defer it until we are indexed in the renderer
     }
@@ -800,6 +802,12 @@ class JournalPinGraphics extends PIXI.Container {
 
         // Clear image sprite reference (will be set if shape is "image")
         this._imageSprite = null;
+
+        // Clean up previous cached texture
+        if (this._cachedTexture) {
+            this._cachedTexture.destroy(true);
+            this._cachedTexture = null;
+        }
 
         // We will build the new label in a local variable and only 
         // attach it to the class/renderer if this build cycle is still valid at the end.
@@ -1210,6 +1218,7 @@ class JournalPinGraphics extends PIXI.Container {
                 }
 
                 this._labelContainer = newLabelContainer;
+                this._labelContainer.cullable = true;
                 this._labelOffset = { x: posX, y: posY };
 
                 const rendererLabelContainer = JournalPinRenderer.getLabelContainer();
@@ -1312,6 +1321,47 @@ class JournalPinGraphics extends PIXI.Container {
         // Add status indicators for GM
         if (game.user?.isGM && this.pinData.requiresVision) {
             await this._addVisionIndicator(container, radius);
+        }
+
+        // Performance: Cache pin visual as a single sprite texture
+        // Converts PIXI.Graphics draw calls into one batchable Sprite per pin
+        // Critical for Chromium/ANGLE on macOS which has high per-draw-call overhead
+        if (canvas?.app?.renderer && container.children.length > 0) {
+            try {
+                // Pre-cache pixel data for pixel-perfect detection before converting
+                if (this.hitArea?._sprite && !this.hitArea._pixelCanvas) {
+                    const ppSprite = this.hitArea._sprite;
+                    if (ppSprite.texture?.baseTexture?.resource?.source) {
+                        const source = ppSprite.texture.baseTexture.resource.source;
+                        const tex = ppSprite.texture;
+                        const pc = document.createElement('canvas');
+                        pc.width = tex.width;
+                        pc.height = tex.height;
+                        const pctx = pc.getContext('2d');
+                        pctx.drawImage(source, 0, 0);
+                        this.hitArea._pixelData = pctx.getImageData(0, 0, tex.width, tex.height).data;
+                        this.hitArea._pixelCanvas = pc;
+                    }
+                }
+
+                if (this._cachedTexture) {
+                    this._cachedTexture.destroy(true);
+                    this._cachedTexture = null;
+                }
+
+                const bounds = container.getLocalBounds();
+                if (bounds.width > 0 && bounds.height > 0) {
+                    const texture = canvas.app.renderer.generateTexture(container, { resolution: 2 });
+                    const cachedSprite = new PIXI.Sprite(texture);
+                    cachedSprite.anchor.set(-bounds.x / bounds.width, -bounds.y / bounds.height);
+                    this.removeChild(container);
+                    container.destroy({ children: true });
+                    this.addChild(cachedSprite);
+                    this._cachedTexture = texture;
+                }
+            } catch (e) {
+                // Keep the raw graphics container if caching fails
+            }
         }
 
         // Apply TMFX filters if present
@@ -2009,6 +2059,10 @@ class JournalPinGraphics extends PIXI.Container {
             this._labelContainer.destroy({ children: true });
             this._labelContainer = null;
         }
+        if (this._cachedTexture) {
+            this._cachedTexture.destroy(true);
+            this._cachedTexture = null;
+        }
         super.destroy(options);
     }
 }
@@ -2134,7 +2188,6 @@ class JournalPinRenderer {
         }
 
         this._container = new PIXI.Container();
-        this._container.sortableChildren = true;
         this._container.eventMode = "static";
         this._container.name = "sdx-pins-container";
 
@@ -2155,7 +2208,6 @@ class JournalPinRenderer {
         }
 
         this._container = new PIXI.Container();
-        this._container.sortableChildren = true;
         this._container.eventMode = "static";
         this._container.name = "sdx-pins-container";
 

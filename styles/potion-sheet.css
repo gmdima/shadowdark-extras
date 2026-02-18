@@ -511,6 +511,53 @@
     border-bottom: none;
 }
 
+.macro-reference-fieldset {
+    margin-top: 10px;
+}
+
+.macro-reference-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 11px;
+    margin-bottom: 8px;
+}
+
+.macro-reference-table thead th {
+    background: rgba(0, 0, 0, 0.3);
+    padding: 4px 6px;
+    text-align: left;
+    font-weight: bold;
+    border-bottom: 1px solid var(--color-border-dark-primary);
+    font-size: 11px;
+}
+
+.macro-reference-table tbody td {
+    padding: 3px 6px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    vertical-align: top;
+}
+
+.macro-reference-table tbody tr:hover {
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.macro-reference-table code {
+    background: rgba(0, 0, 0, 0.3);
+    padding: 1px 4px;
+    border-radius: 3px;
+    font-size: 11px;
+    color: #e8c87a;
+}
+
+.macro-reference-fieldset .macro-info code {
+    background: rgba(0, 0, 0, 0.3);
+    padding: 1px 4px;
+    border-radius: 3px;
+    font-size: 10px;
+    color: #e8c87a;
+    word-break: break-all;
+}
+
 /* ============================================
    Description Tab
    ============================================ */

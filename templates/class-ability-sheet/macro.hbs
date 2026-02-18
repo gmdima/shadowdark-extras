@@ -49,4 +49,94 @@
             <p class="hint">Choose when the macro should trigger based on the ability check result.</p>
         </div>
     </fieldset>
+
+    <fieldset class="potion-fieldset macro-reference-fieldset">
+        <legend><i class="fas fa-book"></i> Available Variables</legend>
+
+        <table class="macro-reference-table">
+            <thead>
+                <tr>
+                    <th>Variable</th>
+                    <th>Type</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>actor</code></td>
+                    <td>Actor</td>
+                    <td>The actor using the ability</td>
+                </tr>
+                <tr>
+                    <td><code>token</code></td>
+                    <td>Token</td>
+                    <td>The actor's token on the canvas (null if not on scene)</td>
+                </tr>
+                <tr>
+                    <td><code>item</code></td>
+                    <td>Item</td>
+                    <td>The class ability item being used</td>
+                </tr>
+                <tr>
+                    <td><code>targets</code></td>
+                    <td>Token[]</td>
+                    <td>Array of all targeted tokens</td>
+                </tr>
+                <tr>
+                    <td><code>target</code></td>
+                    <td>Token</td>
+                    <td>First targeted token (null if none)</td>
+                </tr>
+                <tr>
+                    <td><code>targetActor</code></td>
+                    <td>Actor</td>
+                    <td>First target's actor (null if none)</td>
+                </tr>
+                <tr>
+                    <td><code>speaker</code></td>
+                    <td>Object</td>
+                    <td>ChatMessage speaker data for the actor</td>
+                </tr>
+                <tr>
+                    <td><code>flags</code></td>
+                    <td>Object</td>
+                    <td>The item's shadowdark-extras flags</td>
+                </tr>
+                <tr>
+                    <td><code>success</code></td>
+                    <td>Boolean</td>
+                    <td>Whether the ability check succeeded</td>
+                </tr>
+                <tr>
+                    <td><code>critical</code></td>
+                    <td>String</td>
+                    <td>"success" or "failure" if a critical was rolled, null otherwise</td>
+                </tr>
+                <tr>
+                    <td><code>rolled</code></td>
+                    <td>Boolean</td>
+                    <td>Whether a dice roll was made (false if no check needed)</td>
+                </tr>
+                <tr>
+                    <td><code>scene</code></td>
+                    <td>Scene</td>
+                    <td>The current active scene</td>
+                </tr>
+                <tr>
+                    <td><code>game</code></td>
+                    <td>Game</td>
+                    <td>The global game object</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="macro-info">
+            <p class="hint">
+                <i class="fas fa-lightbulb"></i> <strong>Examples:</strong><br>
+                <code>ChatMessage.create({speaker, content: `${actor.name} activates ${item.name}!`});</code><br>
+                <code>if (success) token.document.update({"light.bright": 20, "light.dim": 40});</code><br>
+                <code>if (target) target.actor.applyDamage(rolled ? 10 : 5);</code>
+            </p>
+        </div>
+    </fieldset>
 </section>
