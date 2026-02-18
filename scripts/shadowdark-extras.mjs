@@ -5786,10 +5786,9 @@ function insertRenownAfter(targetElement, actor) {
 			</div>
 			<div class="content larger">
 				<div class="value-grid renown-display">
-					<input type="number" 
-						name="flags.${MODULE_ID}.renown" 
-						value="${renownValue}" 
-						min="0" 
+					<input type="number"
+						name="flags.${MODULE_ID}.renown"
+						value="${renownValue}"
 						max="${renownMax}"
 						data-dtype="Number"
 						placeholder="0">

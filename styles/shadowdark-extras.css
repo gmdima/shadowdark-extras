@@ -3,6 +3,16 @@
     flex: 1 !important;
 }
 
+.sdx-sc-revert-btn {
+    background: rgba(74, 222, 128, 0.15);
+    border: 1px solid rgba(74, 222, 128, 0.4);
+    width: auto;
+    padding: 6px 12px;
+    border-radius: 4px;
+    font-size: 12px;
+    transition: all 0.2s ease;
+}
+
 /* ============================================
    TRADE CHAT MESSAGE STYLES
    ============================================ */
@@ -9214,11 +9224,16 @@ section[data-tab="tab-notes"].sdx-journal-active>div:not(.sdx-journal-notes) {
    ============================================ */
 
 .sdx-focus-spells-section {
-    background: linear-gradient(135deg, rgba(155, 89, 182, 0.15) 0%, rgba(0, 0, 0, 0.2) 100%);
+
     border: var(--sdx-box-border-width) solid transparent !important;
     position: relative;
     isolation: isolate;
+    margin-bottom: -20px;
     /* Create stacking context so ::before can be z-index -1 but visible */
+}
+
+.SD-box .sdx-focus-spells-section {
+    margin-bottom: -20px;
 }
 
 /* Tint the border image using a pseudo-element */
@@ -9228,13 +9243,12 @@ section[data-tab="tab-notes"].sdx-journal-active>div:not(.sdx-journal-notes) {
     inset: calc(var(--sdx-box-border-width) * -1);
     /* Cover the border area */
     border: var(--sdx-box-border-width) solid transparent;
-    border-image: var(--sdx-box-border) var(--sdx-box-border-image-slice) fill !important;
-    border-image-repeat: stretch !important;
-    border-image-width: var(--sdx-box-border-image-width) !important;
+
     filter: sepia(100%) hue-rotate(240deg) saturate(200%);
     /* Purple tint */
     pointer-events: none;
     z-index: -1;
+
 }
 
 .sdx-focus-spells-section .header {
@@ -10139,8 +10153,7 @@ section[data-tab="tab-notes"].sdx-journal-active>div:not(.sdx-journal-notes) {
 }
 
 .sdx-duration-spells-section {
-    margin-bottom: 1rem;
-    background: linear-gradient(135deg, rgba(217, 119, 6, 0.15) 0%, rgba(0, 0, 0, 0.2) 100%);
+    margin-bottom: -10px;
     border: var(--sdx-box-border-width) solid transparent !important;
     position: relative;
     isolation: isolate;
@@ -10151,9 +10164,7 @@ section[data-tab="tab-notes"].sdx-journal-active>div:not(.sdx-journal-notes) {
     position: absolute;
     inset: calc(var(--sdx-box-border-width) * -1);
     border: var(--sdx-box-border-width) solid transparent;
-    border-image: var(--sdx-box-border) var(--sdx-box-border-image-slice) fill !important;
-    border-image-repeat: stretch !important;
-    border-image-width: var(--sdx-box-border-image-width) !important;
+
     filter: sepia(100%) hue-rotate(340deg) saturate(300%) contrast(1.2);
     /* Burnt Orange tint */
     pointer-events: none;
@@ -17576,6 +17587,13 @@ body:not(.game-master) .sdx-carousing-chat .sdx-player-only {
     color: rgba(74, 222, 128, 0.6);
     margin-bottom: 2px;
     padding-left: 2px;
+}
+
+.sdx-sc-section-meta {
+    font-size: 10px;
+    color: rgba(255, 255, 255, 0.5);
+    padding-left: 2px;
+    margin-bottom: 4px;
 }
 
 .sdx-sc-item {

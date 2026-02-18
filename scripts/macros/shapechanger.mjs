@@ -444,7 +444,11 @@ export async function applyShapechanger(casterActor, casterItem, npcDoc, isCriti
 		// Store target mode info for revert routing
 		targetMode: opts.targetMode || null,
 		casterActorId: casterActor.id,
-		targetTokenId: transformToken?.id || null
+		targetTokenId: transformToken?.id || null,
+		// Spellcasting info from the NPC (for sheet display)
+		npcSpellcastingBonus: npcDoc.system.spellcastingBonus ?? null,
+		npcSpellcastingAttackNum: npcDoc.system.spellcastingAttackNum ?? null,
+		npcSpellcastingAbility: npcDoc.system.spellcastingAbility ?? null
 	};
 
 	// Backup ability base scores and bonuses for transferred abilities only
@@ -488,8 +492,8 @@ export async function applyShapechanger(casterActor, casterItem, npcDoc, isCriti
 	// Apply actor updates
 	await transformActor.update(actorUpdate);
 
-	// Add NPC items (attacks, special attacks, features) with flag
-	const npcItemTypes = ["NPC Attack", "NPC Special Attack", "NPC Feature"];
+	// Add NPC items (attacks, special attacks, features, spells) with flag
+	const npcItemTypes = ["NPC Attack", "NPC Special Attack", "NPC Feature", "NPC Spell"];
 	const npcItems = npcDoc.items.filter(i => npcItemTypes.includes(i.type));
 
 	if (npcItems.length > 0) {
@@ -546,6 +550,7 @@ export async function applyShapechanger(casterActor, casterItem, npcDoc, isCriti
 	const attacks = npcDoc.items.filter(i => i.type === "NPC Attack");
 	const specials = npcDoc.items.filter(i => i.type === "NPC Special Attack");
 	const features = npcDoc.items.filter(i => i.type === "NPC Feature");
+	const spells = npcDoc.items.filter(i => i.type === "NPC Spell");
 
 	let abilitiesHtml = "";
 	for (const ability of transferAbilities) {
@@ -563,6 +568,12 @@ export async function applyShapechanger(casterActor, casterItem, npcDoc, isCriti
 	}
 	if (features.length > 0) {
 		itemsHtml += `<div><strong>Features:</strong> ${features.map(f => f.name).join(", ")}</div>`;
+	}
+	if (spells.length > 0) {
+		const spellBonus = npcDoc.system.spellcastingBonus != null ? ` (+${npcDoc.system.spellcastingBonus})` : "";
+		const spellCastings = npcDoc.system.spellcastingAttackNum != null ? `${npcDoc.system.spellcastingAttackNum}x castings` : "";
+		const spellMeta = [spellCastings, spellBonus ? `bonus${spellBonus}` : ""].filter(Boolean).join(", ");
+		itemsHtml += `<div><strong>Spells${spellMeta ? ` (${spellMeta})` : ""}:</strong> ${spells.map(s => s.name).join(", ")}</div>`;
 	}
 
 	const duration = casterItem.system?.duration?.value || "?";
@@ -830,6 +841,7 @@ Hooks.on("renderPlayerSheetSD", (sheet, html, data) => {
 	const attacks = scItems.filter(i => i.type === "NPC Attack");
 	const specials = scItems.filter(i => i.type === "NPC Special Attack");
 	const features = scItems.filter(i => i.type === "NPC Feature");
+	const spells = scItems.filter(i => i.type === "NPC Spell");
 
 	const spellTitle = backup.spellTitle || "Shapechanger";
 	const spellIcon = backup.spellIcon || "fas fa-paw-claws";
@@ -885,6 +897,34 @@ Hooks.on("renderPlayerSheetSD", (sheet, html, data) => {
 			</div>`;
 	}
 
+	// Build spells HTML
+	let spellsHtml = "";
+	for (const sp of spells) {
+		const dc = sp.system.dc != null ? `DC ${sp.system.dc}` : "";
+		const range = sp.system.range ?? "";
+		const durationType = sp.system.duration?.type ?? "";
+		const detail = [dc, range, durationType].filter(Boolean).join(" · ");
+
+		spellsHtml += `
+			<div class="sdx-sc-item sdx-sc-item-rollable" data-item-id="${sp.id}" data-item-type="NPC Spell" title="Click to display">
+				<img class="sdx-sc-item-img" src="${sp.img}" alt="${sp.name}">
+				<div class="sdx-sc-item-info">
+					<span class="sdx-sc-item-name">${sp.name}</span>
+					${detail ? `<span class="sdx-sc-item-detail">${detail}</span>` : ''}
+				</div>
+			</div>`;
+	}
+
+	// Build spellcasting header (castings / bonus / ability)
+	let spellcastingHeader = "";
+	if (spells.length > 0 && (backup.npcSpellcastingAttackNum != null || backup.npcSpellcastingBonus != null)) {
+		const parts = [];
+		if (backup.npcSpellcastingAttackNum != null) parts.push(`${backup.npcSpellcastingAttackNum} castings`);
+		if (backup.npcSpellcastingBonus != null) parts.push(`+${backup.npcSpellcastingBonus} bonus`);
+		if (backup.npcSpellcastingAbility) parts.push(backup.npcSpellcastingAbility.toUpperCase());
+		spellcastingHeader = `<div class="sdx-sc-section-meta">${parts.join(" · ")}</div>`;
+	}
+
 	const sectionHtml = `
 		<div class="sdx-shapechanger-abilities">
 			<div class="sdx-sc-header">
@@ -895,6 +935,7 @@ Hooks.on("renderPlayerSheetSD", (sheet, html, data) => {
 			${attacks.length > 0 ? `<div class="sdx-sc-section"><div class="sdx-sc-section-label">Attacks</div>${attacksHtml}</div>` : ''}
 			${specials.length > 0 ? `<div class="sdx-sc-section"><div class="sdx-sc-section-label">Special Attacks</div>${specialsHtml}</div>` : ''}
 			${features.length > 0 ? `<div class="sdx-sc-section"><div class="sdx-sc-section-label">Features</div>${featuresHtml}</div>` : ''}
+			${spells.length > 0 ? `<div class="sdx-sc-section"><div class="sdx-sc-section-label">Spells</div>${spellcastingHeader}${spellsHtml}</div>` : ''}
 		</div>
 	`;
 

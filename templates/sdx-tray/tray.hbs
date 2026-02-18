@@ -975,6 +975,20 @@
                         <input type="checkbox" class="dungeon-no-walls-checkbox" {{#if noFoundryWalls}}checked{{/if}} />
                         <span><i class="fas fa-border-none"></i> No Foundry Walls</span>
                     </label>
+                    <label class="dungeon-option-toggle">
+                        <input type="checkbox" class="dungeon-wall-shadows-checkbox" {{#if wallShadows}}checked{{/if}} />
+                        <span><i class="fas fa-adjust"></i> Wall Shadows</span>
+                    </label>
+                </div>
+
+                <!-- Flatten Level Buttons -->
+                <div class="dungeon-flatten-buttons">
+                    <button class="dungeon-flatten-level-btn">
+                        <i class="fas fa-layer-group"></i> Flatten Level
+                    </button>
+                    <button class="dungeon-unflatten-level-btn">
+                        <i class="fas fa-layer-group" style="transform:scaleY(-1)"></i> Unflatten Level
+                    </button>
                 </div>
 
                 <!-- Generator Button -->
@@ -1047,6 +1061,11 @@
                             <label>Textured</label>
                             <input type="checkbox" class="dgen-textured" {{#if
                                 generatorSettings.textured}}checked{{/if}}>
+                        </div>
+                        <div class="dgen-row dgen-checkbox-row">
+                            <label>Wall Shadows</label>
+                            <input type="checkbox" class="dgen-wall-shadows" {{#if
+                                generatorSettings.wallShadows}}checked{{/if}}>
                         </div>
                         <div class="dgen-row dgen-color-row">
                             <label>Color</label>

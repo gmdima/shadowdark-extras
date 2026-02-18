@@ -6,7 +6,9 @@
       "mcp__ide__getDiagnostics",
       "Bash(find:*)",
       "Bash(dir:*)",
-      "WebSearch"
+      "WebSearch",
+      "Bash(python3:*)",
+      "Bash(node -e:*)"
     ]
   }
 }

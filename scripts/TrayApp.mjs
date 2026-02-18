@@ -29,8 +29,8 @@ import { PinListApp } from "./PinListApp.mjs";
 import { PlaceableNotesSD } from "./PlaceableNotesSD.mjs";
 import { setMapDimension, formatActiveScene, enablePainting, disablePainting, toggleTileSelection, setSearchFilter, toggleWaterEffect, toggleWindEffect, toggleFogAnimation, toggleTintEnabled, toggleBwEffect, isTintEnabled, setActiveTileTab, setCustomTileDimension, toggleColoredFolderCollapsed, toggleSymbolFolderCollapsed, undoLastPoi, redoLastPoi, canUndoPoi, canRedoPoi, getPoiScale, enablePreview, disablePreview, getActiveTileTab, adjustPoiScale, rotatePoiLeft, rotatePoiRight, togglePoiMirror, getPoiMirror, setDecorSearchFilter, toggleDecorFolderCollapsed, setDecorMode, setDecorElevation, setDecorSort } from "./HexPainterSD.mjs";
 import { generateHexMap, clearGeneratedTiles } from "./HexGeneratorSD.mjs";
-import { flattenTiles } from "./TileFlattenSD.mjs";
-import { setDungeonMode, selectFloorTile, selectWallTile, selectDoorTile, enableDungeonPainting, disableDungeonPainting, setNoFoundryWalls, setDungeonBackground } from "./DungeonPainterSD.mjs";
+import { flattenTiles, unflattenTile, getDungeonFloorLevels, getFlattendDungeonLevels, flattenDungeonLevel } from "./TileFlattenSD.mjs";
+import { setDungeonMode, selectFloorTile, selectWallTile, selectDoorTile, enableDungeonPainting, disableDungeonPainting, setNoFoundryWalls, setWallShadows, setDungeonBackground } from "./DungeonPainterSD.mjs";
 import { toggleGeneratorPanel, isGeneratorExpanded, generateDungeon, generateRandomSeed, getGeneratorSeed, setGeneratorSeed, getGeneratorSettings, setGeneratorSettings } from "./DungeonGeneratorSD.mjs";
 
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
@@ -607,6 +607,100 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
             });
         }
 
+        // Dungeon "Wall Shadows" toggle
+        const wallShadowsCheckbox = elem.querySelector(".dungeon-wall-shadows-checkbox");
+        if (wallShadowsCheckbox) {
+            wallShadowsCheckbox.addEventListener("change", (e) => {
+                setWallShadows(e.target.checked);
+            });
+        }
+
+        // Dungeon "Flatten Level" button
+        elem.querySelector(".dungeon-flatten-level-btn")?.addEventListener("click", async (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            const byElevation = getDungeonFloorLevels();
+            const elevations = Object.keys(byElevation).map(Number).sort((a, b) => a - b);
+            if (!elevations.length) {
+                ui.notifications.warn("No dungeon floor tiles found on this scene.");
+                return;
+            }
+            let elevation;
+            if (elevations.length === 1) {
+                elevation = elevations[0];
+            } else {
+                const options = elevations.map(el =>
+                    `<option value="${el}">Elevation ${el} — ${byElevation[el].length} tiles</option>`
+                ).join('');
+                elevation = await new Promise(resolve => {
+                    new Dialog({
+                        title: "Flatten Dungeon Level",
+                        content: `<div style="padding:8px 0"><label style="display:block;margin-bottom:6px">Select level to flatten:</label><select id="sdx-fl-sel" style="width:100%">${options}</select></div>`,
+                        buttons: {
+                            ok: {
+                                icon: '<i class="fas fa-layer-group"></i>',
+                                label: "Flatten",
+                                callback: (html) => {
+                                    const el = (html instanceof HTMLElement ? html : html[0]).querySelector("#sdx-fl-sel");
+                                    resolve(el ? Number(el.value) : null);
+                                }
+                            },
+                            cancel: { label: "Cancel", callback: () => resolve(null) }
+                        },
+                        default: "ok",
+                        close: () => resolve(null)
+                    }).render(true);
+                });
+            }
+            if (elevation !== null && elevation !== undefined) {
+                await flattenDungeonLevel(elevation);
+            }
+        });
+
+        // Dungeon "Unflatten Level" button
+        elem.querySelector(".dungeon-unflatten-level-btn")?.addEventListener("click", async (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            const flattenedTiles = getFlattendDungeonLevels();
+            if (!flattenedTiles.length) {
+                ui.notifications.warn("No flattened dungeon levels found on this scene.");
+                return;
+            }
+            let tileDoc;
+            if (flattenedTiles.length === 1) {
+                tileDoc = flattenedTiles[0];
+            } else {
+                const options = flattenedTiles.map(t => {
+                    const el = t.flags?.["shadowdark-extras"]?.dungeonFlattenedLevel ?? "?";
+                    const cnt = t.flags?.["shadowdark-extras"]?.originalTileCount ?? "?";
+                    return `<option value="${t.id}">Elevation ${el} (${cnt} tiles)</option>`;
+                }).join('');
+                tileDoc = await new Promise(resolve => {
+                    new Dialog({
+                        title: "Unflatten Dungeon Level",
+                        content: `<div style="padding:8px 0"><label style="display:block;margin-bottom:6px">Select level to unflatten:</label><select id="sdx-ufl-sel" style="width:100%">${options}</select></div>`,
+                        buttons: {
+                            ok: {
+                                icon: '<i class="fas fa-layer-group"></i>',
+                                label: "Unflatten",
+                                callback: (html) => {
+                                    const el = (html instanceof HTMLElement ? html : html[0]).querySelector("#sdx-ufl-sel");
+                                    const id = el?.value;
+                                    resolve(flattenedTiles.find(t => t.id === id) ?? null);
+                                }
+                            },
+                            cancel: { label: "Cancel", callback: () => resolve(null) }
+                        },
+                        default: "ok",
+                        close: () => resolve(null)
+                    }).render(true);
+                });
+            }
+            if (tileDoc) {
+                await unflattenTile(tileDoc);
+            }
+        });
+
         // Dungeon background select
         const bgSelect = elem.querySelector(".dungeon-background-select");
         if (bgSelect) {
@@ -674,6 +768,7 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
             setGeneratorSeed(seed);
 
             const isTextured = elem.querySelector(".dgen-textured")?.checked ?? false;
+            const isWallShadows = elem.querySelector(".dgen-wall-shadows")?.checked ?? false;
             const rooms = parseInt(elem.querySelector(".dgen-rooms")?.value || "10");
             const dens = parseFloat(elem.querySelector(".dgen-density")?.value || "0.8");
             const branch = parseFloat(elem.querySelector(".dgen-branching")?.value || "0.5");
@@ -689,7 +784,7 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
             setGeneratorSettings({
                 rooms, density: dens, branching: branch, roomSize: roomSz,
                 symmetry: sym, stairs: stairsVal, stairsDown: stairsDownVal, clutter: clutterVal,
-                textured: isTextured, wallColor: wColor, thickness: thick
+                textured: isTextured, wallShadows: isWallShadows, wallColor: wColor, thickness: thick
             });
 
             const config = {
@@ -703,6 +798,7 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
                 stairsDown: stairsDownVal,
                 clutter: clutterVal,
                 useTexture: isTextured,
+                wallShadows: isWallShadows,
                 wallColor: wColor,
                 wallThickness: thick
             };

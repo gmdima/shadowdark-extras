@@ -3238,14 +3238,48 @@ body.sdx-tray-enabled #camera-views.vertical.left {
     gap: 6px;
 }
 
-.sdx-tray .dungeon-option-toggle:has(.dungeon-no-walls-checkbox:checked) {
+.sdx-tray .dungeon-option-toggle:has(.dungeon-no-walls-checkbox:checked),
+.sdx-tray .dungeon-option-toggle:has(.dungeon-wall-shadows-checkbox:checked) {
     border-color: #f97316;
     background: rgba(249, 115, 22, 0.15);
     color: #fdba74;
 }
 
-.sdx-tray .dungeon-option-toggle:has(.dungeon-no-walls-checkbox:checked) i {
+.sdx-tray .dungeon-option-toggle:has(.dungeon-no-walls-checkbox:checked) i,
+.sdx-tray .dungeon-option-toggle:has(.dungeon-wall-shadows-checkbox:checked) i {
     color: #f97316;
+}
+
+/* Flatten Level buttons */
+.sdx-tray .dungeon-flatten-buttons {
+    display: flex;
+    gap: 6px;
+    padding: 4px 8px 2px;
+}
+
+.sdx-tray .dungeon-flatten-level-btn,
+.sdx-tray .dungeon-unflatten-level-btn {
+    flex: 1;
+    padding: 6px 8px;
+    background: rgba(251, 191, 36, 0.15);
+    border: 1px solid rgba(251, 191, 36, 0.3);
+    border-radius: 4px;
+    color: #fbbf24;
+    font-size: 0.75em;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+}
+
+.sdx-tray .dungeon-flatten-level-btn:hover,
+.sdx-tray .dungeon-unflatten-level-btn:hover {
+    background: rgba(251, 191, 36, 0.3);
 }
 
 /* Player info message */

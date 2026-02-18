@@ -3,7 +3,7 @@
  * Spine-walker algorithm for room placement with corridors, doors, and wall visuals
  */
 
-import { getSelectedFloorTile, getSelectedWallTile, getSelectedDoorTile, getCurrentElevation } from "./DungeonPainterSD.mjs";
+import { getSelectedFloorTile, getSelectedWallTile, getSelectedDoorTile, getCurrentElevation, getDungeonBackground, ensureBackgroundDrawing } from "./DungeonPainterSD.mjs";
 
 const MODULE_ID = "shadowdark-extras";
 const GRID_SIZE = 100;
@@ -25,7 +25,8 @@ let _generatorSettings = {
     stairs: 1,
     stairsDown: 1,
     clutter: 0,
-    textured: false,
+    textured: true,
+    wallShadows: false,
     wallColor: "#5C3D3D",
     thickness: 20
 };
@@ -1027,6 +1028,7 @@ async function renderFloorTilesWithElevation(scene, floors, rng, offset, floorTe
             y: (gy + offset.y) * gridSize,
             width: gridSize,
             height: gridSize,
+            sort: 0,
             flags: {
                 [MODULE_ID]: { dungeonFloor: true }
             }
@@ -1063,6 +1065,7 @@ export async function generateDungeon(config) {
         stairsDown = 0,
         clutter = 0,
         useTexture = false,
+        wallShadows = false,
         wallColor = "#5C3D3D",
         wallThickness = 20
     } = config;
@@ -1123,13 +1126,32 @@ export async function generateDungeon(config) {
         }, rng);
 
         // 5. Fit scene to content (expand only if Levels is active to preserve other levels)
-        const { offset, width, height } = fitToContent(layout.floors, GRID_SIZE, 300);
+        let { offset, width, height } = fitToContent(layout.floors, GRID_SIZE, 300);
         if (levelsActive) {
             const newWidth = Math.max(scene.width, width);
             const newHeight = Math.max(scene.height, height);
             await scene.update({ width: newWidth, height: newHeight });
         } else {
             await scene.update({ width, height });
+        }
+
+        // Ensure dungeon content stays inside the scene interior with a 1-cell gap on all sides.
+        // scene.padding is a fraction (e.g. 0.25) added around scene.width/height.
+        // Interior starts at scenePadX px from the canvas corner.
+        // Wall visuals extend wallThickness px outward from floor tiles, so floor tiles must
+        // start at least (scenePadX + GRID_SIZE + wallThickness) px from the canvas corner.
+        // fitToContent already puts content at 300px from the corner; add the difference if needed.
+        {
+            const scenePadX = Math.ceil(scene.width * scene.padding / GRID_SIZE) * GRID_SIZE;
+            const scenePadY = Math.ceil(scene.height * scene.padding / GRID_SIZE) * GRID_SIZE;
+            const minStartX = scenePadX + GRID_SIZE + wallThickness;
+            const minStartY = scenePadY + GRID_SIZE + wallThickness;
+            const extraX = Math.max(0, Math.ceil((minStartX - 300) / GRID_SIZE));
+            const extraY = Math.max(0, Math.ceil((minStartY - 300) / GRID_SIZE));
+            if (extraX > 0 || extraY > 0) {
+                offset = { x: offset.x + extraX, y: offset.y + extraY };
+                console.log(`${MODULE_ID} | Scene padding adjustment: +${extraX},+${extraY} cells (scenePad ${scenePadX}x${scenePadY}px)`);
+            }
         }
 
         // 6. Get selected textures
@@ -1191,6 +1213,34 @@ export async function generateDungeon(config) {
 
         // 12. Create all drawings (wall visuals)
         await createWithElevation("Drawing", drawingsData);
+
+        // 12b. Apply TokenMagic dropshadow2 to wall drawings if Wall Shadows is enabled
+        if (wallShadows && window.TokenMagic) {
+            const shadowParams = [{
+                "filterType": "shadow",
+                "filterId": "dropshadow2",
+                "rotation": 0,
+                "distance": 0,
+                "color": 0x000000,
+                "alpha": 1,
+                "shadowOnly": false,
+                "blur": 5,
+                "quality": 5,
+                "padding": 20
+            }];
+            const wallDrawings = canvas.drawings.placeables.filter(d => {
+                if (!d.document.flags?.[MODULE_ID]?.dungeonWall) return false;
+                if (levelsActive) return Math.abs((d.document.elevation ?? 0) - elevation) < ELEVATION_TOLERANCE;
+                return true;
+            });
+            for (const drawing of wallDrawings) {
+                try {
+                    await TokenMagic.addUpdateFilters(drawing.document, shadowParams);
+                } catch (err) {
+                    console.warn(`${MODULE_ID} | Wall shadow effect failed:`, err);
+                }
+            }
+        }
 
         // 13. Place stairs tiles in random rooms
         if ((stairs > 0 || stairsDown > 0) && layout.roomData.length > 0) {
@@ -1316,6 +1366,12 @@ export async function generateDungeon(config) {
 
                 await createWithElevation("Tile", clutterTiles);
             }
+        }
+
+        // 15. Apply background if one is selected in the painter
+        const bgSetting = getDungeonBackground();
+        if (bgSetting && bgSetting !== "none") {
+            await ensureBackgroundDrawing(scene, elevation, bgSetting);
         }
 
         ui.notifications.info(`SDX | Dungeon generated! ${layout.placedRooms.length} rooms, seed: ${seed}`);

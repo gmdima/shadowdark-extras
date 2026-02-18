@@ -406,15 +406,10 @@ async function saveAsWebP(canvasEl, quality = 1.0) {
 async function createFlattenedTile(bounds, filePath, tiles) {
     if (!canvas?.scene) throw new Error('Scene not available');
 
-    let maxSort = 0;
     let elevation = 0;
-    let overhead = false;
     for (const doc of tiles) {
-        const s = Number(doc.sort ?? 0);
-        if (s > maxSort) maxSort = s;
         const e = Number(doc.elevation ?? 0);
         if (e > elevation) elevation = e;
-        if (doc.overhead) overhead = true;
     }
 
     // Store original tile data for restoration
@@ -432,10 +427,9 @@ async function createFlattenedTile(bounds, filePath, tiles) {
         rotation: 0,
         alpha: 1,
         elevation,
-        sort: maxSort,
+        sort: 2,
         hidden: false,
         locked: false,
-        overhead,
         occlusion: { mode: 0, alpha: 0 },
         flags: {
             [MODULE_ID]: {
@@ -526,6 +520,9 @@ async function unflattenTile(tileDoc) {
             // Apply offset
             if (typeof data.x === 'number') data.x += offsetX;
             if (typeof data.y === 'number') data.y += offsetY;
+
+            // Always restore floor tiles at sort 0 to prevent sort inflation
+            if (data.flags?.[MODULE_ID]?.dungeonFloor) data.sort = 0;
 
             toCreate.push(data);
         }
@@ -662,5 +659,102 @@ Hooks.on('renderTileHUD', (hud, html) => {
     }
 });
 
+// ─── Dungeon Level Flatten/Unflatten ─────────────────────────────────────────
+
+/**
+ * Returns floor tiles grouped by elevation, excluding already-flattened tiles.
+ * Only tiles with flags.shadowdark-extras.dungeonFloor = true are included.
+ * @returns {Object} { [elevation]: TileDocument[] }
+ */
+export function getDungeonFloorLevels() {
+    const scene = canvas?.scene;
+    if (!scene) return {};
+    const tiles = scene.tiles.contents.filter(t =>
+        t.flags?.[MODULE_ID]?.dungeonFloor === true &&
+        !t.flags?.[MODULE_ID]?.flattenedTile
+    );
+    const byElevation = {};
+    for (const tile of tiles) {
+        const elev = tile.elevation ?? 0;
+        if (!byElevation[elev]) byElevation[elev] = [];
+        byElevation[elev].push(tile);
+    }
+    return byElevation;
+}
+
+/**
+ * Returns all dungeon-level flattened tile documents on the current scene.
+ * @returns {TileDocument[]}
+ */
+export function getFlattendDungeonLevels() {
+    const scene = canvas?.scene;
+    if (!scene) return [];
+    return scene.tiles.contents.filter(t =>
+        typeof t.flags?.[MODULE_ID]?.dungeonFlattenedLevel === 'number'
+    );
+}
+
+/**
+ * Flatten all dungeon floor tiles at the given elevation into one tile.
+ * Stores original data for unflatten; marks result with dungeonFlattenedLevel.
+ * @param {number} elevation
+ */
+export async function flattenDungeonLevel(elevation) {
+    const byElevation = getDungeonFloorLevels();
+    const tiles = byElevation[elevation];
+    if (!tiles?.length) {
+        ui.notifications.warn('No dungeon floor tiles found at that elevation.');
+        return;
+    }
+
+    try {
+        ui.notifications.info(`Flattening ${tiles.length} floor tiles at elevation ${elevation}…`);
+        const bounds = computeBounds(tiles);
+        if (!bounds) throw new Error('Could not compute tile bounds');
+
+        const result = await renderTilesToCanvas(tiles, bounds);
+        if (!result?.canvas) throw new Error('Failed to render tiles');
+
+        ui.notifications.info('Saving flattened image…');
+        const filePath = await saveAsWebP(result.canvas, 1.0);
+        try { result.canvas.width = 0; result.canvas.height = 0; } catch (_) {}
+
+        const originalData = tiles.map(t => ({ data: t.toObject(false) }));
+
+        const tileData = {
+            texture: { src: filePath },
+            x: bounds.x,
+            y: bounds.y,
+            width: bounds.width,
+            height: bounds.height,
+            rotation: 0,
+            alpha: 1,
+            elevation,
+            sort: 0,
+            hidden: false,
+            locked: false,
+            occlusion: { mode: 0, alpha: 0 },
+            flags: {
+                [MODULE_ID]: {
+                    flattenedTile: true,
+                    dungeonFloor: true,
+                    dungeonFlattenedLevel: elevation,
+                    originalTileCount: tiles.length,
+                    flattenedAt: Date.now(),
+                    originalPosition: { x: bounds.x, y: bounds.y },
+                    tiles: originalData
+                }
+            }
+        };
+
+        await canvas.scene.createEmbeddedDocuments('Tile', [tileData]);
+        await canvas.scene.deleteEmbeddedDocuments('Tile', tiles.map(t => t.id).filter(Boolean));
+        ui.notifications.info(`Flattened elevation ${elevation} (${tiles.length} tiles) successfully!`);
+    } catch (error) {
+        console.error(`${MODULE_ID} | FlattenDungeonLevel failed:`, error);
+        ui.notifications.error(`Failed to flatten level: ${error.message}`);
+    }
+}
+
 // Export for use by other modules (e.g., TrayApp)
-export { flattenTiles };
+export { flattenTiles, unflattenTile };

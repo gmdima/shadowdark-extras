@@ -30,6 +30,7 @@ let _isShiftHeld = false;
 let _selectionRect = null;
 let _rebuildTimeout = null;
 let _noFoundryWalls = false; // Toggle to skip creating Foundry wall documents (but keep visuals)
+let _wallShadows = false; // Toggle to apply TokenMagic dropshadow2 to wall drawings
 let _backgroundTiles = null;
 let _selectedBackground = "none";
 
@@ -252,15 +253,16 @@ export async function loadDungeonAssets() {
         _selectedFloorTile = _floorTiles[0].path;
     }
 
-    // Select first wall tile by default
+    // Select wall tile by default (prefer dyson)
     if (_wallTiles.length > 0 && !_selectedWallTile) {
-        _selectedWallTile = _wallTiles[0].path;
+        const dysonTile = _wallTiles.find(t => t.key.toLowerCase().includes("dyson"));
+        _selectedWallTile = dysonTile ? dysonTile.path : _wallTiles[0].path;
     }
 
-    // Select first door tile by default (prefer horizontal if available)
+    // Select door tile by default (prefer B&W-Portal-01)
     if (_doorTiles.length > 0 && !_selectedDoorTile) {
-        const horizontalDoor = _doorTiles.find(t => t.key.toLowerCase().includes("horizontal"));
-        _selectedDoorTile = horizontalDoor ? horizontalDoor.path : _doorTiles[0].path;
+        const portalTile = _doorTiles.find(t => t.key.toLowerCase().includes("portal-01"));
+        _selectedDoorTile = portalTile ? portalTile.path : _doorTiles[0].path;
     }
 
     console.log(`${MODULE_ID} | Loaded ${_floorTiles.length} floor tiles, ${_wallTiles.length} wall tiles, ${_doorTiles.length} door tiles, ${(_backgroundTiles || []).length} background tiles`);
@@ -432,6 +434,7 @@ export async function getDungeonPainterData() {
         hasWallTiles: (displayWallTiles.length > 0),
         hasDoorTiles: (doorTiles.length > 0),
         noFoundryWalls: _noFoundryWalls,
+        wallShadows: _wallShadows,
         backgroundOptions,
         selectedBackground: _selectedBackground,
         canPlayerPaint: canPlayerPaint(),
@@ -516,6 +519,20 @@ export function setNoFoundryWalls(value) {
  */
 export function getNoFoundryWalls() {
     return _noFoundryWalls;
+}
+
+/**
+ * Set whether to apply wall shadows (TokenMagic dropshadow2) to wall drawings
+ */
+export function setWallShadows(value) {
+    _wallShadows = !!value;
+}
+
+/**
+ * Get whether wall shadows are enabled
+ */
+export function getWallShadows() {
+    return _wallShadows;
 }
 
 /**
@@ -790,10 +807,10 @@ function destroySelectionRect() {
 /**
  * Ensure a full-scene background Drawing exists at the given elevation
  */
-async function ensureBackgroundDrawing(scene, elevation, backgroundSetting) {
+export async function ensureBackgroundDrawing(scene, elevation, backgroundSetting) {
     if (!backgroundSetting || backgroundSetting === "none") return;
 
-    const bgElevation = elevation - 2;
+    const bgElevation = elevation - 1;
     const rangeTop = elevation;
 
     // Check if a background drawing already exists at this elevation
@@ -828,10 +845,23 @@ async function ensureBackgroundDrawing(scene, elevation, backgroundSetting) {
         texturePath = backgroundSetting;
     }
 
-    // If a background already exists at this elevation, update it to the new setting
+    // Compute scene interior bounds from scene data directly.
+    // canvas.dimensions may be stale if the scene was just resized by the generator.
+    // Foundry snaps the padding offset to the nearest grid cell (ceiling), so we do the same.
+    const scenePadFraction = scene.padding ?? 0;
+    const gridSize = scene.grid?.size || GRID_SIZE;
+    const sceneX = Math.ceil(scene.width * scenePadFraction / gridSize) * gridSize;
+    const sceneY = Math.ceil(scene.height * scenePadFraction / gridSize) * gridSize;
+    const sceneWidth = scene.width;
+    const sceneHeight = scene.height;
+
+    // If a background already exists at this elevation, update fill AND shape/position
     if (existing) {
         const updateData = {
             _id: existing.id,
+            x: sceneX,
+            y: sceneY,
+            shape: { type: "r", width: sceneWidth, height: sceneHeight },
             fillType: fillType,
             fillColor: fillColor,
             fillAlpha: fillAlpha,
@@ -841,13 +871,6 @@ async function ensureBackgroundDrawing(scene, elevation, backgroundSetting) {
         console.log(`${MODULE_ID} | Updated background drawing at elevation ${bgElevation}`);
         return;
     }
-
-    // Get scene playable area
-    const dims = canvas.dimensions;
-    const sceneX = dims.sceneX;
-    const sceneY = dims.sceneY;
-    const sceneWidth = dims.sceneWidth;
-    const sceneHeight = dims.sceneHeight;
 
     const drawingData = {
         author: game.user.id,
@@ -1058,6 +1081,7 @@ async function handleRectangleFill(startPos, endPos, isDeleting) {
                         y: gy * gridSize,
                         width: gridSize,
                         height: gridSize,
+                        sort: 0,
                         flags: {
                             [MODULE_ID]: { dungeonFloor: true }
                         }
@@ -1521,6 +1545,22 @@ async function rebuildWalls(scene) {
                 if (updates.length > 0) {
                     await scene.updateEmbeddedDocuments("Drawing", updates);
                 }
+
+                // Apply wall shadows if enabled
+                if (_wallShadows && window.TokenMagic) {
+                    const shadowParams = [{
+                        filterType: "shadow",
+                        filterId: "dropshadow2",
+                        rotation: 0, distance: 0,
+                        color: 0x000000, alpha: 1,
+                        shadowOnly: false,
+                        blur: 5, quality: 5, padding: 20
+                    }];
+                    for (const doc of created) {
+                        try { await TokenMagic.addUpdateFilters(doc, shadowParams); }
+                        catch (err) { console.warn(`${MODULE_ID} | Wall shadow failed:`, err); }
+                    }
+                }
             }
             totalDrawings += drawingsData.length;
         }
@@ -1824,6 +1864,7 @@ async function _gmFillRectangle(data) {
                     y: gy * gridSize,
                     width: gridSize,
                     height: gridSize,
+                    sort: 0,
                     flags: {
                         [MODULE_ID]: { dungeonFloor: true }
                     }
