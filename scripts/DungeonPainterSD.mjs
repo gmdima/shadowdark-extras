@@ -498,6 +498,13 @@ export function getSelectedDoorTile() {
 }
 
 /**
+ * Get loaded door tiles array
+ */
+export function getDoorTiles() {
+    return _doorTiles || [];
+}
+
+/**
  * Set whether to skip creating Foundry walls (visuals only)
  */
 export function setNoFoundryWalls(value) {
@@ -786,7 +793,7 @@ function destroySelectionRect() {
 async function ensureBackgroundDrawing(scene, elevation, backgroundSetting) {
     if (!backgroundSetting || backgroundSetting === "none") return;
 
-    const bgElevation = elevation - 1;
+    const bgElevation = elevation - 2;
     const rangeTop = elevation;
 
     // Check if a background drawing already exists at this elevation

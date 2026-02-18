@@ -222,6 +222,21 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
             disablePreview();
             disableDungeonPainting();
         }
+
+        this._syncPoiSortPanel();
+    }
+
+    /**
+     * Sync the POI Tile Sort panel visibility based on current mode
+     */
+    async _syncPoiSortPanel() {
+        const viewMode = getViewMode();
+        const isPoiMode = this._isExpanded && (
+            (viewMode === "hexes" && getActiveTileTab() === "symbols") ||
+            viewMode === "decor"
+        );
+        const { PoiTileSortApp } = await import("./PoiTileSortSD.mjs");
+        isPoiMode ? PoiTileSortApp.show() : PoiTileSortApp.hide();
     }
 
     /**
@@ -519,6 +534,7 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
                         disablePreview();
                         disableDungeonPainting();
                     }
+                    this._syncPoiSortPanel();
                 }
             });
         });
@@ -1514,6 +1530,7 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
 
                 // Re-render to update state properly
                 renderTray();
+                this._syncPoiSortPanel();
             });
         });
 

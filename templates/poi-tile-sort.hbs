@@ -1,0 +1,32 @@
+<div class="poi-sort-wrapper">
+    <div class="poi-sort-toolbar">
+        <input type="text" class="poi-sort-search" placeholder="Search tiles..." value="{{searchTerm}}">
+    </div>
+
+    <ul class="poi-sort-list">
+        {{#each tiles}}
+        <li class="poi-sort-item{{#if this.isControlled}} selected{{/if}}{{#if this.isHidden}} hidden-tile{{/if}}"
+            draggable="true" data-tile-id="{{this.id}}">
+            <span class="poi-sort-grip"><i class="fas fa-grip-vertical"></i></span>
+            <img class="poi-sort-thumb" src="{{this.src}}" alt="{{this.name}}" loading="lazy">
+            <div class="poi-sort-info">
+                <span class="poi-sort-name" title="{{this.name}}">{{this.name}}</span>
+                <span class="poi-sort-meta" data-elevation="{{this.elevation}}">z:{{this.sort}} · e:{{this.elevation}}</span>
+            </div>
+            <div class="poi-sort-actions">
+                <span class="poi-sort-trackpoint" title="Hold &amp; drag to nudge tile"><span class="poi-sort-trackpoint-nub"></span></span>
+                <a class="poi-sort-btn poi-sort-rotate-left" title="Rotate left"><i class="fas fa-undo"></i></a>
+                <a class="poi-sort-btn poi-sort-rotate-right" title="Rotate right"><i class="fas fa-redo"></i></a>
+                <a class="poi-sort-btn poi-sort-scale-down" title="Smaller"><i class="fas fa-search-minus"></i></a>
+                <a class="poi-sort-btn poi-sort-scale-up" title="Larger"><i class="fas fa-search-plus"></i></a>
+                <a class="poi-sort-btn poi-sort-eye" title="Toggle visibility"><i class="fas {{#if this.isHidden}}fa-eye-slash{{else}}fa-eye{{/if}}"></i></a>
+                <a class="poi-sort-btn poi-sort-delete" title="Delete tile"><i class="fas fa-trash"></i></a>
+            </div>
+        </li>
+        {{/each}}
+    </ul>
+
+    {{#unless tiles.length}}
+    <p class="poi-sort-empty">No POI tiles on this scene.</p>
+    {{/unless}}
+</div>

@@ -1,5 +1,6 @@
 import { cache } from "./SDXCache.mjs";
 import { BIOME_TILES, BIOME_TINTS } from "./HexGeneratorSD.mjs";
+import { getDoorTiles } from "./DungeonPainterSD.mjs";
 
 const MODULE_ID = "shadowdark-extras";
 const TILE_FOLDER = `modules/${MODULE_ID}/assets/tiles`;
@@ -44,7 +45,7 @@ let _isGenerating = false;
 let _decorSearchFilter = "";
 let _decorFoldersCollapsed = {};
 let _decorMode = false; // Whether we're in decor painting mode
-let _decorElevation = 0.1;
+let _decorElevation = 0;
 let _decorSort = 0;
 
 let _mapColumns = 15;
@@ -740,7 +741,6 @@ export async function getDecorTileFolders() {
     if (_decorSearchFilter) {
         tiles = tiles.filter(t => t.label.toLowerCase().includes(_decorSearchFilter));
     }
-    if (!tiles.length) return [];
 
     const folderMap = new Map();
     for (const tile of tiles) {
@@ -751,6 +751,23 @@ export async function getDecorTileFolders() {
             active: _chosenTiles.has(tile.path), category: tile.category
         });
     }
+
+    // Add door tiles from dungeon painter as a "Doors" folder
+    const doorTiles = getDoorTiles();
+    if (doorTiles.length) {
+        let filteredDoors = doorTiles;
+        if (_decorSearchFilter) {
+            filteredDoors = doorTiles.filter(t => t.label.toLowerCase().includes(_decorSearchFilter));
+        }
+        if (filteredDoors.length) {
+            folderMap.set("doors", filteredDoors.map(t => ({
+                key: t.key, label: t.label, path: t.path,
+                active: _chosenTiles.has(t.path), category: "doors"
+            })));
+        }
+    }
+
+    if (!folderMap.size) return [];
 
     const folders = [];
     for (const [key, folderTiles] of folderMap) {
@@ -1264,7 +1281,11 @@ async function _stampAtPointer(ev, forceStamp = false) {
     let availableTiles = Array.from(_chosenTiles);
 
     if (_activeTileTab === "symbols" || _decorMode) {
-        availableTiles = availableTiles.filter(path => _symbolTiles && _symbolTiles.some(t => t.path === path));
+        const doorTiles = getDoorTiles();
+        availableTiles = availableTiles.filter(path =>
+            (_symbolTiles && _symbolTiles.some(t => t.path === path)) ||
+            (_decorMode && doorTiles.some(t => t.path === path))
+        );
     } else if (_activeTileTab === "custom") {
         availableTiles = availableTiles.filter(path => _customTiles && _customTiles.some(t => t.path === path));
     } else if (_activeTileTab === "colored") {
@@ -1294,7 +1315,8 @@ async function _stampAtPointer(ev, forceStamp = false) {
     }
 
     // Check if the chosen tile is a symbol, custom, or colored tile
-    const isSymbolTile = _symbolTiles && _symbolTiles.some(t => t.path === chosenTile);
+    const isDoorTile = _decorMode && getDoorTiles().some(t => t.path === chosenTile);
+    const isSymbolTile = isDoorTile || (_symbolTiles && _symbolTiles.some(t => t.path === chosenTile));
     const isCustomTile = _customTiles && _customTiles.some(t => t.path === chosenTile);
     const isColoredTile = _coloredTiles && _coloredTiles.some(t => t.path === chosenTile);
 
@@ -1819,8 +1841,10 @@ export function getCurrentPreviewIndex() {
 function _getAvailablePoiTiles() {
     if (_activeTileTab !== "symbols" && !_decorMode) return [];
 
+    const doorTiles = getDoorTiles();
     return Array.from(_chosenTiles).filter(path =>
-        _symbolTiles && _symbolTiles.some(t => t.path === path)
+        (_symbolTiles && _symbolTiles.some(t => t.path === path)) ||
+        (_decorMode && doorTiles.some(t => t.path === path))
     );
 }
 /**
