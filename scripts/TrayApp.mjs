@@ -441,6 +441,17 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
             }
         });
 
+        // SDX Coords Toggle Button
+        elem.querySelector(".tray-handle-button-tool[data-action='sdx-coords']")?.addEventListener("click", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            if (window.SDXCoordinates) {
+                window.SDXCoordinates.toggle();
+            } else {
+                ui.notifications.warn("Coordinate display not supported on this map.");
+            }
+        });
+
         // SDX Roller Button
         elem.querySelector(".tray-handle-button-tool[data-action='sdx-roller']")?.addEventListener("click", async (e) => {
             e.preventDefault();

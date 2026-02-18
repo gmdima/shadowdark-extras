@@ -48,6 +48,9 @@
             <button class="tray-handle-button-tool" data-action="sdx-drawing" title="Drawing Tools">
                 <i class="fa-solid fa-pencil"></i>
             </button>
+            <button class="tray-handle-button-tool" data-action="sdx-coords" title="Toggle Coordinates">
+                <i class="far fa-globe"></i>
+            </button>
             {{#if isGM}}
             <button class="tray-handle-button-tool" data-action="sdx-roller" title="SDX Roller">
                 <i class="fa-solid fa-dice"></i>
@@ -982,7 +985,8 @@
                         <span><i class="fas fa-border-none"></i> No Foundry Walls</span>
                     </label>
                     <label class="dungeon-option-toggle">
-                        <input type="checkbox" class="dungeon-wall-shadows-checkbox" {{#if wallShadows}}checked{{/if}} />
+                        <input type="checkbox" class="dungeon-wall-shadows-checkbox" {{#if
+                            wallShadows}}checked{{/if}} />
                         <span><i class="fas fa-adjust"></i> Wall Shadows</span>
                     </label>
                 </div>

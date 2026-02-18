@@ -72,6 +72,8 @@ import { WallContextMenuSD } from "./WallContextMenuSD.mjs";
 import { sdxDrawingTool } from "./SDXDrawingTool.mjs";
 import { sdxDrawingToolbar } from "./SDXDrawingToolbar.mjs";
 import { SDXRollerApp } from "./SDXRollerApp.mjs";
+import { initSDXCoords, registerSDXCoordsSettings, registerSDXCoordsMenu } from "./SDXCoordsSD.mjs";
+import { SDXCoordsSettingsApp } from "./SDXCoordsSettingsSD.mjs";
 
 import { PixiPlugin } from "/scripts/greensock/esm/all.js";
 
@@ -93,6 +95,7 @@ const HIDDEN_JOURNAL_NAMES = [
 initJournalNarration();
 initMedkit();
 initJournalPins();
+initSDXCoords();
 Hooks.once("init", () => {
 	// Register GSAP Plugins
 	try {
@@ -4232,15 +4235,15 @@ function registerSettings() {
 	// ═══════════════════════════════════════════════════════════════
 	// 3. CHARACTER SHEET
 	// ═══════════════════════════════════════════════════════════════
-game.settings.register(MODULE_ID, "showMedkitIcon", {
-    name: game.i18n.localize("SHADOWDARK_EXTRAS.settings.show_medkit_icon.name"),
-    hint: game.i18n.localize("SHADOWDARK_EXTRAS.settings.show_medkit_icon.hint"),
-    scope: "world",
-    config: true,
-    default: true,
-    type: Boolean,
-    requiresReload: false,
-});
+	game.settings.register(MODULE_ID, "showMedkitIcon", {
+		name: game.i18n.localize("SHADOWDARK_EXTRAS.settings.show_medkit_icon.name"),
+		hint: game.i18n.localize("SHADOWDARK_EXTRAS.settings.show_medkit_icon.hint"),
+		scope: "world",
+		config: true,
+		default: true,
+		type: Boolean,
+		requiresReload: false,
+	});
 	game.settings.register(MODULE_ID, "enableEnhancedHeader", {
 		name: game.i18n.localize("SHADOWDARK_EXTRAS.settings.enable_enhanced_header.name"),
 		hint: game.i18n.localize("SHADOWDARK_EXTRAS.settings.enable_enhanced_header.hint"),
@@ -5096,6 +5099,11 @@ game.settings.register(MODULE_ID, "showMedkitIcon", {
 
 	// Pin Style Editor settings
 	registerPinStyleSettings();
+
+	// 11b. SDX COORDS
+	// ═══════════════════════════════════════════════════════════════
+	registerSDXCoordsSettings();
+	registerSDXCoordsMenu(SDXCoordsSettingsApp);
 
 	// ═══════════════════════════════════════════════════════════════
 	// 12. DRAWING TOOLS
@@ -10088,7 +10096,7 @@ function patchPlayerSheetUseAbility() {
 	// Only patch if getSkipPrompt is missing (i.e. the bug exists in this system version)
 	if (typeof PlayerSheetSD.prototype.getSkipPrompt === "function") return;
 
-	PlayerSheetSD.prototype._onUseAbility = async function(event) {
+	PlayerSheetSD.prototype._onUseAbility = async function (event) {
 		event.preventDefault();
 		const itemId = $(event.currentTarget).data("item-id");
 		const options = this.actor.buildOptionsForSkipPrompt(event);

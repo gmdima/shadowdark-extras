@@ -18435,3 +18435,183 @@ div.window-app.shadowdark.sheet.player .window-header {
     color: #fff;
     text-shadow: 0 0 4px rgba(100, 200, 255, 0.8);
 }
+
+/* ============================================
+   SDX COORDS SETTINGS DIALOG
+   ============================================ */
+
+.application.sdx-coords-settings {
+    background: #1a1a2e !important;
+    color: #e0e0e0 !important;
+}
+
+.sdx-coords-settings .window-content {
+    background: #1a1a2e !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    display: flex !important;
+    flex-direction: column !important;
+}
+
+.sdx-coords-settings .window-content>section {
+    display: flex !important;
+    flex-direction: column !important;
+    overflow: hidden !important;
+    flex: 1 !important;
+}
+
+.sdx-coords-wrapper {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    height: 100%;
+}
+
+.sdx-coords-form {
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    padding: 10px 12px 10px;
+    gap: 8px;
+    flex: 1;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+}
+
+fieldset.sdx-coords-section {
+    border: 1px solid rgba(201, 170, 88, 0.3);
+    border-radius: 6px;
+    padding: 8px 10px;
+    margin: 0;
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.sdx-coords-section legend {
+    color: #c9aa58;
+    font-weight: 600;
+    font-size: 0.9em;
+    padding: 0 6px;
+    letter-spacing: 0.3px;
+}
+
+.sdx-coords-section legend i {
+    margin-right: 4px;
+    font-size: 0.85em;
+}
+
+.sdx-coords-section .form-group {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 8px;
+    margin-bottom: 6px;
+    min-height: 28px;
+}
+
+.sdx-coords-section .form-group:last-child {
+    margin-bottom: 0;
+}
+
+.sdx-coords-section .form-group>label {
+    flex: 0 0 140px;
+    font-size: 0.85em;
+    color: #bbb;
+    white-space: nowrap;
+}
+
+.sdx-coords-section .form-group>select,
+.sdx-coords-section .form-group>input[type="number"] {
+    flex: 1;
+    min-width: 0;
+    background: #111;
+    color: #e0e0e0;
+    border: 1px solid #444;
+    border-radius: 3px;
+    padding: 3px 6px;
+    font-size: 0.85em;
+    height: 26px;
+}
+
+.sdx-coords-section .form-group>input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+    margin-left: auto;
+}
+
+.sdx-coords-section .form-fields {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
+}
+
+.sdx-coords-section input[type="color"] {
+    width: 28px;
+    height: 24px;
+    border: 1px solid #444;
+    border-radius: 3px;
+    padding: 1px;
+    cursor: pointer;
+    background: #111;
+    flex-shrink: 0;
+}
+
+.sdx-coords-section input[type="text"] {
+    flex: 1;
+    min-width: 0;
+    background: #111;
+    color: #e0e0e0;
+    border: 1px solid #444;
+    border-radius: 3px;
+    padding: 3px 6px;
+    font-size: 0.82em;
+    height: 24px;
+}
+
+.sdx-coords-section input[type="range"] {
+    flex: 1;
+    min-width: 0;
+    height: 4px;
+    cursor: pointer;
+}
+
+.sdx-coords-section .range-value {
+    flex: 0 0 28px;
+    text-align: center;
+    font-size: 0.82em;
+    color: #aaa;
+    font-family: monospace;
+}
+
+/* Footer — sticky at the bottom */
+footer.sdx-coords-footer {
+    display: flex;
+    justify-content: flex-end;
+    padding: 8px 12px;
+    background: #15152a;
+    border-top: 1px solid rgba(201, 170, 88, 0.25);
+    flex-shrink: 0;
+}
+
+.sdx-coords-footer button {
+    background: linear-gradient(180deg, #3a7a34, #2d5a27);
+    color: #fff;
+    border: 1px solid #4a8a37;
+    border-radius: 4px;
+    padding: 5px 24px;
+    cursor: pointer;
+    font-size: 0.88em;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+.sdx-coords-footer button:hover {
+    background: linear-gradient(180deg, #4a9a44, #3d7a37);
+    box-shadow: 0 0 8px rgba(74, 138, 55, 0.5);
+}
+
+.sdx-coords-footer button i {
+    margin-right: 4px;
+}
