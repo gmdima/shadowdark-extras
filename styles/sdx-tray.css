@@ -3124,12 +3124,12 @@ body.sdx-tray-enabled #camera-views.vertical.left {
 
 .sdx-tray .dungeon-mode-tab {
     flex: 1;
-    padding: 8px 12px;
+    padding: 6px 4px;
     background: rgba(0, 0, 0, 0.3);
     border: 1px solid rgba(159, 146, 117, 0.2);
     border-radius: 4px;
     color: rgba(255, 255, 255, 0.6);
-    font-size: 0.85em;
+    font-size: 0.75em;
     font-weight: bold;
     text-transform: uppercase;
     cursor: pointer;
@@ -3137,7 +3137,7 @@ body.sdx-tray-enabled #camera-views.vertical.left {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 6px;
+    gap: 4px;
 }
 
 .sdx-tray .dungeon-mode-tab:hover {
@@ -3314,10 +3314,10 @@ body.sdx-tray-enabled #camera-views.vertical.left {
 
 .sdx-tray .dungeon-tile-thumb {
     position: relative;
-    aspect-ratio: 1;
+
     border: 3px solid transparent;
     border-radius: 6px;
-    overflow: hidden;
+
     cursor: pointer;
     transition: all 0.15s ease;
     background: rgba(0, 0, 0, 0.3);
@@ -3335,8 +3335,6 @@ body.sdx-tray-enabled #camera-views.vertical.left {
 
 .sdx-tray .dungeon-tile-thumb img {
     width: 100%;
-    height: 100%;
-    object-fit: cover;
     display: block;
 }
 
@@ -3418,6 +3416,23 @@ body.sdx-tray-enabled #camera-views.vertical.left {
 .sdx-tray .dungeon-wall-grid {
     grid-template-columns: 1fr;
     gap: 8px;
+}
+
+/* Interior wall tiles grid - single column, fixed 50px height */
+.sdx-tray .dungeon-intwall-grid {
+    grid-template-columns: 1fr;
+    gap: 6px;
+}
+
+.sdx-tray .dungeon-intwall-thumb {
+    height: 50px;
+    width: 305px;
+}
+
+.sdx-tray .dungeon-intwall-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
 }
 
 .sdx-tray .dungeon-wall-thumb {

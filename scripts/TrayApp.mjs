@@ -30,7 +30,7 @@ import { PlaceableNotesSD } from "./PlaceableNotesSD.mjs";
 import { setMapDimension, formatActiveScene, enablePainting, disablePainting, toggleTileSelection, setSearchFilter, toggleWaterEffect, toggleWindEffect, toggleFogAnimation, toggleTintEnabled, toggleBwEffect, isTintEnabled, setActiveTileTab, setCustomTileDimension, toggleColoredFolderCollapsed, toggleSymbolFolderCollapsed, undoLastPoi, redoLastPoi, canUndoPoi, canRedoPoi, getPoiScale, enablePreview, disablePreview, getActiveTileTab, adjustPoiScale, rotatePoiLeft, rotatePoiRight, togglePoiMirror, getPoiMirror, setDecorSearchFilter, toggleDecorFolderCollapsed, setDecorMode, setDecorElevation, setDecorSort } from "./HexPainterSD.mjs";
 import { generateHexMap, clearGeneratedTiles } from "./HexGeneratorSD.mjs";
 import { flattenTiles, unflattenTile, getDungeonFloorLevels, getFlattendDungeonLevels, flattenDungeonLevel } from "./TileFlattenSD.mjs";
-import { setDungeonMode, selectFloorTile, selectWallTile, selectDoorTile, enableDungeonPainting, disableDungeonPainting, setNoFoundryWalls, setWallShadows, setDungeonBackground } from "./DungeonPainterSD.mjs";
+import { setDungeonMode, selectFloorTile, selectWallTile, selectDoorTile, selectIntWallTile, selectIntDoorTile, enableDungeonPainting, disableDungeonPainting, setNoFoundryWalls, setWallShadows, setDungeonBackground } from "./DungeonPainterSD.mjs";
 import { toggleGeneratorPanel, isGeneratorExpanded, generateDungeon, generateRandomSeed, getGeneratorSeed, setGeneratorSeed, getGeneratorSettings, setGeneratorSettings } from "./DungeonGeneratorSD.mjs";
 
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
@@ -593,6 +593,34 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
                 if (tilePath) {
                     selectWallTile(tilePath);
                     elem.querySelectorAll(".dungeon-tile-thumb[data-dungeon-wall]").forEach(t => t.classList.remove("active"));
+                    tile.classList.add("active");
+                }
+            });
+        });
+
+        // Interior door tile selection
+        elem.querySelectorAll(".dungeon-intdoor-thumb[data-dungeon-intdoor]").forEach(tile => {
+            tile.addEventListener("click", (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                const tilePath = tile.dataset.dungeonIntdoor;
+                if (tilePath) {
+                    selectIntDoorTile(tilePath);
+                    elem.querySelectorAll(".dungeon-intdoor-thumb[data-dungeon-intdoor]").forEach(t => t.classList.remove("active"));
+                    tile.classList.add("active");
+                }
+            });
+        });
+
+        // Interior wall tile selection
+        elem.querySelectorAll(".dungeon-intwall-thumb[data-dungeon-intwall]").forEach(tile => {
+            tile.addEventListener("click", (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                const tilePath = tile.dataset.dungeonIntwall;
+                if (tilePath) {
+                    selectIntWallTile(tilePath);
+                    elem.querySelectorAll(".dungeon-intwall-thumb[data-dungeon-intwall]").forEach(t => t.classList.remove("active"));
                     tile.classList.add("active");
                 }
             });

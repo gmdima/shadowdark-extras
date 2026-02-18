@@ -950,7 +950,11 @@
                 <div class="dungeon-mode-tabs">
                     <button class="dungeon-mode-tab {{#if (eq dungeonMode 'tiles')}}active{{/if}}"
                         data-dungeon-mode="tiles">
-                        <i class="fas fa-th"></i> Tiles
+                        <i class="fas fa-vector-square"></i> Rooms
+                    </button>
+                    <button class="dungeon-mode-tab {{#if (eq dungeonMode 'intwalls')}}active{{/if}}"
+                        data-dungeon-mode="intwalls">
+                        <i class="fas fa-border-style"></i> Int. Walls
                     </button>
                     <button class="dungeon-mode-tab {{#if (eq dungeonMode 'doors')}}active{{/if}}"
                         data-dungeon-mode="doors">
@@ -960,6 +964,7 @@
 
                 <!-- Options (GM only) -->
                 {{#if isGM}}
+                {{#unless (eq dungeonMode 'intwalls')}}
                 <div class="dungeon-bg-select">
                     <label>
                         <i class="fas fa-image"></i>
@@ -970,6 +975,7 @@
                         </select>
                     </label>
                 </div>
+                {{/unless}}
                 <div class="dungeon-options-section">
                     <label class="dungeon-option-toggle">
                         <input type="checkbox" class="dungeon-no-walls-checkbox" {{#if noFoundryWalls}}checked{{/if}} />
@@ -981,6 +987,7 @@
                     </label>
                 </div>
 
+                {{#unless (eq dungeonMode 'intwalls')}}
                 <!-- Flatten Level Buttons -->
                 <div class="dungeon-flatten-buttons">
                     <button class="dungeon-flatten-level-btn">
@@ -1092,6 +1099,7 @@
                     </button>
                 </div>
                 {{/if}}
+                {{/unless}}
 
                 {{else}}
                 <!-- Player info -->
@@ -1104,7 +1112,46 @@
                 <div class="dungeon-tile-scroll"
                     style="flex: 1; overflow-y: auto; scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.2) rgba(0,0,0,0.1);">
 
-                    {{#if (eq dungeonMode 'tiles')}}
+                    {{#if (eq dungeonMode 'intwalls')}}
+                    <!-- Interior Wall Tiles -->
+                    <div class="dungeon-section-label"><i class="fas fa-border-style"></i> Interior Wall Tiles</div>
+                    {{#if hasWallTiles}}
+                    <div class="dungeon-tile-grid dungeon-intwall-grid">
+                        {{#each intWallTiles}}
+                        <div class="dungeon-tile-thumb dungeon-intwall-thumb {{#if this.active}}active{{/if}}"
+                            data-dungeon-intwall="{{this.path}}" title="{{this.label}}">
+                            <img src="{{this.src}}" alt="{{this.label}}" loading="lazy" />
+                        </div>
+                        {{/each}}
+                    </div>
+                    {{else}}
+                    <div class="dungeon-no-tiles dungeon-no-walls">
+                        <p><i class="fas fa-border-style"></i></p>
+                        <p>No wall tiles found</p>
+                        <p class="dungeon-hint">Add tiles to:<br><code>assets/Dungeon/wall_tiles/</code></p>
+                    </div>
+                    {{/if}}
+
+                    <!-- Interior Door Tiles -->
+                    <div class="dungeon-section-label"><i class="fas fa-door-open"></i> Doors</div>
+                    {{#if hasIntDoorTiles}}
+                    <div class="dungeon-tile-grid dungeon-door-grid">
+                        {{#each intDoorTiles}}
+                        <div class="dungeon-tile-thumb dungeon-intdoor-thumb {{#if this.active}}active{{/if}}"
+                            data-dungeon-intdoor="{{this.path}}" title="{{this.label}}">
+                            <img src="{{this.src}}" alt="{{this.label}}" loading="lazy" />
+                            <span class="dungeon-tile-label">{{this.label}}</span>
+                        </div>
+                        {{/each}}
+                    </div>
+                    {{else}}
+                    <div class="dungeon-no-tiles">
+                        <p><i class="fas fa-door-open"></i></p>
+                        <p>No door tiles found</p>
+                        <p class="dungeon-hint">Add tiles to:<br><code>assets/Dungeon/door_tiles/</code></p>
+                    </div>
+                    {{/if}}
+                    {{else if (eq dungeonMode 'tiles')}}
                     <!-- Floor Tiles -->
                     <div class="dungeon-section-label"><i class="fas fa-th"></i> Floor Tiles</div>
                     {{#if hasFloorTiles}}
@@ -1172,6 +1219,16 @@
                     </div>
                     <div class="dungeon-hint-row">
                         <i class="fas fa-eraser"></i> <span>Shift+Drag</span> to delete
+                    </div>
+                    {{else if (eq dungeonMode 'intwalls')}}
+                    <div class="dungeon-hint-row">
+                        <i class="fas fa-vector-square"></i> <span>Drag</span> wall tile to draw
+                    </div>
+                    <div class="dungeon-hint-row">
+                        <i class="fas fa-door-open"></i> <span>Click</span> int. wall to insert door
+                    </div>
+                    <div class="dungeon-hint-row">
+                        <i class="fas fa-eraser"></i> <span>Shift+Click</span> to remove door
                     </div>
                     {{else}}
                     <div class="dungeon-hint-row">
