@@ -51,6 +51,10 @@
             <button class="tray-handle-button-tool" data-action="sdx-coords" title="Toggle Coordinates">
                 <i class="far fa-globe"></i>
             </button>
+            <button class="tray-handle-button-tool{{#unless isGM}} active{{/unless}}" data-action="sdx-hex-tooltip"
+                title="Hexplorer">
+                <i class="fa-solid fa-hexagon-image"></i>
+            </button>
             {{#if isGM}}
             <button class="tray-handle-button-tool" data-action="sdx-roller" title="SDX Roller">
                 <i class="fa-solid fa-dice"></i>

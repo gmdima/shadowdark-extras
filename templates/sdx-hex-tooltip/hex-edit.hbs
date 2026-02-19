@@ -1,0 +1,116 @@
+<div class="sdx-hex-edit-body">
+
+    <!-- Visibility -->
+    <div class="sdx-hex-edit-section">
+        <div class="sdx-hex-edit-section-title">Visibility</div>
+        <label class="sdx-hex-edit-checkbox-row">
+            <input type="checkbox" name="hex-show-players" {{#if record.showToPlayers}}checked{{/if}}>
+            <span>Show to Players</span>
+        </label>
+    </div>
+
+    <!-- Image -->
+    <div class="sdx-hex-edit-section">
+        <div class="sdx-hex-edit-section-title">Image</div>
+        <div class="sdx-hex-edit-field-row">
+            <label>Path</label>
+            <input type="text" name="hex-image" value="{{record.image}}" placeholder="path/to/image.webp">
+            <button type="button" class="sdx-hex-browse-btn" data-action="browse-image">
+                <i class="fas fa-file-image"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Information -->
+    <div class="sdx-hex-edit-section">
+        <div class="sdx-hex-edit-section-title">Information</div>
+        <div class="sdx-hex-edit-field-row">
+            <label>Hex Name</label>
+            <input type="text" name="hex-name" value="{{record.name}}" placeholder="e.g. Chimera Pride">
+        </div>
+        <div class="sdx-hex-edit-field-row">
+            <label>Zone</label>
+            <input type="text" name="hex-zone" value="{{record.zone}}" placeholder="e.g. Darkwood">
+        </div>
+        <div class="sdx-hex-edit-field-row">
+            <label>Zone Color</label>
+            <div class="sdx-hex-color-swatches" data-selected="{{record.zoneColor}}">
+                {{#each zoneColors}}
+                <button type="button" class="sdx-hex-color-swatch{{#if (eq this.value ../record.zoneColor)}} active{{/if}}"
+                    data-color="{{this.value}}" title="{{this.label}}"
+                    style="background:{{this.hex}}"></button>
+                {{/each}}
+            </div>
+        </div>
+        <div class="sdx-hex-edit-field-row">
+            <label>Terrain</label>
+            <input type="text" name="hex-terrain" value="{{record.terrain}}" placeholder="e.g. Hills">
+        </div>
+        <div class="sdx-hex-edit-field-row">
+            <label>Travel</label>
+            <input type="text" name="hex-travel" value="{{record.travel}}" placeholder="e.g. Open Terrain">
+        </div>
+    </div>
+
+    <!-- Notes -->
+    <div class="sdx-hex-edit-section">
+        <div class="sdx-hex-edit-section-title sdx-hex-feats-title">
+            <span>Notes</span>
+            <button type="button" class="sdx-hex-add-feat-btn" data-action="add-note">
+                <i class="fas fa-plus"></i> Add
+            </button>
+        </div>
+        <div class="sdx-hex-notes-list">
+            {{!-- Note rows appended by JS in _onRender --}}
+        </div>
+    </div>
+
+    <!-- Exploration -->
+    <div class="sdx-hex-edit-section">
+        <div class="sdx-hex-edit-section-title">Exploration</div>
+        <div class="sdx-hex-edit-field-row">
+            <label>Status</label>
+            <select name="hex-exploration">
+                {{#each explorationOptions}}
+                <option value="{{this.value}}" {{#if (eq this.value ../record.exploration)}}selected{{/if}}>
+                    {{this.label}}
+                </option>
+                {{/each}}
+            </select>
+        </div>
+        <div class="sdx-hex-edit-checkboxes">
+            <label class="sdx-hex-edit-checkbox-row">
+                <input type="checkbox" name="hex-cleared" {{#if record.cleared}}checked{{/if}}>
+                <span>Cleared</span>
+            </label>
+            <label class="sdx-hex-edit-checkbox-row">
+                <input type="checkbox" name="hex-claimed" {{#if record.claimed}}checked{{/if}}>
+                <span>Claimed</span>
+            </label>
+        </div>
+    </div>
+
+    <!-- Features -->
+    <div class="sdx-hex-edit-section">
+        <div class="sdx-hex-edit-section-title sdx-hex-feats-title">
+            <span>Features</span>
+            <button type="button" class="sdx-hex-add-feat-btn" data-action="add-feature">
+                <i class="fas fa-plus"></i> Add
+            </button>
+        </div>
+        <div class="sdx-hex-feats-list">
+            {{!-- Feature rows appended by JS in _onRender --}}
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="sdx-hex-edit-footer">
+        <button type="button" class="sdx-hex-save-btn" data-action="save-hex">
+            <i class="fas fa-save"></i> Save
+        </button>
+        <button type="button" class="sdx-hex-cancel-btn" data-action="cancel-hex">
+            Cancel
+        </button>
+    </div>
+
+</div>

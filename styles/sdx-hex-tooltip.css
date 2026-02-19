@@ -1,0 +1,581 @@
+/* ═══════════════════════════════════════════════════════════════
+   SDX Hex Tooltip — hover tooltip + edit dialog styles
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── Utility ────────────────────────────────────────────────── */
+
+.sdx-hidden { display: none !important; }
+
+/* ── Hover Tooltip ─────────────────────────────────────────── */
+
+.sdx-hex-tooltip {
+    position: fixed;
+    z-index: 10000;
+    pointer-events: none;
+    background: rgba(12, 10, 18, 0.96);
+    border: 1px solid rgba(180, 150, 80, 0.55);
+    border-radius: 6px;
+    min-width: 220px;
+    max-width: 320px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.85);
+    overflow: hidden;
+    font-family: var(--font-primary, "Signika", sans-serif);
+}
+
+.sdx-hex-tt-inner {
+    padding: 10px 13px;
+}
+
+/* Header */
+.sdx-hex-tt-head {
+    margin-bottom: 6px;
+}
+
+.sdx-hex-tt-name {
+    font-size: 0.95em;
+    font-weight: bold;
+    color: #e8d5a0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Hidden-from-players icon (GM only) */
+.sdx-hex-tt-hidden-icon {
+    color: #666;
+    font-size: 0.85em;
+    margin-right: 2px;
+}
+
+/* Exploration badge */
+.sdx-hex-tt-badge {
+    display: inline-block;
+    font-size: 0.68em;
+    font-weight: bold;
+    letter-spacing: 0.06em;
+    padding: 2px 9px;
+    border-radius: 2px;
+    margin-bottom: 7px;
+}
+
+.sdx-hex-badge-unexplored {
+    background: rgba(160, 160, 160, 0.15);
+    color: #888;
+    border-left: 3px solid #666;
+}
+
+.sdx-hex-badge-explored {
+    background: rgba(96, 165, 250, 0.2);
+    color: #93c5fd;
+    border-left: 3px solid #60a5fa;
+}
+
+.sdx-hex-badge-mapped {
+    background: rgba(74, 222, 128, 0.2);
+    color: #86efac;
+    border-left: 3px solid #4ade80;
+}
+
+/* Data rows */
+.sdx-hex-tt-rows {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    margin-bottom: 7px;
+}
+
+.sdx-hex-tt-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.83em;
+}
+
+.sdx-hex-tt-rlabel {
+    color: #888;
+}
+
+.sdx-hex-tt-rvalue {
+    color: #ddd;
+    font-weight: 500;
+    text-align: right;
+}
+
+/* Feature pills */
+.sdx-hex-tt-features {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-top: 6px;
+    padding-top: 6px;
+    border-top: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.sdx-hex-tt-feat {
+    font-size: 0.73em;
+    padding: 2px 8px;
+    border-radius: 10px;
+    background: rgba(180, 140, 60, 0.28);
+    color: #fff;
+    border: 1px solid rgba(180, 140, 60, 0.45);
+}
+
+/* GM-only: undiscovered feature appears faded + dashed */
+.sdx-hex-tt-feat.sdx-hex-feat-gm-hidden {
+    opacity: 0.45;
+    border-style: dashed;
+    color: #777;
+}
+
+/* Notes — golden italic quote style */
+.sdx-hex-tt-notes {
+    margin-top: 6px;
+    padding-top: 6px;
+    border-top: 1px solid rgba(255, 255, 255, 0.07);
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.sdx-hex-tt-note {
+    font-size: 0.8em;
+    font-style: italic;
+    color: #d4a94a;
+    padding-left: 7px;
+    border-left: 2px solid rgba(212, 169, 74, 0.5);
+    line-height: 1.4;
+}
+
+.sdx-hex-tt-note.sdx-hex-note-gm-hidden {
+    opacity: 0.4;
+    border-left-style: dashed;
+    color: #8a7030;
+}
+
+/* GM double-click hint */
+.sdx-hex-tt-hint {
+    margin-top: 8px;
+    font-size: 0.68em;
+    color: #444;
+    text-align: center;
+    font-style: italic;
+}
+
+/* ── Tray button active state ───────────────────────────────── */
+
+.tray-handle-button-tool[data-action='sdx-hex-tooltip'].active {
+    color: #d4b06a;
+    background: rgba(180, 140, 60, 0.18);
+}
+
+/* ── Context Menu ───────────────────────────────────────────── */
+
+.sdx-hex-ctx-menu {
+    position: fixed;
+    z-index: 10001;
+    background: rgba(12, 10, 18, 0.97);
+    border: 1px solid rgba(180, 150, 80, 0.5);
+    border-radius: 5px;
+    min-width: 160px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.8);
+    overflow: hidden;
+    font-family: var(--font-primary, "Signika", sans-serif);
+}
+
+.sdx-hex-ctx-header {
+    font-size: 0.75em;
+    font-weight: bold;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #b4965a;
+    padding: 6px 12px 5px;
+    border-bottom: 1px solid rgba(180, 150, 80, 0.2);
+    user-select: none;
+}
+
+/* Placeholder — shown when menu has no items yet */
+.sdx-hex-ctx-menu:not(:has(.sdx-hex-ctx-item))::after {
+    content: "No actions";
+    display: block;
+    padding: 8px 12px;
+    font-size: 0.8em;
+    color: #555;
+    font-style: italic;
+}
+
+/* Future menu items */
+.sdx-hex-ctx-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 12px;
+    font-size: 0.83em;
+    color: #ccc;
+    cursor: pointer;
+    transition: background 0.1s;
+}
+
+.sdx-hex-ctx-item:hover {
+    background: rgba(180, 150, 80, 0.12);
+    color: #e8d5a0;
+}
+
+.sdx-hex-ctx-item i {
+    width: 14px;
+    text-align: center;
+    color: #888;
+}
+
+/* Dimmed — GM-visible but not yet discovered by players */
+.sdx-hex-ctx-item-dim {
+    opacity: 0.5;
+    font-style: italic;
+}
+
+/* ── Edit Dialog ────────────────────────────────────────────── */
+
+.sdx-hex-edit-app .window-content {
+    background: #111018;
+    padding: 0;
+    overflow: visible;
+}
+
+.sdx-hex-edit-body {
+    padding: 12px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+/* Sections */
+.sdx-hex-edit-section {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.sdx-hex-edit-section-title {
+    font-size: 0.72em;
+    font-weight: bold;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #b4965a;
+    padding-bottom: 3px;
+    border-bottom: 1px solid rgba(180, 150, 80, 0.22);
+    margin-bottom: 2px;
+}
+
+/* Field rows */
+.sdx-hex-edit-field-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.sdx-hex-edit-field-row label {
+    flex: 0 0 76px;
+    font-size: 0.82em;
+    color: #999;
+}
+
+/* Zone color swatches */
+.sdx-hex-color-swatches {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    flex: 1;
+}
+
+.sdx-hex-color-swatch {
+    width: 20px;
+    height: 20px;
+    border-radius: 3px;
+    border: 2px solid transparent;
+    cursor: pointer;
+    padding: 0;
+    transition: border-color 0.15s, transform 0.1s;
+}
+
+.sdx-hex-color-swatch:hover {
+    border-color: rgba(255, 255, 255, 0.5);
+    transform: scale(1.15);
+}
+
+.sdx-hex-color-swatch.active {
+    border-color: #e8d5a0;
+    box-shadow: 0 0 6px rgba(232, 213, 160, 0.5);
+}
+
+.sdx-hex-edit-field-row input[type="text"],
+.sdx-hex-edit-field-row select {
+    flex: 1;
+    background: rgba(0, 0, 0, 0.35);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+    color: #ddd;
+    padding: 3px 7px;
+    font-size: 0.82em;
+    font-family: inherit;
+}
+
+.sdx-hex-edit-field-row select option {
+    background: #1a1520;
+    color: #ddd;
+}
+
+/* Checkboxes */
+.sdx-hex-edit-checkboxes {
+    display: flex;
+    gap: 18px;
+}
+
+.sdx-hex-edit-checkbox-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.82em;
+    color: #bbb;
+    cursor: pointer;
+    user-select: none;
+}
+
+/* Features section header */
+.sdx-hex-feats-title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.sdx-hex-add-feat-btn {
+    font-size: 0.72em;
+    padding: 2px 9px;
+    background: rgba(100, 80, 40, 0.45);
+    border: 1px solid rgba(180, 150, 80, 0.38);
+    border-radius: 3px;
+    color: #d4b06a;
+    cursor: pointer;
+    font-family: inherit;
+}
+
+.sdx-hex-add-feat-btn:hover {
+    background: rgba(140, 110, 55, 0.55);
+}
+
+/* Note rows list */
+.sdx-hex-notes-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-height: 18px;
+}
+
+.sdx-hex-note-row {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.sdx-hex-note-text {
+    flex: 1;
+    background: rgba(0, 0, 0, 0.35);
+    border: 1px solid rgba(212, 169, 74, 0.25);
+    border-radius: 3px;
+    color: #d4a94a;
+    padding: 2px 6px;
+    font-size: 0.78em;
+    font-family: inherit;
+    font-style: italic;
+}
+
+.sdx-hex-note-text::placeholder {
+    color: #5a4a28;
+    font-style: normal;
+}
+
+/* Feature rows list */
+.sdx-hex-feats-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-height: 24px;
+}
+
+.sdx-hex-feat-row {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.sdx-hex-feat-type {
+    flex: 0 0 108px;
+    background: rgba(0, 0, 0, 0.35);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+    color: #ddd;
+    padding: 2px 4px;
+    font-size: 0.78em;
+    font-family: inherit;
+}
+
+.sdx-hex-feat-type option {
+    background: #1a1520;
+}
+
+.sdx-hex-feat-name {
+    flex: 1;
+    background: rgba(0, 0, 0, 0.35);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+    color: #ddd;
+    padding: 2px 6px;
+    font-size: 0.78em;
+    font-family: inherit;
+}
+
+/* Journal selects wrapper */
+.sdx-hex-feat-journal-wrap {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.sdx-hex-feat-journal,
+.sdx-hex-feat-page {
+    width: 100%;
+    background: rgba(0, 0, 0, 0.35);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+    color: #ddd;
+    padding: 2px 4px;
+    font-size: 0.75em;
+    font-family: inherit;
+}
+
+.sdx-hex-feat-journal option,
+.sdx-hex-feat-page option {
+    background: #1a1520;
+}
+
+
+/* Discovered toggle */
+.sdx-hex-feat-vis {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    cursor: pointer;
+    font-size: 0.82em;
+    color: #555;
+}
+
+.sdx-hex-feat-vis input[type="checkbox"] {
+    display: none;
+}
+
+.sdx-hex-feat-vis input[type="checkbox"]:checked + i {
+    color: #4ade80;
+}
+
+.sdx-hex-feat-vis i {
+    transition: color 0.15s;
+}
+
+/* Remove button */
+.sdx-hex-feat-del {
+    flex: 0 0 auto;
+    background: none;
+    border: none;
+    color: #555;
+    cursor: pointer;
+    padding: 0 3px;
+    font-size: 0.82em;
+    font-family: inherit;
+}
+
+.sdx-hex-feat-del:hover {
+    color: #f87171;
+}
+
+/* Footer */
+.sdx-hex-edit-footer {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+    padding-top: 8px;
+    border-top: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.sdx-hex-save-btn {
+    background: rgba(55, 120, 55, 0.3);
+    border: 1px solid rgba(74, 222, 128, 0.38);
+    border-radius: 3px;
+    color: #86efac;
+    padding: 5px 14px;
+    cursor: pointer;
+    font-size: 0.82em;
+    font-family: inherit;
+}
+
+.sdx-hex-save-btn:hover {
+    background: rgba(55, 120, 55, 0.5);
+}
+
+.sdx-hex-cancel-btn {
+    background: rgba(50, 50, 50, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 3px;
+    color: #999;
+    padding: 5px 14px;
+    cursor: pointer;
+    font-size: 0.82em;
+    font-family: inherit;
+}
+
+.sdx-hex-cancel-btn:hover {
+    background: rgba(70, 70, 70, 0.4);
+}
+
+/* ── Image Tooltip ─────────────────────────────────────────── */
+
+.sdx-hex-img-tooltip {
+    position: fixed;
+    z-index: 10000;
+    pointer-events: none;
+    border: 2px solid rgba(180, 150, 80, 0.7);
+    border-radius: 10px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.85);
+    overflow: hidden;
+    background: rgba(12, 10, 18, 0.96);
+    opacity: 0;
+    transition: opacity 0.15s ease-in;
+}
+
+.sdx-hex-img-tooltip.sdx-visible {
+    opacity: 1;
+}
+
+.sdx-hex-img-tooltip img {
+    display: block;
+    max-width: 250px;
+    max-height: 300px;
+    object-fit: contain;
+}
+
+/* ── Browse Button (edit dialog) ───────────────────────────── */
+
+.sdx-hex-browse-btn {
+    flex: 0 0 auto;
+    background: rgba(100, 80, 40, 0.45);
+    border: 1px solid rgba(180, 150, 80, 0.38);
+    border-radius: 3px;
+    color: #d4b06a;
+    cursor: pointer;
+    padding: 3px 7px;
+    font-size: 0.82em;
+    font-family: inherit;
+}
+
+.sdx-hex-browse-btn:hover {
+    background: rgba(140, 110, 55, 0.55);
+}

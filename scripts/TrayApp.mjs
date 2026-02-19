@@ -452,6 +452,18 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
             }
         });
 
+        // Hex Tooltip Toggle Button
+        elem.querySelector(".tray-handle-button-tool[data-action='sdx-hex-tooltip']")?.addEventListener("click", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            if (game.user.isGM && !canvas?.grid?.isHexagonal) {
+                ui.notifications.warn("Hex tooltips only work on hex-grid scenes.");
+                return;
+            }
+            const active = window.SDXHexTooltip?.toggle();
+            e.currentTarget.classList.toggle("active", !!active);
+        });
+
         // SDX Roller Button
         elem.querySelector(".tray-handle-button-tool[data-action='sdx-roller']")?.addEventListener("click", async (e) => {
             e.preventDefault();

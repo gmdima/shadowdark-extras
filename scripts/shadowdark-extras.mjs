@@ -74,6 +74,7 @@ import { sdxDrawingToolbar } from "./SDXDrawingToolbar.mjs";
 import { SDXRollerApp } from "./SDXRollerApp.mjs";
 import { initSDXCoords, registerSDXCoordsSettings, registerSDXCoordsMenu } from "./SDXCoordsSD.mjs";
 import { SDXCoordsSettingsApp } from "./SDXCoordsSettingsSD.mjs";
+import { initHexTooltip, HEX_JOURNAL_NAME } from "./HexTooltipSD.mjs";
 
 import { PixiPlugin } from "/scripts/greensock/esm/all.js";
 
@@ -86,7 +87,8 @@ const CAROUSING_TABLES_JOURNAL_NAME = "__sdx_carousing_tables__"; // Must match 
 const HIDDEN_JOURNAL_NAMES = [
 	TRADE_JOURNAL_NAME,
 	CAROUSING_JOURNAL_NAME,
-	CAROUSING_TABLES_JOURNAL_NAME
+	CAROUSING_TABLES_JOURNAL_NAME,
+	HEX_JOURNAL_NAME,
 ];
 
 // ============================================
@@ -96,6 +98,7 @@ initJournalNarration();
 initMedkit();
 initJournalPins();
 initSDXCoords();
+initHexTooltip();
 Hooks.once("init", () => {
 	// Register GSAP Plugins
 	try {
