@@ -959,6 +959,14 @@ export function toggleTileSelection(tilePath) {
     }
 }
 
+/**
+ * Clear all selected tiles
+ */
+export function clearTileSelection() {
+    _chosenTiles.clear();
+    destroyPreview();
+}
+
 export function setSearchFilter(term) {
     _searchFilter = term.toLowerCase();
 }

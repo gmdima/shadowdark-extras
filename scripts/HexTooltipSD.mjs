@@ -175,8 +175,8 @@ export class SDXHexTooltip {
 	#onKeyUpRef = null;
 
 	constructor() {
-		// Players always have tooltips active; GMs toggle manually
-		this.#enabled = !game.user.isGM;
+		// All users (GMs and Players) now start with tooltips disabled by default
+		this.#enabled = false;
 
 		// Tooltip DOM elements
 		this.#tooltipEl = document.createElement("div");

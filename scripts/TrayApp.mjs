@@ -22,7 +22,7 @@ import { PinListApp } from "./PinListApp.mjs";
 
 import { PlaceableNotesSD } from "./PlaceableNotesSD.mjs";
 
-import { setMapDimension, formatActiveScene, enablePainting, disablePainting, toggleTileSelection, setSearchFilter, toggleWaterEffect, toggleWindEffect, toggleFogAnimation, toggleTintEnabled, toggleBwEffect, isTintEnabled, setActiveTileTab, setCustomTileDimension, toggleColoredFolderCollapsed, toggleSymbolFolderCollapsed, undoLastPoi, redoLastPoi, canUndoPoi, canRedoPoi, getPoiScale, enablePreview, disablePreview, getActiveTileTab, adjustPoiScale, rotatePoiLeft, rotatePoiRight, togglePoiMirror, getPoiMirror, setDecorSearchFilter, toggleDecorFolderCollapsed, setDecorMode, setDecorElevation, setDecorSort } from "./HexPainterSD.mjs";
+import { setMapDimension, formatActiveScene, enablePainting, disablePainting, toggleTileSelection, clearTileSelection, setSearchFilter, toggleWaterEffect, toggleWindEffect, toggleFogAnimation, toggleTintEnabled, toggleBwEffect, isTintEnabled, setActiveTileTab, setCustomTileDimension, toggleColoredFolderCollapsed, toggleSymbolFolderCollapsed, undoLastPoi, redoLastPoi, canUndoPoi, canRedoPoi, getPoiScale, enablePreview, disablePreview, getActiveTileTab, adjustPoiScale, rotatePoiLeft, rotatePoiRight, togglePoiMirror, getPoiMirror, setDecorSearchFilter, toggleDecorFolderCollapsed, setDecorMode, setDecorElevation, setDecorSort } from "./HexPainterSD.mjs";
 import { generateHexMap, clearGeneratedTiles } from "./HexGeneratorSD.mjs";
 import { flattenTiles, unflattenTile, getDungeonFloorLevels, getFlattendDungeonLevels, flattenDungeonLevel } from "./TileFlattenSD.mjs";
 import { setDungeonMode, selectFloorTile, selectWallTile, selectDoorTile, selectIntWallTile, selectIntDoorTile, enableDungeonPainting, disableDungeonPainting, setNoFoundryWalls, setWallShadows, setDungeonBackground } from "./DungeonPainterSD.mjs";
@@ -277,7 +277,8 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
             generatorExpanded: isGeneratorExpanded(),
             generatorSeed: getGeneratorSeed(),
             generatorSettings: getGeneratorSettings(),
-            hexFogActive: isHexFogEnabled(canvas.scene?.id)
+            hexFogActive: isHexFogEnabled(canvas.scene?.id),
+            isHexagonal: !!canvas?.grid?.isHexagonal
         };
     }
 
@@ -454,7 +455,7 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
         elem.querySelector(".tray-handle-button-tool[data-action='sdx-hex-tooltip']")?.addEventListener("click", (e) => {
             e.preventDefault();
             e.stopPropagation();
-            if (game.user.isGM && !canvas?.grid?.isHexagonal) {
+            if (!canvas?.grid?.isHexagonal) {
                 ui.notifications.warn("Hex tooltips only work on hex-grid scenes.");
                 return;
             }
@@ -1675,6 +1676,13 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
 
                 thumb.classList.toggle("active");
             });
+
+            thumb.addEventListener("contextmenu", (e) => {
+                e.preventDefault();
+                clearTileSelection();
+                // Remove active class from all tile thumbs
+                elem.querySelectorAll(".hex-tile-thumb").forEach(t => t.classList.remove("active"));
+            });
         });
 
         // ── Procedural Generator ──
@@ -1845,6 +1853,13 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
                 if (!tilePath) return;
                 toggleTileSelection(tilePath);
                 thumb.classList.toggle("active");
+            });
+
+            thumb.addEventListener("contextmenu", (e) => {
+                e.preventDefault();
+                clearTileSelection();
+                // Remove active class from all tile thumbs
+                elem.querySelectorAll(".hex-tile-thumb").forEach(t => t.classList.remove("active"));
             });
         });
 
