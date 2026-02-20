@@ -153,6 +153,62 @@ body.sdx-tray-enabled #camera-views.vertical.left {
     color: #4ade80;
 }
 
+/* Fog Effects Context Menu */
+.sdx-fog-effect-menu {
+    background: #000000;
+    border: var(--sdx-box-border-width, 8px) solid transparent;
+    border-image: var(--sdx-box-border) var(--sdx-box-border-image-slice, 40) fill;
+    border-image-repeat: stretch;
+    border-image-width: var(--sdx-box-border-image-width, 40px);
+    padding: 8px;
+    min-width: 160px;
+    font-family: 'Montserrat-medium', serif;
+}
+
+.sdx-fog-effect-menu-header {
+    font-family: 'Old Newspaper Font', serif;
+    font-size: 14px;
+    color: #c9aa58;
+    padding: 4px 14px 8px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+    margin-bottom: 4px;
+}
+
+.sdx-fog-effect-menu-item {
+    padding: 8px 14px;
+    cursor: pointer;
+    color: #f0f0f0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-radius: 4px;
+    transition: background-color 0.15s ease;
+    font-size: 14px;
+}
+
+.sdx-fog-effect-menu-item:hover {
+    background-color: rgba(201, 170, 88, 0.3);
+}
+
+.sdx-fog-effect-menu-item i {
+    width: 16px;
+    text-align: center;
+    color: #c9aa58;
+}
+
+.sdx-fog-effect-menu-item:hover i {
+    color: #fff;
+}
+
+.sdx-fog-effect-menu-item.active {
+    background-color: rgba(74, 222, 128, 0.15);
+    color: #4ade80;
+}
+
+.sdx-fog-effect-menu-item.active i {
+    color: #4ade80;
+}
+
 .sdx-tray[data-position="left"] .tray-handle-button-tool.disabled {
     color: rgba(255, 255, 255, 0.15);
     cursor: not-allowed;

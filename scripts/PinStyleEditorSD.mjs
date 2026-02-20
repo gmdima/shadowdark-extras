@@ -55,7 +55,7 @@ export class PinStyleEditorApp extends HandlebarsApplicationMixin(ApplicationV2)
         let currentJournalId = null;
         let allJournals = null;
         let requiresVision = false;
-        let belowFog = false;
+        let aboveFog = false;
         let tooltipTitle = "";
         let tooltipContent = "";
         let hideTooltip = false;
@@ -78,7 +78,7 @@ export class PinStyleEditorApp extends HandlebarsApplicationMixin(ApplicationV2)
 
             // Load pin-specific settings (independent of journal linkage)
             requiresVision = pin.requiresVision || false;
-            belowFog = pin.belowFog || false;
+            aboveFog = pin.aboveFog || false;
             tooltipTitle = pin.tooltipTitle || "";
             tooltipContent = pin.tooltipContent || "";
             hideTooltip = pin.hideTooltip || false;
@@ -209,7 +209,7 @@ export class PinStyleEditorApp extends HandlebarsApplicationMixin(ApplicationV2)
             currentJournalId,
             allJournals,
             requiresVision,
-            belowFog,
+            aboveFog,
             tooltipContent,
             hideTooltip,
             isGM: game.user?.isGM,
@@ -842,9 +842,9 @@ export class PinStyleEditorApp extends HandlebarsApplicationMixin(ApplicationV2)
                 formData.requiresVision = requiresVisionCheckbox.checked;
             }
 
-            const belowFogCheckbox = form.querySelector('[name="belowFog"]');
-            if (belowFogCheckbox) {
-                formData.belowFog = belowFogCheckbox.checked;
+            const aboveFogCheckbox = form.querySelector('[name="aboveFog"]');
+            if (aboveFogCheckbox) {
+                formData.aboveFog = aboveFogCheckbox.checked;
             }
 
             const journalIdSelect = form.querySelector('[name="journalId"]');
@@ -891,9 +891,9 @@ export class PinStyleEditorApp extends HandlebarsApplicationMixin(ApplicationV2)
                     delete style.requiresVision;
                 }
 
-                if (style.belowFog !== undefined) {
-                    updateData.belowFog = style.belowFog;
-                    delete style.belowFog;
+                if (style.aboveFog !== undefined) {
+                    updateData.aboveFog = style.aboveFog;
+                    delete style.aboveFog;
                 }
 
                 if (style.journalId !== undefined) {

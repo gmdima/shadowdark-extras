@@ -27,7 +27,7 @@ import { generateHexMap, clearGeneratedTiles } from "./HexGeneratorSD.mjs";
 import { flattenTiles, unflattenTile, getDungeonFloorLevels, getFlattendDungeonLevels, flattenDungeonLevel } from "./TileFlattenSD.mjs";
 import { setDungeonMode, selectFloorTile, selectWallTile, selectDoorTile, selectIntWallTile, selectIntDoorTile, enableDungeonPainting, disableDungeonPainting, setNoFoundryWalls, setWallShadows, setDungeonBackground } from "./DungeonPainterSD.mjs";
 import { toggleGeneratorPanel, isGeneratorExpanded, generateDungeon, generateRandomSeed, getGeneratorSeed, setGeneratorSeed, getGeneratorSettings, setGeneratorSettings } from "./DungeonGeneratorSD.mjs";
-import { isHexFogEnabled, setHexFogEnabled } from "./SDXHexFogSD.mjs";
+import { isHexFogEnabled, setHexFogEnabled, getActiveHexFogEffect, setHexFogEffect, getAvailableHexFogEffects } from "./SDXHexFogSD.mjs";
 
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
@@ -475,6 +475,72 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
             const currentlyEnabled = isHexFogEnabled(sceneId);
             await setHexFogEnabled(sceneId, !currentlyEnabled);
             btn.classList.toggle("active", !currentlyEnabled);
+        });
+
+        // Hex Fog Effects Context Menu (right-click on hex fog button)
+        elem.querySelector(".tray-handle-button-tool[data-action='sdx-hex-fog']")?.addEventListener("contextmenu", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            if (!game.user.isGM) return;
+            if (!canvas?.grid?.isHexagonal || !isHexFogEnabled(canvas.scene?.id)) {
+                ui.notifications.warn("Enable hex fog first.");
+                return;
+            }
+
+            // Remove any existing menu
+            document.querySelector(".sdx-fog-effect-menu")?.remove();
+
+            const sceneId = canvas.scene.id;
+            const current = getActiveHexFogEffect(sceneId);
+            const effects = getAvailableHexFogEffects();
+
+            const menu = document.createElement("div");
+            menu.className = "sdx-fog-effect-menu";
+
+            // Header
+            const header = document.createElement("div");
+            header.className = "sdx-fog-effect-menu-header";
+            header.textContent = "Fog Effects";
+            menu.appendChild(header);
+
+            // "None" option
+            const noneItem = document.createElement("div");
+            noneItem.className = "sdx-fog-effect-menu-item" + (!current ? " active" : "");
+            noneItem.innerHTML = `<i class="fa-solid fa-ban"></i><span>None</span>`;
+            noneItem.addEventListener("click", () => {
+                setHexFogEffect(sceneId, null);
+                menu.remove();
+            });
+            menu.appendChild(noneItem);
+
+            // Effect options
+            for (const fx of effects) {
+                const item = document.createElement("div");
+                item.className = "sdx-fog-effect-menu-item" + (current === fx.name ? " active" : "");
+                item.innerHTML = `<i class="fa-solid fa-wand-magic-sparkles"></i><span>${fx.label}</span>`;
+                item.addEventListener("click", () => {
+                    setHexFogEffect(sceneId, fx.name);
+                    menu.remove();
+                });
+                menu.appendChild(item);
+            }
+
+            // Position near the button
+            const rect = e.currentTarget.getBoundingClientRect();
+            menu.style.position = "fixed";
+            menu.style.left = `${rect.left}px`;
+            menu.style.top = `${rect.bottom + 4}px`;
+            menu.style.zIndex = "10001";
+            document.body.appendChild(menu);
+
+            // Close on outside click
+            const closeMenu = (ev) => {
+                if (!menu.contains(ev.target)) {
+                    menu.remove();
+                    document.removeEventListener("mousedown", closeMenu, true);
+                }
+            };
+            setTimeout(() => document.addEventListener("mousedown", closeMenu, true), 0);
         });
 
         // SDX Roller Button

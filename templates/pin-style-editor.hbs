@@ -54,10 +54,10 @@
 
         <div class="form-group checkbox-group">
             <label>
-                <input type="checkbox" name="belowFog" {{#if belowFog}}checked{{/if}} />
-                Below Hex Fog
+                <input type="checkbox" name="aboveFog" {{#if aboveFog}}checked{{/if}} />
+                Show Above Fog
             </label>
-            <p class="hint">Render this pin below the hex fog overlay so it is hidden by unexplored fog.</p>
+            <p class="hint">Keep this pin visible even in fogged hexes. Without this, pins in unexplored fog are hidden for players.</p>
         </div>
     </section>
     {{/if}}

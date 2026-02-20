@@ -243,6 +243,53 @@ function patchPrimaryForTransparent(primary) {
     };
 }
 
+// ─── Crop transparent borders ────────────────────────────────────────────────
+
+function cropTransparentBorders(canvasEl, bounds) {
+    const ctx = canvasEl.getContext('2d');
+    const w = canvasEl.width;
+    const h = canvasEl.height;
+    if (!w || !h) return { canvas: canvasEl, bounds };
+
+    const imageData = ctx.getImageData(0, 0, w, h);
+    const data = imageData.data;
+
+    let minX = w, minY = h, maxX = -1, maxY = -1;
+    for (let y = 0; y < h; y++) {
+        for (let x = 0; x < w; x++) {
+            if (data[(y * w + x) * 4 + 3] > 0) {
+                if (x < minX) minX = x;
+                if (x > maxX) maxX = x;
+                if (y < minY) minY = y;
+                if (y > maxY) maxY = y;
+            }
+        }
+    }
+
+    if (maxX < 0 || maxY < 0) return { canvas: canvasEl, bounds };
+
+    const cropW = maxX - minX + 1;
+    const cropH = maxY - minY + 1;
+
+    if (minX === 0 && minY === 0 && cropW === w && cropH === h) {
+        return { canvas: canvasEl, bounds };
+    }
+
+    const cropped = document.createElement('canvas');
+    cropped.width = cropW;
+    cropped.height = cropH;
+    cropped.getContext('2d').drawImage(canvasEl, minX, minY, cropW, cropH, 0, 0, cropW, cropH);
+
+    const newBounds = {
+        x: bounds.x + minX,
+        y: bounds.y + minY,
+        width: cropW,
+        height: cropH
+    };
+
+    return { canvas: cropped, bounds: newBounds };
+}
+
 // ─── Rendering ───────────────────────────────────────────────────────────────
 
 async function renderTilesToCanvas(tiles, bounds) {
@@ -469,13 +516,18 @@ async function flattenTiles(tiles) {
         const result = await renderTilesToCanvas(tiles, bounds);
         if (!result?.canvas) throw new Error('Failed to render tiles');
 
-        ui.notifications.info('Saving flattened image…');
-        const filePath = await saveAsWebP(result.canvas, 1.0);
+        const cropped = cropTransparentBorders(result.canvas, bounds);
+        if (cropped.canvas !== result.canvas) {
+            try { result.canvas.width = 0; result.canvas.height = 0; } catch (_) { }
+        }
 
-        try { result.canvas.width = 0; result.canvas.height = 0; } catch (_) { }
+        ui.notifications.info('Saving flattened image…');
+        const filePath = await saveAsWebP(cropped.canvas, 1.0);
+
+        try { cropped.canvas.width = 0; cropped.canvas.height = 0; } catch (_) { }
 
         ui.notifications.info('Creating flattened tile…');
-        await createFlattenedTile(bounds, filePath, tiles);
+        await createFlattenedTile(cropped.bounds, filePath, tiles);
         await deleteOriginalTiles(tiles);
 
         ui.notifications.info(`Flattened ${tiles.length} tiles successfully!`);
@@ -715,18 +767,23 @@ export async function flattenDungeonLevel(elevation) {
         const result = await renderTilesToCanvas(tiles, bounds);
         if (!result?.canvas) throw new Error('Failed to render tiles');
 
+        const cropped = cropTransparentBorders(result.canvas, bounds);
+        if (cropped.canvas !== result.canvas) {
+            try { result.canvas.width = 0; result.canvas.height = 0; } catch (_) {}
+        }
+
         ui.notifications.info('Saving flattened image…');
-        const filePath = await saveAsWebP(result.canvas, 1.0);
-        try { result.canvas.width = 0; result.canvas.height = 0; } catch (_) {}
+        const filePath = await saveAsWebP(cropped.canvas, 1.0);
+        try { cropped.canvas.width = 0; cropped.canvas.height = 0; } catch (_) {}
 
         const originalData = tiles.map(t => ({ data: t.toObject(false) }));
 
         const tileData = {
             texture: { src: filePath },
-            x: bounds.x,
-            y: bounds.y,
-            width: bounds.width,
-            height: bounds.height,
+            x: cropped.bounds.x,
+            y: cropped.bounds.y,
+            width: cropped.bounds.width,
+            height: cropped.bounds.height,
             rotation: 0,
             alpha: 1,
             elevation,

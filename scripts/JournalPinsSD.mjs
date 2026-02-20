@@ -171,7 +171,7 @@ class JournalPinManager {
             style: pinData.style || {},
             gmOnly: pinData.gmOnly ?? false,
             requiresVision: pinData.requiresVision ?? false,
-            belowFog: pinData.belowFog ?? false,
+            aboveFog: pinData.aboveFog ?? false,
             tooltipTitle: pinData.tooltipTitle,
             tooltipContent: pinData.tooltipContent,
             hideTooltip: pinData.hideTooltip ?? false,
@@ -220,7 +220,7 @@ class JournalPinManager {
         if (patch.style) updated.style = { ...updated.style, ...patch.style };
         if (patch.gmOnly !== undefined) updated.gmOnly = patch.gmOnly;
         if (patch.requiresVision !== undefined) updated.requiresVision = patch.requiresVision;
-        if (patch.belowFog !== undefined) updated.belowFog = patch.belowFog;
+        if (patch.aboveFog !== undefined) updated.aboveFog = patch.aboveFog;
         if (patch.tooltipTitle !== undefined) updated.tooltipTitle = patch.tooltipTitle;
         if (patch.tooltipContent !== undefined) updated.tooltipContent = patch.tooltipContent;
         if (patch.hideTooltip !== undefined) updated.hideTooltip = patch.hideTooltip;

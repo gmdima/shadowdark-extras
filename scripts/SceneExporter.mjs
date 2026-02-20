@@ -22,10 +22,11 @@ export class SceneExporter {
             // Collect all data
             const sceneData = await this.collectSceneData(scene);
             const referencedDocs = await this.collectReferencedDocuments(scene);
-            const images = await this.collectImages(sceneData, referencedDocs);
+            const hexData = await this.collectHexData(scene);
+            const images = await this.collectImages(sceneData, referencedDocs, hexData);
 
             // Create ZIP package
-            const zipBlob = await this.createZipPackage(scene.name, sceneData, referencedDocs, images);
+            const zipBlob = await this.createZipPackage(scene.name, sceneData, referencedDocs, images, hexData);
 
             // Trigger download
             await this.downloadZip(zipBlob, `${this.sanitizeFilename(scene.name)}.zip`);
@@ -116,12 +117,28 @@ export class SceneExporter {
     }
 
     /**
+     * Collect hex tooltip data for the scene
+     * @param {Scene} scene - The scene to collect hex data from
+     * @returns {Object|null} Hex data keyed by hexKey, or null if none
+     */
+    static async collectHexData(scene) {
+        const journal = game.journal.find(j => j.name === "__sdx_hex_data__");
+        if (!journal) return null;
+        const allData = journal.getFlag(MODULE_ID, "hexData") ?? {};
+        const sceneHexData = allData[scene.id];
+        if (!sceneHexData || Object.keys(sceneHexData).length === 0) return null;
+        console.log(`${MODULE_ID} | Collected hex tooltip data: ${Object.keys(sceneHexData).length} hexes`);
+        return foundry.utils.deepClone(sceneHexData);
+    }
+
+    /**
      * Collect all image files referenced by the scene and documents
      * @param {Object} sceneData - Scene data object
      * @param {Object} referencedDocs - Referenced documents
+     * @param {Object|null} hexData - Hex tooltip data
      * @returns {Object} Object mapping image paths to their fetched data
      */
-    static async collectImages(sceneData, referencedDocs) {
+    static async collectImages(sceneData, referencedDocs, hexData) {
         const images = new Map();
 
         // Helper to add image to collection
@@ -173,6 +190,13 @@ export class SceneExporter {
             if (item.img) await addImage(item.img, "items");
         }
 
+        // Collect hex tooltip images
+        if (hexData) {
+            for (const record of Object.values(hexData)) {
+                if (record.image) await addImage(record.image, "hex-images");
+            }
+        }
+
         console.log(`${MODULE_ID} | Collected ${images.size} images`);
         return images;
     }
@@ -185,11 +209,16 @@ export class SceneExporter {
      * @param {Map} images - Map of image paths to blobs
      * @returns {Blob} ZIP file blob
      */
-    static async createZipPackage(sceneName, sceneData, referencedDocs, images) {
+    static async createZipPackage(sceneName, sceneData, referencedDocs, images, hexData) {
         const zip = new JSZip();
 
         // Add scene data
         zip.file("scene.json", JSON.stringify(sceneData, null, 2));
+
+        // Add hex tooltip data
+        if (hexData) {
+            zip.file("hex-data.json", JSON.stringify(hexData, null, 2));
+        }
 
         // Add manifest with metadata
         const manifest = {
@@ -203,7 +232,8 @@ export class SceneExporter {
                 actors: referencedDocs.actors.length,
                 items: referencedDocs.items.length,
                 journals: referencedDocs.journals.length,
-                images: images.size
+                images: images.size,
+                hexTooltips: hexData ? Object.keys(hexData).length : 0
             }
         };
         zip.file("manifest.json", JSON.stringify(manifest, null, 2));
@@ -267,22 +297,14 @@ export class SceneExporter {
 
             if (response && response.path) {
                 const fullPath = response.path;
-                console.log(`${MODULE_ID} | File saved to: ${fullPath} (rename to .zip)`);
+                console.log(`${MODULE_ID} | File saved to: ${fullPath}`);
 
-                // Show dialog with instructions
                 Dialog.prompt({
                     title: "Scene Exported Successfully",
                     content: `
                         <p>Your scene has been exported to:</p>
                         <p><strong>${fullPath}</strong></p>
-                        <hr>
-                        <p><strong>Important:</strong> Foundry blocks .zip files for security.</p>
-                        <p>To use the exported file:</p>
-                        <ol>
-                            <li>Navigate to your <code>Data/exported-scenes/</code> folder</li>
-                            <li>Rename the <code>.txt</code> file to <code>.zip</code></li>
-                            <li>You can then extract or import the ZIP file</li>
-                        </ol>
+                        <p>Use the <strong>Import Scene</strong> button to import it into another world.</p>
                     `,
                     callback: () => { },
                     rejectClose: false

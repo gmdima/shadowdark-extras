@@ -272,10 +272,11 @@ export class SceneImporter {
         // Clean up
         delete sceneData._id;
         sceneData.name = sceneName;
-        // Optionally put scene in a folder too? User didn't ask, but good practice.
-        // Let's stick to root for scenes unless requested.
 
-        await Scene.create(sceneData);
+        const [newScene] = await Scene.create([sceneData]);
+
+        // Import hex tooltip data under the new scene ID
+        await this.importHexData(zip, newScene.id, assetMap);
     }
 
     /**
@@ -290,6 +291,34 @@ export class SceneImporter {
             newContent = newContent.replace(regex, newPath);
         }
         return newContent;
+    }
+
+    /**
+     * Import hex tooltip data from the ZIP into the hex journal
+     */
+    static async importHexData(zip, newSceneId, assetMap) {
+        const file = zip.file("hex-data.json");
+        if (!file) return;
+
+        let content = await file.async("string");
+        content = this.replaceStringPaths(content, assetMap);
+        const hexData = JSON.parse(content);
+
+        // Find or create the hex data journal
+        let journal = game.journal.find(j => j.name === "__sdx_hex_data__");
+        if (!journal) {
+            journal = await JournalEntry.create({
+                name: "__sdx_hex_data__",
+                ownership: { default: CONST.DOCUMENT_OWNERSHIP_LEVELS.OBSERVER },
+            });
+        }
+
+        // Merge hex data under the new scene ID
+        const allData = foundry.utils.deepClone(journal.getFlag(MODULE_ID, "hexData") ?? {});
+        allData[newSceneId] = hexData;
+        await journal.setFlag(MODULE_ID, "hexData", allData);
+
+        console.log(`${MODULE_ID} | Imported hex tooltip data: ${Object.keys(hexData).length} hexes`);
     }
 
     static async getOrCreateFolder(type, name) {
