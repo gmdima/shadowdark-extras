@@ -1,8 +1,4 @@
-/**
- * Journal Narration Feature for Shadowdark Extras
- * Adds a "Narration" button to blockquotes in journal pages that sends content to chat
- * Ported from coffee-pub-scribe module
- */
+
 
 const MODULE_ID = "shadowdark-extras";
 

@@ -1,12 +1,4 @@
-/**
- * Character Tray for Shadowdark Extras
- *
- * Displays a collapsible tray on the left side of the screen showing:
- * - Token view: Selected token information
- * - Party view: All party members with health bars
- *
- * Ported from coffee-pub-squire module with adaptations for Shadowdark RPG.
- */
+
 
 import { TrayApp } from "./TrayApp.mjs";
 import { JournalPinManager } from "./JournalPinsSD.mjs";
@@ -293,6 +285,16 @@ export function registerTraySettings() {
     });
 
     // Hidden settings for hex painter (not shown in config)
+    game.settings.register(MODULE_ID, "hexFog.defaultRevealRadius", {
+        name: "Hex Fog: Default Reveal Radius",
+        hint: "How many rings of hexes to reveal around a token when it moves. 0 = only the token's hex, 1 = token + adjacent hexes, 2 = two rings out, etc.",
+        scope: "world",
+        config: true,
+        type: Number,
+        default: 1,
+        range: { min: 0, max: 5, step: 1 }
+    });
+
     game.settings.register(MODULE_ID, "hexPainter.customTileWidth", {
         scope: "client",
         config: false,
@@ -367,6 +369,10 @@ export function getPartyTokens() {
     for (const token of tokens) {
         const actor = token.actor;
         if (!actor) continue;
+
+        // Skip item-piles enabled tokens/actors
+        const pileData = token.document.getFlag("item-piles", "data") ?? actor.getFlag("item-piles", "data");
+        if (pileData?.enabled) continue;
 
         // Check if this is a player character
         if (actor.type === "Player") {

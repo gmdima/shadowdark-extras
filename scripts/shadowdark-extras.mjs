@@ -75,6 +75,8 @@ import { SDXRollerApp } from "./SDXRollerApp.mjs";
 import { initSDXCoords, registerSDXCoordsSettings, registerSDXCoordsMenu } from "./SDXCoordsSD.mjs";
 import { SDXCoordsSettingsApp } from "./SDXCoordsSettingsSD.mjs";
 import { initHexTooltip, HEX_JOURNAL_NAME } from "./HexTooltipSD.mjs";
+import { initHexFog } from "./SDXHexFogSD.mjs";
+
 
 import { PixiPlugin } from "/scripts/greensock/esm/all.js";
 
@@ -99,6 +101,7 @@ initMedkit();
 initJournalPins();
 initSDXCoords();
 initHexTooltip();
+initHexFog();
 Hooks.once("init", () => {
 	// Register GSAP Plugins
 	try {

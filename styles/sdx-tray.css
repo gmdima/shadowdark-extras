@@ -149,6 +149,10 @@ body.sdx-tray-enabled #camera-views.vertical.left {
     background: rgba(159, 146, 117, 0.3);
 }
 
+.sdx-tray[data-position="left"] .tray-handle-button-tool[data-action="sdx-hex-fog"].active {
+    color: #4ade80;
+}
+
 .sdx-tray[data-position="left"] .tray-handle-button-tool.disabled {
     color: rgba(255, 255, 255, 0.15);
     cursor: not-allowed;

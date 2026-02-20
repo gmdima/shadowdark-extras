@@ -1,10 +1,4 @@
-/**
- * Character Tray Application
- *
- * V2 Application for displaying the character tray.
- * Uses Handlebars templates for rendering.
- * Ported from coffee-pub-squire module.
- */
+
 
 import {
     setViewMode,
@@ -27,11 +21,13 @@ import { PinStyleEditorApp } from "./PinStyleEditorSD.mjs";
 import { PinListApp } from "./PinListApp.mjs";
 
 import { PlaceableNotesSD } from "./PlaceableNotesSD.mjs";
+
 import { setMapDimension, formatActiveScene, enablePainting, disablePainting, toggleTileSelection, setSearchFilter, toggleWaterEffect, toggleWindEffect, toggleFogAnimation, toggleTintEnabled, toggleBwEffect, isTintEnabled, setActiveTileTab, setCustomTileDimension, toggleColoredFolderCollapsed, toggleSymbolFolderCollapsed, undoLastPoi, redoLastPoi, canUndoPoi, canRedoPoi, getPoiScale, enablePreview, disablePreview, getActiveTileTab, adjustPoiScale, rotatePoiLeft, rotatePoiRight, togglePoiMirror, getPoiMirror, setDecorSearchFilter, toggleDecorFolderCollapsed, setDecorMode, setDecorElevation, setDecorSort } from "./HexPainterSD.mjs";
 import { generateHexMap, clearGeneratedTiles } from "./HexGeneratorSD.mjs";
 import { flattenTiles, unflattenTile, getDungeonFloorLevels, getFlattendDungeonLevels, flattenDungeonLevel } from "./TileFlattenSD.mjs";
 import { setDungeonMode, selectFloorTile, selectWallTile, selectDoorTile, selectIntWallTile, selectIntDoorTile, enableDungeonPainting, disableDungeonPainting, setNoFoundryWalls, setWallShadows, setDungeonBackground } from "./DungeonPainterSD.mjs";
 import { toggleGeneratorPanel, isGeneratorExpanded, generateDungeon, generateRandomSeed, getGeneratorSeed, setGeneratorSeed, getGeneratorSettings, setGeneratorSettings } from "./DungeonGeneratorSD.mjs";
+import { isHexFogEnabled, setHexFogEnabled } from "./SDXHexFogSD.mjs";
 
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
@@ -275,11 +271,13 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
             tomScenes: await this._getTomScenes(),
             tomFolders: await this._getTomFolders(),
             tintEnabled: isTintEnabled(),
+
             poiScale: poiScale,
             poiScalePercent: poiScalePercent,
             generatorExpanded: isGeneratorExpanded(),
             generatorSeed: getGeneratorSeed(),
-            generatorSettings: getGeneratorSettings()
+            generatorSettings: getGeneratorSettings(),
+            hexFogActive: isHexFogEnabled(canvas.scene?.id)
         };
     }
 
@@ -462,6 +460,21 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
             }
             const active = window.SDXHexTooltip?.toggle();
             e.currentTarget.classList.toggle("active", !!active);
+        });
+
+        // Hex Fog Toggle Button (GM only)
+        elem.querySelector(".tray-handle-button-tool[data-action='sdx-hex-fog']")?.addEventListener("click", async (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            if (!canvas?.grid?.isHexagonal) {
+                ui.notifications.warn("Hex fog only works on hex-grid scenes.");
+                return;
+            }
+            const btn = e.currentTarget;
+            const sceneId = canvas.scene?.id;
+            const currentlyEnabled = isHexFogEnabled(sceneId);
+            await setHexFogEnabled(sceneId, !currentlyEnabled);
+            btn.classList.toggle("active", !currentlyEnabled);
         });
 
         // SDX Roller Button

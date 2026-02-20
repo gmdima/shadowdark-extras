@@ -134,7 +134,6 @@ class PlaceableNotesSD extends HandlebarsApplicationMixin(DocumentSheetV2) {
         const supportedTypes = ["AmbientLight", "AmbientSound", "Token", "Wall", "Tile", "Actor"];
         if (!object.documentName || !supportedTypes.includes(object.documentName)) return;
 
-        // Introduce a delay to ensure the page is fully updated (Ported from gm-notes)
         setTimeout(() => {
             // Find the element
             // In V2, elem might be the HTML content, so we look up to window-app

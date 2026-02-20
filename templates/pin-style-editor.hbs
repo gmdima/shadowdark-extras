@@ -51,6 +51,14 @@
             </label>
             <p class="hint">{{localize "SDX.pinStyleEditor.requiresVisionHint"}}</p>
         </div>
+
+        <div class="form-group checkbox-group">
+            <label>
+                <input type="checkbox" name="belowFog" {{#if belowFog}}checked{{/if}} />
+                Below Hex Fog
+            </label>
+            <p class="hint">Render this pin below the hex fog overlay so it is hidden by unexplored fog.</p>
+        </div>
     </section>
     {{/if}}
 

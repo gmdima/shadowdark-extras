@@ -1,8 +1,3 @@
-/**
- * POI Tile Sort Panel
- * Floating window for managing z-order of POI tiles placed by SDX painting system.
- * Auto-shows/hides with POI drawing mode.
- */
 
 const MODULE_ID = "shadowdark-extras";
 
@@ -61,7 +56,7 @@ export class PoiTileSortApp extends Application {
         if (!canvas.scene) return { tiles: [] };
 
         const tiles = canvas.tiles.placeables
-            .filter(t => t.document.getFlag(MODULE_ID, "painted"))
+            .filter(t => t.document.getFlag(MODULE_ID, "painted") && t.document.getFlag(MODULE_ID, "isSymbol"))
             .sort((a, b) => b.document.sort - a.document.sort) // highest sort on top
             .map(t => {
                 const doc = t.document;

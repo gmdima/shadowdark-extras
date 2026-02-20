@@ -171,6 +171,7 @@ class JournalPinManager {
             style: pinData.style || {},
             gmOnly: pinData.gmOnly ?? false,
             requiresVision: pinData.requiresVision ?? false,
+            belowFog: pinData.belowFog ?? false,
             tooltipTitle: pinData.tooltipTitle,
             tooltipContent: pinData.tooltipContent,
             hideTooltip: pinData.hideTooltip ?? false,
@@ -219,6 +220,7 @@ class JournalPinManager {
         if (patch.style) updated.style = { ...updated.style, ...patch.style };
         if (patch.gmOnly !== undefined) updated.gmOnly = patch.gmOnly;
         if (patch.requiresVision !== undefined) updated.requiresVision = patch.requiresVision;
+        if (patch.belowFog !== undefined) updated.belowFog = patch.belowFog;
         if (patch.tooltipTitle !== undefined) updated.tooltipTitle = patch.tooltipTitle;
         if (patch.tooltipContent !== undefined) updated.tooltipContent = patch.tooltipContent;
         if (patch.hideTooltip !== undefined) updated.hideTooltip = patch.hideTooltip;
@@ -2095,13 +2097,14 @@ class JournalPinTooltip {
             }
         }
 
-        if (!hasAccess) {
-            console.log("SDX Journal Pins | User has no permission to view tooltip");
-            return;
-        }
+        // If no access to the journal page AND no custom title/content, nothing to show
+        if (!hasAccess && !pinData.tooltipTitle && !pinData.tooltipContent) return;
 
         // If no journal/page and no custom text, nothing to show
         if (!page && !pinData.tooltipTitle && !pinData.tooltipContent) return;
+
+        // Clear page reference if user has no access (custom text will still show)
+        if (!hasAccess) page = null;
 
         let content = "";
         let title = page?.name || "Unlinked Pin";
@@ -2335,9 +2338,7 @@ class JournalPinRenderer {
     static removePin(pinId) {
         const pin = this._pins.get(pinId);
         if (pin) {
-            if (this._container) {
-                this._container.removeChild(pin);
-            }
+            if (pin.parent) pin.parent.removeChild(pin);
             pin.destroy();
             this._pins.delete(pinId);
         }
@@ -2345,9 +2346,7 @@ class JournalPinRenderer {
 
     static clear() {
         for (const pin of this._pins.values()) {
-            if (this._container) {
-                this._container.removeChild(pin);
-            }
+            if (pin.parent) pin.parent.removeChild(pin);
             pin.destroy();
         }
         this._pins.clear();

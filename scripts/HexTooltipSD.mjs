@@ -306,7 +306,13 @@ export class SDXHexTooltip {
 			this.#lastKey = hexKey;
 			this.#lastOffset = offset;
 			if (canShow) this.#show(hexKey, record);
-			else this.#tooltipEl && (this.#tooltipEl.style.display = "none");
+			else {
+				if (this.#tooltipEl) this.#tooltipEl.style.display = "none";
+				if (this.#imgTooltipEl) {
+					this.#imgTooltipEl.classList.remove("sdx-visible");
+					this.#imgTooltipEl.style.display = "none";
+				}
+			}
 		}
 
 		if (this.#tooltipEl?.style.display !== "none") {
@@ -612,6 +618,8 @@ export class SDXHexTooltip {
 			: {
 				name: "", zone: "", terrain: "", travel: "",
 				exploration: "unexplored", cleared: false, claimed: false,
+				revealRadius: -1, revealCells: "",
+				rollTable: "", rollTableChance: 100, rollTableFirstOnly: false,
 				showToPlayers: false, features: [], notes: []
 			};
 
@@ -654,12 +662,17 @@ class HexEditApp extends HandlebarsApplicationMixin(ApplicationV2) {
 		main: { template: "modules/shadowdark-extras/templates/sdx-hex-tooltip/hex-edit.hbs" },
 	};
 
-	get title() { return `Edit Hex #${this.#opts.hexLabel}`; }
+	get title() { return "Edit Hex"; }
 
 	async _prepareContext() {
 		const record = { ...this.#opts.record };
 		record.zoneColor = record.zoneColor ?? "";
 		record.image = record.image ?? "";
+		record.revealRadius = record.revealRadius ?? -1;
+		record.revealCells = record.revealCells ?? "";
+		record.rollTable = record.rollTable ?? "";
+		record.rollTableChance = record.rollTableChance ?? 100;
+		record.rollTableFirstOnly = record.rollTableFirstOnly ?? false;
 		return {
 			record,
 			explorationOptions: EXPLORATION_OPTIONS,
@@ -670,6 +683,16 @@ class HexEditApp extends HandlebarsApplicationMixin(ApplicationV2) {
 
 	_onRender(_context, _options) {
 		const el = this.element;
+
+		// Tab switching
+		el.querySelectorAll(".sdx-hex-edit-tab").forEach(tab => {
+			tab.addEventListener("click", () => {
+				el.querySelectorAll(".sdx-hex-edit-tab").forEach(t => t.classList.remove("active"));
+				el.querySelectorAll(".sdx-hex-edit-tab-content").forEach(c => c.classList.remove("active"));
+				tab.classList.add("active");
+				el.querySelector(`.sdx-hex-edit-tab-content[data-tab="${tab.dataset.tab}"]`)?.classList.add("active");
+			});
+		});
 
 		// Populate existing notes
 		for (const n of (this.#opts.record.notes ?? [])) this.#appendNoteRow(n);
@@ -707,6 +730,47 @@ class HexEditApp extends HandlebarsApplicationMixin(ApplicationV2) {
 			swatch.classList.add("active");
 			el.querySelector(".sdx-hex-color-swatches").dataset.selected = swatch.dataset.color;
 		});
+
+		// Alt+click on canvas to add hex to Reveal Cells
+		this._altClickRef = (event) => {
+			if (!event.altKey) return;
+			const clientX = event.client?.x ?? 0;
+			const clientY = event.client?.y ?? 0;
+			const topEl = document.elementFromPoint(clientX, clientY);
+			if (topEl?.tagName !== "CANVAS") return;
+			const worldPos = event.getLocalPosition(canvas.stage);
+			const offset = canvas.grid.getOffset(worldPos);
+			const label = `${offset.i}.${offset.j}`;
+			const input = el.querySelector("[name='hex-reveal-cells']");
+			if (!input) return;
+			const existing = input.value.split(",").map(s => s.trim()).filter(Boolean);
+			if (!existing.includes(label)) {
+				existing.push(label);
+				input.value = existing.join(", ");
+			}
+		};
+		canvas.stage.on("mousedown", this._altClickRef);
+
+		// Paste RollTable UUID from clipboard
+		el.querySelector("[data-action='browse-rolltable']")?.addEventListener("click", () => {
+			const input = el.querySelector("[name='hex-roll-table']");
+			navigator.clipboard.readText().then(text => {
+				if (text?.trim()) input.value = text.trim();
+			}).catch(() => {
+				ui.notifications.warn("Could not read clipboard. Paste or drag a RollTable instead.");
+			});
+		});
+
+		// Drag-drop RollTable UUID
+		const rtInput = el.querySelector("[name='hex-roll-table']");
+		if (rtInput) {
+			rtInput.addEventListener("drop", (event) => {
+				event.preventDefault();
+				const data = TextEditor.getDragEventData(event);
+				if (data?.uuid) rtInput.value = data.uuid;
+				else if (data?.type === "RollTable" && data?.id) rtInput.value = `RollTable.${data.id}`;
+			});
+		}
 
 		el.querySelector("[data-action='save-hex']")?.addEventListener("click", async () => { await this.#save(); });
 		el.querySelector("[data-action='cancel-hex']")?.addEventListener("click", () => { this.close(); });
@@ -826,6 +890,11 @@ class HexEditApp extends HandlebarsApplicationMixin(ApplicationV2) {
 			terrain: el.querySelector("[name='hex-terrain']")?.value?.trim() ?? "",
 			travel: el.querySelector("[name='hex-travel']")?.value?.trim() ?? "",
 			exploration: el.querySelector("[name='hex-exploration']")?.value ?? "unexplored",
+			revealRadius: (() => { const v = parseInt(el.querySelector("[name='hex-reveal-radius']")?.value); return isNaN(v) ? -1 : v; })(),
+			revealCells: el.querySelector("[name='hex-reveal-cells']")?.value?.trim() ?? "",
+			rollTable: el.querySelector("[name='hex-roll-table']")?.value?.trim() ?? "",
+			rollTableChance: (() => { const v = parseInt(el.querySelector("[name='hex-roll-chance']")?.value); return isNaN(v) ? 100 : Math.max(1, Math.min(100, v)); })(),
+			rollTableFirstOnly: el.querySelector("[name='hex-roll-first-only']")?.checked ?? false,
 			cleared: el.querySelector("[name='hex-cleared']")?.checked ?? false,
 			claimed: el.querySelector("[name='hex-claimed']")?.checked ?? false,
 			showToPlayers: el.querySelector("[name='hex-show-players']")?.checked ?? false,
@@ -860,6 +929,14 @@ class HexEditApp extends HandlebarsApplicationMixin(ApplicationV2) {
 		});
 
 		return record;
+	}
+
+	async close(options) {
+		if (this._altClickRef) {
+			canvas.stage.off("mousedown", this._altClickRef);
+			this._altClickRef = null;
+		}
+		return super.close(options);
 	}
 
 	async #save() {

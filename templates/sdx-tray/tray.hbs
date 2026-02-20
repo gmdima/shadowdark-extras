@@ -56,6 +56,12 @@
                 <i class="fa-solid fa-hexagon-image"></i>
             </button>
             {{#if isGM}}
+            <button class="tray-handle-button-tool{{#if hexFogActive}} active{{/if}}" data-action="sdx-hex-fog"
+                title="Hex Fog">
+                <i class="fa-solid fa-smog"></i>
+            </button>
+            {{/if}}
+            {{#if isGM}}
             <button class="tray-handle-button-tool" data-action="sdx-roller" title="SDX Roller">
                 <i class="fa-solid fa-dice"></i>
             </button>

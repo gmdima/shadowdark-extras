@@ -1,106 +1,159 @@
 <div class="sdx-hex-edit-body">
 
-    <!-- Visibility -->
-    <div class="sdx-hex-edit-section">
-        <div class="sdx-hex-edit-section-title">Visibility</div>
-        <label class="sdx-hex-edit-checkbox-row">
-            <input type="checkbox" name="hex-show-players" {{#if record.showToPlayers}}checked{{/if}}>
-            <span>Show to Players</span>
-        </label>
+    <!-- Tabs -->
+    <div class="sdx-hex-edit-tabs">
+        <button type="button" class="sdx-hex-edit-tab active" data-tab="details">Details</button>
+        <button type="button" class="sdx-hex-edit-tab" data-tab="exploration">Exploration</button>
     </div>
 
-    <!-- Image -->
-    <div class="sdx-hex-edit-section">
-        <div class="sdx-hex-edit-section-title">Image</div>
-        <div class="sdx-hex-edit-field-row">
-            <label>Path</label>
-            <input type="text" name="hex-image" value="{{record.image}}" placeholder="path/to/image.webp">
-            <button type="button" class="sdx-hex-browse-btn" data-action="browse-image">
-                <i class="fas fa-file-image"></i>
-            </button>
-        </div>
-    </div>
+    <!-- ═══ Details Tab ═══ -->
+    <div class="sdx-hex-edit-tab-content active" data-tab="details">
 
-    <!-- Information -->
-    <div class="sdx-hex-edit-section">
-        <div class="sdx-hex-edit-section-title">Information</div>
-        <div class="sdx-hex-edit-field-row">
-            <label>Hex Name</label>
-            <input type="text" name="hex-name" value="{{record.name}}" placeholder="e.g. Chimera Pride">
+        <!-- Visibility -->
+        <div class="sdx-hex-edit-section">
+            <div class="sdx-hex-edit-section-title">Visibility</div>
+            <label class="sdx-hex-edit-checkbox-row">
+                <input type="checkbox" name="hex-show-players" {{#if record.showToPlayers}}checked{{/if}}>
+                <span>Show to Players</span>
+            </label>
         </div>
-        <div class="sdx-hex-edit-field-row">
-            <label>Zone</label>
-            <input type="text" name="hex-zone" value="{{record.zone}}" placeholder="e.g. Darkwood">
-        </div>
-        <div class="sdx-hex-edit-field-row">
-            <label>Zone Color</label>
-            <div class="sdx-hex-color-swatches" data-selected="{{record.zoneColor}}">
-                {{#each zoneColors}}
-                <button type="button" class="sdx-hex-color-swatch{{#if (eq this.value ../record.zoneColor)}} active{{/if}}"
-                    data-color="{{this.value}}" title="{{this.label}}"
-                    style="background:{{this.hex}}"></button>
-                {{/each}}
+
+        <!-- Image -->
+        <div class="sdx-hex-edit-section">
+            <div class="sdx-hex-edit-section-title">Image</div>
+            <div class="sdx-hex-edit-field-row">
+                <label>Path</label>
+                <input type="text" name="hex-image" value="{{record.image}}" placeholder="path/to/image.webp">
+                <button type="button" class="sdx-hex-browse-btn" data-action="browse-image">
+                    <i class="fas fa-file-image"></i>
+                </button>
             </div>
         </div>
-        <div class="sdx-hex-edit-field-row">
-            <label>Terrain</label>
-            <input type="text" name="hex-terrain" value="{{record.terrain}}" placeholder="e.g. Hills">
+
+        <!-- Information -->
+        <div class="sdx-hex-edit-section">
+            <div class="sdx-hex-edit-section-title">Information</div>
+            <div class="sdx-hex-edit-field-row">
+                <label>Hex Name</label>
+                <input type="text" name="hex-name" value="{{record.name}}" placeholder="e.g. Chimera Pride">
+            </div>
+            <div class="sdx-hex-edit-field-row">
+                <label>Zone</label>
+                <input type="text" name="hex-zone" value="{{record.zone}}" placeholder="e.g. Darkwood">
+            </div>
+            <div class="sdx-hex-edit-field-row">
+                <label>Zone Color</label>
+                <div class="sdx-hex-color-swatches" data-selected="{{record.zoneColor}}">
+                    {{#each zoneColors}}
+                    <button type="button" class="sdx-hex-color-swatch{{#if (eq this.value ../record.zoneColor)}} active{{/if}}"
+                        data-color="{{this.value}}" title="{{this.label}}"
+                        style="background:{{this.hex}}"></button>
+                    {{/each}}
+                </div>
+            </div>
+            <div class="sdx-hex-edit-field-row">
+                <label>Terrain</label>
+                <input type="text" name="hex-terrain" value="{{record.terrain}}" placeholder="e.g. Hills">
+            </div>
+            <div class="sdx-hex-edit-field-row">
+                <label>Travel</label>
+                <input type="text" name="hex-travel" value="{{record.travel}}" placeholder="e.g. Open Terrain">
+            </div>
         </div>
-        <div class="sdx-hex-edit-field-row">
-            <label>Travel</label>
-            <input type="text" name="hex-travel" value="{{record.travel}}" placeholder="e.g. Open Terrain">
+
+        <!-- Notes -->
+        <div class="sdx-hex-edit-section">
+            <div class="sdx-hex-edit-section-title sdx-hex-feats-title">
+                <span>Notes</span>
+                <button type="button" class="sdx-hex-add-feat-btn" data-action="add-note">
+                    <i class="fas fa-plus"></i> Add
+                </button>
+            </div>
+            <div class="sdx-hex-notes-list">
+                {{!-- Note rows appended by JS in _onRender --}}
+            </div>
         </div>
+
+        <!-- Features -->
+        <div class="sdx-hex-edit-section">
+            <div class="sdx-hex-edit-section-title sdx-hex-feats-title">
+                <span>Features</span>
+                <button type="button" class="sdx-hex-add-feat-btn" data-action="add-feature">
+                    <i class="fas fa-plus"></i> Add
+                </button>
+            </div>
+            <div class="sdx-hex-feats-list">
+                {{!-- Feature rows appended by JS in _onRender --}}
+            </div>
+        </div>
+
     </div>
 
-    <!-- Notes -->
-    <div class="sdx-hex-edit-section">
-        <div class="sdx-hex-edit-section-title sdx-hex-feats-title">
-            <span>Notes</span>
-            <button type="button" class="sdx-hex-add-feat-btn" data-action="add-note">
-                <i class="fas fa-plus"></i> Add
-            </button>
-        </div>
-        <div class="sdx-hex-notes-list">
-            {{!-- Note rows appended by JS in _onRender --}}
-        </div>
-    </div>
+    <!-- ═══ Exploration Tab ═══ -->
+    <div class="sdx-hex-edit-tab-content" data-tab="exploration">
 
-    <!-- Exploration -->
-    <div class="sdx-hex-edit-section">
-        <div class="sdx-hex-edit-section-title">Exploration</div>
-        <div class="sdx-hex-edit-field-row">
-            <label>Status</label>
-            <select name="hex-exploration">
-                {{#each explorationOptions}}
-                <option value="{{this.value}}" {{#if (eq this.value ../record.exploration)}}selected{{/if}}>
-                    {{this.label}}
-                </option>
-                {{/each}}
-            </select>
+        <!-- Exploration -->
+        <div class="sdx-hex-edit-section">
+            <div class="sdx-hex-edit-section-title">Exploration</div>
+            <div class="sdx-hex-edit-field-row">
+                <label>Status</label>
+                <select name="hex-exploration">
+                    {{#each explorationOptions}}
+                    <option value="{{this.value}}" {{#if (eq this.value ../record.exploration)}}selected{{/if}}>
+                        {{this.label}}
+                    </option>
+                    {{/each}}
+                </select>
+            </div>
+            <div class="sdx-hex-edit-checkboxes">
+                <label class="sdx-hex-edit-checkbox-row">
+                    <input type="checkbox" name="hex-cleared" {{#if record.cleared}}checked{{/if}}>
+                    <span>Cleared</span>
+                </label>
+                <label class="sdx-hex-edit-checkbox-row">
+                    <input type="checkbox" name="hex-claimed" {{#if record.claimed}}checked{{/if}}>
+                    <span>Claimed</span>
+                </label>
+            </div>
         </div>
-        <div class="sdx-hex-edit-checkboxes">
+
+        <!-- Fog Reveal -->
+        <div class="sdx-hex-edit-section">
+            <div class="sdx-hex-edit-section-title">Fog Reveal</div>
+            <div class="sdx-hex-edit-field-row">
+                <label>Reveal Radius</label>
+                <input type="number" name="hex-reveal-radius" value="{{record.revealRadius}}" min="-1" step="1" placeholder="-1">
+            </div>
+            <div class="sdx-hex-edit-hint">-1 = use default setting, 0 = only this hex, 1+ = rings outward</div>
+            <div class="sdx-hex-edit-field-row">
+                <label>Reveal Cells</label>
+                <input type="text" name="hex-reveal-cells" value="{{record.revealCells}}" placeholder="e.g. 3.5, 4.6, 5.7">
+            </div>
+            <div class="sdx-hex-edit-hint">Comma separated cells to also reveal. Alt + Click on canvas to add.</div>
+        </div>
+
+        <!-- Roll Tables -->
+        <div class="sdx-hex-edit-section">
+            <div class="sdx-hex-edit-section-title">Roll Tables</div>
+            <div class="sdx-hex-edit-field-row">
+                <label>Roll Table</label>
+                <input type="text" name="hex-roll-table" value="{{record.rollTable}}" placeholder="Enter UUID or Drop Rollable Table">
+                <button type="button" class="sdx-hex-browse-btn" data-action="browse-rolltable">
+                    <i class="fas fa-paste"></i>
+                </button>
+            </div>
+            <div class="sdx-hex-edit-hint">Roll table to roll when entering or traveling through the cell.</div>
+            <div class="sdx-hex-edit-field-row">
+                <label>Chance %</label>
+                <input type="number" name="hex-roll-chance" value="{{record.rollTableChance}}" min="1" max="100" step="1" placeholder="100">
+            </div>
+            <div class="sdx-hex-edit-hint">Percentage chance the table will be rolled (1-100). Empty = always.</div>
             <label class="sdx-hex-edit-checkbox-row">
-                <input type="checkbox" name="hex-cleared" {{#if record.cleared}}checked{{/if}}>
-                <span>Cleared</span>
-            </label>
-            <label class="sdx-hex-edit-checkbox-row">
-                <input type="checkbox" name="hex-claimed" {{#if record.claimed}}checked{{/if}}>
-                <span>Claimed</span>
+                <input type="checkbox" name="hex-roll-first-only" {{#if record.rollTableFirstOnly}}checked{{/if}}>
+                <span>First Time Only</span>
             </label>
         </div>
-    </div>
 
-    <!-- Features -->
-    <div class="sdx-hex-edit-section">
-        <div class="sdx-hex-edit-section-title sdx-hex-feats-title">
-            <span>Features</span>
-            <button type="button" class="sdx-hex-add-feat-btn" data-action="add-feature">
-                <i class="fas fa-plus"></i> Add
-            </button>
-        </div>
-        <div class="sdx-hex-feats-list">
-            {{!-- Feature rows appended by JS in _onRender --}}
-        </div>
     </div>
 
     <!-- Footer -->

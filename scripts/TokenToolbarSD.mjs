@@ -1,15 +1,4 @@
-/**
- * Token Toolbar for Shadowdark Extras
- * 
- * Displays a HUD-style toolbar for the selected/controlled token showing:
- * - Character name
- * - Luck (for players)
- * - AC
- * - Level badge
- * - HP bar with editable current HP
- * 
- * Ported from lights-out-theme-shadowdark module with modifications.
- */
+
 
 import { TokenToolbarApp } from "./TokenToolbarApp.mjs";
 import { getActiveFocusSpells, getActiveDurationSpells, endFocusSpell, endDurationSpell } from "./FocusSpellTrackerSD.mjs";
@@ -323,7 +312,7 @@ function getEquippedItems(actor) {
         // For NPCs: show NPC Attack, NPC Special Attack, NPC Feature
         // For Players: show equipped items (weapons, armor, etc.)
         const isNpcItem = npcItemTypes.includes(item.type);
-        
+
         if (isNPC) {
             if (!isNpcItem) continue;
         } else {

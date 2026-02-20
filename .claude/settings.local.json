@@ -8,7 +8,8 @@
       "Bash(dir:*)",
       "WebSearch",
       "Bash(python3:*)",
-      "Bash(node -e:*)"
+      "Bash(node -e:*)",
+      "Bash(test:*)"
     ]
   }
 }

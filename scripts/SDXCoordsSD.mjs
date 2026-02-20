@@ -144,10 +144,21 @@ class SDXCoord {
 
     // ---- Hex Adjustments ----
 
-    _adjustRow(row) {
-        return canvas.grid.isHexagonal && canvas.grid.even && !canvas.grid.columns
-            ? row - 1
-            : row;
+    /**
+     * @param {number} row - relative row index
+     * @param {number|null} absCol - absolute column j-index (needed for hex column grids)
+     */
+    _adjustRow(row, absCol = null) {
+        if (!canvas.grid.isHexagonal) return row;
+        if (canvas.grid.even && !canvas.grid.columns) return row - 1;
+        // Hex column grids: non-shifted columns have a half hex at top — skip it
+        if (canvas.grid.columns && absCol !== null) {
+            // Odd variant: even j columns are non-shifted (half hex at top)
+            // Even variant: odd j columns are non-shifted (half hex at top)
+            const hasHalfHex = canvas.grid.even ? (absCol % 2 !== 0) : (absCol % 2 === 0);
+            if (hasHalfHex) return row - 1;
+        }
+        return row;
     }
 
     _adjustCol(col) {
@@ -208,16 +219,20 @@ class SDXCoord {
         let c = 0;
         let pos = [this._rect.x, this._rect.y];
         do {
+            const absCol = c + this._col0;
             const colLabel = this._generateLabel(this._xValue, this._adjustCol(c));
             let r = 0;
             do {
-                const rowLabel = this._generateLabel(this._yValue, this._adjustRow(r));
+                const tl = canvas.grid.getTopLeftPoint({ i: r + this._row0, j: c + this._col0 });
+                pos = [tl.x, tl.y];
+
+                const adjRow = this._adjustRow(r, absCol);
+                if (adjRow < 0) { r += 1; continue; }
+
+                const rowLabel = this._generateLabel(this._yValue, adjRow);
                 const text = new PT(SDXCoord._formatPair(rowLabel, colLabel), cellStyle);
                 text.resolution = 4;
                 text.alpha = this._cellAlpha;
-
-                const tl = canvas.grid.getTopLeftPoint({ i: r + this._row0, j: c + this._col0 });
-                pos = [tl.x, tl.y];
 
                 if (canvas.grid.isHexagonal) {
                     pos[0] += this._cellWidth / 2 - text.width / 2;
@@ -252,7 +267,7 @@ class SDXCoord {
         const PT = getPreciseText();
         const pos = canvas.mousePosition;
         const offset = canvas.grid.getOffset({ x: pos.x, y: pos.y });
-        const row = this._adjustRow(offset.i - this._row0);
+        const row = this._adjustRow(offset.i - this._row0, offset.j);
         const col = this._adjustCol(offset.j - this._col0);
         const rowLabel = this._generateLabel(this._yValue, row);
         const colLabel = this._generateLabel(this._xValue, col);

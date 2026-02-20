@@ -247,6 +247,49 @@
     gap: 10px;
 }
 
+/* Tabs */
+.sdx-hex-edit-tabs {
+    display: flex;
+    gap: 0;
+    border-bottom: 1px solid rgba(180, 150, 80, 0.3);
+    margin-bottom: 2px;
+}
+
+.sdx-hex-edit-tab {
+    flex: 1;
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    color: rgba(255, 255, 255, 0.4);
+    cursor: pointer;
+    padding: 5px 10px;
+    font-size: 0.82em;
+    font-family: inherit;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    transition: color 0.15s, border-color 0.15s;
+}
+
+.sdx-hex-edit-tab:hover {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.sdx-hex-edit-tab.active {
+    color: #b4965a;
+    border-bottom-color: #b4965a;
+}
+
+.sdx-hex-edit-tab-content {
+    display: none;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.sdx-hex-edit-tab-content.active {
+    display: flex;
+}
+
 /* Sections */
 .sdx-hex-edit-section {
     display: flex;
@@ -306,7 +349,20 @@
     box-shadow: 0 0 6px rgba(232, 213, 160, 0.5);
 }
 
+.sdx-hex-edit-hint {
+    font-size: 0.72em;
+    color: rgba(255, 255, 255, 0.35);
+    margin: -2px 0 4px 0;
+    padding-left: 2px;
+}
+
+.sdx-hex-edit-field-row input[type="number"] {
+    width: 60px;
+    flex: none;
+}
+
 .sdx-hex-edit-field-row input[type="text"],
+.sdx-hex-edit-field-row input[type="number"],
 .sdx-hex-edit-field-row select {
     flex: 1;
     background: rgba(0, 0, 0, 0.35);
