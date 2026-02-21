@@ -366,6 +366,7 @@ This module is provided under the MIT License.
 - Tom inspired by Exalted Scenes by wands and widgets
 - Overlays by Pixelbay
 - All fonts licences included in the fonts folders
+- Dungeon Mapper and Hexmapper inspired by Hexlands and Instant Dungeons (agnostic procedural dungeon and hex crawling map generators for foundry) by [The Augur](https://www.patreon.com/cw/TheAugur)
 
 ---
 
