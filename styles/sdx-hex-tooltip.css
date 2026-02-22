@@ -232,6 +232,20 @@
     font-style: italic;
 }
 
+/* Context menu divider */
+.sdx-hex-ctx-divider {
+    height: 1px;
+    background: rgba(180, 150, 80, 0.2);
+    margin: 4px 0;
+}
+
+/* Generate item icon highlight */
+.sdx-hex-ctx-generate i,
+.sdx-hex-ctx-generate-settlement i,
+.sdx-hex-ctx-generate-dungeon i {
+    color: #d4b06a;
+}
+
 /* ── Edit Dialog ────────────────────────────────────────────── */
 
 .sdx-hex-edit-app .window-content {

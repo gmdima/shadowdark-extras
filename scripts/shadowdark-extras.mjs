@@ -4189,6 +4189,15 @@ function registerSettings() {
 	// 2. COMBAT & SPELLS
 	// ═══════════════════════════════════════════════════════════════
 
+	game.settings.register(MODULE_ID, "enableFogEffects", {
+		name: "Enable Fog Effects",
+		hint: "Enable shader effects for hex fog (right-click the Hex Fog button to pick an effect). Disable to save performance.",
+		scope: "world",
+		config: true,
+		default: false,
+		type: Boolean,
+	});
+
 	game.settings.register(MODULE_ID, "enableFocusTracker", {
 		name: game.i18n.localize("SHADOWDARK_EXTRAS.settings.enable_focus_tracker.name"),
 		hint: game.i18n.localize("SHADOWDARK_EXTRAS.settings.enable_focus_tracker.hint"),

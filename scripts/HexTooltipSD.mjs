@@ -1,5 +1,10 @@
 
 
+import { getAvailableBiomes, generateHexHtml } from "./HexContentGenerator.mjs";
+import { getSettlementTypes, generateSettlementHtml } from "./SettlementGenerator.mjs";
+import { getDungeonTypes, getDungeonSizes, generateDungeonHtml } from "./DungeonGenerator.mjs";
+import { formatHexCoord } from "./SDXCoordsSD.mjs";
+
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
 const MODULE_ID = "shadowdark-extras";
@@ -62,8 +67,12 @@ export async function saveHexRecord(sceneId, hexKey, record) {
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function hexKeyToLabel(hexKey) {
-	const [r, c] = hexKey.split("_").map(Number);
-	return `${r}.${c}`;
+	const [i, j] = hexKey.split("_").map(Number);
+	try {
+		return formatHexCoord({ i, j });
+	} catch {
+		return `${i}.${j}`;
+	}
 }
 
 /** Resolve display label for any feature (including journal type). */
@@ -166,6 +175,7 @@ export class SDXHexTooltip {
 	#hlAllName = "SDXHexTooltipAll";
 	#altHeld = false;
 	#ctxMenuEl = null;
+	#ctxMenuCloseHandler = null;
 
 	#onMoveRef = null;
 	#onDownRef = null;
@@ -393,6 +403,21 @@ export class SDXHexTooltip {
 				<i class="fas fa-book-open"></i>${label}
 			</div>`;
 		}
+
+		// GM-only: Generate options
+		if (isGM) {
+			html += `<div class="sdx-hex-ctx-divider"></div>`;
+			html += `<div class="sdx-hex-ctx-item sdx-hex-ctx-generate" data-action="generate">
+				<i class="fas fa-dice-d20"></i>Generate Wilderness
+			</div>`;
+			html += `<div class="sdx-hex-ctx-item sdx-hex-ctx-generate-settlement" data-action="generate-settlement">
+				<i class="fas fa-city"></i>Generate Settlement
+			</div>`;
+			html += `<div class="sdx-hex-ctx-item sdx-hex-ctx-generate-dungeon" data-action="generate-dungeon">
+				<i class="fas fa-dungeon"></i>Generate Dungeon
+			</div>`;
+		}
+
 		menu.innerHTML = html;
 
 		document.body.appendChild(menu);
@@ -405,22 +430,18 @@ export class SDXHexTooltip {
 		menu.style.top = `${Math.min(clientY, H - menu.offsetHeight - 8)}px`;
 
 		// Journal click handlers
-		menu.querySelectorAll(".sdx-hex-ctx-item").forEach(item => {
+		menu.querySelectorAll(".sdx-hex-ctx-item:not(.sdx-hex-ctx-generate):not(.sdx-hex-ctx-generate-settlement):not(.sdx-hex-ctx-generate-dungeon)").forEach(item => {
 			item.addEventListener("click", async () => {
 				const j = game.journal.get(item.dataset.jid);
 				if (!j) { this.#closeContextMenu(); return; }
 				const pid = item.dataset.pid || "";
 
 				if (game.user.isGM) {
-					// GM renders directly with TOC navigation
-					await j.sheet.render(true);
+					// GM renders directly
 					if (pid) {
-						await new Promise(r => setTimeout(r, 200));
-						const el = j.sheet.element;
-						(el?.querySelector(`[data-page-id="${pid}"] a`)
-							?? el?.querySelector(`a[data-page-id="${pid}"]`)
-							?? el?.querySelector(`[data-entry-id="${pid}"] a`)
-							?? el?.querySelector(`li[data-page-id="${pid}"]`))?.click();
+						j.sheet.render(true, { pageId: pid });
+					} else {
+						j.sheet.render(true);
 					}
 				} else {
 					// Players always go through the GM — ensures journal is set to LIMITED
@@ -436,19 +457,448 @@ export class SDXHexTooltip {
 			});
 		});
 
+		// Generate Wilderness click handler
+		menu.querySelector(".sdx-hex-ctx-generate")?.addEventListener("click", () => {
+			this.#closeContextMenu();
+			this.#showBiomePicker(hexKey, clientX, clientY);
+		});
+
+		// Generate Settlement click handler
+		menu.querySelector(".sdx-hex-ctx-generate-settlement")?.addEventListener("click", () => {
+			this.#closeContextMenu();
+			this.#showSettlementPicker(hexKey, clientX, clientY);
+		});
+
+		// Generate Dungeon click handler
+		menu.querySelector(".sdx-hex-ctx-generate-dungeon")?.addEventListener("click", () => {
+			this.#closeContextMenu();
+			this.#showDungeonTypePicker(hexKey, clientX, clientY);
+		});
+
 		// Close on outside click
 		const onClose = (e) => {
 			if (!menu.contains(e.target)) {
 				this.#closeContextMenu();
-				document.removeEventListener("mousedown", onClose, true);
 			}
 		};
+		this.#ctxMenuCloseHandler = onClose;
 		setTimeout(() => document.addEventListener("mousedown", onClose, true), 0);
 	}
 
 	#closeContextMenu() {
+		if (this.#ctxMenuCloseHandler) {
+			document.removeEventListener("mousedown", this.#ctxMenuCloseHandler, true);
+			this.#ctxMenuCloseHandler = null;
+		}
 		this.#ctxMenuEl?.remove();
 		this.#ctxMenuEl = null;
+	}
+
+	async #showBiomePicker(hexKey, clientX, clientY) {
+		this.#closeContextMenu();
+
+		let biomes;
+		try {
+			biomes = await getAvailableBiomes();
+		} catch (err) {
+			console.error("SDX | Failed to load biomes:", err);
+			return;
+		}
+		const menu = document.createElement("div");
+		menu.className = "sdx-hex-ctx-menu";
+
+		let html = `<div class="sdx-hex-ctx-header">Select Biome</div>`;
+		for (const b of biomes) {
+			html += `<div class="sdx-hex-ctx-item" data-biome="${b.key}">
+				<i class="fas fa-mountain-sun"></i>${b.label}
+			</div>`;
+		}
+		menu.innerHTML = html;
+
+		document.body.appendChild(menu);
+		this.#ctxMenuEl = menu;
+
+		const W = window.innerWidth;
+		const H = window.innerHeight;
+		menu.style.left = `${Math.min(clientX, W - 190)}px`;
+		menu.style.top = `${Math.min(clientY, H - menu.offsetHeight - 8)}px`;
+
+		menu.querySelectorAll(".sdx-hex-ctx-item").forEach(item => {
+			item.addEventListener("click", async () => {
+				const biomeKey = item.dataset.biome;
+				this.#closeContextMenu();
+				await this.#generateAndSave(hexKey, biomeKey);
+			});
+		});
+
+		const onClose = (e) => {
+			if (!menu.contains(e.target)) {
+				this.#closeContextMenu();
+			}
+		};
+		this.#ctxMenuCloseHandler = onClose;
+		setTimeout(() => document.addEventListener("mousedown", onClose, true), 0);
+	}
+
+	async #generateAndSave(hexKey, biomeKey) {
+		const hexLabel = hexKeyToLabel(hexKey);
+		const sceneId = canvas.scene?.id;
+		const sceneName = canvas.scene?.name ?? "Hex Map";
+
+		// Generate content
+		let htmlContent, regionName;
+		try {
+			const result = await generateHexHtml(biomeKey, hexLabel);
+			htmlContent = result.html;
+			regionName = result.regionName;
+		} catch (err) {
+			console.error("SDX | Hex generation failed:", err);
+			ui.notifications.error("SDX | Hex content generation failed.");
+			return;
+		}
+		const pageName = `The ${regionName}`;
+
+		// Find or create the scene journal (identified by flag)
+		let journal = game.journal.find(
+			j => j.getFlag(MODULE_ID, "hexGenJournal") === sceneId
+		);
+		if (!journal) {
+			journal = await JournalEntry.create({
+				name: `${sceneName} - Hexplorer`,
+				flags: { [MODULE_ID]: { hexGenJournal: sceneId } },
+			});
+		}
+
+		// Create page (always new — unique names allow multiple per hex)
+		await JournalEntryPage.create(
+			{ name: pageName, type: "text", text: { content: htmlContent } },
+			{ parent: journal }
+		);
+
+		// Update hex record — add journal feature so it shows in context menu
+		const record = foundry.utils.deepClone(
+			this.#allData[sceneId]?.[hexKey] ?? {
+				name: "", zone: "", terrain: "", travel: "",
+				exploration: "unexplored", cleared: false, claimed: false,
+				revealRadius: -1, revealCells: "",
+				rollTable: "", rollTableChance: 100, rollTableFirstOnly: false,
+				showToPlayers: false, features: [], notes: [],
+			}
+		);
+		if (!record.features) record.features = [];
+		if (!record.notes) record.notes = [];
+
+		// Set terrain from biome if empty
+		const biomeLabel = (await getAvailableBiomes()).find(b => b.key === biomeKey)?.label ?? biomeKey;
+		if (!record.terrain) record.terrain = biomeLabel;
+
+		// Refresh journal reference to get the page
+		const updatedJournal = game.journal.get(journal.id);
+		const page = updatedJournal.pages.find(p => p.name === pageName);
+
+		// Add journal feature if not already linked
+		if (page) {
+			record.features.push({
+				id: foundry.utils.randomID(),
+				type: "journal",
+				journalId: journal.id,
+				pageId: page.id,
+				name: `The ${regionName}`,
+				discovered: false,
+			});
+		}
+
+		await saveHexRecord(sceneId, hexKey, record);
+		this.notifyDataChanged(sceneId, hexKey, record);
+
+		// Open the journal to the page
+		updatedJournal.sheet.render(true, { pageId: page?.id });
+
+		ui.notifications.info(`Generated "The ${regionName}" for Hex ${hexLabel}`);
+	}
+
+	async #showSettlementPicker(hexKey, clientX, clientY) {
+		this.#closeContextMenu();
+
+		let types;
+		try {
+			types = await getSettlementTypes();
+		} catch (err) {
+			console.error("SDX | Failed to load settlement types:", err);
+			return;
+		}
+		const menu = document.createElement("div");
+		menu.className = "sdx-hex-ctx-menu";
+
+		let html = `<div class="sdx-hex-ctx-header">Select Settlement</div>`;
+		for (const t of types) {
+			html += `<div class="sdx-hex-ctx-item" data-stype="${t.key}">
+				<i class="fas fa-city"></i>${t.label}
+			</div>`;
+		}
+		menu.innerHTML = html;
+
+		document.body.appendChild(menu);
+		this.#ctxMenuEl = menu;
+
+		const W = window.innerWidth;
+		const H = window.innerHeight;
+		menu.style.left = `${Math.min(clientX, W - 190)}px`;
+		menu.style.top = `${Math.min(clientY, H - menu.offsetHeight - 8)}px`;
+
+		menu.querySelectorAll(".sdx-hex-ctx-item").forEach(item => {
+			item.addEventListener("click", async () => {
+				const typeKey = item.dataset.stype;
+				this.#closeContextMenu();
+				await this.#generateSettlementAndSave(hexKey, typeKey);
+			});
+		});
+
+		const onClose = (e) => {
+			if (!menu.contains(e.target)) {
+				this.#closeContextMenu();
+			}
+		};
+		this.#ctxMenuCloseHandler = onClose;
+		setTimeout(() => document.addEventListener("mousedown", onClose, true), 0);
+	}
+
+	async #generateSettlementAndSave(hexKey, typeKey) {
+		const hexLabel = hexKeyToLabel(hexKey);
+		const sceneId = canvas.scene?.id;
+		const sceneName = canvas.scene?.name ?? "Hex Map";
+
+		// Generate content
+		let htmlContent, settlementName;
+		try {
+			const result = await generateSettlementHtml(typeKey, hexLabel, hexKey);
+			htmlContent = result.html;
+			settlementName = result.settlementName;
+		} catch (err) {
+			console.error("SDX | Settlement generation failed:", err);
+			ui.notifications.error("SDX | Settlement content generation failed.");
+			return;
+		}
+		const pageName = settlementName;
+
+		// Find or create the scene journal (identified by flag)
+		let journal = game.journal.find(
+			j => j.getFlag(MODULE_ID, "hexGenJournal") === sceneId
+		);
+		if (!journal) {
+			journal = await JournalEntry.create({
+				name: `${sceneName} - Hexplorer`,
+				flags: { [MODULE_ID]: { hexGenJournal: sceneId } },
+			});
+		}
+
+		// Create page (always new — unique names allow multiple per hex)
+		await JournalEntryPage.create(
+			{ name: pageName, type: "text", text: { content: htmlContent } },
+			{ parent: journal }
+		);
+
+		// Update hex record — add journal feature so it shows in context menu
+		const record = foundry.utils.deepClone(
+			this.#allData[sceneId]?.[hexKey] ?? {
+				name: "", zone: "", terrain: "", travel: "",
+				exploration: "unexplored", cleared: false, claimed: false,
+				revealRadius: -1, revealCells: "",
+				rollTable: "", rollTableChance: 100, rollTableFirstOnly: false,
+				showToPlayers: false, features: [], notes: [],
+			}
+		);
+		if (!record.features) record.features = [];
+		if (!record.notes) record.notes = [];
+
+		// Set name from settlement if empty
+		if (!record.name) record.name = settlementName;
+
+		// Refresh journal reference to get the page
+		const updatedJournal = game.journal.get(journal.id);
+		const page = updatedJournal.pages.find(p => p.name === pageName);
+
+		// Add journal feature
+		if (page) {
+			record.features.push({
+				id: foundry.utils.randomID(),
+				type: "journal",
+				journalId: journal.id,
+				pageId: page.id,
+				name: settlementName,
+				discovered: false,
+			});
+		}
+
+		await saveHexRecord(sceneId, hexKey, record);
+		this.notifyDataChanged(sceneId, hexKey, record);
+
+		// Open the journal to the page
+		updatedJournal.sheet.render(true, { pageId: page?.id });
+
+		ui.notifications.info(`Generated settlement "${settlementName}" for Hex ${hexLabel}`);
+	}
+
+	async #showDungeonTypePicker(hexKey, clientX, clientY) {
+		this.#closeContextMenu();
+
+		let types;
+		try {
+			types = await getDungeonTypes();
+		} catch (err) {
+			console.error("SDX | Failed to load dungeon types:", err);
+			return;
+		}
+		const menu = document.createElement("div");
+		menu.className = "sdx-hex-ctx-menu";
+
+		let html = `<div class="sdx-hex-ctx-header">Dungeon Type</div>`;
+		for (const t of types) {
+			html += `<div class="sdx-hex-ctx-item" data-dtype="${t.key}">
+				<i class="fas fa-dungeon"></i>${t.label}
+			</div>`;
+		}
+		menu.innerHTML = html;
+
+		document.body.appendChild(menu);
+		this.#ctxMenuEl = menu;
+
+		const W = window.innerWidth;
+		const H = window.innerHeight;
+		menu.style.left = `${Math.min(clientX, W - 190)}px`;
+		menu.style.top = `${Math.min(clientY, H - menu.offsetHeight - 8)}px`;
+
+		menu.querySelectorAll(".sdx-hex-ctx-item").forEach(item => {
+			item.addEventListener("click", () => {
+				const typeKey = item.dataset.dtype;
+				this.#closeContextMenu();
+				this.#showDungeonSizePicker(hexKey, typeKey, clientX, clientY);
+			});
+		});
+
+		const onClose = (e) => {
+			if (!menu.contains(e.target)) {
+				this.#closeContextMenu();
+			}
+		};
+		this.#ctxMenuCloseHandler = onClose;
+		setTimeout(() => document.addEventListener("mousedown", onClose, true), 0);
+	}
+
+	#showDungeonSizePicker(hexKey, typeKey, clientX, clientY) {
+		this.#closeContextMenu();
+
+		const sizes = getDungeonSizes();
+		const menu = document.createElement("div");
+		menu.className = "sdx-hex-ctx-menu";
+
+		let html = `<div class="sdx-hex-ctx-header">Dungeon Size</div>`;
+		for (const s of sizes) {
+			html += `<div class="sdx-hex-ctx-item" data-dsize="${s.key}">
+				<i class="fas fa-expand-arrows-alt"></i>${s.label}
+			</div>`;
+		}
+		menu.innerHTML = html;
+
+		document.body.appendChild(menu);
+		this.#ctxMenuEl = menu;
+
+		const W = window.innerWidth;
+		const H = window.innerHeight;
+		menu.style.left = `${Math.min(clientX, W - 190)}px`;
+		menu.style.top = `${Math.min(clientY, H - menu.offsetHeight - 8)}px`;
+
+		menu.querySelectorAll(".sdx-hex-ctx-item").forEach(item => {
+			item.addEventListener("click", async () => {
+				const sizeKey = item.dataset.dsize;
+				this.#closeContextMenu();
+				await this.#generateDungeonAndSave(hexKey, typeKey, sizeKey);
+			});
+		});
+
+		const onClose = (e) => {
+			if (!menu.contains(e.target)) {
+				this.#closeContextMenu();
+			}
+		};
+		this.#ctxMenuCloseHandler = onClose;
+		setTimeout(() => document.addEventListener("mousedown", onClose, true), 0);
+	}
+
+	async #generateDungeonAndSave(hexKey, typeKey, sizeKey) {
+		const hexLabel = hexKeyToLabel(hexKey);
+		const sceneId = canvas.scene?.id;
+		const sceneName = canvas.scene?.name ?? "Hex Map";
+
+		// Generate content — single page with all rooms
+		let htmlContent, dungeonName;
+		try {
+			const result = await generateDungeonHtml(typeKey, sizeKey, hexLabel, hexKey);
+			htmlContent = result.html;
+			dungeonName = result.dungeonName;
+		} catch (err) {
+			console.error("SDX | Dungeon generation failed:", err);
+			ui.notifications.error("SDX | Dungeon content generation failed.");
+			return;
+		}
+		const pageName = dungeonName;
+
+		// Find or create the scene journal (identified by flag)
+		let journal = game.journal.find(
+			j => j.getFlag(MODULE_ID, "hexGenJournal") === sceneId
+		);
+		if (!journal) {
+			journal = await JournalEntry.create({
+				name: `${sceneName} - Hexplorer`,
+				flags: { [MODULE_ID]: { hexGenJournal: sceneId } },
+			});
+		}
+
+		// Create page (always new — unique names allow multiple per hex)
+		await JournalEntryPage.create(
+			{ name: pageName, type: "text", text: { content: htmlContent } },
+			{ parent: journal }
+		);
+
+		// Update hex record — add journal feature
+		const record = foundry.utils.deepClone(
+			this.#allData[sceneId]?.[hexKey] ?? {
+				name: "", zone: "", terrain: "", travel: "",
+				exploration: "unexplored", cleared: false, claimed: false,
+				revealRadius: -1, revealCells: "",
+				rollTable: "", rollTableChance: 100, rollTableFirstOnly: false,
+				showToPlayers: false, features: [], notes: [],
+			}
+		);
+		if (!record.features) record.features = [];
+		if (!record.notes) record.notes = [];
+
+		// Set name from dungeon if empty
+		if (!record.name) record.name = dungeonName;
+
+		// Refresh journal reference to get the page
+		const updatedJournal = game.journal.get(journal.id);
+		const page = updatedJournal.pages.find(p => p.name === pageName);
+
+		// Add journal feature
+		if (page) {
+			record.features.push({
+				id: foundry.utils.randomID(),
+				type: "journal",
+				journalId: journal.id,
+				pageId: page.id,
+				name: dungeonName,
+				discovered: false,
+			});
+		}
+
+		await saveHexRecord(sceneId, hexKey, record);
+		this.notifyDataChanged(sceneId, hexKey, record);
+
+		// Open the journal to the page
+		updatedJournal.sheet.render(true, { pageId: page?.id });
+
+		ui.notifications.info(`Generated dungeon "${dungeonName}" for Hex ${hexLabel}`);
 	}
 
 	#show(hexKey, record) {
@@ -483,7 +933,7 @@ export class SDXHexTooltip {
 		if (!this.#hlName) return;
 		try {
 			const tl = canvas.grid.getTopLeftPoint(offset);
-			canvas.grid.clearHighlightLayer(this.#hlName);
+			canvas.interface.grid.clearHighlightLayer(this.#hlName);
 			const base = zoneColor ? Color.from(zoneColor) : Color.from("#00cc44");
 			const border = base.mix(Color.from("#000000"), 0.3);
 			canvas.grid.highlightPosition(this.#hlName, {
@@ -496,7 +946,7 @@ export class SDXHexTooltip {
 
 	#clearHighlight() {
 		if (!this.#hlName) return;
-		try { canvas.grid.clearHighlightLayer(this.#hlName); } catch { }
+		try { canvas.interface.grid.clearHighlightLayer(this.#hlName); } catch { }
 	}
 
 	#onKeyDown(e) {
@@ -513,7 +963,7 @@ export class SDXHexTooltip {
 
 	#drawAllHighlights() {
 		if (!this.#hlAllName) return;
-		try { canvas.grid.clearHighlightLayer(this.#hlAllName); } catch { return; }
+		try { canvas.interface.grid.clearHighlightLayer(this.#hlAllName); } catch { return; }
 		const sceneId = canvas.scene?.id;
 		const hexes = this.#allData[sceneId];
 		if (!hexes) return;
@@ -534,7 +984,7 @@ export class SDXHexTooltip {
 
 	#clearAllHighlights() {
 		if (!this.#hlAllName) return;
-		try { canvas.grid.clearHighlightLayer(this.#hlAllName); } catch { }
+		try { canvas.interface.grid.clearHighlightLayer(this.#hlAllName); } catch { }
 	}
 
 	#positionAtHex(offset) {
@@ -998,15 +1448,7 @@ export function initHexTooltip() {
 				const openPage = async () => {
 					const j = game.journal.get(journalId);
 					if (!j) return;
-					await j.sheet.render(true);
-					if (!pid) return;
-					// Navigate to the specific page via TOC click (pageId in render options is unreliable in v13)
-					await new Promise(r => setTimeout(r, 200));
-					const el = j.sheet.element;
-					(el?.querySelector(`[data-page-id="${pid}"] a`)
-						?? el?.querySelector(`a[data-page-id="${pid}"]`)
-						?? el?.querySelector(`[data-entry-id="${pid}"] a`)
-						?? el?.querySelector(`li[data-page-id="${pid}"]`))?.click();
+					j.sheet.render(true, { pageId: pid });
 				};
 
 				const j = game.journal.get(journalId);

@@ -1,0 +1,3187 @@
+{
+	"rumorTemplates": [
+		"I heard there's {monster} roaming the {region}.",
+		"{monster} was spotted in the {region} not long ago.",
+		"Avoid the {region} if you can. There's {monster} out there.",
+		"Travelers say {monster} lurks somewhere in the {region}.",
+		"A merchant swore he barely escaped {monster} in the {region}.",
+		"The locals warn about {monster} prowling the {region}.",
+		"Some adventurers went to the {region} and never came back. They say {monster} got them.",
+		"There's good coin to be made hunting {monster} in the {region}, if you're brave enough.",
+		"A shepherd claimed to have seen {monster} near the {region} at dusk.",
+		"Folk around here whisper about {monster} haunting the {region}.",
+		"Word at the tavern is that {monster} has been terrorizing the {region}.",
+		"A wounded soldier stumbled in raving about {monster} in the {region}.",
+		"The roads through the {region} aren't safe. {monster} has been seen there.",
+		"They say the {region} is cursed — {monster} guards something hidden there.",
+		"A bounty was posted for {monster} last seen in the {region}.",
+		"Old timers say {monster} has always nested somewhere in the {region}.",
+		"A peddler mentioned {monster} blocking the trails through the {region}.",
+		"Scouts report fresh tracks of {monster} all over the {region}.",
+		"The militia refuses to patrol the {region} ever since {monster} appeared.",
+		"A dying explorer whispered something about {monster} and treasure in the {region}.",
+		"There's a sealed door carved into the rock face somewhere in the {region}. Nobody's found the key — or lived to tell what's behind it.",
+		"An old dungeon entrance was found in the {region} after a landslide. The stonework is ancient — older than anything around here.",
+		"A farmer plowing near the {region} broke through into a chamber below. He heard breathing down there and ran.",
+		"They say there's a well in the {region} that goes down much further than it should. Some kind of complex underneath.",
+		"Dwarven runes were found carved into a cliff in the {region}. A scholar said they mark the entrance to a forgotten vault.",
+		"A sinkhole opened in the {region} and swallowed a cart whole. The driver crawled out raving about pillars and torchlight below.",
+		"There's an old crypt beneath a ruined chapel in the {region}. The lower levels have never been mapped. {monster} was seen near the entrance.",
+		"Miners in the {region} broke into a natural cavern. They found worked stone walls and bones stacked floor to ceiling.",
+		"The cellars under the old fort in the {region} connect to something deeper. Soldiers used to dare each other to go past the third door.",
+		"A hidden staircase was found behind a waterfall in the {region}. The steps are worn smooth by centuries of use.",
+		"They say the ruins in the {region} are just the top floor. The real complex goes five levels down, maybe more.",
+		"There's a standing stone in the {region} that casts no shadow at noon. Old folk say it marks where the dead kings are buried.",
+		"A trapper found a bronze trapdoor buried under moss in the {region}. He couldn't open it alone. Something knocked back when he pounded on it.",
+		"Every full moon, lights flicker underground in the {region}. You can see them through the cracks in the earth if you know where to look.",
+		"A map was found on a dead thief showing tunnels beneath the {region}. Three Xs mark spots no one has checked.",
+		"The old aqueduct in the {region} has a side passage bricked up centuries ago. A mason said the mortar is crumbling.",
+		"Charcoal burners in the {region} refuse to work after dark. They hear chanting rising from below the ground.",
+		"A toppled obelisk in the {region} has a hollow base. Inside, stairs spiral down into the dark. {monster} guards the upper landing.",
+		"There's a barrow mound in the {region} the locals won't go near. They say the door was sealed with silver nails that have all rusted away.",
+		"An earthquake last winter cracked the ground in the {region} and revealed carved stone corridors. Nobody's gone deeper than the first room.",
+		"A child found a gold coin in a rabbit burrow in the {region}. The coin is from a kingdom that fell three hundred years ago.",
+		"Fishermen say there's a stone archway visible beneath the water in the {region} when the river runs low in summer.",
+		"A hermit living in the {region} claims to have found a door behind a false wall in the old tower. He's too scared to open it alone.",
+		"The trees in one part of the {region} grow in a perfect circle. Dig at the center and you hit flagstone two feet down.",
+		"An old woman says her grandmother spoke of a library buried under the {region}, sealed to protect its books from a long-forgotten war.",
+		"{monster} has been crawling out of a hole in the {region} for weeks now. Whatever is down there, it's not a natural cave.",
+		"A merchant's horse fell through the ground in the {region} and landed in a tiled corridor. The merchant left the horse and fled.",
+		"They found bones in the {region} wearing armor nobody recognizes. The dead were arranged in rows, like they'd been guarding something below.",
+		"A priest says there's a catacomb network under the {region} connected to an old plague cemetery. Some of the dead may not be resting easy.",
+		"Smoke rises from the ground in the {region} on cold mornings — not steam, smoke. Something down there is still burning."
+	],
+	"regionNames": [
+		"Hell Pit",
+		"Stargazer",
+		"Dark Storm",
+		"Ironhammer",
+		"Nightshard",
+		"Pantheon",
+		"Goblinchaser",
+		"Vazul's Spear",
+		"Watermaze",
+		"Dragon's Flame",
+		"Goldseeker's",
+		"Bonecrusher",
+		"Blood Blade",
+		"Battleworn",
+		"Demon's Fork",
+		"Devil's Eye",
+		"Holloweye",
+		"Gem of Elderia",
+		"Dragon Fury",
+		"Revenger",
+		"Karla's Hammer",
+		"Heart of Avaya",
+		"Black Shield",
+		"Dark Armor",
+		"Nightmare",
+		"Spiderweb",
+		"Vicious",
+		"Javelin",
+		"Heartseeker",
+		"Thousand Shrines",
+		"Blackapple",
+		"Redfeather",
+		"Ragthorn",
+		"Crimsonblade",
+		"Nightshadow",
+		"Halfmoon",
+		"Howling Wolves",
+		"Hell's Gate",
+		"Aurora",
+		"Sunbreak",
+		"Goldmass",
+		"Dragonclaw",
+		"Moonwatcher",
+		"Fallen Star",
+		"Crater",
+		"Savage",
+		"Demonskull",
+		"Wyvern's Sting",
+		"Axe of Sal'zazoo",
+		"Vortex",
+		"Spiral",
+		"Bloodborn",
+		"Bloodforged",
+		"Fireforged",
+		"Iceforged",
+		"Fireborn",
+		"Iceborn",
+		"Wintercry",
+		"Summerwave",
+		"Firefly",
+		"Alvania",
+		"Fearless",
+		"Thunderwave",
+		"Lifeless",
+		"Arrowpoint",
+		"Retribution",
+		"Light of Valor",
+		"Goldenswan",
+		"Emerald",
+		"Darkfall",
+		"Grey Mist",
+		"Thornmantle",
+		"Wyrmrest",
+		"Gallowsreach",
+		"Ashenveil",
+		"Crowfather's",
+		"Bonewhisper",
+		"Stormveil",
+		"Harrowdeep",
+		"Duskhollow",
+		"Fangmire",
+		"Copperblood",
+		"Widow's Grief",
+		"Shattered Crown",
+		"Pale Lantern",
+		"Grimjaw",
+		"Rotwood",
+		"Ember Crown",
+		"Serpent's Coil",
+		"Blightwatch",
+		"Oathbreaker's",
+		"Whispering Skull",
+		"Runemark",
+		"Cinderfall",
+		"Hollow Throne",
+		"Wolfsbane",
+		"Pilgrim's End",
+		"Warden's Lament",
+		"Mosshelm",
+		"Deeproot",
+		"Brackenthorn",
+		"Ironvow",
+		"Stillwater",
+		"Crow's Landing",
+		"Frostmantle",
+		"Greybarrow",
+		"Saltblood",
+		"Tinderspark",
+		"Hag's Tooth",
+		"Owlwatch",
+		"Rattlebone",
+		"Dreadmire",
+		"Forge of Kael",
+		"Stonewail",
+		"Murkshroud",
+		"Silverbark",
+		"Gallowstree",
+		"Ashenmaw",
+		"Pearlmist",
+		"Longstrider's",
+		"Brokenspire",
+		"Nighthollow",
+		"Skullthorn",
+		"Wormwood",
+		"Gloomfen",
+		"Raven's Eye",
+		"Dirge of Amar",
+		"Dustwalker's",
+		"Chainrattle",
+		"Moonscar",
+		"Last Candle",
+		"Kingsruin",
+		"Blight of Vorrh",
+		"Wraithmark",
+		"Ironbark",
+		"Starfall",
+		"Gravewatch",
+		"Ember of Tyr",
+		"Deadwind",
+		"Sorrowpeak",
+		"Flinthollow",
+		"Cairn of Elda",
+		"Redthorn",
+		"Stonefather's",
+		"Dawnspear"
+	],
+	"biomes": {
+		"plains": {
+			"label": "Plains",
+			"descriptions": [
+				"There are several large craters in the green fields here. Something violent must have hit the ground from the sky in the past.",
+				"Crushed skulls and rusty swords are scattered around the hills here. You can almost hear the noises and screams of the ancient battlefield.",
+				"A tall stone tower fell and now lay crushed on the ground. A few small bunnies run and hide under its stone bricks.",
+				"A violent earthquake left the ground here broken with deep and narrow chasms. If listening carefully, one can hear eerie sounds coming from deep inside.",
+				"Several large geysers discharge boiling streams of water and vapour every few minutes.",
+				"A vast field of colourful flowers covers the shallow hills here. Butterflies and bees hop from flower to flower.",
+				"There's a perfect circle of large stones, each standing tall above the ground. In the center, a shallow pit seems to have hosted a bonfire not too long ago.",
+				"A pile of stones form a pyramid of steps, tall enough to provide a better vantage point over the region. At the top, a rusty old sword is planted blade first inside the ground.",
+				"The grasslands here are lush and green, but every now and then there's a perfectly dug cubic pit in the mud, much like a fresh and ready grave.",
+				"Giant iron shrapnel, as big as tree trunks, erect from the ground every hundred feet or so. It is as if they fell down from the sky.",
+				"Carcasses of farm animals are scattered around, some in worse shape than others. Swarms of flies are hovering over them like dark veils in the wind.",
+				"A small lake sits between the lush green hills here. At night, countless mysterious forms glow an eerie blue light in its deep water.",
+				"A small lake sits between the black rocky hills here, its water darker than night. Some dead fish are floating near its banks."
+			],
+			"locations": [
+				"in a valley",
+				"at the top of a hill",
+				"between two hills",
+				"on a hill's slope",
+				"on the terraced hills",
+				"in the grasslands",
+				"atop a rocky hill"
+			],
+			"hideouts": [
+				"behind a waterfall",
+				"under the ruins of an old fortress",
+				"inside an oak"
+			],
+			"regionSuffixes": [
+				"Plains",
+				"Prairie",
+				"Steppe",
+				"Meadows",
+				"Fields"
+			],
+			"weatherType": "normal",
+			"featureEncounters": [
+				{
+					"name": "Manticore",
+					"weight": 3
+				},
+				{
+					"name": "Chimera",
+					"weight": 2
+				},
+				{
+					"name": "Griffon",
+					"weight": 3
+				},
+				{
+					"name": "Roc",
+					"weight": 1
+				},
+				{
+					"name": "Cyclops",
+					"weight": 1
+				},
+				{
+					"name": "Wyvern",
+					"weight": 2
+				},
+				{
+					"name": "Bulette",
+					"weight": 2
+				},
+				{
+					"name": "Ogre",
+					"weight": 3
+				},
+				{
+					"name": "Gnoll",
+					"weight": 3
+				},
+				{
+					"name": "Centaur",
+					"weight": 2
+				},
+				{
+					"name": "Hippogriff",
+					"weight": 2
+				},
+				{
+					"name": "Lion",
+					"weight": 3
+				}
+			],
+			"randomEncounters": [
+				{
+					"name": "Wolf",
+					"weight": 4
+				},
+				{
+					"name": "Boar",
+					"weight": 3
+				},
+				{
+					"name": "Bandit",
+					"weight": 5
+				},
+				{
+					"name": "Orc",
+					"weight": 4
+				},
+				{
+					"name": "Gnoll",
+					"weight": 3
+				},
+				{
+					"name": "Goblin",
+					"weight": 3
+				},
+				{
+					"name": "Hobgoblin",
+					"weight": 3
+				},
+				{
+					"name": "Horse",
+					"weight": 4
+				},
+				{
+					"name": "Snake, Venomous",
+					"weight": 2
+				},
+				{
+					"name": "Stirge",
+					"weight": 3
+				},
+				{
+					"name": "Warg",
+					"weight": 2
+				},
+				{
+					"name": "Centaur",
+					"weight": 1
+				},
+				{
+					"name": "Lion",
+					"weight": 2
+				},
+				{
+					"name": "Ogre",
+					"weight": 1
+				}
+			]
+		},
+		"forest": {
+			"label": "Forest",
+			"descriptions": [
+				"Giant red, purple and blue mushrooms grow beside the trees here, their colors are vibrant and bright, much like gemstones.",
+				"The trees here are naked and twisted. Their branches reach down like bony claws. Was this place cursed in days long gone?",
+				"So big and tall are the trees here. Their tops are almost hidden by the dense mist. Their trunks are as wide as a hut. Some of them have planks of wood attached, forming a ladder.",
+				"A huge, lush tree is standing in a clearing here, covered with colourful flowers and holding a sweet berry inside. Birds fly cheerfully around it.",
+				"Moss covered ruins of an ancient stone structure emerge from within the vegetation. Carvings of spirals and swirls decorate some of the larger stones.",
+				"The forest is dense and dark here, but countless clusters of phosphorescent fungi are growing near the base of the trunks, creating a luminous colourful glow above the ground.",
+				"Dense ivy and vegetation cover an old skeleton of a dragon, as if sleeping peacefully in a clearing surrounded by the trees.",
+				"Dense ivy and vegetation cover an old skeleton of a giant humanoid, lying face down in a clearing surrounded by the trees.",
+				"Ropes tangle down from the branches here. On some of them, human-sized straw-made figures are hanging by their canvas covered heads.",
+				"Dozens of giant dead tree trunks are laying on the ground here, covered with moss and undergrowth. Some of them seem to have a face, with a frozen expression of agony.",
+				"An oversized statue of a warrior holding a sword against the ground stands proudly in a clearing here. Fresh flowers were recently placed near its base.",
+				"An oversized statue of a king holding a sword against the ground stands proudly in a clearing here. Fresh flowers were recently placed near its base.",
+				"An oversized statue of a queen holding a sword against the ground stands proudly in a clearing here. Fresh flowers were recently placed near its base.",
+				"There's a stream of clear water here, flowing gently between the woods, over the smooth rock ground.",
+				"Colourful flowers, berry shrubs and mushrooms grow under the woods here, dense enough to almost entirely cover a large number of human-like bones.",
+				"A small pond sits between the woods here. At night, countless mysterious forms glow an eerie purple light deep in the water."
+			],
+			"locations": [
+				"near a water stream",
+				"next to a clearing",
+				"deep in the woods",
+				"where the woods meet a large hill"
+			],
+			"hideouts": [
+				"under the ruins of an ancient city",
+				"in one of the tree covered hills",
+				"near an abandoned stronghold, deep in the woods"
+			],
+			"regionSuffixes": [
+				"Forest",
+				"Woods",
+				"Woodlands",
+				"Timberlands",
+				"Grove"
+			],
+			"weatherType": "normal",
+			"featureEncounters": [
+				{
+					"name": "Owlbear",
+					"weight": 3
+				},
+				{
+					"name": "Dragon, Forest",
+					"weight": 1
+				},
+				{
+					"name": "Bugbear",
+					"weight": 3
+				},
+				{
+					"name": "Ettercap",
+					"weight": 3
+				},
+				{
+					"name": "Basilisk",
+					"weight": 2
+				},
+				{
+					"name": "Treant",
+					"weight": 2
+				},
+				{
+					"name": "Unicorn",
+					"weight": 1
+				},
+				{
+					"name": "Hydra",
+					"weight": 1
+				},
+				{
+					"name": "Troll",
+					"weight": 2
+				},
+				{
+					"name": "Dryad",
+					"weight": 2
+				},
+				{
+					"name": "Spider, Giant",
+					"weight": 3
+				},
+				{
+					"name": "Cockatrice",
+					"weight": 2
+				}
+			],
+			"randomEncounters": [
+				{
+					"name": "Wolf",
+					"weight": 4
+				},
+				{
+					"name": "Boar",
+					"weight": 3
+				},
+				{
+					"name": "Bandit",
+					"weight": 5
+				},
+				{
+					"name": "Goblin",
+					"weight": 4
+				},
+				{
+					"name": "Bugbear",
+					"weight": 3
+				},
+				{
+					"name": "Panther",
+					"weight": 2
+				},
+				{
+					"name": "Bear, Brown",
+					"weight": 2
+				},
+				{
+					"name": "Owlbear",
+					"weight": 1
+				},
+				{
+					"name": "Spider, Giant",
+					"weight": 2
+				},
+				{
+					"name": "Snake, Constrictor",
+					"weight": 2
+				},
+				{
+					"name": "Stirge",
+					"weight": 3
+				},
+				{
+					"name": "Hobgoblin",
+					"weight": 3
+				},
+				{
+					"name": "Orc",
+					"weight": 3
+				},
+				{
+					"name": "Ettercap",
+					"weight": 1
+				}
+			]
+		},
+		"desert": {
+			"label": "Desert",
+			"descriptions": [
+				"The sand here is as dark as the night. Not a fire nor a volcano could have been the cause.",
+				"You can clearly see bones revealing under the dunes when the wind shifts the sand. This was no land of peace.",
+				"Surrounded by the soft dunes, a huge rock shaped like a dome is planted in the sand. It is almost too slippery to climb on.",
+				"Either wind or some other force creates dozens of giant sand vortexes here, as tall as the eye can see.",
+				"There are numerous sinkholes in the sands here. Some of them are big enough to swallow an inn.",
+				"The wind here is gentle and the sand is soft and warm. Large canopied desert trees provide enough shadow to rest or camp under.",
+				"Vast dunes stretch in all directions, shimmering in the desert heat. The sun makes the sand scorching hot.",
+				"Tall pillars of rock emerge from the sands here, like giant columns to support the cloudless sky.",
+				"The sand here is riddled with small craters, as if a cluster of rocks rained violently from above.",
+				"A giant perfect wall of stones stands lonely and unconnected in the middle of the wasteland, with only empty stretches of sand to surround it.",
+				"Gusts of warm desert wind sweep and swirl the sands, creating ghost-like clouds of desert dust."
+			],
+			"locations": [
+				"on the dune sands",
+				"near an oasis",
+				"between two giant dunes",
+				"beside the ruins of a pyramid",
+				"near an ancient monument"
+			],
+			"hideouts": [
+				"under the ruins of an ancient temple",
+				"underground",
+				"near an abandoned ritual site"
+			],
+			"regionSuffixes": [
+				"Dunes",
+				"Desert",
+				"Wastelands",
+				"Barrens",
+				"Wastes"
+			],
+			"weatherType": "desert",
+			"featureEncounters": [
+				{
+					"name": "Dragon, Desert",
+					"weight": 1
+				},
+				{
+					"name": "Basilisk",
+					"weight": 2
+				},
+				{
+					"name": "Manticore",
+					"weight": 3
+				},
+				{
+					"name": "Chimera",
+					"weight": 2
+				},
+				{
+					"name": "Roc",
+					"weight": 1
+				},
+				{
+					"name": "Purple Worm",
+					"weight": 1
+				},
+				{
+					"name": "Bulette",
+					"weight": 2
+				},
+				{
+					"name": "Scorpion, Giant",
+					"weight": 3
+				},
+				{
+					"name": "Lamia",
+					"weight": 2
+				},
+				{
+					"name": "Medusa",
+					"weight": 1
+				},
+				{
+					"name": "Gnoll",
+					"weight": 3
+				},
+				{
+					"name": "Cyclops",
+					"weight": 1
+				}
+			],
+			"randomEncounters": [
+				{
+					"name": "Scorpion, Giant",
+					"weight": 3
+				},
+				{
+					"name": "Snake, Venomous",
+					"weight": 4
+				},
+				{
+					"name": "Gnoll",
+					"weight": 4
+				},
+				{
+					"name": "Bandit",
+					"weight": 5
+				},
+				{
+					"name": "Orc",
+					"weight": 3
+				},
+				{
+					"name": "Centipede, Giant",
+					"weight": 3
+				},
+				{
+					"name": "Hobgoblin",
+					"weight": 3
+				},
+				{
+					"name": "Camel",
+					"weight": 4
+				},
+				{
+					"name": "Skeleton",
+					"weight": 2
+				},
+				{
+					"name": "Zombie",
+					"weight": 2
+				},
+				{
+					"name": "Ogre",
+					"weight": 1
+				},
+				{
+					"name": "Beetle, Giant Fire",
+					"weight": 2
+				}
+			]
+		},
+		"swamps": {
+			"label": "Swamps",
+			"descriptions": [
+				"The trees here are dark and dripping, leaning over the murky water. There are hissing noises all around, and the air is thick and humid.",
+				"These marshes are dark and thick. Rotting tree trunks are scattered around, some are floating, some are splintered in the black mud.",
+				"To walk here one must submerge deep in the swamp and suffer not only the wet and mud, but the occasional leech and water centipede.",
+				"The mud here is deep enough to sink a tall boot, and has boils that emit a vile scent of rot into the air.",
+				"Dense fog covers the wet ground here. It is difficult to tell what lies ahead or what lurks under your feet.",
+				"Tall and naked trees are all submerged in the muddy water. They are so dense and close to each other, making navigation and travel a challenge.",
+				"The land here is drier, easier to walk on and can provide a good camping site.",
+				"The area here is hilly and covered with soggy bushes growing between many small streams of watery mud.",
+				"The land here is mostly dry. A small lake with clear water provides a good opportunity for fishing and camping next to it.",
+				"Murky dark water covers most of the land here. Rotting tree trunks, partially submerged, provide the occasional improvised beam bridge for travel.",
+				"Large, entangled roots provide some solid ground to walk on in the desert of mud here.",
+				"In between murky puddles, mudcracked patches of land provide a thin dry crust to walk on. Few water bushes are sparsely scattered around."
+			],
+			"locations": [
+				"on the muddy lands",
+				"on a dry patch of land",
+				"beside a stream of water"
+			],
+			"hideouts": [
+				"under a group of mounds in the area",
+				"under a large patch of rotting tree trunks",
+				"within the muddy hills",
+				"under the ruins of an old keep",
+				"under the ruins of an ancient settlement"
+			],
+			"regionSuffixes": [
+				"Moors",
+				"Swamps",
+				"Pools",
+				"Wetlands"
+			],
+			"weatherType": "tropical",
+			"weatherTypes": [
+				"tropical",
+				"normal"
+			],
+			"featureEncounters": [
+				{
+					"name": "Dragon, Swamp",
+					"weight": 1
+				},
+				{
+					"name": "Hydra",
+					"weight": 2
+				},
+				{
+					"name": "Hag, Weald",
+					"weight": 2
+				},
+				{
+					"name": "Shambling Mound",
+					"weight": 3
+				},
+				{
+					"name": "Troll",
+					"weight": 3
+				},
+				{
+					"name": "Basilisk",
+					"weight": 2
+				},
+				{
+					"name": "Black Pudding",
+					"weight": 2
+				},
+				{
+					"name": "Will-o-Wisp",
+					"weight": 2
+				},
+				{
+					"name": "Chuul",
+					"weight": 2
+				},
+				{
+					"name": "Crocodile",
+					"weight": 3
+				}
+			],
+			"randomEncounters": [
+				{
+					"name": "Crocodile",
+					"weight": 4
+				},
+				{
+					"name": "Lizardfolk",
+					"weight": 4
+				},
+				{
+					"name": "Frog, Giant",
+					"weight": 4
+				},
+				{
+					"name": "Leech, Giant",
+					"weight": 3
+				},
+				{
+					"name": "Snake, Constrictor",
+					"weight": 3
+				},
+				{
+					"name": "Ghoul",
+					"weight": 3
+				},
+				{
+					"name": "Stirge",
+					"weight": 3
+				},
+				{
+					"name": "Rat, Giant",
+					"weight": 3
+				},
+				{
+					"name": "Zombie",
+					"weight": 3
+				},
+				{
+					"name": "Goblin",
+					"weight": 3
+				},
+				{
+					"name": "Hobgoblin",
+					"weight": 2
+				},
+				{
+					"name": "Boar",
+					"weight": 2
+				},
+				{
+					"name": "Spider, Giant",
+					"weight": 2
+				},
+				{
+					"name": "Centipede, Giant",
+					"weight": 2
+				}
+			]
+		},
+		"mountains": {
+			"label": "Mountains",
+			"descriptions": [
+				"A thundering waterfall drops hundreds of feet down from an overhang in the steep slopes, forming a cloud of raging water at the base.",
+				"A giant peak stands taller than any of the mountains around it. An eerie red glow surrounding its top is visible from afar.",
+				"Waterfalls of lava flow from caves in a cliff, melting pieces of rock as they fall and form a river of inferno in the deep canyon.",
+				"The skeleton of a huge dragon is fossilised in one of the cliff faces here. Its wings are spread as if it was about to fly to the clouds one last time.",
+				"Multiple plateaus separated by seemingly bottomless chasms are connected with fragile rope bridges. The strong wind swings the bridges from side to side, making crossing them a terrifying experience.",
+				"Giant boulders are hanging in mid air by some kind of invisible magic. Some have rope ladders attached, reaching all the way down for anyone to climb.",
+				"A small patch of dark clouds circle an even darker peak. Jolts of lightning flash from within, followed by rumbling thunders.",
+				"The narrow and winding trails here are on the faces of the cliffs. Carelessness or combat are especially risky here.",
+				"The path here leads to a cliffside, more than a hundred feet tall. Planks of wood attached against the rocky wall form the only way ahead.",
+				"The passages here are surrounded with steep vertical cliffs and are branching to all directions like a fractured maze.",
+				"Two giant stone figures of guards, gazing into the sky and holding a sword against the ground are carved on both cliff sides of the valley here.",
+				"The rock formations here are sharp, pointy and dark. Walking here feels like entering the skull of a colossal monster.",
+				"Small unexplained earthquakes tremble the rocks here a few times a day. Loose rocks and boulders may block the pathways, or even worse, fall from above unexpectedly.",
+				"Dense fog makes travelling on the trails here difficult and slow. The reduced visibility renders it almost impossible to scout for danger.",
+				"Weird colourful crystal formations are decorating the rocky walls here. Mesmerising rays of light are bouncing from their countless facets.",
+				"Giant thin pillars of rocks are barely supporting even bigger plates of stone. Some of these huge mushroom-like formations have already collapsed. The others are likely to fall as well soon."
+			],
+			"locations": [
+				"on the edge of the cliffs, at the end of a winding steep trail",
+				"high in the mountains",
+				"across a seemingly bottomless chasm, where a rope bridge meets an overhang",
+				"near the base of a steep cliff",
+				"near the base of the tallest mountain"
+			],
+			"hideouts": [
+				"behind a waterfall",
+				"inside a cave on the cliff",
+				"inside an old volcano"
+			],
+			"regionSuffixes": [
+				"Mountains",
+				"Ridge",
+				"Range",
+				"Peaks",
+				"Teeth",
+				"Crags",
+				"Cliffs"
+			],
+			"weatherType": "mountain",
+			"featureEncounters": [
+				{
+					"name": "Dragon, Fire",
+					"weight": 1
+				},
+				{
+					"name": "Giant, Stone",
+					"weight": 2
+				},
+				{
+					"name": "Giant, Frost",
+					"weight": 2
+				},
+				{
+					"name": "Giant, Cloud",
+					"weight": 1
+				},
+				{
+					"name": "Roc",
+					"weight": 1
+				},
+				{
+					"name": "Griffon",
+					"weight": 2
+				},
+				{
+					"name": "Gargoyle",
+					"weight": 3
+				},
+				{
+					"name": "Harpy",
+					"weight": 3
+				},
+				{
+					"name": "Chimera",
+					"weight": 1
+				},
+				{
+					"name": "Wyvern",
+					"weight": 2
+				},
+				{
+					"name": "Manticore",
+					"weight": 2
+				},
+				{
+					"name": "Basilisk",
+					"weight": 2
+				},
+				{
+					"name": "Medusa",
+					"weight": 1
+				},
+				{
+					"name": "Troll",
+					"weight": 3
+				}
+			],
+			"randomEncounters": [
+				{
+					"name": "Kobold",
+					"weight": 4
+				},
+				{
+					"name": "Goblin",
+					"weight": 4
+				},
+				{
+					"name": "Orc",
+					"weight": 4
+				},
+				{
+					"name": "Hobgoblin",
+					"weight": 3
+				},
+				{
+					"name": "Ogre",
+					"weight": 3
+				},
+				{
+					"name": "Bear, Brown",
+					"weight": 2
+				},
+				{
+					"name": "Wolf",
+					"weight": 3
+				},
+				{
+					"name": "Bandit",
+					"weight": 5
+				},
+				{
+					"name": "Harpy",
+					"weight": 2
+				},
+				{
+					"name": "Warg",
+					"weight": 2
+				},
+				{
+					"name": "Snake, Venomous",
+					"weight": 1
+				},
+				{
+					"name": "Giant, Hill",
+					"weight": 1
+				},
+				{
+					"name": "Cave Brute",
+					"weight": 2
+				}
+			]
+		},
+		"tundra": {
+			"label": "Tundra",
+			"descriptions": [
+				"The ice here is blindingly bright in daylight. It is almost too much to bear for those who are accustomed to the darkness of the depths.",
+				"The ice plateaus here are mostly opaque, but every now and then it reveals ominous shadows of creatures swimming or perhaps lurking underneath.",
+				"In the middle of the icy wasteland, a large round snowy rock emerges from the snow. Easy enough to climb on and perhaps find some shelter from the cold.",
+				"The ice here is thick but broken and cracked. It is a challenge to find a safe path to follow, and quite often, a leap is required to move about.",
+				"The snow here is soft to walk on. Too soft. In some places, taking the next step means falling down deep into a sinkhole.",
+				"Gusts of wind swirl the soft snow in the air, making it difficult to walk safely and comfortably as it obscures the vision and hits any exposed skin with a freezing sting.",
+				"Vast plateaus of ice stretch in all directions, feature-less and monotonous. Navigating is difficult without any distant landmarks.",
+				"Tall pillars of ice emerge from the snow here, as if water has risen from the ground, only to be captured by the frost.",
+				"The snow here is riddled with giant craters. Something with much force and velocity must have fallen from the sky.",
+				"The ruins of a giant wall of ice can be seen in the distance. The formation is unnatural, unmaintained, and impressive.",
+				"There are caverns of translucent ice here. Frozen creatures and ancient artifacts could be spotted if walking inside them.",
+				"There are several deep frozen chasms here, with unnatural thin bridges providing the only way to cross.",
+				"There's a glacier here, almost impossible to climb through, with fragile excavated tunnels dug in it to provide an unsafe passage.",
+				"There's a large ice wall here, forming a natural dam, blocking a large body of icy water from flooding the area.",
+				"A frozen waterfall is the only way to march north from here and will require climbing or rappelling to cross it.",
+				"A frozen waterfall is the only way to march south from here and will require climbing or rappelling to cross it.",
+				"A frozen waterfall is the only way to march north-east from here and will require climbing or rappelling to cross it.",
+				"A frozen waterfall is the only way to march south-east from here and will require climbing or rappelling to cross it.",
+				"A frozen waterfall is the only way to march north-west from here and will require climbing or rappelling to cross it.",
+				"A frozen waterfall is the only way to march south-west from here and will require climbing or rappelling to cross it.",
+				"Several dome shaped shelters are scattered on the snowy planes here, providing a convenient hideout from the cold."
+			],
+			"locations": [
+				"on the icy plateau",
+				"near a hot spring",
+				"between two snowy giant boulders"
+			],
+			"hideouts": [
+				"under the ruins of an ancient temple",
+				"underground",
+				"near an abandoned ritual site",
+				"under the ruins of an ancient settlement",
+				"inside an ancient iceberg"
+			],
+			"regionSuffixes": [
+				"Tundra",
+				"Wastelands",
+				"Barrens",
+				"Wastes",
+				"Icefields",
+				"Snowlands"
+			],
+			"weatherType": "arctic",
+			"featureEncounters": [
+				{
+					"name": "Dragon, Frost",
+					"weight": 1
+				},
+				{
+					"name": "Giant, Frost",
+					"weight": 2
+				},
+				{
+					"name": "Remorhaz",
+					"weight": 2
+				},
+				{
+					"name": "Rime Walker",
+					"weight": 2
+				},
+				{
+					"name": "Mammoth",
+					"weight": 2
+				},
+				{
+					"name": "Troll",
+					"weight": 3
+				},
+				{
+					"name": "Wyvern",
+					"weight": 2
+				},
+				{
+					"name": "Salamander, Frost",
+					"weight": 2
+				},
+				{
+					"name": "Ettin",
+					"weight": 2
+				},
+				{
+					"name": "Bear, Polar",
+					"weight": 3
+				}
+			],
+			"randomEncounters": [
+				{
+					"name": "Wolf",
+					"weight": 5
+				},
+				{
+					"name": "Bear, Polar",
+					"weight": 3
+				},
+				{
+					"name": "Ape, Snow",
+					"weight": 2
+				},
+				{
+					"name": "Goblin",
+					"weight": 3
+				},
+				{
+					"name": "Orc",
+					"weight": 3
+				},
+				{
+					"name": "Hobgoblin",
+					"weight": 3
+				},
+				{
+					"name": "Bandit",
+					"weight": 4
+				},
+				{
+					"name": "Warg",
+					"weight": 3
+				},
+				{
+					"name": "Skeleton",
+					"weight": 2
+				},
+				{
+					"name": "Zombie",
+					"weight": 2
+				},
+				{
+					"name": "Kobold",
+					"weight": 3
+				},
+				{
+					"name": "Ogre",
+					"weight": 2
+				}
+			]
+		},
+		"jungle": {
+			"label": "Jungle",
+			"descriptions": [
+				"Droplets of water fall down from the oversized leaves of the tall trees here. Ancient stone made totem-like pillars emerge from the undergrowth, each with a different carving of an animal.",
+				"This part of the jungle has a very dense undergrowth of bushes and vines. A sword or a machete is likely needed to carve the way forward.",
+				"The trees here are naked and twisted. Their branches reach down like bony claws. Was this place cursed in days long gone?",
+				"The trees here are big and tall. Their tops are almost hidden by the dense mist. Their trunks are as wide as a hut. Some of them have planks of wood attached, forming a ladder.",
+				"A huge, lush tree is standing in a clearing here, covered with colourful flowers and holding a sweet berry inside. Birds fly cheerfully around it.",
+				"Moss covered ruins of an ancient stone structure emerge from within the vegetation. Carvings of spirals and swirls decorate some of the larger stones.",
+				"The forest is dense and dark here, but countless clusters of phosphorescent fungi are growing near the base of the trunks, creating a luminous colourful glow above the ground.",
+				"Dense ivy and vegetation cover an old skeleton of a dragon, as if sleeping peacefully in a clearing surrounded by the jungle trees.",
+				"Dense ivy and vegetation cover an old skeleton of a giant humanoid, lying face down in a clearing surrounded by the jungle trees.",
+				"Ropes tangle down the branches here. On some, straw-made figures of humanoids are hanging down by their canvas covered heads.",
+				"Dozens of giant dead tree trunks are laying on the ground here, covered with moss and undergrowth. Some of them seem to have a face, with a frozen expression of agony.",
+				"An oversized statue of an angry demon holding a sword against the ground stands proudly in a clearing here. Fresh flowers were recently placed near its base.",
+				"An oversized statue of a giant sleeping monkey holding a sword against the ground stands proudly in a clearing here. Fresh flowers were recently placed near its base.",
+				"An oversized statue of three robed priestesses holding a sword against the ground stands proudly in a clearing here. Fresh flowers were recently placed near its base.",
+				"There's a stream of clear water here, flowing gently between the jungle trees, over the smooth rock ground.",
+				"Colourful plants and mushrooms grow within the undergrowth here — almost densely enough to hide the bones of an alien creature.",
+				"A small pond sits between the jungle trees here. At night, countless mysterious forms glow an eerie purple light deep in the water."
+			],
+			"locations": [
+				"near a water stream",
+				"next to a clearing",
+				"deep in the jungle",
+				"where the jungle meets a tall mountain"
+			],
+			"hideouts": [
+				"under the ruins of an ancient temple",
+				"within the dense undergrowth",
+				"near an abandoned ritual site, deep in the jungle",
+				"under the remains of an ancient settlement",
+				"under the ruins of an ancient ziggurat"
+			],
+			"regionSuffixes": [
+				"Jungle",
+				"Wilds",
+				"Bushes",
+				"Rainforest",
+				"Wilderness"
+			],
+			"weatherType": "tropical",
+			"featureEncounters": [
+				{
+					"name": "Dragon, Forest",
+					"weight": 1
+				},
+				{
+					"name": "Hydra",
+					"weight": 2
+				},
+				{
+					"name": "Basilisk",
+					"weight": 2
+				},
+				{
+					"name": "Couatl",
+					"weight": 1
+				},
+				{
+					"name": "Naga",
+					"weight": 2
+				},
+				{
+					"name": "Ettercap",
+					"weight": 3
+				},
+				{
+					"name": "Gorilla",
+					"weight": 3
+				},
+				{
+					"name": "Shambling Mound",
+					"weight": 2
+				},
+				{
+					"name": "Troll",
+					"weight": 2
+				},
+				{
+					"name": "Spider, Giant",
+					"weight": 3
+				}
+			],
+			"randomEncounters": [
+				{
+					"name": "Panther",
+					"weight": 3
+				},
+				{
+					"name": "Frog, Giant",
+					"weight": 3
+				},
+				{
+					"name": "Snake, Constrictor",
+					"weight": 4
+				},
+				{
+					"name": "Snake, Venomous",
+					"weight": 3
+				},
+				{
+					"name": "Centipede, Giant",
+					"weight": 3
+				},
+				{
+					"name": "Spider, Giant",
+					"weight": 2
+				},
+				{
+					"name": "Goblin",
+					"weight": 3
+				},
+				{
+					"name": "Hobgoblin",
+					"weight": 2
+				},
+				{
+					"name": "Stirge",
+					"weight": 3
+				},
+				{
+					"name": "Lizardfolk",
+					"weight": 2
+				},
+				{
+					"name": "Gorilla",
+					"weight": 2
+				},
+				{
+					"name": "Ettercap",
+					"weight": 1
+				},
+				{
+					"name": "Boar",
+					"weight": 2
+				},
+				{
+					"name": "Bandit",
+					"weight": 3
+				}
+			]
+		},
+		"ocean": {
+			"label": "Ocean",
+			"descriptions": [
+				"The sea here is calm and deep blue, stretching endlessly to the horizon. Seabirds circle above, diving for fish.",
+				"Waves crash against jagged rocks that jut out of the water like broken teeth. Barnacles and seaweed cling to their sides.",
+				"A thick fog rolls over the water here, muffling all sound. Shapes appear and vanish in the mist — rocks, or perhaps something else.",
+				"The water is crystal clear here, revealing a colourful reef far below the surface. Schools of fish dart between the corals.",
+				"Debris from a shipwreck floats on the surface — barrels, planks, and torn sails. Whatever happened here was recent.",
+				"A massive whirlpool churns in the distance, pulling driftwood and flotsam into its spiralling maw.",
+				"The sea is unnaturally still here, like a vast mirror. Not a ripple, not a wave. The silence is unnerving.",
+				"Dark shapes move beneath the surface, too large to be fish. They circle slowly before descending into the depths.",
+				"Bioluminescent plankton light up the water at night, turning the sea into a field of drifting blue-green stars.",
+				"A chain of small rocky islands dots the water here, each barely large enough for a campfire. Tide pools glimmer between the stones.",
+				"The water here is dark and cold, far deeper than the surrounding sea. Sailors call places like this bottomless.",
+				"Floating mats of kelp and seaweed stretch across the surface, thick enough to slow a boat and hide what lurks below.",
+				"A half-sunken stone tower rises from the waves, its lower floors submerged. Barnacles and coral have claimed it as their own.",
+				"The remains of a sea wall or ancient pier extend from a submerged ruin. Whatever civilisation built this is long gone."
+			],
+			"locations": [
+				"amid the open waves",
+				"near a rocky outcrop",
+				"beside a coral reef",
+				"near a cluster of small islands",
+				"above a deep underwater trench",
+				"near the wreckage of a ship"
+			],
+			"hideouts": [
+				"inside an underwater cave",
+				"within the hull of a sunken ship",
+				"beneath a submerged ruin"
+			],
+			"regionSuffixes": [
+				"Sea",
+				"Waters",
+				"Depths",
+				"Strait",
+				"Shallows",
+				"Reach"
+			],
+			"weatherType": "ocean",
+			"featureEncounters": [
+				{
+					"name": "Kraken",
+					"weight": 1
+				},
+				{
+					"name": "Dragon, Sea",
+					"weight": 1
+				},
+				{
+					"name": "Aboleth",
+					"weight": 2
+				},
+				{
+					"name": "Hag, Sea",
+					"weight": 2
+				},
+				{
+					"name": "Hydra",
+					"weight": 2
+				},
+				{
+					"name": "Sahuagin",
+					"weight": 3
+				},
+				{
+					"name": "Merfolk",
+					"weight": 3
+				},
+				{
+					"name": "Chuul",
+					"weight": 3
+				},
+				{
+					"name": "Crocodile",
+					"weight": 2
+				},
+				{
+					"name": "Naga",
+					"weight": 1
+				}
+			],
+			"randomEncounters": [
+				{
+					"name": "Sahuagin",
+					"weight": 4
+				},
+				{
+					"name": "Merfolk",
+					"weight": 4
+				},
+				{
+					"name": "Crocodile",
+					"weight": 3
+				},
+				{
+					"name": "Chuul",
+					"weight": 3
+				},
+				{
+					"name": "Leech, Giant",
+					"weight": 3
+				},
+				{
+					"name": "Frog, Giant",
+					"weight": 2
+				},
+				{
+					"name": "Snake, Constrictor",
+					"weight": 2
+				},
+				{
+					"name": "Ghoul",
+					"weight": 2
+				},
+				{
+					"name": "Lizardfolk",
+					"weight": 2
+				},
+				{
+					"name": "Skeleton",
+					"weight": 2
+				},
+				{
+					"name": "Stirge",
+					"weight": 2
+				},
+				{
+					"name": "Bandit",
+					"weight": 3
+				}
+			]
+		}
+	},
+	"weatherTables": {
+		"normal": {
+			"label": "Normal",
+			"variants": [
+				{
+					"seasons": [
+						"Warm Season",
+						"Dry Season",
+						"Wet Season",
+						"Cold Season"
+					],
+					"rows": [
+						{
+							"roll": "2",
+							"values": [
+								"Rainy",
+								"Heatwave",
+								"Thunderstorms",
+								"Blizzard"
+							]
+						},
+						{
+							"roll": "3-4",
+							"values": [
+								"Foggy",
+								"Clear & Humid",
+								"Stormy",
+								"Snowstorm"
+							]
+						},
+						{
+							"roll": "5-9",
+							"values": [
+								"Clear",
+								"Clear",
+								"Rainy",
+								"Snowy"
+							]
+						},
+						{
+							"roll": "10-11",
+							"values": [
+								"Partly Cloudy",
+								"Partly Cloudy",
+								"Foggy",
+								"Frost"
+							]
+						},
+						{
+							"roll": "12",
+							"values": [
+								"Cloudy",
+								"Breezy",
+								"Cloudy",
+								"Foggy"
+							]
+						}
+					],
+					"hazard": null
+				},
+				{
+					"seasons": [
+						"Warm Season",
+						"Dry Season",
+						"Wet Season",
+						"Cold Season"
+					],
+					"rows": [
+						{
+							"roll": "2",
+							"values": [
+								"Cloudy",
+								"Clear & Humid",
+								"Stormy",
+								"Snowstorm"
+							]
+						},
+						{
+							"roll": "3-4",
+							"values": [
+								"Partly Cloudy",
+								"Clear",
+								"Rainy",
+								"Snowy"
+							]
+						},
+						{
+							"roll": "5-9",
+							"values": [
+								"Clear",
+								"Clear",
+								"Drizzling",
+								"Foggy"
+							]
+						},
+						{
+							"roll": "10-11",
+							"values": [
+								"Clear & Breezy",
+								"Partly Cloudy",
+								"Foggy",
+								"Cloudy & Cold"
+							]
+						},
+						{
+							"roll": "12",
+							"values": [
+								"Clear & Breezy",
+								"Clear & Breezy",
+								"Cloudy",
+								"Clear & Cold"
+							]
+						}
+					],
+					"hazard": null
+				},
+				{
+					"seasons": [
+						"Warm Season",
+						"Dry Season",
+						"Wet Season",
+						"Cold Season"
+					],
+					"rows": [
+						{
+							"roll": "2",
+							"values": [
+								"Partly Cloudy",
+								"Clear",
+								"Stormy",
+								"Blizzard"
+							]
+						},
+						{
+							"roll": "3-4",
+							"values": [
+								"Clear",
+								"Clear",
+								"Rain & Wind",
+								"Snowstorm"
+							]
+						},
+						{
+							"roll": "5-9",
+							"values": [
+								"Clear",
+								"Clear & Breezy",
+								"Rainy",
+								"Snowy"
+							]
+						},
+						{
+							"roll": "10-11",
+							"values": [
+								"Clear & Breezy",
+								"Clear & Breezy",
+								"Drizzling",
+								"Fog & Frost"
+							]
+						},
+						{
+							"roll": "12",
+							"values": [
+								"Clear & Breezy",
+								"Partly Cloudy",
+								"Cloudy",
+								"Frost"
+							]
+						}
+					],
+					"hazard": null
+				},
+				{
+					"seasons": [
+						"Warm Season",
+						"Dry Season",
+						"Wet Season",
+						"Cold Season"
+					],
+					"rows": [
+						{
+							"roll": "2",
+							"values": [
+								"Heatwave",
+								"Scorching",
+								"Stormy",
+								"Snowstorm"
+							]
+						},
+						{
+							"roll": "3-4",
+							"values": [
+								"Clear & Humid",
+								"Heatwave",
+								"Rainy",
+								"Snowy"
+							]
+						},
+						{
+							"roll": "5-9",
+							"values": [
+								"Partly Cloudy",
+								"Clear",
+								"Rainy",
+								"Snowy"
+							]
+						},
+						{
+							"roll": "10-11",
+							"values": [
+								"Clear",
+								"Clear & Breezy",
+								"Rainy",
+								"Frost"
+							]
+						},
+						{
+							"roll": "12",
+							"values": [
+								"Clear & Breezy",
+								"Partly Cloudy",
+								"Cloudy",
+								"Frost"
+							]
+						}
+					],
+					"hazard": null
+				}
+			]
+		},
+		"desert": {
+			"label": "Desert",
+			"variants": [
+				{
+					"seasons": [
+						"Warm Season",
+						"Dry Season",
+						"Cold Season"
+					],
+					"rows": [
+						{
+							"roll": "2",
+							"values": [
+								"Clear",
+								"Heatwave",
+								"Clouds & Frost"
+							]
+						},
+						{
+							"roll": "3-4",
+							"values": [
+								"Clear",
+								"Clear",
+								"Frost"
+							]
+						},
+						{
+							"roll": "5-9",
+							"values": [
+								"Clear",
+								"Clear",
+								"Clear"
+							]
+						},
+						{
+							"roll": "10-11",
+							"values": [
+								"Partly Cloudy",
+								"Clear",
+								"Clear & Pleasant"
+							]
+						},
+						{
+							"roll": "12",
+							"values": [
+								"Cloudy",
+								"Partly Cloudy",
+								"Clear & Warmer"
+							]
+						}
+					],
+					"hazard": "There's a 1-in-6 chance once a day for a sandstorm, reducing visibility and movement rate."
+				},
+				{
+					"seasons": [
+						"Warm Season",
+						"Dry Season",
+						"Cold Season"
+					],
+					"rows": [
+						{
+							"roll": "2",
+							"values": [
+								"Heatwave",
+								"Scorching",
+								"Hailstorm"
+							]
+						},
+						{
+							"roll": "3-4",
+							"values": [
+								"Clear",
+								"Heatwave",
+								"Clouds & Frost"
+							]
+						},
+						{
+							"roll": "5-9",
+							"values": [
+								"Clear",
+								"Clear",
+								"Frost"
+							]
+						},
+						{
+							"roll": "10-11",
+							"values": [
+								"Clear",
+								"Clear",
+								"Clear"
+							]
+						},
+						{
+							"roll": "12",
+							"values": [
+								"Partly Cloudy",
+								"Clear",
+								"Clear & Pleasant"
+							]
+						}
+					],
+					"hazard": "There's a 1-in-6 chance once a day for a sandstorm, reducing visibility and movement rate."
+				},
+				{
+					"seasons": [
+						"Dry Season",
+						"Cold Season"
+					],
+					"rows": [
+						{
+							"roll": "2",
+							"values": [
+								"Scorching",
+								"Icestorm"
+							]
+						},
+						{
+							"roll": "3-4",
+							"values": [
+								"Heatwave",
+								"Freezing"
+							]
+						},
+						{
+							"roll": "5-9",
+							"values": [
+								"Clear & Hot",
+								"Clear & Cold"
+							]
+						},
+						{
+							"roll": "10-11",
+							"values": [
+								"Clear",
+								"Clear"
+							]
+						},
+						{
+							"roll": "12",
+							"values": [
+								"Clear & Breezy",
+								"Clear & Pleasant"
+							]
+						}
+					],
+					"hazard": "There's a 1-in-6 chance once a day for a sandstorm, reducing visibility and movement rate."
+				},
+				{
+					"seasons": [
+						"Dry Season"
+					],
+					"rows": [
+						{
+							"roll": "2",
+							"values": [
+								"Scorcher"
+							]
+						},
+						{
+							"roll": "3-4",
+							"values": [
+								"Heatwave"
+							]
+						},
+						{
+							"roll": "5-9",
+							"values": [
+								"Clear"
+							]
+						},
+						{
+							"roll": "10-11",
+							"values": [
+								"Clear & Breezy"
+							]
+						},
+						{
+							"roll": "12",
+							"values": [
+								"Clear & Windy"
+							]
+						}
+					],
+					"hazard": "There's a 1-in-6 chance once a day for a sandstorm, reducing visibility and movement rate."
+				},
+				{
+					"seasons": [
+						"Warm Season",
+						"Dry Season",
+						"Cold Season"
+					],
+					"rows": [
+						{
+							"roll": "2",
+							"values": [
+								"Heatwave",
+								"Scorching",
+								"Hailstorm"
+							]
+						},
+						{
+							"roll": "3-4",
+							"values": [
+								"Clear",
+								"Heatwave",
+								"Frost"
+							]
+						},
+						{
+							"roll": "5-9",
+							"values": [
+								"Clear",
+								"Clear",
+								"Clear"
+							]
+						},
+						{
+							"roll": "10-11",
+							"values": [
+								"Clear",
+								"Clear",
+								"Partly Cloudy"
+							]
+						},
+						{
+							"roll": "12",
+							"values": [
+								"Partly Cloudy",
+								"Clear",
+								"Cloudy"
+							]
+						}
+					],
+					"hazard": "There's a 1-in-6 chance once a day for a sandstorm, reducing visibility and movement rate."
+				}
+			]
+		},
+		"tropical": {
+			"label": "Tropical",
+			"variants": [
+				{
+					"seasons": [
+						"Dry Season",
+						"Wet Season"
+					],
+					"rows": [
+						{
+							"roll": "2",
+							"values": [
+								"Heatwave",
+								"Thunderstorms"
+							]
+						},
+						{
+							"roll": "3-4",
+							"values": [
+								"Cloudy",
+								"Stormy"
+							]
+						},
+						{
+							"roll": "5-9",
+							"values": [
+								"Clear",
+								"Rainy"
+							]
+						},
+						{
+							"roll": "10-11",
+							"values": [
+								"Partly Cloudy",
+								"Foggy"
+							]
+						},
+						{
+							"roll": "12",
+							"values": [
+								"Breezy",
+								"Cloudy"
+							]
+						}
+					],
+					"hazard": "There's a 1-in-6 chance once a week for a flood during the wet season."
+				},
+				{
+					"seasons": [
+						"Dry Season",
+						"Wet Season"
+					],
+					"rows": [
+						{
+							"roll": "2",
+							"values": [
+								"Stormy",
+								"Superstorm"
+							]
+						},
+						{
+							"roll": "3-4",
+							"values": [
+								"Rainy",
+								"Stormy"
+							]
+						},
+						{
+							"roll": "5-9",
+							"values": [
+								"Cloudy & Humid",
+								"Rainy"
+							]
+						},
+						{
+							"roll": "10-11",
+							"values": [
+								"Clear & Humid",
+								"Rainy"
+							]
+						},
+						{
+							"roll": "12",
+							"values": [
+								"Clear",
+								"Foggy"
+							]
+						}
+					],
+					"hazard": "There's a 1-in-6 chance once a week for a flood during the wet season."
+				},
+				{
+					"seasons": [
+						"Dry Season",
+						"Wet Season"
+					],
+					"rows": [
+						{
+							"roll": "2",
+							"values": [
+								"Thunderstorms",
+								"Thunderstorms"
+							]
+						},
+						{
+							"roll": "3-4",
+							"values": [
+								"Stormy",
+								"Stormy"
+							]
+						},
+						{
+							"roll": "5-9",
+							"values": [
+								"Rainy",
+								"Rainy"
+							]
+						},
+						{
+							"roll": "10-11",
+							"values": [
+								"Cloudy",
+								"Foggy"
+							]
+						},
+						{
+							"roll": "12",
+							"values": [
+								"Clear",
+								"Cloudy"
+							]
+						}
+					],
+					"hazard": "There's a 1-in-6 chance once a week for a flood during the wet season."
+				}
+			]
+		},
+		"arctic": {
+			"label": "Arctic",
+			"variants": [
+				{
+					"seasons": [
+						"All Seasons"
+					],
+					"rows": [
+						{
+							"roll": "2",
+							"values": [
+								"Blizzard"
+							]
+						},
+						{
+							"roll": "3-4",
+							"values": [
+								"Snowstorm"
+							]
+						},
+						{
+							"roll": "5-9",
+							"values": [
+								"Snowy"
+							]
+						},
+						{
+							"roll": "10-11",
+							"values": [
+								"Frost"
+							]
+						},
+						{
+							"roll": "12",
+							"values": [
+								"Foggy"
+							]
+						}
+					],
+					"hazard": "There's a 1-in-6 chance once a day for an avalanche."
+				},
+				{
+					"seasons": [
+						"All Seasons"
+					],
+					"rows": [
+						{
+							"roll": "2",
+							"values": [
+								"Snowstorm"
+							]
+						},
+						{
+							"roll": "3-4",
+							"values": [
+								"Heavy Snow"
+							]
+						},
+						{
+							"roll": "5-9",
+							"values": [
+								"Snowy"
+							]
+						},
+						{
+							"roll": "10-11",
+							"values": [
+								"Fog & Frost"
+							]
+						},
+						{
+							"roll": "12",
+							"values": [
+								"Freezing"
+							]
+						}
+					],
+					"hazard": "There's a 1-in-6 chance once a day for an avalanche."
+				},
+				{
+					"seasons": [
+						"All Seasons"
+					],
+					"rows": [
+						{
+							"roll": "2",
+							"values": [
+								"Blizzard"
+							]
+						},
+						{
+							"roll": "3-4",
+							"values": [
+								"Snowy"
+							]
+						},
+						{
+							"roll": "5-9",
+							"values": [
+								"Frost & Wind"
+							]
+						},
+						{
+							"roll": "10-11",
+							"values": [
+								"Frost & Fog"
+							]
+						},
+						{
+							"roll": "12",
+							"values": [
+								"Freezing"
+							]
+						}
+					],
+					"hazard": "There's a 1-in-6 chance once a day for an avalanche."
+				}
+			]
+		},
+		"mountain": {
+			"label": "Mountain",
+			"variants": [
+				{
+					"seasons": [
+						"Warm Season",
+						"Dry Season",
+						"Wet Season",
+						"Cold Season"
+					],
+					"rows": [
+						{
+							"roll": "2",
+							"values": [
+								"Rainy",
+								"Heatwave",
+								"Thunderstorms",
+								"Blizzard"
+							]
+						},
+						{
+							"roll": "3-4",
+							"values": [
+								"Foggy",
+								"Cloudy",
+								"Stormy",
+								"Snowstorm"
+							]
+						},
+						{
+							"roll": "5-9",
+							"values": [
+								"Clear",
+								"Clear",
+								"Rainy",
+								"Snowy"
+							]
+						},
+						{
+							"roll": "10-11",
+							"values": [
+								"Partly Cloudy",
+								"Partly Cloudy",
+								"Foggy",
+								"Frost"
+							]
+						},
+						{
+							"roll": "12",
+							"values": [
+								"Cloudy",
+								"Breezy",
+								"Cloudy",
+								"Foggy"
+							]
+						}
+					],
+					"hazard": "Dry Season: 1-in-6 chance per week for a rockslide. Wet Season: 1-in-6 chance per week for a landslide. Cold Season: 1-in-6 chance per day for an avalanche."
+				},
+				{
+					"seasons": [
+						"Warm Season",
+						"Dry Season",
+						"Wet Season",
+						"Cold Season"
+					],
+					"rows": [
+						{
+							"roll": "2",
+							"values": [
+								"Partly Cloudy",
+								"Clear",
+								"Stormy",
+								"Blizzard"
+							]
+						},
+						{
+							"roll": "3-4",
+							"values": [
+								"Clear",
+								"Clear",
+								"Rain & Wind",
+								"Snowstorm"
+							]
+						},
+						{
+							"roll": "5-9",
+							"values": [
+								"Clear",
+								"Clear & Breezy",
+								"Rainy",
+								"Snowy"
+							]
+						},
+						{
+							"roll": "10-11",
+							"values": [
+								"Clear & Breezy",
+								"Clear & Breezy",
+								"Drizzling",
+								"Fog & Frost"
+							]
+						},
+						{
+							"roll": "12",
+							"values": [
+								"Clear & Breezy",
+								"Partly Cloudy",
+								"Cloudy",
+								"Frost"
+							]
+						}
+					],
+					"hazard": "Dry Season: 1-in-6 chance per week for a rockslide. Wet Season: 1-in-6 chance per week for a landslide. Cold Season: 1-in-6 chance per day for an avalanche."
+				},
+				{
+					"seasons": [
+						"All Seasons"
+					],
+					"rows": [
+						{
+							"roll": "2",
+							"values": [
+								"Blizzard"
+							]
+						},
+						{
+							"roll": "3-4",
+							"values": [
+								"Snowstorm"
+							]
+						},
+						{
+							"roll": "5-9",
+							"values": [
+								"Snowy"
+							]
+						},
+						{
+							"roll": "10-11",
+							"values": [
+								"Frost"
+							]
+						},
+						{
+							"roll": "12",
+							"values": [
+								"Foggy"
+							]
+						}
+					],
+					"hazard": "There's a 1-in-6 chance once a day for an avalanche."
+				},
+				{
+					"seasons": [
+						"All Seasons"
+					],
+					"rows": [
+						{
+							"roll": "2",
+							"values": [
+								"Snowstorm"
+							]
+						},
+						{
+							"roll": "3-4",
+							"values": [
+								"Heavy Snow"
+							]
+						},
+						{
+							"roll": "5-9",
+							"values": [
+								"Snowy"
+							]
+						},
+						{
+							"roll": "10-11",
+							"values": [
+								"Fog & Frost"
+							]
+						},
+						{
+							"roll": "12",
+							"values": [
+								"Freezing"
+							]
+						}
+					],
+					"hazard": "There's a 1-in-6 chance once a day for an avalanche."
+				},
+				{
+					"seasons": [
+						"All Seasons"
+					],
+					"rows": [
+						{
+							"roll": "2",
+							"values": [
+								"Blizzard"
+							]
+						},
+						{
+							"roll": "3-4",
+							"values": [
+								"Snowy"
+							]
+						},
+						{
+							"roll": "5-9",
+							"values": [
+								"Frost & Wind"
+							]
+						},
+						{
+							"roll": "10-11",
+							"values": [
+								"Frost & Fog"
+							]
+						},
+						{
+							"roll": "12",
+							"values": [
+								"Freezing"
+							]
+						}
+					],
+					"hazard": "There's a 1-in-6 chance once a day for an avalanche."
+				}
+			]
+		},
+		"ocean": {
+			"label": "Ocean",
+			"variants": [
+				{
+					"seasons": [
+						"Warm Season",
+						"Storm Season",
+						"Cold Season"
+					],
+					"rows": [
+						{
+							"roll": "2",
+							"values": [
+								"Heatwave & Calm",
+								"Hurricane",
+								"Gale & Sleet"
+							]
+						},
+						{
+							"roll": "3-4",
+							"values": [
+								"Clear & Humid",
+								"Stormy",
+								"Heavy Rain & Wind"
+							]
+						},
+						{
+							"roll": "5-9",
+							"values": [
+								"Clear & Breezy",
+								"Rainy & Choppy",
+								"Overcast & Cold"
+							]
+						},
+						{
+							"roll": "10-11",
+							"values": [
+								"Partly Cloudy",
+								"Foggy",
+								"Foggy & Cold"
+							]
+						},
+						{
+							"roll": "12",
+							"values": [
+								"Clear & Calm",
+								"Cloudy & Windy",
+								"Clear & Freezing"
+							]
+						}
+					],
+					"hazard": "There's a 1-in-6 chance once a day for a sudden squall, capsizing small boats and scattering cargo."
+				},
+				{
+					"seasons": [
+						"Calm Season",
+						"Storm Season"
+					],
+					"rows": [
+						{
+							"roll": "2",
+							"values": [
+								"Becalmed",
+								"Hurricane"
+							]
+						},
+						{
+							"roll": "3-4",
+							"values": [
+								"Clear & Still",
+								"Thunderstorms"
+							]
+						},
+						{
+							"roll": "5-9",
+							"values": [
+								"Clear & Breezy",
+								"Stormy & Choppy"
+							]
+						},
+						{
+							"roll": "10-11",
+							"values": [
+								"Partly Cloudy",
+								"Rainy & Windy"
+							]
+						},
+						{
+							"roll": "12",
+							"values": [
+								"Overcast",
+								"Foggy"
+							]
+						}
+					],
+					"hazard": "There's a 1-in-6 chance once a day for a rogue wave threatening vessels."
+				},
+				{
+					"seasons": [
+						"All Seasons"
+					],
+					"rows": [
+						{
+							"roll": "2",
+							"values": [
+								"Hurricane"
+							]
+						},
+						{
+							"roll": "3-4",
+							"values": [
+								"Stormy & Rough"
+							]
+						},
+						{
+							"roll": "5-9",
+							"values": [
+								"Overcast & Choppy"
+							]
+						},
+						{
+							"roll": "10-11",
+							"values": [
+								"Clear & Windy"
+							]
+						},
+						{
+							"roll": "12",
+							"values": [
+								"Clear & Calm"
+							]
+						}
+					],
+					"hazard": "There's a 1-in-6 chance once a day for a sudden squall or dense fog bank."
+				}
+			]
+		}
+	},
+	"wildernessPool": {
+		"types": [
+			"a still, dark pool",
+			"a shallow natural basin",
+			"a murky stagnant pond",
+			"a small spring-fed pool",
+			"a deep natural pool",
+			"a brackish watering hole",
+			"a fog-shrouded pool"
+		],
+		"liquids": [
+			"dark, tar-like liquid",
+			"crystal-clear water",
+			"milky-white fluid",
+			"thick, blood-like liquid",
+			"faintly glowing green liquid",
+			"stinking yellowish liquid",
+			"sparkling azure water",
+			"murky charcoal fluid",
+			"iridescent, oily film",
+			"boiling, brown mud",
+			"glowing gold nectar",
+			"smoky, silver mist-liquid"
+		],
+		"effects": [
+			"The liquid is strongly acidic. Wading through it deals <strong>1d4 damage per round</strong> of contact.",
+			"Drinking from it <strong>restores 1d6 HP</strong> (once per person, per day).",
+			"The pool is unnaturally still — nothing disturbs its surface, not even wind or rain. Gazing into it too long causes a <strong>creeping unease</strong>.",
+			"Anything submerged too long begins to <strong>petrify</strong>, stiffening and hardening within moments.",
+			"A demonic visage appears in the reflection, whispering dark promises. <strong>Save vs Spells</strong> or be compelled to return here each night.",
+			"The liquid tastes foul and smells of rot, but is otherwise harmless to those who don't drink it.",
+			"The pool glows faintly at night with an eerie bioluminescent light, visible from a great distance.",
+			"Strange coins and corroded offerings litter the bottom — this place has been used as a shrine for generations.",
+			"Bathing in the pool for 1 hour grants <strong>Advantage</strong> on the next Check or Attack, but requires a <strong>DC 12 CON save</strong> to avoid catching a chill (Disadvantage on DEX for 24 hours).",
+			"Casting a spell into the pool <strong>doubles the damage of future castings of that spell for 24 hours</strong> (if applicable), but the caster gets exhausted and has disadvantage on any skill check or saving throw for 1 hour.",
+			"Touching the water reveals a <strong>Mirrored Portal</strong>; jumping in transports you to a 'shadow' version of this hex (GMs discretion).",
+			"The pool is a <strong>Memory Well</strong>: drinking it restores one forgotten spell or daily ability, but causes 1d4 psychic damage."
+		]
+	},
+	"mouths": {
+		"plains": [
+			"hidden deep inside a burial mound",
+			"deep inside the mouth of a giant stone skull",
+			"under a wooden trapdoor buried 5 feet in the ground",
+			"under the ruins of an old fortress",
+			"at the bottom of a false outhouse",
+			"in the basement of an abandoned inn",
+			"inside an abandoned mine",
+			"inside an abandoned wooden hut, under loose floor boards"
+		],
+		"forest": [
+			"deep inside the trunk of a giant oak, at the bottom of an excavated spiral staircase",
+			"under the ruins of an ancient temple, masked by dense undergrowth",
+			"deep inside the mouth of a giant stone skull, entirely covered with moss and ivy",
+			"in the basement of an abandoned inn",
+			"inside an abandoned wooden cabin, under loose floor boards"
+		],
+		"desert": [
+			"under a wooden trapdoor buried 5 feet into the sand, with only an arrow-shaped sign pointing down hinting on the location",
+			"deep inside the mouth of a giant stone craved skull, partly buried under a dune",
+			"in the basement of an abandoned inn",
+			"inside a cave on a formation of rock surrounded by dunes",
+			"inside an abandoned wooden hut, under loose floor boards"
+		],
+		"swamps": [
+			"partially submerged under the roots of a dying willow",
+			"inside an old moss-covered crypt in the heart of the marsh",
+			"under the foundations of a tilted, half-sunken manor",
+			"behind a curtain of hanging moss in a natural grotto",
+			"revealed by a receding tide of murky sludge"
+		],
+		"mountains": [
+			"in a cave on the face of cliff, at the end of a rope bridge above a chasm",
+			"inside a cave, hidden behind a raging waterfall",
+			"inside an abandoned mine",
+			"inside a cave on the face of a steep cliff",
+			"under the ruins of an old fortress",
+			"in the basement of an abandoned inn",
+			"inside an abandoned wooden cabin, under loose floor boards"
+		],
+		"tundra": [
+			"inside an ancient iceberg, revealed by a recent thaw",
+			"at the bottom of a deep crevasse, sheltered from the winds",
+			"under the frozen ruins of a watchtower",
+			"inside a cave on the face of a frozen cliff",
+			"buried deep under a drift of eternal snow"
+		],
+		"jungle": [
+			"choked by ancient vines inside a ruined ziggurat",
+			"at the center of a forgotten stone circle, hidden by ferns",
+			"deep inside the maw of a mossy stone idol",
+			"under the floor of a ruined wooden village raised on stilts",
+			"inside a humid cavern where the air is thick with spores"
+		]
+	},
+	"caravans": {
+		"landTypes": [
+			"wooden",
+			"canvas-covered",
+			"heavily-shielded"
+		],
+		"shipTypes": [
+			"merchant cog",
+			"galleon",
+			"caravel",
+			"sailing ship"
+		],
+		"colors": [
+			"red",
+			"blue",
+			"green",
+			"golden",
+			"silver",
+			"black"
+		],
+		"merchantNames": [
+			"Adger",
+			"Almer",
+			"Ander",
+			"Arbar",
+			"Berrin",
+			"Kaelen",
+			"Kalan",
+			"Lugar",
+			"Malger",
+			"Nadeger",
+			"Aleria",
+			"Amara",
+			"Elenia",
+			"Floretia",
+			"Luceria",
+			"Milia",
+			"Palemia",
+			"Sariel",
+			"Zephyrine"
+		],
+		"npcTraits": [
+			"with a strong, muscular physique",
+			"with a deep scar on the right arm",
+			"with a broken nose",
+			"wearing a big nose-ring",
+			"missing a middle-finger",
+			"wearing a long crimson robe",
+			"with an oversized pointy hat",
+			"with long, skinny fingers"
+		],
+		"npcRoles": [
+			"a hardened mercenary",
+			"a young apprentice",
+			"a sharp-eyed scout",
+			"a quiet bodyguard",
+			"a weary traveler",
+			"an enthusiastic assistant"
+		],
+		"equipment": [
+			{
+				"Title": "Pole",
+				"Cost": "5 sp"
+			},
+			{
+				"Title": "Bastard Sword",
+				"Cost": "10 gp"
+			},
+			{
+				"Title": "Handaxe",
+				"Cost": "2 gp"
+			},
+			{
+				"Title": "Pike",
+				"Cost": "10 gp"
+			},
+			{
+				"Title": "Rope, 60'",
+				"Cost": "1 gp"
+			},
+			{
+				"Title": "Oil, flask",
+				"Cost": "5 sp"
+			},
+			{
+				"Title": "Greataxe",
+				"Cost": "10 gp"
+			},
+			{
+				"Title": "Staff",
+				"Cost": "5 sp"
+			},
+			{
+				"Title": "Javelin",
+				"Cost": "5 sp"
+			},
+			{
+				"Title": "Mithral Plate Mail",
+				"Cost": "520 gp"
+			},
+			{
+				"Title": "Morningstar",
+				"Cost": "5 gp"
+			},
+			{
+				"Title": "Dagger",
+				"Cost": "1 gp"
+			},
+			{
+				"Title": "Scimitar",
+				"Cost": "8 gp"
+			},
+			{
+				"Title": "Chainmail",
+				"Cost": "60 gp"
+			},
+			{
+				"Title": "Iron Spikes",
+				"Cost": "1 gp"
+			},
+			{
+				"Title": "Flint and Steel",
+				"Cost": "5 sp"
+			},
+			{
+				"Title": "Leather Armor",
+				"Cost": "10 gp"
+			},
+			{
+				"Title": "Sling",
+				"Cost": "5 gp"
+			},
+			{
+				"Title": "Foebane",
+				"Cost": "30 gp"
+			},
+			{
+				"Title": "Blowgun",
+				"Cost": "5 gp"
+			},
+			{
+				"Title": "Mirror",
+				"Cost": "10 gp"
+			},
+			{
+				"Title": "Rations",
+				"Cost": "5 sp"
+			},
+			{
+				"Title": "Crowbar",
+				"Cost": "5 sp"
+			},
+			{
+				"Title": "Whip",
+				"Cost": "10 gp"
+			},
+			{
+				"Title": "Longbow",
+				"Cost": "8 gp"
+			},
+			{
+				"Title": "Club",
+				"Cost": "5 cp"
+			},
+			{
+				"Title": "Shortsword",
+				"Cost": "7 gp"
+			},
+			{
+				"Title": "Razor Chain",
+				"Cost": "12 gp"
+			},
+			{
+				"Title": "Spear (Obsidian)",
+				"Cost": "4 gp"
+			},
+			{
+				"Title": "Stave",
+				"Cost": "2 gp"
+			},
+			{
+				"Title": "Restorative",
+				"Cost": "50 gp"
+			},
+			{
+				"Title": "Round Shield",
+				"Cost": "15 gp"
+			},
+			{
+				"Title": "Caltrops",
+				"Cost": "5 sp"
+			},
+			{
+				"Title": "Dagger (Obsidian)",
+				"Cost": "3 gp"
+			},
+			{
+				"Title": "Mithral Chainmail",
+				"Cost": "240 gp"
+			},
+			{
+				"Title": "Shield",
+				"Cost": "10 gp"
+			},
+			{
+				"Title": "Shortbow",
+				"Cost": "6 gp"
+			},
+			{
+				"Title": "Curative",
+				"Cost": "50 gp"
+			},
+			{
+				"Title": "Flask",
+				"Cost": "3 sp"
+			},
+			{
+				"Title": "Arrows",
+				"Cost": "1 gp"
+			},
+			{
+				"Title": "Spear-thrower",
+				"Cost": "2 gp"
+			},
+			{
+				"Title": "Club (Obsidian)",
+				"Cost": "5 gp"
+			},
+			{
+				"Title": "Longsword",
+				"Cost": "9 gp"
+			},
+			{
+				"Title": "Bottle",
+				"Cost": "3 sp"
+			},
+			{
+				"Title": "Spear",
+				"Cost": "5 sp"
+			},
+			{
+				"Title": "Stimulant",
+				"Cost": "0 gp"
+			},
+			{
+				"Title": "Boomerang",
+				"Cost": "3 gp"
+			},
+			{
+				"Title": "Crossbow",
+				"Cost": "8 gp"
+			},
+			{
+				"Title": "Greatsword",
+				"Cost": "12 gp"
+			},
+			{
+				"Title": "Crawling Kit",
+				"Cost": "7 gp"
+			},
+			{
+				"Title": "Grappling Hook",
+				"Cost": "1 gp"
+			},
+			{
+				"Title": "Bolas",
+				"Cost": "2 gp"
+			},
+			{
+				"Title": "Crossbow Bolts",
+				"Cost": "1 gp"
+			},
+			{
+				"Title": "Mace",
+				"Cost": "5 gp"
+			},
+			{
+				"Title": "Lantern",
+				"Cost": "5 gp"
+			},
+			{
+				"Title": "Salve",
+				"Cost": "10 gp"
+			},
+			{
+				"Title": "Thieves' Tools",
+				"Cost": "4 gp"
+			},
+			{
+				"Title": "Plate Mail",
+				"Cost": "130 gp"
+			},
+			{
+				"Title": "Backpack",
+				"Cost": "2 gp"
+			},
+			{
+				"Title": "Shuriken",
+				"Cost": "1 gp"
+			},
+			{
+				"Title": "Arrows",
+				"Cost": "1 gp"
+			},
+			{
+				"Title": "Holy Symbol",
+				"Cost": "5 gp"
+			},
+			{
+				"Title": "Torch",
+				"Cost": "5 sp"
+			},
+			{
+				"Title": "Warhammer",
+				"Cost": "10 gp"
+			},
+			{
+				"Title": "Basilisk Egg",
+				"Cost": "100 gp"
+			}
+		],
+		"magicItems": [
+			{
+				"Title": "Potion of Clairaudience",
+				"Cost": "200 gp"
+			},
+			{
+				"Title": "Potion of Clairvoyance",
+				"Cost": "250 gp"
+			},
+			{
+				"Title": "Potion of Control Animal",
+				"Cost": "200 gp"
+			},
+			{
+				"Title": "Potion of Control Human",
+				"Cost": "250 gp"
+			},
+			{
+				"Title": "Potion of Control Plant",
+				"Cost": "200 gp"
+			},
+			{
+				"Title": "Potion of Diminution",
+				"Cost": "150 gp"
+			},
+			{
+				"Title": "Potion of Fire Resistance",
+				"Cost": "250 gp"
+			},
+			{
+				"Title": "Potion of Flying",
+				"Cost": "250 gp"
+			},
+			{
+				"Title": "Potion of Gaseous Form",
+				"Cost": "250 gp"
+			},
+			{
+				"Title": "Potion of Giant Strength",
+				"Cost": "300 gp"
+			},
+			{
+				"Title": "Potion of Growth",
+				"Cost": "150 gp"
+			},
+			{
+				"Title": "Potion of Healing",
+				"Cost": "50 gp"
+			},
+			{
+				"Title": "Potion of Heroism",
+				"Cost": "250 gp"
+			},
+			{
+				"Title": "Potion of Invisibility",
+				"Cost": "150 gp"
+			},
+			{
+				"Title": "Potion of Invulnerability",
+				"Cost": "300 gp"
+			},
+			{
+				"Title": "Potion of Levitation",
+				"Cost": "200 gp"
+			},
+			{
+				"Title": "Potion of Speed",
+				"Cost": "250 gp"
+			},
+			{
+				"Title": "Potion of Treasure Finding",
+				"Cost": "250 gp"
+			},
+			{
+				"Title": "Ring of Animal Control",
+				"Cost": "500 gp"
+			},
+			{
+				"Title": "Ring of Fire Resistance",
+				"Cost": "500 gp"
+			},
+			{
+				"Title": "Ring of Invisibility",
+				"Cost": "1500 gp"
+			},
+			{
+				"Title": "Ring of Protection +1",
+				"Cost": "1000 gp"
+			},
+			{
+				"Title": "Ring of Water Walking",
+				"Cost": "500 gp"
+			},
+			{
+				"Title": "Wand of Enemy Detection (1d6 charges)",
+				"Cost": "500 gp"
+			},
+			{
+				"Title": "Wand of Light (1d6 charges)",
+				"Cost": "200 gp"
+			},
+			{
+				"Title": "Wand of Magic Detection (1d6 charges)",
+				"Cost": "500 gp"
+			},
+			{
+				"Title": "Wand of Secret Door Detection (1d6 charges)",
+				"Cost": "300 gp"
+			},
+			{
+				"Title": "Wand of Trap Detection (1d6 charges)",
+				"Cost": "300 gp"
+			},
+			{
+				"Title": "Dagger +1",
+				"Cost": "200 gp"
+			},
+			{
+				"Title": "Dagger +1, +3 vs Orcs/Goblins",
+				"Cost": "400 gp"
+			},
+			{
+				"Title": "Sword +1",
+				"Cost": "300 gp"
+			},
+			{
+				"Title": "Sword +1, Light",
+				"Cost": "400 gp"
+			},
+			{
+				"Title": "Mace +1",
+				"Cost": "250 gp"
+			},
+			{
+				"Title": "Battle Axe +1",
+				"Cost": "250 gp"
+			},
+			{
+				"Title": "Spear +1",
+				"Cost": "200 gp"
+			},
+			{
+				"Title": "Warhammer +1",
+				"Cost": "250 gp"
+			},
+			{
+				"Title": "Arrows +1 (bundle of 10)",
+				"Cost": "100 gp"
+			},
+			{
+				"Title": "Shield +1",
+				"Cost": "250 gp"
+			},
+			{
+				"Title": "Leather Armor +1",
+				"Cost": "300 gp"
+			},
+			{
+				"Title": "Chainmail +1",
+				"Cost": "500 gp"
+			},
+			{
+				"Title": "Amulet of Protection Against Scrying",
+				"Cost": "500 gp"
+			},
+			{
+				"Title": "Bag of Holding",
+				"Cost": "800 gp"
+			},
+			{
+				"Title": "Boots of Levitation",
+				"Cost": "600 gp"
+			},
+			{
+				"Title": "Boots of Speed",
+				"Cost": "750 gp"
+			},
+			{
+				"Title": "Boots of Travelling and Leaping",
+				"Cost": "500 gp"
+			},
+			{
+				"Title": "Displacer Cloak",
+				"Cost": "650 gp"
+			},
+			{
+				"Title": "Elven Cloak and Boots",
+				"Cost": "1000 gp"
+			},
+			{
+				"Title": "Gauntlets of Ogre Power",
+				"Cost": "1000 gp"
+			},
+			{
+				"Title": "Helm of Reading Languages and Magic",
+				"Cost": "800 gp"
+			},
+			{
+				"Title": "Rope of Climbing",
+				"Cost": "500 gp"
+			},
+			{
+				"Title": "Scroll: Cure Light Wounds",
+				"Cost": "50 gp"
+			},
+			{
+				"Title": "Scroll: Detect Magic",
+				"Cost": "50 gp"
+			},
+			{
+				"Title": "Scroll: Light",
+				"Cost": "50 gp"
+			},
+			{
+				"Title": "Scroll: Protection from Evil",
+				"Cost": "50 gp"
+			},
+			{
+				"Title": "Scroll: Hold Portal",
+				"Cost": "50 gp"
+			},
+			{
+				"Title": "Scroll: Magic Missile",
+				"Cost": "50 gp"
+			},
+			{
+				"Title": "Scroll: Sleep",
+				"Cost": "50 gp"
+			},
+			{
+				"Title": "Scroll: Invisibility",
+				"Cost": "150 gp"
+			},
+			{
+				"Title": "Scroll: Web",
+				"Cost": "150 gp"
+			},
+			{
+				"Title": "Scroll: Dispel Magic",
+				"Cost": "300 gp"
+			},
+			{
+				"Title": "Scroll: Fireball",
+				"Cost": "300 gp"
+			}
+		],
+		"campfireTales": [
+			"stares into the embers and shares a harrowing tale of a misguided expedition into {dungeon} many years ago. They describe hearing whispered voices trailing just behind them in the dark, and claim they only survived because their torch died at the exact moment a patrol marched past.",
+			"laughs uproariously and tells a highly exaggerated story about getting scammed at a rowdy tavern in {settlement}. It involves a three-legged goat, a wager over a wheel of moldy cheese, and a hasty escape through a kitchen window at dawn.",
+			"goes quiet for a moment, tracing a scar on their arm, and mentions losing a dear friend to a wicked blade trap deep inside {dungeon}. They offer a solemn toast 'to those who stayed in the dark.'",
+			"claims to have been born in the dusty alleys of {settlement} and vividly describes the Festival of Lanterns they hold every summer. They speak with genuine longing of the roasted honey-nuts sold by the street vendors.",
+			"recounts a terrifying, moonless night spent hiding in a ditch near {dungeon}, watching an endless procession of silent, pale figures carrying gold down into the earth.",
+			"pulls out a battered, out-of-tune lute and sings an old, melancholic folk song about the tragic betrayal and fall of the last lord of {settlement}.",
+			"leans in close and whispers an unbelievable rumor about a king's ransom in uncut rubies still hidden somewhere in the flooded lower levels of {dungeon}. They even sketch a rough, half-remembered map in the dirt.",
+			"shares a hearty laugh over the time their entire caravan got chased out of the gates of {settlement} by an infuriated baker over a misunderstanding about a supposedly 'magical' sack of flour.",
+			"tells a grim, cautionary tale about a rival, heavily-armed merchant caravan that vanished without a single trace on the main road heading towards {settlement} just three winters ago.",
+			"speaks fondly, and a bit sadly, of their childhood sweetheart who still lives right across from the main well in {settlement}. They pull out a small, faded wooden carving they kept all these years.",
+			"brags loudly about outsmarting a cunning, subterranean goblin tribe while desperately trying to map the upper levels of {dungeon}. The story involves throwing a bag of sneezing powder into a ventilation shaft.",
+			"reminisces with a watering mouth about the delicious, albeit strange, spiced swamp-rat skewers served under the flickering lanterns in the night markets of {settlement}.",
+			"lowers their voice to tell of a mysterious, veiled prophet they once met on the road near {settlement}, who predicted the very storm that is keeping you all by this fire tonight.",
+			"tells of a cursed, golden idol they once purchased in {settlement} that brought them nothing but misery and bad weather, until they finally threw it down a deep shaft near the entrance of {dungeon}.",
+			"shares a thrilling, fast-paced story of their days as a young courier, culminating in a breakneck horseback chase away from wolf-riders all the way to the protective walls of {settlement}.",
+			"glances around nervously and whispers a secret they bought from a dying thief: a hidden door in the lower levels of {dungeon} will only open if you whisper the word '{magicWord}'.",
+			"draws a crude map in the dirt, marking the location of a concealed lever hidden behind {dungeonLocation} in {dungeon}, claiming it disarms an otherwise deadly and unavoidable trap.",
+			"sells you a piece of free advice: deep inside {dungeon}, behind {dungeonLocation}, lies a hidden stash of treasure untouched for centuries.",
+			"claims their grandfather helped build the lower levels of {dungeon}. They say there is a hidden button concealed inside {dungeonLocation} that opens a shortcut to the vault.",
+			"tells of a mad wizard they once escorted near {dungeon}, who mumbled in their sleep about a magical portal that requires speaking the word '{magicWord}' to activate.",
+			"confides in you that a hidden armory lies sealed in {dungeon}, and to break the seal, one must find {dungeonLocation} and whisper the password: '{magicWord}'."
+		],
+		"magicWords": [
+			"Ashkazel",
+			"Morgarath",
+			"Vesperil",
+			"Gloomweaver",
+			"Shadowmend",
+			"Netherflame",
+			"Ignis-Mal",
+			"Umbra-Vox",
+			"Eldergloom",
+			"Cryo-Vyr",
+			"Venatora",
+			"Gor-Narak",
+			"Thalassar",
+			"Zul-Kadar",
+			"Xaraphon",
+			"Bel-Zun",
+			"Velstrac",
+			"Kharadorn",
+			"Sylveth",
+			"Azimuth",
+			"Gorgorath",
+			"Aethelorn",
+			"Dusk-Vox",
+			"Mael-Strum",
+			"Oubliette",
+			"Nocturne",
+			"Sol-Invictus",
+			"Kor-Vas",
+			"Zephyril",
+			"Abyssal-Knot"
+		],
+		"dungeonLocations": [
+			"a crumbling statue of a forgotten king",
+			"a tapestry depicting a burning city",
+			"the skull of a giant cyclops",
+			"a collapsed stone pillar inscribed with runes",
+			"a rusted iron maiden painted red",
+			"an imposing obsidian throne",
+			"a dried, blood-stained altar",
+			"the mouth of a gargoyle fountain",
+			"a massive, overturned sarcophagus",
+			"a mural of a weeping angel",
+			"a broken sundial in a subterranean garden",
+			"the severed hand of a petrified titan",
+			"a portrait of a noble holding a black pearl",
+			"a pile of fused, melted gold coins",
+			"a seemingly bottomless well illuminated by blue fungi",
+			"a cage made entirely of woven human bones",
+			"a perfectly preserved library bookshelf",
+			"a shattered, star-shaped crystal embedded in the floor",
+			"a cluster of glowing, purplish quartz",
+			"a mural depicting a seven-eyed serpent",
+			"an intricately carved ivory door frame",
+			"a pile of rusted knights' armor",
+			"a massive, rusted dwarven anvil",
+			"the remains of a ruined alchemy lab",
+			"a brass telescope pointed at a blank rock wall",
+			"a stone table carved with a map of the abyss",
+			"a large, unlit bronze brazier shaped like a dragon",
+			"a hanging chandelier made of interconnected skulls",
+			"a seemingly ordinary patch of damp moss",
+			"a broken mirror that reflects a different timeline"
+		]
+	}
+}

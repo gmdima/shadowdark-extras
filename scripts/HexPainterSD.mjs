@@ -1244,6 +1244,13 @@ function _onRightClick(ev) {
 async function _stampAtPointer(ev, forceStamp = false) {
     if (!_isToolActive()) return;
 
+    // Block hex tile painting on unformatted scenes (except POI/decor)
+    if (_activeTileTab !== "symbols" && !_decorMode && !canvas.scene?.getFlag(MODULE_ID, "hexScene")) {
+        ui.notifications.warn("Format the map first before placing hex tiles.");
+        _brushActive = false;
+        return;
+    }
+
     const pos = ev.data?.getLocalPosition?.(canvas.stage);
     if (!pos) return;  // Safety check
 

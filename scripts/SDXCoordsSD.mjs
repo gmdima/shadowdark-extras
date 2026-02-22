@@ -417,3 +417,42 @@ export function registerSDXCoordsMenu(AppClass) {
         restricted: true,
     });
 }
+
+/**
+ * Format a grid offset {i, j} into the same coordinate label shown by the overlay.
+ * Returns a string like "0101" matching the SDXCoords display.
+ */
+export function formatHexCoord(offset) {
+    if (!canvas?.grid) return `${offset.i}.${offset.j}`;
+    const settings = getSettings();
+    const rect = canvas.dimensions.sceneRect;
+    const topLeft = canvas.grid.getOffset({ x: rect.left, y: rect.top });
+    const relRow = offset.i - topLeft.i;
+    const relCol = offset.j - topLeft.j;
+
+    // Adjust for hex grid quirks
+    let adjRow = relRow;
+    let adjCol = relCol;
+    if (canvas.grid.isHexagonal) {
+        if (canvas.grid.even && !canvas.grid.columns) adjRow = relRow - 1;
+        if (canvas.grid.columns) {
+            const hasHalfHex = canvas.grid.even ? (offset.j % 2 !== 0) : (offset.j % 2 === 0);
+            if (hasHalfHex) adjRow = relRow - 1;
+        }
+        if (canvas.grid.even && canvas.grid.columns) adjCol = relCol - 1;
+    }
+
+    const zeroPad = settings.leadingZeroes
+        ? String(Math.max(canvas.dimensions.columns, canvas.dimensions.rows)).length
+        : 0;
+
+    function genLabel(type, index) {
+        if (type === "num") return `${(index + 1).toString().padStart(zeroPad, "0")}`;
+        if (index < 26) return String.fromCharCode(65 + index);
+        return SDXCoord._numberToLetters(index + 1);
+    }
+
+    const colLabel = genLabel(settings.xValue, adjCol);
+    const rowLabel = genLabel(settings.yValue, adjRow);
+    return `${colLabel}${rowLabel}`;
+}

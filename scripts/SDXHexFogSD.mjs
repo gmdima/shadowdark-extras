@@ -552,7 +552,12 @@ export async function setHexFogEnabled(sceneId, val) {
 	return !!val;
 }
 
+export function isFogEffectsEnabled() {
+	return game.settings.get(MODULE_ID, "enableFogEffects");
+}
+
 export function getActiveHexFogEffect(sceneId) {
+	if (!isFogEffectsEnabled()) return null;
 	if (!sceneId) return null;
 	const scene = game.scenes.get(sceneId);
 	return scene?.getFlag(MODULE_ID, "hexFogEffect") ?? null;

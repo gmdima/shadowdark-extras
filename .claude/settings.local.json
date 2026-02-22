@@ -9,7 +9,11 @@
       "WebSearch",
       "Bash(python3:*)",
       "Bash(node -e:*)",
-      "Bash(test:*)"
+      "Bash(test:*)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Bash(python:*)",
+      "Bash(identify:*)"
     ]
   }
 }

@@ -1,0 +1,1596 @@
+{
+	"dungeonTypes": {
+		"temple": {
+			"label": "Temple",
+			"descriptions": [
+				"A hidden temple built by a fanatic cult, its halls still echo with whispered prayers to forgotten gods.",
+				"Once a place of worship, this temple has been overtaken by dark forces. Corrupted altars and defaced murals line the walls.",
+				"This temple complex was sealed centuries ago after a catastrophic ritual. The wards have weakened.",
+				"A subterranean sanctuary dedicated to a long-dead deity. The faithful still guard its secrets.",
+				"Carved into the living rock, this temple served as both a place of worship and a fortress against the faithless.",
+				"Incense smoke still drifts through these corridors, though no one has lit a censer in generations. The faithful remain — after a fashion.",
+				"A sprawling underground cathedral where heretics once performed forbidden rites. Their handiwork endures in every carved sigil.",
+				"This temple was built to contain something, not to worship it. The binding circles etched into every threshold are proof enough.",
+				"The walls are lined with prayer niches, each holding a small idol. Most have been smashed, but a few still radiate faint warmth.",
+				"Deep beneath a ruined monastery, this sanctum was hidden from inquisitors. Its congregation never left.",
+				"A temple to a god of pain, its architecture designed to disorient and unsettle. Every hallway slopes at a subtly wrong angle.",
+				"The faithful built this place in secret, hollowing out the earth over decades. When they vanished, the temple waited.",
+				"Murals depicting apocalyptic prophecy cover every surface. The final panel remains unfinished — or perhaps it hasn't happened yet.",
+				"Once consecrated to a lawful god, this temple was corrupted from within. The holy symbols have been inverted and smeared with blood.",
+				"An underground temple complex connected by processional corridors. The echoes of chanting seem to follow visitors from room to room.",
+				"Built around a natural spring believed to be holy, this temple's lower levels are partially flooded. The water has turned black.",
+				"A circle of standing stones marks the entrance to this subterranean temple. The stones hum faintly when touched.",
+				"This temple was dedicated to a deity of secrets. Its layout is deliberately confusing, with hidden passages behind every wall.",
+				"The cult that built this place worshipped through sacrifice. The drainage channels carved into every floor tell the story clearly enough.",
+				"A vast underground nave with pillars carved to resemble writhing serpents. The altar at the far end is stained permanently dark.",
+				"Pilgrims once traveled great distances to worship here. Their skeletal remains line the processional route, still clutching offerings.",
+				"This temple served dual purpose — worship above, and something far darker in the chambers below. The lower doors were never meant to open from outside.",
+				"Every surface is covered in scripture written in a language no scholar has been able to identify. Reading it aloud produces a feeling of dread.",
+				"The temple was built at a convergence of ley lines. Magical energy still pulses through the walls, causing candle flames to burn blue.",
+				"A modest temple entrance gives way to an absurdly vast underground complex. Whatever god was worshipped here demanded grandeur."
+			],
+			"encounterThemes": [
+				"cultists",
+				"magical",
+				"aberrations"
+			],
+			"hasCultists": true
+		},
+		"tomb": {
+			"label": "Tomb",
+			"descriptions": [
+				"A sprawling burial complex built to honor a forgotten warlord. The dead do not rest easy here.",
+				"This ancient tomb was sealed with powerful wards, but grave robbers have broken the seals.",
+				"Crypts and burial chambers stretch deep underground, filled with the restless remains of the interred.",
+				"A grand mausoleum built to house the remains of a noble dynasty. Traps protect the treasures within.",
+				"The dead were laid to rest with their wealth, and dark magic has kept their guardians vigilant.",
+				"A king's burial vault, its entrance hidden behind a waterfall. The tomb builders were entombed alongside their lord — willing or not.",
+				"Generations of the same bloodline rest here, each level deeper and older than the last. The deepest chambers predate written history.",
+				"This tomb was designed as a final test. The dead lord believed only the worthy should claim their treasure, and filled the halls with traps.",
+				"A mass grave expanded into an elaborate underground ossuary. The bones of thousands line the walls in geometric patterns.",
+				"The tomb of a sorcerer-queen, sealed with arcane locks and guarded by constructs that have outlasted their creator by centuries.",
+				"Carved into a cliff face, this tomb was visible for miles until an earthquake sealed the entrance. Recent tremors have opened it again.",
+				"A modest grave marker conceals a vast underground burial complex. The occupant's wealth was legendary, and their paranoia even more so.",
+				"This tomb was cursed by a dying priest. Anyone interred here rises again within three days, and the complex is now dangerously crowded.",
+				"Built to honor a great hero, this tomb was meant to inspire. Instead, the hero's restless spirit has turned it into a place of terror.",
+				"The tomb of twin brothers, each buried in a mirrored half of the complex. Legend says they hated each other — and their hatred persists.",
+				"A catacomb network beneath an abandoned cemetery. The coffins have been arranged to form corridors, creating a labyrinth of the dead.",
+				"This burial vault was robbed centuries ago, but the thieves never made it out. Their remains join those of the original occupants.",
+				"An emperor's tomb, built by slave labor. The workers were sealed inside to protect its secrets, and their ghosts are not grateful.",
+				"The tomb of a beloved saint, once a place of pilgrimage. Something has driven the pilgrims away, and the saint no longer rests peacefully.",
+				"Burial niches stretch from floor to ceiling in every corridor. Many have been broken open from the inside.",
+				"This tomb was built in haste to contain a plague. The dead were sealed in without proper rites, and they remember the slight.",
+				"A dwarven burial hall, its stonework still magnificent despite the ages. The dwarves buried their dead with their finest weapons — and their grudges.",
+				"The tomb of a lich who chose undeath willingly. The burial chambers are a facade; the real complex lies hidden behind illusory walls.",
+				"A network of family crypts beneath a ruined manor. Each generation added new chambers, and the oldest sections have been forgotten entirely.",
+				"This tomb sits at a crossroads, built to appease a vengeful spirit. The offerings left by travelers have attracted other, hungrier things."
+			],
+			"encounterThemes": [
+				"undead",
+				"vermins"
+			],
+			"hasCultists": false
+		},
+		"dungeon": {
+			"label": "Dungeon",
+			"descriptions": [
+				"A sprawling underground complex of unknown origin. Its purpose has been lost to time.",
+				"Once a fortified underground stronghold, it has been abandoned and claimed by monsters.",
+				"These tunnels and chambers were carved by unknown hands. Strange markings cover the walls.",
+				"A labyrinthine network of rooms and corridors, built by an ancient civilization long since vanished.",
+				"What was once an underground keep has become a haven for all manner of creatures.",
+				"A collapsed mine shaft opens into worked stone chambers far older than the mine itself. Something was here long before the miners arrived.",
+				"The cellars beneath a burned-down tavern extend far deeper than any cellar should. The lower levels were clearly not built by human hands.",
+				"A bandit hideout gone wrong. The outlaws dug too deep and broke through into something ancient. None of them were seen again.",
+				"This complex was a prison, built to hold something that could not be killed. The cells are smashed open and the wards are failing.",
+				"Natural caverns expanded with crude stonework. Multiple factions have claimed sections over the years, leaving behind conflicting fortifications.",
+				"An underground fortress built during a forgotten war. Supply tunnels connect to chambers that have been repurposed by new, less civilized occupants.",
+				"A wizard's underground laboratory, abandoned after an experiment went catastrophically wrong. The magical contamination lingers.",
+				"Storm drains beneath a ruined city have been colonized and expanded over generations by goblins. What started as a warren has become a stronghold.",
+				"The basement of an ancient library extends into a vast underground archive. Something in the deepest stacks has been rearranging the shelves.",
+				"A network of smuggler tunnels beneath a coastal cliff. The smugglers are long gone, but the things they were smuggling remain in the deeper vaults.",
+				"An underground arena where slaves once fought for a mad lord's amusement. The fighting pits are silent now, but the cells below are not.",
+				"This dungeon was purpose-built as a trap, designed by a paranoid noble to lure and kill adventurers for sport. The noble is dead, but the traps work fine.",
+				"Dwarven mining tunnels that broke through into a pre-existing complex of unknown origin. The dwarves sealed it and left. The seals have failed.",
+				"A series of interconnected cellars beneath a row of abandoned shops. Each basement connects to the next, forming an accidental dungeon now inhabited by vermin.",
+				"An underground aqueduct system built by a lost empire. The water stopped flowing centuries ago, and the dry channels make excellent lairs.",
+				"A sinkhole opened in a farmer's field, revealing carved stone steps descending into darkness. The farmer has not been seen since.",
+				"What appears to be a simple root cellar opens into a sprawling complex. The original builders clearly valued their privacy — and their traps.",
+				"An abandoned thieves' guild headquarters, hidden beneath a warehouse. The guild fell to infighting, and their traps now guard empty vaults — mostly.",
+				"A military outpost built underground during a siege. The siege ended, but no one told the garrison. Their descendants have become something else entirely.",
+				"These chambers were carved by a creature of enormous size. Claw marks the width of a man score the walls, and the tunnels slope ever downward."
+			],
+			"encounterThemes": [
+				"humanoids",
+				"vermins",
+				"ooze"
+			],
+			"hasCultists": false
+		}
+	},
+	"dungeonNames": {
+		"prefixes": [
+			"The Forgotten",
+			"The Cursed",
+			"The Sunken",
+			"The Silent",
+			"The Blighted",
+			"The Shattered",
+			"The Crimson",
+			"The Shadow",
+			"The Hollow",
+			"The Forsaken",
+			"The Black",
+			"The Rotting",
+			"The Burning",
+			"The Frozen",
+			"The Howling",
+			"The Dread",
+			"The Lost",
+			"The Ruined",
+			"The Veiled",
+			"The Ashen"
+		],
+		"suffixes": [
+			"Crypt",
+			"Sanctum",
+			"Halls",
+			"Vault",
+			"Tomb",
+			"Depths",
+			"Chambers",
+			"Catacombs",
+			"Warren",
+			"Dungeon",
+			"Keep",
+			"Labyrinth",
+			"Pit",
+			"Shrine",
+			"Cellars",
+			"Barrows",
+			"Ossuary",
+			"Sepulcher",
+			"Lair",
+			"Undercroft"
+		]
+	},
+	"roomTypes": [
+		{
+			"type": "pantry",
+			"label": "Pantry",
+			"weight": 2
+		},
+		{
+			"type": "shrine",
+			"label": "Shrine",
+			"weight": 3
+		},
+		{
+			"type": "library",
+			"label": "Library",
+			"weight": 2
+		},
+		{
+			"type": "torture_chamber",
+			"label": "Torture Chamber",
+			"weight": 1
+		},
+		{
+			"type": "crypt",
+			"label": "Crypt",
+			"weight": 3
+		},
+		{
+			"type": "laboratory",
+			"label": "Laboratory",
+			"weight": 2
+		},
+		{
+			"type": "ceremonial",
+			"label": "Ceremonial Chamber",
+			"weight": 2
+		},
+		{
+			"type": "guard_room",
+			"label": "Guard Room",
+			"weight": 3
+		},
+		{
+			"type": "storage",
+			"label": "Storage Room",
+			"weight": 3
+		},
+		{
+			"type": "hall",
+			"label": "Great Hall",
+			"weight": 2
+		},
+		{
+			"type": "antechamber",
+			"label": "Antechamber",
+			"weight": 2
+		},
+		{
+			"type": "barracks",
+			"label": "Barracks",
+			"weight": 2
+		},
+		{
+			"type": "prison",
+			"label": "Prison Cell",
+			"weight": 1
+		},
+		{
+			"type": "well_room",
+			"label": "Well Room",
+			"weight": 1
+		},
+		{
+			"type": "armory",
+			"label": "Armory",
+			"weight": 2
+		}
+	],
+	"roomDescriptions": {
+		"pantry": [
+			"Rotting grain bags sag against the walls, split open and crawling with pale maggots. The floor is sticky with the residue of spoiled preserves, and the sour reek of vinegar and decay fills the air.",
+			"Shelves of clay jars and salt-glazed barrels stretch floor to ceiling, most cracked and weeping dark liquid. A toppled cask has spilled its contents across the flagstones, leaving a stain that looks almost intentional.",
+			"Blackened joints of meat hang from iron hooks in the ceiling, so old they've petrified into something resembling driftwood. Flies swarm in lazy circles despite nothing edible remaining.",
+			"Sacks of flour have burst open and turned to solid grey bricks in the damp air. Barrels of what was once ale have swollen and split, filling the room with a yeasty, sickly-sweet stench.",
+			"A cold storage room with deep stone shelves carved directly from the rock. Ice crystals still cling to the back wall, though the preservation magic failed long ago. The contents have thawed into an indistinguishable slurry.",
+			"Strings of dried herbs dangle from the ceiling like strange curtains, papery and colorless. A butcher's block in the center bears deep cleaver marks and dark stains that have soaked into the wood grain.",
+			"Ceramic crocks sealed with wax line every shelf, their contents labeled in a cramped, anxious hand. Several lids have popped off, revealing things that were never meant to be pickled.",
+			"The pantry has been ransacked — shelves pulled from walls, barrels smashed, sacks torn open and emptied. Whatever raided this room was thorough but messy; claw marks score the wooden shelving.",
+			"A surprisingly organized larder, with clay vessels arranged by size on stone shelves. Everything appears untouched, covered in a uniform layer of dust. The preserves inside have separated into layers of unappetizing color.",
+			"This cramped room reeks of smoke and salt. Racks for curing meat line the walls, a few still holding strips of something leathery and unidentifiable. A salt barrel in the corner has crystallized into a solid white block."
+		],
+		"shrine": [
+			"A stone altar stands at the center of the room, its surface stained a deep rust-brown from centuries of offerings. Ritual symbols are carved into the floor in concentric circles, worn smooth by the knees of the faithful.",
+			"Faded murals cover every wall, depicting a many-armed deity performing acts of creation and destruction in equal measure. Candle stubs and fragments of bone litter the altar, and the air tastes faintly of copper.",
+			"A small shrine built into an alcove, dominated by a defaced idol whose features have been chiseled away with furious strokes. Someone has scratched protective wards into the surrounding stone in a desperate, unsteady hand.",
+			"Tarnished incense burners hang from bronze chains, still carrying a sweet, resinous scent that clings to the throat. A prayer mat embroidered with celestial symbols lies before the altar, worn threadbare at the knees.",
+			"Religious inscriptions cover the walls from floor to ceiling in a flowing script that seems to shift when viewed in peripheral vision. A ceremonial dagger with a bone handle rests on the altar, its edge still keen.",
+			"A shallow reflecting pool surrounds a raised altar of pale marble, now dry and cracked. Offerings of tarnished coins and withered flowers fill the empty basin. The ceiling is painted to resemble a night sky.",
+			"An icon of a weeping saint is set into the far wall, framed by alcoves holding guttered candles. The saint's tears appear to be real water, seeping from a crack in the stone behind the painting.",
+			"The shrine is dominated by a massive stone wheel carved with zodiacal symbols, set into the wall behind the altar. It appears to be designed to rotate, but has been jammed in place with iron wedges.",
+			"Rows of votive candle shelves climb the walls like a honeycomb, each niche blackened with soot. A kneeling skeleton in faded robes faces the altar, hands still clasped in prayer. It has been here a very long time.",
+			"This shrine has been violently desecrated — the altar overturned, holy symbols smashed, sacred texts torn and scattered. Crude profanities in an unknown language have been painted on the walls in something dark and dried."
+		],
+		"library": [
+			"Tall shelves of dark wood line every wall, sagging under the weight of crumbling scrolls and mildewed tomes. The smell of old paper and leather is overwhelming, cut with the sharp tang of bookworm rot.",
+			"A heavy reading desk sits in the center beneath a vaulted ceiling, its surface covered in dust so thick it has formed a felt-like layer. Most of the books have rotted into shapeless lumps on their shelves.",
+			"Scrolls and loose papers carpet the floor like autumn leaves, crunching underfoot. A few intact volumes remain on the highest shelves, their spines faded but legible. A rolling ladder lies broken on the floor.",
+			"Stone tablets inscribed with ancient text lean against the walls in precarious stacks, some shattered where they've toppled. A scholar's desk in the corner holds a half-finished translation and a dried-out inkwell.",
+			"The shelves are mostly bare, stripped by looters or time, but a few hidden compartments behind false book-spines still contain readable texts wrapped in oilcloth. Someone knew which volumes mattered.",
+			"A circular library with shelves built into curved walls, rising two stories to a domed ceiling painted with constellations. A spiral staircase in the center has collapsed, leaving the upper gallery unreachable.",
+			"Chains dangle from the shelves — this was a chained library, where the most valuable books were secured to prevent theft. Several chains have been snapped, and the books they held are gone. The rest remain, locked in place.",
+			"A cramped scriptorium with slanted writing desks facing narrow windows that open onto solid rock. Pots of dried ink in various colors sit in rows. Unfinished manuscripts reveal the scribes left in a hurry.",
+			"The books here were organized by a meticulous hand — catalogued, cross-referenced, and shelved by a system of colored ribbons. The system is indecipherable now, but the care taken is evident in every detail.",
+			"Shelf after shelf of identical leather-bound journals, each filled with the same handwriting growing progressively more erratic. The final volumes on the lowest shelf are written in a language that hurts to look at."
+		],
+		"torture_chamber": [
+			"Rusted iron racks and taut chains hang from the walls, their mechanisms seized with age. Dark stains have soaked so deeply into the stone floor that no amount of scrubbing could ever remove them.",
+			"A wooden rack dominates the room, its ropes frayed but its gears still intact. Cruel implements — pincers, hooks, and heated irons — hang from a leather roll on the wall, arranged with surgical precision.",
+			"Iron cages hang from the ceiling at varying heights, some still containing skeletal remains curled into fetal positions. A brazier sits cold in the center, its coals turned to powder. The room smells of rust and old fear.",
+			"An iron maiden stands open against the far wall, its interior spikes dark with ancient stains. Thumb screws and bone saws litter a workbench. The floor drains are clogged with calcite and something worse.",
+			"Whips of varying cruelty hang from hooks alongside branding irons bearing unfamiliar symbols. A heavy wooden chair fitted with leather restraints and iron clamps sits bolted to the floor in the center of the room.",
+			"Manacles line the walls at different heights — some at wrist level, some near the floor, some high enough to suspend a body completely. The stone beneath each set of manacles is worn smooth and discolored.",
+			"A stone slab tilted at an angle dominates the room, with leather straps at the wrists, ankles, and throat. Channels carved into the slab lead to a collection vessel on the floor, long since overflowed and dried.",
+			"This room has been divided into individual cells by iron bars, each barely large enough to stand in. The walls of each cell bear different scratch marks — some counting days, some forming words, some forming patterns that defy reason.",
+			"A torturer's logbook lies open on a high desk near the door, its entries written in a cold, clinical hand. The implements described within are laid out on a nearby table, each cleaned and oiled with professional care.",
+			"The room is dominated by a deep pit covered by a rusted iron grate. The pit walls are smooth and slick, offering no handholds. Bones are visible at the bottom, piled several feet deep."
+		],
+		"crypt": [
+			"Stone sarcophagi line the walls in orderly rows, their carved lids depicting the occupants in idealized repose. Several lids have been cracked or shoved aside, revealing empty interiors lined with decayed silk.",
+			"Deep alcoves hold embalmed remains wrapped in stained linen, arranged in the traditional pose of peaceful sleep. The wrappings have yellowed and split, and the air is thick with a choking, ancient dust.",
+			"A central sarcophagus of black marble, larger and more ornate than the others, is surrounded by smaller burial niches arranged like spokes of a wheel. Grave goods — coins, weapons, jewelry — have been scattered across the floor.",
+			"Wooden coffins are stacked three high along both walls, their planks warped and splitting. Several have been pried open from the inside, the nails bent outward and the lids splintered from within.",
+			"Skulls and bones are arranged in ornate geometric patterns in wall niches, creating macabre mosaics that extend from floor to ceiling. Funerary urns carved with names and dates sit on stone shelves between the patterns.",
+			"A long, low-ceilinged vault filled with stone burial shelves receding into darkness. Each shelf holds a wrapped form, layered one atop another. The lowest, oldest bundles have compressed into something barely recognizable.",
+			"The crypt is flooded ankle-deep with dark, still water that has seeped through the walls over centuries. Sarcophagi rise from the water like stone islands, their inscriptions half-dissolved by mineral deposits.",
+			"An elaborate memorial wall lists hundreds of names in gilded script, most now tarnished to illegibility. Before it, a stone bench for mourners is flanked by empty candle stands. The candles melted long ago.",
+			"This circular crypt has a domed ceiling painted with a scene of the afterlife — feasting, music, and eternal rest. The paint has flaked in places, revealing crude older images beneath of something far less peaceful.",
+			"The burial niches are sealed with carved stone faces, each unique and presumably depicting the occupant. Time has eroded many into featureless ovals, but a few near the back still bear expressions of startling serenity — or horror."
+		],
+		"laboratory": [
+			"Glass vials and ceramic jars crowd the shelves in no discernible order, many cracked and leaking iridescent liquids that have eaten into the wood. The air shimmers faintly with residual alchemical vapours.",
+			"A massive iron cauldron sits over a cold fire pit, its interior coated in layers of crystallized residue in colors not found in nature. Dried organs and strange specimens float in sealed jars on the walls.",
+			"Alchemical apparatus covers a stone workbench in an elaborate arrangement — alembics, retorts, crucibles, and copper tubing connecting vessels of clouded glass. A notebook beside it is filled with failed calculations.",
+			"Chalk circles and arcane diagrams cover the floor in overlapping layers, each drawn with painstaking precision and then crossed out. Spell components — feathers, bone dust, mercury — are scattered among the designs.",
+			"Shelves of labeled specimens line the walls, their contents preserved in amber fluid. A heavy leather-bound tome lies open on the workbench, its pages covered in anatomical drawings of creatures that should not exist.",
+			"A bank of glass distillation columns rises along one wall, connected by a web of copper piping. Several flasks still contain glowing liquids of uncertain properties. A burn mark on the ceiling suggests one flask already detonated.",
+			"Cages of various sizes line the back wall, their doors hanging open. Whatever was kept here has long escaped. The workbench is covered in scales, feathers, and tufts of fur from no recognizable creature.",
+			"The workbench is dominated by a complex orrery of brass and crystal, depicting celestial bodies in an arrangement that matches no known sky. Astrological charts pinned to the walls are covered in frantic annotations.",
+			"A vivisection table with leather restraints occupies the center of the room, its surface stained with substances of varying colors. Beside it, a cabinet of surgical instruments gleams — someone has been maintaining them.",
+			"Bookshelves alternate with specimen shelves, creating a claustrophobic maze of knowledge and horror. The experiments documented here progressed from mundane alchemy to something that warped the very stones of the room."
+		],
+		"ceremonial": [
+			"A pentagram has been carved inches deep into the stone floor, its channels blackened with centuries of candle soot and darker substances. Melted wax has pooled in drifts along the walls like frozen waterfalls.",
+			"An altar of polished black stone dominates the room, reflecting torchlight like dark water. Ceremonial robes of heavy velvet hang from hooks on the wall, embroidered with silver thread that still catches the light.",
+			"Ritual symbols cover every surface — walls, floor, ceiling, even the backs of the doors. The air feels heavy and charged with residual energy that makes the hair stand on end and metal taste sharp.",
+			"A raised dais of white marble holds a stone throne carved with screaming faces. Broad steps lead up from the ceremonial floor below, their edges worn by centuries of processional feet.",
+			"Iron braziers the height of a man flank a central altar, their bowls still holding the charred remnants of offerings. The walls are painted with scenes of sacrifice and divine supplication in vivid, unsettling detail.",
+			"A circular chamber with tiered stone seating arranged around a sunken floor — an amphitheater designed for ritual performance. The acoustics are perfect; even a whisper from the center reaches every seat.",
+			"Channels carved into the floor form an intricate pattern that converges on the altar, designed to collect and direct liquid from above. The pattern resembles a glyph of binding, grown to architectural scale.",
+			"The chamber is dominated by a massive bronze gong suspended from chains between two pillars. The gong's surface is engraved with a scene of a gate opening between worlds. A padded mallet lies on the floor beneath it.",
+			"Thirteen stone pedestals are arranged in a circle, each holding a snuffed black candle. The center of the circle is marked with a summoning seal that has been partially scratched away — whether to break it or repair it is unclear.",
+			"Tapestries depicting a ritual sequence hang on every wall, telling a story that begins with prayer and ends with something emerging from a crack in reality. The final tapestry has been torn down and burned."
+		],
+		"guard_room": [
+			"Weapon racks line the walls, most stripped bare save for a few bent spears and a sword so rusted it has fused to its scabbard. A table in the corner holds scattered dice and a toppled mug, as if the game was interrupted mid-throw.",
+			"Narrow bunks are crammed against one wall, with a weapons stand and a battered shield rack opposite. A cold fireplace holds old ashes and the charred remains of what might have been a chair leg, burned for warmth.",
+			"Arrow slits cut into the far wall look out onto the main corridor, offering excellent fields of fire. A crossbow lies on the floor, its string rotted through, beside a scatter of green-patinated bolts.",
+			"Shield racks and spear stands fill the walls in military order, though most are empty. A duty roster is pinned to a board near the door, the names written in a firm hand, the dates from decades or centuries past.",
+			"A sturdy oak table surrounded by heavy chairs fills the center of the room — clearly a guard post where shifts were organized and reports filed. Playing cards are scattered across the table; someone was holding a winning hand.",
+			"A heavy iron portcullis mechanism dominates one wall, its chains wrapped around a massive winch. The chains have rusted in place, locking the portcullis in whatever position it was last left. Oil and tools lie unused nearby.",
+			"Pegs along the wall hold leather jerkins and dented helmets, arranged by size. A weapons locker under the window has been pried open, its contents largely removed. A manifest nailed to the lid lists everything that should be inside.",
+			"Murder holes in the ceiling suggest this room controls a kill zone in the corridor outside. Cauldrons for heating oil sit on cold braziers, and a rack of javelins is bolted to the wall for dropping through the openings.",
+			"A spy-hole disguised as a wall decoration allows observation of the room beyond. The guard who used it left a stool positioned beneath it and a half-written report on the desk describing something they found alarming.",
+			"This guard post straddles a corridor junction, with reinforced doors on three walls. A signal horn hangs from a peg, tarnished green. The log book on the desk records increasingly frantic entries about noises from below."
+		],
+		"storage": [
+			"Crates and barrels are stacked against the walls in precarious towers, many broken open and emptied of anything useful. Straw packing material covers the floor like a rodent's nest.",
+			"Rope, tools, and miscellaneous supplies fill this cluttered room in haphazard piles. Everything is coated in a uniform layer of grey dust that puffs up with every step.",
+			"Wooden shelves hold a disorganized collection of supplies — bent nails, tangled rope, stubby candles, and empty oil flasks. A manifest pinned to the wall has been rendered illegible by damp.",
+			"The room is crammed with old furniture stacked to the ceiling — chairs, tables, bed frames, and a broken loom. A narrow path winds through the clutter like a tunnel through debris.",
+			"Moldy canvas sacks and rusted tools fill the shelves. A handcart with a broken wheel sits in the corner, loaded with something heavy that has settled and merged with the cart's bed.",
+			"Bolts of fabric have been stored here, now reduced to fragile sheets that disintegrate at a touch. Moth cocoons cover every surface, and the air is thick with fine textile dust.",
+			"This was a lamp room — shelves hold dozens of empty oil lamps, wicks trimmed and ready. A large oil cask sits in the corner, its tap crusted shut. The room smells of rancid tallow.",
+			"Mining supplies fill the shelves: picks, shovels, iron buckets, coils of heavy chain, and wooden support beams cut to standard lengths. The mine they serviced was either extensive or frequently collapsing.",
+			"Earthenware pots of various sizes are stacked on shelves, each sealed with wax and labeled in a code of colored dots. Most are empty, but a few still slosh when disturbed.",
+			"A quartermaster's desk sits near the door, its drawers crammed with inventory lists and requisition forms. The supplies themselves are largely gone, though the organizational system — hooks, labels, numbered shelves — remains immaculate."
+		],
+		"hall": [
+			"A cavernous hall stretches into shadow, its vaulted ceiling supported by two rows of crumbling stone columns carved to resemble armored warriors. Every footstep echoes like a drumbeat in the vast space.",
+			"Tattered banners hang from iron rods along the walls, their heraldry faded to muddy ghosts of color. A raised stone platform at the far end once held a throne or seat of authority — only its outline remains.",
+			"A grand hall with long oak tables and heavy benches arranged for feasting, all covered in dust and cobwebs. The head table sits on a raised dais, its chair taller and more ornate than the rest.",
+			"Pillared archways march down both sides of this great hall, framing alcoves that once held statues. The frescoes between them depict scenes of battle, feasting, and coronation in faded but still vivid pigments.",
+			"A flagstone floor stretches between walls lined with torch sconces at regular intervals. The ceiling is high enough to be lost in shadow, and the room's proportions create an uncomfortable sense of exposure.",
+			"The hall narrows at both ends like a bottleneck, clearly designed for defense as much as ceremony. A gallery runs along one wall at the second-story level, accessible by a stone staircase that has partially collapsed.",
+			"An enormous fireplace, large enough to roast an ox, dominates one wall. The mantel is carved with a hunting scene so detailed the hounds seem to strain at their leashes. Ashes fill the hearth to overflowing.",
+			"A mosaic floor depicts a map of territories that no longer exist, its colored tiles still vibrant beneath centuries of grime. The hall's original purpose is clear — this was where a ruler held court and dispensed justice.",
+			"Tall, narrow windows of colored glass line the upper walls, though most are shattered. The few intact panels cast pools of red and gold light across the dusty floor, making the dust motes look like embers.",
+			"The hall has been divided by a crude barricade of overturned tables and furniture, suggesting two factions once held opposite ends. Scorch marks and embedded crossbow bolts tell the story of how that arrangement ended."
+		],
+		"antechamber": [
+			"A small waiting room with stone benches along the walls, their surfaces worn to a polish by generations of seated visitors. The floor tiles are cracked in a starburst pattern, as if something heavy was dropped from above.",
+			"This narrow room serves as a junction between corridors, with three doorways leading in different directions. Hooks line one wall — a cloak room of sorts — and a single torch bracket holds nothing but a stub of melted iron.",
+			"A low-ceilinged antechamber that feels claustrophobic after the corridors. Every surface is covered in thick dust that holds footprints — old ones, many sets, leading in every direction and none of them leading back out.",
+			"Stone benches and iron coat hooks line the walls of what was clearly a reception area. A visitors' ledger on a stand near the inner door has swollen with damp into an unreadable brick of pulp.",
+			"Worn floor tiles in alternating black and white create a checkerboard pattern that leads the eye toward the inner door. Faded wall hangings frame each doorway, their designs reduced to abstract smears of color.",
+			"A pair of decorative suits of armor flank the inner doorway, their visors down and halberds crossed. One has collapsed into a heap of rusted plates; the other stands at an unsettling angle, as if it shifted when no one was looking.",
+			"The antechamber ceiling is painted with a map of the stars, the constellations connected by gold leaf lines that still glitter. A compass rose is set into the floor tiles, its directional markers worn but legible.",
+			"A simple room with a stone bench, a dead potted plant in a ceramic urn, and a wall niche that once held a lantern. The normalcy of it is jarring — it could be the waiting room of any modest official, frozen in time.",
+			"Arrow slits flanking the inner door reveal this antechamber doubled as a defensive chokepoint. Anyone waiting on the benches would have been utterly exposed. The slots are too narrow to see what lies behind them.",
+			"The floor slopes gently toward a drain grate in the center — this antechamber was designed to be washed down regularly, suggesting what passed through it was often unclean, or unwilling, or both."
+		],
+		"barracks": [
+			"Rows of rotting wooden cots fill this long room, each with a footlocker at its base. The footlockers have all been pried open, their contents — letters, dice, personal trinkets — scattered across the floor like confetti.",
+			"Bunk beds fashioned from heavy timber line both walls, their frames orange with rust where iron bolts held them together. Personal effects — a carved pipe, a lucky coin, a child's drawing — litter the floor between them.",
+			"Straw pallets and threadbare woolen blankets cover the stone floor in rows, slowly decomposing into the flagstones. The room carries a stubborn smell of old sweat and mildew that centuries have failed to dispel.",
+			"Hammocks of heavy canvas are strung between stone pillars in overlapping rows, creating a dense web. Most have rotted and collapsed, but a few still hold, swaying slightly in a draft from somewhere unseen.",
+			"Weapon racks between the cots hold personal arms — each slot labeled with a name carved into the wood. Crude graffiti covers every reachable surface: complaints, jokes, threats, and one surprisingly detailed portrait of a woman.",
+			"A communal barracks with a central fire pit, its chimney rising through the ceiling. Bedrolls are arranged in a ring around the warmth. Someone stacked firewood by the pit before they left and never came back for it.",
+			"The barracks has been converted into a makeshift infirmary — cots dragged together, bandages and herb pouches on a side table, and a heavy curtain separating the worst cases from the rest. Everyone here died in their beds.",
+			"A long, narrow dormitory with beds built into the walls like ship's berths, each with a thin mattress and a curtain for privacy. The curtains are drawn on every berth, and from the doorway you cannot tell which are occupied.",
+			"Training dummies made of straw and leather stand between the bunks, each scarred with hundreds of blade strikes. The soldiers who slept here practiced before sleep and upon waking — their discipline is evident in every cut.",
+			"This barracks was clearly home to officers rather than rank and file — the beds are larger, the footlockers finer, and a writing desk with a candle and seal sits at the far end. A half-written letter orders a retreat."
+		],
+		"prison": [
+			"Iron-barred cells line one wall, their doors hanging open on rusted hinges. Chains and shackles dangle from brackets set at wrist height, some still clasped shut around nothing. The stone beneath each cell is worn into shallow bowls.",
+			"A narrow corridor runs between cramped cells barely large enough to lie down in. Tally marks cover every reachable surface — walls, floor, the underside of the door — in desperate, overlapping clusters that defy counting.",
+			"Heavy wooden doors with iron-banded frames seal each cell, their only opening a slot at the bottom for food and a peephole at eye level for guards. The peepholes have been scratched at from the inside.",
+			"Manacles and leg irons are bolted to the walls at varying heights, suggesting prisoners were sometimes restrained standing, sometimes kneeling, sometimes prone. A dented tin bucket sits in each cell, its purpose unmistakable.",
+			"The cells are empty and the locks intact, but the silence here feels oppressive and aware. Straw bedding has decomposed to mulch and then to a thin film of organic residue. Something has been scratched into the back wall of every cell — the same word, repeated.",
+			"A jailer's station sits at the head of the corridor, complete with a desk, a ring of heavy iron keys, and a leather-bound ledger recording prisoners by number rather than name. The final entries describe screaming that wouldn't stop.",
+			"This prison held something other than men — the cells are reinforced with silver-inlaid bars, the walls inscribed with binding circles, and the manacles are engraved with holy symbols. Whatever was held here tested every precaution.",
+			"The cells are stacked two levels high, the upper row accessible by a narrow iron walkway. The walkway has partially collapsed, trapping anyone in the upper cells beyond reach. Bones are visible through the upper bars.",
+			"Oubliettes — vertical shafts with iron grates — are set into the floor at intervals. Each is barely wide enough for a person to stand in and too deep to climb out of. Some still have occupants, reduced to bones and rags.",
+			"A surprisingly humane prison, with proper beds, writing materials, and even small bookshelves in each cell. The prisoners here were political rather than criminal, held in comfort while their fates were decided. The shelves are full of unanswered petitions."
+		],
+		"well_room": [
+			"A stone well built from fitted blocks occupies the center of this room, its rim worn smooth by centuries of rope. The rope itself has frayed to a few strands, and the darkness below swallows every sound dropped into it.",
+			"A deep shaft is cut into the living rock, ringed by a low wall of mortared stone. The water far below reflects torchlight as a single distant point. The echo of dripping water comes from a depth that suggests the shaft goes much further than the waterline.",
+			"A large cistern built into the floor holds water fed by channels from the surface. Drinking cups of beaten tin hang from hooks on the wall, green with verdigris. The water is clear but has a faint mineral smell.",
+			"The well has been deliberately sealed with heavy capstones and iron bands hammered into the surrounding rock. Fresh scratch marks around the seal suggest something has been trying to break through from below. Recently.",
+			"Water drips from the ceiling in a steady rhythm, collecting in a natural limestone basin before overflowing into a channel cut into the floor. The channel leads under the far wall, and something in the room beyond makes the water ripple backwards.",
+			"A decorative wellhead of carved stone depicts river nymphs pouring water from vessels. The craftsmanship is exquisite, at odds with the rough utility of the surrounding room. The well itself is dry, but the stone is damp to the touch.",
+			"The well room doubles as a bath — a stone trough runs along one wall, fed by a pipe from the well shaft. The trough is cracked and dry now, but tiles with geometric patterns still decorate its interior.",
+			"This is less a well and more a natural spring — water bubbles up through a crack in the floor into a stone-lined pool. Mineral deposits have built up around the edges in pale, organic-looking formations. The water is warm.",
+			"The well shaft has collapsed at some point, filling the bottom with rubble and cutting off the water supply. Someone has dug a secondary shaft beside it, crude and unlined, that reaches a different, deeper water source. The new water has an odd color.",
+			"A massive wooden winch mechanism spans the well opening, designed to lower and raise large containers. The bucket on the hook is iron-banded and the size of a bathtub — this well served a large population, or something very thirsty."
+		],
+		"armory": [
+			"Weapon racks and armor stands fill this room in orderly rows, though most have been stripped bare. A forge sits cold in the corner, its bellows cracked and its anvil pitted with use. Soot covers the ceiling in a thick black layer.",
+			"Shields bearing faded heraldry hang on the walls in ranks, each painted with variations of the same device. A few rusted swords remain in the racks, their edges eaten away to lacework by time and damp.",
+			"This armory has been thoroughly and methodically looted — every weapon taken, every piece of armor stripped from its stand. Only broken weapons and cracked shields were left behind, piled in the corner like refuse.",
+			"Barrels of crossbow bolts and bundles of arrows fill racks along the wall, their fletching gone but the iron points still sound. A grinding wheel sits in the corner, its stone cracked but its mechanism still functional.",
+			"Chainmail shirts hang from wooden frames like metal ghosts, rusted into rigid shapes that hold the posture of their last wearer. A workbench holds repair tools — pliers, wire, rivets — laid out and never picked up again.",
+			"The armory is organized by regiment — each section of wall labeled with a unit name and holding matching equipment. Most sections are empty, but one still holds a complete set of gear: shield, spear, helm, and leather armor, untouched.",
+			"A locked cage in the corner holds the most valuable pieces — silvered weapons, enchanted shields, and ammunition marked with arcane symbols. The lock is formidable, and the cage bars are reinforced with rune-etched bands.",
+			"Spear shafts are bundled in racks like firewood, their heads stored separately in oiled wrappings that have since dried and cracked. A tally board on the wall tracks inventory in chalk, the numbers obsessively maintained even as supplies dwindled to nothing.",
+			"The armory has been converted into a workshop — a half-forged blade sits on the anvil, armor pieces are laid out mid-repair, and a suit of plate armor stands on a frame with one pauldron missing. The smith simply walked away.",
+			"Racks of identical short swords and round shields line the walls — standardized equipment for a garrison. The uniformity is unsettling, like an army frozen mid-equip. A banner furled around its pole leans in the corner, its allegiance hidden."
+		]
+	},
+	"roomDecorations": {
+		"pantry": [
+			"Rat droppings cover the shelves in drifts.",
+			"A cat skeleton lies in the corner, curled as if sleeping.",
+			"Mouse holes pepper the baseboards, widened by generations of gnawing.",
+			"A hand-written recipe is pinned to the wall, stained with grease.",
+			"Iron meat hooks hang empty from the ceiling, swaying in a draft.",
+			"Someone scratched a warning into the door: 'DON'T EAT THE MUSHROOMS.'"
+		],
+		"shrine": [
+			"Dried blood stains the altar cloth in a pattern that might be deliberate.",
+			"Incense smoke still hangs in the air, impossibly persistent.",
+			"Prayer beads of polished bone are scattered across the floor.",
+			"Votive offerings of coins and small figurines fill a niche by the door.",
+			"The idol's gemstone eyes have been pried out, leaving empty sockets.",
+			"A prayer wheel sits in a wall alcove, frozen mid-spin."
+		],
+		"library": [
+			"A magnifying glass lies on the desk, its brass frame green with age.",
+			"Bookworms have riddled the remaining tomes into lace.",
+			"Ink stains cover the reading desk in overlapping rings from a hundred pots.",
+			"A bookmark made from a pressed flower marks a page in an open volume.",
+			"Reading glasses sit folded on a shelf, one lens cracked.",
+			"A stack of blank journals sits unused, their pages yellowed but clean."
+		],
+		"torture_chamber": [
+			"Scratch marks cover the inside of the door, clustered at handle height.",
+			"A confession ledger lies open on a stool, its entries coldly methodical.",
+			"The drain in the floor is clogged with calcium deposits and something darker.",
+			"A torturer's leather apron hangs from a hook, stiff and stained.",
+			"Teeth are scattered in the cracks between the flagstones.",
+			"A small shrine to a god of justice sits in the corner, untouched by blood."
+		],
+		"crypt": [
+			"Burial offerings of coins and gems lie scattered by careless hands.",
+			"Funerary incense has left a permanent cloying smell in the stone.",
+			"Stone flowers are carved above each burial niche with delicate skill.",
+			"A mourner's veil of black lace lies draped over one sarcophagus.",
+			"Small clay figurines of servants are arranged around the central tomb.",
+			"Candle stubs in bronze holders mark a path between the sarcophagi."
+		],
+		"laboratory": [
+			"A half-finished experiment still bubbles faintly on the bench.",
+			"Strange crystals glow with a sickly light on a high shelf.",
+			"A dissected creature of uncertain species lies pinned to a board.",
+			"Equations and formulae are scrawled directly on the walls in chalk.",
+			"A pair of thick leather gloves, burned through at the fingertips, lie on the bench.",
+			"A bell jar contains something that moves when you're not looking directly at it."
+		],
+		"ceremonial": [
+			"Ash and bone fragments fill the braziers in compacted layers.",
+			"Candle wax has pooled inches deep, embedding small objects in its surface.",
+			"A ceremonial mask of painted wood hangs above the altar, its expression agonized.",
+			"A circle of salt surrounds the central dais, unbroken despite the dust.",
+			"Hooded ceremonial robes are arranged on the floor in a seated circle.",
+			"The altar stone is warm to the touch, despite no apparent heat source."
+		],
+		"guard_room": [
+			"A half-eaten meal sits on the table, petrified by time into a still life.",
+			"Wanted posters with crude charcoal sketches are pinned to the wall.",
+			"A set of heavy iron keys hangs from a hook by the door.",
+			"A duty schedule carved into a slate tablet leans against the wall.",
+			"Boot prints in the dust suggest someone paced this room endlessly.",
+			"A signal whistle on a leather cord hangs from a nail."
+		],
+		"storage": [
+			"A broken cart wheel leans against the wall, its spokes splayed.",
+			"Lamp oil has leaked across the floor in a dark, slick pool.",
+			"Cobwebs stretch between the crates in thick, dusty curtains.",
+			"A manifest nailed to a shelf lists items in a language no one reads.",
+			"Packing straw has been gathered into a nest-like mound in one corner.",
+			"Someone has organized the remaining supplies into a neat pile by the door."
+		],
+		"hall": [
+			"A chandelier lies shattered on the floor, its candles scattered like bones.",
+			"The fireplace is cold but holds recently charred wood and warm ashes.",
+			"Bird nests fill the high window ledges, abandoned and full of eggshell.",
+			"A tapestry has fallen from its rod, pooling on the floor like shed skin.",
+			"Boot scuffs on the dais suggest someone recently stood where the throne was.",
+			"A long dining table bears the circular stains of a hundred feasts."
+		],
+		"antechamber": [
+			"A mosaic pattern covers the floor, its meaning lost but its beauty intact.",
+			"Peeling paint reveals older, cruder murals beneath the surface layer.",
+			"A single leather boot sits by the door, its partner nowhere in sight.",
+			"A coat hook holds a cloak so dusty it has become part of the wall.",
+			"The doorbell mechanism — a pull-chain connected to a bell — still works.",
+			"A small mirror on the wall has clouded to opacity."
+		],
+		"barracks": [
+			"Playing cards are scattered under a cot, the game interrupted forever.",
+			"A love letter lies half-burnt in the cold fireplace, the name illegible.",
+			"Someone carved their name and unit number into every bedpost they slept above.",
+			"A pair of dice sit on a footlocker lid, showing snake eyes.",
+			"A soldier's journal lies under a pillow, its last entry mid-sentence.",
+			"Chalk tallies on the wall count down to a date that passed long ago."
+		],
+		"prison": [
+			"Tally marks cover every reachable wall surface in frantic clusters.",
+			"A tin cup sits in the corner of a cell, dented from being thrown.",
+			"Names and dates are scratched deep into the stone with something sharp.",
+			"A loose stone in one cell hides a small hollow — a prisoner's secret cache.",
+			"Iron rings in the ceiling suggest prisoners were sometimes suspended.",
+			"A child's toy — a wooden horse — sits in one of the cells."
+		],
+		"well_room": [
+			"Green algae covers the well stones in a slippery film.",
+			"A bucket with a frayed rope handle sits on the rim, ready to fall in.",
+			"The water makes strange echoing sounds, as if something breathes below.",
+			"Mineral deposits have built stalactites on the ceiling above the well.",
+			"Offerings of coins glint at the bottom of the shaft.",
+			"A warning scratched into the well rim reads: 'DO NOT DRINK.'"
+		],
+		"armory": [
+			"A whetstone sits on the workbench, worn to a thin crescent.",
+			"Oil rags hang from pegs, stiff and blackened with old lubricant.",
+			"A dented helmet serves as a doorstop, jammed under the frame.",
+			"A bowstring hangs from a peg, still waxed and supple.",
+			"A tally of weapons issued and returned is carved into the door frame.",
+			"A practice target of straw and wood leans in the corner, bristling with embedded points."
+		]
+	},
+	"appearances": {
+		"covers": [
+			"splatters of dried blood",
+			"claw marks",
+			"burn marks and soot",
+			"scorch marks",
+			"deep cracks",
+			"fractures",
+			"green ooze and rot",
+			"thick cobwebs",
+			"strange runes",
+			"scratch marks",
+			"mold and fungus",
+			"water stains"
+		],
+		"states": [
+			"deeply fractured",
+			"scorched",
+			"crumbling",
+			"damp and slick",
+			"covered in moss",
+			"blackened with soot",
+			"unusually smooth",
+			"rough-hewn",
+			"coated in grime",
+			"pitted and worn"
+		],
+		"locations": [
+			"the walls",
+			"the ground",
+			"the ceiling",
+			"the doorframe",
+			"a corner of the room",
+			"the far wall",
+			"the floor near the entrance",
+			"the stone pillars"
+		]
+	},
+	"doors": {
+		"shapes": [
+			{
+				"shape": "rectangular",
+				"weight": 5
+			},
+			{
+				"shape": "arched",
+				"weight": 4
+			},
+			{
+				"shape": "round",
+				"weight": 3
+			},
+			{
+				"shape": "triangular",
+				"weight": 1
+			},
+			{
+				"shape": "odd-shaped",
+				"weight": 1
+			}
+		],
+		"materials": [
+			"wooden",
+			"wooden",
+			"wooden",
+			"wooden",
+			"iron-banded wooden",
+			"iron",
+			"bronze",
+			"bronze",
+			"stone",
+			"marble"
+		],
+		"states": [
+			{
+				"state": "open",
+				"weight": 5,
+				"description": "The door stands open."
+			},
+			{
+				"state": "closed",
+				"weight": 4,
+				"description": "The door is closed but unlocked."
+			},
+			{
+				"state": "stuck",
+				"weight": 3,
+				"description": "The door is stuck and requires force to open (DC 12 STR)."
+			},
+			{
+				"state": "locked",
+				"weight": 2,
+				"description": "The door is locked."
+			},
+			{
+				"state": "barricaded",
+				"weight": 1,
+				"description": "The door has been barricaded from the other side."
+			},
+			{
+				"state": "half-broken",
+				"weight": 1,
+				"description": "The door is half-broken, with a gap large enough to squeeze through."
+			},
+			{
+				"state": "trapped",
+				"weight": 1,
+				"description": "The door is trapped!"
+			}
+		]
+	},
+	"secretDoors": {
+		"triggers": [
+			"a hidden lever disguised as a wall sconce",
+			"a lever concealed behind a loose stone",
+			"a pressure plate under a specific floor tile",
+			"a rotating torch bracket on the wall",
+			"a pull-ring hidden behind a tapestry",
+			"a passphrase spoken in {language}",
+			"a specific sequence of knocks on the wall",
+			"a concealed mechanism behind a false bookshelf",
+			"pushing a particular stone brick",
+			"placing an object on a specific shelf"
+		]
+	},
+	"passphraseData": {
+		"languages": [
+			"Common",
+			"Deepcommon",
+			"Elvish",
+			"Dwarvish",
+			"Gargoyle",
+			"Dragon",
+			"Celestial",
+			"Infernal"
+		],
+		"adjectives": [
+			"wondrous",
+			"exiled",
+			"blessed",
+			"eternal",
+			"dark",
+			"dreaded",
+			"fearful",
+			"doomed",
+			"sacred",
+			"profane",
+			"burning",
+			"frozen",
+			"hidden",
+			"ancient",
+			"forgotten"
+		],
+		"nouns": [
+			"dagger",
+			"the gods",
+			"flames",
+			"spirit",
+			"soul",
+			"heart",
+			"heretic",
+			"traitor",
+			"wizard",
+			"horror",
+			"bones",
+			"goblin",
+			"fiend",
+			"serpent",
+			"shadow",
+			"throne"
+		],
+		"actions": [
+			"whisper",
+			"scream",
+			"sing",
+			"chant",
+			"speak"
+		]
+	},
+	"keyData": {
+		"hidingSpots": [
+			"a small wooden box hidden under debris",
+			"a nook in the wall behind a loose stone",
+			"a hollowed-out book on a shelf",
+			"a leather pouch tucked inside a skull",
+			"a crack in the floor beneath rubble",
+			"a clay jar on a high shelf",
+			"the pocket of a corpse",
+			"a hidden compartment in the wall",
+			"beneath a flagstone near the door",
+			"inside a rusted tin on a shelf"
+		],
+		"sigils": [
+			"a serpent eating its tail",
+			"a crescent moon",
+			"a burning eye",
+			"interlocking triangles",
+			"a skull and crossbones",
+			"a thorned rose",
+			"a coiled dragon",
+			"a broken chain",
+			"an inverted star",
+			"a winged hourglass",
+			"a raven in flight",
+			"a crown of thorns"
+		]
+	},
+	"traps": {
+		"areaTrapTypes": [
+			{
+				"type": "pit",
+				"descriptions": [
+					"A concealed pit trap opens beneath your feet! The 10-foot deep pit contains sharpened stakes.",
+					"The floor gives way, revealing a 10-foot pit. Poisonous spiders swarm at the bottom.",
+					"A trapdoor concealed by dust swings open, revealing a deep pit with slick walls."
+				],
+				"damage": "2d6",
+				"save": "Dexterity"
+			},
+			{
+				"type": "blade",
+				"descriptions": [
+					"A massive blade swings from a concealed slot in the wall!",
+					"Spinning blades emerge from hidden panels in the floor!",
+					"A guillotine blade drops from a slot in the ceiling!"
+				],
+				"damage": "2d6",
+				"save": "Dexterity"
+			},
+			{
+				"type": "sprung_device",
+				"descriptions": [
+					"Spring-loaded spears thrust from holes in the walls!",
+					"A concealed mechanism fires a volley of iron spikes from the wall!",
+					"Hidden spear tips spring from the floor at ankle height!"
+				],
+				"damage": "1d8",
+				"save": "Dexterity"
+			},
+			{
+				"type": "projectiles",
+				"descriptions": [
+					"Poison darts shoot from tiny holes in the wall!",
+					"A hidden crossbow mechanism fires a bolt at chest height!",
+					"Small blowgun needles fire from the doorframe!"
+				],
+				"damage": "1d6 + poison",
+				"save": "Dexterity"
+			},
+			{
+				"type": "vapour",
+				"descriptions": [
+					"A cloud of poisonous gas erupts from vents in the floor!",
+					"Acidic vapour sprays from nozzles concealed in the walls!",
+					"A burst of choking, burning mist fills the room!"
+				],
+				"damage": "2d4",
+				"save": "Constitution"
+			}
+		],
+		"doorTrapTypes": [
+			{
+				"type": "blade",
+				"descriptions": [
+					"A giant blade drops from above the doorframe!",
+					"Concealed blades spring from the door's edges as it opens!"
+				],
+				"damage": "2d6",
+				"save": "Dexterity"
+			},
+			{
+				"type": "magical",
+				"descriptions": [
+					"A magical ward on the door fires a bolt of energy!",
+					"Arcane runes flare as the door is touched, releasing a blast of force!",
+					"The door glows with malevolent energy and a wave of pain washes over you!"
+				],
+				"damage": "2d6",
+				"save": "Intelligence"
+			},
+			{
+				"type": "pit",
+				"descriptions": [
+					"The floor in front of the door collapses into a 10-foot pit!",
+					"A trapdoor swings open as you reach for the handle!"
+				],
+				"damage": "1d6",
+				"save": "Dexterity"
+			}
+		],
+		"containerTrapTypes": [
+			{
+				"type": "needle",
+				"descriptions": [
+					"A poisoned needle pricks your finger as you open the lid!",
+					"A hidden needle jabs from beneath the clasp!"
+				],
+				"damage": "1d4 + poison",
+				"save": "Constitution"
+			},
+			{
+				"type": "vapour",
+				"descriptions": [
+					"A cloud of toxic gas erupts from inside!",
+					"Choking fumes billow from the opened container!"
+				],
+				"damage": "1d6",
+				"save": "Constitution"
+			},
+			{
+				"type": "touch",
+				"descriptions": [
+					"The surface is coated with a corrosive substance!",
+					"Contact poison smeared on the handle burns your skin!"
+				],
+				"damage": "1d6",
+				"save": "Constitution"
+			},
+			{
+				"type": "rubble",
+				"descriptions": [
+					"Opening the container triggers a collapse of debris from above!",
+					"A deadfall of stones is released from a mechanism above!"
+				],
+				"damage": "2d4",
+				"save": "Dexterity"
+			}
+		],
+		"triggers": [
+			"a pressure plate",
+			"a trip wire",
+			"a sound sensor",
+			"removing an object",
+			"stepping on a loose tile",
+			"opening the door"
+		]
+	},
+	"containers": {
+		"types": [
+			{
+				"name": "jar",
+				"label": "A clay jar"
+			},
+			{
+				"name": "chest",
+				"label": "A wooden chest"
+			},
+			{
+				"name": "crate",
+				"label": "A wooden crate"
+			},
+			{
+				"name": "barrel",
+				"label": "A barrel"
+			},
+			{
+				"name": "bag",
+				"label": "A leather bag"
+			},
+			{
+				"name": "coffer",
+				"label": "An iron coffer"
+			},
+			{
+				"name": "urn",
+				"label": "A stone urn"
+			},
+			{
+				"name": "strongbox",
+				"label": "A locked strongbox"
+			}
+		],
+		"locations": [
+			"sits in the corner",
+			"rests against the far wall",
+			"is tucked behind a pillar",
+			"lies half-buried in rubble",
+			"is partially hidden under a cloth",
+			"sits on a stone shelf",
+			"is chained to the wall",
+			"stands near the entrance"
+		]
+	},
+	"treasure": {
+		"tiers": {
+			"1": {
+				"goldRange": [
+					5,
+					30
+				],
+				"items": [
+					"a tarnished silver ring",
+					"a handful of copper coins",
+					"a small gemstone (worth 10 gp)",
+					"a potion of healing",
+					"a dagger with a jeweled hilt",
+					"a set of bone dice",
+					"a silver holy symbol",
+					"a vial of holy water"
+				]
+			},
+			"2": {
+				"goldRange": [
+					20,
+					80
+				],
+				"items": [
+					"a gold necklace set with garnets",
+					"a spell scroll (tier 1)",
+					"a masterwork short sword",
+					"a jeweled brooch (worth 50 gp)",
+					"a potion of invisibility",
+					"a silver chalice",
+					"an embroidered silk cloak",
+					"a set of thieves' tools"
+				]
+			},
+			"3": {
+				"goldRange": [
+					60,
+					200
+				],
+				"items": [
+					"a gold crown set with rubies",
+					"a spell scroll (tier 2)",
+					"a magic shield (+1)",
+					"a platinum ring (worth 100 gp)",
+					"a potion of fire resistance",
+					"a jeweled scepter",
+					"a mithril chain shirt",
+					"a wand of magic missiles"
+				]
+			},
+			"4": {
+				"goldRange": [
+					150,
+					500
+				],
+				"items": [
+					"a diamond-studded tiara",
+					"a spell scroll (tier 3)",
+					"a magic sword (+1)",
+					"a bag of holding",
+					"a ruby the size of a fist (worth 300 gp)",
+					"a suit of enchanted plate armor",
+					"a staff of power",
+					"a ring of protection"
+				]
+			}
+		}
+	},
+	"debris": {
+		"primary": [
+			"a discarded backpack",
+			"a broken flask",
+			"an empty quiver",
+			"a rusted sword",
+			"a burnt-out torch",
+			"a cracked mirror",
+			"a suit of ruined armor",
+			"a pile of rusted chains",
+			"a broken doll",
+			"a cluster of mushrooms",
+			"a crude stone idol",
+			"a pile of bones",
+			"an overturned table",
+			"a tangle of dried vines",
+			"a moth-eaten hat",
+			"a broken music box",
+			"a cracked bell",
+			"a jar of eyeballs",
+			"a moldy bedroll",
+			"a broken lantern",
+			"a pile of rubble",
+			"a shattered pottery urn",
+			"a frayed rope coil",
+			"a rusted iron spike",
+			"a bent candelabra",
+			"a chipped stone bowl",
+			"a torn leather boot",
+			"an empty ink pot",
+			"a bundle of rotted arrows",
+			"a corroded copper coin",
+			"a broken wooden wheel",
+			"a pile of ash",
+			"a tattered map fragment",
+			"a cracked skull",
+			"a child's wooden toy",
+			"a rusted lock and key",
+			"a scorched holy symbol",
+			"a bundle of dead flowers",
+			"a broken cage",
+			"a stone fragment with writing"
+		],
+		"secondary": [
+			"pieces of splintered wood",
+			"scraps of torn clothing",
+			"crumbs of moldy food",
+			"bits of frayed rope",
+			"patches of animal fur",
+			"dried garlic cloves",
+			"scattered bone fragments",
+			"clumps of mushrooms",
+			"thick spiderwebs",
+			"shards of broken glass",
+			"scattered marbles",
+			"a handful of dead mice",
+			"dried seeds and husks",
+			"tiny wooden figurines",
+			"carved stone runes",
+			"broken arrow shafts",
+			"rusted iron nails",
+			"scraps of parchment",
+			"fragments of tile",
+			"clumps of dried clay",
+			"strips of rusted metal",
+			"crumbled mortar",
+			"a scattering of feathers",
+			"drops of dried wax",
+			"tiny bone beads",
+			"a dusting of sulphur",
+			"flakes of dried paint",
+			"small animal droppings",
+			"a residue of green slime",
+			"crushed insect shells"
+		],
+		"locations": [
+			"in a corner",
+			"against the far wall",
+			"near the entrance",
+			"in the center of the room",
+			"scattered across the floor",
+			"piled near the door",
+			"half-hidden in shadow",
+			"wedged between stones"
+		]
+	},
+	"specialFeatures": {
+		"pools": {
+			"liquids": [
+				"dark, tar-like liquid",
+				"crystal-clear water",
+				"milky-white fluid",
+				"thick, blood-like liquid",
+				"faintly glowing green liquid",
+				"stinking yellowish liquid",
+				"shimmery, toxic mercury",
+				"boiling, grey slurry",
+				"rainbow-hued, oily film",
+				"abyss-black, viscous ink",
+				"molten, liquid gold",
+				"vibrant violet slime"
+			],
+			"effects": [
+				"The liquid is acidic; touching it deals 1d4 damage per round of contact.",
+				"The liquid is healing; drinking it restores 1d6 HP (once per person).",
+				"The pool slowly overflows, flooding the room ankle-deep.",
+				"The liquid petrifies anything dipped into it.",
+				"A demonic visage appears in the reflection, whispering dark promises.",
+				"The liquid tastes foul but is otherwise harmless.",
+				"Dipping a weapon into the pool coats it in a permanent <strong>gilded/silvered</strong> sheen (Ignore non-magical resistance), but roll a <strong>DC 12 Luck check</strong> or the item is rendered brittle and breaks on its next critical fail.",
+				"Drinking the liquid causes a permanent <strong>Stat Swap</strong>: roll 1d6 for a stat to gain +1, and another 1d6 for a stat to lose -1.",
+				"Gazing deep into the pool reveals a <strong>vision</strong> of a nearby secret door or treasure, but the viewer is <strong>blinded</strong> for 1d4 turns.",
+				"Disturbing the surface causes a <strong>Gray Ooze</strong> or <strong>Water Weird</strong> to coalesce and attack.",
+				"Leaping into the pool <strong>teleports</strong> the creature to another random pool or fountain elsewhere in the dungeon.",
+				"The liquid is highly <strong>flammable</strong>; even a spark will turn the room into an inferno."
+			]
+		},
+		"fungi": {
+			"quantities": [
+				"A small cluster of",
+				"A patch of",
+				"A large colony of",
+				"Scattered growths of"
+			],
+			"colors": [
+				"green and purple",
+				"blue and red",
+				"vivid yellow",
+				"ghostly white",
+				"deep crimson",
+				"spotted orange"
+			],
+			"effects": [
+				"Eating them causes violent illness (1d4 poison damage).",
+				"Eating them causes paralysis and vivid hallucinations for 1d6 turns.",
+				"Eating them causes a terrible stomach ache and -2 penalty to all rolls for 1d6 turns.",
+				"Eating them produces the effects of a random potion.",
+				"They release spores when disturbed, causing coughing (DC 10 CON or -1 to attacks for 1 hour).",
+				"They glow faintly, providing dim light in a 10-foot radius."
+			]
+		},
+		"remains": {
+			"bodyTypes": [
+				"a dust-covered human skeleton",
+				"a half-decomposed orc",
+				"a goblin skeleton in rusted armor",
+				"several rotting corpses",
+				"a mummified body in fine robes",
+				"a dwarf skeleton clutching a warhammer"
+			],
+			"equipment": [
+				"Club",
+				"Dagger",
+				"Mace",
+				"Short Bow",
+				"Silver Dagger",
+				"Sling",
+				"Sword",
+				"Iron Rations",
+				"Mirror",
+				"Iron Spikes",
+				"Holy Symbol",
+				"Garlic",
+				"Sack",
+				"Rope (50 ft)",
+				"10 ft Pole",
+				"Oil Flask",
+				"Hammer",
+				"Thieves' Tools",
+				"Leather Boots",
+				"Wool Cloak"
+			],
+			"equipmentStates": [
+				"Usable",
+				"Usable",
+				"Unusable",
+				"Unusable",
+				"Barely functional"
+			]
+		},
+		"fountains": {
+			"descriptions": [
+				"A stone fountain shaped like a lion's head, water trickling from its mouth.",
+				"A marble fountain in the shape of a weeping maiden. The basin is full.",
+				"A crude stone fountain with a basin of dark water. Something glints at the bottom.",
+				"An ornate bronze fountain, dry and corroded. A faint magical aura lingers.",
+				"A natural spring bubbles up through a crack in the floor into a stone basin."
+			]
+		}
+	},
+	"encounterCategories": {
+		"humanoids": {
+			"monsters": [
+				{
+					"name": "Goblin",
+					"weight": 3,
+					"count": [
+						2,
+						6
+					]
+				},
+				{
+					"name": "Kobold",
+					"weight": 2,
+					"count": [
+						3,
+						8
+					]
+				},
+				{
+					"name": "Orc",
+					"weight": 2,
+					"count": [
+						1,
+						4
+					]
+				},
+				{
+					"name": "Gnoll",
+					"weight": 1,
+					"count": [
+						1,
+						3
+					]
+				},
+				{
+					"name": "Hobgoblin",
+					"weight": 1,
+					"count": [
+						1,
+						3
+					]
+				},
+				{
+					"name": "Bugbear",
+					"weight": 1,
+					"count": [
+						1,
+						2
+					]
+				}
+			],
+			"foreshadowing": [
+				"You hear the sound of speaking and footsteps ahead.",
+				"The scraping of boots on stone echoes from somewhere nearby.",
+				"A guttural voice barks orders in the distance."
+			],
+			"hints": [
+				"You notice movement in the shadows.",
+				"A pair of glowing eyes watches from the darkness.",
+				"A crude shout echoes through the corridor.",
+				"You see the shimmer of a blade in the dim light."
+			]
+		},
+		"undead": {
+			"monsters": [
+				{
+					"name": "Skeleton",
+					"weight": 3,
+					"count": [
+						2,
+						6
+					]
+				},
+				{
+					"name": "Zombie",
+					"weight": 3,
+					"count": [
+						1,
+						4
+					]
+				},
+				{
+					"name": "Ghoul",
+					"weight": 2,
+					"count": [
+						1,
+						3
+					]
+				},
+				{
+					"name": "Shadow",
+					"weight": 1,
+					"count": [
+						1,
+						2
+					]
+				},
+				{
+					"name": "Wight",
+					"weight": 1,
+					"count": [
+						1,
+						2
+					]
+				},
+				{
+					"name": "Wraith",
+					"weight": 1,
+					"count": [
+						1,
+						1
+					]
+				}
+			],
+			"foreshadowing": [
+				"An unnatural silence fills the air ahead.",
+				"It's suddenly impossible to hear anything at all.",
+				"A chill creeps through the corridor, and your breath mists."
+			],
+			"hints": [
+				"A supernatural chill runs down your spine.",
+				"Pools of congealed blood stain the floor.",
+				"The hair on the back of your neck stands up.",
+				"A faint moaning drifts from the darkness."
+			]
+		},
+		"vermins": {
+			"monsters": [
+				{
+					"name": "Giant Rat",
+					"weight": 3,
+					"count": [
+						3,
+						8
+					]
+				},
+				{
+					"name": "Giant Spider",
+					"weight": 2,
+					"count": [
+						1,
+						3
+					]
+				},
+				{
+					"name": "Giant Centipede",
+					"weight": 2,
+					"count": [
+						2,
+						6
+					]
+				},
+				{
+					"name": "Stirge",
+					"weight": 2,
+					"count": [
+						2,
+						5
+					]
+				},
+				{
+					"name": "Giant Scorpion",
+					"weight": 1,
+					"count": [
+						1,
+						2
+					]
+				},
+				{
+					"name": "Swarm of Insects",
+					"weight": 1,
+					"count": [
+						1,
+						2
+					]
+				}
+			],
+			"foreshadowing": [
+				"A foul smell drifts from ahead, like rotting meat.",
+				"Skittering sounds echo through the passage.",
+				"The walls are covered in sticky webbing."
+			],
+			"hints": [
+				"You notice something moving in the dark.",
+				"A foul, musty smell assaults your nostrils.",
+				"Small skeletons picked clean lie against the wall.",
+				"A cloud of flies buzzes near the ceiling."
+			]
+		},
+		"ooze": {
+			"monsters": [
+				{
+					"name": "Gray Ooze",
+					"weight": 2,
+					"count": [
+						1,
+						1
+					]
+				},
+				{
+					"name": "Green Slime",
+					"weight": 2,
+					"count": [
+						1,
+						1
+					]
+				},
+				{
+					"name": "Ochre Jelly",
+					"weight": 1,
+					"count": [
+						1,
+						1
+					]
+				},
+				{
+					"name": "Gelatinous Cube",
+					"weight": 1,
+					"count": [
+						1,
+						1
+					]
+				},
+				{
+					"name": "Black Pudding",
+					"weight": 1,
+					"count": [
+						1,
+						1
+					]
+				}
+			],
+			"foreshadowing": [
+				"A vile stench fills the air, like acid and decay.",
+				"The floor ahead glistens with a thin, slimy residue.",
+				"You notice the stone walls are oddly clean and smooth."
+			],
+			"hints": [
+				"You feel a burning sensation on your skin.",
+				"An acidic stench fills the air.",
+				"Bones picked perfectly clean litter the floor.",
+				"The ground is slippery with translucent residue."
+			]
+		},
+		"aberrations": {
+			"monsters": [
+				{
+					"name": "Carrion Crawler",
+					"weight": 2,
+					"count": [
+						1,
+						2
+					]
+				},
+				{
+					"name": "Rust Monster",
+					"weight": 2,
+					"count": [
+						1,
+						2
+					]
+				},
+				{
+					"name": "Mimic",
+					"weight": 1,
+					"count": [
+						1,
+						1
+					]
+				},
+				{
+					"name": "Owlbear",
+					"weight": 1,
+					"count": [
+						1,
+						1
+					]
+				},
+				{
+					"name": "Hook Horror",
+					"weight": 1,
+					"count": [
+						1,
+						1
+					]
+				}
+			],
+			"foreshadowing": [
+				"Something feels deeply wrong about this place.",
+				"The air itself seems to vibrate with an unnatural energy.",
+				"Reality seems to bend at the edges of your vision."
+			],
+			"hints": [
+				"Red, unblinking eyes watch from the darkness.",
+				"Pools of blood and strange residue stain the floor.",
+				"A terrible stench makes your eyes water.",
+				"Claw marks gouged deep into the stone walls."
+			]
+		},
+		"magical": {
+			"monsters": [
+				{
+					"name": "Gargoyle",
+					"weight": 2,
+					"count": [
+						1,
+						2
+					]
+				},
+				{
+					"name": "Basilisk",
+					"weight": 1,
+					"count": [
+						1,
+						1
+					]
+				},
+				{
+					"name": "Medusa",
+					"weight": 1,
+					"count": [
+						1,
+						1
+					]
+				},
+				{
+					"name": "Manticore",
+					"weight": 1,
+					"count": [
+						1,
+						1
+					]
+				},
+				{
+					"name": "Harpy",
+					"weight": 1,
+					"count": [
+						1,
+						2
+					]
+				}
+			],
+			"foreshadowing": [
+				"The air crackles with residual magical energy.",
+				"You feel a tingling sensation across your skin.",
+				"Strange lights flicker in your peripheral vision."
+			],
+			"hints": [
+				"You get the sense you are not alone.",
+				"The ground beneath your feet feels oddly sticky.",
+				"An unpleasant, otherworldly smell permeates the area.",
+				"Scorch marks from magical energy scar the walls."
+			]
+		},
+		"cultists": {
+			"monsters": [
+				{
+					"name": "Acolyte",
+					"weight": 3,
+					"count": [
+						2,
+						5
+					]
+				},
+				{
+					"name": "Bandit",
+					"weight": 2,
+					"count": [
+						2,
+						4
+					]
+				},
+				{
+					"name": "Berserker",
+					"weight": 1,
+					"count": [
+						1,
+						2
+					]
+				},
+				{
+					"name": "Priest",
+					"weight": 1,
+					"count": [
+						1,
+						1
+					]
+				}
+			],
+			"foreshadowing": [
+				"The sound of chanting echoes through the halls.",
+				"You hear rhythmic drumming from somewhere deeper within.",
+				"The smell of burning incense drifts from ahead."
+			],
+			"hints": [
+				"Robed figures move in the shadows.",
+				"You overhear hushed voices speaking in a strange tongue.",
+				"Temple beasts prowl the corridors.",
+				"Ritual markings are freshly painted on the walls."
+			]
+		}
+	},
+	"wanderingMonsters": {
+		"chance": "1 in 6",
+		"checkFrequency": "every 2 turns"
+	},
+	"directions": [
+		"North",
+		"South",
+		"East",
+		"West",
+		"Northeast",
+		"Northwest",
+		"Southeast",
+		"Southwest"
+	]
+}

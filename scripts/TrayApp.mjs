@@ -27,7 +27,7 @@ import { generateHexMap, clearGeneratedTiles } from "./HexGeneratorSD.mjs";
 import { flattenTiles, unflattenTile, getDungeonFloorLevels, getFlattendDungeonLevels, flattenDungeonLevel } from "./TileFlattenSD.mjs";
 import { setDungeonMode, selectFloorTile, selectWallTile, selectDoorTile, selectIntWallTile, selectIntDoorTile, enableDungeonPainting, disableDungeonPainting, setNoFoundryWalls, setWallShadows, setDungeonBackground } from "./DungeonPainterSD.mjs";
 import { toggleGeneratorPanel, isGeneratorExpanded, generateDungeon, generateRandomSeed, getGeneratorSeed, setGeneratorSeed, getGeneratorSettings, setGeneratorSettings } from "./DungeonGeneratorSD.mjs";
-import { isHexFogEnabled, setHexFogEnabled, getActiveHexFogEffect, setHexFogEffect, getAvailableHexFogEffects } from "./SDXHexFogSD.mjs";
+import { isHexFogEnabled, setHexFogEnabled, getActiveHexFogEffect, setHexFogEffect, getAvailableHexFogEffects, isFogEffectsEnabled } from "./SDXHexFogSD.mjs";
 
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
@@ -483,6 +483,7 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
             e.preventDefault();
             e.stopPropagation();
             if (!game.user.isGM) return;
+            if (!isFogEffectsEnabled()) return;
             if (!canvas?.grid?.isHexagonal || !isHexFogEnabled(canvas.scene?.id)) {
                 ui.notifications.warn("Enable hex fog first.");
                 return;
@@ -1672,6 +1673,14 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
                 e.preventDefault();
                 const tilePath = thumb.dataset.tile;
                 if (!tilePath) return;
+
+                // Block hex tile painting on unformatted scenes (except POI tab)
+                const activeTab = getActiveTileTab();
+                if (activeTab !== "symbols" && !canvas.scene?.getFlag(MODULE_ID, "hexScene")) {
+                    ui.notifications.warn("Format the map first before placing hex tiles.");
+                    return;
+                }
+
                 toggleTileSelection(tilePath);
 
                 thumb.classList.toggle("active");

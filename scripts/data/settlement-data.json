@@ -1,0 +1,2520 @@
+{
+	"settlementTypes": {
+		"village": {
+			"label": "Village",
+			"prefixes": [
+				"Thriving",
+				"Bustling",
+				"Sleepy",
+				"Flourishing",
+				"Lively",
+				"Struggling",
+				"Growing",
+				"Withering",
+				"Prospering",
+				"Expanding",
+				"Quiet",
+				"Remote",
+				"Humble"
+			],
+			"shopCount": [
+				3,
+				6
+			],
+			"hasFaction": false,
+			"descriptions": [
+				"A handful of thatched-roof cottages cluster around a muddy crossroads. Chickens roam freely between vegetable gardens.",
+				"Smoke curls from stone chimneys as villagers tend their fields. A weathered signpost points toward the nearest town.",
+				"This small settlement sits beside a shallow creek. Children play among stacked firewood while elders mend fishing nets.",
+				"A circle of sturdy timber buildings surrounds a mossy well. The smell of baking bread drifts from an open window.",
+				"Goats graze on the hillside above this cluster of homes. A blacksmith's hammer rings out in steady rhythm.",
+				"Log cabins line a packed-earth road. A shrine to a forgotten god stands at the village edge, draped in wildflowers.",
+				"The village sits in the shadow of ancient oaks. Lanterns hang from iron hooks, ready for the coming dusk.",
+				"Farmsteads spread along a gentle valley. A communal barn dominates the center, its doors wide open at harvest time.",
+				"Muddy cart tracks converge at a sagging wooden bridge. A dog barks from a rooftop while geese waddle along the road.",
+				"Stone foundations and wattle walls lean against one another for support. A thin plume of peat smoke marks the village from miles away.",
+				"A ring of standing stones watches over this settlement from the hilltop. The villagers leave offerings there on moonless nights.",
+				"Drying racks of fish line the lakeshore. The houses here are built on stilts, connected by creaking boardwalks.",
+				"Wildflowers push through the cobbles of the tiny square. A bent old woman tends the communal herb garden, humming a tune.",
+				"Two rows of houses face each other across a ditch that doubles as a drain. Laundry hangs between the upper floors.",
+				"The settlement clings to the base of a cliff. Caves behind the houses serve as root cellars and storm shelters.",
+				"Apple orchards surround this hamlet on three sides. Cider-press season brings a sweet, heady scent to every corner.",
+				"A watchtower converted into a grain silo dominates the village. Its bell still rings when danger approaches.",
+				"Beehives line the fence around the village common. The local honey is famous enough to attract traders from afar.",
+				"A crumbling aqueduct from a forgotten age runs through the settlement, still carrying clear water from the hills.",
+				"The village straddles a shallow ford. Wagon wheels have worn deep ruts in the riverbed from generations of crossing."
+			]
+		},
+		"town": {
+			"label": "Town",
+			"prefixes": [
+				"Fortified",
+				"Prosperous",
+				"Walled",
+				"Bustling",
+				"Trade",
+				"Market",
+				"Garrison",
+				"Riverside",
+				"Hilltop",
+				"Crossroads"
+			],
+			"shopCount": [
+				6,
+				12
+			],
+			"hasFaction": true,
+			"descriptions": [
+				"Timber and stone buildings line cobblestone streets. A market square buzzes with merchants hawking their wares.",
+				"Sturdy walls encircle this settlement. Guards patrol the gates, checking the papers of arriving merchants.",
+				"The town sits at a major crossroads, drawing travelers from every direction. Inns and taverns line the main thoroughfare.",
+				"Church bells mark the hours as townsfolk go about their business. A militia drills in the square each morning.",
+				"Half-timbered buildings lean over narrow streets. The smell of tanned leather and forge smoke fills the air.",
+				"A stone bridge spans the river at the town's heart. Boats crowd the docks, loading grain and timber for distant markets.",
+				"Banners fly from the town hall as merchants argue prices in the covered market. The streets are alive with commerce.",
+				"Watchtowers rise above slate rooftops. The town has weathered raids before and stands ready for the next.",
+				"Ox carts queue at the gatehouse while a tax collector argues with a fur trader. The streets inside smell of sawdust and iron.",
+				"Washing lines crisscross the alley above the tannery district. Apprentices haul buckets of water from the central fountain.",
+				"A clocktower with a cracked face overlooks the market. Locals claim it hasn't kept accurate time in thirty years, but nobody minds.",
+				"Scaffolding covers the eastern wall where masons work to repair damage from a recent storm. The town is growing despite itself.",
+				"The old quarter's narrow lanes give way to a newer district of wide avenues and whitewashed facades. Two eras live side by side.",
+				"Fishmongers shout prices at the dawn market while bakers slide trays of rolls into brick ovens. The town wakes hungry.",
+				"A statue of a forgotten hero stands in the main square, one arm missing. Pigeons roost where the sword once pointed.",
+				"Canal boats glide beneath arched stone bridges, delivering barrels of ale and bundles of wool to the warehouses.",
+				"The town sits inside the ruins of a much larger fortification. Ancient walls dwarf the buildings that shelter within them.",
+				"A yearly horse fair has just ended, leaving trampled fields and the lingering smell of roasted chestnuts.",
+				"Ivy crawls over the town walls, softening their silhouette. Guards lean on their spears and watch the road with lazy eyes.",
+				"Three competing inns face the town square, each with a larger signboard than the last. The rivalry is the talk of every traveler."
+			]
+		},
+		"city": {
+			"label": "City",
+			"prefixes": [
+				"Grand",
+				"Ancient",
+				"Sprawling",
+				"Magnificent",
+				"Imperial",
+				"Free",
+				"Crowned",
+				"Sovereign",
+				"Gilded",
+				"Storied"
+			],
+			"shopCount": [
+				12,
+				20
+			],
+			"hasFaction": true,
+			"descriptions": [
+				"Massive walls enclose districts of varied character. Spires and domes punctuate a skyline thick with chimney smoke.",
+				"The city sprawls across both banks of a great river, connected by stone bridges. Thousands call these streets home.",
+				"Towering gates open onto broad avenues lined with merchant houses, guild halls, and temples to a dozen faiths.",
+				"The city rises in tiers from the harbor to the citadel. Each level tells the story of a different era.",
+				"Narrow alleys wind between ancient stone buildings. Street vendors, beggars, and nobles all jostle for space.",
+				"Great walls guard a city famous for its artisans and scholars. Universities and workshops share every block.",
+				"The city's markets draw traders from across the known world. Exotic goods fill warehouses along the waterfront.",
+				"A sprawling metropolis that never truly sleeps. Lantern-lit streets echo with music, argument, and commerce at all hours.",
+				"Aqueducts arch above the rooftops, carrying mountain water to marble fountains in every district. The stonework is ancient beyond memory.",
+				"Smoke from a hundred forges darkens the sky over the craftsmen's quarter. The noble district upwind gleams white by contrast.",
+				"A great coliseum dominates the city center, its tiers able to seat thousands. Contests of blade and spell draw crowds year-round.",
+				"Canals lace through the lower city, choked with gondolas and flat-bottomed barges. Bridges of every style link the islands together.",
+				"The city clings to a mountainside, its streets switchbacking between terraced levels connected by steep stairways and cargo lifts.",
+				"An enormous lighthouse crowns the harbor breakwater, visible for leagues at sea. The docks never rest — ships arrive at every tide.",
+				"Gargoyles watch from every cornice in the old quarter. Locals say the stonecutters' guild placed them there to ward off evil spirits.",
+				"Sewer grates breathe warm, foul air into the streets. Beneath the city runs a labyrinth older than the walls above.",
+				"The palace complex alone could house a small town. Its gilded domes and hanging gardens are visible from every rooftop.",
+				"Printing presses clatter in the scholar's district, churning out broadsheets and pamphlets. Literacy is both prized and dangerous here.",
+				"A vast cemetery lies within the city walls, its crypts and mausoleums forming a silent district of their own. Grave wardens patrol at dusk.",
+				"Rope bridges and wooden walkways connect the upper stories of buildings in the poorest quarter, creating a second city above the streets."
+			]
+		}
+	},
+	"settlementNames": {
+		"prefixes": [
+			"Iron",
+			"Stone",
+			"Silver",
+			"Gold",
+			"Copper",
+			"Amber",
+			"Shadow",
+			"Bright",
+			"White",
+			"Black",
+			"Red",
+			"Green",
+			"Grey",
+			"Dark",
+			"Frost",
+			"Storm",
+			"Oak",
+			"Elm",
+			"Ash",
+			"Thorn",
+			"Briar",
+			"Raven",
+			"Wolf",
+			"Eagle",
+			"Crown",
+			"Shield",
+			"Sword",
+			"Arrow",
+			"Helm",
+			"Tower",
+			"Bridge",
+			"Mill",
+			"High",
+			"Low",
+			"Old",
+			"New",
+			"North",
+			"South",
+			"East",
+			"West",
+			"King's",
+			"Dragon",
+			"Hawk",
+			"Stag",
+			"Bear",
+			"Fox",
+			"Heron",
+			"Falcon"
+		],
+		"suffixes": [
+			"haven",
+			"ford",
+			"bury",
+			"gate",
+			"bridge",
+			"stead",
+			"holm",
+			"worth",
+			"field",
+			"dale",
+			"glen",
+			"vale",
+			"moor",
+			"fell",
+			"crest",
+			"reach",
+			"town",
+			"ton",
+			"wick",
+			"ham",
+			"keep",
+			"wall",
+			"march",
+			"hold",
+			"water",
+			"well",
+			"brook",
+			"mere",
+			"port",
+			"haven",
+			"mouth",
+			"shore"
+		]
+	},
+	"shopTypes": [
+		{
+			"type": "tavern",
+			"label": "Tavern",
+			"weight": 0
+		},
+		{
+			"type": "blacksmith",
+			"label": "Blacksmith",
+			"weight": 3
+		},
+		{
+			"type": "general_goods",
+			"label": "General Goods",
+			"weight": 3
+		},
+		{
+			"type": "armor_weapons",
+			"label": "Armor & Weapons",
+			"weight": 2
+		},
+		{
+			"type": "temple",
+			"label": "Temple",
+			"weight": 2
+		},
+		{
+			"type": "herbalist",
+			"label": "Herbalist",
+			"weight": 2
+		},
+		{
+			"type": "stables",
+			"label": "Stables",
+			"weight": 2
+		},
+		{
+			"type": "bakery",
+			"label": "Bakery",
+			"weight": 2
+		},
+		{
+			"type": "grocer",
+			"label": "Grocer",
+			"weight": 2
+		},
+		{
+			"type": "butchery",
+			"label": "Butchery",
+			"weight": 1
+		},
+		{
+			"type": "jeweler",
+			"label": "Jeweler",
+			"weight": 1
+		},
+		{
+			"type": "library",
+			"label": "Library",
+			"weight": 1
+		},
+		{
+			"type": "bookstore",
+			"label": "Bookstore",
+			"weight": 1
+		},
+		{
+			"type": "tailor",
+			"label": "Tailor",
+			"weight": 1
+		},
+		{
+			"type": "carpenter",
+			"label": "Carpenter",
+			"weight": 1
+		},
+		{
+			"type": "leatherworker",
+			"label": "Leatherworker",
+			"weight": 1
+		},
+		{
+			"type": "barber",
+			"label": "Barber",
+			"weight": 1
+		},
+		{
+			"type": "potions",
+			"label": "Potions",
+			"weight": 1
+		},
+		{
+			"type": "pet_shop",
+			"label": "Pet Shop",
+			"weight": 1
+		},
+		{
+			"type": "brewery",
+			"label": "Brewery",
+			"weight": 1
+		},
+		{
+			"type": "cobbler",
+			"label": "Cobbler",
+			"weight": 1
+		},
+		{
+			"type": "tinkerer",
+			"label": "Tinkerer",
+			"weight": 1
+		},
+		{
+			"type": "weaver",
+			"label": "Weaver",
+			"weight": 1
+		},
+		{
+			"type": "physician",
+			"label": "Physician",
+			"weight": 1
+		},
+		{
+			"type": "cartographer",
+			"label": "Cartographer",
+			"weight": 1
+		},
+		{
+			"type": "exotic_goods",
+			"label": "Exotic Goods",
+			"weight": 1
+		},
+		{
+			"type": "music",
+			"label": "Music Shop",
+			"weight": 1
+		},
+		{
+			"type": "bathhouse",
+			"label": "Bathhouse",
+			"weight": 1
+		},
+		{
+			"type": "fortune_teller",
+			"label": "Fortune Teller",
+			"weight": 1
+		},
+		{
+			"type": "occult",
+			"label": "Occult Shop",
+			"weight": 1
+		}
+	],
+	"shopNames": {
+		"tavern": {
+			"prefix": [
+				"The Golden",
+				"The Silver",
+				"The Iron",
+				"The Rusty",
+				"The Prancing",
+				"The Drunken",
+				"The Sleeping",
+				"The Laughing",
+				"The Howling",
+				"The Wandering",
+				"The Crimson",
+				"The Black",
+				"The Crooked",
+				"The Last",
+				"The Lucky",
+				"The Jolly"
+			],
+			"suffix": [
+				"Dragon",
+				"Griffin",
+				"Stag",
+				"Boar",
+				"Pony",
+				"Goblin",
+				"Giant",
+				"Wolf",
+				"Raven",
+				"Fox",
+				"Mermaid",
+				"Knight",
+				"Barrel",
+				"Tankard",
+				"Crown",
+				"Anchor"
+			]
+		},
+		"blacksmith": {
+			"prefix": [
+				"The Ringing",
+				"The Iron",
+				"The Red",
+				"The Sturdy",
+				"The Hammer &"
+			],
+			"suffix": [
+				"Anvil",
+				"Forge",
+				"Hammer",
+				"Iron",
+				"Blade",
+				"Tongs"
+			]
+		},
+		"general_goods": {
+			"prefix": [
+				"The Honest",
+				"The Full",
+				"The Wanderer's",
+				"The Traveler's",
+				"The Lucky"
+			],
+			"suffix": [
+				"Supply",
+				"Tradehouse",
+				"Stock",
+				"Goods",
+				"Emporium"
+			]
+		},
+		"armor_weapons": {
+			"prefix": [
+				"The Sharp",
+				"The Steel",
+				"The Battle",
+				"The War",
+				"The Iron"
+			],
+			"suffix": [
+				"Blade",
+				"Shield & Sword",
+				"Spear",
+				"Edge",
+				"Arsenal"
+			]
+		},
+		"temple": {
+			"prefix": [
+				"The Sacred",
+				"The Holy",
+				"The Blessed",
+				"The Divine",
+				"The Hallowed"
+			],
+			"suffix": [
+				"Flame",
+				"Light",
+				"Sanctuary",
+				"Shrine",
+				"Chapel"
+			]
+		},
+		"herbalist": {
+			"prefix": [
+				"The Green",
+				"The Fragrant",
+				"The Wild",
+				"The Mossy",
+				"The Verdant"
+			],
+			"suffix": [
+				"Leaf",
+				"Root",
+				"Mushroom",
+				"Remedy",
+				"Garden"
+			]
+		},
+		"stables": {
+			"prefix": [
+				"The Swift",
+				"The Galloping",
+				"The Gentle",
+				"The Sure-Footed",
+				"The Proud"
+			],
+			"suffix": [
+				"Stallion",
+				"Hoof",
+				"Mane",
+				"Rider",
+				"Bridle"
+			]
+		},
+		"bakery": {
+			"prefix": [
+				"The Warm",
+				"The Golden",
+				"The Sweet",
+				"The Crusty",
+				"The Rising"
+			],
+			"suffix": [
+				"Loaf",
+				"Oven",
+				"Bun",
+				"Crust",
+				"Hearth"
+			]
+		},
+		"grocer": {
+			"prefix": [
+				"The Fresh",
+				"The Bountiful",
+				"The Daily",
+				"The Market",
+				"The Farmer's"
+			],
+			"suffix": [
+				"Basket",
+				"Harvest",
+				"Barrel",
+				"Cart",
+				"Bushel"
+			]
+		},
+		"butchery": {
+			"prefix": [
+				"The Prime",
+				"The Choice",
+				"The Cleaver &",
+				"The Smoking",
+				"The Fat"
+			],
+			"suffix": [
+				"Cut",
+				"Chop",
+				"Haunch",
+				"Spit",
+				"Hook"
+			]
+		},
+		"jeweler": {
+			"prefix": [
+				"The Glittering",
+				"The Brilliant",
+				"The Faceted",
+				"The Sparkling",
+				"The Polished"
+			],
+			"suffix": [
+				"Gem",
+				"Setting",
+				"Crown",
+				"Jewel",
+				"Prism"
+			]
+		},
+		"library": {
+			"prefix": [
+				"The Dusty",
+				"The Whispering",
+				"The Learned",
+				"The Silent",
+				"The Ancient"
+			],
+			"suffix": [
+				"Page",
+				"Scroll",
+				"Tome",
+				"Shelf",
+				"Quill"
+			]
+		},
+		"bookstore": {
+			"prefix": [
+				"The Bound",
+				"The Inked",
+				"The Printed",
+				"The Open",
+				"The Curious"
+			],
+			"suffix": [
+				"Page",
+				"Volume",
+				"Chapter",
+				"Manuscript",
+				"Codex"
+			]
+		},
+		"tailor": {
+			"prefix": [
+				"The Fine",
+				"The Silken",
+				"The Threaded",
+				"The Stitched",
+				"The Elegant"
+			],
+			"suffix": [
+				"Needle",
+				"Thread",
+				"Hem",
+				"Stitch",
+				"Cloth"
+			]
+		},
+		"carpenter": {
+			"prefix": [
+				"The Sturdy",
+				"The Oaken",
+				"The Carved",
+				"The Jointed",
+				"The Master"
+			],
+			"suffix": [
+				"Plank",
+				"Timber",
+				"Chisel",
+				"Beam",
+				"Sawdust"
+			]
+		},
+		"leatherworker": {
+			"prefix": [
+				"The Tanned",
+				"The Supple",
+				"The Burnished",
+				"The Tooled",
+				"The Hardy"
+			],
+			"suffix": [
+				"Hide",
+				"Belt",
+				"Saddle",
+				"Strap",
+				"Leather"
+			]
+		},
+		"barber": {
+			"prefix": [
+				"The Clean",
+				"The Sharp",
+				"The Quick",
+				"The Steady",
+				"The Gentle"
+			],
+			"suffix": [
+				"Razor",
+				"Shears",
+				"Cut",
+				"Blade",
+				"Mirror"
+			]
+		},
+		"potions": {
+			"prefix": [
+				"The Bubbling",
+				"The Mystic",
+				"The Swirling",
+				"The Volatile",
+				"The Verdant"
+			],
+			"suffix": [
+				"Flask",
+				"Elixir",
+				"Brew",
+				"Draught",
+				"Vial"
+			]
+		},
+		"pet_shop": {
+			"prefix": [
+				"The Friendly",
+				"The Loyal",
+				"The Curious",
+				"The Merry",
+				"The Little"
+			],
+			"suffix": [
+				"Paw",
+				"Feather",
+				"Companion",
+				"Critter",
+				"Menagerie"
+			]
+		},
+		"brewery": {
+			"prefix": [
+				"The Foaming",
+				"The Stout",
+				"The Hoppy",
+				"The Aged",
+				"The Copper"
+			],
+			"suffix": [
+				"Barrel",
+				"Keg",
+				"Vat",
+				"Tap",
+				"Mash"
+			]
+		},
+		"cobbler": {
+			"prefix": [
+				"The Resoled",
+				"The Well-Worn",
+				"The Mended",
+				"The Sturdy",
+				"The Fine"
+			],
+			"suffix": [
+				"Boot",
+				"Sole",
+				"Last",
+				"Heel",
+				"Step"
+			]
+		},
+		"tinkerer": {
+			"prefix": [
+				"The Clever",
+				"The Clanking",
+				"The Whirring",
+				"The Inventive",
+				"The Odd"
+			],
+			"suffix": [
+				"Gear",
+				"Spring",
+				"Cog",
+				"Gadget",
+				"Widget"
+			]
+		},
+		"weaver": {
+			"prefix": [
+				"The Threaded",
+				"The Colorful",
+				"The Woven",
+				"The Spinning",
+				"The Fine"
+			],
+			"suffix": [
+				"Loom",
+				"Shuttle",
+				"Tapestry",
+				"Bobbin",
+				"Cloth"
+			]
+		},
+		"physician": {
+			"prefix": [
+				"The Healing",
+				"The Careful",
+				"The Steady",
+				"The Mending",
+				"The Skilled"
+			],
+			"suffix": [
+				"Hand",
+				"Clinic",
+				"Poultice",
+				"Salve",
+				"Remedy"
+			]
+		},
+		"cartographer": {
+			"prefix": [
+				"The Wanderer's",
+				"The Explorer's",
+				"The Charted",
+				"The Measured",
+				"The Precise"
+			],
+			"suffix": [
+				"Map",
+				"Compass",
+				"Atlas",
+				"Horizon",
+				"Meridian"
+			]
+		},
+		"exotic_goods": {
+			"prefix": [
+				"The Distant",
+				"The Curious",
+				"The Rare",
+				"The Unusual",
+				"The Far-Flung"
+			],
+			"suffix": [
+				"Curio",
+				"Relic",
+				"Wonder",
+				"Oddity",
+				"Treasure"
+			]
+		},
+		"music": {
+			"prefix": [
+				"The Singing",
+				"The Merry",
+				"The Tuneful",
+				"The Harmonious",
+				"The Dulcet"
+			],
+			"suffix": [
+				"Lute",
+				"Harp",
+				"Bell",
+				"Chord",
+				"Note"
+			]
+		},
+		"bathhouse": {
+			"prefix": [
+				"The Steaming",
+				"The Warm",
+				"The Tranquil",
+				"The Soothing",
+				"The Marble"
+			],
+			"suffix": [
+				"Basin",
+				"Spring",
+				"Pool",
+				"Baths",
+				"Waters"
+			]
+		},
+		"fortune_teller": {
+			"prefix": [
+				"The Veiled",
+				"The Seeing",
+				"The Mystic",
+				"The Starlit",
+				"The Shadowed"
+			],
+			"suffix": [
+				"Eye",
+				"Orb",
+				"Star",
+				"Vision",
+				"Fate"
+			]
+		},
+		"occult": {
+			"prefix": [
+				"The Darkened",
+				"The Hidden",
+				"The Whispering",
+				"The Shrouded",
+				"The Arcane"
+			],
+			"suffix": [
+				"Tome",
+				"Sigil",
+				"Rune",
+				"Shadow",
+				"Circle"
+			]
+		}
+	},
+	"tavernData": {
+		"drinks": [
+			{
+				"name": "Ale",
+				"price": "4 cp",
+				"weight": 6
+			},
+			{
+				"name": "Common Beer",
+				"price": "5 cp",
+				"weight": 6
+			},
+			{
+				"name": "Craft Beer",
+				"price": "1 sp 2 cp",
+				"weight": 4
+			},
+			{
+				"name": "Cider",
+				"price": "8 cp",
+				"weight": 6
+			},
+			{
+				"name": "Common Wine",
+				"price": "1 sp 5 cp",
+				"weight": 4
+			},
+			{
+				"name": "Craft Wine",
+				"price": "3 sp 5 cp",
+				"weight": 2
+			},
+			{
+				"name": "Royal Quality Wine",
+				"price": "1 gp 5 sp",
+				"weight": 1
+			},
+			{
+				"name": "Mead",
+				"price": "1 sp",
+				"weight": 3
+			},
+			{
+				"name": "Grog",
+				"price": "3 cp",
+				"weight": 4
+			},
+			{
+				"name": "Spiced Rum",
+				"price": "2 sp",
+				"weight": 2
+			},
+			{
+				"name": "Dwarven Stout",
+				"price": "2 sp",
+				"weight": 2
+			},
+			{
+				"name": "Elven Brandy",
+				"price": "5 sp",
+				"weight": 1
+			},
+			{
+				"name": "Bitter Ale",
+				"price": "4 cp",
+				"weight": 5
+			},
+			{
+				"name": "Dark Porter",
+				"price": "6 cp",
+				"weight": 4
+			},
+			{
+				"name": "Honey Lager",
+				"price": "8 cp",
+				"weight": 3
+			},
+			{
+				"name": "Wheat Beer",
+				"price": "5 cp",
+				"weight": 5
+			},
+			{
+				"name": "Perry",
+				"price": "7 cp",
+				"weight": 3
+			},
+			{
+				"name": "Mulled Wine",
+				"price": "2 sp",
+				"weight": 2
+			},
+			{
+				"name": "Blackberry Wine",
+				"price": "2 sp",
+				"weight": 2
+			},
+			{
+				"name": "Plum Brandy",
+				"price": "3 sp",
+				"weight": 2
+			},
+			{
+				"name": "Firewine",
+				"price": "4 sp",
+				"weight": 1
+			},
+			{
+				"name": "Halfling Cider",
+				"price": "1 sp",
+				"weight": 3
+			},
+			{
+				"name": "Orc Rotgut",
+				"price": "2 cp",
+				"weight": 3
+			},
+			{
+				"name": "Barley Water",
+				"price": "1 cp",
+				"weight": 6
+			},
+			{
+				"name": "Small Beer",
+				"price": "2 cp",
+				"weight": 6
+			},
+			{
+				"name": "Honeyed Mead",
+				"price": "1 sp 5 cp",
+				"weight": 2
+			},
+			{
+				"name": "Spiced Cider",
+				"price": "1 sp",
+				"weight": 3
+			},
+			{
+				"name": "Herb Tonic",
+				"price": "5 cp",
+				"weight": 4
+			},
+			{
+				"name": "Monastery Ale",
+				"price": "1 sp",
+				"weight": 2
+			},
+			{
+				"name": "Dragon's Breath Whiskey",
+				"price": "5 sp",
+				"weight": 1
+			},
+			{
+				"name": "Goblin Swill",
+				"price": "1 cp",
+				"weight": 4
+			},
+			{
+				"name": "Apple Brandy",
+				"price": "3 sp",
+				"weight": 2
+			},
+			{
+				"name": "Rice Wine",
+				"price": "2 sp",
+				"weight": 2
+			},
+			{
+				"name": "Nettle Beer",
+				"price": "3 cp",
+				"weight": 4
+			},
+			{
+				"name": "Mushroom Stout",
+				"price": "8 cp",
+				"weight": 2
+			},
+			{
+				"name": "Elderflower Cordial",
+				"price": "6 cp",
+				"weight": 3
+			},
+			{
+				"name": "Juniper Spirits",
+				"price": "3 sp",
+				"weight": 2
+			},
+			{
+				"name": "Warm Milk & Honey",
+				"price": "3 cp",
+				"weight": 5
+			},
+			{
+				"name": "Peppermint Tea",
+				"price": "2 cp",
+				"weight": 5
+			}
+		],
+		"menuStyles": [
+			"Stewed",
+			"Barbecued",
+			"Roasted",
+			"Grilled",
+			"Braised",
+			"Smoked",
+			"Fried",
+			"Baked"
+		],
+		"menuMeats": [
+			"beef",
+			"pork",
+			"chicken",
+			"mutton",
+			"venison",
+			"fish",
+			"rabbit",
+			"pheasant"
+		],
+		"menuSides": [
+			"mashed potatoes",
+			"baked potatoes",
+			"steamed vegetables",
+			"fresh salad",
+			"cooked rice",
+			"crusty bread",
+			"roasted turnips",
+			"buttered corn"
+		],
+		"menuSauces": [
+			"ale",
+			"red wine",
+			"honey and herbs",
+			"garlic and butter",
+			"mushroom gravy",
+			"pepper sauce",
+			"mint jelly",
+			"brown mustard"
+		],
+		"lodging": [
+			{
+				"name": "Bench and a Roof",
+				"price": "5 cp/night",
+				"capacity": "1"
+			},
+			{
+				"name": "Common Bunk Room",
+				"price": "1 sp/night",
+				"capacity": "6-10"
+			},
+			{
+				"name": "Shared Room",
+				"price": "5 sp/night",
+				"capacity": "2-4"
+			},
+			{
+				"name": "Private Room",
+				"price": "2 gp/night",
+				"capacity": "1-2"
+			},
+			{
+				"name": "Upscale Suite",
+				"price": "8 gp/night",
+				"capacity": "2"
+			}
+		]
+	},
+	"npcNames": {
+		"firstMale": [
+			"Aldric",
+			"Bram",
+			"Cedric",
+			"Dorian",
+			"Edmund",
+			"Finn",
+			"Gareth",
+			"Henrik",
+			"Ivan",
+			"Jasper",
+			"Kellan",
+			"Leoric",
+			"Magnus",
+			"Nolan",
+			"Osric",
+			"Percival",
+			"Quinton",
+			"Roland",
+			"Stefan",
+			"Theron",
+			"Ulric",
+			"Viktor",
+			"Willem",
+			"Yorick",
+			"Roderick",
+			"Tobias",
+			"Hadrian",
+			"Cormac",
+			"Desmond",
+			"Barrett",
+			"Conrad",
+			"Edgar",
+			"Fabian",
+			"Gunther",
+			"Hugo",
+			"Kendric",
+			"Lucian",
+			"Merrick",
+			"Norbert",
+			"Otto"
+		],
+		"firstFemale": [
+			"Astrid",
+			"Brenna",
+			"Clara",
+			"Delia",
+			"Elara",
+			"Freya",
+			"Gwendolyn",
+			"Helena",
+			"Isolde",
+			"Jessa",
+			"Katarina",
+			"Lyra",
+			"Mirabel",
+			"Nadia",
+			"Ophelia",
+			"Petra",
+			"Rosalind",
+			"Sylvia",
+			"Thora",
+			"Ursula",
+			"Vivienne",
+			"Winifred",
+			"Yvette",
+			"Zelda",
+			"Rowena",
+			"Tabitha",
+			"Hilda",
+			"Cordelia",
+			"Dagny",
+			"Beatrix",
+			"Constance",
+			"Edith",
+			"Fiona",
+			"Gertrude",
+			"Helga",
+			"Kirsten",
+			"Lenora",
+			"Mathilda",
+			"Nessa",
+			"Olga"
+		],
+		"lastNames": [
+			"Ashford",
+			"Blackwood",
+			"Copperfield",
+			"Dunmore",
+			"Everett",
+			"Fairbanks",
+			"Greystone",
+			"Hightower",
+			"Ironside",
+			"Kettleworth",
+			"Longstrider",
+			"Millbrook",
+			"Northcott",
+			"Oakenheart",
+			"Pennywhistle",
+			"Ravenscroft",
+			"Silverhand",
+			"Thornberry",
+			"Underhill",
+			"Whitmore",
+			"Yarrow",
+			"Bramblewood",
+			"Coldwater",
+			"Deepwell",
+			"Flintlock",
+			"Goldmane",
+			"Hawkridge",
+			"Inkwell",
+			"Marshwick",
+			"Stonebridge",
+			"Blackthorn",
+			"Burrows",
+			"Clayborne",
+			"Duskwood",
+			"Farrow",
+			"Greenhill",
+			"Holloway",
+			"Kingsmill",
+			"Moorfield",
+			"Redmane"
+		]
+	},
+	"npcTraits": [
+		"cheerful and talkative",
+		"gruff but honest",
+		"shrewd and calculating",
+		"warm and welcoming",
+		"suspicious of strangers",
+		"perpetually worried",
+		"boisterous and loud",
+		"quiet and observant",
+		"gossipy and well-informed",
+		"stern but fair",
+		"anxious and fidgety",
+		"calm and patient",
+		"ambitious and driven",
+		"lazy but clever",
+		"kind to a fault",
+		"quick to anger",
+		"wise beyond their years",
+		"haunted by the past",
+		"jovial and generous",
+		"miserly and careful",
+		"deeply religious",
+		"notorious for tall tales",
+		"humble and hardworking",
+		"secretive and guarded",
+		"endlessly curious",
+		"known for a dry wit",
+		"eager to please",
+		"fiercely independent"
+	],
+	"npcAppearances": [
+		"a stocky figure with calloused hands",
+		"tall and thin with sharp features",
+		"broad-shouldered with a thick beard",
+		"a scarred face and knowing eyes",
+		"neat clothing and polished boots",
+		"flour-dusted apron and rolled sleeves",
+		"a crooked nose and easy smile",
+		"greying temples and wire spectacles",
+		"sun-weathered skin and strong arms",
+		"a limp from an old injury",
+		"bright eyes and an infectious grin",
+		"ink-stained fingers and rumpled hair",
+		"a patch over one eye",
+		"muscular arms covered in old burns",
+		"a round face and rosy cheeks",
+		"a tall, gaunt frame wrapped in faded robes",
+		"missing two fingers on the left hand",
+		"elaborate braids and silver rings",
+		"a neatly trimmed mustache and keen gaze",
+		"wild, untamed hair and paint-speckled hands",
+		"a hunched posture and shuffling gait",
+		"a booming voice that carries across any room",
+		"a faded military tattoo on one forearm",
+		"heavy-set with surprisingly light footsteps"
+	],
+	"factions": {
+		"cult": {
+			"namePrefix": [
+				"The Crimson",
+				"The Silent",
+				"The Ashen",
+				"The Veiled",
+				"The Midnight",
+				"The Hollow",
+				"The Burning",
+				"The Shattered"
+			],
+			"nameSuffix": [
+				"Hand",
+				"Circle",
+				"Eye",
+				"Flame",
+				"Veil",
+				"Covenant",
+				"Order",
+				"Communion"
+			],
+			"purposes": [
+				"seeking to awaken a slumbering entity beneath the earth",
+				"collecting forbidden texts from across the realm",
+				"infiltrating positions of power through blackmail and charm",
+				"performing blood rituals to extend the life of their leader",
+				"plotting to open a gateway to another plane",
+				"hoarding magical artifacts for an unknown purpose"
+			]
+		},
+		"militia": {
+			"namePrefix": [
+				"The Iron",
+				"The Shield",
+				"The Steel",
+				"The Sworn",
+				"The Vigilant",
+				"The Stalwart",
+				"The Scarred",
+				"The Unyielding"
+			],
+			"nameSuffix": [
+				"Guard",
+				"Watch",
+				"Brigade",
+				"Legion",
+				"Company",
+				"Wardens",
+				"Sentinels",
+				"Defenders"
+			],
+			"purposes": [
+				"patrolling the roads and keeping bandits at bay",
+				"guarding the settlement against monster incursions",
+				"training townsfolk for militia duty in times of need",
+				"hunting down a notorious outlaw gang operating nearby",
+				"maintaining order during a tense political dispute",
+				"fortifying defenses against rumored invasion"
+			]
+		},
+		"syndicate": {
+			"namePrefix": [
+				"The Shadow",
+				"The Velvet",
+				"The Copper",
+				"The Broken",
+				"The Whispered",
+				"The Gilded",
+				"The Crooked",
+				"The Hidden"
+			],
+			"nameSuffix": [
+				"Hand",
+				"Coin",
+				"Dagger",
+				"Network",
+				"Ring",
+				"Fang",
+				"Mark",
+				"Ledger"
+			],
+			"purposes": [
+				"controlling the black market and smuggling routes",
+				"running a protection racket on local merchants",
+				"brokering information between rival factions",
+				"counterfeiting coins and flooding the local economy",
+				"assassinating political rivals for wealthy patrons",
+				"operating a network of spies and informants"
+			]
+		}
+	},
+	"questHooks": [
+		"A merchant's caravan carrying {goods} went missing on the road to {location}. Someone must investigate.",
+		"Strange lights have been seen near {location} at night. The townsfolk fear {monster} may be involved.",
+		"The local well has gone dry. {npc} believes something is blocking the underground spring near {location}.",
+		"{npc} is offering a reward for anyone who can retrieve a family heirloom stolen by bandits hiding near {location}.",
+		"Livestock have been disappearing from farms outside town. Tracks suggest {monster} is responsible.",
+		"A traveling scholar claims {location} holds the entrance to an ancient vault filled with {goods}.",
+		"Miners refuse to return to work after encountering {monster} deep in the tunnels near {location}.",
+		"{npc} needs an escort to deliver {goods} to a buyer in a dangerous part of the region.",
+		"Children have gone missing near {location}. Some blame {monster}, others whisper of a more sinister cause.",
+		"A bounty has been posted for the head of {monster}, last spotted near {location}.",
+		"The remains of an adventuring party were found near {location}. Their map and journal are still missing.",
+		"{npc} seeks brave souls to clear {monster} from the ruins at {location} before a new trade route can open.",
+		"A sealed letter was found on a dead courier, addressed to {npc}. It mentions {goods} hidden near {location}.",
+		"The local temple's sacred relic was stolen during the night. Witnesses saw figures fleeing toward {location}.",
+		"Fishermen pulled a strange artifact from the river near {location}. Since then, {monster} has appeared nightly.",
+		"A noble is offering a fortune for {goods} said to be found only in the wilds near {location}.",
+		"A refugee stumbled into town raving about {monster} overrunning a homestead near {location}. No one else has dared to check.",
+		"The bridge near {location} collapsed under mysterious circumstances. {npc} suspects sabotage and wants proof.",
+		"Grave robbers have been seen near {location}. The dead aren't staying buried, and {monster} has been spotted at the site.",
+		"{npc} claims a stash of {goods} was buried near {location} by a now-dead relative. The map is crude but readable.",
+		"A woodcutter's family hasn't been heard from in two weeks. Their cabin lies near {location}, deep in {monster} territory.",
+		"Smoke has been rising from {location} for three days straight. The last patrol sent to investigate never returned.",
+		"A merchant is paying well for {goods}, but the only reliable source is near {location} — and {monster} guards the approach.",
+		"A wandering priest warns that {monster} is being drawn to {location} by some dark ritual. He begs someone to intervene.",
+		"{npc} lost a prized racing horse that bolted toward {location}. Will pay handsomely for its safe return.",
+		"An old map found in the library marks {location} as the site of a forgotten armory stocked with {goods}.",
+		"The miller's daughter eloped with a soldier and was last seen heading toward {location}. {npc} wants them found before winter.",
+		"Taxcollectors traveling to {location} were robbed. The crown wants the stolen {goods} recovered and the thieves identified.",
+		"Howling is heard every night from the direction of {location}. Hunters say the tracks don't match any known animal, but resemble {monster}.",
+		"A tinker passing through claims to have seen {monster} dragging something heavy into a cave near {location}.",
+		"The ferry at {location} has stopped running. The ferryman sent word that something in the water destroyed his boat.",
+		"A sealed tomb near {location} has cracked open on its own. {npc} fears what may have crawled out — or what was let in."
+	],
+	"questGoods": [
+		"rare herbs",
+		"silver ore",
+		"ancient relics",
+		"fine silks",
+		"dwarven weapons",
+		"spell components",
+		"preserved meats",
+		"gemstones",
+		"alchemical reagents",
+		"enchanted trinkets",
+		"holy water",
+		"exotic spices",
+		"old maps",
+		"trade goods",
+		"sealed diplomatic letters",
+		"casks of aged brandy",
+		"bolts of spider silk",
+		"church tithes in gold",
+		"a crate of crossbow bolts",
+		"mining tools",
+		"barrels of lamp oil",
+		"ivory tusks",
+		"uncut rubies",
+		"a sack of silver coins",
+		"ritual candles",
+		"a shipment of salt",
+		"iron ingots",
+		"dragon bones",
+		"vials of antivenom",
+		"bundles of rare furs",
+		"a chest of old coinage",
+		"blessed weapons",
+		"a cask of black powder",
+		"a bundle of love letters"
+	],
+	"questLocations": [
+		"the old watchtower",
+		"the abandoned mine",
+		"the forest shrine",
+		"the river crossing",
+		"the ruined keep",
+		"the stone circle",
+		"the sunken chapel",
+		"the mountain pass",
+		"the dead marshes",
+		"the hollow hills",
+		"the crossroads cairn",
+		"the burned village",
+		"the collapsed bridge",
+		"the flooded quarry",
+		"the witch's hollow",
+		"the hanging tree",
+		"the lightning-split oak",
+		"the bone pit",
+		"the sealed barrow",
+		"the dry well",
+		"the charcoal burner's camp",
+		"the hermit's cave",
+		"the fallen tower",
+		"the plague house",
+		"the old mill ruins",
+		"the smuggler's cove",
+		"the troll bridge",
+		"the standing stones",
+		"the overgrown graveyard",
+		"the crow roost",
+		"the shepherd's ruin",
+		"the sunken road"
+	],
+	"rulerTitles": {
+		"village": [
+			"Elder",
+			"Headman",
+			"Headwoman",
+			"Reeve",
+			"Warden",
+			"Goodwife"
+		],
+		"town": [
+			"Mayor",
+			"Magistrate",
+			"Burgher",
+			"Alderman",
+			"Bailiff",
+			"Steward"
+		],
+		"city": [
+			"Baron",
+			"Baroness",
+			"Lord Mayor",
+			"Governor",
+			"Archduke",
+			"Viceroy"
+		]
+	},
+	"shopInventory": {
+		"blacksmith": [
+			{
+				"name": "Dagger",
+				"price": "1 gp"
+			},
+			{
+				"name": "Shortsword",
+				"price": "7 gp"
+			},
+			{
+				"name": "Longsword",
+				"price": "9 gp"
+			},
+			{
+				"name": "Bastard Sword",
+				"price": "10 gp"
+			},
+			{
+				"name": "Mace",
+				"price": "5 gp"
+			},
+			{
+				"name": "Warhammer",
+				"price": "10 gp"
+			},
+			{
+				"name": "Spear",
+				"price": "1 gp"
+			},
+			{
+				"name": "Greataxe",
+				"price": "10 gp"
+			},
+			{
+				"name": "Iron Pot",
+				"price": "1 gp"
+			},
+			{
+				"name": "Iron Spikes (10)",
+				"price": "1 gp"
+			},
+			{
+				"name": "Horseshoes (set)",
+				"price": "5 sp"
+			},
+			{
+				"name": "Crowbar",
+				"price": "2 gp"
+			}
+		],
+		"general_goods": [
+			{
+				"name": "Backpack",
+				"price": "2 gp"
+			},
+			{
+				"name": "Rope, 60 ft",
+				"price": "1 gp"
+			},
+			{
+				"name": "Torch (4)",
+				"price": "1 sp"
+			},
+			{
+				"name": "Rations (3 days)",
+				"price": "1 gp"
+			},
+			{
+				"name": "Tinderbox",
+				"price": "5 sp"
+			},
+			{
+				"name": "Waterskin",
+				"price": "5 sp"
+			},
+			{
+				"name": "Sack",
+				"price": "5 cp"
+			},
+			{
+				"name": "Oil Flask",
+				"price": "5 sp"
+			},
+			{
+				"name": "Lantern",
+				"price": "10 gp"
+			},
+			{
+				"name": "Chalk (10)",
+				"price": "1 sp"
+			},
+			{
+				"name": "Candles (10)",
+				"price": "1 sp"
+			},
+			{
+				"name": "Grappling Hook",
+				"price": "5 gp"
+			}
+		],
+		"armor_weapons": [
+			{
+				"name": "Leather Armor",
+				"price": "10 gp"
+			},
+			{
+				"name": "Chainmail",
+				"price": "60 gp"
+			},
+			{
+				"name": "Plate Mail",
+				"price": "130 gp"
+			},
+			{
+				"name": "Shield",
+				"price": "10 gp"
+			},
+			{
+				"name": "Longsword",
+				"price": "9 gp"
+			},
+			{
+				"name": "Crossbow",
+				"price": "8 gp"
+			},
+			{
+				"name": "Longbow",
+				"price": "8 gp"
+			},
+			{
+				"name": "Crossbow Bolts (20)",
+				"price": "1 gp"
+			},
+			{
+				"name": "Arrows (20)",
+				"price": "1 gp"
+			},
+			{
+				"name": "Halberd",
+				"price": "10 gp"
+			},
+			{
+				"name": "Javelin",
+				"price": "1 gp"
+			}
+		],
+		"temple": [
+			{
+				"name": "Holy Water",
+				"price": "25 gp"
+			},
+			{
+				"name": "Holy Symbol",
+				"price": "25 gp"
+			},
+			{
+				"name": "Healing (service)",
+				"price": "varies"
+			},
+			{
+				"name": "Blessing (service)",
+				"price": "donation"
+			},
+			{
+				"name": "Candles (10)",
+				"price": "1 sp"
+			},
+			{
+				"name": "Incense (bundle)",
+				"price": "5 sp"
+			}
+		],
+		"herbalist": [
+			{
+				"name": "Healing Herbs",
+				"price": "1 gp"
+			},
+			{
+				"name": "Antitoxin",
+				"price": "10 gp"
+			},
+			{
+				"name": "Wolfsbane",
+				"price": "10 gp"
+			},
+			{
+				"name": "Garlic, bulb",
+				"price": "2 cp"
+			},
+			{
+				"name": "Poultice Kit",
+				"price": "5 gp"
+			},
+			{
+				"name": "Dried Mushrooms",
+				"price": "3 sp"
+			},
+			{
+				"name": "Belladonna",
+				"price": "10 gp"
+			},
+			{
+				"name": "Smelling Salts",
+				"price": "5 sp"
+			}
+		],
+		"stables": [
+			{
+				"name": "Riding Horse",
+				"price": "75 gp"
+			},
+			{
+				"name": "Draft Horse",
+				"price": "30 gp"
+			},
+			{
+				"name": "War Horse",
+				"price": "200 gp"
+			},
+			{
+				"name": "Mule",
+				"price": "30 gp"
+			},
+			{
+				"name": "Saddle",
+				"price": "25 gp"
+			},
+			{
+				"name": "Saddlebags",
+				"price": "5 gp"
+			},
+			{
+				"name": "Horse Feed (1 week)",
+				"price": "5 sp"
+			}
+		],
+		"bakery": [
+			{
+				"name": "Bread Loaf",
+				"price": "2 cp"
+			},
+			{
+				"name": "Meat Pie",
+				"price": "5 cp"
+			},
+			{
+				"name": "Sweet Cake",
+				"price": "5 cp"
+			},
+			{
+				"name": "Flour (5 lbs)",
+				"price": "1 sp"
+			},
+			{
+				"name": "Honey Rolls (6)",
+				"price": "3 cp"
+			}
+		],
+		"grocer": [
+			{
+				"name": "Rations (1 day)",
+				"price": "5 sp"
+			},
+			{
+				"name": "Cheese Wheel",
+				"price": "2 sp"
+			},
+			{
+				"name": "Dried Fish",
+				"price": "3 sp"
+			},
+			{
+				"name": "Apples (basket)",
+				"price": "1 sp"
+			},
+			{
+				"name": "Preserved Meat",
+				"price": "4 sp"
+			},
+			{
+				"name": "Salt (1 lb)",
+				"price": "5 sp"
+			},
+			{
+				"name": "Eggs (dozen)",
+				"price": "5 cp"
+			},
+			{
+				"name": "Pickled Vegetables",
+				"price": "2 sp"
+			}
+		],
+		"butchery": [
+			{
+				"name": "Fresh Beef (1 lb)",
+				"price": "3 sp"
+			},
+			{
+				"name": "Pork Cuts (1 lb)",
+				"price": "2 sp"
+			},
+			{
+				"name": "Sausages (link)",
+				"price": "1 sp"
+			},
+			{
+				"name": "Smoked Ham",
+				"price": "5 sp"
+			},
+			{
+				"name": "Game Bird",
+				"price": "3 sp"
+			},
+			{
+				"name": "Rabbit, whole",
+				"price": "2 sp"
+			}
+		],
+		"jeweler": [
+			{
+				"name": "Copper Ring",
+				"price": "5 sp"
+			},
+			{
+				"name": "Silver Ring",
+				"price": "5 gp"
+			},
+			{
+				"name": "Gold Ring",
+				"price": "25 gp"
+			},
+			{
+				"name": "Pearl Pendant",
+				"price": "50 gp"
+			},
+			{
+				"name": "Gem Brooch",
+				"price": "75 gp"
+			},
+			{
+				"name": "Gemstone (uncut)",
+				"price": "10 gp"
+			}
+		],
+		"library": [
+			{
+				"name": "Book Borrowing (1 week)",
+				"price": "1 gp"
+			},
+			{
+				"name": "Research Assistance",
+				"price": "5 gp"
+			},
+			{
+				"name": "Blank Journal",
+				"price": "5 gp"
+			},
+			{
+				"name": "Ink Vial",
+				"price": "8 gp"
+			},
+			{
+				"name": "Quill (3)",
+				"price": "2 sp"
+			}
+		],
+		"bookstore": [
+			{
+				"name": "Empty Scroll",
+				"price": "1 gp"
+			},
+			{
+				"name": "Ink Vial",
+				"price": "8 gp"
+			},
+			{
+				"name": "Quill (3)",
+				"price": "2 sp"
+			},
+			{
+				"name": "Blank Book",
+				"price": "5 gp"
+			},
+			{
+				"name": "Local Map",
+				"price": "10 gp"
+			},
+			{
+				"name": "Chapbook of Tales",
+				"price": "3 gp"
+			}
+		],
+		"tailor": [
+			{
+				"name": "Common Clothing",
+				"price": "5 sp"
+			},
+			{
+				"name": "Fine Clothing",
+				"price": "15 gp"
+			},
+			{
+				"name": "Traveler's Cloak",
+				"price": "1 gp"
+			},
+			{
+				"name": "Winter Cloak",
+				"price": "3 gp"
+			},
+			{
+				"name": "Mending (service)",
+				"price": "2 sp"
+			}
+		],
+		"carpenter": [
+			{
+				"name": "Wooden Pole, 10 ft",
+				"price": "5 sp"
+			},
+			{
+				"name": "Wooden Stake (6)",
+				"price": "2 sp"
+			},
+			{
+				"name": "Ladder, 10 ft",
+				"price": "7 sp"
+			},
+			{
+				"name": "Chest (small)",
+				"price": "2 gp"
+			},
+			{
+				"name": "Barrel",
+				"price": "2 gp"
+			},
+			{
+				"name": "Repairs (service)",
+				"price": "varies"
+			}
+		],
+		"leatherworker": [
+			{
+				"name": "Leather Armor",
+				"price": "10 gp"
+			},
+			{
+				"name": "Belt Pouch",
+				"price": "5 sp"
+			},
+			{
+				"name": "Leather Satchel",
+				"price": "1 gp"
+			},
+			{
+				"name": "Waterskin",
+				"price": "5 sp"
+			},
+			{
+				"name": "Boots",
+				"price": "1 gp"
+			},
+			{
+				"name": "Saddle Repair",
+				"price": "3 gp"
+			}
+		],
+		"potions": [
+			{
+				"name": "Healing Potion",
+				"price": "50 gp"
+			},
+			{
+				"name": "Antitoxin",
+				"price": "10 gp"
+			},
+			{
+				"name": "Oil of Sharpness",
+				"price": "75 gp"
+			},
+			{
+				"name": "Potion of Climbing",
+				"price": "50 gp"
+			},
+			{
+				"name": "Flask of Alchemist's Fire",
+				"price": "25 gp"
+			},
+			{
+				"name": "Smelling Salts",
+				"price": "5 sp"
+			}
+		],
+		"pet_shop": [
+			{
+				"name": "Cat",
+				"price": "1 gp"
+			},
+			{
+				"name": "Dog",
+				"price": "4 gp"
+			},
+			{
+				"name": "Raven",
+				"price": "3 gp"
+			},
+			{
+				"name": "Rat",
+				"price": "2 sp"
+			},
+			{
+				"name": "Owl",
+				"price": "16 gp"
+			},
+			{
+				"name": "Song Bird",
+				"price": "2 gp"
+			},
+			{
+				"name": "Snake",
+				"price": "3 gp"
+			}
+		],
+		"brewery": [
+			{
+				"name": "Ale, keg",
+				"price": "2 gp"
+			},
+			{
+				"name": "Beer, keg",
+				"price": "3 gp"
+			},
+			{
+				"name": "Cider, keg",
+				"price": "4 gp"
+			},
+			{
+				"name": "Stout, bottle",
+				"price": "2 sp"
+			},
+			{
+				"name": "Mead, bottle",
+				"price": "3 sp"
+			}
+		],
+		"cobbler": [
+			{
+				"name": "Leather Boots",
+				"price": "1 gp"
+			},
+			{
+				"name": "Riding Boots",
+				"price": "3 gp"
+			},
+			{
+				"name": "Sandals",
+				"price": "3 sp"
+			},
+			{
+				"name": "Boot Repair",
+				"price": "5 sp"
+			}
+		],
+		"tinkerer": [
+			{
+				"name": "Thieves' Tools",
+				"price": "25 gp"
+			},
+			{
+				"name": "Caltrops (bag)",
+				"price": "1 gp"
+			},
+			{
+				"name": "Lock (iron)",
+				"price": "20 gp"
+			},
+			{
+				"name": "Manacles",
+				"price": "10 gp"
+			},
+			{
+				"name": "Mirror (small)",
+				"price": "5 gp"
+			},
+			{
+				"name": "Spyglass",
+				"price": "100 gp"
+			}
+		],
+		"cartographer": [
+			{
+				"name": "Regional Map",
+				"price": "15 gp"
+			},
+			{
+				"name": "Compass",
+				"price": "25 gp"
+			},
+			{
+				"name": "Blank Parchment (5)",
+				"price": "1 gp"
+			},
+			{
+				"name": "Custom Map (commission)",
+				"price": "50 gp"
+			}
+		],
+		"exotic_goods": [
+			{
+				"name": "Silk Scarf",
+				"price": "10 gp"
+			},
+			{
+				"name": "Spyglass",
+				"price": "100 gp"
+			},
+			{
+				"name": "Magnifying Glass",
+				"price": "10 gp"
+			},
+			{
+				"name": "Perfume (vial)",
+				"price": "5 gp"
+			},
+			{
+				"name": "Ivory Dice Set",
+				"price": "5 gp"
+			},
+			{
+				"name": "Foreign Spice (pouch)",
+				"price": "5 gp"
+			}
+		],
+		"music": [
+			{
+				"name": "Lute",
+				"price": "25 gp"
+			},
+			{
+				"name": "Flute",
+				"price": "2 gp"
+			},
+			{
+				"name": "Drum",
+				"price": "5 gp"
+			},
+			{
+				"name": "Harp",
+				"price": "50 gp"
+			},
+			{
+				"name": "Strings (replacement)",
+				"price": "5 sp"
+			}
+		]
+	},
+	"bookTitles": {
+		"patterns": [
+			"The {noun} and the {noun}",
+			"The {adjective} {noun}",
+			"The Life of {person}",
+			"A History of {place}",
+			"On the Nature of {concept}",
+			"The {adjective} {noun} of {place}",
+			"Tales of the {adjective} {noun}",
+			"Meditations on {concept}",
+			"The {person} Manuscript",
+			"The Last {noun} of {place}",
+			"Songs of the {adjective} {noun}",
+			"The {noun}'s Lament",
+			"Confessions of a {adjective} {noun}",
+			"{person}'s Guide to {concept}",
+			"The {adjective} Road to {place}",
+			"Legends of the {noun}",
+			"The Secret {noun}",
+			"Beyond the {adjective} {noun}",
+			"The Fall of {place}",
+			"The {noun} of {person}"
+		],
+		"nouns": [
+			"Bard",
+			"Stag",
+			"King",
+			"Serpent",
+			"Tower",
+			"Flame",
+			"Shadow",
+			"Knight",
+			"Pilgrim",
+			"Witch",
+			"Crow",
+			"River",
+			"Storm",
+			"Thief",
+			"Dragon",
+			"Hermit",
+			"Sword",
+			"Rose",
+			"Wolf",
+			"Prophet",
+			"Lantern",
+			"Bridge",
+			"Merchant",
+			"Chalice",
+			"Gate",
+			"Beggar",
+			"Star",
+			"Mask",
+			"Fool",
+			"Oracle",
+			"Maiden",
+			"Hammer",
+			"Fox",
+			"Lion",
+			"Hound"
+		],
+		"adjectives": [
+			"Silver",
+			"Lost",
+			"Crimson",
+			"Hollow",
+			"Golden",
+			"Broken",
+			"Silent",
+			"Wandering",
+			"Forgotten",
+			"Burning",
+			"Iron",
+			"Pale",
+			"Dark",
+			"Last",
+			"Hidden",
+			"Crooked",
+			"Weeping",
+			"Blessed",
+			"Cursed",
+			"Fallen",
+			"Lonely",
+			"Emerald",
+			"Ashen",
+			"Scarlet",
+			"Bitter",
+			"Gilded"
+		],
+		"persons": [
+			"Aldric Vane",
+			"Marta Dunhill",
+			"Brother Cassius",
+			"Lady Elowen",
+			"Old Gregor",
+			"Theron the Lame",
+			"Helga Marshwick",
+			"Duke Rennald",
+			"Sister Agatha",
+			"Captain Wulfric",
+			"Petra Coldwater",
+			"Finn the Red",
+			"Scholar Tamsin",
+			"Lord Ashworth",
+			"Ingrid Halfmoon",
+			"Father Oswin",
+			"Blind Merrik",
+			"Queen Solaine",
+			"Yorick Blackthorn",
+			"The Mad Abbot"
+		],
+		"places": [
+			"Kingshold",
+			"the Northmarch",
+			"the Grey Isles",
+			"Redwater",
+			"the Thornlands",
+			"Old Valdris",
+			"the Sunken Coast",
+			"Grimhaven",
+			"the Iron Hills",
+			"Ashenmoor",
+			"the Frostfell",
+			"Dawnbridge",
+			"the Bitter Reach",
+			"Crow's Perch",
+			"the Pale Marches",
+			"Stonewall",
+			"the Western Shore",
+			"Ember Vale",
+			"the Blackwood",
+			"Gallowsgate"
+		],
+		"concepts": [
+			"Shadows",
+			"War",
+			"Mercy",
+			"Alchemy",
+			"the Undead",
+			"Dragonkind",
+			"Sorcery",
+			"Kingship",
+			"the Old Gods",
+			"Dungeon Delving",
+			"Poison",
+			"Herbcraft",
+			"Siege Warfare",
+			"the Fey Courts",
+			"Divination",
+			"Dwarven Stonework",
+			"the Outer Planes",
+			"Trade Routes",
+			"Prophecy",
+			"the Common Law",
+			"Navigation",
+			"Elven History",
+			"Beasts & Monsters"
+		],
+		"prices": [
+			"3 gp",
+			"5 gp",
+			"8 gp",
+			"10 gp",
+			"15 gp",
+			"25 gp",
+			"50 gp"
+		]
+	},
+	"pocketItems": [
+		"a quill and 2 sp",
+		"a copper ring",
+		"a worn letter",
+		"3 sp and a button",
+		"a lucky coin",
+		"a pipe and tobacco pouch",
+		"a small knife and 1 sp",
+		"a half-eaten apple",
+		"a leather pouch with 5 cp",
+		"a religious medallion",
+		"a whittled figurine",
+		"a crumpled receipt",
+		"a brass key",
+		"a deck of marked cards",
+		"a snuff box",
+		"a bone comb",
+		"a child's drawing",
+		"a bundle of herbs",
+		"a flask of cheap spirits",
+		"a sewing needle and thread",
+		"4 cp and a smooth pebble",
+		"a tin whistle",
+		"a pouch of salt",
+		"a pair of loaded dice",
+		"a love letter",
+		"a broken compass",
+		"a feather quill and ink",
+		"7 cp in a cloth wrap"
+	],
+	"shopQuestTemplates": [
+		"A <strong>{item}</strong> is lost (or so claimed). Secret: This is actually <strong>{secret}</strong> and it is currently somewhere near <strong>{hexRef}</strong>. Finder's reward is <strong>{reward}</strong>.",
+		"A shipment of goods was intercepted by bandits near <strong>{hexRef}</strong>. Retrieve the cargo and the reward is <strong>{reward}</strong>.",
+		"Needs someone to deliver {goods} to a contact near <strong>{hexRef}</strong>. Payment on delivery: <strong>{reward}</strong>.",
+		"A regular supplier has gone missing somewhere near <strong>{hexRef}</strong>. Find out what happened. Will pay <strong>{reward}</strong> for answers.",
+		"Has heard rumors of rare materials near <strong>{hexRef}</strong>. Willing to pay <strong>{reward}</strong> for a sample.",
+		"A rival merchant near <strong>{hexRef}</strong> has been undercutting prices with stolen goods. Investigate discreetly for <strong>{reward}</strong>.",
+		"An old debt needs collecting from someone last seen near <strong>{hexRef}</strong>. The debtor owes <strong>{reward}</strong> — keep half as payment.",
+		"A previous customer vanished while traveling near <strong>{hexRef}</strong>. Their family is offering <strong>{reward}</strong> for information."
+	],
+	"questItems": [
+		"Custom Sword",
+		"Ancient Medallion",
+		"Sealed Chest",
+		"Jeweled Dagger",
+		"Crystal Goblet",
+		"Ornate Shield",
+		"Silver Locket",
+		"Embroidered Cloak",
+		"Engraved Ring",
+		"Bone Flute",
+		"Gilded Tome",
+		"Iron Crown",
+		"Masterwork Crossbow",
+		"Silvered Mace",
+		"Ivory Scroll Case",
+		"Jade Figurine"
+	],
+	"questSecrets": [
+		"a Sword +1, +2 vs Undead",
+		"a Ring of Protection",
+		"a Cloak of Elvenkind",
+		"a Wand of Magic Missiles (7 charges)",
+		"a Potion of Heroism",
+		"a +1 Shield that glows near goblins",
+		"a cursed blade that whispers at night",
+		"a map to a hidden treasure vault",
+		"evidence of a noble's treason",
+		"a holy relic worth ten times the reward",
+		"a Bag of Holding",
+		"a scroll of Fireball",
+		"a letter implicating the local ruler"
+	],
+	"questRewardRanges": {
+		"village": [
+			"10 gp",
+			"15 gp",
+			"20 gp",
+			"25 gp",
+			"30 gp"
+		],
+		"town": [
+			"25 gp",
+			"50 gp",
+			"75 gp",
+			"100 gp",
+			"150 gp"
+		],
+		"city": [
+			"100 gp",
+			"200 gp",
+			"320 gp",
+			"500 gp",
+			"750 gp"
+		]
+	},
+	"questChance": 0.35,
+	"npcRelations": {
+		"maxRelations": {
+			"village": 2,
+			"town": 3,
+			"city": 4
+		},
+		"business": [
+			"has some <strong>business</strong> with",
+			"is a <strong>business partner</strong> of",
+			"owes a <strong>debt</strong> to",
+			"is in a <strong>trade rivalry</strong> with",
+			"has a <strong>supply arrangement</strong> with"
+		],
+		"conflict": [
+			"has a severe <strong>dispute</strong> with",
+			"holds a <strong>grudge</strong> against",
+			"has <strong>bad blood</strong> with",
+			"has a <strong>vendetta</strong> against",
+			"has <strong>stolen</strong> something from",
+			"is in a bitter <strong>feud</strong> with",
+			"is <strong>blackmailing</strong>",
+			"has been <strong>slandering</strong>",
+			"suspects <strong>theft</strong> by"
+		],
+		"personal": [
+			"has <strong>feelings</strong> for",
+			"has fallen <strong>in love</strong> with",
+			"is having an <strong>affair</strong> with",
+			"is <strong>secretly married</strong> to",
+			"is the <strong>estranged sibling</strong> of",
+			"has a <strong>special interest</strong> in",
+			"is <strong>jealous</strong> of",
+			"deeply <strong>admires</strong>"
+		],
+		"alliance": [
+			"is a <strong>close friend</strong> of",
+			"is a <strong>sworn ally</strong> of",
+			"is the <strong>mentor</strong> of",
+			"grew up alongside",
+			"served in the militia with",
+			"is a <strong>drinking companion</strong> of",
+			"shares a <strong>secret</strong> with"
+		],
+		"criminal": [
+			"is <strong>conspiring</strong> with",
+			"is <strong>fencing stolen goods</strong> for",
+			"is being <strong>extorted</strong> by",
+			"has <strong>hired</strong> someone to spy on",
+			"is <strong>covering up</strong> a crime committed by",
+			"is <strong>smuggling goods</strong> with"
+		]
+	}
+}
