@@ -1,5 +1,5 @@
 import { loadDungeonData, generateDungeonName } from "./DungeonGenerator.mjs";
-import { loadSettlementData, generateSettlementName } from "./SettlementGenerator.mjs";
+import { loadSettlementData, generateSettlementName, generateNpc, cap } from "./SettlementGenerator.mjs";
 
 const MODULE_ID = "shadowdark-extras";
 
@@ -98,7 +98,209 @@ export async function getAvailableBiomes() {
 }
 
 /**
+ * Generate a procedural Inn landmark.
+ */
+async function generateLandmarkInn(data, biomeKey, regionName) {
+	const settlementData = await loadSettlementData();
+	const inn = data.landmarks.inn;
+	const prefix = pick(inn.names.prefixes);
+	const suffix = pick(inn.names.suffixes);
+	const innName = `${prefix} ${suffix}`;
+
+	const host = generateNpc(settlementData);
+	const numPatrons = Math.floor(Math.random() * 3) + 1;
+	const patrons = [];
+	for (let i = 0; i < numPatrons; i++) {
+		const npc = generateNpc(settlementData);
+		const type = pick(inn.patronTypes);
+		patrons.push(`<strong>${npc.name}</strong>, ${type}`);
+	}
+
+	const foodPool = inn.food[biomeKey] || inn.food["plains"];
+	const drinkPool = inn.drinks;
+
+	const menuFood = [];
+	const usedFood = new Set();
+	while (menuFood.length < 2 && usedFood.size < foodPool.length) {
+		const f = pick(foodPool);
+		if (!usedFood.has(f)) {
+			usedFood.add(f);
+			menuFood.push(f);
+		}
+	}
+
+	const menuDrinks = [];
+	const usedDrinks = new Set();
+	while (menuDrinks.length < 2 && usedDrinks.size < drinkPool.length) {
+		const d = pick(drinkPool);
+		if (!usedDrinks.has(d)) {
+			usedDrinks.add(d);
+			menuDrinks.push(d);
+		}
+	}
+
+	let rumor = "There's talk of strange things in the wilds.";
+	if (data.rumorTemplates) {
+		const tmpl = pick(data.rumorTemplates);
+		const monsters = data.biomes[biomeKey].featureEncounters;
+		const link = await monsterLink(pickWeightedUnique(monsters, 1)[0]);
+		rumor = tmpl.replace(/\{monster\}/g, link).replace(/\{region\}/g, regionName);
+	}
+
+	let html = `<div class="landmark-inn">`;
+	html += `<h3>${innName} (Inn)</h3>`;
+	html += `<p>This thematic retreat is hosted by <strong>${host.name}</strong>, ${host.appearance} (<em>${host.trait}</em>). In their pocket: ${host.pocket}.</p>`;
+
+	html += `<table><tr><th>Menu Item</th><th>Price</th></tr>`;
+	for (const f of menuFood) html += `<tr><td>${f}</td><td>2 sp</td></tr>`;
+	for (const d of menuDrinks) html += `<tr><td>${d}</td><td>5 cp</td></tr>`;
+	html += `</table>`;
+
+	html += `<h4>Notable Patrons</h4><ul>`;
+	for (const p of patrons) html += `<li>${p}</li>`;
+	html += `</ul>`;
+
+	html += `<h4>Inn's Rumors</h4><p><em>"${rumor}"</em></p>`;
+	html += `</div>`;
+
+	return html;
+}
+
+/**
+ * Generate a procedural Abandoned Village landmark.
+ */
+async function generateLandmarkAbandonedVillage(data, biomeKey) {
+	const landmark = data.landmarks.abandonedVillage;
+	let description = pick(landmark.descriptions);
+
+	if (description.includes("{settlement}")) {
+		const settlementName = generateSettlementName(await loadSettlementData());
+		description = description.replace(/\{settlement\}/g, `<strong>${settlementName}</strong>`);
+	}
+
+	if (description.includes("{monster}")) {
+		const monsters = data.biomes[biomeKey].featureEncounters;
+		const link = await monsterLink(pickWeightedUnique(monsters, 1)[0]);
+		description = description.replace(/\{monster\}/g, link);
+	}
+
+	let html = `<div class="landmark-village">`;
+	html += `<h3>Abandoned Village (Landmark)</h3>`;
+	html += `<p>${description}</p>`;
+	html += `</div>`;
+	return html;
+}
+
+/**
+ * Generate a procedural Altar landmark.
+ */
+function generateLandmarkAltar(data) {
+	const landmark = data.landmarks.altar;
+	const description = pick(landmark.descriptions);
+	let html = `<div class="landmark-altar">`;
+	html += `<h3>Ancient Altar (Landmark)</h3>`;
+	html += `<p>${description}</p>`;
+	html += `</div>`;
+	return html;
+}
+
+/**
+ * Generate a procedural Signaling Tower landmark.
+ */
+function generateLandmarkSignalingTower(data) {
+	const landmark = data.landmarks.signalingTower;
+	const description = pick(landmark.descriptions);
+	let html = `<div class="landmark-signaling-tower">`;
+	html += `<h3>Signaling Tower (Landmark)</h3>`;
+	html += `<p>${description}</p>`;
+	html += `<p><em>${landmark.supplemental}</em></p>`;
+	html += `</div>`;
+	return html;
+}
+
+/**
+ * Generate a procedural Wagons landmark.
+ */
+function generateLandmarkWagons(data) {
+	const landmark = data.landmarks.wagons;
+	const number = pick(landmark.numbers);
+	const template = pick(landmark.descriptions);
+	const description = template
+		.replace(/\{number\}/g, number)
+		.replace(/\{NumberCap\}/g, cap(number));
+	let html = `<div class="landmark-wagons">`;
+	html += `<h3>Abandoned Wagons (Landmark)</h3>`;
+	html += `<p>${description}</p>`;
+	html += `</div>`;
+	return html;
+}
+
+/**
+ * Generate a procedural Dead Adventurers landmark.
+ */
+function generateLandmarkDeadAdventurers(data) {
+	const landmark = data.landmarks.deadAdventurers;
+	const number = pick(landmark.numbers);
+	const template = pick(landmark.descriptions);
+	const description = template
+		.replace(/\{number\}/g, number)
+		.replace(/\{NumberCap\}/g, cap(number));
+	let html = `<div class="landmark-adventurers">`;
+	html += `<h3>Dead Adventurers (Landmark)</h3>`;
+	html += `<p>${description}</p>`;
+	html += `</div>`;
+	return html;
+}
+
+/**
+ * Generate a procedural Sacrificial Site landmark.
+ */
+function generateLandmarkSacrificialSite(data) {
+	const landmark = data.landmarks.sacrificialSite;
+	const subject = pick(landmark.subjects);
+	const description = landmark.descriptionTemplate.replace(/\{subject\}/g, subject);
+	let html = `<div class="landmark-sacrificial">`;
+	html += `<h3>Sacrificial Site (Landmark)</h3>`;
+	html += `<p>${description}</p>`;
+	html += `</div>`;
+	return html;
+}
+
+/**
+ * Generate a procedural Dead Monster landmark.
+ */
+async function generateLandmarkDeadMonster(data, biomeKey) {
+	const landmark = data.landmarks.deadMonster;
+	const template = pick(landmark.descriptions);
+	const monsters = data.biomes[biomeKey].featureEncounters;
+	const link = await monsterLink(pickWeightedUnique(monsters, 1)[0]);
+	const description = template.replace(/\{monster\}/g, link);
+	let html = `<div class="landmark-monster-remains">`;
+	html += `<h3>Monster Remains (Landmark)</h3>`;
+	html += `<p>${description}</p>`;
+	html += `</div>`;
+	return html;
+}
+
+/**
+ * Generate a procedural Watchtower landmark.
+ */
+function generateLandmarkWatchtower(data, biomeKey) {
+	const watchtower = data.landmarks.watchtower;
+	const description = pick(watchtower.descriptions);
+
+	let html = `<div class="landmark-watchtower">`;
+	html += `<h3>Watchtower (Landmark)</h3>`;
+	html += `<p>${description}</p>`;
+	html += `<p><em>Travelers who spend time surveying from this vantage point eliminate the risk of becoming lost for the remainder of the day.</em></p>`;
+	html += `</div>`;
+
+	return html;
+}
+
+/**
  * Generate hex wilderness content and format as HTML.
+
  * Encounter names are resolved to @UUID compendium links.
  */
 export async function generateHexHtml(biomeKey, hexLabel) {
@@ -131,6 +333,52 @@ export async function generateHexHtml(biomeKey, hexLabel) {
 	// Description
 	html += `<p>${description}</p>`;
 	html += `<p><em>Located ${location}.</em></p>`;
+
+	// Landmarks - 0, 1, or 2
+	const landmarkSlots = 2; // Maximum slots available
+
+	if (data.landmarks) {
+		let landmarkHtml = "";
+		let generatedCount = 0;
+		const isDifficult = ["swamp", "mountain", "jungle"].includes(biomeKey);
+
+		// Landmark rolling rules and helpers
+		const landmarkConfigs = [
+			{ key: "inn", gen: async (d, b, r) => await generateLandmarkInn(d, b, r) },
+			{ key: "watchtower", gen: (d, b) => generateLandmarkWatchtower(d, b) },
+			{ key: "abandonedVillage", gen: async (d, b) => await generateLandmarkAbandonedVillage(d, b) },
+			{ key: "altar", gen: (d) => generateLandmarkAltar(d) },
+			{ key: "signalingTower", gen: (d) => generateLandmarkSignalingTower(d) },
+			{ key: "wagons", gen: (d) => generateLandmarkWagons(d) },
+			{ key: "deadAdventurers", gen: (d) => generateLandmarkDeadAdventurers(d) },
+			{ key: "sacrificialSite", gen: (d) => generateLandmarkSacrificialSite(d) },
+			{ key: "deadMonster", gen: async (d, b) => await generateLandmarkDeadMonster(d, b) }
+		];
+
+		// Shuffle or iterate? Let's iterate in order for now as a "priority" or "fairness" roll
+		// but we want randomization. Let's shuffle the configs first.
+		const shuffled = [...landmarkConfigs].sort(() => Math.random() - 0.5);
+
+		for (const config of shuffled) {
+			if (generatedCount >= landmarkSlots) break;
+
+			const lData = data.landmarks[config.key];
+			if (!lData) continue;
+
+			if (lData.excludedBiomes && lData.excludedBiomes.includes(biomeKey)) continue;
+
+			const threshold = isDifficult ? lData.probabilities.difficult : lData.probabilities.normal;
+			if (Math.random() < threshold) {
+				landmarkHtml += await config.gen(data, biomeKey, regionName);
+				generatedCount++;
+			}
+		}
+
+		if (generatedCount > 0) {
+			html += `<h2>Landmarks</h2>`;
+			html += landmarkHtml;
+		}
+	}
 
 	// Rumors — pick from feature encounters + rumor templates
 	const rumorMonsters = pickWeightedUnique(biome.featureEncounters, 4);
@@ -238,7 +486,7 @@ export async function generateHexHtml(biomeKey, hexLabel) {
 		}
 
 		// Inventory
-		const numItems = Math.floor(Math.random() * 4) + 2; // 2 to 5 standard items
+		const numItems = Math.floor(Math.random() * 4) + 4; // 4 to 7 standard items
 		const items = [];
 		for (let i = 0; i < numItems; i++) {
 			items.push(pick(cd.equipment));

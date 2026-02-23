@@ -74,7 +74,7 @@ function randRange(min, max) {
 	return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-function cap(s) {
+export function cap(s) {
 	return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
@@ -102,7 +102,7 @@ export function generateSettlementName(data) {
 	return `${prefix}${suffix}`;
 }
 
-function generateNpc(data) {
+export function generateNpc(data) {
 	const isMale = Math.random() < 0.5;
 	const first = isMale ? pick(data.npcNames.firstMale) : pick(data.npcNames.firstFemale);
 	const last = pick(data.npcNames.lastNames);

@@ -3183,5 +3183,222 @@
 			"a seemingly ordinary patch of damp moss",
 			"a broken mirror that reflects a different timeline"
 		]
+	},
+	"landmarks": {
+		"inn": {
+			"probabilities": {
+				"normal": 0.25,
+				"difficult": 0.10
+			},
+			"excludedBiomes": [
+				"ocean",
+				"tundra",
+				"desert"
+			],
+			"names": {
+				"prefixes": [
+					"The Golden",
+					"The Rusty",
+					"The Prancing",
+					"The Drunken",
+					"The Lonely",
+					"The Wandering",
+					"The Crimson",
+					"The Hidden",
+					"The Broken",
+					"The Silent"
+				],
+				"suffixes": [
+					"Stag",
+					"Boar",
+					"Tankard",
+					"Gully",
+					"Traveler",
+					"Hearth",
+					"Waypoint",
+					"Lantern",
+					"Knight",
+					"Bridge"
+				]
+			},
+			"food": {
+				"forest": [
+					"Roasted Venison with Wild Berries",
+					"Baked Pheasant in Herb Crust",
+					"Stewed Rabbit and Mushrooms",
+					"Grilled Trout from the Creek"
+				],
+				"plains": [
+					"Braised Beef and Root Vegetables",
+					"Roasted Pork Haunch",
+					"Mutton and Barley Stew",
+					"Grilled Savory Sausages"
+				],
+				"mountain": [
+					"Smoked Goat Ribs",
+					"Hearty Yak Stew",
+					"Roasted Alpine Hare",
+					"Braised Ibex with Rock Salt"
+				],
+				"swamp": [
+					"Spiced Swamp-Rat Skewers",
+					"Fried Frog Legs with Garlic",
+					"Stewed Eel and Watercress",
+					"Roasted Bog-Turtle"
+				],
+				"jungle": [
+					"Grilled Jungle Fowl",
+					"Roast Tapir with Spiced Fruit",
+					"Braised Snake Steaks",
+					"Roasted Monkey (Tastes like Chicken)"
+				]
+			},
+			"drinks": [
+				"Dark Mulled Ale",
+				"Strong Honey Mead",
+				"Sharp Apple Cider",
+				"Bitter Stout",
+				"Spiced Berry Wine"
+			],
+			"patronTypes": [
+				"a weary traveler nursing a drink",
+				"with a pair of rowdy mercenaries laughing loudly",
+				"a hooded figure in the corner watching the room",
+				"with a group of local farmers complaining about the weather",
+				"a traveling minstrel tuning their instrument",
+				"a exhausted courier catching their breath",
+				"with a pair of scholars debating an ancient text",
+				"a local hunter trading pelts for a meal"
+			]
+		},
+		"watchtower": {
+			"probabilities": {
+				"normal": 0.12,
+				"difficult": 0.08
+			},
+			"excludedBiomes": [
+				"ocean"
+			],
+			"descriptions": [
+				"The ruins of an ancient watchtower are perched on a nearby rise, its stones weathered by centuries of wind.",
+				"There’s an old abandoned watchtower overlooking the area, its wooden stairs long since rotted away.",
+				"There's a recently built but seemingly unstaffed watchtower standing tall, its banners fluttering idly in the breeze."
+			]
+		},
+		"abandonedVillage": {
+			"probabilities": {
+				"normal": 0.12,
+				"difficult": 0.02
+			},
+			"excludedBiomes": [
+				"ocean",
+				"desert"
+			],
+			"descriptions": [
+				"The burned remains of a small village can be found, its charred timbers sinking into the earth.",
+				"There's a recently abandoned village, windows shuttered and doors left unlatched, feeling as if the inhabitants fled in a hurry.",
+				"The hollow shells of stone cottages mark a village where, legend says, the entire population vanished in a single night, leaving their dinner half-eaten on the tables.",
+				"A thick, unnerving silence hangs over these ruins; local lore claims a 'crawling mist' descended from the hills, taking everyone except those who fled toward {settlement}.",
+				"Once a thriving farming hamlet, this place was 'reclaimed' by the wilds after a series of brutal nocturnal raids by a pack of hungry {monster}s.",
+				"Vines and moss have nearly reclaimed this settlement, which served as a vital waypoint for {settlement} players until the wells mysteriously turned to salt.",
+				"The village square is dominated by a single, massive oak tree hung with empty birdcages; travelers claim the inhabitants were whispered away by the wind itself.",
+				"This cluster of hovels was abandoned decades ago during the 'Great Fever'; the nearby woods are still said to be haunted by the spirits of those left behind."
+			]
+		},
+		"altar": {
+			"probabilities": {
+				"normal": 0.12,
+				"difficult": 0.04
+			},
+			"excludedBiomes": [
+				"ocean"
+			],
+			"descriptions": [
+				"The crumbling ruins of an ancient altar can be found, its surface etched with faded runes and stained by time."
+			]
+		},
+		"signalingTower": {
+			"probabilities": {
+				"normal": 0.12,
+				"difficult": 0.05
+			},
+			"excludedBiomes": [
+				"ocean"
+			],
+			"descriptions": [
+				"There’s a stone-made signaling tower standing as a silent sentinel over the landscape.",
+				"There’s a wood-made signaling tower, its construction sturdy but showy signs of neglect."
+			],
+			"supplemental": "Finding the tower will eliminate any risk of getting lost in this region."
+		},
+		"wagons": {
+			"probabilities": {
+				"normal": 0.12,
+				"difficult": 0.03
+			},
+			"excludedBiomes": [
+				"ocean",
+				"mountain",
+				"swamp"
+			],
+			"numbers": [
+				"three",
+				"four",
+				"five",
+				"six"
+			],
+			"descriptions": [
+				"There are {number} abandoned and half-broken wagons scattered across the area.",
+				"{NumberCap} wagons were abandoned and looted, their contents long gone.",
+				"{NumberCap} heavily damaged wagons were left to decay, their wheels sinking into the mud."
+			]
+		},
+		"deadAdventurers": {
+			"probabilities": {
+				"normal": 0.12,
+				"difficult": 0.05
+			},
+			"excludedBiomes": [
+				"ocean"
+			],
+			"numbers": [
+				"three",
+				"four",
+				"five",
+				"six"
+			],
+			"descriptions": [
+				"The bodies of {number} dead adventurers were thrown to rot, their gear picked clean by scavengers.",
+				"{NumberCap} unfortunate adventurers met their death here, their poses suggesting a final, desperate stand."
+			]
+		},
+		"sacrificialSite": {
+			"probabilities": {
+				"normal": 0.12,
+				"difficult": 0.06
+			},
+			"excludedBiomes": [
+				"ocean"
+			],
+			"subjects": [
+				"human",
+				"animal",
+				"and unrecognizable"
+			],
+			"descriptionTemplate": "There's a sacrificial site with burnt {subject} remains."
+		},
+		"deadMonster": {
+			"probabilities": {
+				"normal": 0.12,
+				"difficult": 0.08
+			},
+			"excludedBiomes": [],
+			"descriptions": [
+				"The headless remains of {monster} can be found, the ground stained dark around it.",
+				"The headless rotting remains of a beheaded {monster} can be found, attracting a swarm of flies.",
+				"The chopped head of {monster} was left to rot on a crude spike.",
+				"The brutalized remains of {monster} were left to rot, likely the work of a more powerful predator."
+			]
+		}
 	}
 }
