@@ -19,6 +19,34 @@ export async function loadDungeonData() {
 	return _data;
 }
 
+let _bookData = null;
+export async function loadBookData() {
+	if (_bookData) return _bookData;
+	try {
+		const resp = await fetch(`modules/${MODULE_ID}/scripts/data/dungeon-books.json`);
+		if (!resp.ok) throw new Error(`HTTP ${resp.status}: ${resp.statusText}`);
+		_bookData = await resp.json();
+	} catch (err) {
+		console.error(`${MODULE_ID} | Failed to load dungeon books:`, err);
+		throw err;
+	}
+	return _bookData;
+}
+
+let _motivationsData = null;
+export async function loadMotivationsData() {
+	if (_motivationsData) return _motivationsData;
+	try {
+		const resp = await fetch(`modules/${MODULE_ID}/scripts/data/dungeon-motivations.json`);
+		if (!resp.ok) throw new Error(`HTTP ${resp.status}: ${resp.statusText}`);
+		_motivationsData = await resp.json();
+	} catch (err) {
+		console.error(`${MODULE_ID} | Failed to load dungeon motivations:`, err);
+		throw err;
+	}
+	return _motivationsData;
+}
+
 async function getMonsterIndex() {
 	if (_monsterIndex) return _monsterIndex;
 	_monsterIndex = new Map();
@@ -181,6 +209,144 @@ function reverseDirection(dir) {
 		"Northwest": "Southeast", "Southeast": "Northwest",
 	};
 	return map[dir] || "opposite";
+}
+
+// ── Map Layout & Rendering ──────────────────────────────────────────────────
+
+function buildDungeonLayout(connections) {
+	const layout = new Map(); // roomNum -> { x, y }
+	const roomCount = connections.length - 1; // index 0 is unused
+
+	// Start room 1 at origin
+	layout.set(1, { x: 0, y: 0 });
+
+	const queue = [1];
+	const visited = new Set([1]);
+
+	const dirOffsets = {
+		"North": { dx: 0, dy: -1 },
+		"South": { dx: 0, dy: 1 },
+		"East": { dx: 1, dy: 0 },
+		"West": { dx: -1, dy: 0 },
+		"Northeast": { dx: 1, dy: -1 },
+		"Northwest": { dx: -1, dy: -1 },
+		"Southeast": { dx: 1, dy: 1 },
+		"Southwest": { dx: -1, dy: 1 },
+	};
+
+	// Attempt to place rooms. If there's a collision, we'll try to nudge them.
+	while (queue.length > 0) {
+		const current = queue.shift();
+		const currentPos = layout.get(current);
+
+		for (const conn of connections[current]) {
+			if (!visited.has(conn.toRoom)) {
+				const offset = dirOffsets[conn.direction] || { dx: Math.random() > 0.5 ? 1 : -1, dy: 0 };
+
+				// Standard spacing
+				const spacing = 2; // grid units
+				let targetX = currentPos.x + (offset.dx * spacing);
+				let targetY = currentPos.y + (offset.dy * spacing);
+
+				// Basic collision resolution: if occupied, nudge right until free
+				let collisionAttempts = 0;
+				while (isOccupied(layout, targetX, targetY) && collisionAttempts < 10) {
+					targetX += 1;
+					targetY += (Math.random() > 0.5 ? 1 : -1);
+					collisionAttempts++;
+				}
+
+				layout.set(conn.toRoom, { x: targetX, y: targetY });
+				visited.add(conn.toRoom);
+				queue.push(conn.toRoom);
+			}
+		}
+	}
+
+	return layout;
+}
+
+function isOccupied(layout, x, y) {
+	// Simple bounding box check (rooms take up roughly 1x1 space)
+	for (const pos of layout.values()) {
+		if (Math.abs(pos.x - x) < 1.5 && Math.abs(pos.y - y) < 1.5) {
+			return true;
+		}
+	}
+	return false;
+}
+
+function generateDungeonSVG(layout, connections) {
+	// Calculate bounds
+	let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+	for (const pos of layout.values()) {
+		if (pos.x < minX) minX = pos.x;
+		if (pos.x > maxX) maxX = pos.x;
+		if (pos.y < minY) minY = pos.y;
+		if (pos.y > maxY) maxY = pos.y;
+	}
+
+	// Canvas padding and scaling
+	const padding = 2; // grid units
+	const scale = 50; // pixels per grid unit
+	const roomSize = 40; // pixel size of room rect
+
+	const width = (maxX - minX + (padding * 2)) * scale;
+	const height = (maxY - minY + (padding * 2)) * scale;
+
+	// Center map in canvas
+	const offsetX = (-minX + padding) * scale;
+	const offsetY = (-minY + padding) * scale;
+
+	let svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}" style="background-color: #f4f4f4; border: 1px solid #ccc; max-width: 100%; height: auto; border-radius: 8px; margin-bottom: 1em;">`;
+
+	// Draw grid (optional, but looks nice)
+	svg += `<defs><pattern id="grid" width="${scale}" height="${scale}" patternUnits="userSpaceOnUse">
+				<path d="M ${scale} 0 L 0 0 0 ${scale}" fill="none" stroke="#e0e0e0" stroke-width="1"/>
+			</pattern></defs>`;
+	svg += `<rect width="100%" height="100%" fill="url(#grid)" />`;
+
+	// Draw connections (corridors)
+	svg += `<g id="corridors" stroke="#555" stroke-width="6" stroke-linecap="round">`;
+	const drawnConnections = new Set();
+	for (let i = 1; i < connections.length; i++) {
+		const fromPos = layout.get(i);
+		if (!fromPos) continue;
+		const px1 = fromPos.x * scale + offsetX;
+		const py1 = fromPos.y * scale + offsetY;
+
+		for (const conn of connections[i]) {
+			// Avoid drawing reverse connections twice
+			const connKey = [i, conn.toRoom].sort().join("-");
+			if (drawnConnections.has(connKey)) continue;
+
+			const toPos = layout.get(conn.toRoom);
+			if (!toPos) continue;
+			const px2 = toPos.x * scale + offsetX;
+			const py2 = toPos.y * scale + offsetY;
+
+			svg += `<line x1="${px1}" y1="${py1}" x2="${px2}" y2="${py2}" />`;
+			drawnConnections.add(connKey);
+		}
+	}
+	svg += `</g>`;
+
+	// Draw rooms
+	svg += `<g id="rooms">`;
+	for (const [roomNum, pos] of layout.entries()) {
+		const px = pos.x * scale + offsetX;
+		const py = pos.y * scale + offsetY;
+
+		// Room shape
+		svg += `<rect x="${px - roomSize / 2}" y="${py - roomSize / 2}" width="${roomSize}" height="${roomSize}" rx="4" fill="#fff" stroke="#333" stroke-width="2" />`;
+
+		// Room number
+		svg += `<text x="${px}" y="${py + 5}" font-family="sans-serif" font-size="16" font-weight="bold" fill="#333" text-anchor="middle">${roomNum}</text>`;
+	}
+	svg += `</g>`;
+
+	svg += `</svg>`;
+	return svg;
 }
 
 // ── Doorway Generation ──────────────────────────────────────────────────────
@@ -468,17 +634,64 @@ export async function generateDungeonHtml(typeKey, sizeKey, hexLabel, hexKey) {
 		roomTypes.push(pickWeighted(data.roomTypes));
 	}
 
+	// ── Generate & Upload Map Image ──────────────────────────────────────────
+	const layout = buildDungeonLayout(connections);
+	const svgString = generateDungeonSVG(layout, connections);
+
+	// Convert SVG to File
+	const blob = new Blob([svgString], { type: 'image/svg+xml' });
+	const safeFileName = `${dungeonName.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_${hexKey}.svg`;
+	let fileObj;
+	if (typeof File !== 'undefined') { // Browser
+		fileObj = new File([blob], safeFileName, { type: 'image/svg+xml' });
+	} else { // Fallback shouldn't usually happen in Foundry UI, but safe
+		fileObj = blob;
+		fileObj.name = safeFileName;
+	}
+
+	let mapSrc = "";
+	try {
+		// Ensure directory exists (Foundry API: data, path, options)
+		const targetFolder = "hexlocations";
+		try {
+			await FilePicker.createDirectory("data", targetFolder);
+		} catch (e) {
+			// Directory probably exists, ignore
+		}
+
+		// Upload the file
+		const uploadResult = await FilePicker.upload("data", targetFolder, fileObj);
+		mapSrc = uploadResult.path;
+	} catch (err) {
+		console.warn(`${MODULE_ID} | Failed to upload dungeon map:`, err);
+		// Fallback to inline data URI if upload fails (some browsers might still display it)
+		mapSrc = `data:image/svg+xml;base64,${btoa(unescape(encodeURIComponent(svgString)))}`;
+	}
+
 	// ── Overview ─────────────────────────────────────────────────────────────
 	let html = `<h2>${dungeonName}</h2>`;
 	html += `<p><em>${dungeonType.label} — Hex ${hexLabel}</em></p>`;
+	if (mapSrc) {
+		const mapSecretId = `secret-${(typeof foundry !== 'undefined' && foundry.utils) ? foundry.utils.randomID() : Math.random().toString(36).substring(2, 10)}`;
+		html += `<section id="${mapSecretId}" class="secret">`;
+		html += `<div style="text-align: center; margin: 10px 0;">`;
+		html += `<img src="${mapSrc}" alt="Dungeon Map" style="max-width: 450px; width: 100%; border: 1px solid #ccc; border-radius: 8px;">`;
+		html += `</div>`;
+		html += `</section>`;
+	}
 	html += `<p>${description}</p>`;
 
-	// Room index
-	html += `<h3>Rooms</h3><ol>`;
-	for (let i = 0; i < roomCount; i++) {
-		html += `<li>${roomTypes[i].label}</li>`;
+	if (typeKey === "dungeon") {
+		const motData = await loadMotivationsData();
+		const pickedMots = pickN(motData.motivations, 3);
+		html += `<h3>Peculiar Motivations</h3>`;
+		html += `<p>There is someone here with some peculiar motivations, choose one or make your own:</p>`;
+		html += `<ul>`;
+		for (const mot of pickedMots) {
+			html += `<li>${mot}</li>`;
+		}
+		html += `</ul>`;
 	}
-	html += `</ol>`;
 
 	// Wandering monsters
 	html += `<h2>Wandering Monsters</h2>`;
@@ -487,11 +700,24 @@ export async function generateDungeonHtml(typeKey, sizeKey, hexLabel, hexKey) {
 
 	// ── Rooms ────────────────────────────────────────────────────────────────
 	html += `<hr>`;
+
+	// Pick a random room to have the book
+	const bookRoomIndex = randRange(0, roomCount - 1);
+	const bookData = await loadBookData();
+
 	for (let i = 0; i < roomCount; i++) {
 		html += await generateRoom(
 			data, i + 1, roomTypes[i], connections, keyMap, typeKey, treasureTier,
 			sizeKey !== "small"
 		);
+
+		// Add book if this is the chosen room
+		if (i === bookRoomIndex) {
+			const chosenBook = pick(bookData.books);
+			const chosenLocation = pick(bookData.bookLocations);
+			html += `<p><strong>Rare Find (Book):</strong> You notice a book ${chosenLocation}. The cover reads: <em>"${chosenBook}"</em>.</p>`;
+		}
+
 		if (i < roomCount - 1) html += `<hr>`;
 	}
 

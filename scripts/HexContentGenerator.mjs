@@ -20,6 +20,34 @@ async function loadData() {
 	return _data;
 }
 
+let _caravanFortunes = null;
+async function loadCaravanFortunes() {
+	if (_caravanFortunes) return _caravanFortunes;
+	try {
+		const resp = await fetch(`modules/${MODULE_ID}/scripts/data/caravan-fortunes.json`);
+		if (!resp.ok) throw new Error(`HTTP ${resp.status}: ${resp.statusText}`);
+		_caravanFortunes = await resp.json();
+	} catch (err) {
+		console.error(`${MODULE_ID} | Failed to load caravan fortunes:`, err);
+		throw err;
+	}
+	return _caravanFortunes;
+}
+
+let _hiddenTraitsData = null;
+async function loadHiddenTraitsData() {
+	if (_hiddenTraitsData) return _hiddenTraitsData;
+	try {
+		const resp = await fetch(`modules/${MODULE_ID}/scripts/data/npc-hidden-traits.json`);
+		if (!resp.ok) throw new Error(`HTTP ${resp.status}: ${resp.statusText}`);
+		_hiddenTraitsData = await resp.json();
+	} catch (err) {
+		console.error(`${MODULE_ID} | Failed to load hidden NPC traits:`, err);
+		throw err;
+	}
+	return _hiddenTraitsData;
+}
+
 /**
  * Get the compendium index for shadowdark.monsters, cached after first load.
  * Returns a Map of monster name → compendium document ID.
@@ -497,10 +525,20 @@ export async function generateHexHtml(biomeKey, hexLabel) {
 			items.push(pick(cd.magicItems));
 		}
 
+		const traitsData = await loadHiddenTraitsData();
+		let hiddenTrait = null;
+		if (traitsData && Math.random() < 0.20) {
+			hiddenTrait = pick(traitsData.hiddenTraits);
+		}
+
 		const secretId = `secret-${foundry.utils.randomID()}`;
 		html += `<section id="${secretId}" class="secret">`;
 		html += `<h2>Merchant ${vehicleName}</h2>`;
-		html += `<p>You encounter a ${vehicleType} ${vehicleColor}-colored ${vehicleName.toLowerCase()}. It is owned by <strong>${merchantName}</strong>, a merchant ${merchantTrait}.</p>`;
+		html += `<p>You encounter a ${vehicleType} ${vehicleColor}-colored ${vehicleName.toLowerCase()}. It is owned by <strong>${merchantName}</strong>, a merchant ${merchantTrait}.`;
+		if (hiddenTrait) {
+			html += ` <span class="secret"><strong>Secret:</strong> ${hiddenTrait}</span>`;
+		}
+		html += `</p>`;
 		html += `<p>Traveling with them: ${assistants.join(" and ")}.</p>`;
 
 		html += `<h3>Items for Sale</h3>`;
@@ -552,6 +590,16 @@ export async function generateHexHtml(biomeKey, hexLabel) {
 			html += `<h3>Campfire Tale</h3>`;
 			html += `<p><em>If you sit by their fire, <strong>${merchantName}</strong> ${taleTemplate}</em></p>`;
 		}
+
+		// Fortune Teller
+		const fortuneData = await loadCaravanFortunes();
+		const pcs = typeof game !== 'undefined' && game.actors ? game.actors.filter(a => a.type === "Player" || a.hasPlayerOwner) : [];
+		const pcName = pcs.length > 0 ? pick(pcs).name : "a random adventurer";
+		const fortune = pick(fortuneData.fortunes);
+
+		html += `<h3>Fortune Teller</h3>`;
+		html += `<p>A fortune teller travels with the ${vehicleName.toLowerCase()}. She refuses to read the fortune of the party, but she whispers in the ear of <strong>${pcName}</strong>:</p>`;
+		html += `<blockquote>"${fortune}"</blockquote>`;
 
 		html += `</section>`;
 	}

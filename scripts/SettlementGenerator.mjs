@@ -19,6 +19,20 @@ export async function loadSettlementData() {
 	return _data;
 }
 
+let _hiddenTraitsData = null;
+export async function loadHiddenTraitsData() {
+	if (_hiddenTraitsData) return _hiddenTraitsData;
+	try {
+		const resp = await fetch(`modules/${MODULE_ID}/scripts/data/npc-hidden-traits.json`);
+		if (!resp.ok) throw new Error(`HTTP ${resp.status}: ${resp.statusText}`);
+		_hiddenTraitsData = await resp.json();
+	} catch (err) {
+		console.error(`${MODULE_ID} | Failed to load hidden NPC traits:`, err);
+		throw err;
+	}
+	return _hiddenTraitsData;
+}
+
 async function getMonsterIndex() {
 	if (_monsterIndex) return _monsterIndex;
 	_monsterIndex = new Map();
@@ -109,7 +123,13 @@ export function generateNpc(data) {
 	const trait = pick(data.npcTraits);
 	const appearance = pick(data.npcAppearances);
 	const pocket = pick(data.pocketItems);
-	return { name: `${first} ${last}`, trait, appearance, pocket };
+
+	let hiddenTrait = null;
+	if (_hiddenTraitsData && Math.random() < 0.20) {
+		hiddenTrait = pick(_hiddenTraitsData.hiddenTraits);
+	}
+
+	return { name: `${first} ${last}`, trait, appearance, pocket, hiddenTrait };
 }
 
 function generateShopName(data, shopType) {
@@ -189,7 +209,11 @@ function generateShopSection(data, shop, owner, hexKey, typeKey) {
 	// Owner line — hexroll style: name, appearance (trait). pocket items.
 	html += `<p>Merchant: <strong>${owner.name}</strong>. `;
 	html += `${cap(owner.appearance)} (<em>${cap(owner.trait)}</em>).`;
-	html += ` In the pocket: <strong>${owner.pocket}</strong>.</p>`;
+	html += ` In the pocket: <strong>${owner.pocket}</strong>.`;
+	if (owner.hiddenTrait) {
+		html += ` <p class="secret"><strong>Secret:</strong> ${owner.hiddenTrait}</p>`;
+	}
+	html += `</p>`;
 
 	// Inventory table
 	if (inventory.length) {
@@ -202,7 +226,10 @@ function generateShopSection(data, shop, owner, hexKey, typeKey) {
 
 	// Quest
 	if (quest) {
+		const secretId = `secret-${(typeof foundry !== 'undefined' && foundry.utils) ? foundry.utils.randomID() : Math.random().toString(36).substring(2, 10)}`;
+		html += `<section id="${secretId}" class="secret">`;
 		html += `<ul><li>${quest}</li></ul>`;
+		html += `</section>`;
 	}
 
 	return html;
@@ -248,7 +275,11 @@ function generateTavernSection(data, keeper, hexKey, typeKey) {
 	let html = `<h2>The ${tavernName}</h2>`;
 	html += `<p>Keeper: <strong>${keeper.name}</strong>. `;
 	html += `${cap(keeper.appearance)} (<em>${cap(keeper.trait)}</em>).`;
-	html += ` In the pocket: <strong>${keeper.pocket}</strong>.</p>`;
+	html += ` In the pocket: <strong>${keeper.pocket}</strong>.`;
+	if (keeper.hiddenTrait) {
+		html += ` <p class="secret"><strong>Secret:</strong> ${keeper.hiddenTrait}</p>`;
+	}
+	html += `</p>`;
 
 	// Menu table
 	html += `<h3>Menu</h3>`;
@@ -279,7 +310,10 @@ function generateTavernSection(data, keeper, hexKey, typeKey) {
 	// Tavern quest
 	const quest = generateShopQuest(data, hexKey, typeKey);
 	if (quest) {
+		const secretId = `secret-${(typeof foundry !== 'undefined' && foundry.utils) ? foundry.utils.randomID() : Math.random().toString(36).substring(2, 10)}`;
+		html += `<section id="${secretId}" class="secret">`;
 		html += `<ul><li>${quest}</li></ul>`;
+		html += `</section>`;
 	}
 
 	return html;
@@ -385,6 +419,10 @@ export async function generateSettlementHtml(typeKey, hexLabel, hexKey) {
 	const settlementName = generateSettlementName(data);
 	const prefix = pick(sType.prefixes);
 	const description = pick(sType.descriptions);
+
+	// Load hidden traits first so generateNpc can use them
+	await loadHiddenTraitsData();
+
 	const ruler = generateNpc(data);
 	const rulerTitle = pick(data.rulerTitles[typeKey] || ["Leader"]);
 
@@ -417,7 +455,11 @@ export async function generateSettlementHtml(typeKey, hexLabel, hexKey) {
 	html += `<h2>${prefix} ${settlementName}</h2>`;
 	html += `<p><em>${sType.label} — Hex ${hexLabel}</em></p>`;
 	html += `<p>${description}</p>`;
-	html += `<p>Ruled by <strong>${rulerTitle} ${ruler.name}</strong>, ${ruler.appearance}. ${cap(ruler.trait)}.</p>`;
+	html += `<p>Ruled by <strong>${rulerTitle} ${ruler.name}</strong>, ${ruler.appearance}. ${cap(ruler.trait)}.`;
+	if (ruler.hiddenTrait) {
+		html += ` <p class="secret"><strong>Secret:</strong> ${ruler.hiddenTrait}</p>`;
+	}
+	html += `</p>`;
 
 	// Notable Locations — each shop gets a rich sub-section
 	html += `<h2>Notable Locations</h2>`;
@@ -427,6 +469,10 @@ export async function generateSettlementHtml(typeKey, hexLabel, hexKey) {
 
 	// Tavern
 	html += generateTavernSection(data, tavernKeeper, safeHexKey, typeKey);
+
+	// Factions, Relationships, and Quest Hooks - GM Only
+	const secretId = `secret-${(typeof foundry !== 'undefined' && foundry.utils) ? foundry.utils.randomID() : Math.random().toString(36).substring(2, 10)}`;
+	html += `<section id="${secretId}" class="secret">`;
 
 	// Faction (town/city only)
 	if (sType.hasFaction) {
@@ -447,13 +493,15 @@ export async function generateSettlementHtml(typeKey, hexLabel, hexKey) {
 	// Quest Hooks — general settlement-level hooks
 	const hookCount = randRange(3, 4);
 	const templates = pickN(data.questHooks, hookCount);
-	html += `<h2>Quest Hooks</h2>`;
+	html += `<h2>Quest Hooks / Rumors</h2>`;
 	html += `<table><tr><th>1d${hookCount}</th><th>Hook</th></tr>`;
 	for (let i = 0; i < templates.length; i++) {
 		const filled = await fillQuestTemplate(templates[i], data, safeHexKey);
 		html += `<tr><td>${i + 1}</td><td>${filled}</td></tr>`;
 	}
 	html += `</table>`;
+
+	html += `</section>`;
 
 	// Attribution
 	html += `<hr><p style="font-size:0.75em;opacity:0.6;">Generated from <a href="https://hexroll.app">Hexroll</a> data</p>`;
