@@ -11,6 +11,12 @@ export async function loadDungeonData() {
 		const resp = await fetch(`modules/${MODULE_ID}/scripts/data/dungeon-data.json`);
 		if (!resp.ok) throw new Error(`HTTP ${resp.status}: ${resp.statusText}`);
 		_data = await resp.json();
+		// Merge supplemental temple room descriptions into the main roomDescriptions object
+		if (_data.roomDescriptions_temple) {
+			for (const [key, val] of Object.entries(_data.roomDescriptions_temple)) {
+				_data.roomDescriptions[key] = val;
+			}
+		}
 	} catch (err) {
 		console.error(`${MODULE_ID} | Failed to load dungeon data:`, err);
 		ui.notifications?.error("SDX | Could not load dungeon data.");
@@ -74,6 +80,37 @@ async function monsterLink(name) {
 
 function pick(arr) {
 	return arr[Math.floor(Math.random() * arr.length)];
+}
+
+/**
+ * Resolve inline [A|B|C] tokens and named [tableName] references recursively.
+ * Innermost bracket groups (no nested brackets) are resolved first, repeated
+ * until no [...] groups remain. Named lookups are resolved from `tables`.
+ */
+function resolveTemplate(template, tables = {}) {
+	if (!template) return template;
+	let result = template;
+	const inner = /\[([^\[\]]+)\]/g;
+	let prev;
+	do {
+		prev = result;
+		result = result.replace(inner, (_, group) => {
+			if (group.includes("|")) {
+				const options = group.split("|");
+				return options[Math.floor(Math.random() * options.length)];
+			} else {
+				const table = tables[group.trim()];
+				if (Array.isArray(table) && table.length > 0) {
+					return resolveTemplate(
+						table[Math.floor(Math.random() * table.length)],
+						tables
+					);
+				}
+				return group; // unknown token — leave as-is
+			}
+		});
+	} while (result !== prev);
+	return result;
 }
 
 function pickN(arr, n) {
@@ -435,6 +472,15 @@ function generatePool(data) {
 	return `<p>A pool of <strong>${liquid}</strong> sits recessed into the chamber floor. ${effect}</p>`;
 }
 
+function generateWell(data) {
+	let desc = pick(data.specialFeatures.wells);
+	if (data.specialFeatures.wellSubdescriptions && data.specialFeatures.wellSubdescriptions.length > 0) {
+		const subdesc = pick(data.specialFeatures.wellSubdescriptions);
+		desc += ` ${subdesc}`;
+	}
+	return `<p>${desc}</p>`;
+}
+
 function generateSpecialFeature(data) {
 	const featureType = pick(["debris", "debris", "remains", "pool", "fungi", "fountain"]);
 
@@ -475,8 +521,11 @@ function generateSpecialFeature(data) {
 async function generateRoom(data, roomNum, roomType, connections, keyMap, typeKey, treasureTier, allowPool = false) {
 	const descs = data.roomDescriptions[roomType.type];
 	const decos = data.roomDecorations[roomType.type];
-	const roomDesc = descs ? pick(descs) : "A nondescript room.";
-	const roomDeco = decos ? pick(decos) : "";
+	const tables = data.templateTables || {};
+	const rawDesc = descs ? pick(descs) : "A nondescript room.";
+	const rawDeco = decos ? pick(decos) : "";
+	const roomDesc = resolveTemplate(rawDesc, tables);
+	const roomDeco = resolveTemplate(rawDeco, tables);
 
 	// Appearance detail
 	const cover = pick(data.appearances.covers);
@@ -539,6 +588,12 @@ async function generateRoom(data, roomNum, roomType, connections, keyMap, typeKe
 	if (allowPool && Math.random() < 0.2) {
 		html += `<h3>Pool</h3>`;
 		html += generatePool(data);
+	}
+
+	// Well (Specific to room)
+	if (arguments.length > 8 && arguments[8]) {
+		html += `<h3>Well</h3>`;
+		html += generateWell(data);
 	}
 
 	return html;
@@ -627,11 +682,12 @@ export async function generateDungeonHtml(typeKey, sizeKey, hexLabel, hexKey) {
 	// Build room connections
 	const connections = buildRoomConnections(roomCount, data);
 
-	// Pick room types
-	const roomTypes = pickWeightedUnique(data.roomTypes, roomCount);
+	// Pick room types — use type-specific pool if the dungeonType defines one
+	const roomTypePool = dungeonType.roomTypes || data.roomTypes;
+	const roomTypes = pickWeightedUnique(roomTypePool, roomCount);
 	// Pad with random picks if we don't have enough unique types
 	while (roomTypes.length < roomCount) {
-		roomTypes.push(pickWeighted(data.roomTypes));
+		roomTypes.push(pickWeighted(roomTypePool));
 	}
 
 	// ── Generate & Upload Map Image ──────────────────────────────────────────
@@ -698,17 +754,24 @@ export async function generateDungeonHtml(typeKey, sizeKey, hexLabel, hexKey) {
 	html += `<p>Check <strong>${data.wanderingMonsters.chance}</strong> (${data.wanderingMonsters.checkFrequency}) for a wandering encounter:</p>`;
 	html += await generateWanderingTable(data, typeKey);
 
-	// ── Rooms ────────────────────────────────────────────────────────────────
+	// Rooms ────────────────────────────────────────────────────────────────
 	html += `<hr>`;
 
 	// Pick a random room to have the book
 	const bookRoomIndex = randRange(0, roomCount - 1);
 	const bookData = await loadBookData();
 
+	// Pick a random room to have a well (50% chance for dungeons/temples)
+	let wellRoomIndex = -1;
+	if ((typeKey === "dungeon" || typeKey === "temple") && Math.random() < 0.5) {
+		wellRoomIndex = randRange(0, roomCount - 1);
+	}
+
 	for (let i = 0; i < roomCount; i++) {
 		html += await generateRoom(
 			data, i + 1, roomTypes[i], connections, keyMap, typeKey, treasureTier,
-			sizeKey !== "small"
+			sizeKey !== "small",
+			i === wellRoomIndex
 		);
 
 		// Add book if this is the chosen room

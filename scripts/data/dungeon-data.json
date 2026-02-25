@@ -34,7 +34,74 @@
 				"magical",
 				"aberrations"
 			],
-			"hasCultists": true
+			"hasCultists": true,
+			"roomTypes": [
+				{
+					"type": "temple_hall",
+					"label": "Temple Hall",
+					"weight": 3
+				},
+				{
+					"type": "altar",
+					"label": "Altar Chamber",
+					"weight": 3
+				},
+				{
+					"type": "chapel",
+					"label": "Chapel",
+					"weight": 3
+				},
+				{
+					"type": "shrine",
+					"label": "Shrine",
+					"weight": 3
+				},
+				{
+					"type": "chantry",
+					"label": "Chantry",
+					"weight": 2
+				},
+				{
+					"type": "vestry",
+					"label": "Vestry",
+					"weight": 2
+				},
+				{
+					"type": "antechamber",
+					"label": "Antechamber",
+					"weight": 2
+				},
+				{
+					"type": "crypt",
+					"label": "Crypt",
+					"weight": 1
+				},
+				{
+					"type": "library",
+					"label": "Library",
+					"weight": 1
+				},
+				{
+					"type": "pantry",
+					"label": "Pantry",
+					"weight": 1
+				},
+				{
+					"type": "prison",
+					"label": "Prison Cell",
+					"weight": 1
+				},
+				{
+					"type": "torture_chamber",
+					"label": "Torture Chamber",
+					"weight": 1
+				},
+				{
+					"type": "storage",
+					"label": "Storage Room",
+					"weight": 1
+				}
+			]
 		},
 		"tomb": {
 			"label": "Tomb",
@@ -533,6 +600,69 @@
 			"A bowstring hangs from a peg, still waxed and supple.",
 			"A tally of weapons issued and returned is carved into the door frame.",
 			"A practice target of straw and wood leans in the corner, bristling with embedded points."
+		],
+		"temple_hall": [
+			"Damaged mosaics depict religious parables along the walls of this room.",
+			"Fragments of prayers are barely legible on the surrounding walls.",
+			"A [wooden|copper] rail, waist high, runs along [two|three|all four] walls, used for kneeling and supplication.",
+			"The walls are lined with torches that flicker to life when anyone enters, casting [crimson|violet|pale blue|green] flames.",
+			"The room is lined with [tuscan|doric|ionic|corinthian] columns of [wood|brick|stone|marble] in [a square|two rows]."
+		],
+		"altar": [
+			"A rough [masonry mat] idol, more boulder than sculpture, squats in a corner — an ancient image of *[power]*.",
+			"A giant [cheap metal] lamp dangles from a chain from the ceiling.",
+			"On one wall is a [scarred|roughly hewn|gouged] [masonry mat] slab, [stained|crudely painted|flecked] with dark [red synonym] stains.",
+			"One wall is dominated by a mosaic depicting *[power]*.",
+			"Ash from burned offerings coats every surface in a fine grey layer."
+		],
+		"chapel": [
+			"A miniature bell tower in the corner holds a large brass bell. Ringing it will put every monster in the dungeon on alert.",
+			"Moth-eaten hassocks are angled toward the dais.",
+			"Water-soaked prayer mats line the floor and smell of brine and mildew.",
+			"Faded, damp tapestries along the walls show a heroine hunting [a forest animal], leading an army, and battling [a devil].",
+			"Three frescoes each display a hellscape: ruled by [a devil], by [a devil], and by [a devil]."
+		],
+		"chantry": [
+			"Moth-eaten hassocks are angled toward an alcove adorned with religious carvings.",
+			"Fragments of a hymnal are scattered across the floor, waterlogged and illegible.",
+			"A triangular table in a corner holds ceremonial [candles and charms|lamps and oil|drinks and cups]."
+		],
+		"vestry": [
+			"A [height] pedestal holds a tarnished [cheap metal] reliquary, now empty.",
+			"A partition in the corner sets off a side alcove, with incense holders and a reading stand.",
+			"A long birch chest holds two candle lighters of copper, spare candles, and wicks."
+		]
+	},
+	"roomDescriptions_temple": {
+		"temple_hall": [
+			"A [masonry mat] table is bolted to the center of this room; fixed to it is a grotesque [cheap metal] idol of [a devil|a coiled serpent|a weeping saint|an unblinking eye]. [religious periphery]",
+			"A circle of inlaid [masonry mat] is divided into [three|four|six|twelve] equal segments, at the end of each is a stone pedestal. Rust circles on each pedestal mark where statues once stood.",
+			"A small chamber, roofed and enclosed on all four sides, occupies the center of this room; its only door is [locked|open, revealing a hall of statues|open, revealing sacred books and friezes|open, revealing engravings and ledge-statues].",
+			"An elevated dais is faced by [2d4+1] rows of wooden pews crowding this room. A [size] candle holder holds only melted wax, but the room still smells of incense and patchouli. [religious walls]",
+			"[shrine]"
+		],
+		"altar": [
+			"A low [masonry mat] plinth crowns a [crumbling|collapsing|squat] dais covered in [cobwebs|dried blood|dust]. [religious walls]",
+			"Decades of melted wax form a frozen dribble and cover a wide [ornately|primitively|austerely] decorated [masonry mat] pedestal. [religious periphery]",
+			"A carefully sculptured marble altar shows images of *[power]*. Instead of an offering it holds only [old bones|dried flower petals|a desiccated rat|a shattered reliquary].",
+			"An enormous stone table, brimming with [occult|dark|evil|vile] [energy|magic], dominates this room. Ceremonial stone knives line the edges. [religious periphery] [religious walls]"
+		],
+		"chapel": [
+			"An elevated dais is faced by [1d6+1] rows of wooden pews, which crowd this room. [religious periphery]",
+			"A mostly burnt pulpit stands in the center, surrounded by circular benches. [religious walls]",
+			"A circular stone font, dry but with a stain around the water line, smells of [smells]. [religious periphery]",
+			"Rows and rows of long [masonry mat] benches fill this room. [religious walls]",
+			"The room is dominated by a central dais, [two|three|six] [masonry mat] steps above the floor, with a low [masonry mat] plinth covered in dried [cobwebs|blood|dust]. [religious periphery]"
+		],
+		"chantry": [
+			"A vaulted ceiling provides excellent acoustics for singing \u2014 but it will also transmit any noise to adjacent rooms. An elevated dais is faced by [1d6+1] rows of wooden pews crowding this room. [religious periphery]",
+			"The curved walls of this small chantry are lined with carved memorial tablets, each dedicated to a [priest|deacon|bishop|martyr] long since dead. Faded portraits hang between them. [religious walls]",
+			"A private singing chamber, its ceiling carved into ribbed vaults to enhance resonance. [masonry mat] lecterns bear rotting sheet music. Candle stubs cluster in every niche. [religious periphery]"
+		],
+		"vestry": [
+			"A heavy chest holds vestments in many sizes, including [albas|cassocks|cottas|robes|surplices]. They are worn but still wearable. [religious walls]",
+			"A locked coffer holds vestments in many sizes, including [albas|cassocks|cottas|robes|surplices]. The air still holds a faint smell of cedar-wood and incense. [religious walls]",
+			"An iron-banded box holds vestments in many sizes, including [albas|cassocks|cottas|robes|surplices]. A mirror of polished bronze stands in one corner, tarnished to near opacity. [religious periphery]"
 		]
 	},
 	"appearances": {
@@ -1174,7 +1304,89 @@
 				"An ornate bronze fountain, dry and corroded. A faint magical aura lingers.",
 				"A natural spring bubbles up through a crack in the floor into a stone basin."
 			]
-		}
+		},
+		"wells": [
+			"A crumbling stone wall circles this well. A frayed, rotting rope dangles into the darkness, holding a splintered wooden bucket.",
+			"A heavy, rusted iron grate covers this well, padlocked with a mechanism that looks centuries old. The water below faintly reflects any light.",
+			"Iron-bound corners reinforce the rotted wooden walls of this 20-foot deep well, which smells faintly of sulfur.",
+			"A macabre ring of butchered corpses serves as a grisly wall for this well, which reeks of copper and foul bile.",
+			"Carved stone reliefs of a long-forgotten coastal city and a rising sun adorn the low wall of this otherwise mundane well.",
+			"Two small, moss-slicked buckets sit next to an open hole. Supple, pale vines attach the buckets to a bleached, dead tree stump.",
+			"Four solid slabs of jagged obsidian form a crude, menacing barrier around this well, the water within unnaturally cold.",
+			"Sunken in a low hollow, unnaturally fresh water fills this well to only a few feet below ground level.",
+			"Long, thin blocks of finely cut stone interlock to form a wall, bound with corroded iron bands that look ready to snap.",
+			"A heavy double-door lid, secured by iron hinges and a sliding bolt, seals this circular brick well. Deep scratches mar the inside of the lid.",
+			"Small, cracked flagstones pave the floor around the well. A nearby pool connects to it through a natural fissure in the rock.",
+			"An octagonal, rough-hewn stone wall with two semicircular cutouts surrounds this well. A petrified log acts as a makeshift crank.",
+			"An inverted step pyramid descends to a small stone platform jutting out over the well shaft, which plunges 80 feet into darkness.",
+			"Dozens of humanoid skulls are mortared into the walls of this circular shaft. The macabre decorations make scaling the well much easier.",
+			"What appears to be a well is actually perfectly circular, smooth bore-hole left by a massive, tunneling monstrosity plunging deep into the earth.",
+			"The leg bones of massive, unknown creatures decorate the top portion of this 150-foot deep, completely dry well.",
+			"An upturned, rotting barrel serves as an impromptu cover. A cracked wooden bucket sits atop it amid a coil of brittle rope.",
+			"A rusted cast iron hand pump draws water from this well through a thick pipe. A heavy stone slab seals the actual shaft.",
+			"This open hole follows a jagged natural fissure in the rock as it twists and turns down to a small, stagnant pool.",
+			"A hardened leather bucket attached to tightly woven spider-silk rope lies next to a three-foot wide hole piercing the cavern floor.",
+			"Cut stone forms a runoff basin nearby. Unsettlingly red water is drawn into the basin by an ancient, squeaking hand pump.",
+			"Cube-shaped slabs of polished rose granite form the walls of this remarkably shallow well.",
+			"Shattered slate tiles roof the wooden frame surrounding this five-foot wide well. It has no walls to stop the unwary from falling in.",
+			"The eight walls of this octagonal well each depict, in bright tile mosaics, the grisly execution of various tradesmen.",
+			"Sharp shards of loosely piled, blood-stained rock surround a ragged, open hole in the ground.",
+			"A treacherous, crude wooden bridge—nothing more than two rotting planks—crosses this ten-foot wide chasm over a well.",
+			"Bricks of gold travertine marble form this well’s low round wall, strangely pristine amidst the surrounding decay.",
+			"A thick tangle of thorny, blood-red roots grows aggressively through the stone walls of this hand-dug well.",
+			"A rotting thatch roof provides meager protection over the well, mostly catching dirty water dripping from the ceiling above.",
+			"Intricately cut interlocking stones, carved to look like weeping faces, form the well’s walls.",
+			"This 25-foot diameter stone-walled well features a precarious spiral stone stair cut into its side, descending to the water level.",
+			"Slightly pink-hued, jagged crystals form a low wall around a perfectly carved circular well.",
+			"This square well has a slender green marble column at each corner. Several chips and dark stains in the marble bear mute testimony to a previous massacre."
+		],
+		"wellSubdescriptions": [
+			"The brittle husks of massive, dead centipedes litter the ground around the well.",
+			"Small, perfectly rectangular holes pierce the well wall; two tarnished brass bars lean against it, slick with moisture.",
+			"A large, crudely carved sigil of an inverted, bleeding crown is chiseled into the stone near the well.",
+			"The heavy rope for the well’s bucket has been cleanly severed into three sections—none long enough to reach the water below.",
+			"Fresh, alarmingly bright blood spatters the ground and the rim of the well.",
+			"Abandoned stonemason tools lie scattered amidst fresh mortar and smears of blood. Drag marks lead frantically away from the well.",
+			"A shallow, hastily dug trench leads away from the well, stained dark with an unknown liquid.",
+			"The well sits in a tight alcove hacked violently from the living rock; the jagged walls seem designed to snag clothing and flesh.",
+			"A massive slab of ceiling rubble has crashed down, partially choking the well with crushed stone and dust.",
+			"Jagged stalagmites and stalactites have grown to form a sinister, cage-like structure entirely enclosing the well.",
+			"A low, barely audible moaning wind issues forth from the depths of the well, carrying the scent of ozone.",
+			"The water is hopelessly fouled by the bloated, pale corpse of a dungeon denizen floating face-down. Drinking the water induces severe nausea.",
+			"A pile of basic adventuring gear—a molded backpack, spoiled rations, and a rusted lantern—lies neatly stacked, as if waiting for an owner who never returned.",
+			"The well’s heavy iron pulley mechanism has been violently torn from its block and lies discarded; the rope is shredded.",
+			"The hacked, oozing remains of bioluminescent fungi lie scattered next to the well, their glow slowly fading.",
+			"Thoroughly chewed and splintered bones of indeterminate origin litter the ground in a wide circle around the well.",
+			"The entire well structure has slumped into a 15-foot deep sinkhole; crude, slippery steps have been hacked into the dirt to reach it.",
+			"A sinister wooden structure is built directly over the well; heavy iron manacles dangle from crossbeams.",
+			"Scattered, crunching gravel covers the ground. If inspected closely, the misshapen footprints of subterranean horrors can be seen.",
+			"Many stones from the well’s wall have been deliberately removed and replaced with human skulls, crudely packed in with gray mud.",
+			"Delicate, glowing chalk writing on the floor nearby says in Undercommon, \"Drink deeply, friend.\"",
+			"The well’s stones are freezing to the touch. Lower down the shaft, a thick layer of rime ice glazes the rock.",
+			"Heavy, dragging footsteps circle the well before abruptly stopping at the edge.",
+			"Scrawled in fresh blood on the lip are the words \"Prey here,\" with a jagged arrow pointing straight down into the darkness.",
+			"Disturbingly, the well is immaculately clean and perfectly maintained, standing in stark contrast to the surrounding ruin.",
+			"A set of fresh, dripping-wet footprints lead away from the well and fade into the darkness.",
+			"The immediate area reeks overpowering of wet fur and old copper.",
+			"The frantic, hollow sound of something large thrashing about in the water echoes up from far below.",
+			"The cloying, sweet stench of days-old rotting meat wafts lazily from the well’s depths.",
+			"Wide, spider-web cracks in the floor radiate out from the well, as if something massive slammed into it from below.",
+			"A faint, sickly-green glow from phosphorescent moss illuminates the black water far at the bottom.",
+			"A battered, blood-filled iron helmet lies forgotten near the well. Of the owner's body, there is no sign.",
+			"A grinning, clean-picked skull hangs suspended from a thin wire directly over the center of the well.",
+			"The water here is slightly sour; it is safe to drink but tastes incredibly flat and metallic.",
+			"The skeletal remains of two small humanoids rest on a slippery ledge near the water line, their gear rotted away.",
+			"A skeletal draft animal is hopelessly trapped at the bottom, standing in muck, its bones vibrating with an unnatural chill.",
+			"A single set of wet, three-toed webbed footprints lead away from the well, suggesting something just climbed out.",
+			"A sickening tangle of pale, fleshy roots pierces the well’s walls and hangs limply into the water below.",
+			"Agonized, ghostly faces seem to swirl briefly in the inky black water whenever a light source gets too close.",
+			"The well’s stone walls have unnatural, fleshy growths that slowly pulse, oozing yellow pus into the water. The water is highly toxic.",
+			"A surprisingly sturdy, long wooden ladder rests securely against the well’s inner wall, descending into the dark.",
+			"Loose stones and rubble have been intentionally piled around the well to camouflage it and make approaching it treacherous.",
+			"The well emits a choking, sulfuric stench of raw sewage and decay.",
+			"The fresh, mangled corpses of three goblins lie in a heap near the well, their faces frozen in terror.",
+			"A wide, iridescent slime trail emerges from the well, crosses the floor, and disappears into a crack in the wall."
+		]
 	},
 	"encounterCategories": {
 		"humanoids": {
@@ -1592,5 +1804,130 @@
 		"Northwest",
 		"Southeast",
 		"Southwest"
-	]
+	],
+	"templateTables": {
+		"height": [
+			"tall",
+			"waist-high",
+			"low",
+			"short",
+			"knee-high",
+			"chest-high"
+		],
+		"smells": [
+			"incense",
+			"mildew and sewage",
+			"brine",
+			"decay",
+			"patchouli",
+			"old wet stone",
+			"charred ash"
+		],
+		"cheap metal": [
+			"brass",
+			"copper",
+			"tarnished iron",
+			"pewter",
+			"tin"
+		],
+		"masonry mat": [
+			"stone",
+			"granite",
+			"marble",
+			"limestone",
+			"sandstone",
+			"slate"
+		],
+		"size": [
+			"small",
+			"large",
+			"enormous",
+			"great",
+			"modest",
+			"wide"
+		],
+		"colour": [
+			"crimson",
+			"violet",
+			"golden",
+			"pale white",
+			"azure",
+			"indigo",
+			"saffron"
+		],
+		"another realm": [
+			"heaven",
+			"the abyss",
+			"the underworld",
+			"purgatory",
+			"the celestial court",
+			"the outer dark"
+		],
+		"red synonym": [
+			"crimson",
+			"scarlet",
+			"rust-dark",
+			"dried-blood"
+		],
+		"a devil": [
+			"a pit fiend",
+			"a horned devil",
+			"an arch-devil",
+			"a bone devil",
+			"a chain devil",
+			"an erinyes"
+		],
+		"a forest animal": [
+			"a stag",
+			"a boar",
+			"a wolf",
+			"a great elk",
+			"a bear",
+			"a fox"
+		],
+		"power": [
+			"the Unnamed God",
+			"the Devourer",
+			"the Eye of Night",
+			"the Pale Mother",
+			"the Iron Throne",
+			"the Smiling Wound",
+			"Blessed Oblivion",
+			"the Undying Flame"
+		],
+		"religious periphery": [
+			"Moth-eaten hassocks are angled toward an alcove adorned with religious carvings.",
+			"Water-soaked prayer mats line the floor and smell of brine and sewage.",
+			"A [height] pedestal holds a tarnished [cheap metal] reliquary, now empty.",
+			"A [height] wooden table is draped in a cloth whose imagery has been lost to mold and mildew.",
+			"A long birch chest holds two candle lighters of copper, spare candles, and wicks.",
+			"A miniature bell tower holds a large brass bell. Ringing it will put every monster on alert.",
+			"A [size] [cheap metal] cymbal stands on a stand with a padded drumstick beside it. Striking it releases a sleep spell.",
+			"A partition in the corner sets off a vestry, with a chest containing new vestments in many sizes, including [albas|cassocks|cottas|robes|surplices].",
+			"A rough [masonry mat] idol, more boulder than sculpture, squats in a corner — an ancient image of *[power]*.",
+			"A giant [cheap metal] lamp dangles from a chain from the ceiling."
+		],
+		"religious walls": [
+			"Damaged mosaics depict religious parables along the walls.",
+			"Crouching within a recess is a large [simple|ornamental|empty|brackish-water-filled] font, surrounded by carvings of [another realm] scenes.",
+			"One wall bears a [scarred|roughly hewn|gouged] [masonry mat] slab, [stained|crudely painted|flecked] with dark [red synonym] stains.",
+			"Fragments of prayers are barely legible on the surrounding walls.",
+			"One wall is dominated by a mosaic depicting *[power]*.",
+			"Faded, damp tapestries show a heroine hunting [a forest animal], leading an army, and battling [a devil].",
+			"Three frescoes each display a hellscape: ruled by [a devil], by [a devil], and by [a devil].",
+			"A [wooden|copper] rail, waist high, runs along [two|three|all four] walls, used for kneeling and supplication.",
+			"The walls are lined with torches that flicker to life when anyone enters, casting [colour] flames.",
+			"The room is lined with [tuscan|doric|ionic|corinthian] columns of [wood|brick|stone|marble] in [a square|two rows]."
+		],
+		"shrine": [
+			"Within an ornate alcove rests a small votive sculpture of *[power]*. [religious walls]",
+			"A hazy film of soot clings to every surface; the smell of incense and [smells] hangs in the air. [religious walls]",
+			"At the foot of a defaced stone statue rest small bones, fragile flower petals, and the stubs of consumed candles. [religious periphery]",
+			"A [height] [bright|sharp|unnatural|smoky] [colour] flame rises from the floor in the [center|middle] of this chamber. [religious periphery]",
+			"A [whitened sepulchre|sarcophagus] holds the remains of a prophet of *[power]*, her name written in strange runes that line its sides. [religious walls]",
+			"A philatory the size of an enormous coffin, with a thick glass cover, reveals the skeleton of [a troll|an ogre|a giant]. [religious periphery]",
+			"A bronze reliquary stands on a pedestal, warded by a necrotic curse that reduces to 3 the Strength of anyone who touches it. [religious walls]",
+			"At the bottom of a shallow pool, silver coins reflect any torchlight; the head of each coin shows *[power]*. The water is a transparent acid that does 2d6 damage per turn to any creature exposed to it."
+		]
+	}
 }
