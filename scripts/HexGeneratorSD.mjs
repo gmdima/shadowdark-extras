@@ -9,9 +9,27 @@
  */
 
 import { setGenerating, isWaterEffect, isBwEffect, getCustomTilesByBiome, getCustomTileDimensions, getColoredTilesByBiome, getColoredTileDimensions, isTintEnabled, getActiveTileTab } from "./HexPainterSD.mjs";
+import { setHexTerrainBatch } from "./HexTooltipSD.mjs";
 
 const MODULE_ID = "shadowdark-extras";
 const TILE_FOLDER = `modules/${MODULE_ID}/assets/tiles`;
+
+// Maps biome keys to user-friendly terrain labels (same mapping as HexPainterSD)
+const BIOME_TO_TERRAIN = {
+    water: "Water",
+    swamp: "Swamp",
+    grassland: "Vegetation",
+    forestLight: "Vegetation",
+    forest: "Vegetation",
+    hills: "Mountains",
+    hillsForest: "Mountains",
+    mountains: "Mountains",
+    mountainsForest: "Mountains",
+    desert: "Desert",
+    badlands: "Badlands",
+    snowyMountains: "Snow",
+    special: null,
+};
 const HEX_TILE_W = 296;
 const HEX_TILE_H = 256;
 
@@ -446,6 +464,7 @@ export async function generateHexMap(params = {}) {
 
         // Build tile placement data
         const tileData = [];
+        const terrainMap = {};  // { hexKey: terrainLabel }
         for (let r = 0; r < rows; r++) {
             for (let c = 0; c < cols; c++) {
                 const elev = elevMap[r * cols + c];
@@ -529,6 +548,12 @@ export async function generateHexMap(params = {}) {
                     sort: Math.floor(center.y),
                     flags: { [MODULE_ID]: { painted: true, biome: isWater ? "water" : undefined } }
                 });
+
+                // Track terrain for tooltip auto-set
+                const terrainLabel = BIOME_TO_TERRAIN[biome];
+                if (terrainLabel) {
+                    terrainMap[`${r}_${c}`] = terrainLabel;
+                }
             }
         }
 
@@ -628,6 +653,16 @@ export async function generateHexMap(params = {}) {
         }
 
         ui.notifications.info(`SDX | Generated ${created} hex tiles.`);
+
+        // Batch-save terrain into hex tooltip data
+        if (Object.keys(terrainMap).length > 0 && scene.id) {
+            try {
+                await setHexTerrainBatch(scene.id, terrainMap);
+                console.log(`${MODULE_ID} | Set terrain for ${Object.keys(terrainMap).length} hexes`);
+            } catch (err) {
+                console.warn(`${MODULE_ID} | Failed to batch-set hex terrain:`, err);
+            }
+        }
 
     } finally {
         setGenerating(false);

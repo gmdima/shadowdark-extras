@@ -793,6 +793,15 @@ class JournalPinGraphics extends PIXI.Container {
         // Track build cycle to prevent overlapping async builds from creating ghost labels
         const buildId = ++this._buildId;
 
+        // CRITICAL: Kill all GSAP animations BEFORE tearing down children/textures.
+        // On macOS Chrome, hover animations (scale/pulse/etc.) hold references to
+        // sprites whose textures we are about to destroy. If the PIXI render loop
+        // fires between destroy and rebuild, it hits a null texture → black screen.
+        if (window.gsap) {
+            gsap.killTweensOf(this);
+            gsap.killTweensOf(this.scale);
+        }
+
         // Cleanup old label container reference if this is a fresh start
         if (this._labelContainer) {
             if (this._labelContainer.parent) {
@@ -805,7 +814,11 @@ class JournalPinGraphics extends PIXI.Container {
         // Clear image sprite reference (will be set if shape is "image")
         this._imageSprite = null;
 
-        // Clean up previous cached texture
+        // SAFE TEARDOWN: Remove children from the display tree FIRST so that
+        // PIXI's render loop never encounters a sprite with a destroyed texture.
+        this.removeChildren();
+
+        // NOW destroy the old cached texture (no sprite references it anymore)
         if (this._cachedTexture) {
             this._cachedTexture.destroy(true);
             this._cachedTexture = null;
@@ -1051,7 +1064,8 @@ class JournalPinGraphics extends PIXI.Container {
             }
         }
 
-        // Everything is ready, SWAP children to avoid flicker
+        // Everything is ready, add the new container
+        // (old children were already removed at the start of _build)
         this.removeChildren();
         this.addChild(container);
 
@@ -1354,12 +1368,15 @@ class JournalPinGraphics extends PIXI.Container {
                 const bounds = container.getLocalBounds();
                 if (bounds.width > 0 && bounds.height > 0) {
                     const texture = canvas.app.renderer.generateTexture(container, { resolution: 2 });
-                    const cachedSprite = new PIXI.Sprite(texture);
-                    cachedSprite.anchor.set(-bounds.x / bounds.width, -bounds.y / bounds.height);
-                    this.removeChild(container);
-                    container.destroy({ children: true });
-                    this.addChild(cachedSprite);
-                    this._cachedTexture = texture;
+                    // Guard: only use the cached texture if generation succeeded
+                    if (texture && texture.valid) {
+                        const cachedSprite = new PIXI.Sprite(texture);
+                        cachedSprite.anchor.set(-bounds.x / bounds.width, -bounds.y / bounds.height);
+                        this.removeChild(container);
+                        container.destroy({ children: true });
+                        this.addChild(cachedSprite);
+                        this._cachedTexture = texture;
+                    }
                 }
             } catch (e) {
                 // Keep the raw graphics container if caching fails
@@ -1711,6 +1728,13 @@ class JournalPinGraphics extends PIXI.Container {
         this._removeEventListeners();
         this.pinData = foundry.utils.deepClone(newData);
 
+        // Kill any active GSAP animations before rebuild to prevent
+        // stale references to sprites/textures that _build() will destroy
+        if (window.gsap) {
+            gsap.killTweensOf(this);
+            gsap.killTweensOf(this.scale);
+        }
+
         // Rebuild the graphics
         await this._build();
 
@@ -1825,6 +1849,17 @@ class JournalPinGraphics extends PIXI.Container {
             if (isGm) {
                 this._isDragging = true;
                 this._hasDragged = false;
+
+                // Kill hover animations immediately when starting a drag.
+                // This prevents GSAP from holding stale sprite references
+                // during the subsequent update() → _build() on pointer up.
+                if (window.gsap) {
+                    gsap.killTweensOf(this);
+                    gsap.killTweensOf(this.scale);
+                    this.scale.set(1.0);
+                    this.rotation = 0;
+                }
+
                 const local = this.parent.toLocal(event.global);
                 this._dragOffset.x = this.position.x - local.x;
                 this._dragOffset.y = this.position.y - local.y;

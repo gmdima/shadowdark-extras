@@ -24,7 +24,7 @@ body.sdx-dark-mode .window-header {
 }
 
 body.sdx-dark-mode .sdx-narration-card blockquote {
-    font-family: 'Old Newspaper Font' !important;
+    font-family: 'Montserrat-medium' !important;
     font-weight: normal;
     text-align: center;
     text-transform: none;
@@ -35,7 +35,7 @@ body.sdx-dark-mode .sdx-narration-card blockquote {
     background: #1a1a1a;
     color: #f0f0f0;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-    font-family: 'Old Newspaper Font' !important;
+    font-family: 'Montserrat-medium' !important;
     border: var(--sdx-box-border-width) solid transparent !important;
     border-image: var(--sdx-box-border) var(--sdx-box-border-image-slice) fill !important;
     border-image-repeat: stretch !important;
@@ -43,6 +43,9 @@ body.sdx-dark-mode .sdx-narration-card blockquote {
 
 }
 
+body.sdx-dark-mode .sheet.journal-entry.application .journal-sidebar .toc li.page:not(.active)+.active {
+    background-color: #151516;
+}
 
 body.sdx-dark-mode .sdx-narration-card blockquote p {
     color: #ffffff;
@@ -64,7 +67,7 @@ body.sdx-dark-mode .sdx-narration-card blockquote h6 {
    ============================================ */
 body.sdx-dark-mode .sheet.journal-entry:not(.minimized, .minimizing, .maximizing) {
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-    font-family: 'Old Newspaper Font' !important;
+    font-family: 'Montserrat-Medium' !important;
     border: var(--sdx-box-border-width) solid transparent !important;
     border-image: var(--sdx-journal-border) var(--sdx-journal-border-image-slice) fill !important;
     border-image-repeat: var(--sdx-journal-border-image-repeat) !important;
@@ -111,7 +114,7 @@ body.sdx-dark-mode .sheet.journal-entry .journal-header input[type=text] {
     color: #c4c4c4;
     border: none;
     border-radius: 0;
-    font-family: 'Old Newspaper Font';
+    font-family: 'Montserrat-medium';
 }
 
 /* Journal page H1 headers with border-image frame */
@@ -128,7 +131,7 @@ body.sdx-dark-mode .sheet.journal-entry .journal-entry-page h1 {
     background: #1a1a1a;
     color: #f0f0f0;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-    font-family: 'Old Newspaper Font' !important;
+    font-family: 'Montserrat-medium' !important;
     border: var(--sdx-box-border-width) solid transparent !important;
     border-image: var(--sdx-box-border) var(--sdx-box-border-image-slice) fill !important;
     border-image-repeat: stretch !important;
@@ -148,7 +151,7 @@ body.sdx-dark-mode .sheet.journal-entry .journal-entry-page h3,
 body.sdx-dark-mode .sheet.journal-entry .journal-entry-page h4,
 body.sdx-dark-mode .sheet.journal-entry .journal-entry-page h5,
 body.sdx-dark-mode .sheet.journal-entry .journal-entry-page h6 {
-    font-family: 'Old Newspaper Font' !important;
+    font-family: 'Montserrat-medium' !important;
     color: #d7d7d7 !important;
 }
 
@@ -178,7 +181,7 @@ body.sdx-dark-mode .sheet.journal-entry .journal-entry-page table tr:first-child
 body.sdx-dark-mode .sheet.journal-entry .journal-entry-page table tr:first-child td {
     padding: 10px 12px;
     text-align: center !important;
-    font-family: 'Old Newspaper Font', 'Modesto Condensed', serif !important;
+    font-family: 'Montserrat-medium', 'Modesto Condensed', serif !important;
     font-size: 16px;
     font-weight: bold;
     text-transform: uppercase;
@@ -192,7 +195,7 @@ body.sdx-dark-mode .sheet.journal-entry .journal-entry-page table td {
     padding: 8px 12px;
     color: #e0dcd4 !important;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    font-family: 'Old Newspaper Font', 'Modesto Condensed', serif !important;
+    font-family: 'Montserrat-medium', 'Modesto Condensed', serif !important;
 }
 
 body.sdx-dark-mode .ProseMirror table tbody tr:nth-child(even),
@@ -222,7 +225,7 @@ body.sdx-dark-mode .journal-page-content blockquote {
     background: #1a1a1a;
     color: #f0f0f0;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-    font-family: 'Old Newspaper Font' !important;
+    font-family: 'Montserrat-medium' !important;
     border: var(--sdx-box-border-width) solid transparent !important;
     border-image: var(--sdx-box-border) var(--sdx-box-border-image-slice) fill !important;
     border-image-repeat: stretch !important;
@@ -330,7 +333,7 @@ body.sdx-dark-mode {
     --lights-out-color-bar-critical: linear-gradient(180deg, #6a1413, #410808);
 
     --font-body: "Montserrat-Medium", sans-serif;
-    --font-header: "Old Newspaper Font", sans-serif;
+    --font-header: "Montserrat-medium", sans-serif;
 }
 
 body.sdx-dark-mode .sidebar-tab {
@@ -490,11 +493,11 @@ body.sdx-dark-mode .dice-roll .dice-total {
 }
 
 body.sdx-dark-mode .chat-portrait-text-size-name-generic {
-    font-family: "Old Newspaper Font";
+    font-family: "Montserrat-medium";
 }
 
 body.sdx-dark-mode .message-sender {
-    font-family: "Old Newspaper Font";
+    font-family: "Montserrat-medium";
     font-size: 16px;
 }
 

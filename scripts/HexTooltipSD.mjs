@@ -64,6 +64,51 @@ export async function saveHexRecord(sceneId, hexKey, record) {
 	await journal.setFlag(MODULE_ID, "hexData", allData);
 }
 
+const DEFAULT_HEX_RECORD = () => ({
+	name: "", zone: "", terrain: "", travel: "",
+	exploration: "unexplored", cleared: false, claimed: false,
+	revealRadius: -1, revealCells: "",
+	rollTable: "", rollTableChance: 100, rollTableFirstOnly: false,
+	showToPlayers: false, features: [], notes: [],
+});
+
+/**
+ * Set the terrain field for a single hex (used by the painter).
+ * Loads existing record or creates a default, updates terrain, and saves.
+ * @returns {object} the updated record
+ */
+export async function setHexTerrain(sceneId, hexKey, terrain) {
+	const allData = loadAllHexDataSync();
+	const existing = allData[sceneId]?.[hexKey];
+	const record = existing
+		? foundry.utils.deepClone(existing)
+		: DEFAULT_HEX_RECORD();
+	record.terrain = terrain;
+	await saveHexRecord(sceneId, hexKey, record);
+	return record;
+}
+
+/**
+ * Set the terrain field for many hexes in one journal write (used by the generator).
+ * @param {string} sceneId
+ * @param {Object<string,string>} terrainMap  – { hexKey: terrainLabel, … }
+ */
+export async function setHexTerrainBatch(sceneId, terrainMap) {
+	const journal = await ensureHexJournal();
+	if (!journal) return;
+	const allData = loadAllHexDataSync();
+	if (!allData[sceneId]) allData[sceneId] = {};
+
+	for (const [hexKey, terrain] of Object.entries(terrainMap)) {
+		if (!allData[sceneId][hexKey]) {
+			allData[sceneId][hexKey] = DEFAULT_HEX_RECORD();
+		}
+		allData[sceneId][hexKey].terrain = terrain;
+	}
+
+	await journal.setFlag(MODULE_ID, "hexData", allData);
+}
+
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function hexKeyToLabel(hexKey) {

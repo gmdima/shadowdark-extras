@@ -1,9 +1,11 @@
 import { formatHexCoord } from "./SDXCoordsSD.mjs";
+import { resolveTemplate } from "./HexContentGenerator.mjs";
 
 const MODULE_ID = "shadowdark-extras";
 
 let _data = null;
 let _monsterIndex = null;
+let _fortunateEventData = null;
 
 export async function loadSettlementData() {
 	if (_data) return _data;
@@ -31,6 +33,19 @@ export async function loadHiddenTraitsData() {
 		throw err;
 	}
 	return _hiddenTraitsData;
+}
+
+export async function loadFortunateEventData() {
+	if (_fortunateEventData) return _fortunateEventData;
+	try {
+		const resp = await fetch(`modules/${MODULE_ID}/scripts/data/fortunate-event-data.json`);
+		if (!resp.ok) throw new Error(`HTTP ${resp.status}: ${resp.statusText}`);
+		_fortunateEventData = await resp.json();
+	} catch (err) {
+		console.error(`${MODULE_ID} | Failed to load fortunate event data:`, err);
+		throw err;
+	}
+	return _fortunateEventData;
 }
 
 async function getMonsterIndex() {
@@ -460,6 +475,34 @@ export async function generateSettlementHtml(typeKey, hexLabel, hexKey) {
 		html += ` <p class="secret"><strong>Secret:</strong> ${ruler.hiddenTrait}</p>`;
 	}
 	html += `</p>`;
+
+	// Fortunate Event
+	const fortChance = { "village": 0.25, "town": 0.30, "city": 0.35 }[typeKey] || 0;
+	if (Math.random() < fortChance) {
+		const fortData = await loadFortunateEventData();
+		if (fortData) {
+			const selections = {};
+			const combinedTables = {
+				...data.templateTables,
+				...fortData,
+				nearby_village_name: data.nearbyVillageNames || [],
+				old_names_for_women: data.npcNames?.firstFemale || [],
+				old_names_for_men: data.npcNames?.firstMale || [],
+				human_name: data.npcNames?.firstMale || [],
+				domestic_animal_adjective: [
+					"overworked", "hungry", "underfed", "thoroughbred", "extremely hardy",
+					"tired", "prize-winning", "gaunt", "well-treated", "exceptionally stubborn"
+				],
+				draft_animals: ["oxen", "work horses", "donkeys", "mules"],
+				conveyances: ["carts", "wagons", "sledges", "drays"]
+			};
+			const template = pick(fortData.fortunate_event);
+			const eventText = resolveTemplate(template, combinedTables, selections);
+
+			html += `<h2>Fortunate Event</h2>`;
+			html += `<p>${eventText}</p>`;
+		}
+	}
 
 	// Notable Locations — each shop gets a rich sub-section
 	html += `<h2>Notable Locations</h2>`;

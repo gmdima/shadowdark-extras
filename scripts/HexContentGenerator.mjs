@@ -48,6 +48,34 @@ async function loadHiddenTraitsData() {
 	return _hiddenTraitsData;
 }
 
+let _poiData = null;
+async function loadPoiData() {
+	if (_poiData) return _poiData;
+	try {
+		const resp = await fetch(`modules/${MODULE_ID}/scripts/data/poi-data.json`);
+		if (!resp.ok) throw new Error(`HTTP ${resp.status}: ${resp.statusText}`);
+		_poiData = await resp.json();
+	} catch (err) {
+		console.error(`${MODULE_ID} | Failed to load POI data:`, err);
+		throw err;
+	}
+	return _poiData;
+}
+
+let _circusData = null;
+async function loadCircusData() {
+	if (_circusData) return _circusData;
+	try {
+		const resp = await fetch(`modules/${MODULE_ID}/scripts/data/circus-data.json`);
+		if (!resp.ok) throw new Error(`HTTP ${resp.status}: ${resp.statusText}`);
+		_circusData = await resp.json();
+	} catch (err) {
+		console.error(`${MODULE_ID} | Failed to load circus data:`, err);
+		throw err;
+	}
+	return _circusData;
+}
+
 /**
  * Get the compendium index for shadowdark.monsters, cached after first load.
  * Returns a Map of monster name → compendium document ID.
@@ -81,6 +109,53 @@ async function monsterLink(name) {
 
 function pick(arr) {
 	return arr[Math.floor(Math.random() * arr.length)];
+}
+
+/**
+ * Resolve a template string containing [option1|option2|...] groups.
+ * Supports nesting — innermost groups are resolved first. Repeats until
+ * no more groups remain (handles nested/recursive patterns).
+ */
+export function resolveTemplate(template, tables = {}, selections = {}) {
+	if (!template) return template;
+	let result = template;
+	// Iteratively resolve innermost [...] groups (no nested brackets inside)
+	const inner = /\[([^\[\]]+)\]/g;
+	let prev;
+	do {
+		prev = result;
+		result = result.replace(inner, (_, group) => {
+			group = group.trim();
+
+			// Handle "same_" prefix for reusing previously picked choices
+			if (group.startsWith("same_")) {
+				const key = group.replace("same_", "");
+				return selections[key] || group;
+			}
+
+			if (group.includes("|")) {
+				const options = group.split("|");
+				return options[Math.floor(Math.random() * options.length)];
+			} else {
+				const table = tables[group];
+				if (Array.isArray(table) && table.length > 0) {
+					// Pick a random entry
+					const picked = table[Math.floor(Math.random() * table.length)];
+					// Resolve recursively (allows nested table refs)
+					const resolved = resolveTemplate(picked, tables, selections);
+					// Store the choice for "same_" lookups if it's a top-level table lookup
+					selections[group] = resolved;
+					return resolved;
+				}
+				// If it's a key in tables but not an array (e.g. stats string), return it
+				if (tables[group] && typeof tables[group] === "string") {
+					return tables[group];
+				}
+				return group; // unknown token
+			}
+		});
+	} while (result !== prev);
+	return result;
 }
 
 /**
@@ -333,6 +408,7 @@ function generateLandmarkWatchtower(data, biomeKey) {
  */
 export async function generateHexHtml(biomeKey, hexLabel) {
 	const data = await loadData();
+	const poiData = await loadPoiData();
 	const biome = data.biomes[biomeKey];
 	if (!biome) return { html: "<p>Unknown biome.</p>", regionName: biomeKey };
 
@@ -361,6 +437,17 @@ export async function generateHexHtml(biomeKey, hexLabel) {
 	// Description
 	html += `<p>${description}</p>`;
 	html += `<p><em>Located ${location}.</em></p>`;
+
+	// Point of Interest - 20% chance
+	if (Math.random() < 0.40 && poiData[biomeKey]) {
+		const poiTemplate = pick(poiData[biomeKey]);
+		const poi = resolveTemplate(poiTemplate);
+		const poiSecretId = `secret-${foundry.utils.randomID()}`;
+		html += `<section id="${poiSecretId}" class="secret">`;
+		html += `<h2>Point of Interest</h2>`;
+		html += `<div class="poi-content">${poi}</div>`;
+		html += `</section>`;
+	}
 
 	// Landmarks - 0, 1, or 2
 	const landmarkSlots = 2; // Maximum slots available
@@ -536,7 +623,7 @@ export async function generateHexHtml(biomeKey, hexLabel) {
 		html += `<h2>Merchant ${vehicleName}</h2>`;
 		html += `<p>You encounter a ${vehicleType} ${vehicleColor}-colored ${vehicleName.toLowerCase()}. It is owned by <strong>${merchantName}</strong>, a merchant ${merchantTrait}.`;
 		if (hiddenTrait) {
-			html += ` <span class="secret"><strong>Secret:</strong> ${hiddenTrait}</span>`;
+			html += ` <p class="secret"><strong>Secret:</strong> ${hiddenTrait}</p>`;
 		}
 		html += `</p>`;
 		html += `<p>Traveling with them: ${assistants.join(" and ")}.</p>`;
@@ -602,6 +689,22 @@ export async function generateHexHtml(biomeKey, hexLabel) {
 		html += `<blockquote>"${fortune}"</blockquote>`;
 
 		html += `</section>`;
+	}
+
+	// Circus Encounter - 5% chance in Forest, Plains, Jungle
+	if (["forest", "plains", "jungle"].includes(biomeKey) && Math.random() < 0.05) {
+		const circusData = await loadCircusData();
+		if (circusData) {
+			const selections = {};
+			const template = pick(circusData.travelling_circus);
+			const content = resolveTemplate(template, circusData, selections);
+
+			const circusSecretId = `secret-${foundry.utils.randomID()}`;
+			html += `<section id="${circusSecretId}" class="secret">`;
+			html += `<h2>Traveling Circus</h2>`;
+			html += `<div class="circus-content">${content}</div>`;
+			html += `</section>`;
+		}
 	}
 
 	// Attribution

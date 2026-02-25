@@ -1,0 +1,255 @@
+{
+    "travelling_circus": [
+        "Resting on their long journey between villages is the **circus** **[circus_name]**. Throughout the region, it's whispered that they are actually a group of [circus_reputation]. They transport their show via [2|3|4|5|6|7] wooden [conveyances], pulled by [domestic_animal_adjective] [draft_animals]. [circus_hooks]",
+        "Carefully practicing their acts as they stop on their circuit through the area is the **circus** **[circus_name]**, rumored to be comprised entirely of [circus_reputation]. Circled and tethered are their [domestic_animal_adjective] [draft_animals] near their [2|3|4|5|6|7|8|9] sturdy [conveyances]. [circus_hooks]",
+        "A large, colorful canvas tent set up to the side of your path ahead is emblazoned with large lettering proclaiming that this is property of the **circus** **[circus_name]**. Rumors say that the performers are actually [circus_reputation]. Off to one side, you can see various individuals unloading things from [conveyances] and watering and feeding some [domestic_animal_adjective] [draft_animals]. [circus_hooks]"
+    ],
+    "circus_name": [
+        "[circus1] [circus2]"
+    ],
+    "circus1": [
+        "Sunshine",
+        "Happy Clown",
+        "Lion's Mane",
+        "Behemoth",
+        "Red Letter",
+        "Madame [old_names_for_women]'s Spectacular",
+        "[with_old_names_for_men] & Friends Instant",
+        "[old_names_for_women]'s",
+        "[polish_names_for_men] Family",
+        "Lucky [old_names_for_men]'s",
+        "Two Copper"
+    ],
+    "circus2": [
+        "Carnival",
+        "Circus",
+        "Travelling Fair",
+        "Spectacle",
+        "Menagerie",
+        "Hippodrome"
+    ],
+    "circus_reputation": [
+        "thieves",
+        "cut-throats",
+        "magicians",
+        "were-creatures",
+        "fey changelings",
+        "exiled nobles",
+        "penitent monks"
+    ],
+    "conveyances": [
+        "carts",
+        "wagons",
+        "sledges",
+        "drays"
+    ],
+    "draft_animals": [
+        "oxen",
+        "oxen",
+        "oxen",
+        "work horses",
+        "donkeys",
+        "mules",
+        "[mountain_animals]"
+    ],
+    "domestic_animal_adjective": [
+        "overworked",
+        "hungry",
+        "underfed",
+        "thoroughbred",
+        "extremely hardy",
+        "tired",
+        "prize-winning",
+        "gaunt",
+        "well-treated",
+        "exceptionally stubborn"
+    ],
+    "circus_performers": [
+        "jugglers",
+        "acrobats",
+        "tumblers",
+        "aerialists",
+        "trapezists",
+        "clowns",
+        "contortionists",
+        "hand-balance acts",
+        "rope walkers",
+        "antipodists",
+        "trampoliners",
+        "knife throwers",
+        "human catapult stones",
+        "puppeteers",
+        "chair jugglers",
+        "trick archers"
+    ],
+    "sideshow_attractions": [
+        "bed of nails",
+        "beard of bees",
+        "escapology",
+        "fire-breathing",
+        "fire-eating",
+        "shallow diving",
+        "snake-charming",
+        "sword-swallowing"
+    ],
+    "secret_circus_leader": [
+        "strongwoman, [woman_with_portrait]",
+        "lion tamer, [human_with_portrait]",
+        "bearded woman, [woman_with_portrait]",
+        "tattooed woman, [woman_with_portrait]"
+    ],
+    "circus_hooks": [
+        "A prized [circus_exotic_animal] ([circus_exotic_animal_stats]) has escaped from their cage. The [secret_circus_leader] is desperate and will pay 200gp to retrieve them, alive and intact.",
+        "Local children from [nearby_village_name] have gone missing, and many of them ran away to join [same_circus_name]. The villagers may not have much in the way of payment, but returning them would make you local heroes, and always welcome.",
+        "[human_with_portrait], one of the [circus_performers] that travels with the [same_circus_name] is secretly a **vampire** ([vampire_stats]), with a coffin of dark earth hidden away in one of the [conveyances]. They use the nomadic nature of the [same_circus2] to drain victims dry and move on before suspicion falls on the circus.",
+        "The circus has been experiencing mysterious accidents lately. Just yesterday, [human_with_portrait], one of the [circus_performers], was severely injured during their act. The other performers suspect foul play, but are too busy rehearsing to properly investigate. [circus_plot]",
+        "On their last visit to [nearby_village_name], the circus managed to bilk the community out of most of their wealth. [10|20|30|40] villagers armed with pitchforks and torches led by [human_with_portrait] has been tracking them down to forcibly request refunds.",
+        "Times have been tough for [same_circus_name] lately, and the last performance resulted in their payment being in the form of [with_trade_goods] and [and_trade_goods]. [human_with_portrait] is looking to unload them for coin.",
+        "The [with_circus_performers] have gone on strike for better wages and more safety measures. The protest has begun to escalate, roping in the [and_circus_performers] and [and_circus_performers]. The days of ringmaster [human_with_portrait] may be numbered as the [secret_circus_leader] and her supporters [with_human_name] and [and_human_name] are outmanoeuvring them.",
+        "The [secret_circus_leader] is looking to retire and settle down in [nearby_village_name]. They've saved up quite a bit of coin over the years, but ringmaster [human_with_portrait] is worried that they may end up taking the [with_circus_performers] [with_human_name] and [and_human_name] and [and_circus_performers] [and_human_name] and [and_human_name] with them.",
+        "A horrible accident occurred during the last [sideshow_attractions] performance, and the [secret_circus_leader] will pay 50gp for a new, exciting act for tonight's show, and another 50gp for the same show in [nearby_village_name].",
+        "The mascot of [same_circus_name], the [domestic_animal_adjective] **[circus_exotic_animal]**, has died. The [secret_circus_leader] suspects foul play and is quick to blame the [circus_performers] [with_human_name] and [and_human_name] who have been getting significantly less ring-time lately."
+    ],
+    "circus_plot": [
+        "Indeed, the [circus_performers] [with_human_name] and [and_human_name] are actually **doppelgängers** ([doppelganger_stats]). They studiously avoid any contact with alcohol in order to avoid discovery.",
+        "Sadly, when they fired one of the [circus_performers] back in [nearby_village_name], [human_name] swore bloody vengeance and started following the circus, sneaking through the camp at night and sabotaging the equipment.",
+        "It turns out that this all started after the breakup between the [circus_performers] [a] and [b] back in [nearby_village_name]. [same_b] has been acting strangely ever since, losing their temper easily and secretly threatening [same_a] with more accidents unless they come back. [same_a] isn't confiding in anybody because they think [same_b] can still be saved. But how?"
+    ],
+    "circus_exotic_animal": [
+        "gorgon",
+        "unicorn",
+        "manticore",
+        "harpy",
+        "wyvern",
+        "chimera",
+        "basilisk",
+        "pegasus",
+        "griffon"
+    ],
+    "old_names_for_women": [
+        "Agatha",
+        "Beatrice",
+        "Clara",
+        "Dorothy",
+        "Edith",
+        "Florence",
+        "Gertrude",
+        "Hazel",
+        "Irene",
+        "Joan"
+    ],
+    "with_old_names_for_men": [
+        "Arthur",
+        "Bertram",
+        "Cecil",
+        "Desmond",
+        "Edmund",
+        "Francis",
+        "George",
+        "Harold",
+        "Ivan",
+        "Jasper"
+    ],
+    "old_names_for_men": [
+        "Arthur",
+        "Bertram",
+        "Cecil",
+        "Desmond",
+        "Edmund",
+        "Francis",
+        "George",
+        "Harold",
+        "Ivan",
+        "Jasper"
+    ],
+    "polish_names_for_men": [
+        "Andrzej",
+        "Bogdan",
+        "Czeslaw",
+        "Dariusz",
+        "Eugeniusz",
+        "Franciszek",
+        "Grzegorz",
+        "Henryk",
+        "Ireneusz",
+        "Janusz"
+    ],
+    "woman_with_portrait": [
+        "a stern-faced woman with a silver locket",
+        "a young girl in a faded dress",
+        "a noblewoman with a complex hairstyle",
+        "a warrior woman with a scar across her cheek"
+    ],
+    "human_with_portrait": [
+        "a man with a monocle and a twisted mustache",
+        "a hooded figure with glowing eyes",
+        "a child holding a wooden sword",
+        "a merchant with a greedy smile"
+    ],
+    "nearby_village_name": [
+        "Duskfell",
+        "Oakhaven",
+        "Stonebridge",
+        "Riverford",
+        "Thornwall"
+    ],
+    "with_trade_goods": [
+        "fine silks",
+        "rare spices",
+        "iron ingots",
+        "aged wine"
+    ],
+    "and_trade_goods": [
+        "exotic pelts",
+        "gemstones",
+        "alchemical salt",
+        "bollocks of wool"
+    ],
+    "mountain_animals": [
+        "mountain goats",
+        "yaks",
+        "giant rams",
+        "llamas"
+    ],
+    "with_circus_performers": [
+        "jugglers",
+        "acrobats",
+        "clowns"
+    ],
+    "and_circus_performers": [
+        "trapezists",
+        "knife throwers",
+        "contortionists"
+    ],
+    "with_human_name": [
+        "Aldo",
+        "Balthazar",
+        "Cyrus",
+        "Dante"
+    ],
+    "and_human_name": [
+        "Elara",
+        "Fiona",
+        "Gia",
+        "Hana"
+    ],
+    "a": [
+        "Aaron",
+        "Bas",
+        "Caspian"
+    ],
+    "b": [
+        "Aria",
+        "Bella",
+        "Cleo"
+    ],
+    "vampire_stats": "LV 11, AC 15, HP 52, ATK 3 bite +7 (1d8 + Blood Drain), MV near (climb), S +4, D +3, C +3, I +1, W +3, Ch +4, AL C",
+    "doppelganger_stats": "LV 4, AC 12, HP 20, ATK 1 dagger +2 (1d4), MV near, S +1, D +2, C +2, I +1, W +0, Ch +4, AL C",
+    "circus_exotic_animal_stats": "See Shadowdark Monsters compendium",
+    "human_name": [
+        "Gus",
+        "Hans",
+        "Igor",
+        "Jeb"
+    ]
+}

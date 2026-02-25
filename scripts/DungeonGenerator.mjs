@@ -518,7 +518,7 @@ function generateSpecialFeature(data) {
 
 // ── Room Generation ─────────────────────────────────────────────────────────
 
-async function generateRoom(data, roomNum, roomType, connections, keyMap, typeKey, treasureTier, allowPool = false) {
+async function generateRoom(data, roomNum, roomType, connections, keyMap, typeKey, treasureTier, allowPool = false, hasWell = false, hasStatue = false) {
 	const descs = data.roomDescriptions[roomType.type];
 	const decos = data.roomDecorations[roomType.type];
 	const tables = data.templateTables || {};
@@ -577,11 +577,29 @@ async function generateRoom(data, roomNum, roomType, connections, keyMap, typeKe
 		html += treasure.html;
 	}
 
-	// Special features (~50% chance)
-	if (Math.random() < 0.5) {
-		const feature = generateSpecialFeature(data);
-		html += `<h3>Features</h3>`;
-		html += feature;
+	// Special features (~50% chance, or guaranteed if it has a statue)
+	if (Math.random() < 0.5 || hasStatue) {
+		let featureStr = "";
+		// Still roll for random debris/remains internally if there wasn't a statue
+		// Or if there is a statue, maybe still have other features 50% of the time
+		if (Math.random() < 0.5 || !hasStatue) {
+			const randomFeature = generateSpecialFeature(data);
+			if (randomFeature) featureStr += randomFeature;
+		}
+
+		if (hasStatue) {
+			let statueDesc = pick(data.specialFeatures.statues);
+			if (data.specialFeatures.statueSubdescriptions && data.specialFeatures.statueSubdescriptions.length > 0) {
+				const subdesc = pick(data.specialFeatures.statueSubdescriptions);
+				statueDesc += ` ${subdesc}`;
+			}
+			featureStr += `<p><strong>Statue:</strong> ${statueDesc}</p>`;
+		}
+
+		if (featureStr !== "") {
+			html += `<h3>Features</h3>`;
+			html += featureStr;
+		}
 	}
 
 	// Pool (~20% chance, medium/large dungeons only)
@@ -591,7 +609,7 @@ async function generateRoom(data, roomNum, roomType, connections, keyMap, typeKe
 	}
 
 	// Well (Specific to room)
-	if (arguments.length > 8 && arguments[8]) {
+	if (hasWell) {
 		html += `<h3>Well</h3>`;
 		html += generateWell(data);
 	}
@@ -767,11 +785,15 @@ export async function generateDungeonHtml(typeKey, sizeKey, hexLabel, hexKey) {
 		wellRoomIndex = randRange(0, roomCount - 1);
 	}
 
+	// Pick a random room to have a statue (1 per dungeon/tomb/temple)
+	const statueRoomIndex = randRange(0, roomCount - 1);
+
 	for (let i = 0; i < roomCount; i++) {
 		html += await generateRoom(
 			data, i + 1, roomTypes[i], connections, keyMap, typeKey, treasureTier,
 			sizeKey !== "small",
-			i === wellRoomIndex
+			i === wellRoomIndex,
+			i === statueRoomIndex
 		);
 
 		// Add book if this is the chosen room

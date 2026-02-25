@@ -1,6 +1,24 @@
 import { cache } from "./SDXCache.mjs";
 import { BIOME_TILES, BIOME_TINTS } from "./HexGeneratorSD.mjs";
 import { getDoorTiles } from "./DungeonPainterSD.mjs";
+import { setHexTerrain } from "./HexTooltipSD.mjs";
+
+// Maps default-tile biome keys to user-friendly terrain labels
+const BIOME_TO_TERRAIN = {
+    water: "Water",
+    swamp: "Swamp",
+    grassland: "Vegetation",
+    forestLight: "Vegetation",
+    forest: "Vegetation",
+    hills: "Mountains",
+    hillsForest: "Mountains",
+    mountains: "Mountains",
+    mountainsForest: "Mountains",
+    desert: "Desert",
+    badlands: "Badlands",
+    snowyMountains: "Snow",
+    special: null,
+};
 
 const MODULE_ID = "shadowdark-extras";
 const TILE_FOLDER = `modules/${MODULE_ID}/assets/tiles`;
@@ -1436,6 +1454,40 @@ async function _stampAtPointer(ev, forceStamp = false) {
     } catch (err) {
         console.error(`${MODULE_ID} | Failed to create tile:`, err);
         return;
+    }
+
+    // ── Auto-set terrain in hex tooltip data (skip symbols / decor) ──
+    if (!isSymbolTile && createdTiles?.length > 0) {
+        let terrain = null;
+        if (isColoredTile) {
+            const ct = _coloredTiles.find(t => t.path === chosenTile);
+            terrain = ct?.biome;
+        } else if (isCustomTile) {
+            const ct = _customTiles.find(t => t.path === chosenTile);
+            terrain = ct?.biome;
+        } else {
+            // Default tile — match filename to BIOME_TILES
+            const filename = chosenTile.split("/").pop();
+            for (const [biome, files] of Object.entries(BIOME_TILES)) {
+                if (files.includes(filename)) {
+                    terrain = BIOME_TO_TERRAIN[biome] ?? biome;
+                    break;
+                }
+            }
+        }
+        if (terrain) {
+            // Capitalize folder names (e.g. "vegetation" → "Vegetation")
+            const terrainLabel = typeof terrain === "string"
+                ? terrain.charAt(0).toUpperCase() + terrain.slice(1)
+                : terrain;
+            const hexKey = `${cell.i}_${cell.j}`;
+            const sceneId = canvas.scene?.id;
+            if (sceneId) {
+                setHexTerrain(sceneId, hexKey, terrainLabel).catch(err =>
+                    console.warn(`${MODULE_ID} | Failed to set hex terrain:`, err)
+                );
+            }
+        }
     }
 
     // In decor mode, re-apply elevation/sort after creation to override Levels module hooks
