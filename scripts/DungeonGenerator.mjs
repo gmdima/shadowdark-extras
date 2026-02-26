@@ -524,8 +524,15 @@ async function generateRoom(data, roomNum, roomType, connections, keyMap, typeKe
 	const tables = data.templateTables || {};
 	const rawDesc = descs ? pick(descs) : "A nondescript room.";
 	const rawDeco = decos ? pick(decos) : "";
-	const roomDesc = resolveTemplate(rawDesc, tables);
+	let roomDesc = resolveTemplate(rawDesc, tables);
 	const roomDeco = resolveTemplate(rawDeco, tables);
+
+	if (data.wallDescriptions && data.wallDescriptions.length > 0) {
+		roomDesc += " " + pick(data.wallDescriptions);
+	}
+	if (data.ceilingDescriptions && data.ceilingDescriptions.length > 0) {
+		roomDesc += " " + pick(data.ceilingDescriptions);
+	}
 
 	// Appearance detail
 	const cover = pick(data.appearances.covers);
@@ -809,5 +816,5 @@ export async function generateDungeonHtml(typeKey, sizeKey, hexLabel, hexKey) {
 	// Attribution
 	html += `<hr><p style="font-size:0.75em;opacity:0.6;">Generated from <a href="https://hexroll.app">Hexroll</a> data</p>`;
 
-	return { html, dungeonName };
+	return { html, dungeonName, roomCount };
 }

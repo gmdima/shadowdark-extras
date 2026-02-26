@@ -28,6 +28,7 @@ import { flattenTiles, unflattenTile, getDungeonFloorLevels, getFlattendDungeonL
 import { setDungeonMode, selectFloorTile, selectWallTile, selectDoorTile, selectIntWallTile, selectIntDoorTile, enableDungeonPainting, disableDungeonPainting, setNoFoundryWalls, setWallShadows, setDungeonBackground } from "./DungeonPainterSD.mjs";
 import { toggleGeneratorPanel, isGeneratorExpanded, generateDungeon, generateRandomSeed, getGeneratorSeed, setGeneratorSeed, getGeneratorSettings, setGeneratorSettings } from "./DungeonGeneratorSD.mjs";
 import { isHexFogEnabled, setHexFogEnabled, getActiveHexFogEffect, setHexFogEffect, getAvailableHexFogEffects, isFogEffectsEnabled } from "./SDXHexFogSD.mjs";
+import { isSoloMode, toggleSoloMode } from "./SoloHexMode.mjs";
 
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
@@ -278,7 +279,8 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
             generatorSeed: getGeneratorSeed(),
             generatorSettings: getGeneratorSettings(),
             hexFogActive: isHexFogEnabled(canvas.scene?.id),
-            isHexagonal: !!canvas?.grid?.isHexagonal
+            isHexagonal: !!canvas?.grid?.isHexagonal,
+            soloModeActive: isSoloMode()
         };
     }
 
@@ -543,6 +545,14 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
                 }
             };
             setTimeout(() => document.addEventListener("mousedown", closeMenu, true), 0);
+        });
+
+        // Solo Hex Mode Toggle Button (GM only)
+        elem.querySelector(".tray-handle-button-tool[data-action='sdx-solo-mode']")?.addEventListener("click", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            const active = toggleSoloMode();
+            e.currentTarget.classList.toggle("active", active);
         });
 
         // SDX Roller Button

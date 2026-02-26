@@ -4,6 +4,7 @@ import { getAvailableBiomes, generateHexHtml } from "./HexContentGenerator.mjs";
 import { getSettlementTypes, generateSettlementHtml } from "./SettlementGenerator.mjs";
 import { getDungeonTypes, getDungeonSizes, generateDungeonHtml } from "./DungeonGenerator.mjs";
 import { formatHexCoord } from "./SDXCoordsSD.mjs";
+import { registerContentRegistrySetting, registerContent } from "./ContentRegistry.mjs";
 
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
@@ -656,6 +657,13 @@ export class SDXHexTooltip {
 		await saveHexRecord(sceneId, hexKey, record);
 		this.notifyDataChanged(sceneId, hexKey, record);
 
+		// Register in content registry for cross-referencing quests
+		await registerContent({
+			hexKey, sceneId, type: "wilderness", subType: biomeKey,
+			name: `The ${regionName}`,
+			journalId: journal.id, pageId: page?.id || "",
+		});
+
 		// Open the journal to the page
 		updatedJournal.sheet.render(true, { pageId: page?.id });
 
@@ -778,6 +786,13 @@ export class SDXHexTooltip {
 		await saveHexRecord(sceneId, hexKey, record);
 		this.notifyDataChanged(sceneId, hexKey, record);
 
+		// Register in content registry for cross-referencing quests
+		await registerContent({
+			hexKey, sceneId, type: "settlement", subType: typeKey,
+			name: settlementName,
+			journalId: journal.id, pageId: page?.id || "",
+		});
+
 		// Open the journal to the page
 		updatedJournal.sheet.render(true, { pageId: page?.id });
 
@@ -876,11 +891,12 @@ export class SDXHexTooltip {
 		const sceneName = canvas.scene?.name ?? "Hex Map";
 
 		// Generate content — single page with all rooms
-		let htmlContent, dungeonName;
+		let htmlContent, dungeonName, roomCount;
 		try {
 			const result = await generateDungeonHtml(typeKey, sizeKey, hexLabel, hexKey);
 			htmlContent = result.html;
 			dungeonName = result.dungeonName;
+			roomCount = result.roomCount || 0;
 		} catch (err) {
 			console.error("SDX | Dungeon generation failed:", err);
 			ui.notifications.error("SDX | Dungeon content generation failed.");
@@ -939,6 +955,13 @@ export class SDXHexTooltip {
 
 		await saveHexRecord(sceneId, hexKey, record);
 		this.notifyDataChanged(sceneId, hexKey, record);
+
+		// Register in content registry for cross-referencing quests
+		await registerContent({
+			hexKey, sceneId, type: "dungeon", subType: typeKey,
+			name: dungeonName, roomCount: roomCount,
+			journalId: journal.id, pageId: page?.id || "",
+		});
 
 		// Open the journal to the page
 		updatedJournal.sheet.render(true, { pageId: page?.id });
@@ -1445,6 +1468,11 @@ class HexEditApp extends HandlebarsApplicationMixin(ApplicationV2) {
 // ─── Initialization ───────────────────────────────────────────────────────────
 
 export function initHexTooltip() {
+	// Register the content-registry world setting (must happen during 'init', not at load time)
+	Hooks.once("init", () => {
+		registerContentRegistrySetting();
+	});
+
 	// Must wait for "ready" — game.socket is undefined before that hook fires
 	Hooks.once("ready", () => {
 		game.socket.on("module.shadowdark-extras", async (data) => {

@@ -1,0 +1,243 @@
+{
+    "relations": [
+        "brother",
+        "sister",
+        "husband",
+        "wife",
+        "son",
+        "daughter",
+        "uncle",
+        "aunt",
+        "nephew",
+        "niece",
+        "cousin",
+        "mentor",
+        "apprentice",
+        "old friend",
+        "business partner"
+    ],
+    "timeframes": [
+        "two days ago",
+        "three days ago",
+        "last week",
+        "nearly two weeks ago",
+        "last month",
+        "a fortnight ago",
+        "several days ago"
+    ],
+    "complications": [
+        "However, others warn the area is cursed.",
+        "But rumor has it someone else is also looking for the same thing.",
+        "The last person who tried never came back.",
+        "However, the road there has become increasingly dangerous.",
+        "Strangely, no animal will go near the area.",
+        "The authorities have forbidden anyone from going there.",
+        "There may be more to this story than meets the eye."
+    ],
+    "questItems": [
+        "a silver locket containing a family portrait",
+        "a jewel-encrusted ceremonial dagger",
+        "a leather-bound journal filled with encoded secrets",
+        "a signet ring bearing a noble house's crest",
+        "a blessed holy relic wrapped in velvet",
+        "an ancient map etched on bronze plates",
+        "a crystal vial filled with a shimmering, unknown liquid",
+        "a set of master-crafted thieves' tools",
+        "a small music box that plays an eerie, haunting melody",
+        "a skull carved from a single enormous ruby",
+        "a heavy iron key covered in strange runes",
+        "a finely crafted astrolabe of dwarven make",
+        "a bundle of letters sealed with black wax",
+        "a glass eye that occasionally glows faintly",
+        "a taxidermied raven with gemstone eyes"
+    ],
+    "rewards": {
+        "village": [
+            "25 gp",
+            "30 gp",
+            "40 gp",
+            "50 gp",
+            "a favor from the elder"
+        ],
+        "town": [
+            "50 gp",
+            "75 gp",
+            "100 gp",
+            "150 gp",
+            "free lodging for a season"
+        ],
+        "city": [
+            "100 gp",
+            "200 gp",
+            "300 gp",
+            "500 gp",
+            "a letter of introduction to a noble"
+        ]
+    },
+    "questTypes": {
+        "missingPerson": {
+            "label": "Missing Person",
+            "targetTypes": [
+                "dungeon",
+                "wilderness"
+            ],
+            "templates": [
+                "{npcName}'s {relation} went to explore near <strong>{targetName}</strong> ({targetHex}) {timeframe} and hasn't returned. Reward: <strong>{reward}</strong>.",
+                "A desperate {npcName} begs for help — their {relation} was dragged away by unknown assailants toward <strong>{targetName}</strong> ({targetHex}). Reward: <strong>{reward}</strong>.",
+                "{npcName} received a bloodstained scrap of cloth belonging to their {relation}, who was last seen heading toward <strong>{targetName}</strong> ({targetHex}). Reward: <strong>{reward}</strong>.",
+                "Search parties sent toward <strong>{targetName}</strong> ({targetHex}) looking for {npcName}'s {relation} have themselves gone missing. Reward: <strong>{reward}</strong>.",
+                "A traveling merchant claims to have seen a prisoner matching {npcName}'s {relation}'s description being taken into <strong>{targetName}</strong> ({targetHex}). Reward: <strong>{reward}</strong>.",
+                "{npcName} hasn't heard from their {relation} since {timeframe}. Their {relation} mentioned going near <strong>{targetName}</strong> ({targetHex}) to gather herbs. Reward: <strong>{reward}</strong>.",
+                "A strange ransom note appeared at {npcName}'s door demanding gold for the return of their {relation}, last seen near <strong>{targetName}</strong> ({targetHex}). Reward: <strong>{reward}</strong>.",
+                "{npcName}'s {relation} vanished from the road near <strong>{targetName}</strong> ({targetHex}). Only their shoes were found, arranged neatly at the roadside. Reward: <strong>{reward}</strong>."
+            ]
+        },
+        "lostItem": {
+            "label": "Lost Item",
+            "targetTypes": [
+                "dungeon"
+            ],
+            "templates": [
+                "{npcName} believes {questItem} was stolen and hidden somewhere inside <strong>{targetName}</strong> ({targetHex}). Reward: <strong>{reward}</strong>.",
+                "A dying traveler told {npcName} that {questItem} can be found deep within <strong>{targetName}</strong> ({targetHex}). Reward: <strong>{reward}</strong>.",
+                "{npcName}'s {questItem} was seized by raiders who are now holed up in <strong>{targetName}</strong> ({targetHex}). Reward: <strong>{reward}</strong>.",
+                "According to an old map, {questItem} was buried somewhere in <strong>{targetName}</strong> ({targetHex}) generations ago. {npcName} will pay well for its recovery. Reward: <strong>{reward}</strong>.",
+                "{npcName} foolishly gambled away {questItem} to a creature reportedly laired in <strong>{targetName}</strong> ({targetHex}). Reward: <strong>{reward}</strong>.",
+                "A thief confessed under interrogation that they stashed {questItem} inside <strong>{targetName}</strong> ({targetHex}) before being caught. {npcName} wants it back. Reward: <strong>{reward}</strong>.",
+                "{npcName}'s {questItem} was lost when a caravan was ambushed near <strong>{targetName}</strong> ({targetHex}). The bandits fled inside. Reward: <strong>{reward}</strong>.",
+                "An ancestor of {npcName} was entombed with {questItem} somewhere in <strong>{targetName}</strong> ({targetHex}). The family needs it back desperately. Reward: <strong>{reward}</strong>."
+            ]
+        },
+        "delivery": {
+            "label": "Delivery",
+            "targetTypes": [
+                "settlement"
+            ],
+            "templates": [
+                "{npcName} needs {goods} delivered safely to <strong>{targetName}</strong> ({targetHex}). The roads are dangerous. Reward: <strong>{reward}</strong>.",
+                "Urgent medicine must reach <strong>{targetName}</strong> ({targetHex}) before the week's end. {npcName} can't make the journey alone. Reward: <strong>{reward}</strong>.",
+                "{npcName} has a sealed package — no questions asked — that must reach a contact in <strong>{targetName}</strong> ({targetHex}). Reward: <strong>{reward}</strong>.",
+                "A wagon loaded with {goods} bound for <strong>{targetName}</strong> ({targetHex}) needs armed guards. The previous escort was found dead on the road. Reward: <strong>{reward}</strong>.",
+                "{npcName} owes a significant debt to someone in <strong>{targetName}</strong> ({targetHex}) and needs {goods} delivered as payment before collectors arrive. Reward: <strong>{reward}</strong>.",
+                "The temple requires sacred relics transported to the shrine in <strong>{targetName}</strong> ({targetHex}). {npcName} fears they will be stolen en route. Reward: <strong>{reward}</strong>.",
+                "{npcName} inherited property in <strong>{targetName}</strong> ({targetHex}) and needs important legal documents delivered to the magistrate there. Reward: <strong>{reward}</strong>.",
+                "A merchant caravan carrying {goods} to <strong>{targetName}</strong> ({targetHex}) was forced to turn back by bandits. {npcName} needs the delivery completed. Reward: <strong>{reward}</strong>."
+            ]
+        },
+        "escort": {
+            "label": "Escort",
+            "targetTypes": [
+                "settlement",
+                "wilderness"
+            ],
+            "templates": [
+                "{npcName} needs safe passage to <strong>{targetName}</strong> ({targetHex}). They've heard terrible things about the road. Reward: <strong>{reward}</strong>.",
+                "A frightened {npcName} must reach <strong>{targetName}</strong> ({targetHex}) before {timeframe} ends, or face dire consequences. They need bodyguards. Reward: <strong>{reward}</strong>.",
+                "{npcName}, a scholar, wishes to study something near <strong>{targetName}</strong> ({targetHex}) but requires armed protection. Reward: <strong>{reward}</strong>.",
+                "A noble's child must be secretly escorted to <strong>{targetName}</strong> ({targetHex}). {npcName} insists on absolute discretion. Reward: <strong>{reward}</strong>.",
+                "{npcName} is a witness to a crime and must reach <strong>{targetName}</strong> ({targetHex}) to testify. Powerful people want them silenced. Reward: <strong>{reward}</strong>.",
+                "A healer named {npcName} must reach <strong>{targetName}</strong> ({targetHex}) to treat a plague outbreak, but the route is infested with monsters. Reward: <strong>{reward}</strong>.",
+                "{npcName} is transporting a dangerous prisoner to <strong>{targetName}</strong> ({targetHex}) and needs additional muscle. Reward: <strong>{reward}</strong>.",
+                "An elderly {npcName} wants to make a pilgrimage to <strong>{targetName}</strong> ({targetHex}) one last time before they die. Reward: <strong>{reward}</strong>."
+            ]
+        },
+        "monsterBounty": {
+            "label": "Monster Bounty",
+            "targetTypes": [
+                "wilderness",
+                "dungeon"
+            ],
+            "templates": [
+                "A {monster} has been spotted near <strong>{targetName}</strong> ({targetHex}), terrorizing travelers. {npcName} has posted a bounty. Reward: <strong>{reward}</strong>.",
+                "Livestock have been disappearing near <strong>{targetName}</strong> ({targetHex}). {npcName} suspects a {monster} is responsible. Reward: <strong>{reward}</strong>.",
+                "Hunters report that a {monster} has made a lair somewhere near <strong>{targetName}</strong> ({targetHex}). {npcName} wants its head. Reward: <strong>{reward}</strong>.",
+                "A pack of creatures led by a {monster} raided a farmstead near <strong>{targetName}</strong> ({targetHex}). {npcName} demands retribution. Reward: <strong>{reward}</strong>.",
+                "The road to <strong>{targetName}</strong> ({targetHex}) has become impassable due to a {monster}. {npcName} needs the trade route cleared. Reward: <strong>{reward}</strong>.",
+                "A {monster} dragged a woodcutter into the wilds near <strong>{targetName}</strong> ({targetHex}). {npcName} wants the beast slain before it strikes again. Reward: <strong>{reward}</strong>.",
+                "Refugees arriving from near <strong>{targetName}</strong> ({targetHex}) speak of a {monster} that hunts by night. {npcName} is organizing a response. Reward: <strong>{reward}</strong>.",
+                "A {monster} has begun demanding tribute from travelers near <strong>{targetName}</strong> ({targetHex}). {npcName} says enough is enough. Reward: <strong>{reward}</strong>."
+            ]
+        },
+        "investigation": {
+            "label": "Investigation",
+            "targetTypes": [
+                "wilderness",
+                "dungeon"
+            ],
+            "templates": [
+                "Strange lights have been appearing near <strong>{targetName}</strong> ({targetHex}) every night. {npcName} wants someone to investigate. Reward: <strong>{reward}</strong>.",
+                "The water supply from near <strong>{targetName}</strong> ({targetHex}) has turned foul and black. {npcName} needs to know why. Reward: <strong>{reward}</strong>.",
+                "People who pass near <strong>{targetName}</strong> ({targetHex}) report hearing voices calling their names. {npcName} wants answers. Reward: <strong>{reward}</strong>.",
+                "Animals in the area around <strong>{targetName}</strong> ({targetHex}) are behaving erratically — fleeing in one direction. {npcName} fears dark magic. Reward: <strong>{reward}</strong>.",
+                "A massive sinkhole opened overnight near <strong>{targetName}</strong> ({targetHex}). {npcName} wants to know what's beneath. Reward: <strong>{reward}</strong>.",
+                "An ancient ward stone near <strong>{targetName}</strong> ({targetHex}) has cracked. {npcName} worries about what it was sealing away. Reward: <strong>{reward}</strong>.",
+                "Flowers near <strong>{targetName}</strong> ({targetHex}) bloom only at midnight and wilt by dawn. {npcName}, an herbalist, suspects something unnatural. Reward: <strong>{reward}</strong>.",
+                "A star fell from the sky and struck the earth near <strong>{targetName}</strong> ({targetHex}). {npcName} wants to know what remains at the impact site. Reward: <strong>{reward}</strong>."
+            ]
+        },
+        "rivalry": {
+            "label": "Rivalry",
+            "targetTypes": [
+                "settlement"
+            ],
+            "templates": [
+                "{npcName} suspects merchants from <strong>{targetName}</strong> ({targetHex}) are deliberately undercutting local prices to ruin their business. They need proof. Reward: <strong>{reward}</strong>.",
+                "A dispute with <strong>{targetName}</strong> ({targetHex}) over water rights is escalating. {npcName} needs someone to negotiate, or intimidate. Reward: <strong>{reward}</strong>.",
+                "{npcName} believes <strong>{targetName}</strong> ({targetHex}) has been harboring bandits who raid local caravans. They need an outsider to expose the truth. Reward: <strong>{reward}</strong>.",
+                "A prized {goods} shipment was intercepted before reaching its destination. {npcName} believes agents from <strong>{targetName}</strong> ({targetHex}) are responsible. Reward: <strong>{reward}</strong>.",
+                "The leader of <strong>{targetName}</strong> ({targetHex}) publicly insulted the locals. {npcName} wants a response delivered — diplomatically or otherwise. Reward: <strong>{reward}</strong>.",
+                "Counterfeit coins bearing the mark of <strong>{targetName}</strong> ({targetHex}) are flooding the local market. {npcName} needs someone to trace their source. Reward: <strong>{reward}</strong>.",
+                "{npcName} wants to establish a trade agreement with <strong>{targetName}</strong> ({targetHex}), but the last envoy was sent back with a black eye. Reward: <strong>{reward}</strong>.",
+                "Cattle branded with the mark of <strong>{targetName}</strong> ({targetHex}) have been found in local pastures. {npcName} smells a setup and wants the truth. Reward: <strong>{reward}</strong>."
+            ]
+        },
+        "treasureHunt": {
+            "label": "Treasure Hunt",
+            "targetTypes": [
+                "dungeon"
+            ],
+            "templates": [
+                "A dying prospector whispered to {npcName} about a hidden vault deep inside <strong>{targetName}</strong> ({targetHex}). Reward: a share of whatever is found.",
+                "{npcName} purchased an old map that marks <strong>{targetName}</strong> ({targetHex}) as the resting place of an ancient warlord's treasure hoard. They need someone brave enough to go look. Reward: <strong>{reward}</strong>.",
+                "Legend says a dragon once kept its hoard in <strong>{targetName}</strong> ({targetHex}). {npcName} believes some of it remains, guarded by whatever moved in since. Reward: a cut of the take.",
+                "A coded message found in a library book points to <strong>{targetName}</strong> ({targetHex}) as the hiding spot of a legendary enchanted weapon. {npcName} wants it found. Reward: <strong>{reward}</strong>.",
+                "{npcName} found a jeweler's receipt from a century ago for gems deposited in a vault beneath <strong>{targetName}</strong> ({targetHex}). Time to make a withdrawal. Reward: <strong>{reward}</strong>.",
+                "An old ballad names <strong>{targetName}</strong> ({targetHex}) as where a pirate king buried his plunder. {npcName} thinks the song is more than fiction. Reward: a generous share.",
+                "A ghost appeared to {npcName} in a dream, begging them to recover its earthly possessions from <strong>{targetName}</strong> ({targetHex}). Reward: <strong>{reward}</strong>.",
+                "{npcName} claims a rival adventuring party is already heading to <strong>{targetName}</strong> ({targetHex}) for its rumored treasure. They want someone to beat them there. Reward: <strong>{reward}</strong>."
+            ]
+        },
+        "sabotage": {
+            "label": "Sabotage",
+            "targetTypes": [
+                "wilderness"
+            ],
+            "templates": [
+                "Something near <strong>{targetName}</strong> ({targetHex}) is poisoning the local river. {npcName} needs it identified and stopped. Reward: <strong>{reward}</strong>.",
+                "The old signal tower near <strong>{targetName}</strong> ({targetHex}) was destroyed overnight. {npcName} fears it was deliberate and wants the saboteurs found. Reward: <strong>{reward}</strong>.",
+                "Bridge timbers near <strong>{targetName}</strong> ({targetHex}) were found sawn nearly through. {npcName} needs to know who and why before someone dies. Reward: <strong>{reward}</strong>.",
+                "Stakes and pit traps have appeared on the road near <strong>{targetName}</strong> ({targetHex}). {npcName} wants the culprits caught alive if possible. Reward: <strong>{reward}</strong>.",
+                "Someone has been setting fires in the forest near <strong>{targetName}</strong> ({targetHex}). {npcName} needs the arsonist stopped before the whole region burns. Reward: <strong>{reward}</strong>.",
+                "Warning markers near <strong>{targetName}</strong> ({targetHex}) have been moved to lead travelers into dangerous terrain. {npcName} needs them restored and the vandals found. Reward: <strong>{reward}</strong>.",
+                "Crops on farms near <strong>{targetName}</strong> ({targetHex}) are dying from a blight that smells alchemical, not natural. {npcName} wants the source found. Reward: <strong>{reward}</strong>.",
+                "Hunting traps near <strong>{targetName}</strong> ({targetHex}) have been sprung and smashed. {npcName} suspects a druid or ranger is responsible and wants to talk to them. Reward: <strong>{reward}</strong>."
+            ]
+        },
+        "rescue": {
+            "label": "Rescue",
+            "targetTypes": [
+                "dungeon"
+            ],
+            "templates": [
+                "A group of miners is trapped inside <strong>{targetName}</strong> ({targetHex}) after a cave-in. {npcName} is desperate for help. Reward: <strong>{reward}</strong>.",
+                "A patrol of soldiers entered <strong>{targetName}</strong> ({targetHex}) and never reported back. {npcName} needs someone to find them. Reward: <strong>{reward}</strong>.",
+                "{npcName}'s apprentice ventured into <strong>{targetName}</strong> ({targetHex}) on a foolish dare. It's been three days. Reward: <strong>{reward}</strong>.",
+                "A pilgrim group was captured by bandits operating out of <strong>{targetName}</strong> ({targetHex}). {npcName} is raising funds for a rescue mission. Reward: <strong>{reward}</strong>.",
+                "A messenger carrying vital intelligence is being held prisoner in <strong>{targetName}</strong> ({targetHex}). {npcName} needs them freed immediately. Reward: <strong>{reward}</strong>.",
+                "{npcName}'s expedition to map <strong>{targetName}</strong> ({targetHex}) went horribly wrong. Only one member escaped to tell the tale. The rest are still alive — probably. Reward: <strong>{reward}</strong>.",
+                "An adventuring party accepted a contract to clear <strong>{targetName}</strong> ({targetHex}) but hasn't emerged. {npcName}, their patron, fears the worst. Reward: <strong>{reward}</strong>.",
+                "A child from the village wandered into <strong>{targetName}</strong> ({targetHex}) chasing a stray cat. {npcName} heard screaming from inside. Reward: <strong>{reward}</strong>."
+            ]
+        }
+    }
+}

@@ -1,11 +1,14 @@
 import { formatHexCoord } from "./SDXCoordsSD.mjs";
 import { resolveTemplate } from "./HexContentGenerator.mjs";
+import { getNearbyContent } from "./ContentRegistry.mjs";
+import { HEX_JOURNAL_NAME } from "./HexTooltipSD.mjs";
 
 const MODULE_ID = "shadowdark-extras";
 
 let _data = null;
 let _monsterIndex = null;
 let _fortunateEventData = null;
+let _questData = null;
 
 export async function loadSettlementData() {
 	if (_data) return _data;
@@ -46,6 +49,19 @@ export async function loadFortunateEventData() {
 		throw err;
 	}
 	return _fortunateEventData;
+}
+
+async function loadQuestData() {
+	if (_questData) return _questData;
+	try {
+		const resp = await fetch(`modules/${MODULE_ID}/scripts/data/quest-data.json`);
+		if (!resp.ok) throw new Error(`HTTP ${resp.status}: ${resp.statusText}`);
+		_questData = await resp.json();
+	} catch (err) {
+		console.error(`${MODULE_ID} | Failed to load quest data:`, err);
+		_questData = null;
+	}
+	return _questData;
 }
 
 async function getMonsterIndex() {
@@ -105,6 +121,124 @@ function randRange(min, max) {
 
 export function cap(s) {
 	return s.charAt(0).toUpperCase() + s.slice(1);
+}
+
+// ── Watabou city map URL builder ────────────────────────────────────────────
+
+/**
+ * Check adjacent hexes for ocean terrain.
+ * @param {string} hexKey - "i_j"
+ * @returns {{ hasOcean: boolean, allOcean: boolean, oceanCount: number, totalNeighbors: number }}
+ */
+function getAdjacentOceanInfo(hexKey) {
+	const result = { hasOcean: false, allOcean: false, oceanCount: 0, totalNeighbors: 0 };
+	if (!hexKey || !canvas?.grid?.isHexagonal) return result;
+
+	const [i, j] = hexKey.split("_").map(Number);
+	if (isNaN(i) || isNaN(j)) return result;
+
+	const sceneId = canvas.scene?.id;
+	if (!sceneId) return result;
+
+	// Read hex data from journal
+	const journal = game.journal.find(jj => jj.name === HEX_JOURNAL_NAME);
+	const allData = journal?.getFlag(MODULE_ID, "hexData") ?? {};
+	const sceneData = allData[sceneId] ?? {};
+
+	// Ocean terrain labels
+	const OCEAN_LABELS = new Set(["Ocean", "Water"]);
+
+	try {
+		const neighbors = canvas.grid.getAdjacentOffsets({ i, j });
+		result.totalNeighbors = neighbors.length;
+		for (const n of neighbors) {
+			const nKey = `${n.i}_${n.j}`;
+			const rec = sceneData[nKey];
+			if (rec?.terrain && OCEAN_LABELS.has(rec.terrain)) {
+				result.oceanCount++;
+			}
+		}
+		result.hasOcean = result.oceanCount > 0;
+		result.allOcean = result.totalNeighbors > 0 && result.oceanCount === result.totalNeighbors;
+	} catch { /* grid not ready */ }
+
+	return result;
+}
+
+/**
+ * Build a Watabou generator URL with parameters matching the settlement.
+ * Villages use the village-generator; towns and cities use the city-generator.
+ * @param {string} settlementName
+ * @param {string} typeKey - "village", "town", or "city"
+ * @param {{ hasOcean: boolean, allOcean: boolean }} oceanInfo
+ * @returns {{ viewUrl: string, svgUrl: string }}
+ */
+function buildWatabouUrl(settlementName, typeKey, oceanInfo) {
+	const seed = Math.floor(Math.random() * 2147483647);
+
+	if (typeKey === "village") {
+		// ── Village Generator ──
+		const pop = randRange(50, 400);
+		const roads = Math.floor(Math.random() * 99999);
+
+		// Pick random tags from the available options
+		const tagPool = [
+			"confluence", "crossroads", "dead end",
+			"farmland", "grove", "highway", "no square", "organic",
+			"palisade", "pond", "river", "sparse", "uncultivated",
+			"dense", "district", "isolated", "no orchards",
+		];
+		const tagCount = randRange(1, 4);
+		const tags = pickN(tagPool, tagCount);
+
+		// Context-aware coast/island tags
+		if (oceanInfo.allOcean) {
+			tags.push("island");
+		} else if (oceanInfo.hasOcean) {
+			tags.push("coast");
+		}
+
+		const params = {
+			seed,
+			name: settlementName,
+			pop,
+			roads,
+			tags: tags.join(","),
+		};
+		const qs = Object.entries(params).map(([k, v]) => `${k}=${encodeURIComponent(v)}`).join("&");
+		const base = "https://watabou.github.io/village-generator/";
+		return {
+			viewUrl: `${base}?${qs}`,
+			svgUrl: `${base}?${qs}&export=svg`,
+		};
+	}
+
+	// ── City Generator (town / city) ──
+	const sizes = { town: 25, city: 45 };
+	const size = sizes[typeKey] ?? 25;
+
+	const params = {
+		size,
+		seed,
+		name: settlementName,
+		citadel: typeKey === "city" ? 1 : 0,
+		urban_castle: typeKey === "city" ? (Math.random() < 0.3 ? 1 : 0) : 0,
+		plaza: 1,
+		temple: 1,
+		walls: 1,
+		shantytown: typeKey === "city" ? 1 : 0,
+		coast: oceanInfo.hasOcean ? 1 : 0,
+		river: Math.random() < 0.4 ? 1 : 0,
+		greens: 0,
+		gates: -1,
+	};
+
+	const qs = Object.entries(params).map(([k, v]) => `${k}=${encodeURIComponent(v)}`).join("&");
+	const base = "https://watabou.github.io/city-generator/";
+	return {
+		viewUrl: `${base}?${qs}`,
+		svgUrl: `${base}?${qs}&export=svg`,
+	};
 }
 
 // ── Nearby hex coordinate generation ────────────────────────────────────────
@@ -192,9 +326,9 @@ function generateShopInventory(data, shopType) {
 	return base;
 }
 
-// ── Shop quest (with hex coordinate reference) ──────────────────────────────
+// ── Shop quest (context-aware with registry fallback) ──────────────────────────────
 
-function generateShopQuest(data, hexKey, typeKey) {
+function generateShopQuest(data, hexKey, typeKey, nearbyContent) {
 	if (Math.random() > (data.questChance ?? 0.35)) return null;
 
 	const template = pick(data.shopQuestTemplates);
@@ -202,7 +336,15 @@ function generateShopQuest(data, hexKey, typeKey) {
 	const secret = pick(data.questSecrets);
 	const goods = pick(data.questGoods);
 	const reward = pick(data.questRewardRanges[typeKey] ?? ["50 gp"]);
-	const hexRef = generateNearbyHexRef(hexKey);
+
+	// Use a real location from the registry if available
+	let hexRef;
+	if (nearbyContent && nearbyContent.length > 0) {
+		const target = pick(nearbyContent);
+		hexRef = `<strong>${target.name}</strong> (${hexKeyToLabel(target.hexKey)})`;
+	} else {
+		hexRef = generateNearbyHexRef(hexKey);
+	}
 
 	return template
 		.replace(/\{item\}/g, item)
@@ -214,10 +356,10 @@ function generateShopQuest(data, hexKey, typeKey) {
 
 // ── Section generators ──────────────────────────────────────────────────────
 
-function generateShopSection(data, shop, owner, hexKey, typeKey) {
+function generateShopSection(data, shop, owner, hexKey, typeKey, nearbyContent) {
 	const shopName = generateShopName(data, shop.type);
 	const inventory = generateShopInventory(data, shop.type);
-	const quest = generateShopQuest(data, hexKey, typeKey);
+	const quest = generateShopQuest(data, hexKey, typeKey, nearbyContent);
 
 	let html = `<h3>${shopName} <em>(${shop.label})</em></h3>`;
 
@@ -250,7 +392,7 @@ function generateShopSection(data, shop, owner, hexKey, typeKey) {
 	return html;
 }
 
-function generateTavernSection(data, keeper, hexKey, typeKey) {
+function generateTavernSection(data, keeper, hexKey, typeKey, nearbyContent) {
 	const td = data.tavernData;
 	const tavernName = generateShopName(data, "tavern");
 
@@ -323,7 +465,7 @@ function generateTavernSection(data, keeper, hexKey, typeKey) {
 	}
 
 	// Tavern quest
-	const quest = generateShopQuest(data, hexKey, typeKey);
+	const quest = generateShopQuest(data, hexKey, typeKey, nearbyContent);
 	if (quest) {
 		const secretId = `secret-${(typeof foundry !== 'undefined' && foundry.utils) ? foundry.utils.randomID() : Math.random().toString(36).substring(2, 10)}`;
 		html += `<section id="${secretId}" class="secret">`;
@@ -347,10 +489,18 @@ function generateFaction(data) {
 	return html;
 }
 
-async function fillQuestTemplate(template, data, hexKey) {
+async function fillQuestTemplate(template, data, hexKey, nearbyContent) {
 	const npc = generateNpc(data);
 	const goods = pick(data.questGoods);
-	const hexRef = generateNearbyHexRef(hexKey);
+
+	// Use a real location from the registry if available
+	let hexRef;
+	if (nearbyContent && nearbyContent.length > 0) {
+		const target = pick(nearbyContent);
+		hexRef = `<strong>${target.name}</strong> (${hexKeyToLabel(target.hexKey)})`;
+	} else {
+		hexRef = generateNearbyHexRef(hexKey);
+	}
 
 	// Pick a random monster from the compendium for quest hooks
 	const index = await getMonsterIndex();
@@ -366,6 +516,126 @@ async function fillQuestTemplate(template, data, hexKey) {
 		.replace(/\{goods\}/g, goods)
 		.replace(/\{location\}/g, hexRef)
 		.replace(/\{monster\}/g, monsterText);
+}
+
+// ── Context-Aware Quest Generation ──────────────────────────────────────────
+
+function hexKeyToLabel(hexKey) {
+	const [i, j] = hexKey.split("_").map(Number);
+	try {
+		return `Hex ${formatHexCoord({ i, j })}`;
+	} catch {
+		return `Hex ${i}.${j}`;
+	}
+}
+
+async function generateContextQuests(data, hexKey, typeKey, allNpcs) {
+	const questData = await loadQuestData();
+	if (!questData) return null; // Fall back to generic quests
+
+	// Query the registry:
+	// - Dungeons/wilderness: 7 hex radius
+	// - Settlements: 50 hex radius (settlements are far apart)
+	let nearby = [];
+	let nearbySettlementsWide = [];
+	try {
+		nearby = getNearbyContent(hexKey, 7);
+		nearbySettlementsWide = getNearbyContent(hexKey, 50, ["settlement"]);
+	} catch (err) {
+		console.warn(`${MODULE_ID} | Could not query content registry:`, err);
+		return null;
+	}
+
+	// Combine: use nearby for dungeons/wilderness, wide search for settlements
+	const allNearby = [
+		...nearby.filter(e => e.type !== "settlement"),
+		...nearbySettlementsWide,
+	];
+
+	if (allNearby.length === 0) return null; // No nearby content — fall back
+
+	// Group nearby content by type
+	const nearbyDungeons = allNearby.filter(e => e.type === "dungeon");
+	const nearbySettlements = allNearby.filter(e => e.type === "settlement");
+	const nearbyWilderness = allNearby.filter(e => e.type === "wilderness");
+
+	// Determine which quest types are available based on what's nearby
+	const availableTypes = [];
+	for (const [key, qType] of Object.entries(questData.questTypes)) {
+		const canTarget = qType.targetTypes.some(t => {
+			if (t === "dungeon") return nearbyDungeons.length > 0;
+			if (t === "settlement") return nearbySettlements.length > 0;
+			if (t === "wilderness") return nearbyWilderness.length > 0;
+			return false;
+		});
+		if (canTarget) availableTypes.push(key);
+	}
+
+	if (availableTypes.length === 0) return null;
+
+	// Pick 3-5 quest hooks, with priority to diverse types
+	const hookCount = randRange(3, 5);
+	const chosenTypes = pickN(availableTypes, hookCount);
+
+	// Get a monster for bounty quests
+	const monsterIndex = await getMonsterIndex();
+	let monsterText = "a dangerous creature";
+	if (monsterIndex.size > 0) {
+		const names = Array.from(monsterIndex.keys());
+		monsterText = await monsterLink(pick(names));
+	}
+
+	const quests = [];
+	for (const qTypeKey of chosenTypes) {
+		const qType = questData.questTypes[qTypeKey];
+		const template = pick(qType.templates);
+
+		// Pick a suitable target based on the quest's targetTypes
+		let target = null;
+		const possibleTargetTypes = qType.targetTypes.filter(t => {
+			if (t === "dungeon") return nearbyDungeons.length > 0;
+			if (t === "settlement") return nearbySettlements.length > 0;
+			if (t === "wilderness") return nearbyWilderness.length > 0;
+			return false;
+		});
+		const chosenTargetType = pick(possibleTargetTypes);
+		if (chosenTargetType === "dungeon") target = pick(nearbyDungeons);
+		else if (chosenTargetType === "settlement") target = pick(nearbySettlements);
+		else if (chosenTargetType === "wilderness") target = pick(nearbyWilderness);
+
+		if (!target) continue;
+
+		// Fill template placeholders
+		const npc = pick(allNpcs);
+		const relation = pick(questData.relations);
+		const questItem = pick(questData.questItems);
+		const goods = pick(data.questGoods);
+		const reward = pick(questData.rewards[typeKey] || questData.rewards.village);
+		const timeframe = pick(questData.timeframes);
+		const targetHex = hexKeyToLabel(target.hexKey);
+
+		// Get a fresh monster for each quest that needs one
+		let questMonster = monsterText;
+		if (monsterIndex.size > 0) {
+			const names = Array.from(monsterIndex.keys());
+			questMonster = await monsterLink(pick(names));
+		}
+
+		const filled = template
+			.replace(/\{npcName\}/g, `<strong>${npc.name}</strong>`)
+			.replace(/\{relation\}/g, relation)
+			.replace(/\{targetName\}/g, target.name)
+			.replace(/\{targetHex\}/g, targetHex)
+			.replace(/\{questItem\}/g, questItem)
+			.replace(/\{goods\}/g, goods)
+			.replace(/\{reward\}/g, reward)
+			.replace(/\{timeframe\}/g, timeframe)
+			.replace(/\{monster\}/g, questMonster);
+
+		quests.push({ type: qType.label, text: filled });
+	}
+
+	return quests.length > 0 ? quests : null;
 }
 
 // ── NPC Relations ───────────────────────────────────────────────────────────
@@ -469,6 +739,15 @@ export async function generateSettlementHtml(typeKey, hexLabel, hexKey) {
 	// Header
 	html += `<h2>${prefix} ${settlementName}</h2>`;
 	html += `<p><em>${sType.label} — Hex ${hexLabel}</em></p>`;
+
+	// Watabou city map — embedded iframe
+	const oceanInfo = getAdjacentOceanInfo(safeHexKey);
+	const watabouUrls = buildWatabouUrl(settlementName, typeKey, oceanInfo);
+	html += `<div style="margin:0.5em 0 1em;position:relative;">`;
+	html += `<iframe src="${watabouUrls.viewUrl}" style="width:100%;height:500px;border:1px solid rgba(0,0,0,0.2);border-radius:6px;" sandbox="allow-scripts allow-same-origin"></iframe>`;
+	html += `<div style="position:absolute;top:0;left:0;width:100%;height:100%;cursor:default;" oncontextmenu="return false;"></div>`;
+	html += `</div>`;
+
 	html += `<p>${description}</p>`;
 	html += `<p>Ruled by <strong>${rulerTitle} ${ruler.name}</strong>, ${ruler.appearance}. ${cap(ruler.trait)}.`;
 	if (ruler.hiddenTrait) {
@@ -504,14 +783,28 @@ export async function generateSettlementHtml(typeKey, hexLabel, hexKey) {
 		}
 	}
 
+	// Fetch nearby content ONCE for the whole settlement (shared by shops, tavern, and quests)
+	// Dungeons/wilderness: 7 hex radius. Settlements: 50 hex radius.
+	let nearbyContent = [];
+	try {
+		const nearbyClose = getNearbyContent(safeHexKey, 7);
+		const nearbySettlementsWide = getNearbyContent(safeHexKey, 50, ["settlement"]);
+		nearbyContent = [
+			...nearbyClose.filter(e => e.type !== "settlement"),
+			...nearbySettlementsWide,
+		];
+	} catch (err) {
+		console.warn(`${MODULE_ID} | Could not query content registry for shops:`, err);
+	}
+
 	// Notable Locations — each shop gets a rich sub-section
 	html += `<h2>Notable Locations</h2>`;
 	for (let i = 0; i < shops.length; i++) {
-		html += generateShopSection(data, shops[i], shopOwners[i], safeHexKey, typeKey);
+		html += generateShopSection(data, shops[i], shopOwners[i], safeHexKey, typeKey, nearbyContent);
 	}
 
 	// Tavern
-	html += generateTavernSection(data, tavernKeeper, safeHexKey, typeKey);
+	html += generateTavernSection(data, tavernKeeper, safeHexKey, typeKey, nearbyContent);
 
 	// Factions, Relationships, and Quest Hooks - GM Only
 	const secretId = `secret-${(typeof foundry !== 'undefined' && foundry.utils) ? foundry.utils.randomID() : Math.random().toString(36).substring(2, 10)}`;
@@ -533,16 +826,26 @@ export async function generateSettlementHtml(typeKey, hexLabel, hexKey) {
 		html += `</ul>`;
 	}
 
-	// Quest Hooks — general settlement-level hooks
-	const hookCount = randRange(3, 4);
-	const templates = pickN(data.questHooks, hookCount);
+	// Quest Hooks — try context-aware quests first, fall back to generic
+	const contextQuests = await generateContextQuests(data, safeHexKey, typeKey, allNpcs);
 	html += `<h2>Quest Hooks / Rumors</h2>`;
-	html += `<table><tr><th>1d${hookCount}</th><th>Hook</th></tr>`;
-	for (let i = 0; i < templates.length; i++) {
-		const filled = await fillQuestTemplate(templates[i], data, safeHexKey);
-		html += `<tr><td>${i + 1}</td><td>${filled}</td></tr>`;
+	if (contextQuests && contextQuests.length > 0) {
+		html += `<table><tr><th>1d${contextQuests.length}</th><th>Type</th><th>Hook</th></tr>`;
+		for (let i = 0; i < contextQuests.length; i++) {
+			html += `<tr><td>${i + 1}</td><td><em>${contextQuests[i].type}</em></td><td>${contextQuests[i].text}</td></tr>`;
+		}
+		html += `</table>`;
+	} else {
+		// Fallback: generic quest hooks with random hex references
+		const hookCount = randRange(3, 4);
+		const templates = pickN(data.questHooks, hookCount);
+		html += `<table><tr><th>1d${hookCount}</th><th>Hook</th></tr>`;
+		for (let i = 0; i < templates.length; i++) {
+			const filled = await fillQuestTemplate(templates[i], data, safeHexKey, nearbyContent);
+			html += `<tr><td>${i + 1}</td><td>${filled}</td></tr>`;
+		}
+		html += `</table>`;
 	}
-	html += `</table>`;
 
 	html += `</section>`;
 

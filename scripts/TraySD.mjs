@@ -2,6 +2,7 @@
 
 import { TrayApp } from "./TrayApp.mjs";
 import { JournalPinManager } from "./JournalPinsSD.mjs";
+import { initSoloHexMode } from "./SoloHexMode.mjs";
 import { getHexPainterData, loadTileAssets, bindCanvasEvents, enablePainting, disablePainting, isPainting, setDecorMode, canUndoPoi, canRedoPoi } from "./HexPainterSD.mjs";
 import {
     getDungeonPainterData,
@@ -63,6 +64,9 @@ export function initTray() {
 
     // Initialize dungeon socket FIRST (so players can request tiles from GM)
     initDungeonSocket();
+
+    // Initialize Solo Hex Mode (registers updateToken hook)
+    initSoloHexMode();
 
     // Load dungeon tile assets (after socket init so players can request from GM)
     loadDungeonAssets().then(() => renderTray());
