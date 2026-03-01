@@ -1,0 +1,140 @@
+{
+	"city" : [
+		"#proper#{ #feature#}",
+		"#[_:#adjPlace# #feature#]_.merge#"],
+
+	"feature" : [
+		"{hill|mount|rock}", "{wood|grove}", "field", "cliff{s}", "vale",
+		"CASTLE?-{castle|keep|tower|hold}", 
+		"WALLS?-{wall|gate}",
+		"TEMPLE?-church",
+		"PLAZA?-{market|fair}",
+		"RIVER?-{river|falls|water|0.5?-ford}", 
+		"COAST?-{sea|lake|coast|shore|beach|strand|wharf|port}"],
+
+	"district" : [
+		"{0.5?-#proper#|#adjPlace#} #place#",
+		"{0.2?-#proper#|#adjObj#} #obj#",
+		"0.2?-{#adj#|#proper#} #districtNoun#",
+		"0.1?-#proper#",
+		"0.1?-the {#obj#|0.3?-#obj.s#}",
+		"0.05?-#number# #obj.s#",
+		"0.05?-#color# #obj.s# #districtNoun#"],
+
+	"centralDistrict" : [
+		"old #cityName#",
+		"old #districtNoun#",
+		"{trade|merchants|market} #districtNoun#"],
+
+	"castleDistrict" : [
+		"COMPACT?-{castle|0.5?-citadel|0.2?-fortress}",
+		"!COMPACT?-{castle|military|upper} #districtNoun#"],
+
+	"docksDistrict" : [
+		"UNIQUE?-the #docksNoun#",
+		"UNIQUE&0.5?-#docksNoun# #districtNoun#",
+		"!UNIQUE?-{#adj#|#dir#} docks"],
+
+	"parkDistrict" : [
+		"UNIQUE?-the #parkNoun#",
+		"{#adj#|#proper#} #parkNoun#"],
+
+	"bridgeDistrict" :[
+		"#[_:#adj# #bridgeNoun#]_.merge#",
+		"0.5?-#proper# #bridgeNoun#"],
+
+	"gateDistrict" : [
+		"#[_:#adj# #gateNoun#]_.merge#",
+		"0.5?-#proper# #gateNoun#"],
+
+	"bankDistrict" :
+		"#adj# #bankNoun#",
+
+	"sprawlDistrict" : [
+		"UNIQUE?-new #cityName#",
+		"UNIQUE?-the slums",
+		"#dir# {#cityName#|slums}",
+		"#district#",
+		"#district#"],
+
+	"docksNoun" : [
+		"docks", "port", "harbour"],
+	"bridgeNoun" : [
+		"bridge", "0.2?-ford", "0.2?-crossing", "0.1?-ferry"],
+	"gateNoun" : [
+		"gate", "0.5?-road", "0.1?-way"],
+	"bankNoun" : [
+		"bank", "side", "0.2?-wharf"],
+	"parkNoun" : [
+		"green", "hill", "0.5?-garden{s}", "0.2?-park",  "0.1?-grove"],
+
+	"adj" : ["@adjObj", "@adjPlace"],
+	"adjObj" : [
+		"new", "old", "free",
+		"iron", "silver", "golden", "copper", "stone", "timber",
+		"silk", "wool", "cotton", "{char|ember|ash}", "pearl", "clay", "bone", "glass",
+		"egg", "milk", "bread", "salt", "spice", "{beer|ale|mead}", "wine", "honey",
+		"cattle", "fish", "chicken",
+		"cherry", "apple", "oak", "ivy", "elm", "rose",
+		"#occupation.s#",
+		"@color"],
+	"adjPlace" : [
+		"#dir#",
+		"new", "old", "free",
+		"far", "high", "low", "middle", "long", "deep",
+		"{spirit|ghost}", "{fairy|fey}", "haunted",
+		"night", "noon", "dawn", "dusk", "twilight",
+		"misty", "clear", "rainy",
+		"forest", "COAST?-sea",
+		"great", "little",
+		"#occupation.s#", "#occupation.s#",
+		"@color"],
+	"color" : [
+		"white", "black", "green", "grey", "red", "purple", "blue",
+		"light", "dark", "bright", "{pale|ashen}"],
+	"occupation" : [
+		"tanner", "cobbler", "barber", "carpenter", "mason", "merchant", "tailor", 
+		"artist", "smith", "potter", "hermit", "bard", "hunter", "fool", "weaver", "artisan",
+		"baker", "butcher", "brewer", 
+		"scholar", "scribe", "witch",
+		"shepherd", "farmer", 
+		"murderer", "beggar", "thief", "smuggler", "cutter",
+		"WALLS?-{king|lord}",
+		"CASTLE?-{knight|soldier|archer}",
+		"TEMPLE?-{priest|nun|pilgrim|prophet}",
+		"COAST?-{fisher|sailor}"],
+
+	"noun" : ["@obj", "@place"],
+	"obj" : [
+		"{spring|brook}", "{orchard|garden}", "heath", "rock",
+		"cliff", "tower", "{hall|lodge}", "mill", "{church|chapel|shrine|temple}", "well", 
+		"{market|fair}", "wall", "court", "forge", "crown", "cross", "crest",
+		"shade", "star", "ring", "stair", "arch", "horn", "knot"],
+	"place" : [
+		"town", "sprawl", "village", "side", "end", "reach", "point", "borough", "edge",
+		"mile", "yard", "water", "street{s}", "square", "{walk|row}", "steps", "pass",
+		"{valley|vale}", "ridge", "hill", "mire", "field", "{wood|grove|park}", "hook",
+		"market"],
+
+	"number" : [
+		"{two|twin}", "three", "four", "@0.1?-rareNumber"],
+	"rareNumber" : ["five", "six", "seven", "ten"],
+
+	"proper" : "#prop1##prop2#",
+	"prop1" : [
+		"amber", "ash", "black", "candle", "cloud", "dagger", "dark", "down", "dragon", "ever", 
+		"fen", "frost", "green", "grey", "grim", "mist", "moon", "red", "sky", "star", "stone", 
+		"storm", "under", "wolf"],
+	"prop2" : [
+		"bark", "bloom", "crest", "church", "fall", "fire", "heart", "hill", "key", "light", 
+		"rise", "soul", "tide", "way", "well", "wind", "wood"],
+
+	"compound" : "#adjNoun.merge#",
+	"adjNoun" : "#adj# #noun#",
+
+	"dir" : ["#north#", "#south#", "#east#", "#west#"],
+	"north" : "north{ern}",
+	"south" : "south{ern}",
+	"east" : "east{ern}",
+	"west" : "west{ern}"
+}

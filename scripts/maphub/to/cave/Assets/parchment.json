@@ -1,0 +1,17 @@
+{
+  "hatchingStones": "0.3",
+  "strokeHatch": "1.2",
+  "hatchingStrokes": "5",
+  "strokeDetail": "1.5",
+  "shadeAlpha": "0.2",
+  "colorFloor": "#EBE3D3",
+  "strokeWall": "3.0",
+  "colorPage": "#CCBBA3",
+  "hatchingSize": "0.6",
+  "colorInk": "#000000",
+  "colorWater": "#BCB0A0",
+  "strokeGrid": "0.3",
+  "shadowAlpha": "0.4",
+  "shadowDist": "1.5",
+  "hatchingDistance": "0.15"
+}

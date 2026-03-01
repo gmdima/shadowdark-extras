@@ -442,6 +442,14 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
             }
         });
 
+        // Maphub Launcher Button
+        elem.querySelector(".tray-handle-button-tool[data-action='sdx-maphub-launcher']")?.addEventListener("click", async (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            const { MaphubLauncherApp } = await import("./MaphubLauncherApp.mjs");
+            new MaphubLauncherApp().render(true);
+        });
+
         // SDX Coords Toggle Button
         elem.querySelector(".tray-handle-button-tool[data-action='sdx-coords']")?.addEventListener("click", (e) => {
             e.preventDefault();

@@ -1,0 +1,60 @@
+{
+  "road": "#FFFFFF",
+  "roofLight": [
+    "#FFFFFF"
+  ],
+  "plank": "#FFFFFF",
+  "shadowColor": "#FFFFFF",
+  "treeShape": "Cotton",
+  "waterDeep": "#FFFFFF",
+  "treeDetails": "#444444",
+  "sand": "#FFFFFF",
+  "roofVariance": "0.0",
+  "ink": "#000000",
+  "shadowLength": "0.0",
+  "smallRoad": "0.0",
+  "ground": [
+    "#FFFFFF",
+    "#DDDDDD"
+  ],
+  "shallowBands": "0",
+  "fieldVariance": "0.0",
+  "paper": "#FFFFFF",
+  "thicket": "#FFFFFF",
+  "roofStroke": "#444444",
+  "waterTide": "#CCCCCC",
+  "roofType": "Gable",
+  "treeVariance": "0.0",
+  "strokeThin": "0.5",
+  "relief": "Grass",
+  "outlineRoads": "Hard",
+  "fieldFurrow": "#000000",
+  "shadowAngle": "60",
+  "roofSlope": "0.5",
+  "mergeRoads": "false",
+  "largeRoad": "6.0",
+  "outlineFields": "None",
+  "fontPopulation": {
+    "italic": false,
+    "bold": false,
+    "face": null,
+    "size": 24,
+    "embedded": "def_font"
+  },
+  "fieldLight": [
+    "#FFFFFF"
+  ],
+  "fontHeader": {
+    "italic": false,
+    "bold": false,
+    "face": null,
+    "size": 48,
+    "embedded": "def_font"
+  },
+  "waterShallow": "#FFFFFF",
+  "lights": "#000000",
+  "tree": [
+    "#FFFFFF"
+  ],
+  "strokeNormal": "1.0"
+}

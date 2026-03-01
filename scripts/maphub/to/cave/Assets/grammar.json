@@ -1,0 +1,59 @@
+{
+	"name" : [
+		"#compound_noun# #noun#",
+		"#adj# #noun#",
+		"0.2?-#noun# of #fantasy#",
+		"!LARGE&0.2?-#person#'s #noun#",
+		"!SMALL&0.1?-#noun# of #epic_noun#"],
+
+	"person" : "#proper#",
+
+	"noun" : [
+		"hollow", "{rock|hill|mount}",
+		"!LARGE?-hole", "!LARGE?-drop",
+		"!SMALL?-hollows", "!SMALL?-chasm", 
+		"!SMALL&0.1?-subterrane",
+		"!SEALED?-mine", 
+		"LARGE&!SEALED?-mines",
+		"SMALL&!BURROWS?-cavern", "SMALL&!BURROWS?-cave",
+		"!SMALL&!BURROWS?-caverns", "!SMALL&!BURROWS?-caves", "!SMALL&!BURROWS?-halls", 
+		"LARGE?-{depths|downs}", "LARGE?-{labyrinth|maze}", 
+		"LARGE?-catacombs", "LARGE&0.1?-abyss",
+		"SMALL&!BURROWS?-pit",
+		"!SMALL&!BURROWS?-pits",
+		"!LARGE&!JUNCTION&!PASSAGE?-lair", "!LARGE&!JUNCTION&!PASSAGE?-den", 
+		"ENTRANCE?-descent", 
+		"!LARGE&ENTRANCE?-maw", 
+		"PASSAGE?-passage", "PASSAGE?-{road|way}",
+		"BURROWS?-burrows", "BURROWS?-warrens",
+		"ROAD?-{road|way|trail|path|passage|pass}",
+		"!SMALL&HUB?-chambers",
+		"!SMALL&CHAMBERS?-chambers", "!SMALL&CHAMBERS?-halls"],
+
+	"adj" : [
+		"black", "scarlet",
+		"{frozen|ice}", "{shattered|crumbling}", "molten", "burning", "forbidden",
+		"crystal", "shadow", "blood", "obsidian",
+		"{howling|wailing}", "silent", "twisting", "whispering",
+		"WATER?-{flooded|underwater|sunken}"],
+
+	"compound_noun" : "#comp_part1##comp_part2#",
+	"comp_part1" : [
+		"beast", "black", "blood", "cold", "dagger", "dark", "dawn", "death", "doom", 
+		"dusk", "east", "ebon",  "ember", "ever", "far", "fey", "gloom", "grim", "hell", 
+		"ice", "mist", "moon", "north", "night", "pale", "plague", "rage", "razor", 
+		"shadow", "silver", "sorrow", "soul", "south", "star", "timber", "under", "west", 
+		"wild", "WATER?-water"],
+	"comp_part2" : [
+		"rock", "hill", "mount", "bog", "wood",
+		"mist", "wind",
+		"wing", "heart", "fang", "eye", "claw", "skull", "hoof",
+		"fire", "crown", "fall", "crest", "horn", "look", "shade", "song", "stone",
+		"lake", "tomb",
+		"WATER?-tide"],
+
+
+	"epic_noun" : [
+		"time", "{fear|terror}", "fire", "eternity", "darkness", "reflection", "illusions",
+		"doom", "mystery", "ancients", "dreams"]
+}

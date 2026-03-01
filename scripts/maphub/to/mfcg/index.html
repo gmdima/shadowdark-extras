@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <title>Medieval Fantasy City Generator</title>
+  <meta id="viewport" name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <link rel="shortcut icon" type="image/png" href="favicon.png" />
+
+  <script type="text/javascript" src="../../js/lzma_worker-min.js"></script>
+  <script type="text/javascript" src="../../js/lzma-d-min.js"></script>
+
+  <script>
+    // Rewrite /to/{gen} paths to the correct Foundry module path
+    (function () {
+      // Force preserveDrawingBuffer for capturing PNGs
+      const _getContext = HTMLCanvasElement.prototype.getContext;
+      HTMLCanvasElement.prototype.getContext = function (type, options) {
+        if (type === 'webgl' || type === 'webgl2') {
+          options = options || {};
+          options.preserveDrawingBuffer = true;
+        }
+        return _getContext.call(this, type, options);
+      };
+
+      const BASE = "/modules/shadowdark-extras/scripts/maphub";
+      const RX = /^\/to\/(cave|dwellings|mfcg|village|viewer)(\/.*)?$/;
+      function rewrite(url) {
+        try {
+          const u = new URL(url, location.origin);
+          const m = RX.exec(u.pathname);
+          if (m) {
+            u.pathname = BASE + "/to/" + m[1] + "/index.html";
+            return u.href;
+          }
+        } catch (e) { }
+        return url;
+      }
+      // Intercept window.open
+      const _open = window.open.bind(window);
+      window.open = function (url) {
+        arguments[0] = rewrite(url || "");
+        return _open.apply(window, arguments);
+      };
+      // Intercept location.href and location.assign
+      const _assign = location.assign.bind(location);
+      location.assign = function (url) { return _assign(rewrite(url)); };
+      const _replace = location.replace.bind(location);
+      location.replace = function (url) { return _replace(rewrite(url)); };
+      // Intercept .href setter via navigation event
+      window.addEventListener("beforeunload", function () {
+        // Last resort: if we get here, check if href needs rewriting
+      });
+      // Proxy-based interception of location.href setter
+      const origDesc = Object.getOwnPropertyDescriptor(window, 'location');
+      // For click-based navigations, intercept at the anchor level
+      document.addEventListener("click", function (e) {
+        const a = e.target.closest && e.target.closest("a[href]");
+        if (a) {
+          const newHref = rewrite(a.href);
+          if (newHref !== a.href) {
+            e.preventDefault();
+            location.href = newHref;
+          }
+        }
+      }, true);
+    })();
+  </script>
+
+  <script type="module">
+    import "../../js/vendor.globals.min.js";
+    import "../../js/mfcg.js";
+
+    const _saveAs = globalThis.saveAs;
+    if (_saveAs) {
+      globalThis.saveAs = function (blob, filename) {
+        if (filename) {
+          if (filename.endsWith('.json') || filename.endsWith('.pb')) {
+            window.parent.postMessage({ type: 'maphub_save_json', blob: blob, filename: filename }, '*');
+            return;
+          }
+          if (filename.endsWith('.png')) {
+            window.parent.postMessage({ type: 'maphub_save_image', blob: blob, filename: filename, format: 'png' }, '*');
+            return;
+          }
+          if (filename.endsWith('.svg')) {
+            window.parent.postMessage({ type: 'maphub_save_image', blob: blob, filename: filename, format: 'svg' }, '*');
+            return;
+          }
+        }
+        return _saveAs.apply(this, arguments);
+      };
+    }
+
+    window.addEventListener("message", (event) => {
+      if (event.data && event.data.type === 'maphub_load_json') {
+        console.log("SDX | Received maphub_load_json message in MFCG iframe");
+        let retries = 0;
+        const tryLoad = () => {
+          if (globalThis.maphubMfcgAppInstance && globalThis.maphubMfcgAppInstance.applyLocalStorageTownBuf) {
+            try {
+              console.log("SDX | Found maphubMfcgAppInstance! Attempting to applyLocalStorageTownBuf...");
+              globalThis.maphubMfcgAppInstance.applyLocalStorageTownBuf("j" + event.data.json);
+              console.log("SDX | Successfully applied imported MFCG buffer.");
+            } catch (err) {
+              console.error("SDX | Maphub load failed:", err);
+            }
+          } else {
+            if (retries < 50) {
+              setTimeout(tryLoad, 100);
+              retries++;
+            } else {
+              console.log("SDX | Timed out waiting for maphubMfcgAppInstance. Checking globalThis:", !!globalThis.maphubMfcgAppInstance);
+            }
+          }
+        };
+        tryLoad();
+      }
+    });
+
+    globalThis.lime.embed("mfcg", "openfl-content", 0, 0, {
+      parameters: {
+        routes: {
+          primary_source: { url: "watabou.github.io", type: 2 },
+          github: { url: "github.com/voluminor/maphub", type: 2 },
+          homepage: { url: "/modules/shadowdark-extras/scripts/maphub/to/mfcg/index.html", type: 1 },
+          cave: { url: "/modules/shadowdark-extras/scripts/maphub/to/cave/index.html", type: 1 },
+          dwellings: { url: "/modules/shadowdark-extras/scripts/maphub/to/dwellings/index.html", type: 1 },
+          mfcg: { url: "/modules/shadowdark-extras/scripts/maphub/to/mfcg/index.html", type: 1 },
+          village: { url: "/modules/shadowdark-extras/scripts/maphub/to/village/index.html", type: 1 },
+          viewer: { url: "/modules/shadowdark-extras/scripts/maphub/to/viewer/index.html", type: 1 },
+        },
+        flags: {},
+        meta: {
+          param: { allow_high_dpi: true, resizable: true, frame_rate: 60, height: 0, width: 0 },
+          context: { antialiasing: 0, background: 13419960, color_depth: 32, depth: true, hardware: true, stencil: true, vsync: true },
+          build: "2430", ver_app: "0.11.5", ver_global: "1.2.6",
+          name_file: "mfcg", name_company: "fantasy-maphub", name_app: "Medieval Fantasy City Generator", name_package: "mfcg",
+          about: { text: "Based on generator by watabou.", params: {}, buttons: {} },
+        },
+      }
+    });
+  </script>
+
+  <style>
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      overflow: hidden;
+    }
+
+    #openfl-content {
+      background: #000000;
+      width: 100%;
+      height: 100%;
+    }
+
+    @font-face {
+      font-family: 'IM FELL Great Primer Roman';
+      src: url('../../fonts/IMFellGreatPrimer-Regular.woff') format('woff');
+    }
+
+    @font-face {
+      font-family: 'Share Tech Regular';
+      src: url('../../fonts/ShareTech-Regular.woff') format('woff');
+    }
+
+    @font-face {
+      font-family: 'Share Tech Mono';
+      src: url('../../fonts/ShareTechMono-Regular.woff') format('woff');
+    }
+  </style>
+</head>
+
+<body>
+  <noscript>This webpage makes extensive use of JavaScript. Please enable JavaScript in your web browser to view this
+    page.</noscript>
+  <div id="openfl-content"></div>
+</body>
+
+</html>

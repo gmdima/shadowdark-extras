@@ -1,0 +1,15 @@
+{
+  "colorGreen": "#8D927B",
+  "colorLabel": "#662C28",
+  "colorTree": "#777F66",
+  "colorDark": "#3F322C",
+  "colorPaper": "#BFBFB5",
+  "colorLight": "#D8D8CD",
+  "colorRoad": "#E1DBD5",
+  "tintStrength": "20",
+  "tintMethod": "Spectrum",
+  "colorWater": "#8F9997",
+  "colorWall": "#4C4C4C",
+  "weathering": "30",
+  "colorRoof": "#66707F"
+}

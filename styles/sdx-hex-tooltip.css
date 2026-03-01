@@ -204,6 +204,16 @@
 }
 
 /* Future menu items */
+.sdx-hex-ctx-item-row {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+}
+
+.sdx-hex-ctx-item-row:hover {
+	background: rgba(180, 150, 80, 0.12);
+}
+
 .sdx-hex-ctx-item {
     display: flex;
     align-items: center;
@@ -213,11 +223,28 @@
     color: #ccc;
     cursor: pointer;
     transition: background 0.1s;
+    flex: 1;
 }
 
 .sdx-hex-ctx-item:hover {
     background: rgba(180, 150, 80, 0.12);
     color: #e8d5a0;
+}
+
+.sdx-hex-ctx-maphub-btn {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 0 12px;
+	height: 100%;
+	color: #999;
+	cursor: pointer;
+	transition: color 0.1s, transform 0.1s;
+}
+
+.sdx-hex-ctx-maphub-btn:hover {
+	color: #e8d5a0;
+	transform: scale(1.1);
 }
 
 .sdx-hex-ctx-item i {
@@ -227,7 +254,7 @@
 }
 
 /* Dimmed — GM-visible but not yet discovered by players */
-.sdx-hex-ctx-item-dim {
+.sdx-hex-ctx-item-dim, .sdx-hex-ctx-item-row.sdx-hex-ctx-item-dim {
     opacity: 0.5;
     font-style: italic;
 }

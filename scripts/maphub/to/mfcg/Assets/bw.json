@@ -1,0 +1,15 @@
+{
+  "colorGreen": "#EEEEEE",
+  "colorLabel": "#000000",
+  "colorTree": "#EEEEEE",
+  "colorDark": "#000000",
+  "colorPaper": "#FFFFFF",
+  "colorLight": "#FFFFFF",
+  "colorRoad": "#FFFFFF",
+  "tintStrength": "0",
+  "tintMethod": "Brightness",
+  "colorWater": "#FFFFFF",
+  "colorWall": "#000000",
+  "weathering": "0",
+  "colorRoof": "#DDDDDD"
+}

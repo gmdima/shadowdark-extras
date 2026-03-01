@@ -1,0 +1,23 @@
+{
+  "tree_shape": "Ellipsoid",
+  "pitch": "1.0",
+  "sky1": "#101820",
+  "greens": "#444444",
+  "sun_pos": "30.0",
+  "sky2": "#000000",
+  "roofs1": "#888877",
+  "windows": "#E5D272",
+  "roofs2": "#666666",
+  "roads": "#333333",
+  "lighted": "0.4",
+  "ground": "#555555",
+  "water": "#111111",
+  "walls1": "#888888",
+  "fields": "#444444",
+  "foliage": "#222222",
+  "walls2": "#444444",
+  "towers": "Round",
+  "sun": "#CCDDFF",
+  "roofedTowers": "false",
+  "ambience": "0.1"
+}

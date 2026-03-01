@@ -5,6 +5,7 @@ import { getSettlementTypes, generateSettlementHtml } from "./SettlementGenerato
 import { getDungeonTypes, getDungeonSizes, generateDungeonHtml } from "./DungeonGenerator.mjs";
 import { formatHexCoord } from "./SDXCoordsSD.mjs";
 import { registerContentRegistrySetting, registerContent } from "./ContentRegistry.mjs";
+import { MaphubViewerApp } from "./MaphubViewerApp.mjs";
 
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
@@ -445,9 +446,21 @@ export class SDXHexTooltip {
 			const p = f.pageId ? j.pages.get(f.pageId) : null;
 			const label = f.name || (p ? p.name : j.name);
 			const dim = (isGM && !f.discovered) ? " sdx-hex-ctx-item-dim" : "";
-			html += `<div class="sdx-hex-ctx-item${dim}" data-jid="${f.journalId}" data-pid="${f.pageId ?? ""}">
-				<i class="fas fa-book-open"></i>${label}
-			</div>`;
+
+			if (f.maphub) {
+				html += `<div class="sdx-hex-ctx-item-row${dim}">
+					<div class="sdx-hex-ctx-item" data-jid="${f.journalId}" data-pid="${f.pageId ?? ""}">
+						<i class="fas fa-book-open"></i>${label}
+					</div>
+					<div class="sdx-hex-ctx-maphub-btn" data-maphub='${JSON.stringify(f.maphub).replace(/'/g, "&#39;")}'>
+						<i class="fas fa-eye"></i>
+					</div>
+				</div>`;
+			} else {
+				html += `<div class="sdx-hex-ctx-item${dim}" data-jid="${f.journalId}" data-pid="${f.pageId ?? ""}">
+					<i class="fas fa-book-open"></i>${label}
+				</div>`;
+			}
 		}
 
 		// GM-only: Generate options
@@ -498,6 +511,24 @@ export class SDXHexTooltip {
 						journalId: j.id,
 						pageId: pid,
 					});
+				}
+				this.#closeContextMenu();
+			});
+		});
+
+		// Maphub eye button handlers
+		menu.querySelectorAll(".sdx-hex-ctx-maphub-btn").forEach(btn => {
+			btn.addEventListener("click", (e) => {
+				e.stopPropagation();
+				try {
+					const maphubData = JSON.parse(btn.dataset.maphub);
+					new MaphubViewerApp({
+						type: maphubData.maphubType,
+						queryString: maphubData.params,
+						externalBase: maphubData.externalBase
+					}).render(true);
+				} catch (err) {
+					console.error(`${MODULE_ID} | Failed to launch MaphubViewerApp:`, err);
 				}
 				this.#closeContextMenu();
 			});
@@ -722,11 +753,12 @@ export class SDXHexTooltip {
 		const sceneName = canvas.scene?.name ?? "Hex Map";
 
 		// Generate content
-		let htmlContent, settlementName;
+		let htmlContent, settlementName, maphubData;
 		try {
 			const result = await generateSettlementHtml(typeKey, hexLabel, hexKey);
 			htmlContent = result.html;
 			settlementName = result.settlementName;
+			maphubData = result.maphubData;
 		} catch (err) {
 			console.error("SDX | Settlement generation failed:", err);
 			ui.notifications.error("SDX | Settlement content generation failed.");
@@ -773,14 +805,16 @@ export class SDXHexTooltip {
 
 		// Add journal feature
 		if (page) {
-			record.features.push({
+			const feature = {
 				id: foundry.utils.randomID(),
 				type: "journal",
 				journalId: journal.id,
 				pageId: page.id,
 				name: settlementName,
 				discovered: false,
-			});
+			};
+			if (maphubData) feature.maphub = maphubData;
+			record.features.push(feature);
 		}
 
 		await saveHexRecord(sceneId, hexKey, record);
@@ -1431,11 +1465,16 @@ class HexEditApp extends HandlebarsApplicationMixin(ApplicationV2) {
 
 		el.querySelectorAll(".sdx-hex-feat-row").forEach(row => {
 			const type = row.querySelector(".sdx-hex-feat-type")?.value ?? "dungeon";
+			const fid = row.dataset.fid;
+			const existing = this.#opts.record.features?.find(xf => xf.id === fid) ?? {};
+
 			const f = {
-				id: row.dataset.fid,
+				...existing,
+				id: fid,
 				type,
 				discovered: row.querySelector(".sdx-hex-feat-vis input")?.checked ?? false,
 			};
+
 			if (type === "journal") {
 				f.journalId = row.querySelector(".sdx-hex-feat-journal")?.value ?? "";
 				f.pageId = row.querySelector(".sdx-hex-feat-page")?.value ?? "";

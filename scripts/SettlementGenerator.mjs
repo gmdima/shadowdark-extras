@@ -125,6 +125,10 @@ export function cap(s) {
 
 // ── Watabou city map URL builder ────────────────────────────────────────────
 
+// External base URLs — used by MaphubSD.mjs hook when local maphub is disabled
+const WATABOU_VILLAGE_URL = "https://watabou.github.io/village-generator/";
+const WATABOU_CITY_URL = "https://watabou.github.io/city-generator/";
+
 /**
  * Check adjacent hexes for ocean terrain.
  * @param {string} hexKey - "i_j"
@@ -166,79 +170,52 @@ function getAdjacentOceanInfo(hexKey) {
 }
 
 /**
- * Build a Watabou generator URL with parameters matching the settlement.
- * Villages use the village-generator; towns and cities use the city-generator.
+ * Build generator parameters for a settlement map.
+ * Returns the maphub generator type, URL query string, and external fallback
+ * base URL.  The actual iframe is created at render time by MaphubSD.mjs.
+ *
  * @param {string} settlementName
  * @param {string} typeKey - "village", "town", or "city"
  * @param {{ hasOcean: boolean, allOcean: boolean }} oceanInfo
- * @returns {{ viewUrl: string, svgUrl: string }}
+ * @returns {{ maphubType: string, params: string, externalBase: string }}
  */
-function buildWatabouUrl(settlementName, typeKey, oceanInfo) {
+function buildWatabouParams(settlementName, typeKey, oceanInfo) {
 	const seed = Math.floor(Math.random() * 2147483647);
 
 	if (typeKey === "village") {
-		// ── Village Generator ──
 		const pop = randRange(50, 400);
 		const roads = Math.floor(Math.random() * 99999);
 
-		// Pick random tags from the available options
 		const tagPool = [
 			"confluence", "crossroads", "dead end",
 			"farmland", "grove", "highway", "no square", "organic",
 			"palisade", "pond", "river", "sparse", "uncultivated",
 			"dense", "district", "isolated", "no orchards",
 		];
-		const tagCount = randRange(1, 4);
-		const tags = pickN(tagPool, tagCount);
+		const tags = pickN(tagPool, randRange(1, 4));
+		if (oceanInfo.allOcean) tags.push("island");
+		else if (oceanInfo.hasOcean) tags.push("coast");
 
-		// Context-aware coast/island tags
-		if (oceanInfo.allOcean) {
-			tags.push("island");
-		} else if (oceanInfo.hasOcean) {
-			tags.push("coast");
-		}
+		const qs = Object.entries({ seed, name: settlementName, pop, roads, tags: tags.join(",") })
+			.map(([k, v]) => `${k}=${encodeURIComponent(v)}`).join("&");
 
-		const params = {
-			seed,
-			name: settlementName,
-			pop,
-			roads,
-			tags: tags.join(","),
-		};
-		const qs = Object.entries(params).map(([k, v]) => `${k}=${encodeURIComponent(v)}`).join("&");
-		const base = "https://watabou.github.io/village-generator/";
-		return {
-			viewUrl: `${base}?${qs}`,
-			svgUrl: `${base}?${qs}&export=svg`,
-		};
+		return { maphubType: "village", params: qs, externalBase: WATABOU_VILLAGE_URL };
 	}
 
-	// ── City Generator (town / city) ──
-	const sizes = { town: 25, city: 45 };
-	const size = sizes[typeKey] ?? 25;
-
-	const params = {
-		size,
-		seed,
-		name: settlementName,
+	// town / city → MFCG
+	const size = typeKey === "city" ? 45 : 25;
+	const qs = Object.entries({
+		size, seed, name: settlementName,
 		citadel: typeKey === "city" ? 1 : 0,
 		urban_castle: typeKey === "city" ? (Math.random() < 0.3 ? 1 : 0) : 0,
-		plaza: 1,
-		temple: 1,
-		walls: 1,
+		plaza: 1, temple: 1, walls: 1,
 		shantytown: typeKey === "city" ? 1 : 0,
 		coast: oceanInfo.hasOcean ? 1 : 0,
 		river: Math.random() < 0.4 ? 1 : 0,
-		greens: 0,
-		gates: -1,
-	};
+		greens: 0, gates: -1,
+	}).map(([k, v]) => `${k}=${encodeURIComponent(v)}`).join("&");
 
-	const qs = Object.entries(params).map(([k, v]) => `${k}=${encodeURIComponent(v)}`).join("&");
-	const base = "https://watabou.github.io/city-generator/";
-	return {
-		viewUrl: `${base}?${qs}`,
-		svgUrl: `${base}?${qs}&export=svg`,
-	};
+	return { maphubType: "mfcg", params: qs, externalBase: WATABOU_CITY_URL };
 }
 
 // ── Nearby hex coordinate generation ────────────────────────────────────────
@@ -740,13 +717,9 @@ export async function generateSettlementHtml(typeKey, hexLabel, hexKey) {
 	html += `<h2>${prefix} ${settlementName}</h2>`;
 	html += `<p><em>${sType.label} — Hex ${hexLabel}</em></p>`;
 
-	// Watabou city map — embedded iframe
+	// Settlement map parameters (the iframe is now launched from the hex tooltip menu)
 	const oceanInfo = getAdjacentOceanInfo(safeHexKey);
-	const watabouUrls = buildWatabouUrl(settlementName, typeKey, oceanInfo);
-	html += `<div style="margin:0.5em 0 1em;position:relative;">`;
-	html += `<iframe src="${watabouUrls.viewUrl}" style="width:100%;height:500px;border:1px solid rgba(0,0,0,0.2);border-radius:6px;" sandbox="allow-scripts allow-same-origin"></iframe>`;
-	html += `<div style="position:absolute;top:0;left:0;width:100%;height:100%;cursor:default;" oncontextmenu="return false;"></div>`;
-	html += `</div>`;
+	const maphubData = buildWatabouParams(settlementName, typeKey, oceanInfo);
 
 	html += `<p>${description}</p>`;
 	html += `<p>Ruled by <strong>${rulerTitle} ${ruler.name}</strong>, ${ruler.appearance}. ${cap(ruler.trait)}.`;
@@ -852,5 +825,5 @@ export async function generateSettlementHtml(typeKey, hexLabel, hexKey) {
 	// Attribution
 	html += `<hr><p style="font-size:0.75em;opacity:0.6;">Generated from <a href="https://hexroll.app">Hexroll</a> data</p>`;
 
-	return { html, settlementName };
+	return { html, settlementName, maphubData };
 }

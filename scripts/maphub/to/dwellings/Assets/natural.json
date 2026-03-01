@@ -1,0 +1,24 @@
+{
+  "colorStairs": "#A58F7D",
+  "fontRoom": {
+    "bold": false,
+    "face": null,
+    "size": 28,
+    "embedded": "ui_font",
+    "italic": false
+  },
+  "alphaLights": "0.6",
+  "alphaGrid": "0.4",
+  "colorPaper": "#F2EDDE",
+  "colorWalls": "#B2B2B2",
+  "colorProps": "#B29C85",
+  "strGrid10": "0.2",
+  "strNormal10": "0.2",
+  "colorLabels": "#E5D6B7",
+  "colorInk": "#000000",
+  "colorWindows": "#8C8C8C",
+  "hatching": "false",
+  "colorFloor": "#8B796B",
+  "colorRoof": "#B27559",
+  "alphaAO": "0.5"
+}

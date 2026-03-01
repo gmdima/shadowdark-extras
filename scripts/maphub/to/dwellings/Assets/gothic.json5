@@ -1,0 +1,196 @@
+{
+	primary : ["lounge", "kitchen", "bedroom"],
+	rooms : {
+		anatomicalTheatre : {
+			name	: "Anatomical theatre",
+			minSize	: 4,
+			maxNarr	: 0.5,
+			entrance: false
+		},
+		attic : {
+			topFloor: true,
+			singular: true
+		},
+		ballroom : {
+			minSize	: 6,
+			maxNarr	: 0.0,
+			fill	: ""
+		},
+		banquetHall : {
+			name	: "Banquet hall",
+			minSize	: 6,
+			maxNarr	: 0.5,
+			basement: false
+		},
+		bathroom : {
+			short	: "BTH",
+			maxSize	: 4,
+			maxDoors: 1,
+			entrance: false,
+			basement: false,
+			singular: false,
+			windows	: 0.01,
+			doors	: "regular"
+		},
+		bedroom : {
+			minSize	: 4,
+			maxSize	: 8,
+			maxNarr	: 0.5,
+			maxDoors: 1,
+			aboveGround	: true,
+			windows	: 0.25,
+			doors	: "regular",
+			fill	: "0.5, 1, 1, 0.8, 1, 0.9, 0.3"
+		},
+		cellar : {
+			minSize	: 5,
+			maxNarr	: 0.9,
+			basement: true,
+			fill	: "0.25, 0.5, 1, 0.2, 0, 0.1, 10"
+		},
+		conservatory : {
+			maxNarr	: 0.5,
+			topFloor: true,
+			windows	: 1.0,
+			fill	: "0.25, 0.2, 10, 1, 0, 0, 10"
+		},
+		crypt : {
+			minSize	: 2,
+			basement: true
+		},
+		dungeon : {
+			minSize	: 4,
+			basement: true
+		},
+		fencingRoom : {
+			name	: "Fencing room",
+			minSize	: 4,
+			entrance: false,
+			fill	: ""
+		},
+		gallery : {
+			minSize	: 6,
+			minNarr	: 1,
+			fill	: ""
+		},
+		grandFoyer : {
+			name	: "Grand foyer",
+			minSize	: 4,
+			entrance: true
+		},
+		hall : {
+			minSize	: 2,
+			maxSize	: 4,
+			entrance: true
+		},
+		hallOfArmour : {
+			name	: "Hall of armour",
+			minSize	: 4,
+			maxSize	: 9,
+			maxNarr	: 0.5,
+			maxDoors: 1,
+			entrance: false
+		},
+		kitchen : {
+			minSize	: 4,
+			maxSize	: 6,
+			maxNarr	: 0.5,
+			maxDoors: 2,
+			groundFloor	: true,
+			doors	: "regular",
+			fill	: "0.4, 0.5, 3, 0.8, 1, 0.8, 1"
+		},
+		laundry : {
+			minSize	: 2,
+			maxDoors: 1,
+			entrance: false,
+			aboveGround	: false,
+			doors	: "regular"
+		},
+		library : {
+			minSize	: 4,
+			maxSize	: 9,
+			maxNarr	: 0.8,
+			maxDoors: 3,
+			entrance: false,
+			basement: false,
+			fill	: "0.35, 1, 1, 0.5, 1, 1, 1"
+		},
+		lounge : {
+			minSize	: 5,
+			maxNarr	: 0.5,
+			basement: false,
+			fill	: "0.5, 0.4, 2, 0.9, 0.2, 0.7, 0.3"
+		},
+		menagerie : {
+			minSize	: 4,
+			maxDoors: 2,
+			entrance: false,
+			windows	: 0.0
+		},
+		musicRoom : {
+			name	: "Music room",
+			minSize	: 4,
+			maxNarr	: 0.5,
+			basement: false
+		},
+		nursery : {
+			minSize	: 2,
+			maxSize	: 5,
+			maxDoors: 1,
+			aboveGround	: true
+		},
+		pantry : {
+			maxSize	: 4,
+			maxDoors: 2,
+			entrance: false,
+			aboveGround: false,
+			windows	: 0.0
+		},
+		passage : {
+			name	: "Secret passage",
+			minSize	: 3,
+			minNarr	: 1.0,
+			entrance: false,
+			fill	: ""
+		},
+		ritualRoom : {
+			name	: "Ritual room",
+			minSize	: 4,
+			maxNarr	: 0.5,
+			entrance: false
+		},
+		storage : {
+			minSize	: 2,
+			maxSize	: 5,
+			maxDoors: 1,
+			entrance: false,
+			windows	: 0.0,
+			doors	: "regular"
+		},
+		study: {
+			minSize	: 4,
+			maxSize	: 6,
+			maxNarr	: 0.5,
+			maxDoors: 1,
+			entrance: false,
+			aboveGround	: false
+		},
+		theater : {
+			minSize	: 6,
+			maxNarr	: 0.3,
+			entrance: false,
+			basement: false,
+			windows	: 0.0
+		},
+		tortureChamber : {
+			name	: "Torture chamber",
+			minSize	: 4,
+			maxSize	: 6,
+			maxNarr	: 0.5,
+			basement: true,
+			maxDoors: 1,
+			windows	: 0.0
+		}
+	}
+}

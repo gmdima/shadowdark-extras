@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <title>Dwellings Generator</title>
+  <meta id="viewport" name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <link rel="shortcut icon" type="image/png" href="favicon.png" />
+
+  <script type="text/javascript" src="../../js/lzma_worker-min.js"></script>
+  <script type="text/javascript" src="../../js/lzma-d-min.js"></script>
+
+  <script>
+    (function () {
+      // Force preserveDrawingBuffer for capturing PNGs
+      const _getContext = HTMLCanvasElement.prototype.getContext;
+      HTMLCanvasElement.prototype.getContext = function (type, options) {
+        if (type === 'webgl' || type === 'webgl2') {
+          options = options || {};
+          options.preserveDrawingBuffer = true;
+        }
+        return _getContext.call(this, type, options);
+      };
+
+      const BASE = "/modules/shadowdark-extras/scripts/maphub";
+      const RX = /^\/to\/(cave|dwellings|mfcg|village|viewer)(\/.*)?$/;
+      function rewrite(url) {
+        try {
+          const u = new URL(url, location.origin); const m = RX.exec(u.pathname);
+          if (m) { u.pathname = BASE + "/to/" + m[1] + "/index.html"; return u.href; }
+        } catch (e) { } return url;
+      }
+      const _open = window.open.bind(window);
+      window.open = function (url) { arguments[0] = rewrite(url || ""); return _open.apply(window, arguments); };
+      const _assign = location.assign.bind(location);
+      location.assign = function (url) { return _assign(rewrite(url)); };
+      const _replace = location.replace.bind(location);
+      location.replace = function (url) { return _replace(rewrite(url)); };
+      document.addEventListener("click", function (e) {
+        const a = e.target.closest && e.target.closest("a[href]");
+        if (a) { const h = rewrite(a.href); if (h !== a.href) { e.preventDefault(); location.href = h; } }
+      }, true);
+    })();
+  </script>
+
+  <script type="module">
+    import "../../js/vendor.globals.min.js";
+    import "../../js/Dwellings.js";
+
+    const _saveAs = globalThis.saveAs;
+    if (_saveAs) {
+      globalThis.saveAs = function (blob, filename) {
+        if (filename) {
+          if (filename.endsWith('.json') || filename.endsWith('.pb')) {
+            window.parent.postMessage({ type: 'maphub_save_json', blob: blob, filename: filename }, '*');
+            return;
+          }
+          if (filename.endsWith('.png')) {
+            window.parent.postMessage({ type: 'maphub_save_image', blob: blob, filename: filename, format: 'png' }, '*');
+            return;
+          }
+          if (filename.endsWith('.svg')) {
+            window.parent.postMessage({ type: 'maphub_save_image', blob: blob, filename: filename, format: 'svg' }, '*');
+            return;
+          }
+        }
+        return _saveAs.apply(this, arguments);
+      };
+    }
+
+    window.addEventListener("message", (event) => {
+      if (event.data && event.data.type === 'maphub_load_json') {
+        const tryLoad = () => {
+          if (window.maphubAppInstance && window.maphubDwellingsDecoder) {
+            try {
+              const encoder = new TextEncoder();
+              const uint8Array = encoder.encode(event.data.json);
+              const c = window.maphubDwellingsDecoder("loaded.json", uint8Array);
+              window.maphubAppInstance.applyImportedHouse(c);
+            } catch (err) {
+              console.error("Maphub load failed:", err);
+            }
+          } else {
+            setTimeout(tryLoad, 100);
+          }
+        };
+        tryLoad();
+      }
+    });
+
+    globalThis.lime.embed("Dwellings", "openfl-content", 0, 0, {
+      parameters: {
+        routes: {
+          primary_source: { url: "watabou.github.io", type: 2 },
+          github: { url: "github.com/voluminor/maphub", type: 2 },
+          homepage: { url: "/modules/shadowdark-extras/scripts/maphub/to/dwellings/index.html", type: 1 },
+          cave: { url: "/modules/shadowdark-extras/scripts/maphub/to/cave/index.html", type: 1 },
+          dwellings: { url: "/modules/shadowdark-extras/scripts/maphub/to/dwellings/index.html", type: 1 },
+          mfcg: { url: "/modules/shadowdark-extras/scripts/maphub/to/mfcg/index.html", type: 1 },
+          village: { url: "/modules/shadowdark-extras/scripts/maphub/to/village/index.html", type: 1 },
+          viewer: { url: "/modules/shadowdark-extras/scripts/maphub/to/viewer/index.html", type: 1 },
+        },
+        flags: {},
+        meta: {
+          param: { allow_high_dpi: true, resizable: true, frame_rate: 60, height: 0, width: 0 },
+          context: { antialiasing: 0, background: 16777215, color_depth: 32, depth: true, hardware: true, stencil: true, vsync: true },
+          build: "3719", ver_app: "1.4.1", ver_global: "1.2.6",
+          name_file: "Dwellings", name_company: "fantasy-maphub", name_app: "Dwellings Generator", name_package: "dwellings",
+          about: { text: "Based on generator by watabou.", params: {}, buttons: {} },
+        },
+      }
+    });
+  </script>
+
+  <style>
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      overflow: hidden;
+    }
+
+    #openfl-content {
+      background: #000000;
+      width: 100%;
+      height: 100%;
+    }
+
+    @font-face {
+      font-family: 'Share Tech Regular';
+      src: url('../../fonts/ShareTech-Regular.woff') format('woff');
+    }
+
+    @font-face {
+      font-family: 'Share Tech Mono';
+      src: url('../../fonts/ShareTechMono-Regular.woff') format('woff');
+    }
+  </style>
+</head>
+
+<body>
+  <noscript>This webpage makes extensive use of JavaScript. Please enable JavaScript in your web browser to view this
+    page.</noscript>
+  <div id="openfl-content"></div>
+</body>
+
+</html>

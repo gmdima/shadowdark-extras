@@ -1,0 +1,32 @@
+{
+	"title" : "{0.1?-#adj# }#location#",
+
+	"location" : [
+		"#adj# #house#",
+		"town #house#", 
+		"{rural|country} #house#",
+		"{riverside #house#|#house# by the river}", 
+		"{lakeside #house#|#house# by the lake}", 
+		"{hilltop #house#|#house# on the hill}", 
+		"{mountain #house#|#house# in the mountains}", 
+		"{{coastal|marine|beach} #house#|#house# by the sea}", 
+		"{forest #house#|#house# in the wood{s}}",
+		"desert #house#",
+		"{swamp #house#|#house# in the swamps}"
+	],
+
+	"house"	: [
+		"house",
+		"SMALL&LOW?-hut", "SMALL&LOW?-cabin",
+		"SMALL&!TALL?-cottage", "SMALL&!TALL?-lodge",
+		"!SMALL&!LOW?-mansion", "!SMALL&!LOW?-manor", "!SMALL?-residence",
+		"!SMALL&TALL?-castle", "LARGE&!LOW?-palace",
+		"SMALL&TALL?-tower", "SMALL&TALL?-keep"
+	],
+
+	"adj" : [
+		"mysterious", "forlorn", "lonely", "haunted",
+		"{abandoned|deserted}", "{derelict|ruined|crumbling}",
+		"{strange|odd|weird}"
+	]
+}

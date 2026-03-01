@@ -1,0 +1,188 @@
+{
+	"village" : [
+		"#personsNoun#", 
+		"#twoWords#", "#twoWords#", 
+		"#oneWord#", "#oneWord#", "#oneWord#",
+		"DISTRICT?-#district#"],
+	"district" : "{#adj#|#simpleName#} #districtNoun#",
+	"personsNoun" : [
+		"#proper.possessive# #noun#", 
+		"#proper.possessive# #noun#", 
+		"st #proper#"],
+	"twoWords" : ["#adj# #genericNoun#", "#genericAdj# #noun#"],
+	"oneWord" : [
+		"#simpleName#", "#simpleName#", "#simpleName#", 
+		"#suffixName#", "#suffixName#", "#prefixName#"],
+	"simpleName" : ["#adj##genericNoun#", "#genericAdj##noun#"],
+	"suffixName" : "{#adj#|#syll#}#suffix#",
+	"prefixName" : "#prefix##syll#",
+
+	"adj" : ["#genericAdj#", "#specificAdj#"],
+	"specificAdj" : ["#terrAdj#", "0.5?-#sizeAdj#"],
+
+	"terrAdj" : [
+		"WATER?-#waterAdj#", 
+		"SHORE?-#shoreAdj#", 
+		"RIVER?-#riverAdj#", 
+		"PLAIN?-#plainAdj#", 
+		"HILL?-#hillAdj#",
+		"VALLEY?-#valleyAdj#",
+		"FOREST?-#forestAdj#"],
+	"waterAdj" : [
+		"fish", "otter", "wet", "pearl", "azure", "mermaid", "reed", "fisher"],
+	"shoreAdj" : [
+		"shark", "dolphin", "turtle", "crab", "gull", "sea", "bay", "sailor", 
+		"pirate", "sandy"],
+	"riverAdj" : [
+		"trout", "salmon", "frog", "river", "otter"],
+	"plainAdj" : [
+		"swamp", "wide", "broad", "flat"],
+	"hillAdj" : [
+		"high", "cloud"
+	],
+	"valleyAdj" : [
+		"deep", "dark", "low"
+	],
+	"forestAdj": [
+		"forest", "bear", "boar", "deer", "fox", "hunter", "emerald", "deep"],
+
+	"sizeAdj" : ["SMALL?-#smallAdj#", "LARGE?-#largeAdj#"],
+	"smallAdj" : ["lonely", "small", "tiny", "wee", "little"],
+	"largeAdj" : ["great", "big", "high"],
+
+	"noun" : ["#genericNoun#", "#specificNoun#"],
+	"specificNoun" : ["#terrNoun#", "0.5?-#featNoun#"],
+
+	"terrNoun" : [
+		"NO_WATER?-#noWaterNoun#", "WATER?-#waterNoun#", "FOREST?-#forestNoun#",
+		"RIVER?-#riverNoun#", "SHORE?-#shoreNoun#", "ISLAND?-#islandNoun#",  
+		"POND?-#pondNoun#", "FORK?-#forkNoun#", "MOUTH?-#mouthNoun#", 
+		"PLAIN?-#plainNoun#", "HILL?-#hillNoun#", "VALLEY?-#valleyNoun#"],
+	"noWaterNoun"	: ["meadow", "heath"],
+	"waterNoun"		: ["water", "bank", "oar", "sail"],
+	"riverNoun"		: ["creek", "brook", "stream", "spring", "falls", "crossing"],
+	"shoreNoun"		: ["bay", "beach", "harbour", "head", "{lake|pond}", "sea", "shore", "tide", "coast", "strand", "strait", "landing"],
+	"islandNoun"	: ["island", "isle", "rock{s}"],
+	"forkNoun"		: ["meeting", "joining", "fork", "junction"],
+	"mouthNoun"		: ["mouth", "firth", "0.1?-outfall"],
+	"pondNoun"		: ["pond", "pool", "hole", "pit"],
+	"plainNoun"		: ["marsh", "{bog|fen|mire}", "moor", "field", "plain"],
+	"hillNoun"		: ["hill", "weald", "peak", "barrow", "ridge", "bluff", "top", "rise"],
+	"valleyNoun"	: ["valley", "hollow", "bowl", "glen", "gorge"],
+	"forestNoun"	: ["wood", "grove", "thicket", "bark", "weald", "log"],
+	"districtNoun"	: ["district", "quarter", "0.5?-ward", "0.1?-borough"],
+
+	"featNoun" : [
+		"HIGHWAY?-#highwayNoun#",
+		"BRIDGE?-#bridgeNoun#", 
+		"WHARF?-#wharfNoun#",
+		"SMALL?-#smallNoun#", 
+		"LARGE?-#largeNoun#",
+		"PALISADE?-#palisadeNoun#", 
+		"JUCTION?-#junctionNoun#", 
+		"SQUARE?-#squareNoun#"],
+	"highwayNoun"	: ["road", "trail", "steps", "pass", "way", "bend"],
+	"bridgeNoun"	: ["bridge", "pont"],
+	"palisadeNoun"	: ["fort"],
+	"junctionNoun"	: ["crossroads", "junction"],
+	"squareNoun"	: ["market", "place"],
+	"wharfNoun"		: ["port", "wharf", "quay", "pier", "landing"],
+	"smallNoun"		: ["farm", "rest", "village"],
+	"largeNoun"		: ["town", "seat"],
+
+	"genericAdj" : [
+		"white", "black", "red", "green", "grey", "pale", "light", "dark", "shadow", "bright", "shady",
+		"apple", "pear", "cherry", "berry", "cabbage", "plum", "turnip", "bramble", "wheat", "rye", "barley", "pumpkin",
+		"oak", "birch", "maple", "pine", "willow", "elm", "cedar", "aspen", "juniper", "heather", "thistle",
+		"rose", "daisy", "poppy", "clover", "lily", "basil", "moss",
+		"honey", "dairy", "cheese", "cream", "mead", "salt",
+		"cow", "sheep", "pig", "chicken", "goat", "mouse",
+		"raven", "crow", "rabbit", "crane", "wolf", "owl", 
+		"beatle", "spider", "ant",
+		"moon", "sun", "mist", "star", "wind", "snow", "ice", "cold", "hot", "rain", "fair", "clear", "frost", "sky",
+		"north", "south", "east", "west", "far", "deep", "middle", "long", "bottom", "low", "high", "wide", "narrow", "short",
+		"copper", "iron", "amber", "coal", "stone", "wool", "ash", "dust", "tar", "chalk", "timber", "sand", "cotton", "gold", "silver", "shell", "ember",
+		"dawn", "dusk", "noon", "winter", "summer", "spring",
+		"heart", "good", "strong", "brave", "free",
+		"blood", "broken",
+		"fairy", "troll", "spirit", "whisper", "fey", "pixie", "ghost",
+		"old", "new", "lost", "last"],
+	"genericNoun" : [
+		"font", "hay{es}", "shaw", "pit", "point", "down{s}",
+		"tree", "rock", "stump", "nest", "leaf", "knot", "view", "horn", 
+		"drum", "gift", "rest", "crown", "star", "song", "dew", "cross",
+		"spear", "shield", "dagger", "pole",
+		"reach", "side", "end", "rise", "top", "corner", "place", "hole",
+		"mill", "church", "garden", "forge", "well", "gate", "yard", "court", 
+		"wall", "hearth", "hall", "lodge"],
+	"suffix" : [
+		"{by|bie}", "cot{t}", "ham", "{wick|wich}", "ton",
+		"fall", "ley", "{don|den|dean}", "ing", "stead",
+		"{ov|heim|wend|kirk|hus}",
+		"LARGE?-shire",
+		"SMALL?-toft", "SMALL?-ster", "SMALL?-thorp{e}",
+		"HILL?-fell",
+		"VALLEY?-dale",
+		"WATER?-mouth", "WATER?-vik",
+		"RIVER?-{burn|bourn|bourne}", "RIVER?-{ach|au|bach|keld}",
+		"BRIDGE?-{ford|forth}", "BRIDGE?-bruck",
+		"WHARF?-porth", "WHARF?-wharf",
+		"SHORE?-ness", "SHORE?-pool", "SHORE?-tarn", "SHORE?-mere", "SHORE?-haven", "SHORE?-sund",
+		"ISLAND?-holm",
+		"MOUTH?-mouth",
+		"PALISADE?-{burgh|bury|borough|burg}"
+	],
+	"prefix" : [
+		"ast", "nor", "sut", "wes", "bal", "{fin|win|vin}", "kil", "stan",
+		"WATER?-aber",
+		"SHORE?-inver",
+		"RIVER?-{dal|dol}",
+		"BRIDGE?-ponte",
+		"WHARF?-porth",
+		"HILL?-bre",
+		"FORK?-{inver|inner}", "FORK?-aber",
+		"PALISADE?-ca{e}r", "PALISADE?-dun"
+	],
+
+	"inn_noun" : ["rest", "house", "inn", "0.1?-lodge"],
+	"smith_noun" : ["blades", "anvil", "forge", "weapons", "smithy"],
+	"temple_noun" : ["shrine", "temple", "0.2?-house", "0.1?-church"],
+	"est_noun" : [
+		"treasure", "cup", "gold", "boon", "booty", "chalice", "coin",
+		"lady", "knight", "pirate", "monk", "king", "bishop",
+		"arms", "hook", "flag", "bell", "sword", "shield", "arrow", "boat", "rose", "star", "rope", "lantern", "throne", "anchor", "keg",
+		"trout", "clam", "cat", "dog", "crow", "snake", "dragon", "goat", "raven", "pig", "{horse|pony}",
+		"liar", "hero", "beggar", "thief", "bard", "jester"],
+	"estAdj" : [
+		"buried", "burning", "filthy", "bronze", "old", "threatened",
+		"nothern", "southern", "eastern", "western",
+		"white", "blue", "red", "black",
+		"wet", "dry", "bloody", "rusty", "harsh", "dead",
+		"lucky", "dead", "hungry", "thirsty", "drunken", "jolly", "dancing", "wild"],
+
+	"surname" : "#sur1##sur2#",
+	"sur1" : ["iron", "strong", "brave", "storm", "copper", "black", "white", "red", "old", "free", "port", "east", "nor", "true"],
+	"sur2" : ["hand", "head", "fist", "shield", "field", "grass", "road", "man", "wood", "son", "spear", "staff", "lock"],
+
+	"god1" : ["day", "morning", "night", "life", "death", "light", "fire", "frost", "storm"],
+	"god2" : ["lord", "bringer", "keeper", "{king|queen}", "0.1?-breaker"],
+	"godTitle" : "#god1#{ }#god2#",
+
+	"inn" : [
+		"#proper.possessive# #inn_noun#",
+		"the #estAdj# #est_noun#{ inn}"],
+	"tavern" : [
+		"#est_noun#{ #est_noun#} & #est_noun#",
+		"the #est_noun# and #est_noun#",
+		"the #estAdj# #est_noun#",
+		"#proper.possessive#",
+		"{{two|three|0.3?-four} }#est_noun.s#"],
+	"smithy" : "{#surname#|#proper.possessive#} #smith_noun#",
+	"person" : "#proper# #surname.possessive# home",
+	"temple" : [
+		"#temple_noun# of {#fantasy#|the #godTitle#|#fantasy# the #godTitle#}",
+		"#fantasy#'s #temple_noun#"],
+	"basic_shop" : "#proper.possessive# {general store|bakery|grocery|potions|butchery|brewery}",
+	"special_shop" : "{apothecary|antique{s} shop|jewelry|clothier|pawnshop|barber}",
+	"special" : ["guild{ }{house|hall}", "town hall", "archive", "library", "SHORE?-lighthouse"]
+}

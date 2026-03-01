@@ -76,6 +76,7 @@ import { initSDXCoords, registerSDXCoordsSettings, registerSDXCoordsMenu } from 
 import { SDXCoordsSettingsApp } from "./SDXCoordsSettingsSD.mjs";
 import { initHexTooltip, HEX_JOURNAL_NAME } from "./HexTooltipSD.mjs";
 import { initHexFog } from "./SDXHexFogSD.mjs";
+import { registerMaphubHooks } from "./MaphubSD.mjs";
 
 
 import { PixiPlugin } from "/scripts/greensock/esm/all.js";
@@ -102,6 +103,7 @@ initJournalPins();
 initSDXCoords();
 initHexTooltip();
 initHexFog();
+registerMaphubHooks();
 Hooks.once("init", () => {
 	// Register GSAP Plugins
 	try {

@@ -13,7 +13,21 @@
       "WebFetch(domain:github.com)",
       "WebFetch(domain:raw.githubusercontent.com)",
       "Bash(python:*)",
-      "Bash(identify:*)"
+      "Bash(identify:*)",
+      "Bash(echo:*)",
+      "Bash(powershell -Command \"Get-ChildItem -Path ''C:\\\\Users\\\\gmdim\\\\AppData\\\\Local\\\\FoundryVTT\\\\Data\\\\modules\\\\shadowdark-extras\\\\scripts\\\\maphub'' -Recurse -Depth 3 | Select-Object FullName\")",
+      "Bash(powershell -Command \"Test-Path ''C:\\\\Users\\\\gmdim\\\\AppData\\\\Local\\\\FoundryVTT\\\\Data\\\\modules\\\\shadowdark-extras\\\\scripts\\\\maphub''\")",
+      "Bash(powershell -Command \"Get-ChildItem ''C:\\\\Users\\\\gmdim\\\\AppData\\\\Local\\\\FoundryVTT\\\\Data\\\\modules\\\\shadowdark-extras\\\\scripts\\\\maphub'' | ForEach-Object { $_.Name }\")",
+      "Bash(cmd /c \"dir /B C:\\\\Users\\\\gmdim\\\\AppData\\\\Local\\\\FoundryVTT\\\\Data\\\\modules\\\\shadowdark-extras\\\\scripts\\\\maphub\")",
+      "WebFetch(domain:api.github.com)",
+      "Bash(node --version:*)",
+      "Bash(npm --version:*)",
+      "Bash(git clone:*)",
+      "Bash(npm install:*)",
+      "Bash(npm run build:*)",
+      "Bash(cmd /c \"dir C:\\\\Users\\\\gmdim\\\\AppData\\\\Local\\\\Temp\\\\maphub-build\\\\node_modules\\\\.bin\\\\pbjs*\")",
+      "Bash(cmd /c \"dir /s /b \"\"C:\\\\Users\\\\gmdim\\\\AppData\\\\Local\\\\FoundryVTT\\\\Data\\\\modules\\\\shadowdark-extras\\\\scripts\\\\maphub\"\"\")",
+      "Bash(powershell -Command:*)"
     ]
   }
 }

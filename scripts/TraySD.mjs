@@ -319,6 +319,15 @@ export function registerTraySettings() {
         type: Number,
         default: 0.5
     });
+
+    game.settings.register(MODULE_ID, "settlement.useLocalMaphub", {
+        name: "Settlement Maps: Use Local Maphub",
+        hint: "Load settlement map visuals from the locally-built maphub files (scripts/maphub/) instead of watabou.github.io. Enables offline use. Requires building and copying maphub files first — see module README.",
+        scope: "world",
+        config: true,
+        type: Boolean,
+        default: false
+    });
 }
 
 /**
