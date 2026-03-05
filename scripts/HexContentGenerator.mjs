@@ -76,6 +76,20 @@ async function loadCircusData() {
 	return _circusData;
 }
 
+let _coastalMinorEventsData = null;
+async function loadCoastalMinorEvents() {
+	if (_coastalMinorEventsData) return _coastalMinorEventsData;
+	try {
+		const resp = await fetch(`modules/${MODULE_ID}/scripts/data/coastal-minor-events.json`);
+		if (!resp.ok) throw new Error(`HTTP ${resp.status}: ${resp.statusText}`);
+		_coastalMinorEventsData = await resp.json();
+	} catch (err) {
+		console.error(`${MODULE_ID} | Failed to load coastal minor events:`, err);
+		throw err;
+	}
+	return _coastalMinorEventsData;
+}
+
 /**
  * Get the compendium index for shadowdark.monsters, cached after first load.
  * Returns a Map of monster name → compendium document ID.
@@ -403,10 +417,11 @@ function generateLandmarkWatchtower(data, biomeKey) {
 
 /**
  * Generate hex wilderness content and format as HTML.
-
+ *
  * Encounter names are resolved to @UUID compendium links.
+ * @param {boolean} [nearOcean=false] — If true, a coastal minor event is appended to the description.
  */
-export async function generateHexHtml(biomeKey, hexLabel) {
+export async function generateHexHtml(biomeKey, hexLabel, nearOcean = false) {
 	const data = await loadData();
 	const poiData = await loadPoiData();
 	const biome = data.biomes[biomeKey];
@@ -437,6 +452,69 @@ export async function generateHexHtml(biomeKey, hexLabel) {
 	// Description
 	html += `<p>${description}</p>`;
 	html += `<p><em>Located ${location}.</em></p>`;
+
+	// Coastal Minor Event — only when a neighboring hex is ocean/water
+	if (nearOcean) {
+		try {
+			const minorEventsData = await loadCoastalMinorEvents();
+			if (minorEventsData?.coastalMinorEvents?.length) {
+				const minorEvent = pick(minorEventsData.coastalMinorEvents);
+				html += `<p><em><strong>As you travel:</strong> ${minorEvent}</em></p>`;
+			}
+		} catch (err) {
+			console.warn(`${MODULE_ID} | Could not load coastal minor events:`, err);
+		}
+	}
+
+	// Shipboard Event — only for ocean hexes
+	if (biomeKey === "ocean") {
+		try {
+			const minorEventsData = await loadCoastalMinorEvents();
+			if (minorEventsData) {
+				const shipSecretId = `secret-${foundry.utils.randomID()}`;
+				html += `<section id="${shipSecretId}" class="secret">`;
+				html += `<h2>Shipboard Events</h2>`;
+				html += `<p><em><strong>If aboard a ship</strong></em></p>`;
+
+				// Shipboard minor event
+				if (minorEventsData.shipboardEvents?.length) {
+					const shipEvent = pick(minorEventsData.shipboardEvents);
+					html += `<p>${shipEvent}</p>`;
+				}
+
+				// Positive or Negative omen — 50/50
+				const isPositive = Math.random() < 0.5;
+				if (isPositive && minorEventsData.shipboardPositiveEvents?.length) {
+					const omen = pick(minorEventsData.shipboardPositiveEvents);
+					html += `<p><strong>⚑ Positive Event:</strong> ${omen}</p>`;
+				} else if (!isPositive && minorEventsData.shipboardNegativeEvents?.length) {
+					const omen = pick(minorEventsData.shipboardNegativeEvents);
+					html += `<p><strong>☠ Negative Event:</strong> ${omen}</p>`;
+				}
+
+				html += `</section>`;
+			}
+		} catch (err) {
+			console.warn(`${MODULE_ID} | Could not load shipboard events:`, err);
+		}
+	}
+
+	// Shipwreck — 10% chance for ocean hexes or hexes neighbouring ocean/water
+	if ((biomeKey === "ocean" || nearOcean) && Math.random() < 0.10) {
+		try {
+			const minorEventsData = await loadCoastalMinorEvents();
+			if (minorEventsData?.shipwrecks?.length) {
+				const wreck = pick(minorEventsData.shipwrecks);
+				const wreckSecretId = `secret-${foundry.utils.randomID()}`;
+				html += `<section id="${wreckSecretId}" class="secret">`;
+				html += `<h2>Shipwreck</h2>`;
+				html += `<p>${wreck}</p>`;
+				html += `</section>`;
+			}
+		} catch (err) {
+			console.warn(`${MODULE_ID} | Could not load shipwrecks:`, err);
+		}
+	}
 
 	// Point of Interest - 20% chance
 	if (Math.random() < 0.40 && poiData[biomeKey]) {

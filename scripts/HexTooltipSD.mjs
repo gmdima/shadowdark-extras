@@ -622,10 +622,24 @@ export class SDXHexTooltip {
 		const sceneId = canvas.scene?.id;
 		const sceneName = canvas.scene?.name ?? "Hex Map";
 
+		// Check if any neighboring hex has Ocean terrain
+		let nearOcean = false;
+		try {
+			const [iStr, jStr] = hexKey.split("_");
+			const offset = { i: Number(iStr), j: Number(jStr) };
+			const neighbors = canvas.grid.getAdjacentOffsets(offset);
+			for (const n of neighbors) {
+				const nKey = `${n.i}_${n.j}`;
+				const terrain = this.#allData[sceneId]?.[nKey]?.terrain ?? "";
+				const t = terrain.toLowerCase();
+				if (t === "ocean" || t === "water") { nearOcean = true; break; }
+			}
+		} catch { /* grid not available — skip check */ }
+
 		// Generate content
 		let htmlContent, regionName;
 		try {
-			const result = await generateHexHtml(biomeKey, hexLabel);
+			const result = await generateHexHtml(biomeKey, hexLabel, nearOcean);
 			htmlContent = result.html;
 			regionName = result.regionName;
 		} catch (err) {

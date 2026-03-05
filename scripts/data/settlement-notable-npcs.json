@@ -1,0 +1,159 @@
+{
+    "port": {
+        "male": [
+            "A one-eyed rigger who patches sails for a living and claims he has worked every port on three continents. He charges twice the going rate and is worth it.",
+            "A cheerful chandler who sells rope, oil, and ship's provisions from a low-ceilinged shop that smells permanently of tallow. He is deeply in debt to the wrong people.",
+            "A heavyset man who loads and unloads cargo for whoever pays. He can be hired to 'forget' what he carried. He always remembers.",
+            "A dockside moneylender who offers loans to ship captains short on provisions. His interest is fair but his patience is not.",
+            "A fisherman who makes his living catching what larger trawlers miss. He knows every shallow, rock, and current within ten miles of the harbour.",
+            "A pilot who guides vessels safely into the harbour in fog or heavy weather. His fee is standard. His knowledge of the bottom is irreplaceable.",
+            "An elderly rope-maker who has worked the same stand for forty years. His ropes have never failed at sea, and he is proud of this in a very quiet way.",
+            "A fast-talking broker who buys and sells cargo without ever touching it himself. He currently has seventeen deals in motion and is nervous about three of them.",
+            "A retired smuggler who now runs a legitimate cartage company. Most of his employees have similar histories. The business is entirely above board these days.",
+            "A tattoo artist who works from a booth near the sailor's tavern. He gives every client an anchor — somewhere — regardless of what they asked for.",
+            "A ferryman who operates the small boat crossing the harbour mouth. He hears everything said between ships and shore and charges extra for discretion.",
+            "A nervous clerk for a shipping company who knows the contents of every manifest filed in the last year. He has noticed some discrepancies he has not reported.",
+            "A harbormaster's assistant who handles berth assignments. He has a talent for remembering exactly who was where on any given night.",
+            "A retired admiral, long since stripped of rank, who drinks at the harbour's end and will advise captains loudly whether or not they have asked."
+        ],
+        "female": [
+            "A sun-leathered harbour master who tracks every vessel entering and leaving port in a ledger she keeps locked to her belt. She has not taken a day off in six years.",
+            "A former ship's surgeon who now runs a small clinic near the docks. She treats dock injuries cheaply and asks no questions about the fights that caused them.",
+            "A young woman who paints ship names and designs on hulls. Her work is considered extremely lucky by sailors, and her commission list is six months long.",
+            "A retired captain who now teaches navigation to merchant apprentices. She drinks heavily in the evenings and keeps a locked chest beneath her bed.",
+            "A sharp-eyed customs officer who finds contraband with uncanny regularity. Half the smugglers in town pay her a tithe to look away occasionally.",
+            "A ship's cook between voyages, looking for a new berth. She keeps her knives very sharp and feeds anyone who sits at her table, whether they have coin or not.",
+            "A young dockhand who dreams of becoming a navigator. She teaches herself celestial mathematics late at night and will talk about it to anyone who listens.",
+            "A lighthouse keeper who visits the port once a week for supplies. She is quiet and deliberate and knows every ship that has passed in the last decade.",
+            "A ship's carpenter who builds and repairs small craft on spec. She is always working, even while she talks, and her prices are the most honest in town.",
+            "A dockside fortune teller who reads the weather by the smell of the wind and the behaviour of gulls. Sailors pay her more than most people think is rational.",
+            "A barrel merchant who supplies the ships with cured staves and finishing hoops. She has an opinion on every vessel that has ever taken on her barrels."
+        ]
+    },
+    "logging": {
+        "male": [
+            "A mill foreman whose voice can be heard across the entire yard. He has strong opinions about woodgrain and does not keep them to himself.",
+            "A river driver who guides log rafts down the seasonal current to the mill. He has pulled twelve men out of the water over the years and lost two.",
+            "A sawyer's apprentice, barely seventeen, who is already better with a crosscut than his master. He is saving to buy his own saw.",
+            "A charcoal burner who lives mostly in the forest near his kilns. He treats charcoal to food and has little use for the town or its opinions.",
+            "An axe-sharpener who travels between logging camps keeping tools in order. He hears every piece of gossip from every camp and distributes it freely.",
+            "A former city carpenter who came out to source timber and never went back. He carves elaborate figures from offcuts and leaves them on stumps.",
+            "A druid who visits the settlement regularly to argue against clear-cutting. He is calm, well-reasoned, and increasingly angry.",
+            "A seasonal worker who spends winters in the camps and summers gambling on river races. He always wins the races and loses everything on everything else.",
+            "A small man who specializes in felling trees in tight spaces where larger crews cannot operate. He has never dropped a tree where he did not intend it.",
+            "An old sawmill mechanic who keeps the saws running through ingenuity and salvaged parts. He speaks to machinery under his breath and it seems to cooperate.",
+            "A half-elf woodworker who shapes fine furniture from lumber the mill would otherwise waste. His work sells in the city for prices that embarrass the loggers.",
+            "A former soldier who now runs camp security. He politely but firmly removes those who cause trouble, and has a gift for making them want to leave.",
+            "An ox handler who drives the great draft animals that haul timber to the river. He is deeply fond of the animals and moderately fond of people.",
+            "A gnome who has spent three years studying the relationship between moon phases and tree density. He has a talent for finding the best wood in the forest."
+        ],
+        "female": [
+            "A bark-stripper who has been working the same stretch of forest for twenty years. She knows every old-growth tree by name and argues against cutting the largest ones.",
+            "A timber surveyor who assesses stands for their yield before the crews move in. Her estimates are accurate to within two percent, which is considered uncanny.",
+            "A tall woman who runs the largest lumber yard in the settlement. She has a memory for board-feet that astonishes merchants and frustrates rivals.",
+            "A hunting guide who takes party members into the deep timber for wild game. She charges nothing extra for dangerous work but insists on leading.",
+            "A camp cook who feeds forty loggers twice a day and keeps meticulous count of every pot and spoon. Three are missing and she suspects the same man.",
+            "A log grader who determines the quality and value of timber as it arrives at the mill. She has a sixth sense for rot hidden inside sound-looking wood.",
+            "A woman who supplies the camps with their weekly provisions by mule train. She is the only regular link between the deep camps and the settlement.",
+            "A camp medic who travels between sites treating injuries. She carries more thread and bone-saw than bandages, which accurately reflects her caseload.",
+            "A young woman who catalogs tree species across the region for a distant academic institution. She pays the loggers for samples they find amusing to provide.",
+            "A brewer who makes a strong dark ale from forest botanicals that the loggers prize above all other drink. Her recipe is written down nowhere.",
+            "A retired mill owner who sold her business but still visits every morning to stand outside and listen to the saws, which she finds comforting."
+        ]
+    },
+    "mining": {
+        "male": [
+            "A shaft boss who descends into the mine every morning before any of his crew and is last out every evening. He does this not from duty but because he does not trust the dark.",
+            "A powder handler responsible for controlled blasting. He moves slowly and deliberately at all times and becomes visibly irritated when anyone rushes around him.",
+            "A claim registrar who files and maintains official mining claims. Every person in town either owes him a favor or owes him money; he keeps track of both.",
+            "A mule driver who supplies the deep shafts with timber and equipment on a continuous shuttle system. His mules know the route better than he does.",
+            "A smelter who processes raw ore into refined metal. His face is permanently reddened from the furnace and he is half-deaf in one ear from a bellows accident.",
+            "A company store clerk who sells provisions to miners on credit against their wages. He knows exactly who is in debt and by how much, which is everyone.",
+            "A former prospector who found a rich seam ten years ago, sold the claim for a fraction of its value, and now works for wages at the very mine he discovered.",
+            "A night watchman who guards the ore processing shed and is deeply suspicious of everyone. He is statistically correct to be.",
+            "A skilled mapper who charts the growing network of tunnels. His maps are the most accurate document of the mine's extent; he sells copies for a modest fee.",
+            "An old hand who has worked five mines across three territories. He knows which safety shortcuts will kill you and which ones only feel dangerous.",
+            "A metallurgist who studies the unusual mineral compositions found in the lower shafts. His notes are dense with technical observations and one sentence he has crossed out repeatedly."
+        ],
+        "female": [
+            "An assayer who tests ore samples for the mining company. She is scrupulously honest and has been threatened for it on three separate occasions.",
+            "A canary keeper who maintains the birds used to detect bad air in the shafts. She is very attached to them and keeps detailed records of their health.",
+            "A veteran digger with twenty years underground who can read rock the way others read faces. She has turned back three teams from shafts that later collapsed.",
+            "A company doctor who treats the inevitable injuries of underground work. She notes that the company could prevent most of them but does not say so out loud.",
+            "A mining engineer who designs the pit structure and timber supports. She has a horror of collapses that is entirely proportional to her expertise.",
+            "A dwarf who has refused every promotion offered by the company and prefers to work alone in a single shaft she chose herself, which continues to produce.",
+            "A timber framer who cuts and fits the wooden supports for mineshafts. She works fast because her predecessor worked too slowly and is not here to tell the story.",
+            "A young ore cart runner who spends all day pushing carts from the face to the shaft head. She is saving every spare coin and will leave this job in under a year.",
+            "A union organizer who agitates quietly for better conditions among the workers. The company knows who she is and has not yet decided what to do about her.",
+            "A cook who runs the company dining hall and feeds three hundred miners each shift. She is the most popular person in town and refuses any title.",
+            "A halfling who repairs and calibrates the weighing equipment used for ore measurement. Small errors in calibration compound into significant differences over time, and she knows it.",
+            "A former soldier who now oversees mine security. She runs a professional operation and does not permit the casual violence that is common at less-managed camps.",
+            "An elderly miner who was blinded in a gas incident but continues to work in a supervisory capacity. Her knowledge of the mine's history is encyclopedic and her opinions are trusted by the crew."
+        ]
+    },
+    "marsh": {
+        "male": [
+            "A veteran frog-hunter who navigates the deepest bogs on a flat-bottomed punt. He claims to have seen the 'King of Croaks' and has the scars to prove it.",
+            "A mud-covered peat digger who spends his days cutting fuel from the fen. He is quiet, smelling of damp earth and slow decay.",
+            "A nervous guide who offers to lead travelers through the 'shifting mires'. He checks the wind every few minutes and mutters prayers to the spirits of the bog.",
+            "A reclusive alchemist who lives on a tethered raft. He harvests rare fungi that only grow on the corpses of drowned animals.",
+            "A former soldier who now works as a swamp scavenger, pulling rusted relics from the black water. He is convinced a great army once perished here.",
+            "A fisherman who uses trained water-snakes to drive eels into his nets. He is missing two fingers and has a strange, hissing laugh.",
+            "A bridge-warden who maintains the rotting wooden walkways that serve as the town's streets. He is obsessed with the rising water levels.",
+            "A silent hunter who stalks the marsh with a heavy crossbow. He trades strange, leathery hides for salt and iron.",
+            "A weary mason who spends his time trying to reinforce the town's sinking foundations with rubble and heavy timber.",
+            "An eccentric hermit who claims to be the rightful lord of the entire swamp. He lives in a hollowed-out tree and demands 'tribute' in the form of shiny buttons.",
+            "A boat-builder who specializes in craft that can glide over thick mud. He is always covered in sticky pitch and sawdust.",
+            "A courier who ran the swamp trails for years until his legs gave out. He now sits by the main dock, selling 'safe' route maps that are hopelessly outdated.",
+            "A grave-tender who ensures that the dead stay buried in the shifting soil. He uses heavy stones and iron chains to keep the lids down.",
+            "A young man who harvests willow switches and weaves them into intricate, waterproof baskets. He dreams of seeing a mountain one day."
+        ],
+        "female": [
+            "A reed-cutter who produces the finest thatch in the region. She is tough as old leather and can spot a lurking crocodile from a hundred paces.",
+            "A moss-gatherer who knows the medicinal properties of every slime and lichen in the marsh. She is often called upon to treat 'swamp lung'.",
+            "A ferry-woman who operates a slow, heavy barge across the black-water channel. She charges extra if she has to row in the fog.",
+            "A sharp-eyed scavenger who combs the mud-flats after every heavy rain. She has a collection of ancient coins that she refuses to sell.",
+            "An herbalist who brews a potent, foul-smelling tea that ward off mosquitoes. She is the most popular person in town during the summer months.",
+            "A retired mercenary who now guards the town's perimeter from 'the things that crawl out at night'. She never goes anywhere without her heavy spear.",
+            "A quiet oracle who reads the future in the ripples of a stagnant pool. She warned the last mayor to leave, and he disappeared three days later.",
+            "A weaver who makes cloth from spider-silk harvested from the giant webs in the deep bog. Her work is incredibly strong and slightly sticky.",
+            "A tavern-keeper who serves a fermented mud-root ale that is an acquired taste. She has a zero-tolerance policy for rowdy behavior.",
+            "A young girl who collects glowing fireflies in jars to sell as 'night-lights'. She knows all the best secrets hidden in the brush.",
+            "A salt-mercenary who protects the peat-diggers from swamp-pirates. She is scrupulously honest and exceptionally violent when provoked.",
+            "A bird-catcher who specializes in the rare, colorful plumage of marsh-fowl. She is always covered in feathers and smells faintly of wet dog.",
+            "A village elder who remembers when the swamp was half its current size. She is convinced the water is alive and seeking to reclaim the land.",
+            "A midwife who has assisted at every birth in the settlement for a decade. She is a font of local lore and a stern critic of 'city ways'."
+        ]
+    },
+    "generic": {
+        "male": [
+            "A hedge wizard who rents a room above the smith and offers minor magical services. He undercharges for everything and is consequently very busy.",
+            "A retired road warden who now lives in the settlement and can describe every mile of the local roads, including which sections flood in spring.",
+            "A wandering monk who has been 'passing through' for seven months. He does odd jobs for food and is in no apparent hurry to continue his journey.",
+            "A horse trader who visits the settlement when work is available and camps at the edge of town with his string of animals. He is a fair dealer by the standards of the trade.",
+            "A blacksmith of exceptional skill who has never left the settlement but whose work travels the world. He is content with this arrangement.",
+            "A gravedigger who has buried every notable person in the settlement for thirty years. He knows the date of death, cause, and the identity of anyone who did not attend the service.",
+            "A former tax collector who now runs a legitimate accounting service. He is very good at finding money people have forgotten they owe.",
+            "A beekeeper on the edge of the settlement who produces excellent honey and mediocre mead. The honey sells itself. The mead requires a sales pitch.",
+            "A miller's assistant who keeps the grain accounts and does a superstitious amount of ritual around the millstones to prevent bad grinding days.",
+            "A tinker who repairs small metal objects — buckles, clasps, worn hinges, cracked bells. He sets up in the market square and is gone by afternoon.",
+            "A veteran mercenary now farming a modest plot. He does not talk about where he has been and is startlingly competent in situations that call for calm and violence.",
+            "A traveling entertainer who does conjuring tricks and tells dramatic monologues. He is between engagements and running out of coin, but remains cheerful.",
+            "A grain factor who buys and stores harvest surplus and sells it back in lean seasons. He is hated in politics and necessary in practice."
+        ],
+        "female": [
+            "A traveling seed merchant who passes through twice a year with exotic varieties of grain and vegetable. She is always cheerful and always a little behind schedule.",
+            "A scribe who takes dictation for farmers, merchants, and anyone else who cannot write. She also reads contracts aloud and has saved several people from unpleasant surprises.",
+            "A cartographer working on a detailed regional map. She pays in coin for reliable information about roads, distances, and local hazards.",
+            "An apothecary who knows fourteen remedies for fever and two that work. She also knows which wild plants are edible, which are useful, and which will kill a horse.",
+            "A carpenter who builds furniture, structures, and coffins with equal competence. She has no preferences about which she is asked to build.",
+            "A wheelwright whose wheels are so well made that customers come from two settlements over. She is behind on orders and not taking new ones.",
+            "A midwife who has assisted at more births than anyone in the settlement can count. She is respected, discreet, and the keeper of several significant secrets.",
+            "A tanner who runs a business that the settlement considers essential and unpleasant to be near. She does not apologize for the smell.",
+            "An elderly woman who teaches reading and numbers to the settlement's children. She charges nothing and accepts food in lieu of payment from families who have none.",
+            "A basket weaver who makes every kind of container and storage solution at reasonable prices. Her workshop is stacked from floor to ceiling with examples.",
+            "A herbalist who gathers wild plants and prepares them into tinctures, poultices, and powders. She charges fairly and cannot stand to see anyone in unnecessary pain.",
+            "A road lawyer who deals in contracts, deeds, and disputes without formal training but with extensive practical experience. She is technically unlicensed and extremely effective."
+        ]
+    }
+}

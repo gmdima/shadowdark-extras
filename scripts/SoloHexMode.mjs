@@ -297,14 +297,14 @@ async function placeTileForBiome(offset, biomeKey) {
  * @param {string} biomeKey — e.g. "forest"
  * @param {string} hexLabel — e.g. "3.5"
  */
-async function generateJournalForHex(hexKey, biomeKey, hexLabel) {
+async function generateJournalForHex(hexKey, biomeKey, hexLabel, nearOcean = false) {
     const sceneId = canvas.scene?.id;
     const sceneName = canvas.scene?.name ?? "Hex Map";
 
     // Generate content
     let htmlContent, regionName;
     try {
-        const result = await generateHexHtml(biomeKey, hexLabel);
+        const result = await generateHexHtml(biomeKey, hexLabel, nearOcean);
         htmlContent = result.html;
         regionName = result.regionName;
     } catch (err) {
@@ -464,7 +464,8 @@ async function onTokenMove(tokenDoc, changes) {
             await placeTileForBiome(hex.offset, biomeKey);
 
             // Generate journal + hex record
-            await generateJournalForHex(hex.key, biomeKey, hexLabel);
+            const nearOcean = adjacentBiomes.includes("ocean");
+            await generateJournalForHex(hex.key, biomeKey, hexLabel, nearOcean);
         }
 
     } catch (err) {

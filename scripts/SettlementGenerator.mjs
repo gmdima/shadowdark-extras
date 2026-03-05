@@ -9,6 +9,10 @@ let _data = null;
 let _monsterIndex = null;
 let _fortunateEventData = null;
 let _questData = null;
+let _eventPoolData = null;
+
+const ALIGNMENTS = ["L", "N", "C"];
+const ANCESTRIES = ["Human", "Elf", "Dwarf", "Halfling", "Half-Orc", "Half-Elf"];
 
 export async function loadSettlementData() {
 	if (_data) return _data;
@@ -62,6 +66,33 @@ async function loadQuestData() {
 		_questData = null;
 	}
 	return _questData;
+}
+
+let _notableNpcData = null;
+async function loadNotableNpcData() {
+	if (_notableNpcData) return _notableNpcData;
+	try {
+		const resp = await fetch(`modules/${MODULE_ID}/scripts/data/settlement-notable-npcs.json`);
+		if (!resp.ok) throw new Error(`HTTP ${resp.status}: ${resp.statusText}`);
+		_notableNpcData = await resp.json();
+	} catch (err) {
+		console.error(`${MODULE_ID} | Failed to load notable NPC data:`, err);
+		_notableNpcData = null;
+	}
+	return _notableNpcData;
+}
+
+async function loadSettlementEventData() {
+	if (_eventPoolData) return _eventPoolData;
+	try {
+		const resp = await fetch(`modules/${MODULE_ID}/scripts/data/settlement-events.json`);
+		if (!resp.ok) throw new Error(`HTTP ${resp.status}: ${resp.statusText}`);
+		_eventPoolData = await resp.json();
+	} catch (err) {
+		console.error(`${MODULE_ID} | Failed to load settlement event data:`, err);
+		_eventPoolData = null;
+	}
+	return _eventPoolData;
 }
 
 async function getMonsterIndex() {
@@ -167,6 +198,37 @@ function getAdjacentOceanInfo(hexKey) {
 	} catch { /* grid not ready */ }
 
 	return result;
+}
+
+/**
+ * Read the terrain label of the settlement's own hex from journal flags.
+ * @param {string} hexKey
+ * @returns {string} terrain label, e.g. "Mountains", "Vegetation", or ""
+ */
+function getOwnHexTerrain(hexKey) {
+	if (!hexKey) return "";
+	const sceneId = canvas.scene?.id;
+	if (!sceneId) return "";
+	const journal = game.journal.find(jj => jj.name === HEX_JOURNAL_NAME);
+	const allData = journal?.getFlag(MODULE_ID, "hexData") ?? {};
+	return allData[sceneId]?.[hexKey]?.terrain ?? "";
+}
+
+/**
+ * Classify the settlement type for NPC flavour selection.
+ * Priority: port > mining > logging > generic
+ * @param {string} hexKey
+ * @param {{ hasOcean: boolean }} oceanInfo
+ * @returns {"port"|"logging"|"mining"|"generic"}
+ */
+function classifySettlementType(hexKey, oceanInfo) {
+	if (oceanInfo.hasOcean) return "port";
+	const terrain = getOwnHexTerrain(hexKey).toLowerCase();
+	if (terrain.includes("mountain")) return "mining";
+	if (terrain.includes("swamp") || terrain.includes("marsh")) return "marsh";
+	if (terrain.includes("vegetation") || terrain.includes("forest")
+		|| terrain.includes("jungle") || terrain.includes("snow")) return "logging";
+	return "generic";
 }
 
 /**
@@ -822,8 +884,129 @@ export async function generateSettlementHtml(typeKey, hexLabel, hexKey) {
 
 	html += `</section>`;
 
+	// Notable NPCs — count scales with settlement size, flavour by settlement type
+	try {
+		const npcPoolData = await loadNotableNpcData();
+		if (npcPoolData) {
+			const npcCount = { village: 2, town: 3, city: 5 }[typeKey] ?? 2;
+			const settlementClass = classifySettlementType(safeHexKey, oceanInfo);
+			const genderPools = npcPoolData[settlementClass] || npcPoolData.generic;
+
+			if (genderPools) {
+				html += `<h2>Notable NPCs</h2>`;
+				html += `<ul>`;
+
+				// Track used descriptions to avoid duplicates across genders if needed
+				// (Though each gender has its own unique pool now)
+				const usedDescs = new Set();
+
+				for (let i = 0; i < npcCount; i++) {
+					const isMale = Math.random() < 0.5;
+					const gender = isMale ? "male" : "female";
+					const pool = genderPools[gender] || [];
+
+					// If one pool is empty, try the other
+					const activePool = pool.filter(d => !usedDescs.has(d));
+					const finalPool = activePool.length > 0 ? activePool : (genderPools[isMale ? "female" : "male"] || []).filter(d => !usedDescs.has(d));
+
+					if (finalPool.length === 0) break;
+
+					const desc = pick(finalPool);
+					usedDescs.add(desc);
+
+					// Determine effective gender for name/meta
+					// (Check if we had to swap pools)
+					const effectiveIsMale = genderPools[gender]?.includes(desc) ? isMale : !isMale;
+					const effectiveGenderLabel = effectiveIsMale ? "male" : "female";
+
+					// Generate Name
+					const first = effectiveIsMale ? pick(data.npcNames.firstMale) : pick(data.npcNames.firstFemale);
+					const last = pick(data.npcNames.lastNames);
+					const name = `${first} ${last}`;
+
+					// Ancestry detection or random
+					let ancestry = pick(ANCESTRIES);
+					const lowerDesc = desc.toLowerCase();
+					if (lowerDesc.includes("half-elf")) ancestry = "Half-Elf";
+					else if (lowerDesc.includes("half-orc")) ancestry = "Half-Orc";
+					else if (lowerDesc.includes("halfling")) ancestry = "Halfling";
+					else if (lowerDesc.includes("dwarf")) ancestry = "Dwarf";
+					else if (lowerDesc.includes("elf")) ancestry = "Elf";
+					else if (lowerDesc.includes("gnome")) ancestry = "Gnome";
+					else if (lowerDesc.includes("human")) ancestry = "Human";
+
+					// Alignment
+					const alignment = pick(ALIGNMENTS);
+
+					html += `<li><strong>${name} (${alignment} ${effectiveGenderLabel} ${ancestry})</strong> ${desc}</li>`;
+				}
+				html += `</ul>`;
+			}
+		}
+	} catch (err) {
+		console.warn(`${MODULE_ID} | Could not generate notable NPCs:`, err);
+	}
+
+	// Random Event Button
+	const settClassRoll = classifySettlementType(safeHexKey, oceanInfo);
+	html += `<div style="margin-top: 20px; text-align: center;">
+		<a class="sdx-roll-settlement-event shadowdark-button" data-settlement-type="${settClassRoll}" data-settlement-name="${settlementName}">
+			<i class="fas fa-dice-d20"></i> Roll Random ${settClassRoll.charAt(0).toUpperCase() + settClassRoll.slice(1)} Event
+		</a>
+	</div>`;
+
 	// Attribution
 	html += `<hr><p style="font-size:0.75em;opacity:0.6;">Generated from <a href="https://hexroll.app">Hexroll</a> data</p>`;
 
 	return { html, settlementName, maphubData };
 }
+
+// Global click listener for rolling settlement events
+Hooks.on("ready", () => {
+	document.addEventListener("click", async (event) => {
+		const button = event.target.closest(".sdx-roll-settlement-event");
+		if (!button) return;
+
+		event.preventDefault();
+
+		const type = button.dataset.settlementType;
+		const name = button.dataset.settlementName;
+
+		try {
+			const eventData = await loadSettlementEventData();
+			const pool = eventData[type] || eventData.generic || [];
+			if (pool.length === 0) {
+				ui.notifications.warn(`SDX | No events found for settlement type: ${type}`);
+				return;
+			}
+
+			const randomEvent = pool[Math.floor(Math.random() * pool.length)];
+
+			// Create chat message
+			const content = `
+				<div class="shadowdark-chat-card">
+					<header class="card-header">
+						<img src="icons/svg/dice-target.svg" width="36" height="36" />
+						<h3>Settlement Event: ${name}</h3>
+					</header>
+					<div class="card-content">
+						<p>${randomEvent}</p>
+					</div>
+					<footer class="card-footer">
+						<span>${type.charAt(0).toUpperCase() + type.slice(1)} Event</span>
+					</footer>
+				</div>
+			`;
+
+			await ChatMessage.create({
+				user: game.user.id,
+				speaker: { alias: "Settlement Guide" },
+				content: content,
+				whisper: game.users.filter(u => u.isGM).map(u => u.id)
+			});
+
+		} catch (err) {
+			console.error("SDX | Failed to roll settlement event:", err);
+		}
+	});
+});
