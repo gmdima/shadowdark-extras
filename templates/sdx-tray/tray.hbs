@@ -952,11 +952,18 @@
 
                 <!-- Usage hints -->
                 <div class="tray-footer-message">
-                    {{#if (eq activeTileTab 'symbols')}}
-                    Drag to paint · Shift+Drag to erase · Right-click to cycle · +/- to resize
-                    {{else}}
-                    Drag to paint · Shift+Drag to erase
-                    {{/if}}
+                    <div style="display: flex; gap: 12px; align-items: center; justify-content: space-between; flex-wrap: wrap;">
+                        <span style="flex: 1; min-width: 200px;">
+                            {{#if (eq activeTileTab 'symbols')}}
+                            Drag to paint · Shift+Drag to erase · Right-click to cycle · +/- to resize
+                            {{else}}
+                            Drag to paint · Shift+Drag to erase
+                            {{/if}}
+                        </span>
+                        <button class="hex-refresh-cache-btn" title="Refresh tile cache (for newly added images)" style="flex: 0 0 auto; padding: 4px 8px; font-size: 12px;">
+                            <i class="fas fa-sync-alt"></i> Refresh
+                        </button>
+                    </div>
                 </div>
             </div>
             {{/if}}
