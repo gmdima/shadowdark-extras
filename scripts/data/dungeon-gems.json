@@ -1,0 +1,388 @@
+{
+    "tiers": [
+        {
+            "name": "ornamental",
+            "label": "Ornamental Stone",
+            "chance": 0.55,
+            "valueMin": 10,
+            "valueMax": 20,
+            "qtyMin": 1,
+            "qtyMax": 4,
+            "gems": [
+                {
+                    "name": "Banded Shaleite",
+                    "color": "Layered grey, rust-brown, and dull white",
+                    "transparency": "Opaque"
+                },
+                {
+                    "name": "Sulphur Agate",
+                    "color": "Pale yellow with smoky grey veins",
+                    "transparency": "Translucent to opaque"
+                },
+                {
+                    "name": "Tidal Jasper",
+                    "color": "Dark teal-green with wave-like brown markings",
+                    "transparency": "Opaque"
+                },
+                {
+                    "name": "Ironbloom Stone",
+                    "color": "Dark red to charcoal grey",
+                    "transparency": "Opaque"
+                },
+                {
+                    "name": "Marshite",
+                    "color": "Murky green with black inclusions",
+                    "transparency": "Subtranslucent"
+                },
+                {
+                    "name": "Ash Chalcedony",
+                    "color": "Pale grey with faint white streaks",
+                    "transparency": "Translucent"
+                },
+                {
+                    "name": "Copperstone",
+                    "color": "Bright verdigris-green with blue-grey patches",
+                    "transparency": "Opaque"
+                },
+                {
+                    "name": "Dustfire Opal",
+                    "color": "Dull orange deepening to brown at edges",
+                    "transparency": "Translucent to opaque"
+                },
+                {
+                    "name": "Snowveil Obsidian",
+                    "color": "Deep black with pale grey fracture patterns",
+                    "transparency": "Transparent to subtranslucent"
+                },
+                {
+                    "name": "Violet Slate",
+                    "color": "Muted purple to deep blue-grey",
+                    "transparency": "Opaque"
+                },
+                {
+                    "name": "Tiger Flint",
+                    "color": "Rich tawny-brown with golden ripple lines",
+                    "transparency": "Semi-translucent to opaque"
+                },
+                {
+                    "name": "Seafoam Agate",
+                    "color": "Sky blue to grey-green, sometimes mottled",
+                    "transparency": "Translucent to opaque"
+                }
+            ]
+        },
+        {
+            "name": "semiprecious",
+            "label": "Semi-Precious Stone",
+            "chance": 0.28,
+            "valueMin": 25,
+            "valueMax": 75,
+            "qtyMin": 1,
+            "qtyMax": 3,
+            "gems": [
+                {
+                    "name": "Hearthstone",
+                    "color": "Dark green with scattered crimson speckles",
+                    "transparency": "Transparent to subtranslucent"
+                },
+                {
+                    "name": "Sunvein Carnelian",
+                    "color": "Warm amber-orange to deep terracotta",
+                    "transparency": "Transparent to subtranslucent"
+                },
+                {
+                    "name": "Verdant Prase",
+                    "color": "Pale to vivid apple-green",
+                    "transparency": "Transparent to subtranslucent"
+                },
+                {
+                    "name": "Goldhaze Citrine",
+                    "color": "Clear yellow deepening to amber at the core",
+                    "transparency": "Transparent to translucent"
+                },
+                {
+                    "name": "Dusk Iolite",
+                    "color": "Deep blue-violet, shifting to grey in low light",
+                    "transparency": "Transparent to translucent"
+                },
+                {
+                    "name": "Bloodbanded Jasper",
+                    "color": "Deep red-brown with irregular yellow stripes",
+                    "transparency": "Opaque"
+                },
+                {
+                    "name": "Pallid Moonstone",
+                    "color": "Colourless to white with a soft blue inner glow",
+                    "transparency": "Translucent"
+                },
+                {
+                    "name": "Ink Onyx",
+                    "color": "Deep black to dark brown, occasionally dark green",
+                    "transparency": "Transparent to subtranslucent"
+                },
+                {
+                    "name": "Olive Chrysolite",
+                    "color": "Yellowish-green to warm olive",
+                    "transparency": "Transparent to translucent"
+                },
+                {
+                    "name": "Clear Rockglass",
+                    "color": "Perfectly colourless",
+                    "transparency": "Transparent"
+                },
+                {
+                    "name": "Russet Sardonyx",
+                    "color": "Reddish-brown with alternating black and cream bands",
+                    "transparency": "Transparent to subtranslucent"
+                },
+                {
+                    "name": "Sandfire Zircon",
+                    "color": "Light honey-brown to reddish, sometimes colourless or blue",
+                    "transparency": "Transparent to translucent"
+                }
+            ]
+        },
+        {
+            "name": "fancy",
+            "label": "Fancy Stone",
+            "chance": 0.12,
+            "valueMin": 100,
+            "valueMax": 500,
+            "qtyMin": 1,
+            "qtyMax": 2,
+            "gems": [
+                {
+                    "name": "Golden Ambrite",
+                    "color": "Warm yellow to deep orange, occasionally blood-red or pale green",
+                    "transparency": "Transparent to opaque"
+                },
+                {
+                    "name": "Violet Amethine",
+                    "color": "Deep purple, sometimes lavender at the facet edges",
+                    "transparency": "Transparent to translucent"
+                },
+                {
+                    "name": "Chrysoverde",
+                    "color": "Rich yellow-green to forest green",
+                    "transparency": "Transparent to translucent"
+                },
+                {
+                    "name": "Crimson Coralite",
+                    "color": "Pink to vivid crimson",
+                    "transparency": "Opaque"
+                },
+                {
+                    "name": "Deepfire Garnet",
+                    "color": "Dark orangish-brown to deep wine-red or greenish",
+                    "transparency": "Transparent to translucent"
+                },
+                {
+                    "name": "Shadow Jade",
+                    "color": "Dark green to near-black, occasionally white or pale lavender",
+                    "transparency": "Translucent to opaque"
+                },
+                {
+                    "name": "Obsidian Pearl",
+                    "color": "Lustrous white, gold, or pale rose; rarely silver-grey",
+                    "transparency": "Opaque"
+                },
+                {
+                    "name": "Bloodspinel",
+                    "color": "Deep red to blackish-red; rarely vivid green",
+                    "transparency": "Transparent"
+                },
+                {
+                    "name": "Aurora Tourmaline",
+                    "color": "Pale blue-green, dusty rose, or pale amber",
+                    "transparency": "Opaque to transparent"
+                },
+                {
+                    "name": "Ember Jet",
+                    "color": "Solid deep black with a faint internal warmth",
+                    "transparency": "Opaque"
+                }
+            ]
+        },
+        {
+            "name": "precious",
+            "label": "Precious Stone",
+            "chance": 0.05,
+            "valueMin": 500,
+            "valueMax": 1500,
+            "qtyMin": 1,
+            "qtyMax": 1,
+            "gems": [
+                {
+                    "name": "Starfire Diamond",
+                    "color": "Colourless, with exceptional inner brilliance",
+                    "transparency": "Transparent"
+                },
+                {
+                    "name": "Bloodsea Ruby",
+                    "color": "Deep pigeon-blood red to vivid crimson",
+                    "transparency": "Transparent"
+                },
+                {
+                    "name": "Abyssal Sapphire",
+                    "color": "Velvety midnight blue, occasionally violet or pale blue",
+                    "transparency": "Transparent"
+                },
+                {
+                    "name": "Verdant Emerald",
+                    "color": "Vivid green to rich forest green",
+                    "transparency": "Transparent to translucent"
+                },
+                {
+                    "name": "Golden Topaz",
+                    "color": "Rich imperial yellow to warm orange-gold",
+                    "transparency": "Transparent"
+                },
+                {
+                    "name": "Pale Alexandrite",
+                    "color": "Green in daylight, shifting to rose-red in firelight",
+                    "transparency": "Transparent"
+                },
+                {
+                    "name": "Sea-Eye Aquamarine",
+                    "color": "Clear pale blue to deep ocean blue-green",
+                    "transparency": "Transparent"
+                },
+                {
+                    "name": "Dawnfire Opal",
+                    "color": "White to black base, blazing with shifting red, gold, and green fire",
+                    "transparency": "Translucent to opaque"
+                }
+            ]
+        }
+    ],
+    "placements": [
+        {
+            "text": "set into the eye sockets of a stone idol",
+            "hidden": false
+        },
+        {
+            "text": "embedded in the pommel of an ornate sword lying on the floor",
+            "hidden": false
+        },
+        {
+            "text": "resting in a shallow bowl on a stone altar",
+            "hidden": false
+        },
+        {
+            "text": "inlaid into the carved forehead of a relief carving on the wall",
+            "hidden": false
+        },
+        {
+            "text": "dangling from a tarnished chain hung on a rusted hook",
+            "hidden": false
+        },
+        {
+            "text": "set into the crown of a crumbling stone effigy",
+            "hidden": false
+        },
+        {
+            "text": "scattered among the bones of a long-dead figure",
+            "hidden": false
+        },
+        {
+            "text": "resting inside an open wooden coffer, still intact",
+            "hidden": false
+        },
+        {
+            "text": "pressed into the wax seal of a rolled document on a shelf",
+            "hidden": false
+        },
+        {
+            "text": "worked into the face of a ceremonial shield mounted on the wall",
+            "hidden": false
+        },
+        {
+            "text": "lodged in a crack in the floor, partially hidden by grime",
+            "hidden": true
+        },
+        {
+            "text": "tucked behind a loose stone near the base of the wall",
+            "hidden": true
+        },
+        {
+            "text": "concealed inside a hollowed-out book spine on a neglected shelf",
+            "hidden": true
+        },
+        {
+            "text": "wedged between two ceiling stones, invisible from below without a light source",
+            "hidden": true
+        },
+        {
+            "text": "sealed inside a dried lump of old wax on a candelabra",
+            "hidden": true
+        },
+        {
+            "text": "embedded in thick mortar that has partially crumbled, revealing it only on close inspection",
+            "hidden": true
+        },
+        {
+            "text": "wrapped in a scrap of rotted cloth stuffed into a crevice",
+            "hidden": true
+        },
+        {
+            "text": "hidden inside a false-bottomed brass urn near the door",
+            "hidden": true
+        },
+        {
+            "text": "wedged between the toes of a stone statue, invisible unless the base is examined",
+            "hidden": true
+        },
+        {
+            "text": "pressed flat under the corner of a heavy stone slab",
+            "hidden": true
+        },
+        {
+            "text": "worked into the eye of a serpent carved into a pillar",
+            "hidden": false
+        },
+        {
+            "text": "resting in the folded hands of a skeletal corpse seated against the wall",
+            "hidden": false
+        },
+        {
+            "text": "hanging from the ear of a decorative brass mask mounted near the entrance",
+            "hidden": false
+        },
+        {
+            "text": "balanced on the rim of a dry stone fountain",
+            "hidden": false
+        },
+        {
+            "text": "set into the hilt-guard of a dagger driven into the floor",
+            "hidden": false
+        },
+        {
+            "text": "mortared into a wall niche beside a burned-out torch sconce",
+            "hidden": true
+        },
+        {
+            "text": "hidden inside the remains of a small clay figurine on a shelf",
+            "hidden": true
+        },
+        {
+            "text": "glinting faintly inside a pool of hardened black tallow beneath an overturned candle stand",
+            "hidden": true
+        },
+        {
+            "text": "tucked into the lining of a rotted leather satchel hanging from a peg",
+            "hidden": true
+        },
+        {
+            "text": "resting in the eye sockets of a skull used as a decorative ornament",
+            "hidden": false
+        },
+        {
+            "text": "inlaid along the spine of a stone relief depicting a coiling serpent or dragon",
+            "hidden": false
+        },
+        {
+            "text": "sewn into the hem of a tattered ceremonial robe hanging on a wooden frame",
+            "hidden": true
+        }
+    ]
+}
