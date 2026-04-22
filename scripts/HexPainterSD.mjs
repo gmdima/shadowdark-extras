@@ -147,6 +147,43 @@ export async function loadTileAssets() {
 }
 
 /**
+ * Refresh the hex tile cache
+ * Clears cached metadata and reloads all hex tiles from disk
+ */
+export async function refreshTileCache() {
+    try {
+        console.log(`${MODULE_ID} | Refreshing hex tile cache...`);
+
+        // Clear metadata cache for all tile types
+        const metadataKeys = [
+            `hex_tiles_metadata_default`,
+            `hex_tiles_metadata_custom`,
+            `hex_tiles_metadata_colored`,
+            `hex_tiles_metadata_symbol`
+        ];
+
+        for (const key of metadataKeys) {
+            await cache.setMetadata(key, null);
+        }
+
+        // Reset tile variables to force reload
+        _tiles = null;
+        _customTiles = null;
+        _coloredTiles = null;
+        _symbolTiles = null;
+
+        // Reload all tiles
+        await loadTileAssets();
+
+        ui.notifications.info("Hex tile cache refreshed!");
+        console.log(`${MODULE_ID} | Hex tile cache refresh complete`);
+    } catch (err) {
+        console.error(`${MODULE_ID} | Error refreshing hex tile cache:`, err);
+        ui.notifications.error("Failed to refresh hex tile cache");
+    }
+}
+
+/**
  * Ensure the custom hexes folder structure exists
  */
 async function ensureCustomFolderStructure() {

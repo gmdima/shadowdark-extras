@@ -53,6 +53,20 @@ export async function loadMotivationsData() {
 	return _motivationsData;
 }
 
+let _gemData = null;
+async function loadGemData() {
+	if (_gemData) return _gemData;
+	try {
+		const resp = await fetch(`modules/${MODULE_ID}/scripts/data/dungeon-gems.json`);
+		if (!resp.ok) throw new Error(`HTTP ${resp.status}: ${resp.statusText}`);
+		_gemData = await resp.json();
+	} catch (err) {
+		console.error(`${MODULE_ID} | Failed to load dungeon gems:`, err);
+		_gemData = null;
+	}
+	return _gemData;
+}
+
 async function getMonsterIndex() {
 	if (_monsterIndex) return _monsterIndex;
 	_monsterIndex = new Map();
@@ -464,6 +478,40 @@ function generateTreasure(data, tier) {
 	return { html };
 }
 
+// ── Gem Generation ──────────────────────────────────────────────────────────
+
+async function generateGems() {
+	const data = await loadGemData();
+	if (!data || !data.tiers || !data.placements) return null;
+
+	// Weighted tier selection
+	const roll = Math.random();
+	let cumulative = 0;
+	let selectedTier = null;
+	for (const tier of data.tiers) {
+		cumulative += tier.chance;
+		if (roll < cumulative) { selectedTier = tier; break; }
+	}
+	if (!selectedTier) selectedTier = data.tiers[0];
+
+	const gem = pick(selectedTier.gems);
+	const qty = randRange(selectedTier.qtyMin, selectedTier.qtyMax);
+	const unitValue = randRange(selectedTier.valueMin, selectedTier.valueMax);
+	const totalValue = qty * unitValue;
+	const placement = pick(data.placements);
+
+	const qtyLabel = qty === 1 ? `1 ${gem.name}` : `${qty}× ${gem.name}`;
+	let html = `<h3>Gems</h3>`;
+	html += `<p><strong>${qtyLabel}</strong> (${selectedTier.label} — ~${totalValue} gp total)<br>`;
+	html += `<em>${gem.color}. ${gem.transparency}.</em><br>`;
+	html += `Found: ${placement.text}.`;
+	if (placement.hidden) {
+		html += ` <em>(Requires a check to notice.)</em>`;
+	}
+	html += `</p>`;
+	return html;
+}
+
 // ── Special Feature Generation ──────────────────────────────────────────────
 
 function generatePool(data) {
@@ -582,6 +630,12 @@ async function generateRoom(data, roomNum, roomType, connections, keyMap, typeKe
 		const treasure = generateTreasure(data, treasureTier);
 		html += `<h3>Treasure</h3>`;
 		html += treasure.html;
+	}
+
+	// Gems (~25% chance)
+	if (Math.random() < 0.25) {
+		const gems = await generateGems();
+		if (gems) html += gems;
 	}
 
 	// Special features (~50% chance, or guaranteed if it has a statue)

@@ -4,6 +4,7 @@ import { TrayApp } from "./TrayApp.mjs";
 import { JournalPinManager } from "./JournalPinsSD.mjs";
 import { initSoloHexMode } from "./SoloHexMode.mjs";
 import { getHexPainterData, loadTileAssets, bindCanvasEvents, enablePainting, disablePainting, isPainting, setDecorMode, canUndoPoi, canRedoPoi } from "./HexPainterSD.mjs";
+import { refreshHexFog } from "./SDXHexFogSD.mjs";
 import {
     getDungeonPainterData,
     loadDungeonAssets,
@@ -297,6 +298,16 @@ export function registerTraySettings() {
         type: Number,
         default: 1,
         range: { min: 0, max: 5, step: 1 }
+    });
+
+    game.settings.register(MODULE_ID, "hexFog.enablePreview", {
+        name: "Enable Hex Preview",
+        hint: "Store a semi-transparent ring around newly revealed hexes. Previewed hexes stay half-fogged until they are fully revealed or manually re-fogged.",
+        scope: "world",
+        config: true,
+        type: Boolean,
+        default: false,
+        onChange: () => refreshHexFog()
     });
 
     game.settings.register(MODULE_ID, "hexPainter.customTileWidth", {
