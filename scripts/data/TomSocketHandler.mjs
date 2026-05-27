@@ -5,7 +5,7 @@ import { TomStore as Store } from './TomStore.mjs';
 export class TomSocketHandler {
   static initialize() {
     game.socket.on(CONFIG.SOCKET_NAME, this._handleSocketMessage.bind(this));
-    console.warn(`${CONFIG.MODULE_NAME} | Socket Handler Initialized | Socket Name: ${CONFIG.SOCKET_NAME}`);
+    console.log(`${CONFIG.MODULE_NAME} | Socket Handler Initialized | Socket Name: ${CONFIG.SOCKET_NAME}`);
   }
 
   static _handleSocketMessage(payload) {
@@ -130,7 +130,7 @@ export class TomSocketHandler {
       outAnimation = currentScene?.outAnimation || 'fade';
     }
 
-    console.warn(`${CONFIG.MODULE_NAME} | Socket Message Emitted: broadcast-scene`, { sceneId, inAnimation, outAnimation });
+    console.log(`${CONFIG.MODULE_NAME} | Socket Message Emitted: broadcast-scene`, { sceneId, inAnimation, outAnimation });
     game.socket.emit(CONFIG.SOCKET_NAME, {
       type: 'broadcast-scene',
       data: { sceneId, inAnimation, outAnimation }
@@ -319,7 +319,7 @@ export class TomSocketHandler {
   static emitSceneFadeTransition(sceneId) {
     if (!game.user.isGM) return;
 
-    console.warn(`${CONFIG.MODULE_NAME} | Socket Message Emitted: scene-fade-transition`, { sceneId });
+    console.log(`${CONFIG.MODULE_NAME} | Socket Message Emitted: scene-fade-transition`, { sceneId });
     game.socket.emit(CONFIG.SOCKET_NAME, {
       type: 'scene-fade-transition',
       data: { sceneId }
@@ -389,7 +389,7 @@ export class TomSocketHandler {
   static emitOverlaySet(overlayPath) {
     if (!game.user.isGM) return;
 
-    console.warn(`${CONFIG.MODULE_NAME} | Socket Message Emitted: overlay-set`, { overlayPath });
+    console.log(`${CONFIG.MODULE_NAME} | Socket Message Emitted: overlay-set`, { overlayPath });
     game.socket.emit(CONFIG.SOCKET_NAME, {
       type: 'overlay-set',
       data: { overlayPath }
@@ -402,7 +402,7 @@ export class TomSocketHandler {
   static emitOverlayClear() {
     if (!game.user.isGM) return;
 
-    console.warn(`${CONFIG.MODULE_NAME} | Socket Message Emitted: overlay-clear`);
+    console.log(`${CONFIG.MODULE_NAME} | Socket Message Emitted: overlay-clear`);
     game.socket.emit(CONFIG.SOCKET_NAME, {
       type: 'overlay-clear',
       data: {}

@@ -1,0 +1,160 @@
+effects: []
+folder: vmqOYZjyo8VunyyP
+img: icons/commodities/materials/material-webbing.webp
+name: Web
+system:
+  description: >-
+    <p>You create a near-sized cube of sticky, dense spider web within the
+    spell’s range. A creature stuck in the web can’t move and must succeed on a
+    Strength check opposed by your spellcasting check to free
+    itself.</p><p>@UUID[Compendium.shadowdark.spell-effects.28PPFz1MYTsfPwzh]{Spell
+    Effect: Web}</p>
+  source:
+    title: core-rules
+  class:
+    - Compendium.shadowdark.classes.Item.035nuVkU9q2wtMPs
+  duration:
+    type: rounds
+    value: '5'
+  range: far
+  tier: 2
+  lost: false
+  magicItem: false
+  predefinedEffects: ''
+type: Spell
+_stats:
+  compendiumSource: null
+  duplicateSource: null
+  exportSource: null
+  coreVersion: '13.348'
+  systemId: shadowdark
+  systemVersion: 3.6.1
+  createdTime: 1769459178580
+  modifiedTime: 1771295884104
+  lastModifiedBy: HP3Vba5udEHYm4dW
+ownership:
+  default: 0
+  lDQovrTY32fJwPBR: 3
+flags:
+  shadowdark-extras:
+    spellDamage:
+      enabled: false
+      damageType: ''
+      damageRequirement: ''
+      damageRequirementFailAction: zero
+      formulaType: basic
+      numDice: 1
+      dieType: d6
+      bonus: 0
+      scaling: none
+      scalingDice: 0
+      formula: ''
+      tieredFormula: ''
+      effects: >-
+        [{"uuid":"Compendium.shadowdark.spell-effects.Item.28PPFz1MYTsfPwzh","duration":{}}]
+      effectsRequirement: ''
+      effectsApplyToTarget: true
+      criticalEffects: '[]'
+      effectSelectionMode: all
+      trackDuration: true
+      perTurnTrigger: start
+      perTurnDamage: ''
+      reapplyEffects: false
+    summoning:
+      enabled: false
+      profiles: '[]'
+      deleteAtExpiry: false
+    itemGive:
+      enabled: false
+      profiles: '[]'
+    targeting:
+      mode: template
+      template:
+        type: rect
+        size: 15
+        deleteMode: duration
+        deleteDuration: 5
+        fillColor: '#4e9a06'
+        placement: choose
+        hideOutline: false
+        excludeCaster: false
+        tokenMagic:
+          texture: ''
+          opacity: 0.5
+          preset: NOFX
+    templateEffects:
+      enabled: true
+      triggers:
+        onEnter: true
+        onLeave: true
+        onTurnStart: false
+        onTurnEnd: false
+      applyConfiguredEffects: true
+      damage:
+        formula: ''
+        type: ''
+      save:
+        enabled: false
+        dc: '12'
+        ability: dex
+        halfOnSuccess: true
+      runItemMacro: false
+    alignment: ''
+    auraEffects:
+      enabled: false
+      attachTo: caster
+      radius: 30
+      triggers:
+        onEnter: false
+        onLeave: false
+        onSourceTurnStart: false
+        onSourceTurnEnd: false
+        onTargetTurnStart: false
+        onTargetTurnEnd: false
+      damage:
+        formula: ''
+        type: ''
+      damageTriggers:
+        onEnter: false
+        onLeave: false
+        onSourceTurnStart: false
+        onSourceTurnEnd: false
+        onTargetTurnStart: false
+        onTargetTurnEnd: false
+      save:
+        enabled: false
+        dc: 12
+        ability: con
+        halfOnSuccess: false
+      disposition: all
+      includeSelf: false
+      applyToOriginator: true
+      checkVisibility: false
+      animation:
+        enabled: true
+        style: circle
+        tint: '#4488ff'
+        scaleMultiplier: 1
+        opacity: 0.6
+      tokenFilters:
+        enabled: false
+        preset: ''
+      applyConfiguredEffects: false
+      effectsTriggers:
+        onEnter: false
+        onLeave: false
+        onSourceTurnStart: false
+        onSourceTurnEnd: false
+        onTargetTurnStart: false
+        onTargetTurnEnd: false
+      runItemMacro: false
+      macroTriggers:
+        onEnter: false
+        onLeave: false
+        onSourceTurnStart: false
+        onSourceTurnEnd: false
+        onTargetTurnStart: false
+        onTargetTurnEnd: false
+_id: NLiIl34tP0nl06YN
+sort: 500000
+_key: '!items!NLiIl34tP0nl06YN'

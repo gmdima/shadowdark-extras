@@ -499,11 +499,9 @@ export default class TradeWindowSD extends HandlebarsApplicationMixin(Applicatio
 			return;
 		}
 
-		// Check if Item Piles is available
-		if (!game.modules.get("item-piles")?.active || !game.itempiles?.API) {
-			ui.notifications.error("Item Piles module is required for trading.");
-			return;
-		}
+		// Pick a transfer backend: Item Piles if installed and active,
+		// otherwise the native fallback (no module dependency).
+		const useItemPiles = game.modules.get("item-piles")?.active && !!game.itempiles?.API;
 
 		try {
 			// Get actors
@@ -517,31 +515,47 @@ export default class TradeWindowSD extends HandlebarsApplicationMixin(Applicatio
 			// Transfer items from A to B
 			if (state.itemsA.length > 0) {
 				const itemsA = state.itemsA.map(i => ({ _id: i._id, quantity: i.system?.quantity ?? 1 }));
-				await game.itempiles.API.transferItems(actorA, actorB, itemsA, { interactionId: false });
+				if (useItemPiles) {
+					await game.itempiles.API.transferItems(actorA, actorB, itemsA, { interactionId: false });
+				} else {
+					await this._nativeTransferItems(actorA, actorB, itemsA);
+				}
 			}
 
 			// Transfer items from B to A
 			if (state.itemsB.length > 0) {
 				const itemsB = state.itemsB.map(i => ({ _id: i._id, quantity: i.system?.quantity ?? 1 }));
-				await game.itempiles.API.transferItems(actorB, actorA, itemsB, { interactionId: false });
+				if (useItemPiles) {
+					await game.itempiles.API.transferItems(actorB, actorA, itemsB, { interactionId: false });
+				} else {
+					await this._nativeTransferItems(actorB, actorA, itemsB);
+				}
 			}
 
-			// Transfer coins from A to B using Item Piles transferAttributes API
+			// Transfer coins from A to B
 			const coinsA = state.coinsA || { gp: 0, sp: 0, cp: 0 };
 			if (coinsA.gp > 0 || coinsA.sp > 0 || coinsA.cp > 0) {
-				const attributesA = this._buildCurrencyAttributes(coinsA);
-				console.log(`${MODULE_ID} | Transferring currencies from ${actorA.name} to ${actorB.name}:`, attributesA);
-				const result = await game.itempiles.API.transferAttributes(actorA, actorB, attributesA, { interactionId: false });
-				console.log(`${MODULE_ID} | Currency transfer A->B result:`, result);
+				if (useItemPiles) {
+					const attributesA = this._buildCurrencyAttributes(coinsA);
+					console.log(`${MODULE_ID} | Transferring currencies from ${actorA.name} to ${actorB.name}:`, attributesA);
+					const result = await game.itempiles.API.transferAttributes(actorA, actorB, attributesA, { interactionId: false });
+					console.log(`${MODULE_ID} | Currency transfer A->B result:`, result);
+				} else {
+					await this._nativeTransferCoins(actorA, actorB, coinsA);
+				}
 			}
 
-			// Transfer coins from B to A using Item Piles transferAttributes API
+			// Transfer coins from B to A
 			const coinsB = state.coinsB || { gp: 0, sp: 0, cp: 0 };
 			if (coinsB.gp > 0 || coinsB.sp > 0 || coinsB.cp > 0) {
-				const attributesB = this._buildCurrencyAttributes(coinsB);
-				console.log(`${MODULE_ID} | Transferring currencies from ${actorB.name} to ${actorA.name}:`, attributesB);
-				const result = await game.itempiles.API.transferAttributes(actorB, actorA, attributesB, { interactionId: false });
-				console.log(`${MODULE_ID} | Currency transfer B->A result:`, result);
+				if (useItemPiles) {
+					const attributesB = this._buildCurrencyAttributes(coinsB);
+					console.log(`${MODULE_ID} | Transferring currencies from ${actorB.name} to ${actorA.name}:`, attributesB);
+					const result = await game.itempiles.API.transferAttributes(actorB, actorA, attributesB, { interactionId: false });
+					console.log(`${MODULE_ID} | Currency transfer B->A result:`, result);
+				} else {
+					await this._nativeTransferCoins(actorB, actorA, coinsB);
+				}
 			}
 
 			// Mark trade as complete
@@ -564,6 +578,95 @@ export default class TradeWindowSD extends HandlebarsApplicationMixin(Applicatio
 		if (coins.sp > 0) attributes["system.coins.sp"] = coins.sp;
 		if (coins.cp > 0) attributes["system.coins.cp"] = coins.cp;
 		return attributes;
+	}
+
+	/**
+	 * Native item-transfer fallback used when Item Piles isn't installed.
+	 *
+	 * For each item to transfer:
+	 *  - Read the source item (`{_id, quantity}` from the trade state).
+	 *  - If the target already has an item with the same name + matching
+	 *    compendium source, merge by bumping the existing quantity.
+	 *  - Otherwise create a fresh copy on the target via
+	 *    `createEmbeddedDocuments`.
+	 *  - Reduce source quantity by the transferred amount; delete the
+	 *    source item if quantity reaches 0.
+	 *
+	 * Doesn't replicate every Item Piles feature (stack limits, slot
+	 * checks, currency conversion). For SDX trades — which the chat-card
+	 * style trade window does — the simple stack-merge behavior matches
+	 * what users expect.
+	 */
+	async _nativeTransferItems(fromActor, toActor, transferList) {
+		for (const entry of transferList) {
+			const srcItem = fromActor.items.get(entry._id);
+			if (!srcItem) {
+				console.warn(`${MODULE_ID} | _nativeTransferItems: source item ${entry._id} not found on ${fromActor.name}`);
+				continue;
+			}
+			const transferQty = Math.max(1, Number(entry.quantity ?? 1));
+			const srcQty = Number(srcItem.system?.quantity ?? 1);
+			if (transferQty > srcQty) {
+				console.warn(`${MODULE_ID} | _nativeTransferItems: requested ${transferQty} of ${srcItem.name} but source has ${srcQty}; clamping`);
+			}
+			const actualTransfer = Math.min(transferQty, srcQty);
+
+			// Try to merge into an existing stack on the target.
+			const sourceUuid = srcItem._stats?.compendiumSource ?? srcItem.flags?.core?.sourceId ?? null;
+			const existingStack = toActor.items.find(it =>
+				it.type === srcItem.type
+				&& it.name === srcItem.name
+				&& (it._stats?.compendiumSource ?? it.flags?.core?.sourceId ?? null) === sourceUuid
+			);
+
+			if (existingStack) {
+				const newQty = Number(existingStack.system?.quantity ?? 1) + actualTransfer;
+				await existingStack.update({ "system.quantity": newQty });
+			} else {
+				const data = srcItem.toObject();
+				data.system = data.system ?? {};
+				data.system.quantity = actualTransfer;
+				delete data._id;
+				await toActor.createEmbeddedDocuments("Item", [data]);
+			}
+
+			// Reduce source — delete if we transferred everything, else decrement.
+			const remaining = srcQty - actualTransfer;
+			if (remaining <= 0) {
+				await srcItem.delete();
+			} else {
+				await srcItem.update({ "system.quantity": remaining });
+			}
+		}
+	}
+
+	/**
+	 * Native coin-transfer fallback. Reads source coins, subtracts the
+	 * transfer amounts, reads target coins, adds them. Single `update()`
+	 * per actor to keep history clean.
+	 */
+	async _nativeTransferCoins(fromActor, toActor, coins) {
+		const types = ["gp", "sp", "cp"];
+		const fromCoins = fromActor.system?.coins ?? {};
+		const toCoins = toActor.system?.coins ?? {};
+
+		const fromUpdate = {};
+		const toUpdate = {};
+		for (const t of types) {
+			const amt = Math.max(0, Number(coins[t] ?? 0));
+			if (amt === 0) continue;
+			const fromCurrent = Number(fromCoins[t] ?? 0);
+			if (amt > fromCurrent) {
+				console.warn(`${MODULE_ID} | _nativeTransferCoins: ${fromActor.name} has ${fromCurrent} ${t} but transfer asks for ${amt}; clamping`);
+			}
+			const actualAmt = Math.min(amt, fromCurrent);
+			if (actualAmt <= 0) continue;
+			fromUpdate[`system.coins.${t}`] = fromCurrent - actualAmt;
+			toUpdate[`system.coins.${t}`] = Number(toCoins[t] ?? 0) + actualAmt;
+		}
+
+		if (Object.keys(fromUpdate).length) await fromActor.update(fromUpdate);
+		if (Object.keys(toUpdate).length) await toActor.update(toUpdate);
 	}
 
 	/**
@@ -847,15 +950,17 @@ export async function showTradeDialog(localActor) {
 	`;
 
 	return new Promise((resolve) => {
-		const dialog = new Dialog({
-			title: game.i18n.localize("SHADOWDARK_EXTRAS.trade.initiate_title"),
-			content: content,
-			buttons: {
-				trade: {
-					icon: '<i class="fas fa-exchange-alt"></i>',
+		const dialog = new foundry.applications.api.DialogV2({
+			window: { title: game.i18n.localize("SHADOWDARK_EXTRAS.trade.initiate_title") },
+			content,
+			buttons: [
+				{
+					action: "trade",
+					icon: "fas fa-exchange-alt",
 					label: game.i18n.localize("SHADOWDARK_EXTRAS.trade.start_trade"),
-					callback: async (html) => {
-						const targetActorId = html.find('[name="targetActorId"]').val();
+					default: true,
+					callback: async (event, button, dlg) => {
+						const targetActorId = dlg.element.querySelector('[name="targetActorId"]')?.value;
 						const targetActor = game.actors.get(targetActorId);
 						if (targetActor) {
 							await initiateTradeWithPlayer(localActor, targetActor);
@@ -863,65 +968,53 @@ export async function showTradeDialog(localActor) {
 						resolve(true);
 					}
 				},
-				cancel: {
-					icon: '<i class="fas fa-times"></i>',
+				{
+					action: "cancel",
+					icon: "fas fa-times",
 					label: game.i18n.localize("Cancel"),
 					callback: () => resolve(false)
 				}
-			},
-			default: "trade",
-			render: (html) => {
-				const $select = html.find('#sdx-trade-target');
-				const $filterCheckbox = html.find('#sdx-filter-connected');
-				const $searchInput = html.find('#sdx-trade-search');
+			],
+			close: () => resolve(false)
+		});
+		dialog.render({ force: true }).then(() => {
+			const root = dialog.element;
+			const select = root.querySelector('#sdx-trade-target');
+			const filterCheckbox = root.querySelector('#sdx-filter-connected');
+			const searchInput = root.querySelector('#sdx-trade-search');
 
-				// Combined filter function for both checkbox and search
-				const updateFilter = () => {
-					const showOnlyConnected = $filterCheckbox.is(':checked');
-					const searchText = $searchInput.val().toLowerCase().trim();
+			const updateFilter = () => {
+				const showOnlyConnected = !!filterCheckbox?.checked;
+				const searchText = (searchInput?.value || "").toLowerCase().trim();
 
-					$select.find('optgroup').each(function () {
-						const $group = $(this);
-						const groupType = $group.data('group');
-
-						// First, apply connected filter to groups
-						if (groupType === 'other' && showOnlyConnected) {
-							$group.hide();
-							return;
-						}
-
-						// Then apply search filter to options within visible groups
-						let visibleCount = 0;
-						$group.find('option').each(function () {
-							const $option = $(this);
-							const optionSearch = $option.data('search') || '';
-
-							if (searchText === '' || optionSearch.includes(searchText)) {
-								$option.show();
-								visibleCount++;
-							} else {
-								$option.hide();
-							}
-						});
-
-						// Hide group if no visible options
-						$group.toggle(visibleCount > 0);
-					});
-
-					// If current selection is now hidden, select first visible option
-					const $selectedOption = $select.find('option:selected');
-					if (!$selectedOption.is(':visible') || $selectedOption.parent('optgroup').is(':hidden')) {
-						$select.find('option:visible').first().prop('selected', true);
+				root.querySelectorAll('#sdx-trade-target optgroup').forEach(group => {
+					const groupType = group.dataset.group;
+					if (groupType === 'other' && showOnlyConnected) {
+						group.hidden = true;
+						return;
 					}
-				};
+					let visibleCount = 0;
+					group.querySelectorAll('option').forEach(option => {
+						const optionSearch = option.dataset.search || '';
+						const visible = searchText === '' || optionSearch.includes(searchText);
+						option.hidden = !visible;
+						if (visible) visibleCount++;
+					});
+					group.hidden = visibleCount === 0;
+				});
 
-				updateFilter();
-				$filterCheckbox.on('change', updateFilter);
-				$searchInput.on('input', updateFilter);
+				const selected = select?.options[select.selectedIndex];
+				if (selected && (selected.hidden || selected.parentElement?.hidden)) {
+					const firstVisible = Array.from(select.options).find(o => !o.hidden && !o.parentElement?.hidden);
+					if (firstVisible) firstVisible.selected = true;
+				}
+			};
 
-				// Focus search input for immediate typing
-				setTimeout(() => $searchInput.focus(), 100);
-			}
-		}).render(true);
+			updateFilter();
+			filterCheckbox?.addEventListener('change', updateFilter);
+			searchInput?.addEventListener('input', updateFilter);
+
+			setTimeout(() => searchInput?.focus(), 100);
+		});
 	});
 }

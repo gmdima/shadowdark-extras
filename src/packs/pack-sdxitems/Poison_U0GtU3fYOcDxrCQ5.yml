@@ -1,0 +1,86 @@
+effects: []
+folder: vmqOYZjyo8VunyyP
+img: icons/magic/acid/dissolve-pool-bubbles.webp
+name: Poison
+system:
+  description: >-
+    <p>One worn or carried object you touch becomes toxic for the spell's
+    duration. Any creature in contact with the object at the start of its turn
+    takes 1d6 damage.</p>
+  source:
+    title: cursed-scroll-1
+  class:
+    - Compendium.shadowdark.classes.Item.KGnBAFiTiLHZJUND
+  duration:
+    type: rounds
+    value: '5'
+  range: touch
+  tier: 2
+  lost: false
+  magicItem: false
+  formula: '1d6'
+  damageType: damage
+  predefinedEffects: ''
+type: Spell
+_stats:
+  compendiumSource: null
+  duplicateSource: null
+  exportSource: null
+  coreVersion: '13.348'
+  systemId: shadowdark
+  systemVersion: 3.6.1
+  createdTime: 1767137288062
+  modifiedTime: 1771295884104
+  lastModifiedBy: HP3Vba5udEHYm4dW
+ownership:
+  default: 0
+  lDQovrTY32fJwPBR: 3
+flags:
+  shadowdark-extras:
+    spellDamage:
+      enabled: true
+      damageType: Poison
+      damageRequirement: ''
+      damageRequirementFailAction: zero
+      formulaType: basic
+      numDice: 1
+      dieType: d6
+      bonus: 0
+      scaling: none
+      scalingDice: 0
+      formula: ''
+      tieredFormula: ''
+      effects: >-
+        [{"uuid":"Compendium.shadowdark-extras.pack-sdxitems.Item.SA4PtYZRssGhjEjf","duration":{"rounds":5}}]
+      effectsRequirement: ''
+      effectsApplyToTarget: true
+      criticalEffects: '[]'
+      effectSelectionMode: all
+      trackDuration: true
+      perTurnTrigger: start
+      perTurnDamage: 1d6
+      reapplyEffects: false
+    summoning:
+      enabled: false
+      profiles: '[]'
+      deleteAtExpiry: false
+    itemGive:
+      enabled: false
+      profiles: '[]'
+    targeting:
+      mode: targeted
+      template:
+        type: circle
+        size: 30
+        fillColor: '#4e9a06'
+        placement: choose
+        deleteMode: none
+        hideOutline: false
+        excludeCaster: false
+        tokenMagic:
+          texture: ''
+          opacity: 0.5
+          preset: NOFX
+_id: U0GtU3fYOcDxrCQ5
+sort: 2200000
+_key: '!items!U0GtU3fYOcDxrCQ5'

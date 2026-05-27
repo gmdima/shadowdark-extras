@@ -451,10 +451,10 @@ export async function applyShapechanger(casterActor, casterItem, npcDoc, isCriti
 		npcSpellcastingAbility: npcDoc.system.spellcastingAbility ?? null
 	};
 
-	// Backup ability base scores and bonuses for transferred abilities only
+	// Backup ability values and bonuses for transferred abilities only
 	for (const ability of transferAbilities) {
 		backup.abilities[ability] = {
-			base: transformActor.system.abilities[ability]?.base ?? 10,
+			value: transformActor.system.abilities[ability]?.value ?? 10,
 			bonus: transformActor.system.abilities[ability]?.bonus ?? 0
 		};
 	}
@@ -481,7 +481,7 @@ export async function applyShapechanger(casterActor, casterItem, npcDoc, isCriti
 	for (const ability of transferAbilities) {
 		if (npcAbilities[ability]) {
 			const npcMod = npcAbilities[ability].mod ?? 0;
-			actorUpdate[`system.abilities.${ability}.base`] = modToBase(npcMod);
+			actorUpdate[`system.abilities.${ability}.value`] = modToBase(npcMod);
 			actorUpdate[`system.abilities.${ability}.bonus`] = 0;
 		}
 	}
@@ -680,10 +680,10 @@ export async function revertShapechanger(actor, skipEndDuration = false) {
 		actorUpdate["system.attributes.hp.value"] = backup.hp.value;
 	}
 
-	// Restore only the transferred ability base scores and bonuses
+	// Restore only the transferred ability values and bonuses
 	for (const ability of transferAbilities) {
 		if (backup.abilities[ability]) {
-			actorUpdate[`system.abilities.${ability}.base`] = backup.abilities[ability].base;
+			actorUpdate[`system.abilities.${ability}.value`] = backup.abilities[ability].value;
 			actorUpdate[`system.abilities.${ability}.bonus`] = backup.abilities[ability].bonus;
 		}
 	}
@@ -970,16 +970,19 @@ Hooks.on("renderPlayerSheetSD", (sheet, html, data) => {
 				return;
 			}
 
-			const rollData = {
-				item: item,
-				actor: actor,
-			};
-			const parts = ["1d20", "@attackBonus"];
-			rollData.attackBonus = item.system.bonuses.attackBonus;
-			rollData.damageParts = ["@damageBonus"];
-			rollData.damageBonus = item.system.bonuses.damageBonus;
+			// Shadowdark 4.x uses rollAttack on the data model
+			if (typeof actor.system?.rollAttack === "function") {
+				await actor.system.rollAttack(itemId);
+			} else if (typeof item.rollNpcAttack === "function") {
+				const rollData = {
+					item: item,
+					actor: actor,
+				};
+				const parts = ["1d20", "@attackBonus"];
+				rollData.attackBonus = item.system.bonuses.attackBonus;
+				rollData.damageParts = ["@damageBonus"];
+				rollData.damageBonus = item.system.bonuses.damageBonus;
 
-			if (typeof item.rollNpcAttack === "function") {
 				await item.rollNpcAttack(parts, rollData);
 			} else if (typeof item.displayCard === "function") {
 				await item.displayCard();

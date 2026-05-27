@@ -1,3 +1,6 @@
+// v13+ FilePicker namespaced under foundry.applications.apps.
+const FilePicker = foundry.applications.apps.FilePicker?.implementation ?? globalThis.FilePicker;
+
 /**
  * SceneExporter: Exports a Foundry VTT scene with all dependencies as a ZIP file
  */
@@ -299,14 +302,14 @@ export class SceneExporter {
                 const fullPath = response.path;
                 console.log(`${MODULE_ID} | File saved to: ${fullPath}`);
 
-                Dialog.prompt({
-                    title: "Scene Exported Successfully",
+                foundry.applications.api.DialogV2.prompt({
+                    window: { title: "Scene Exported Successfully" },
                     content: `
                         <p>Your scene has been exported to:</p>
                         <p><strong>${fullPath}</strong></p>
                         <p>Use the <strong>Import Scene</strong> button to import it into another world.</p>
                     `,
-                    callback: () => { },
+                    ok: { callback: () => {} },
                     rejectClose: false
                 });
             } else {

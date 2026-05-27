@@ -1,0 +1,88 @@
+effects:
+  - name: Silenced
+    img: icons/magic/death/skull-horned-goat-pentagram-red.webp
+    disabled: false
+    origin: Item.hewie9CLPl712Pvz
+    transfer: true
+    _id: 7LeWZC1K72tySlFu
+    type: base
+    system:
+      changes:
+        - key: flags.shadowdark-extras.silenced
+          value: true
+          type: override
+    duration:
+      value: null
+      units: seconds
+      expiry: null
+      expired: false
+    description: ''
+    tint: '#ffffff'
+    statuses: []
+    sort: 0
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '14.360'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+      createdTime: null
+      modifiedTime: null
+    start: null
+    showIcon: 1
+    folder: null
+    _key: '!items.effects!U3HRWXhYsP7E1cOp.7LeWZC1K72tySlFu'
+folder: qj1zzZaF60XW0BZc
+img: icons/magic/air/wind-tornado-wall-blue.webp
+name: 'Spell Effect: Gaseous Form'
+system:
+  description: >-
+    <p>You and your gear turn into a cloud of smoke for the spell's
+    duration.</p><p>You can fly and pass through any gap that smoke could. You
+    can sense the terrain and any movement around you out to a near
+    distance.</p><p>You can't cast spells while in this form.</p>
+  source:
+    title: core-rules
+  light:
+    active: false
+    hasBeenUsed: false
+    isSource: false
+    longevityMins: 60
+    remainingSecs: 3600
+    template: torch
+  category: effect
+  duration:
+    type: rounds
+    value: '10'
+  effectPanel:
+    show: true
+  start:
+    combatTime: '1.0'
+    value: 34668
+  tokenIcon:
+    show: true
+  magicItem: false
+  predefinedEffects: ''
+type: Effect
+_stats:
+  compendiumSource: null
+  duplicateSource: null
+  exportSource: null
+  coreVersion: '14.360'
+  systemId: shadowdark
+  systemVersion: 3.6.1
+  createdTime: 1766973818346
+  modifiedTime: 1769435793155
+  lastModifiedBy: lDQovrTY32fJwPBR
+ownership:
+  default: 0
+  lDQovrTY32fJwPBR: 3
+flags:
+  shadowdark-extras:
+    silenced: 'true'
+_id: U3HRWXhYsP7E1cOp
+sort: 100000
+_key: '!items!U3HRWXhYsP7E1cOp'

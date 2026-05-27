@@ -1,0 +1,85 @@
+effects: []
+folder: vmqOYZjyo8VunyyP
+img: icons/magic/control/debuff-chains-shackles-movement-blue.webp
+name: Hold Monster
+system:
+  description: >-
+    <p>You paralyze one creature you can see within range. If the target is LV
+    9+, it may make a STR check vs. your last spellcasting check at the start of
+    its turn to end the
+    spell.</p><p>@UUID[Compendium.shadowdark.spell-effects.Item.PUFCnXLjvBQSM2YO]{Spell
+    Effect: Hold Monster}</p>
+  source:
+    title: core-rules
+  class:
+    - Compendium.shadowdark.classes.Item.035nuVkU9q2wtMPs
+  duration:
+    type: focus
+    value: 1
+  range: near
+  tier: 5
+  lost: false
+  predefinedEffects: ''
+type: Spell
+_stats:
+  compendiumSource: null
+  duplicateSource: null
+  exportSource: null
+  coreVersion: '13.348'
+  systemId: shadowdark
+  systemVersion: 3.6.1
+  createdTime: 1766974921008
+  modifiedTime: 1771295884104
+  lastModifiedBy: HP3Vba5udEHYm4dW
+ownership:
+  default: 0
+  lDQovrTY32fJwPBR: 3
+flags:
+  shadowdark-extras:
+    spellDamage:
+      enabled: false
+      damageType: ''
+      damageRequirement: ''
+      damageRequirementFailAction: zero
+      formulaType: basic
+      numDice: 1
+      dieType: d6
+      bonus: 0
+      scaling: none
+      scalingDice: 0
+      formula: ''
+      tieredFormula: ''
+      effects: >-
+        [{"uuid":"Compendium.shadowdark.spell-effects.Item.PUFCnXLjvBQSM2YO","duration":{}}]
+      effectsRequirement: ''
+      effectsApplyToTarget: true
+      criticalEffects: '[]'
+      effectSelectionMode: all
+      trackDuration: false
+      perTurnTrigger: start
+      perTurnDamage: ''
+      reapplyEffects: false
+    summoning:
+      enabled: false
+      profiles: '[]'
+      deleteAtExpiry: false
+    itemGive:
+      enabled: false
+      profiles: '[]'
+    targeting:
+      mode: targeted
+      template:
+        type: circle
+        size: 30
+        fillColor: '#4e9a06'
+        placement: choose
+        deleteMode: none
+        hideOutline: false
+        excludeCaster: false
+        tokenMagic:
+          texture: ''
+          opacity: 0.5
+          preset: NOFX
+_id: msrMXQhJhnfcGXVL
+sort: 5300000
+_key: '!items!msrMXQhJhnfcGXVL'

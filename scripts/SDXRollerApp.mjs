@@ -21,13 +21,15 @@ const SD_ABILITIES = {
     cha: "SHADOWDARK.ability_charisma",
 };
 
+const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
+
 /* ------------------------------------------------------------------ */
 /*  SDXRollerApp – configuration window                               */
 /* ------------------------------------------------------------------ */
-export class SDXRollerApp extends Application {
+export class SDXRollerApp extends HandlebarsApplicationMixin(ApplicationV2) {
 
-    constructor(opts = {}) {
-        super(opts);
+    constructor(options = {}) {
+        super(options);
         this._participants = [];    // {uuid, contestant:false}
         this._contestants = [];     // {uuid, contestant:true}
         this._selectedAbility = "str";
@@ -41,20 +43,34 @@ export class SDXRollerApp extends Application {
 
     /* ---------- Foundry overrides ---------- */
 
-    static get defaultOptions() {
-        return foundry.utils.mergeObject(super.defaultOptions, {
-            id: "sdx-roller-app",
+    static DEFAULT_OPTIONS = {
+        id: "sdx-roller-app",
+        tag: "form",
+        classes: ["sdx-roller-window"],
+        window: {
             title: "SDX Roller",
-            template: `modules/${MODULE_ID}/templates/sdx-roller.hbs`,
+            resizable: false,
+            controls: []
+        },
+        position: {
             width: 380,
             height: "auto",
-            resizable: false,
-            popOut: true,
-            classes: ["sdx-roller-window"],
-        });
-    }
+        },
+        actions: {
+            roll: SDXRollerApp._onStartRoll,
+            cancel: (app) => app.close(),
+            'remove-participant': SDXRollerApp._onRemoveParticipant,
+            'toggle-favorite': SDXRollerApp._onToggleFavorite, // Note: not in original but good for V2
+        }
+    };
 
-    async getData() {
+    static PARTS = {
+        main: {
+            template: `modules/${MODULE_ID}/templates/sdx-roller.hbs`,
+        }
+    };
+
+    async _prepareContext(options) {
         const actors = this._getAvailableActors();
         const abilities = Object.entries(SD_ABILITIES).map(([key, label]) => ({
             key,
@@ -82,9 +98,9 @@ export class SDXRollerApp extends Application {
         };
     }
 
-    activateListeners(html) {
-        super.activateListeners(html);
-        const el = html[0] ?? html;
+    _onRender(context, options) {
+        super._onRender(context, options);
+        const el = this.element;
 
         // Actor portrait clicks → add to participants
         el.querySelectorAll(".sdx-roller-actor-portrait").forEach(img => {
@@ -103,16 +119,6 @@ export class SDXRollerApp extends Application {
                     this._contestants.push({ uuid });
                     this.render();
                 }
-            });
-        });
-
-        // Remove participant
-        el.querySelectorAll(".sdx-roller-remove-participant").forEach(btn => {
-            btn.addEventListener("click", ev => {
-                const uuid = ev.currentTarget.dataset.uuid;
-                this._participants = this._participants.filter(p => p.uuid !== uuid);
-                this._contestants = this._contestants.filter(p => p.uuid !== uuid);
-                this.render();
             });
         });
 
@@ -153,15 +159,20 @@ export class SDXRollerApp extends Application {
                 this._applyFilter(el);
             });
         }
-
-        // Roll button
-        el.querySelector(".sdx-roller-btn-roll")?.addEventListener("click", () => this._startRoll());
-
-        // Cancel button
-        el.querySelector(".sdx-roller-btn-cancel")?.addEventListener("click", () => this.close());
     }
 
     /* ---------- Internals ---------- */
+
+    static _onRemoveParticipant(event, target) {
+        const uuid = target.dataset.uuid;
+        this._participants = this._participants.filter(p => p.uuid !== uuid);
+        this._contestants = this._contestants.filter(p => p.uuid !== uuid);
+        this.render();
+    }
+
+    static _onStartRoll(event, target) {
+        this._startRoll();
+    }
 
     _bindToggle(el, selector, prop) {
         const toggle = el.querySelector(selector);
@@ -263,10 +274,10 @@ export class SDXRollerApp extends Application {
 /* ------------------------------------------------------------------ */
 /*  SDXRollerOverlay – full-screen cinematic roll overlay              */
 /* ------------------------------------------------------------------ */
-export class SDXRollerOverlay extends Application {
+export class SDXRollerOverlay extends HandlebarsApplicationMixin(ApplicationV2) {
 
-    constructor(rollData) {
-        super();
+    constructor(rollData, options = {}) {
+        super(options);
         this.rollData = rollData;
         this.actors = rollData.actors.map(uuid => fromUuidSync(uuid)).filter(Boolean);
         this.contestants = rollData.contestants.map(uuid => fromUuidSync(uuid)).filter(Boolean);
@@ -283,15 +294,26 @@ export class SDXRollerOverlay extends Application {
         });
     }
 
-    static get defaultOptions() {
-        return foundry.utils.mergeObject(super.defaultOptions, {
-            id: "sdx-roller-overlay",
-            template: `modules/${MODULE_ID}/templates/sdx-roller-overlay.hbs`,
-            popOut: false,
-        });
-    }
+    static DEFAULT_OPTIONS = {
+        id: "sdx-roller-overlay",
+        classes: ["sdx-roller-overlay-app"],
+        window: {
+            frame: false,
+            positioned: false,
+        },
+        position: {
+            width: "100%",
+            height: "100%",
+        }
+    };
 
-    async getData() {
+    static PARTS = {
+        main: {
+            template: `modules/${MODULE_ID}/templates/sdx-roller-overlay.hbs`,
+        }
+    };
+
+    async _prepareContext(options) {
         const showDC = (this.rollData.showDc) || game.user.isGM;
         const label = this.rollData.customLabel
             || this._buildLabel(showDC);
@@ -299,7 +321,8 @@ export class SDXRollerOverlay extends Application {
         const abilityId = this.rollData.ability;
         const isNone = abilityId === "none";
         const addMod = (a) => {
-            const mod = isNone ? 0 : a.abilityModifier(abilityId);
+            // Shadowdark 4.x: use computed mod from system.abilities
+            const mod = isNone ? 0 : (a.system?.abilities?.[abilityId]?.mod ?? 0);
             const modLabel = isNone ? "" : (mod >= 0 ? "+" : "") + mod;
             return { uuid: a.uuid, name: a.name, img: a.img, isOwner: a.isOwner, mod, modLabel };
         };
@@ -321,9 +344,9 @@ export class SDXRollerOverlay extends Application {
         return label;
     }
 
-    activateListeners(html) {
-        super.activateListeners(html);
-        const el = html[0] ?? html;
+    _onRender(context, options) {
+        super._onRender(context, options);
+        const el = this.element;
         this._runIntroSequence(el);
 
         // Advantage / Disadvantage toggle buttons
@@ -453,7 +476,7 @@ export class SDXRollerOverlay extends Application {
 
         const abilityId = this.rollData.ability;
         const isNone = abilityId === "none";
-        const mod = isNone ? 0 : actor.abilityModifier(abilityId);
+        const mod = isNone ? 0 : (actor.system?.abilities?.[abilityId]?.mod ?? 0);
 
         // Build roll formula based on advantage/disadvantage
         let formula = isNone ? "1d20" : "1d20 + @mod";
@@ -518,7 +541,7 @@ export class SDXRollerOverlay extends Application {
         this._rolls[data.uuid] = data;
         if (data.messageId) this._messageIds.add(data.messageId);
 
-        const el = this.element?.[0];
+        const el = this.element;
         if (!el) return;
         const tileEl = el.querySelector(`.sdx-overlay-tile[data-uuid="${data.uuid}"]`);
         if (!tileEl) return;
@@ -589,7 +612,7 @@ export class SDXRollerOverlay extends Application {
     }
 
     _applyToggle({ uuid, rolling }) {
-        const el = this.element?.[0];
+        const el = this.element;
         if (!el) return;
         const tileEl = el.querySelector(`.sdx-overlay-tile[data-uuid="${uuid}"]`);
         if (!tileEl) return;
@@ -626,7 +649,7 @@ export class SDXRollerOverlay extends Application {
         const isSuccess = this._computeSuccess();
         this._resolve?.({ canceled: false, success: isSuccess, results: this._results });
         this._createChatRecap(isSuccess);
-        const el = this.element?.[0];
+        const el = this.element;
         if (el) await this._runOutroSequence(el, isSuccess);
         SDXRollerApp._activeOverlay = null;
     }

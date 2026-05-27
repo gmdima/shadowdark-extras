@@ -1,0 +1,159 @@
+effects: []
+folder: vmqOYZjyo8VunyyP
+img: icons/magic/earth/strike-fist-stone-light.webp
+name: Pillar of Salt
+system:
+  description: >-
+    <p>A creature you target turns into a statue made of hardened
+    salt.</p><p>You can target a creature you can see of LV 5 or less.</p><p>If
+    you successfully focus on this spell for 3 rounds in a row, the
+    transformation becomes
+    permanent.</p><p>@UUID[Compendium.shadowdark.spell-effects.Item.6yYj2FkmYppGAl9N]{Spell
+    Effect: Pillar of Salt}</p>
+  source:
+    title: core-rules
+  class:
+    - Compendium.shadowdark.classes.Item.oZWzXx1WRLg286zD
+  duration:
+    type: focus
+    value: 1
+  range: near
+  tier: 4
+  lost: false
+  predefinedEffects: ''
+type: Spell
+_stats:
+  compendiumSource: null
+  duplicateSource: null
+  exportSource: null
+  coreVersion: '13.348'
+  systemId: shadowdark
+  systemVersion: 3.6.1
+  createdTime: 1767055501452
+  modifiedTime: 1771295884104
+  lastModifiedBy: HP3Vba5udEHYm4dW
+ownership:
+  default: 0
+  lDQovrTY32fJwPBR: 3
+flags:
+  shadowdark-extras:
+    spellDamage:
+      enabled: false
+      damageType: ''
+      numDice: 0
+      dieType: d4
+      effects: >-
+        [{"uuid":"Compendium.shadowdark.spell-effects.Item.6yYj2FkmYppGAl9N","duration":{}}]
+      effectsRequirement: '@target.level < 6'
+      trackDuration: true
+      damageRequirement: ''
+      damageRequirementFailAction: zero
+      formulaType: basic
+      bonus: null
+      scaling: none
+      scalingDice: null
+      formula: undefined
+      tieredFormula: ''
+      criticalEffects: '[]'
+      effectsApplyToTarget: true
+      effectSelectionMode: all
+      perTurnTrigger: start
+      perTurnDamage: ''
+      reapplyEffects: false
+    summoning:
+      enabled: false
+      profiles: '[]'
+      deleteAtExpiry: false
+    itemGive:
+      enabled: false
+      profiles: '[]'
+    targeting:
+      mode: targeted
+      template:
+        type: circle
+        size: 30
+        fillColor: '#4e9a06'
+        placement: choose
+        deleteMode: none
+        hideOutline: false
+        excludeCaster: false
+        tokenMagic:
+          texture: ''
+          opacity: 0.5
+          preset: NOFX
+    alignment: ''
+    templateEffects:
+      enabled: false
+      triggers:
+        onEnter: false
+        onTurnStart: false
+        onTurnEnd: false
+        onLeave: false
+      damage:
+        formula: ''
+        type: ''
+      save:
+        enabled: false
+        dc: '12'
+        ability: dex
+        halfOnSuccess: true
+      applyConfiguredEffects: false
+      runItemMacro: false
+    auraEffects:
+      enabled: false
+      attachTo: caster
+      radius: 30
+      triggers:
+        onEnter: false
+        onLeave: false
+        onSourceTurnStart: false
+        onSourceTurnEnd: false
+        onTargetTurnStart: false
+        onTargetTurnEnd: false
+      damage:
+        formula: ''
+        type: ''
+      damageTriggers:
+        onEnter: false
+        onLeave: false
+        onSourceTurnStart: false
+        onSourceTurnEnd: false
+        onTargetTurnStart: false
+        onTargetTurnEnd: false
+      save:
+        enabled: false
+        dc: 12
+        ability: con
+        halfOnSuccess: false
+      disposition: all
+      includeSelf: false
+      applyToOriginator: true
+      checkVisibility: false
+      animation:
+        enabled: true
+        style: circle
+        tint: '#4488ff'
+        scaleMultiplier: 1
+        opacity: 0.6
+      tokenFilters:
+        enabled: false
+        preset: ''
+      applyConfiguredEffects: false
+      effectsTriggers:
+        onEnter: false
+        onLeave: false
+        onSourceTurnStart: false
+        onSourceTurnEnd: false
+        onTargetTurnStart: false
+        onTargetTurnEnd: false
+      runItemMacro: false
+      macroTriggers:
+        onEnter: false
+        onLeave: false
+        onSourceTurnStart: false
+        onSourceTurnEnd: false
+        onTargetTurnStart: false
+        onTargetTurnEnd: false
+_id: 858GRp0tDuiHWjzJ
+sort: 3500000
+_key: '!items!858GRp0tDuiHWjzJ'

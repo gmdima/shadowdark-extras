@@ -1,0 +1,186 @@
+effects: []
+folder: vmqOYZjyo8VunyyP
+img: icons/magic/nature/wolf-paw-glow-orange.webp
+name: Shapechanger
+system:
+  description: >-
+    <p>You transform yourself and any gear you carry into another natural
+    creature you've seen of level 10 or less. You assume the creature's physical
+    statistics, but you retain your non-physical statistics (such as INT, WIS,
+    and CHA).</p><p>If you go to 0 HP while under the effects of this spell, you
+    revert to your true form at 1
+    HP.</p><p>@UUID[Compendium.shadowdark.spell-effects.Item.F89CJeindj8k8oiC]{Spell
+    Effect: Shapechanger}</p>
+  source:
+    title: core-rules
+  class:
+    - Compendium.shadowdark.classes.Item.035nuVkU9q2wtMPs
+  duration:
+    type: focus
+    value: 1
+  range: self
+  tier: 5
+  lost: false
+  predefinedEffects: ''
+type: Spell
+_stats:
+  compendiumSource: null
+  duplicateSource: null
+  exportSource: null
+  coreVersion: '13.348'
+  systemId: shadowdark
+  systemVersion: 3.6.1
+  createdTime: 1771295884054
+  modifiedTime: 1771295923045
+  lastModifiedBy: HP3Vba5udEHYm4dW
+ownership:
+  default: 0
+  HP3Vba5udEHYm4dW: 3
+flags:
+  itemacro:
+    macro:
+      name: Shapechanger
+      type: script
+      scope: global
+      command: |-
+        const sdx = game.modules.get("shadowdark-extras");
+        await sdx.api.showShapechangerDialog(actor, item, null);
+      author: HP3Vba5udEHYm4dW
+      _id: null
+      img: icons/svg/dice-target.svg
+      folder: null
+      sort: 0
+      ownership:
+        default: 0
+      flags: {}
+      _stats:
+        coreVersion: '13.348'
+        systemId: shadowdark
+        systemVersion: 3.6.1
+        lastModifiedBy: null
+        compendiumSource: null
+        duplicateSource: null
+        exportSource: null
+  shadowdark-extras:
+    alignment: ''
+    targeting:
+      mode: targeted
+      template:
+        type: circle
+        size: 30
+        fillColor: '#4e9a06'
+        placement: choose
+        deleteMode: none
+        hideOutline: false
+        excludeCaster: false
+        tokenMagic:
+          texture: ''
+          opacity: 0.5
+          preset: NOFX
+    templateEffects:
+      enabled: false
+      triggers:
+        onEnter: false
+        onTurnStart: false
+        onTurnEnd: false
+        onLeave: false
+      damage:
+        formula: ''
+        type: ''
+      save:
+        enabled: false
+        dc: '12'
+        ability: dex
+        halfOnSuccess: true
+      applyConfiguredEffects: false
+      runItemMacro: false
+    auraEffects:
+      enabled: false
+      attachTo: caster
+      radius: 30
+      triggers:
+        onEnter: false
+        onLeave: false
+        onSourceTurnStart: false
+        onSourceTurnEnd: false
+        onTargetTurnStart: false
+        onTargetTurnEnd: false
+      damage:
+        formula: ''
+        type: ''
+      damageTriggers:
+        onEnter: false
+        onLeave: false
+        onSourceTurnStart: false
+        onSourceTurnEnd: false
+        onTargetTurnStart: false
+        onTargetTurnEnd: false
+      save:
+        enabled: false
+        dc: 12
+        ability: con
+        halfOnSuccess: false
+      disposition: all
+      includeSelf: false
+      applyToOriginator: true
+      checkVisibility: false
+      animation:
+        enabled: true
+        style: circle
+        tint: '#4488ff'
+        scaleMultiplier: 1
+        opacity: 0.6
+      tokenFilters:
+        enabled: false
+        preset: ''
+      applyConfiguredEffects: false
+      effectsTriggers:
+        onEnter: false
+        onLeave: false
+        onSourceTurnStart: false
+        onSourceTurnEnd: false
+        onTargetTurnStart: false
+        onTargetTurnEnd: false
+      runItemMacro: false
+      macroTriggers:
+        onEnter: false
+        onLeave: false
+        onSourceTurnStart: false
+        onSourceTurnEnd: false
+        onTargetTurnStart: false
+        onTargetTurnEnd: false
+    spellDamage:
+      enabled: false
+      damageType: ''
+      damageRequirement: ''
+      damageRequirementFailAction: zero
+      formulaType: basic
+      numDice: 1
+      dieType: d6
+      bonus: 0
+      scaling: every-level
+      scalingDice: 1
+      formula: ''
+      tieredFormula: ''
+      effects: '[]'
+      criticalEffects: '[]'
+      effectsRequirement: ''
+      effectsApplyToTarget: true
+      effectSelectionMode: all
+      trackDuration: false
+      perTurnTrigger: start
+      perTurnDamage: ''
+      reapplyEffects: false
+    summoning:
+      enabled: false
+      profiles: '[]'
+      deleteAtExpiry: false
+    itemGive:
+      enabled: false
+      profiles: '[]'
+    itemMacro:
+      triggers:
+        - onSuccess
+_id: k1eY3dKdgpX4U4ye
+sort: 200000
+_key: '!items!k1eY3dKdgpX4U4ye'

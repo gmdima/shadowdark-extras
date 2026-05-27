@@ -13,6 +13,7 @@
  */
 
 import { getSocket } from "./CombatSettingsSD.mjs";
+import { resolveCardContext } from "./sd4Compat.mjs";
 
 const MODULE_ID = "shadowdark-extras";
 
@@ -51,8 +52,8 @@ export function initFocusSpellTracker() {
 	console.log("shadowdark-extras | Initializing Focus Spell Tracker");
 
 	// Hook into chat message rendering to track focus spells
-	// (We use renderChatMessage because we need to parse the HTML for actor/item IDs)
-	Hooks.on("renderChatMessage", handleChatMessageRender);
+	// (We use renderChatMessageHTML because we need to parse the HTML for actor/item IDs)
+	Hooks.on("renderChatMessageHTML", handleChatMessageRender);
 
 	// Hook into effect creation to link effects to focus spells
 	Hooks.on("createItem", handleEffectCreated);
@@ -76,13 +77,13 @@ export function initFocusSpellTracker() {
 	Hooks.on("updateCombat", handleDurationSpellCombatUpdate);
 
 	// Hook into chat message rendering to add click handlers for focus roll buttons
-	Hooks.on("renderChatMessage", handleFocusReminderChatClick);
+	Hooks.on("renderChatMessageHTML", handleFocusReminderChatClick);
 
 	// Hook into chat message rendering to add click handlers for duration damage apply buttons
-	Hooks.on("renderChatMessage", handleDurationDamageApplyClick);
+	Hooks.on("renderChatMessageHTML", handleDurationDamageApplyClick);
 
 	// Hook into chat message rendering to track wand uses
-	Hooks.on("renderChatMessage", handleWandUsesTracking);
+	Hooks.on("renderChatMessageHTML", handleWandUsesTracking);
 
 	// Hook into player sheet rendering to display wand uses next to wand names
 	Hooks.on("renderPlayerSheetSD", injectWandUsesDisplay);
@@ -102,25 +103,35 @@ function getFocusSpellSocket() {
  * Handle chat message rendering to detect spell casts
  * Extracts actor/item IDs from the chat card HTML data attributes
  */
-async function handleChatMessageRender(message, html, data) {
+async function handleChatMessageRender(message, html, context) {
 	// Only process if current user is the author to avoid duplicate processing
 	if (message.author?.id !== game.user.id) return;
 
-	// Check if this is a Shadowdark roll message
+	// Check if this is a Shadowdark roll message (uses rollConfig in v4)
 	const sdFlags = message.flags?.shadowdark;
-	if (!sdFlags?.isRoll) return;
+	const rollConfig = sdFlags?.rollConfig;
+	if (!rollConfig) return;
 
-	// Get actor and item IDs from the chat card HTML
-	const chatCard = html.find('.chat-card');
-	if (!chatCard.length) return;
+	const cardCtx = resolveCardContext(message, html);
+	const actorId = cardCtx?.actorId;
+	const itemUuid = cardCtx?.itemUuid || cardCtx?.itemId;
 
-	const actorId = chatCard.data('actorId');
-	const itemId = chatCard.data('itemId');
-
-	if (!actorId || !itemId) return;
+	if (!actorId) return;
 
 	const actor = game.actors.get(actorId);
-	const item = actor?.items.get(itemId);
+	let item = itemUuid
+		? (itemUuid.includes(".") ? await fromUuid(itemUuid) : actor?.items.get(itemUuid))
+		: null;
+
+	// Compendium/item-card UUIDs can resolve to a source item instead of the
+	// actor-owned copy. Store the local item id so later actor.items lookups work.
+	if (item && actor && !actor.items.has(item.id)) {
+		const localCopy = actor.items.find(i => i.name === item.name && i.type === item.type);
+		if (localCopy) {
+			console.log(`shadowdark-extras | Resolved ${item.id} to actor-local spell ${localCopy.id} (${localCopy.name})`);
+			item = localCopy;
+		}
+	}
 
 	if (!actor || !item) return;
 
@@ -133,8 +144,13 @@ async function handleChatMessageRender(message, html, data) {
 
 	const spellId = item.id;
 	const casterId = actor.id;
-	const success = sdFlags.success === true;
-	const critical = sdFlags.critical;
+
+	// Get success/critical from the actual roll instances in v4
+	const mainRoll = message.rolls.find(r => r.options?.type === "main");
+	if (!mainRoll) return;
+
+	const success = mainRoll.success === true;
+	const critical = mainRoll.criticalSuccess ? "success" : (mainRoll.criticalFailure ? "failure" : null);
 
 	// Check if this is a focus roll (maintenance) or initial cast
 	// Focus rolls have "Focus Check" in the flavor
@@ -211,8 +227,8 @@ async function startFocusSpell(actor, spell, perTurnConfig = null) {
 	// Cache spell data so we can still roll focus checks even if the item is deleted (e.g., scrolls)
 	const spellData = {
 		tier: spell.system?.tier ?? 1,
-		ability: spell.system?.spellcasting?.ability ?? actor.system?.spellcastingAbility ?? "INT",
-		dc: spell.system?.dc ?? spell.system?.tier ? (10 + spell.system.tier) : 11,
+		ability: spell.system?.spellcasting?.ability ?? actor.system?.spellcastingAbility ?? actor.system?.ability ?? "INT",
+		dc: spell.system?.dc ?? (spell.system?.tier ? (10 + spell.system.tier) : 11),
 		type: spell.type,
 		description: spell.system?.description ?? "",
 		// Cache the spell's class UUIDs - important for focus rolls to use correct ability
@@ -593,7 +609,6 @@ async function revertSpellModifications(spellId, casterId) {
 				<p>${message}</p>
 			</div>`,
 			speaker: ChatMessage.getSpeaker({ actor: caster }),
-			type: CONST.CHAT_MESSAGE_STYLES.OTHER
 		});
 	}
 
@@ -741,7 +756,6 @@ export async function endDurationSpell(casterId, instanceId, reason = "expired")
 						<p>${messageText}</p>
 					</div>`,
 					speaker: ChatMessage.getSpeaker({ actor: caster }),
-					type: CONST.CHAT_MESSAGE_STYLES.OTHER
 				});
 			}
 		}
@@ -846,7 +860,6 @@ export async function endDurationSpell(casterId, instanceId, reason = "expired")
 	await ChatMessage.create({
 		content: chatContent,
 		speaker: ChatMessage.getSpeaker({ actor: caster }),
-		type: CONST.CHAT_MESSAGE_STYLES.OTHER
 	});
 
 	ui.notifications.info(`${durationEntry.spellName} has ${reason === "expired" ? "expired" : "ended"}`);
@@ -1120,7 +1133,6 @@ async function handleCombatUpdate(combat, changed, options, userId) {
 		content: content,
 		speaker: ChatMessage.getSpeaker({ actor }),
 		whisper: game.users.filter(u => actor.testUserPermission(u, "OWNER")).map(u => u.id),
-		type: CONST.CHAT_MESSAGE_STYLES.OTHER
 	});
 
 	// Process per-turn damage for focus spells (if configured)
@@ -1212,7 +1224,6 @@ async function applyFocusSpellPerTurnDamage(focusSpell, targetActor, targetToken
 		await ChatMessage.create({
 			content: content,
 			speaker: ChatMessage.getSpeaker({ actor: targetActor }),
-			type: CONST.CHAT_MESSAGE_STYLES.OTHER
 		});
 	} catch (err) {
 		console.error(`shadowdark-extras | Error applying per-turn damage for focus spell: `, err);
@@ -1222,38 +1233,39 @@ async function applyFocusSpellPerTurnDamage(focusSpell, targetActor, targetToken
 /**
  * Handle clicks on focus roll buttons in chat messages
  */
-function handleFocusReminderChatClick(message, html, data) {
+function handleFocusReminderChatClick(message, html, context) {
 	// Find all focus roll buttons in this message
-	const focusRollBtns = html.find(".sdx-focus-roll-btn");
+	const focusRollBtns = html.querySelectorAll(".sdx-focus-roll-btn");
 	if (focusRollBtns.length === 0) return;
 
-	focusRollBtns.on("click", async (event) => {
-		event.preventDefault();
-		event.stopPropagation();
+	focusRollBtns.forEach(btn => {
+		btn.addEventListener("click", async (event) => {
+			event.preventDefault();
+			event.stopPropagation();
 
-		const btn = event.currentTarget;
-		const actorId = btn.dataset.actorId;
-		const spellId = btn.dataset.spellId;
+			const actorId = btn.dataset.actorId;
+			const spellId = btn.dataset.spellId;
 
-		if (!actorId || !spellId) {
-			console.warn("shadowdark-extras | Focus roll button missing actorId or spellId");
-			return;
-		}
+			if (!actorId || !spellId) {
+				console.warn("shadowdark-extras | Focus roll button missing actorId or spellId");
+				return;
+			}
 
-		const actor = game.actors.get(actorId);
-		if (!actor) {
-			ui.notifications.error("Could not find the actor for this focus spell.");
-			return;
-		}
+			const actor = game.actors.get(actorId);
+			if (!actor) {
+				ui.notifications.error("Could not find the actor for this focus spell.");
+				return;
+			}
 
-		// Check if the current user owns this actor
-		if (!actor.isOwner) {
-			ui.notifications.warn("You do not own this actor.");
-			return;
-		}
+			// Check if the current user owns this actor
+			if (!actor.isOwner) {
+				ui.notifications.warn("You do not own this actor.");
+				return;
+			}
 
-		// Roll the focus check with auto-targeting
-		await rollFocusSpellWithTargets(actor, spellId);
+			// Roll the focus check with auto-targeting
+			await rollFocusSpellWithTargets(actor, spellId);
+		});
 	});
 }
 
@@ -1304,9 +1316,14 @@ async function rollFocusSpellWithTargets(actor, spellId) {
 	const spell = actor.items.get(spellId);
 
 	if (spell) {
-		// Spell item still exists - use normal method
-		console.log(`shadowdark-extras | Rolling focus check for spell ${spellId} on actor ${actor.name}`);
-		actor.castSpell(spellId, { isFocusRoll: true });
+		// Shadowdark v4 expects the full item UUID, not just the local item id.
+		const spellUuid = spell.uuid;
+		console.log(`shadowdark-extras | Rolling focus check for spell ${spell.name} (${spellUuid}) on actor ${actor.name}`);
+		if (actor.system.castSpell) {
+			actor.system.castSpell(spellUuid, { isFocusRoll: true });
+		} else {
+			actor.castSpell(spellUuid, { isFocusRoll: true });
+		}
 	} else if (focusEntry?.spellData) {
 		// Spell item no longer exists (e.g., scroll was consumed) - use cached data
 		console.log(`shadowdark-extras | Spell item ${spellId} no longer exists, using cached data for focus roll`);
@@ -1373,9 +1390,13 @@ async function rollFocusCheckFromCachedData(actor, focusEntry) {
 
 		console.log(`shadowdark-extras | Created temporary spell: ${tempSpell.name} (${tempSpell.id}) for focus roll`);
 
-		// Use the native Shadowdark spell casting mechanism
-		// The { isFocusRoll: true } option tells the system this is a focus check
-		await actor.castSpell(tempSpell.id, { isFocusRoll: true });
+		// Shadowdark v4 expects the full item UUID, not just the local item id.
+		const tempSpellUuid = tempSpell.uuid;
+		if (actor.system.castSpell) {
+			await actor.system.castSpell(tempSpellUuid, { isFocusRoll: true });
+		} else {
+			await actor.castSpell(tempSpellUuid, { isFocusRoll: true });
+		}
 
 		// Delete the temporary spell item after a brief delay to allow the roll to complete
 		// We need to wait because castSpell is async but we need the roll to process first
@@ -1400,72 +1421,79 @@ async function rollFocusCheckFromCachedData(actor, focusEntry) {
 /**
  * Handle clicks on duration damage apply buttons in chat messages
  */
-function handleDurationDamageApplyClick(message, html, data) {
+function handleDurationDamageApplyClick(message, html, context) {
 	// Find all duration damage apply buttons in this message
-	const applyBtns = html.find(".sdx-duration-apply-btn");
+	const applyBtns = html.querySelectorAll(".sdx-duration-apply-btn");
 	if (applyBtns.length === 0) return;
 
-	applyBtns.on("click", async (event) => {
-		event.preventDefault();
-		event.stopPropagation();
+	applyBtns.forEach(btn => {
+		btn.addEventListener("click", async (event) => {
+			event.preventDefault();
+			event.stopPropagation();
 
-		const btn = event.currentTarget;
-		const $btn = $(btn);
+			// Disable immediately to prevent double-clicks
+			if (btn.disabled || btn.classList.contains("sdx-duration-applied")) {
+				return; // Already applied
+			}
+			btn.disabled = true;
+			const originalHtml = btn.innerHTML;
+			btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Applying...';
 
-		// Disable immediately to prevent double-clicks
-		if ($btn.prop("disabled") || $btn.hasClass("sdx-duration-applied")) {
-			return; // Already applied
-		}
-		$btn.prop("disabled", true).html('<i class="fas fa-spinner fa-spin"></i> Applying...');
+			const tokenId = btn.dataset.tokenId;
+			const damage = parseInt(btn.dataset.damage);
+			const actorName = btn.dataset.actorName;
 
-		const tokenId = btn.dataset.tokenId;
-		const damage = parseInt(btn.dataset.damage);
-		const actorName = btn.dataset.actorName;
-
-		if (!tokenId || isNaN(damage)) {
-			console.warn("shadowdark-extras | Duration apply button missing tokenId or damage");
-			$btn.prop("disabled", false).html('<i class="fas fa-heart-broken"></i> Apply Damage');
-			return;
-		}
-
-		try {
-			// Only GM can apply damage via socket or directly
-			if (!game.user.isGM) {
-				// Use socket to ask GM to apply
-				const socket = getSocket();
-				if (socket) {
-					socket.executeAsGM("applyDamage", tokenId, damage, actorName);
-				} else {
-					ui.notifications.warn("Cannot apply damage - no GM connected.");
-					$btn.prop("disabled", false).html('<i class="fas fa-heart-broken"></i> Apply Damage');
-					return;
-				}
-			} else {
-				// GM applies directly
-				const token = canvas.tokens?.get(tokenId);
-				if (!token?.actor) {
-					ui.notifications.error("Could not find the target token.");
-					$btn.prop("disabled", false).html('<i class="fas fa-heart-broken"></i> Apply Damage');
-					return;
-				}
-
-				const currentHp = token.actor.system.attributes.hp.value;
-				const newHp = Math.max(0, currentHp - damage);
-				await token.actor.update({ "system.attributes.hp.value": newHp });
+			if (!tokenId || isNaN(damage)) {
+				console.warn("shadowdark-extras | Duration apply button missing tokenId or damage");
+				btn.disabled = false;
+				btn.innerHTML = originalHtml;
+				return;
 			}
 
-			// Update the button to show it was applied
-			$btn.html('<i class="fas fa-check"></i> Applied');
-			$btn.addClass("sdx-duration-applied");
+			try {
+				// Only GM can apply damage via socket or directly
+				if (!game.user.isGM) {
+					// Use socket to ask GM to apply
+					const socket = getSocket();
+					if (socket) {
+						// Use the registered applyTokenDamage handler (CombatSettingsSD).
+						// Note: the previous call site used "applyDamage" which was never registered.
+						socket.executeAsGM("applyTokenDamage", { tokenId, damage, actorName });
+					} else {
+						ui.notifications.warn("Cannot apply damage - no GM connected.");
+						btn.disabled = false;
+						btn.innerHTML = originalHtml;
+						return;
+					}
+				} else {
+					// GM applies directly
+					const token = canvas.tokens?.get(tokenId);
+					if (!token?.actor) {
+						ui.notifications.error("Could not find the target token.");
+						btn.disabled = false;
+						btn.innerHTML = originalHtml;
+						return;
+					}
 
-			// Update the message flags
-			await message.setFlag(MODULE_ID, "applied", true);
+					const currentHp = token.actor.system.attributes.hp.value;
+					const newHp = Math.max(0, currentHp - damage);
+					await token.actor.update({ "system.attributes.hp.value": newHp });
+				}
 
-			ui.notifications.info(`Applied ${damage} damage to ${actorName}`);
-		} catch (err) {
-			console.error("shadowdark-extras | Failed to apply duration damage:", err);
-			$btn.prop("disabled", false).html('<i class="fas fa-heart-broken"></i> Apply Damage');
-		}
+				// Update the button to show it was applied
+				btn.innerHTML = '<i class="fas fa-check"></i> Applied';
+				btn.classList.add("sdx-duration-applied");
+
+				// Update the message flags
+				await message.setFlag(MODULE_ID, "applied", true);
+
+				ui.notifications.info(`Applied ${damage} damage to ${actorName}`);
+			} catch (err) {
+				console.error("shadowdark-extras | Failed to apply duration damage:", err);
+				btn.disabled = false;
+				btn.innerHTML = originalHtml;
+			}
+		});
 	});
 }
 
@@ -1638,7 +1666,6 @@ async function applyDurationSpellPerTurnDamage(durationSpell, targetActor, targe
 		const chatMessage = await ChatMessage.create({
 			content: content,
 			speaker: ChatMessage.getSpeaker({ actor: game.actors.get(durationSpell.casterId) }),
-			type: CONST.CHAT_MESSAGE_STYLES.OTHER,
 			flags: {
 				[MODULE_ID]: {
 					isDurationDamage: true,
@@ -1874,7 +1901,6 @@ export async function addTargetToDurationSpell(casterId, instanceId, tokenId) {
 	await ChatMessage.create({
 		content: content,
 		speaker: ChatMessage.getSpeaker({ actor: caster }),
-		type: CONST.CHAT_MESSAGE_STYLES.OTHER
 	});
 
 	console.log(`shadowdark-extras | Added ${token.name} to duration spell ${durationEntry.spellName}`);
@@ -1987,7 +2013,6 @@ export async function removeTargetFromDurationSpell(casterId, instanceId, tokenI
 	await ChatMessage.create({
 		content: content,
 		speaker: ChatMessage.getSpeaker({ actor: caster }),
-		type: CONST.CHAT_MESSAGE_STYLES.OTHER
 	});
 
 	console.log(`shadowdark-extras | Removed ${removedTarget.name} from duration spell ${durationEntry.spellName}`);
@@ -2139,7 +2164,6 @@ export async function endFocusSpell(casterId, spellId, reason = "manual") {
 	await ChatMessage.create({
 		content: chatContent,
 		speaker: ChatMessage.getSpeaker({ actor: caster }),
-		type: CONST.CHAT_MESSAGE_STYLES.OTHER
 	});
 
 	// Refresh the actor sheet if open
@@ -2242,11 +2266,12 @@ function injectFocusSpellsUI(sheet, html, data) {
 
 			// Confirm adding targets
 			const targetNames = targets.map(t => t.name).join(", ");
-			const confirmed = await Dialog.confirm({
-				title: "Add Targets to Spell",
+			const confirmed = await foundry.applications.api.DialogV2.confirm({
+				window: { title: "Add Targets to Spell" },
 				content: `<p>Add <strong>${targetNames}</strong> to <strong>${durationEntry.spellName}</strong>?</p>
 				          <p>They will receive the spell's effects and start taking per-turn damage.</p>`,
-				defaultYes: true
+				modal: true,
+				yes: { default: true }
 			});
 
 			if (confirmed) {
@@ -2272,11 +2297,12 @@ function injectFocusSpellsUI(sheet, html, data) {
 
 			if (!target) return;
 
-			const confirmed = await Dialog.confirm({
-				title: "Remove Target from Spell",
+			const confirmed = await foundry.applications.api.DialogV2.confirm({
+				window: { title: "Remove Target from Spell" },
 				content: `<p>Remove <strong>${target.name}</strong> from <strong>${durationEntry.spellName}</strong>?</p>
 				          <p>Any effects applied by this spell will be removed from them.</p>`,
-				defaultYes: true
+				modal: true,
+				yes: { default: true }
 			});
 
 			if (confirmed) {
@@ -2345,13 +2371,13 @@ function injectFocusSpellsUI(sheet, html, data) {
 			const spellId = event.currentTarget.dataset.spellId;
 
 			const focusEntry = activeFocus.find(f => f.spellId === spellId);
-			const confirmed = await Dialog.confirm({
-				title: game.i18n.localize("SHADOWDARK_EXTRAS.focus_tracker.end_focus_title"),
+			const confirmed = await foundry.applications.api.DialogV2.confirm({
+				window: { title: game.i18n.localize("SHADOWDARK_EXTRAS.focus_tracker.end_focus_title") },
 				content: `<p>${game.i18n.format("SHADOWDARK_EXTRAS.focus_tracker.end_focus_confirm", {
 					spellName: focusEntry?.spellName ?? "Unknown",
 					targetCount: focusEntry?.targetEffects?.length ?? 0
 				})}</p>`,
-				defaultYes: false
+				modal: true
 			});
 
 			if (confirmed) {
@@ -2822,17 +2848,11 @@ async function handleWandUsesTracking(message, html, data) {
 	const sdFlags = message.flags?.shadowdark;
 	if (!sdFlags?.isRoll) return;
 
-	// Get actor and item IDs from the chat card HTML
-	const chatCard = html.find('.chat-card');
-	if (!chatCard.length) return;
+	const cardCtx = resolveCardContext(message, html);
+	if (!cardCtx?.actorId || !cardCtx?.itemId) return;
 
-	const actorId = chatCard.data('actorId');
-	const itemId = chatCard.data('itemId');
-
-	if (!actorId || !itemId) return;
-
-	const actor = game.actors.get(actorId);
-	const item = actor?.items.get(itemId);
+	const actor = game.actors.get(cardCtx.actorId);
+	const item = actor?.items.get(cardCtx.itemId);
 
 	if (!actor || !item) return;
 

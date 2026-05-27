@@ -1,0 +1,213 @@
+effects: []
+folder: vmqOYZjyo8VunyyP
+img: icons/weapons/swords/sword-winged-pink.webp
+name: Cleansing Weapon
+system:
+  description: >-
+    <p>One weapon you touch is wreathed in purifying flames. It deals an
+    additional [[/r 1d4]] damage ([[/r 1d6]] vs. undead) for the
+    duration.</p><p>@UUID[Compendium.shadowdark.spell-effects.7hKYL9hdnsvCUM9c]{Spell
+    Effect: Cleansing Weapon}</p>
+  source:
+    title: core-rules
+  class:
+    - Compendium.shadowdark.classes.Item.oZWzXx1WRLg286zD
+  duration:
+    type: rounds
+    value: '5'
+  range: close
+  tier: 2
+  lost: false
+  magicItem: false
+  predefinedEffects: ''
+type: Spell
+_stats:
+  compendiumSource: null
+  duplicateSource: null
+  exportSource: null
+  coreVersion: '13.348'
+  systemId: shadowdark
+  systemVersion: 3.6.1
+  createdTime: 1766719261774
+  modifiedTime: 1771295884104
+  lastModifiedBy: HP3Vba5udEHYm4dW
+ownership:
+  default: 0
+  lDQovrTY32fJwPBR: 3
+flags:
+  shadowdark-extras:
+    spellDamage:
+      enabled: false
+      damageType: Fire
+      damageRequirement: ''
+      damageRequirementFailAction: zero
+      formulaType: basic
+      numDice: 1
+      dieType: d4
+      bonus: 0
+      scaling: none
+      scalingDice: 0
+      formula: ''
+      tieredFormula: ''
+      effects: '[]'
+      effectsRequirement: ''
+      effectsApplyToTarget: true
+      criticalEffects: '[]'
+      effectSelectionMode: all
+      trackDuration: true
+      perTurnTrigger: start
+      perTurnDamage: ''
+      reapplyEffects: false
+    summoning:
+      enabled: false
+      profiles: '[]'
+      deleteAtExpiry: false
+    itemGive:
+      enabled: false
+      profiles: '[]'
+    targeting:
+      mode: targeted
+      template:
+        type: circle
+        size: 30
+        fillColor: '#4e9a06'
+        placement: choose
+        deleteMode: none
+        hideOutline: false
+        excludeCaster: false
+        tokenMagic:
+          texture: ''
+          opacity: 0.5
+          preset: NOFX
+    templateEffects:
+      enabled: false
+      triggers:
+        onEnter: false
+        onTurnStart: false
+        onTurnEnd: false
+        onLeave: false
+      damage:
+        formula: ''
+        type: ''
+      save:
+        enabled: false
+        dc: '12'
+        ability: dex
+        halfOnSuccess: true
+      applyConfiguredEffects: false
+      runItemMacro: false
+    auraEffects:
+      enabled: false
+      attachTo: caster
+      radius: 30
+      triggers:
+        onEnter: false
+        onLeave: false
+        onSourceTurnStart: false
+        onSourceTurnEnd: false
+        onTargetTurnStart: false
+        onTargetTurnEnd: false
+      damage:
+        formula: ''
+        type: ''
+      damageTriggers:
+        onEnter: false
+        onLeave: false
+        onSourceTurnStart: false
+        onSourceTurnEnd: false
+        onTargetTurnStart: false
+        onTargetTurnEnd: false
+      save:
+        enabled: false
+        dc: 12
+        ability: con
+        halfOnSuccess: false
+      disposition: all
+      includeSelf: false
+      applyToOriginator: true
+      checkVisibility: false
+      animation:
+        enabled: true
+        style: circle
+        tint: '#4488ff'
+        scaleMultiplier: 1
+        opacity: 0.6
+      tokenFilters:
+        enabled: false
+        preset: ''
+      applyConfiguredEffects: false
+      effectsTriggers:
+        onEnter: false
+        onLeave: false
+        onSourceTurnStart: false
+        onSourceTurnEnd: false
+        onTargetTurnStart: false
+        onTargetTurnEnd: false
+      runItemMacro: false
+      macroTriggers:
+        onEnter: false
+        onLeave: false
+        onSourceTurnStart: false
+        onSourceTurnEnd: false
+        onTargetTurnStart: false
+        onTargetTurnEnd: false
+    itemMacro:
+      runAsGm: false
+      triggers:
+        - onSuccess
+    alignment: ''
+  itemacro:
+    macro:
+      name: Cleansing Weapon
+      type: script
+      scope: global
+      command: >-
+        // Cleansing Weapon
+
+        const targetToken = (typeof target !== "undefined" && target) ? target :
+        Array.from(game.user.targets)[0];
+
+        if (!targetToken) { 
+            ui.notifications.warn("You must target a creature!"); 
+            return; 
+        }
+
+
+        const sdxModule = game.modules.get("shadowdark-extras");
+
+
+        // Get critical success status from the spell cast context
+
+        const isCritical = args.isCritical ?? false;
+
+
+        const userId = (typeof originatingUserId !== "undefined") ?
+        originatingUserId : undefined;
+
+        await sdxModule.api.showCleansingWeaponDialog(
+            actor,                      // casterActor
+            item,                       // casterItem (the Cleansing Weapon spell)
+            targetToken.actor,          // targetActor
+            targetToken,                // targetToken
+            userId,                     // originatingUserId (for GM routing)
+            isCritical                  // isCritical - grants 2d4/2d6 on critical success
+        );
+      author: lDQovrTY32fJwPBR
+      _id: null
+      img: icons/svg/dice-target.svg
+      folder: null
+      sort: 0
+      ownership:
+        default: 0
+      flags: {}
+      _stats:
+        coreVersion: '13.348'
+        systemId: shadowdark
+        systemVersion: 3.6.1
+        lastModifiedBy: null
+        compendiumSource: null
+        duplicateSource: null
+        exportSource: null
+_id: T7kIkSBCqCebLs3g
+sort: 7900000
+_key: '!items!T7kIkSBCqCebLs3g'

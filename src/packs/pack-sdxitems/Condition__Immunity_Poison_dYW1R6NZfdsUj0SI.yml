@@ -1,0 +1,84 @@
+name: 'Condition: Immunity Poison'
+type: Effect
+img: icons/consumables/potions/bottle-bulb-corked-green.webp
+system:
+  description: <p>Creature is immune to poison damage.</p>
+  source:
+    title: ''
+  light:
+    active: false
+    hasBeenUsed: false
+    isSource: false
+    longevityMins: 60
+    remainingSecs: 3600
+    template: torch
+  category: effect
+  duration:
+    type: unlimited
+    value: 1
+  effectPanel:
+    show: true
+  start:
+    combatTime: '34.0'
+    value: 102059
+  tokenIcon:
+    show: true
+effects:
+  - name: SHADOWDARK_EXTRAS.item.effect.predefined_effect.immunityPoison
+    img: icons/consumables/potions/bottle-bulb-corked-green.webp
+    disabled: false
+    transfer: true
+    type: base
+    system:
+      changes:
+        - key: flags.shadowdark-extras.immunity.poison
+          value: true
+          priority: null
+          type: override
+    duration:
+      value: null
+      units: seconds
+      expiry: null
+      expired: false
+    description: ''
+    tint: '#ffffff'
+    statuses: []
+    sort: 0
+    flags: {}
+    _id: MoJ3RdTZEJ8jKlCx
+    origin: null
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '14.360'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: lDQovrTY32fJwPBR
+      modifiedTime: 1767312901877
+      createdTime: null
+    start: null
+    showIcon: 1
+    folder: null
+    _key: '!items.effects!dYW1R6NZfdsUj0SI.MoJ3RdTZEJ8jKlCx'
+folder: K6zOr2GTFzOnckMq
+flags:
+  shadowdark-extras:
+    immunity:
+      poison: 'true'
+ownership:
+  default: 0
+  lDQovrTY32fJwPBR: 3
+_id: dYW1R6NZfdsUj0SI
+sort: 4600000
+_stats:
+  compendiumSource: null
+  duplicateSource: null
+  exportSource: null
+  coreVersion: '14.360'
+  systemId: shadowdark
+  systemVersion: 3.6.1
+  createdTime: 1767312562115
+  modifiedTime: 1768096139170
+  lastModifiedBy: lDQovrTY32fJwPBR
+_key: '!items!dYW1R6NZfdsUj0SI'

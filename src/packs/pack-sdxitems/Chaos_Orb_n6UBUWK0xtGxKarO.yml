@@ -1,0 +1,154 @@
+effects: []
+folder: vmqOYZjyo8VunyyP
+img: icons/magic/defensive/barrier-shield-dome-blue-purple.webp
+name: Chaos Orb
+system:
+  description: <p>Test</p>
+  source:
+    title: core-rules
+  class:
+    - Compendium.shadowdark.classes.Item.035nuVkU9q2wtMPs
+  duration:
+    type: rounds
+    value: '5'
+  range: far
+  tier: 4
+  lost: false
+  predefinedEffects: ''
+type: Spell
+_stats:
+  compendiumSource: null
+  duplicateSource: null
+  exportSource: null
+  coreVersion: '13.348'
+  systemId: shadowdark
+  systemVersion: 3.6.1
+  createdTime: 1768012359428
+  modifiedTime: 1771295884104
+  lastModifiedBy: HP3Vba5udEHYm4dW
+ownership:
+  default: 0
+  lDQovrTY32fJwPBR: 3
+flags:
+  shadowdark-extras:
+    spellDamage:
+      enabled: false
+      damageType: Poison
+      damageRequirement: ''
+      damageRequirementFailAction: zero
+      formulaType: basic
+      numDice: 2
+      dieType: d6
+      bonus: 0
+      scaling: none
+      scalingDice: 0
+      formula: ''
+      tieredFormula: ''
+      effects: >-
+        [{"uuid":"Compendium.shadowdark.conditions.Item.Grd46xo0lgHLtfVe","duration":{}}]
+      effectsRequirement: ''
+      effectsApplyToTarget: true
+      criticalEffects: '[]'
+      effectSelectionMode: all
+      trackDuration: true
+      perTurnTrigger: start
+      perTurnDamage: ''
+      reapplyEffects: false
+    summoning:
+      enabled: false
+      profiles: '[]'
+      deleteAtExpiry: false
+    itemGive:
+      enabled: false
+      profiles: '[]'
+    targeting:
+      mode: template
+      template:
+        type: rect
+        size: 30
+        fillColor: '#4e9a06'
+        placement: choose
+        deleteMode: duration
+        hideOutline: false
+        excludeCaster: false
+        tokenMagic:
+          texture: ''
+          opacity: 0.5
+          preset: NOFX
+        deleteDuration: 5
+    templateEffects:
+      enabled: true
+      triggers:
+        onTurnStart: true
+        onEnter: false
+        onTurnEnd: false
+        onLeave: false
+      damage:
+        formula: 2d6
+        type: poison
+      save:
+        enabled: false
+        dc: '12'
+        ability: dex
+        halfOnSuccess: true
+      applyConfiguredEffects: false
+      runItemMacro: false
+    alignment: chaotic
+    auraEffects:
+      enabled: false
+      attachTo: caster
+      radius: 30
+      triggers:
+        onEnter: false
+        onLeave: false
+        onSourceTurnStart: false
+        onSourceTurnEnd: false
+        onTargetTurnStart: false
+        onTargetTurnEnd: false
+      damage:
+        formula: ''
+        type: ''
+      damageTriggers:
+        onEnter: false
+        onLeave: false
+        onSourceTurnStart: false
+        onSourceTurnEnd: false
+        onTargetTurnStart: false
+        onTargetTurnEnd: false
+      save:
+        enabled: false
+        dc: 12
+        ability: con
+        halfOnSuccess: false
+      disposition: all
+      includeSelf: false
+      applyToOriginator: true
+      checkVisibility: false
+      animation:
+        enabled: true
+        style: circle
+        tint: '#4488ff'
+        scaleMultiplier: 1
+        opacity: 0.6
+      tokenFilters:
+        enabled: false
+        preset: ''
+      applyConfiguredEffects: false
+      effectsTriggers:
+        onEnter: false
+        onLeave: false
+        onSourceTurnStart: false
+        onSourceTurnEnd: false
+        onTargetTurnStart: false
+        onTargetTurnEnd: false
+      runItemMacro: false
+      macroTriggers:
+        onEnter: false
+        onLeave: false
+        onSourceTurnStart: false
+        onSourceTurnEnd: false
+        onTargetTurnStart: false
+        onTargetTurnEnd: false
+_id: n6UBUWK0xtGxKarO
+sort: 1900000
+_key: '!items!n6UBUWK0xtGxKarO'

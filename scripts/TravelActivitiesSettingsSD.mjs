@@ -5,6 +5,8 @@
 
 const MODULE_ID = "shadowdark-extras";
 
+const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
+
 // All available abilities for selection
 const ABILITIES = ["STR", "DEX", "CON", "INT", "WIS", "CHA"];
 
@@ -23,36 +25,46 @@ const DEFAULT_TRAVEL_ACTIVITIES = [
 /**
  * Travel Activities Settings Application
  */
-export class TravelActivitiesSettingsApp extends FormApplication {
-	static get defaultOptions() {
-		return foundry.utils.mergeObject(super.defaultOptions, {
-			id: "sdx-travel-activities-settings",
-			title: game.i18n.localize("SHADOWDARK_EXTRAS.travel_activities.title"),
-			template: `modules/${MODULE_ID}/templates/travel-activities-settings.hbs`,
-			classes: ["shadowdark", "shadowdark-extras", "travel-activities-settings-app"],
-			width: 700,
-			height: "auto",
-			resizable: true,
-			closeOnSubmit: false,
-			submitOnChange: true,
-			scrollY: [".sdx-activities-list"]
-		});
-	}
-
+export class TravelActivitiesSettingsApp extends HandlebarsApplicationMixin(ApplicationV2) {
 	static _instance = null;
+
+	static DEFAULT_OPTIONS = {
+		id: "sdx-travel-activities-settings",
+		classes: ["shadowdark", "shadowdark-extras", "travel-activities-settings-app"],
+		tag: "form",
+		window: {
+			title: "SHADOWDARK_EXTRAS.travel_activities.title",
+			resizable: true
+		},
+		position: {
+			width: 700,
+			height: "auto"
+		},
+		form: {
+			handler: TravelActivitiesSettingsApp.formHandler,
+			submitOnChange: true,
+			closeOnSubmit: false
+		}
+	};
+
+	static PARTS = {
+		form: {
+			template: `modules/${MODULE_ID}/templates/travel-activities-settings.hbs`,
+			scrollable: [".sdx-activities-list"]
+		}
+	};
 
 	static show() {
 		if (!this._instance) {
 			this._instance = new TravelActivitiesSettingsApp();
 		}
-		this._instance.render(true);
+		this._instance.render({ force: true });
 		return this._instance;
 	}
 
-	getData(options = {}) {
+	async _prepareContext(options) {
 		let activities = getTravelActivities();
 
-		// Ensure we always have activities to display
 		if (!activities || !Array.isArray(activities) || activities.length === 0) {
 			activities = foundry.utils.deepClone(DEFAULT_TRAVEL_ACTIVITIES);
 		}
@@ -72,81 +84,70 @@ export class TravelActivitiesSettingsApp extends FormApplication {
 		};
 	}
 
-	activateListeners(html) {
-		super.activateListeners(html);
-
-		// Store reference to html for use in event handlers
-		this._html = html;
+	_onRender(context, options) {
+		const html = this.element;
+		if (!html) return;
 
 		// Add new activity
-		html.find(".sdx-add-activity").on("click", (ev) => {
+		html.querySelector(".sdx-add-activity")?.addEventListener("click", (ev) => {
 			ev.preventDefault();
-			console.log("Shadowdark Extras | Add Activity clicked");
-			this._addActivity(this._html);
+			this._addActivity();
 		});
 
-		// Remove activity
-		html.on("click", ".sdx-remove-activity", (ev) => {
-			ev.preventDefault();
-			this._removeActivity(html, ev);
-		});
-
-		// Move activity up
-		html.on("click", ".sdx-move-up", (ev) => {
-			ev.preventDefault();
-			this._moveActivity(html, ev, -1);
-		});
-
-		// Move activity down
-		html.on("click", ".sdx-move-down", (ev) => {
-			ev.preventDefault();
-			this._moveActivity(html, ev, 1);
+		// Event delegation for row buttons
+		html.addEventListener("click", (ev) => {
+			if (ev.target.closest(".sdx-remove-activity")) {
+				ev.preventDefault();
+				this._removeActivity(ev);
+			} else if (ev.target.closest(".sdx-move-up")) {
+				ev.preventDefault();
+				this._moveActivity(ev, -1);
+			} else if (ev.target.closest(".sdx-move-down")) {
+				ev.preventDefault();
+				this._moveActivity(ev, 1);
+			} else if (ev.target.closest(".sdx-file-picker")) {
+				ev.preventDefault();
+				const button = ev.target.closest(".sdx-file-picker");
+				const index = button.dataset.index;
+				const input = html.querySelector(`input[name="activities.${index}.bannerImage"]`);
+				const fp = new foundry.applications.apps.FilePicker.implementation({
+					type: "image",
+					current: input?.value || "",
+					callback: (path) => {
+						if (input) input.value = path;
+						html.dispatchEvent(new SubmitEvent("submit", { cancelable: true }));
+					}
+				});
+				fp.browse();
+			}
 		});
 
 		// Reset to defaults
-		html.find(".sdx-reset-defaults").on("click", async (ev) => {
+		html.querySelector(".sdx-reset-defaults")?.addEventListener("click", async (ev) => {
 			ev.preventDefault();
-			const confirmed = await Dialog.confirm({
-				title: game.i18n.localize("SHADOWDARK_EXTRAS.travel_activities.reset_confirm_title"),
-				content: `<p>${game.i18n.localize("SHADOWDARK_EXTRAS.travel_activities.reset_confirm_content")}</p>`
+			const confirmed = await foundry.applications.api.DialogV2.confirm({
+				window: { title: game.i18n.localize("SHADOWDARK_EXTRAS.travel_activities.reset_confirm_title") },
+				content: `<p>${game.i18n.localize("SHADOWDARK_EXTRAS.travel_activities.reset_confirm_content")}</p>`,
+				modal: true
 			});
 			if (confirmed) {
 				await game.settings.set(MODULE_ID, "travelActivities", { activities: foundry.utils.deepClone(DEFAULT_TRAVEL_ACTIVITIES) });
-				this.render(true);
+				this.render({ force: true });
 				ui.notifications.info(game.i18n.localize("SHADOWDARK_EXTRAS.travel_activities.reset_complete"));
 			}
 		});
 
-		// File picker for banner image
-		html.on("click", ".sdx-file-picker", (ev) => {
-			ev.preventDefault();
-			const button = ev.currentTarget;
-			const index = button.dataset.index;
-			const input = html.find(`input[name="activities.${index}.bannerImage"]`);
-
-			const fp = new FilePicker({
-				type: "image",
-				current: input.val(),
-				callback: (path) => {
-					input.val(path);
-					this._onSubmit(ev);
-				}
-			});
-			fp.browse();
-		});
-
 		// Save button - close after submit
-		html.find('button[name="submit"]').on("click", () => {
+		html.querySelector('button[name="submit"]')?.addEventListener("click", () => {
 			setTimeout(() => this.close(), 100);
 		});
 	}
 
-	_addActivity(html) {
-		// Use element reference if html is stale
-		const $html = this.element || html;
-		const $list = $html.find(".sdx-activities-list");
-		console.log("Shadowdark Extras | Activities list found:", $list.length);
-		const newIndex = $list.find(".sdx-activity-row").length;
+	_addActivity() {
+		const html = this.element;
+		const list = html?.querySelector(".sdx-activities-list");
+		if (!list) return;
+		const newIndex = list.querySelectorAll(".sdx-activity-row").length;
 		const newKey = `activity${Date.now()}`;
 
 		const abilitiesCheckboxes = ABILITIES.map(ab => `
@@ -156,117 +157,109 @@ export class TravelActivitiesSettingsApp extends FormApplication {
 			</label>
 		`).join("");
 
-		const newRow = `
-			<div class="sdx-activity-row" data-index="${newIndex}">
-				<div class="sdx-activity-header">
-					<div class="sdx-activity-order">
-						<button type="button" class="sdx-move-up" data-tooltip="${game.i18n.localize("SHADOWDARK_EXTRAS.travel_activities.move_up")}">
-							<i class="fas fa-chevron-up"></i>
-						</button>
-						<button type="button" class="sdx-move-down" data-tooltip="${game.i18n.localize("SHADOWDARK_EXTRAS.travel_activities.move_down")}">
-							<i class="fas fa-chevron-down"></i>
-						</button>
-					</div>
-					<input type="hidden" name="activities.${newIndex}.key" value="${newKey}">
-					<input type="text" name="activities.${newIndex}.name"
-						placeholder="${game.i18n.localize("SHADOWDARK_EXTRAS.travel_activities.name_placeholder")}"
-						value="" class="sdx-activity-name"/>
-					<button type="button" class="sdx-remove-activity" data-tooltip="${game.i18n.localize("SHADOWDARK_EXTRAS.travel_activities.remove")}">
-						<i class="fas fa-trash"></i>
+		const row = document.createElement("div");
+		row.className = "sdx-activity-row";
+		row.dataset.index = String(newIndex);
+		row.innerHTML = `
+			<div class="sdx-activity-header">
+				<div class="sdx-activity-order">
+					<button type="button" class="sdx-move-up" data-tooltip="${game.i18n.localize("SHADOWDARK_EXTRAS.travel_activities.move_up")}">
+						<i class="fas fa-chevron-up"></i>
+					</button>
+					<button type="button" class="sdx-move-down" data-tooltip="${game.i18n.localize("SHADOWDARK_EXTRAS.travel_activities.move_down")}">
+						<i class="fas fa-chevron-down"></i>
 					</button>
 				</div>
-				<div class="sdx-activity-body">
-					<div class="sdx-activity-abilities">
-						<label>${game.i18n.localize("SHADOWDARK_EXTRAS.travel_activities.abilities")}:</label>
-						<div class="sdx-abilities-grid">
-							${abilitiesCheckboxes}
-						</div>
+				<input type="hidden" name="activities.${newIndex}.key" value="${newKey}">
+				<input type="text" name="activities.${newIndex}.name"
+					placeholder="${game.i18n.localize("SHADOWDARK_EXTRAS.travel_activities.name_placeholder")}"
+					value="" class="sdx-activity-name"/>
+				<button type="button" class="sdx-remove-activity" data-tooltip="${game.i18n.localize("SHADOWDARK_EXTRAS.travel_activities.remove")}">
+					<i class="fas fa-trash"></i>
+				</button>
+			</div>
+			<div class="sdx-activity-body">
+				<div class="sdx-activity-abilities">
+					<label>${game.i18n.localize("SHADOWDARK_EXTRAS.travel_activities.abilities")}:</label>
+					<div class="sdx-abilities-grid">
+						${abilitiesCheckboxes}
 					</div>
-					<div class="sdx-activity-options">
-						<label class="sdx-campfire-checkbox">
-							<input type="checkbox" name="activities.${newIndex}.campfire">
-							${game.i18n.localize("SHADOWDARK_EXTRAS.travel_activities.campfire")}
-						</label>
-					</div>
-					<div class="sdx-activity-banner">
-						<label>${game.i18n.localize("SHADOWDARK_EXTRAS.travel_activities.banner_image")}:</label>
-						<div class="sdx-banner-input">
-							<input type="text" name="activities.${newIndex}.bannerImage" value="" class="sdx-banner-path"/>
-							<button type="button" class="sdx-file-picker" data-index="${newIndex}" data-tooltip="${game.i18n.localize("SHADOWDARK_EXTRAS.travel_activities.browse")}">
-								<i class="fas fa-file-image"></i>
-							</button>
-						</div>
+				</div>
+				<div class="sdx-activity-options">
+					<label class="sdx-campfire-checkbox">
+						<input type="checkbox" name="activities.${newIndex}.campfire">
+						${game.i18n.localize("SHADOWDARK_EXTRAS.travel_activities.campfire")}
+					</label>
+				</div>
+				<div class="sdx-activity-banner">
+					<label>${game.i18n.localize("SHADOWDARK_EXTRAS.travel_activities.banner_image")}:</label>
+					<div class="sdx-banner-input">
+						<input type="text" name="activities.${newIndex}.bannerImage" value="" class="sdx-banner-path"/>
+						<button type="button" class="sdx-file-picker" data-index="${newIndex}" data-tooltip="${game.i18n.localize("SHADOWDARK_EXTRAS.travel_activities.browse")}">
+							<i class="fas fa-file-image"></i>
+						</button>
 					</div>
 				</div>
 			</div>
 		`;
-		$list.append(newRow);
+		list.appendChild(row);
 		this.setPosition({ height: "auto" });
 	}
 
-	_removeActivity(html, ev) {
-		$(ev.currentTarget).closest(".sdx-activity-row").remove();
-		const $html = this.element || html;
-		this._reindexRows($html);
+	_removeActivity(ev) {
+		ev.target.closest(".sdx-activity-row")?.remove();
+		this._reindexRows();
 		this.setPosition({ height: "auto" });
-		this._onSubmit(ev);
+		this.element?.dispatchEvent(new SubmitEvent("submit", { cancelable: true }));
 	}
 
-	_moveActivity(html, ev, direction) {
-		const $html = this.element || html;
-		const $row = $(ev.currentTarget).closest(".sdx-activity-row");
-		const $rows = $html.find(".sdx-activity-row");
-		const currentIndex = $rows.index($row);
+	_moveActivity(ev, direction) {
+		const html = this.element;
+		const row = ev.target.closest(".sdx-activity-row");
+		const rows = Array.from(html.querySelectorAll(".sdx-activity-row"));
+		const currentIndex = rows.indexOf(row);
 		const newIndex = currentIndex + direction;
 
-		if (newIndex < 0 || newIndex >= $rows.length) return;
+		if (newIndex < 0 || newIndex >= rows.length) return;
 
-		if (direction < 0) {
-			$row.insertBefore($rows.eq(newIndex));
-		} else {
-			$row.insertAfter($rows.eq(newIndex));
-		}
+		if (direction < 0) rows[newIndex].before(row);
+		else rows[newIndex].after(row);
 
-		this._reindexRows($html);
-		this._onSubmit(ev);
+		this._reindexRows();
+		html?.dispatchEvent(new SubmitEvent("submit", { cancelable: true }));
 	}
 
-	_reindexRows(html) {
-		const $html = this.element || html;
-		$html.find(".sdx-activity-row").each((i, row) => {
-			$(row).attr("data-index", i);
-			$(row).find("input, select").each((j, input) => {
-				const $input = $(input);
-				const oldName = $input.attr("name");
+	_reindexRows() {
+		const html = this.element;
+		if (!html) return;
+		html.querySelectorAll(".sdx-activity-row").forEach((row, i) => {
+			row.dataset.index = String(i);
+			row.querySelectorAll("input, select").forEach(input => {
+				const oldName = input.getAttribute("name");
 				if (oldName && oldName.startsWith("activities.")) {
 					const parts = oldName.split(".");
-					parts[1] = i;
-					$input.attr("name", parts.join("."));
+					parts[1] = String(i);
+					input.setAttribute("name", parts.join("."));
 				}
 			});
-			$(row).find(".sdx-file-picker").attr("data-index", i);
+			row.querySelector(".sdx-file-picker")?.setAttribute("data-index", String(i));
 		});
 	}
 
-	async _updateObject(event, formData) {
-		// Process form data into activities array
+	static async formHandler(event, form, formData) {
+		const flat = formData.object;
 		const activitiesData = {};
 
-		for (const [key, value] of Object.entries(formData)) {
+		for (const [key, value] of Object.entries(flat)) {
 			if (key.startsWith("activities.")) {
 				const parts = key.split(".");
 				const index = parseInt(parts[1]);
 				const field = parts[2];
 
-				if (!activitiesData[index]) {
-					activitiesData[index] = { abilities: [] };
-				}
+				if (!activitiesData[index]) activitiesData[index] = { abilities: [] };
 
 				if (field === "abilities") {
-					// Handle checkbox array for abilities
-					if (value === true || value === "on") {
-						// This shouldn't happen with our structure, but handle it
-					} else if (typeof value === "string") {
+					if (typeof value === "string") {
 						activitiesData[index].abilities.push(value);
 					} else if (Array.isArray(value)) {
 						activitiesData[index].abilities = value;
@@ -279,14 +272,12 @@ export class TravelActivitiesSettingsApp extends FormApplication {
 			}
 		}
 
-		// Convert to array and filter out incomplete entries
 		const activities = [];
 		const indices = Object.keys(activitiesData).map(Number).sort((a, b) => a - b);
 
 		for (const index of indices) {
 			const data = activitiesData[index];
 			if (data.name && data.name.trim()) {
-				// Filter out empty strings from abilities array
 				const filteredAbilities = (data.abilities || []).filter(ab => ab && ab.trim());
 				activities.push({
 					key: data.key || `activity${Date.now()}_${index}`,
@@ -300,8 +291,7 @@ export class TravelActivitiesSettingsApp extends FormApplication {
 
 		await game.settings.set(MODULE_ID, "travelActivities", { activities });
 
-		// Refresh any open party sheets to show changes
-		for (const app of Object.values(ui.windows)) {
+		for (const app of foundry.applications.instances.values()) {
 			if (app.constructor.name === "PartySheetSD") {
 				app.render(false);
 			}
@@ -316,7 +306,6 @@ export class TravelActivitiesSettingsApp extends FormApplication {
 export function getTravelActivities() {
 	try {
 		const saved = game.settings.get(MODULE_ID, "travelActivities");
-		// Handle both old array format and new object format
 		if (saved) {
 			if (Array.isArray(saved) && saved.length > 0) {
 				return saved;

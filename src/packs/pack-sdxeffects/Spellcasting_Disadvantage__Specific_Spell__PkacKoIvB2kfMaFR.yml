@@ -1,0 +1,38 @@
+name: Spellcasting Disadvantage (Specific Spell)
+img: icons/magic/unholy/hand-light-pink.webp
+transfer: false
+system:
+  changes:
+    - key: system.roll.spell.advantage.REPLACEME
+      value: -1
+      priority: 20
+      type: add
+      phase: initial
+_id: PkacKoIvB2kfMaFR
+type: base
+disabled: false
+start: null
+duration:
+  value: null
+  units: seconds
+  expiry: null
+  expired: false
+description: ''
+origin: null
+tint: '#ffffff'
+statuses: []
+showIcon: 1
+folder: null
+sort: 0
+flags: {}
+_stats:
+  coreVersion: '14.361'
+  systemId: shadowdark
+  systemVersion: 4.0.4
+  createdTime: 1778965044902
+  modifiedTime: 1778965044902
+  lastModifiedBy: lgz0hScAHYW4VnVt
+  compendiumSource: null
+  duplicateSource: null
+  exportSource: null
+_key: '!effects!PkacKoIvB2kfMaFR'

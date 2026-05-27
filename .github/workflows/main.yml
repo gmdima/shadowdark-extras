@@ -30,11 +30,20 @@ jobs:
           MANIFEST: ${{ env.latest_manifest_url }}
           DOWNLOAD: ${{ env.release_system_url }}
 
-      # No npm ci or build step needed for your current structure
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Dev Dependencies
+        run: npm ci
+
+      - name: Build Compendium Packs From YAML Source
+        run: npm run pack
 
       - name: Create Module Archive
         run: |
-          zip -r module.zip module.json README.md LICENSE i18n/ scripts/ styles/ templates/ packs/ assets/ art/ libs/
+          zip -r module.zip module.json README.md LICENSE data/ i18n/ scripts/ styles/ templates/ packs/ assets/ art/ libs/
 
       - name: Update Release With Files
         id: create_version_release

@@ -1,0 +1,501 @@
+name: Wilderness Inn Hooks
+formula: 1d20
+results:
+  - type: text
+    weight: 1
+    range:
+      - 1
+      - 1
+    drawn: false
+    description: >-
+      The innkeeper explains that the road ahead 'closes at sundown' — not by
+      any official authority, but because every traveler who has pushed on after
+      dark in the past month has turned up back at the inn by morning, shaken
+      and unable to explain how.
+    _id: SPVbc8jLBj4m0Gx6
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!RqMKr2VWTsm9HOMJ.SPVbc8jLBj4m0Gx6'
+  - type: text
+    weight: 1
+    range:
+      - 2
+      - 2
+    drawn: false
+    description: >-
+      A lone rider arrived two nights ago, took a room, prepaid a week in
+      advance, and has not emerged since. No sound comes from the room. The
+      innkeeper slid food under the door on the first day. It was not touched.
+    _id: wLUkls9QaCMSjfhR
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!RqMKr2VWTsm9HOMJ.wLUkls9QaCMSjfhR'
+  - type: text
+    weight: 1
+    range:
+      - 3
+      - 3
+    drawn: false
+    description: >-
+      A group of pilgrims heading to a distant shrine have stopped for the
+      night. Their leader insists the route marked on their holy map passes
+      through somewhere that — according to every other map in the inn — simply
+      does not exist.
+    _id: WzFxAz3SsrbRb6Ws
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!RqMKr2VWTsm9HOMJ.WzFxAz3SsrbRb6Ws'
+  - type: text
+    weight: 1
+    range:
+      - 4
+      - 4
+    drawn: false
+    description: >-
+      A traveling mail courier is distributing letters to everyone in the inn
+      tonight — every guest has one, each sealed with the same plain black wax.
+      The courier has no idea who sent them and picked up the pouch at a relay
+      post that had no record of accepting it.
+    _id: THKAYOZmJeXMxGe1
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!RqMKr2VWTsm9HOMJ.THKAYOZmJeXMxGe1'
+  - type: text
+    weight: 1
+    range:
+      - 5
+      - 5
+    drawn: false
+    description: >-
+      The inn's well has begun producing water that is completely pure,
+      odorless, and perfect — but it makes every fire it is used to boil gutter
+      out immediately. The innkeeper is very confused and slightly worried.
+    _id: KbEuTb8RaG9vlJe4
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!RqMKr2VWTsm9HOMJ.KbEuTb8RaG9vlJe4'
+  - type: text
+    weight: 1
+    range:
+      - 6
+      - 6
+    drawn: false
+    description: >-
+      A merchant caravan has stopped here for repairs. The lead merchant is
+      quietly, desperately hiring anyone available to ride ahead and check
+      whether the bridge at the valley crossing is still standing.
+    _id: Y9UiWpN961OhRStW
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!RqMKr2VWTsm9HOMJ.Y9UiWpN961OhRStW'
+  - type: text
+    weight: 1
+    range:
+      - 7
+      - 7
+    drawn: false
+    description: >-
+      A child is sitting on the fence outside the inn, watching the road from
+      both directions simultaneously by turning her head at regular intervals.
+      She will not come in. She says she is 'waiting for the thing that's
+      following the last group.'
+    _id: 7Zd3AYC8nuviS7r0
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!RqMKr2VWTsm9HOMJ.7Zd3AYC8nuviS7r0'
+  - type: text
+    weight: 1
+    range:
+      - 8
+      - 8
+    drawn: false
+    description: >-
+      An older couple running a modest cart have taken the last room. Over
+      supper, pieces of their conversation suggest they know rather more about
+      the local area than travelers passing through should — including events
+      that happened yesterday in a village three days' ride away.
+    _id: 426bRf045sAt4k49
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!RqMKr2VWTsm9HOMJ.426bRf045sAt4k49'
+  - type: text
+    weight: 1
+    range:
+      - 9
+      - 9
+    drawn: false
+    description: >-
+      The road sign at the crossroads has been turned around. All of the signs
+      are pointing in the wrong direction. The innkeeper says it happens every
+      few months and shrugs. She's never bothered to find out who does it or
+      why.
+    _id: tm8dqFVHvpCrPjS7
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!RqMKr2VWTsm9HOMJ.tm8dqFVHvpCrPjS7'
+  - type: text
+    weight: 1
+    range:
+      - 10
+      - 10
+    drawn: false
+    description: >-
+      A patrol of soldiers arrived at midday, requisitioned the inn's entire
+      stock of preserved food, paid fairly, and left heading north. A second
+      patrol arrived an hour later heading the same direction, also wanted
+      provisions, and was confused to hear the first group had come through —
+      they should have intercepted them on the road.
+    _id: glZIiom5LiYLVKmw
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!RqMKr2VWTsm9HOMJ.glZIiom5LiYLVKmw'
+  - type: text
+    weight: 1
+    range:
+      - 11
+      - 11
+    drawn: false
+    description: >-
+      The inn's stable master refuses to stable a particular horse that arrived
+      with a recent guest. The horse is calm, healthy, and well-behaved. The
+      stable master will not explain his objection and is clearly frightened.
+    _id: lfawEILBGn63He2J
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!RqMKr2VWTsm9HOMJ.lfawEILBGn63He2J'
+  - type: text
+    weight: 1
+    range:
+      - 12
+      - 12
+    drawn: false
+    description: >-
+      A bounty hunter is eating alone, has said nothing, and has a bounty
+      board's worth of folded papers visible in her coat pocket. She has been
+      making small marks on the edge of her plate with a knife since she
+      arrived.
+    _id: nuDWkmlL1CZjD06R
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!RqMKr2VWTsm9HOMJ.nuDWkmlL1CZjD06R'
+  - type: text
+    weight: 1
+    range:
+      - 13
+      - 13
+    drawn: false
+    description: >-
+      The inn roof is covered in ravens. Only this inn — every other rooftop at
+      the crossroads is clear. They have not made a sound since they arrived
+      this morning. The innkeeper says they came in with yesterday's sunset and
+      roosted as a group.
+    _id: kDrrNxz3wk72eLyi
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!RqMKr2VWTsm9HOMJ.kDrrNxz3wk72eLyi'
+  - type: text
+    weight: 1
+    range:
+      - 14
+      - 14
+    drawn: false
+    description: >-
+      A heavily loaded pack mule arrived at the inn without a rider, saddlebags
+      full, reins trailing. It walked up to the trough, drank, and stopped. Its
+      saddlebags contain trade goods, personal effects, and a letter that is
+      addressed to the first person to find this animal.
+    _id: TeUDUWOyqCXJ7pBz
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!RqMKr2VWTsm9HOMJ.TeUDUWOyqCXJ7pBz'
+  - type: text
+    weight: 1
+    range:
+      - 15
+      - 15
+    drawn: false
+    description: >-
+      An elderly mapmaker is spending several days here, claiming the crossroads
+      is not where any of her maps say it should be. She is recalculating. She
+      looks like she has been recalculating for some time.
+    _id: PH82B2Pa0JPjkt05
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!RqMKr2VWTsm9HOMJ.PH82B2Pa0JPjkt05'
+  - type: text
+    weight: 1
+    range:
+      - 16
+      - 16
+    drawn: false
+    description: >-
+      The fireplace in the common room has not required new wood since dawn
+      despite burning steadily all day. The innkeeper attributes this to 'a good
+      cut of oak.' The fire is not consuming the logs visibly.
+    _id: gZ6qAYoPhgXgTQSe
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!RqMKr2VWTsm9HOMJ.gZ6qAYoPhgXgTQSe'
+  - type: text
+    weight: 1
+    range:
+      - 17
+      - 17
+    drawn: false
+    description: >-
+      Travelers coming from the west report a ruined inn two days up the road —
+      same name, same signage, same floor plan as this one, but clearly
+      abandoned for years. The innkeeper has no knowledge of a second location.
+    _id: a728p9yDXBXRFfEE
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!RqMKr2VWTsm9HOMJ.a728p9yDXBXRFfEE'
+  - type: text
+    weight: 1
+    range:
+      - 18
+      - 18
+    drawn: false
+    description: >-
+      A messenger arrived at speed, handed a sealed document to a guest in the
+      corner, and departed immediately. The guest read it, placed it in the
+      fire, finished their meal calmly, paid in advance for a week, and went to
+      bed at the seventh hour.
+    _id: spnSbeXKALlokT5b
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!RqMKr2VWTsm9HOMJ.spnSbeXKALlokT5b'
+  - type: text
+    weight: 1
+    range:
+      - 19
+      - 19
+    drawn: false
+    description: >-
+      A trapper who uses this inn as a seasonal base is back earlier than anyone
+      expected. He won't say what drove him in from the deep woods. He keeps
+      looking at the door. He asked the innkeeper to bolt all the shutters
+      before full dark.
+    _id: 5guZ1y81jGeRD7E5
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!RqMKr2VWTsm9HOMJ.5guZ1y81jGeRD7E5'
+  - type: text
+    weight: 1
+    range:
+      - 20
+      - 20
+    drawn: false
+    description: >-
+      The inn has no sign of its original name — the board is blank and
+      weathered clean. The innkeeper says it's always been that way. She refers
+      to the place only as 'here,' and deflects every question about what it was
+      called when it was built.
+    _id: YRXNYhh8CORyKuHH
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!RqMKr2VWTsm9HOMJ.YRXNYhh8CORyKuHH'
+description: >-
+  20 original hooks for roadside inns, crossroads waypoints, and wilderness
+  resting places.
+replacement: true
+displayRoll: true
+img: icons/svg/d20-grey.svg
+folder: null
+ownership:
+  default: 0
+  HP3Vba5udEHYm4dW: 3
+flags: {}
+_stats:
+  compendiumSource: null
+  duplicateSource: null
+  exportSource: null
+  coreVersion: '13.348'
+  systemId: shadowdark
+  systemVersion: 3.6.1
+  createdTime: 1772673109721
+  modifiedTime: 1772760502256
+  lastModifiedBy: HP3Vba5udEHYm4dW
+_id: RqMKr2VWTsm9HOMJ
+sort: 100000
+_key: '!tables!RqMKr2VWTsm9HOMJ'

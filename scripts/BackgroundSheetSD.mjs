@@ -1,3 +1,6 @@
+// v13+ FilePicker namespaced under foundry.applications.apps.
+const FilePicker = foundry.applications.apps.FilePicker?.implementation ?? globalThis.FilePicker;
+
 /**
  * Background Item Sheet - AppV2
  * Modern Background sheet with Description and Advancement tabs

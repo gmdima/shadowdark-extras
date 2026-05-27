@@ -1,0 +1,86 @@
+effects: []
+folder: vmqOYZjyo8VunyyP
+img: icons/magic/control/hypnosis-mesmerism-eye.webp
+name: Hallucinate
+system:
+  description: >-
+    <p>One creature you target in near whose level is less than or equal to your
+    own is overcome by visions of what might yet come to pass.</p><p>For the
+    spell's duration, the target cannot act on its turn unless it passes a
+    Wisdom check equal to your last spellcasting
+    check.</p><p>@UUID[Compendium.shadowdark.spell-effects.Item.PLPiCgwZaEetlx5O]{Spell
+    Effect: Hallucinate}</p>
+  source:
+    title: cursed-scroll-3
+  class:
+    - Compendium.shadowdark.classes.Item.xdjod5gPhNPIkLth
+  duration:
+    type: focus
+    value: 1
+  range: near
+  tier: 3
+  lost: false
+  predefinedEffects: ''
+type: Spell
+_stats:
+  compendiumSource: null
+  duplicateSource: null
+  exportSource: null
+  coreVersion: '13.348'
+  systemId: shadowdark
+  systemVersion: 3.6.1
+  createdTime: 1766974803008
+  modifiedTime: 1771295884104
+  lastModifiedBy: HP3Vba5udEHYm4dW
+ownership:
+  default: 0
+  lDQovrTY32fJwPBR: 3
+flags:
+  shadowdark-extras:
+    spellDamage:
+      enabled: false
+      damageType: ''
+      numDice: 0
+      dieType: d4
+      effects: >-
+        [{"uuid":"Compendium.shadowdark.spell-effects.Item.PLPiCgwZaEetlx5O","duration":{}}]
+      damageRequirement: ''
+      damageRequirementFailAction: zero
+      formulaType: basic
+      bonus: null
+      scaling: none
+      scalingDice: null
+      formula: undefined
+      tieredFormula: ''
+      criticalEffects: '[]'
+      effectsRequirement: ''
+      effectsApplyToTarget: true
+      effectSelectionMode: all
+      trackDuration: false
+      perTurnTrigger: start
+      perTurnDamage: ''
+      reapplyEffects: false
+    summoning:
+      enabled: false
+      profiles: '[]'
+      deleteAtExpiry: false
+    itemGive:
+      enabled: false
+      profiles: '[]'
+    targeting:
+      mode: targeted
+      template:
+        type: circle
+        size: 30
+        fillColor: '#4e9a06'
+        placement: choose
+        deleteMode: none
+        hideOutline: false
+        excludeCaster: false
+        tokenMagic:
+          texture: ''
+          opacity: 0.5
+          preset: NOFX
+_id: Bt4yVOxY3qApJgiM
+sort: 4500000
+_key: '!items!Bt4yVOxY3qApJgiM'

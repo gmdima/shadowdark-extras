@@ -1,0 +1,71 @@
+effects: []
+folder: vmqOYZjyo8VunyyP
+img: icons/equipment/back/cloak-layered-tattered-purple.webp
+name: Cloak of Night
+system:
+  description: >-
+    <p>Your wrap yourself in a swirling cloak of shadows. For the spell's
+    duration, your armor class becomes 17 (20 on a critical spellcasting
+    check).</p><p>You have advantage on Dexterity checks to sneak and hide for
+    the spell's
+    duration.</p><p>@UUID[Compendium.shadowdark.spell-effects.Item.3viSgI4JpKsXdaFd]{Spell
+    Effect: Cloak of
+    Night}</p><p>@UUID[Compendium.shadowdark.spell-effects.Item.vP9UrCnOXOe2ViZU]{Spell
+    Effect: Cloak of Night (Critical)}</p>
+  source:
+    title: cursed-scroll-1
+  class:
+    - Compendium.shadowdark.classes.Item.KGnBAFiTiLHZJUND
+  duration:
+    type: rounds
+    value: '8'
+  range: self
+  tier: 4
+  lost: false
+  predefinedEffects: ''
+type: Spell
+_stats:
+  compendiumSource: null
+  duplicateSource: null
+  exportSource: null
+  coreVersion: '13.348'
+  systemId: shadowdark
+  systemVersion: 3.6.1
+  createdTime: 1766719295976
+  modifiedTime: 1771295884104
+  lastModifiedBy: HP3Vba5udEHYm4dW
+ownership:
+  default: 0
+  lDQovrTY32fJwPBR: 3
+flags:
+  shadowdark-extras:
+    spellDamage:
+      enabled: false
+      damageType: ''
+      damageRequirement: ''
+      damageRequirementFailAction: zero
+      formulaType: basic
+      numDice: 1
+      dieType: d6
+      bonus: 0
+      scaling: none
+      scalingDice: 0
+      formula: ''
+      tieredFormula: ''
+      effects: >-
+        [{"uuid":"Compendium.shadowdark.spell-effects.Item.3viSgI4JpKsXdaFd","duration":{}}]
+      effectsRequirement: ''
+      effectsApplyToTarget: false
+      criticalEffects: >-
+        [{"uuid":"Compendium.shadowdark.spell-effects.Item.vP9UrCnOXOe2ViZU","duration":{}}]
+      effectSelectionMode: all
+    summoning:
+      enabled: false
+      profiles: '[]'
+      deleteAtExpiry: false
+    itemGive:
+      enabled: false
+      profiles: '[]'
+_id: tkJAU5g5JJVHIfTd
+sort: 8100000
+_key: '!items!tkJAU5g5JJVHIfTd'

@@ -1,0 +1,66 @@
+effects: []
+folder: vmqOYZjyo8VunyyP
+img: icons/tools/hand/broom-straw-brown.webp
+name: Broomstick
+system:
+  description: >-
+    <p>You conjure a flying broomstick in your hand.</p><p>The broomstick's
+    rider can fly a near distance each round and can hover in
+    place.</p><p>@UUID[Compendium.shadowdark.spell-effects.Item.23KrUIOKwPNwVSCh]{Spell
+    Effect: Broomstick}</p>
+  source:
+    title: cursed-scroll-1
+  class:
+    - Compendium.shadowdark.classes.Item.KGnBAFiTiLHZJUND
+  duration:
+    type: focus
+    value: 1
+  range: self
+  tier: 3
+  lost: false
+  magicItem: false
+  predefinedEffects: ''
+type: Spell
+_stats:
+  compendiumSource: null
+  duplicateSource: null
+  exportSource: null
+  coreVersion: '13.348'
+  systemId: shadowdark
+  systemVersion: 3.6.1
+  createdTime: 1766712520689
+  modifiedTime: 1771295884104
+  lastModifiedBy: HP3Vba5udEHYm4dW
+ownership:
+  default: 0
+  lDQovrTY32fJwPBR: 3
+flags:
+  shadowdark-extras:
+    spellDamage:
+      enabled: false
+      damageType: ''
+      damageRequirement: ''
+      damageRequirementFailAction: zero
+      formulaType: basic
+      numDice: 1
+      dieType: d6
+      bonus: 0
+      scaling: none
+      scalingDice: 0
+      formula: ''
+      tieredFormula: ''
+      effects: >-
+        [{"uuid":"Compendium.shadowdark.spell-effects.Item.23KrUIOKwPNwVSCh","duration":{}}]
+      effectsRequirement: ''
+      effectsApplyToTarget: false
+      criticalEffects: '[]'
+      effectSelectionMode: all
+    summoning:
+      enabled: false
+      profiles: '[]'
+    itemGive:
+      enabled: false
+      profiles: '[]'
+_id: l8M5FQl2uqlsn04H
+sort: 7100000
+_key: '!items!l8M5FQl2uqlsn04H'

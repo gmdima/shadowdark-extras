@@ -1,0 +1,2270 @@
+name: City Encounters
+formula: 1d100
+results:
+  - type: text
+    weight: 1
+    range:
+      - 1
+      - 1
+    drawn: false
+    description: >-
+      [DAY] A portrait artist is sketching rapid likenesses of passersby who
+      haven't stopped to pose. The portraits are uncannily accurate, including
+      one of a person who hasn't passed yet.
+    _id: HjQo2SFFP2Qtl2Go
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!ODi9Z7HM0djgpNVE.HjQo2SFFP2Qtl2Go'
+  - type: text
+    weight: 1
+    range:
+      - 2
+      - 2
+    drawn: false
+    description: >-
+      [DAY] A city herald unrolls a proclamation scroll, reads the first line
+      silently, goes pale, rolls it back up, and strides quickly away.
+    _id: YxeJHnEK6BvhHQdZ
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!ODi9Z7HM0djgpNVE.YxeJHnEK6BvhHQdZ'
+  - type: text
+    weight: 1
+    range:
+      - 3
+      - 3
+    drawn: false
+    description: >-
+      [DAY] A merchant is calmly destroying his own stock — cracking pots,
+      snapping boards — with the expression of a man completing a long-overdue
+      task.
+    _id: GSfha6mrNV0rerxP
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!ODi9Z7HM0djgpNVE.GSfha6mrNV0rerxP'
+  - type: text
+    weight: 1
+    range:
+      - 4
+      - 4
+    drawn: false
+    description: >-
+      [DAY] Three men have independently presented themselves at the same
+      perfumer's stall claiming to be her cousin from the capital. None know
+      each other.
+    _id: hzt7t8xR5zz8AiNJ
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!ODi9Z7HM0djgpNVE.hzt7t8xR5zz8AiNJ'
+  - type: text
+    weight: 1
+    range:
+      - 5
+      - 5
+    drawn: false
+    description: >-
+      [DAY] A woman walks through the market selling small vials of sand, each
+      labeled with what she promises that specific hour will bring. She is
+      completely sold out of the afternoon.
+    _id: JK2SHQh5XDjHeDOe
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!ODi9Z7HM0djgpNVE.JK2SHQh5XDjHeDOe'
+  - type: text
+    weight: 1
+    range:
+      - 6
+      - 6
+    drawn: false
+    description: >-
+      [DAY] A very official-looking figure is measuring the widths of
+      storefronts with a length of knotted rope and recording the results in a
+      ledger. He has not told anyone why.
+    _id: 4U2ugO0tWHliND89
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!ODi9Z7HM0djgpNVE.4U2ugO0tWHliND89'
+  - type: text
+    weight: 1
+    range:
+      - 7
+      - 7
+    drawn: false
+    description: >-
+      [DAY] An apothecary is sweeping shattered glass from her doorstep in
+      silence. The shop behind her smells of scorched cedar. She won't look up.
+    _id: s7YDdcMiKvfRBVtC
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!ODi9Z7HM0djgpNVE.s7YDdcMiKvfRBVtC'
+  - type: text
+    weight: 1
+    range:
+      - 8
+      - 8
+    drawn: false
+    description: >-
+      [DAY] A child is selling handwritten receipts for 'things that definitely
+      did not happen.' The receipts look official. She has sold seventeen today.
+    _id: 8OTK0Yb05597hX9o
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!ODi9Z7HM0djgpNVE.8OTK0Yb05597hX9o'
+  - type: text
+    weight: 1
+    range:
+      - 9
+      - 9
+    drawn: false
+    description: >-
+      [DAY] A man in a fire brigade uniform is directing a bucket chain drill in
+      the middle of a busy road, with no fire present, with total conviction.
+    _id: 2Od6rbadSBauFKJM
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!ODi9Z7HM0djgpNVE.2Od6rbadSBauFKJM'
+  - type: text
+    weight: 1
+    range:
+      - 10
+      - 10
+    drawn: false
+    description: >-
+      [DAY] A large wall mural of the city's last three mayors has recently had
+      all three faces replaced with the same face — a man no one can identify.
+    _id: ki5GRG3Q2b6gdUKA
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!ODi9Z7HM0djgpNVE.ki5GRG3Q2b6gdUKA'
+  - type: text
+    weight: 1
+    range:
+      - 11
+      - 11
+    drawn: false
+    description: >-
+      [DAY] A barrel maker's workshop is packed floor-to-ceiling with identical
+      barrels. He is standing in the street insisting he didn't make most of
+      them.
+    _id: uhswmGIN6TJzOelk
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!ODi9Z7HM0djgpNVE.uhswmGIN6TJzOelk'
+  - type: text
+    weight: 1
+    range:
+      - 12
+      - 12
+    drawn: false
+    description: >-
+      [DAY] A notary is seated at a small outdoor table. A queue stretches half
+      the block. Everyone in the queue appears to be witnessing the same
+      document, one at a time.
+    _id: uZPIxmxwOfhALhlp
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!ODi9Z7HM0djgpNVE.uZPIxmxwOfhALhlp'
+  - type: text
+    weight: 1
+    range:
+      - 13
+      - 13
+    drawn: false
+    description: >-
+      [DAY] A city engineer is examining the road with increasing agitation. She
+      keeps measuring the same section with different tools and getting
+      different results.
+    _id: G90o5Fb7hhRXJrad
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!ODi9Z7HM0djgpNVE.G90o5Fb7hhRXJrad'
+  - type: text
+    weight: 1
+    range:
+      - 14
+      - 14
+    drawn: false
+    description: >-
+      [DAY] An elderly scholar is following the party at a respectful distance,
+      making notes in a small book. If asked what he's recording, he says 'your
+      route.'
+    _id: hL98a7mHBumoKF3g
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!ODi9Z7HM0djgpNVE.hL98a7mHBumoKF3g'
+  - type: text
+    weight: 1
+    range:
+      - 15
+      - 15
+    drawn: false
+    description: >-
+      [DAY] A very confident man is selling maps of places he claims to have
+      never visited. The maps are detailed, internally consistent, and show
+      places no other map records.
+    _id: 58SmIUbMxhoQXRs6
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!ODi9Z7HM0djgpNVE.58SmIUbMxhoQXRs6'
+  - type: text
+    weight: 1
+    range:
+      - 16
+      - 16
+    drawn: false
+    description: >-
+      [DAY] A baker is arguing through a window with someone inside who insists
+      the bread hasn't been paid for. The baker owns the shop. He lives alone.
+    _id: HPA9igiFIImVln3I
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!ODi9Z7HM0djgpNVE.HPA9igiFIImVln3I'
+  - type: text
+    weight: 1
+    range:
+      - 17
+      - 17
+    drawn: false
+    description: >-
+      [DAY] Someone has stacked forty-one chairs in a precise tower in the main
+      square. No note. No crowd. One chair is upside down near the top.
+    _id: gWEQ8wqHnlUdLRRY
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!ODi9Z7HM0djgpNVE.gWEQ8wqHnlUdLRRY'
+  - type: text
+    weight: 1
+    range:
+      - 18
+      - 18
+    drawn: false
+    description: >-
+      [DAY] Two city magistrates are having a furious whispered argument at a
+      food stall. One of them keeps looking at a sealed letter. Neither has
+      noticed their food is on fire.
+    _id: zssPI1JLqCovGcdf
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!ODi9Z7HM0djgpNVE.zssPI1JLqCovGcdf'
+  - type: text
+    weight: 1
+    range:
+      - 19
+      - 19
+    drawn: false
+    description: >-
+      [DAY] A very old man is seated in a chair in the center of the road, being
+      politely walked around by everyone. No one seems to find this unusual.
+    _id: MicT6TqMYUC54g3E
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!ODi9Z7HM0djgpNVE.MicT6TqMYUC54g3E'
+  - type: text
+    weight: 1
+    range:
+      - 20
+      - 20
+    drawn: false
+    description: >-
+      [DAY] A guild representative is posting identical notices on twelve
+      consecutive buildings. The notice appears blank from a distance. Up close
+      it reads: 'You read this.'
+    _id: h2Y5E88acEq2YJ9Z
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!ODi9Z7HM0djgpNVE.h2Y5E88acEq2YJ9Z'
+  - type: text
+    weight: 1
+    range:
+      - 21
+      - 21
+    drawn: false
+    description: >-
+      [DAY] A pair of architects are gesturing excitedly at a perfectly ordinary
+      stretch of wall. One of them keeps crossing out and rewriting numbers.
+    _id: 8dRF2ASfot7IEkHj
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!ODi9Z7HM0djgpNVE.8dRF2ASfot7IEkHj'
+  - type: text
+    weight: 1
+    range:
+      - 22
+      - 22
+    drawn: false
+    description: >-
+      [DAY] A street performer has gathered a crowd with a simple trick: she
+      correctly tells every volunteer what they had for breakfast. She hasn't
+      gotten one wrong.
+    _id: 5vFqWn6xl94oGWVK
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!ODi9Z7HM0djgpNVE.5vFqWn6xl94oGWVK'
+  - type: text
+    weight: 1
+    range:
+      - 23
+      - 23
+    drawn: false
+    description: >-
+      [DAY] An enormous pile of books has appeared outside a closed library. A
+      small placard reads 'Return. Overdue.' No one is collecting them.
+    _id: QEdEv3Jwq76QEo6k
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!ODi9Z7HM0djgpNVE.QEdEv3Jwq76QEo6k'
+  - type: text
+    weight: 1
+    range:
+      - 24
+      - 24
+    drawn: false
+    description: >-
+      [DAY] A man is walking very fast in a precise square pattern around the
+      fountain. He has been walking the square for over an hour and shows no
+      sign of stopping.
+    _id: 0kZ9Gry1ZNtgUwEC
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!ODi9Z7HM0djgpNVE.0kZ9Gry1ZNtgUwEC'
+  - type: text
+    weight: 1
+    range:
+      - 25
+      - 25
+    drawn: false
+    description: >-
+      [DAY] A stonemason is repairing a wall and keeps stopping to examine the
+      original stonework with an expression of growing discomfort.
+    _id: u1bZGWr95vPvFkSx
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!ODi9Z7HM0djgpNVE.u1bZGWr95vPvFkSx'
+  - type: text
+    weight: 1
+    range:
+      - 26
+      - 26
+    drawn: false
+    description: >-
+      [DAY] A locksmith has set up an outdoor display of locks in a row. She
+      invites passersby to try picking them. Every lock has been picked. She is
+      not sure by whom.
+    _id: 0j9y85PNqwPc4dKe
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!ODi9Z7HM0djgpNVE.0j9y85PNqwPc4dKe'
+  - type: text
+    weight: 1
+    range:
+      - 27
+      - 27
+    drawn: false
+    description: >-
+      [DAY] A child runs up to the party and hands one of them a sealed note,
+      says 'you'll know when,' and runs away before questions can be asked.
+    _id: 0mz8xwtheZHv7PIs
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!ODi9Z7HM0djgpNVE.0mz8xwtheZHv7PIs'
+  - type: text
+    weight: 1
+    range:
+      - 28
+      - 28
+    drawn: false
+    description: >-
+      [DAY] A very large, very calm dog is sitting in the entrance of a
+      goldsmith's shop. The goldsmith appears to be negotiating with the dog for
+      permission to enter.
+    _id: 0yAplLe8Kj238xcy
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!ODi9Z7HM0djgpNVE.0yAplLe8Kj238xcy'
+  - type: text
+    weight: 1
+    range:
+      - 29
+      - 29
+    drawn: false
+    description: >-
+      [DAY] A street cook is offering free samples from a pot of something that
+      smells extraordinary. Everyone who tries it looks immediately emotional.
+    _id: f7WLkATWfYB1zPEh
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!ODi9Z7HM0djgpNVE.f7WLkATWfYB1zPEh'
+  - type: text
+    weight: 1
+    range:
+      - 30
+      - 30
+    drawn: false
+    description: >-
+      [DAY] A woman is walking through the market distributing small folded
+      notes to strangers. When opened, each note contains a single word.
+      Nobody's word is the same.
+    _id: YryNjDQvqrXIg45K
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!ODi9Z7HM0djgpNVE.YryNjDQvqrXIg45K'
+  - type: text
+    weight: 1
+    range:
+      - 31
+      - 31
+    drawn: false
+    description: >-
+      [DAY] A cartographer is crying quietly at a public bench surrounded by
+      maps, all of which depict the same street — including this street — laid
+      out completely differently.
+    _id: ISdOUWPIa5EVu9cw
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!ODi9Z7HM0djgpNVE.ISdOUWPIa5EVu9cw'
+  - type: text
+    weight: 1
+    range:
+      - 32
+      - 32
+    drawn: false
+    description: >-
+      [DAY] A public announcement has been scratched off a noticeboard and
+      replaced with a hand-lettered apology in identical official script.
+    _id: bmuIzauTsTEYvM1P
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!ODi9Z7HM0djgpNVE.bmuIzauTsTEYvM1P'
+  - type: text
+    weight: 1
+    range:
+      - 33
+      - 33
+    drawn: false
+    description: >-
+      [DAY] A man has set up a small table and is offering to sell 'the last
+      conversation I overheard' for one copper each. He has a substantial
+      clientele.
+    _id: iu2EGsiEDY78cjyf
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!ODi9Z7HM0djgpNVE.iu2EGsiEDY78cjyf'
+  - type: text
+    weight: 1
+    range:
+      - 34
+      - 34
+    drawn: false
+    description: >-
+      [DAY] A traveling merchant is selling a collection of keys, all different
+      sizes, from a case mounted on a cart. He swears each one fits something
+      real. He doesn't know what.
+    _id: LouHrkcRD5aOeS0u
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!ODi9Z7HM0djgpNVE.LouHrkcRD5aOeS0u'
+  - type: text
+    weight: 1
+    range:
+      - 35
+      - 35
+    drawn: false
+    description: >-
+      [DAY] A road crew has begun digging up a section of road and found, a
+      hand's depth down, an identical road in perfect condition beneath it.
+    _id: C0xCfJiHokv0oUfW
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!ODi9Z7HM0djgpNVE.C0xCfJiHokv0oUfW'
+  - type: text
+    weight: 1
+    range:
+      - 36
+      - 36
+    drawn: false
+    description: >-
+      [DAY] A woman in a tower window is flying a very long ribbon from the
+      window. Its colors change with a pattern no one below has decoded yet.
+    _id: BFkdCOPr5vNEVq3I
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!ODi9Z7HM0djgpNVE.BFkdCOPr5vNEVq3I'
+  - type: text
+    weight: 1
+    range:
+      - 37
+      - 37
+    drawn: false
+    description: >-
+      [DAY] A herbalist is giving away bundles of dried plants from a basket,
+      insisting they were paid for already. By whom, she cannot say.
+    _id: tTjpx3ez3IpuhuaR
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!ODi9Z7HM0djgpNVE.tTjpx3ez3IpuhuaR'
+  - type: text
+    weight: 1
+    range:
+      - 38
+      - 38
+    drawn: false
+    description: >-
+      [DAY] A very serious small child is following a city guard, exactly three
+      steps behind him, copying every gesture precisely.
+    _id: bMhAqSoxEsM28G54
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!ODi9Z7HM0djgpNVE.bMhAqSoxEsM28G54'
+  - type: text
+    weight: 1
+    range:
+      - 39
+      - 39
+    drawn: false
+    description: >-
+      [DAY] Two inns across the street from each other have put out signs
+      offering identical meal deals. Both innkeepers are at their doorsteps,
+      watching the other.
+    _id: 8CRTPwakwUlX1pOH
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!ODi9Z7HM0djgpNVE.8CRTPwakwUlX1pOH'
+  - type: text
+    weight: 1
+    range:
+      - 40
+      - 40
+    drawn: false
+    description: >-
+      [DAY] A man is selling advertising space on his coat. Both sleeves, the
+      back, and the collar are already sold. The advertisements are for products
+      nobody recognizes.
+    _id: 9qy0eFv4s3HbCXzd
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!ODi9Z7HM0djgpNVE.9qy0eFv4s3HbCXzd'
+  - type: text
+    weight: 1
+    range:
+      - 41
+      - 41
+    drawn: false
+    description: >-
+      [DAY] A woman with a cart full of mirrors is rearranging them to reflect
+      sunlight onto a single spot on an upper wall, with great patience and
+      apparent purpose.
+    _id: v6eJusuoenZoGqZS
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!ODi9Z7HM0djgpNVE.v6eJusuoenZoGqZS'
+  - type: text
+    weight: 1
+    range:
+      - 42
+      - 42
+    drawn: false
+    description: >-
+      [DAY] An auctioneer is selling 'promises' by the lot — written pledges
+      from notable citizens, apparently real. The bidding has become intense.
+    _id: 85R2ZxsEu1Rjsjt4
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!ODi9Z7HM0djgpNVE.85R2ZxsEu1Rjsjt4'
+  - type: text
+    weight: 1
+    range:
+      - 43
+      - 43
+    drawn: false
+    description: >-
+      [DAY] A courier has been standing with an undelivered letter for twenty
+      minutes because the address on it describes this exact spot — but it
+      appears to be addressed to the ground.
+    _id: kRhH6rhwNwTmkCGI
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!ODi9Z7HM0djgpNVE.kRhH6rhwNwTmkCGI'
+  - type: text
+    weight: 1
+    range:
+      - 44
+      - 44
+    drawn: false
+    description: >-
+      [DAY] A pair of dueling bards have been playing competing songs at the
+      same corner since dawn. A crowd grades each verse. The score is tied.
+    _id: lUsghMGw0nJ9wzze
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!ODi9Z7HM0djgpNVE.lUsghMGw0nJ9wzze'
+  - type: text
+    weight: 1
+    range:
+      - 45
+      - 45
+    drawn: false
+    description: >-
+      [DAY] A clocks-smith's shop has three clocks visible in the window, all
+      showing different times, all moving at the same pace.
+    _id: 4fuRdIXoUWC18z2w
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!ODi9Z7HM0djgpNVE.4fuRdIXoUWC18z2w'
+  - type: text
+    weight: 1
+    range:
+      - 46
+      - 46
+    drawn: false
+    description: >-
+      [DAY] A market stall is selling a very convincing fake of every other item
+      available in the market that day. The fakes are better quality.
+    _id: 4CEefkEzdHyWacYP
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!ODi9Z7HM0djgpNVE.4CEefkEzdHyWacYP'
+  - type: text
+    weight: 1
+    range:
+      - 47
+      - 47
+    drawn: false
+    description: >-
+      [DAY] A very organized beggar has a numbered queue of people waiting to
+      give him alms. He is reviewing each donor briefly before accepting or
+      declining.
+    _id: oH8iD1jUMii7jbHl
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!ODi9Z7HM0djgpNVE.oH8iD1jUMii7jbHl'
+  - type: text
+    weight: 1
+    range:
+      - 48
+      - 48
+    drawn: false
+    description: >-
+      [DAY] A man walking ahead of the party drops something small, doesn't
+      stop, then drops something else ten steps later, and again, at regular
+      intervals.
+    _id: 350z4wGuJxiZrBUK
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!ODi9Z7HM0djgpNVE.350z4wGuJxiZrBUK'
+  - type: text
+    weight: 1
+    range:
+      - 49
+      - 49
+    drawn: false
+    description: >-
+      [DAY] An entire row of shopfronts has been freshly painted the same shade
+      of deep red overnight. The shop owners are gathering outside, none of them
+      having commissioned this.
+    _id: PROylnFKfBl0wIQY
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!ODi9Z7HM0djgpNVE.PROylnFKfBl0wIQY'
+  - type: text
+    weight: 1
+    range:
+      - 50
+      - 50
+    drawn: false
+    description: >-
+      [DAY] A city crier rings his bell, opens his mouth to deliver an
+      announcement, and then closes it. He does this three times. Then he
+      leaves.
+    _id: PBOsTNmgUl57rHUQ
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!ODi9Z7HM0djgpNVE.PBOsTNmgUl57rHUQ'
+  - type: text
+    weight: 1
+    range:
+      - 51
+      - 51
+    drawn: false
+    description: >-
+      [NIGHT] A paper lantern drifts through the air at head height with no
+      string or visible support, takes a precise corner, and disappears.
+    _id: GLJyDmJ9yITar6BO
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!ODi9Z7HM0djgpNVE.GLJyDmJ9yITar6BO'
+  - type: text
+    weight: 1
+    range:
+      - 52
+      - 52
+    drawn: false
+    description: >-
+      [NIGHT] The cobblestones in a stretch of alley are noticeably warm
+      underfoot despite the cold night air.
+    _id: UmOYI5RMglnbrz2a
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!ODi9Z7HM0djgpNVE.UmOYI5RMglnbrz2a'
+  - type: text
+    weight: 1
+    range:
+      - 53
+      - 53
+    drawn: false
+    description: >-
+      [NIGHT] Forty oil candles have been arranged in a perfect geometric
+      pattern on the road. They are freshly lit. No one is present.
+    _id: 1yzNQtV7G0BuJjNR
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!ODi9Z7HM0djgpNVE.1yzNQtV7G0BuJjNR'
+  - type: text
+    weight: 1
+    range:
+      - 54
+      - 54
+    drawn: false
+    description: >-
+      [NIGHT] An expensive oil painting leans against a wall with a note that
+      reads: 'Not for sale. Not for taking. Please don't look at it directly.'
+    _id: g3urtmuoT6eXjFoC
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!ODi9Z7HM0djgpNVE.g3urtmuoT6eXjFoC'
+  - type: text
+    weight: 1
+    range:
+      - 55
+      - 55
+    drawn: false
+    description: >-
+      [NIGHT] A horse in full tack stands alone at the center of a road
+      junction, watching the party leave. It does not follow. It does not move
+      as long as the party is visible.
+    _id: a57EatG0SHdVhX2e
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!ODi9Z7HM0djgpNVE.a57EatG0SHdVhX2e'
+  - type: text
+    weight: 1
+    range:
+      - 56
+      - 56
+    drawn: false
+    description: >-
+      [NIGHT] A library window is lit and a figure inside is actively reading.
+      The library has been shuttered for months. The city has no record of it
+      reopening.
+    _id: HbzBX8zMUSF9bhch
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!ODi9Z7HM0djgpNVE.HbzBX8zMUSF9bhch'
+  - type: text
+    weight: 1
+    range:
+      - 57
+      - 57
+    drawn: false
+    description: >-
+      [NIGHT] A woman at an upper window is writing something in very large
+      letters on the inside of the glass, facing outward. She writes for ten
+      minutes, regards it, and wipes it clean.
+    _id: w3OG897hvCpj9SUn
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!ODi9Z7HM0djgpNVE.w3OG897hvCpj9SUn'
+  - type: text
+    weight: 1
+    range:
+      - 58
+      - 58
+    drawn: false
+    description: >-
+      [NIGHT] A shop's door stands open. The interior is fully lit, neatly
+      stocked, and empty. The day's receipts are on the counter. The safe is
+      open.
+    _id: dHGC4NkrEyklmuFu
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!ODi9Z7HM0djgpNVE.dHGC4NkrEyklmuFu'
+  - type: text
+    weight: 1
+    range:
+      - 59
+      - 59
+    drawn: false
+    description: >-
+      [NIGHT] A line of footprints in fresh mud leads to the center of the
+      street and simply ends — not leading anywhere else, not obscured, simply
+      ending.
+    _id: 0CIEMl0xkVQiKq5U
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!ODi9Z7HM0djgpNVE.0CIEMl0xkVQiKq5U'
+  - type: text
+    weight: 1
+    range:
+      - 60
+      - 60
+    drawn: false
+    description: >-
+      [NIGHT] An old counting song is being sung, very quietly, from somewhere
+      beneath a sealed well. It stops precisely when anyone leans to listen.
+    _id: oi1atKfYy4VaC8dj
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!ODi9Z7HM0djgpNVE.oi1atKfYy4VaC8dj'
+  - type: text
+    weight: 1
+    range:
+      - 61
+      - 61
+    drawn: false
+    description: >-
+      [NIGHT] A clock tower strikes the hour three times, then pauses, then
+      strikes it again. The hour is wrong on both counts.
+    _id: lzi1a1aR0HOQ2X9X
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!ODi9Z7HM0djgpNVE.lzi1a1aR0HOQ2X9X'
+  - type: text
+    weight: 1
+    range:
+      - 62
+      - 62
+    drawn: false
+    description: >-
+      [NIGHT] Every cat visible from the party's position is facing the same
+      direction. None of them are looking at the same thing.
+    _id: nq0wSvN7HKJZwYtG
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!ODi9Z7HM0djgpNVE.nq0wSvN7HKJZwYtG'
+  - type: text
+    weight: 1
+    range:
+      - 63
+      - 63
+    drawn: false
+    description: >-
+      [NIGHT] A bridge is missing. The party's map and memory both say there is
+      a bridge here. The river is present. The bridge is not.
+    _id: PHYrCLnJcE7r2rwH
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!ODi9Z7HM0djgpNVE.PHYrCLnJcE7r2rwH'
+  - type: text
+    weight: 1
+    range:
+      - 64
+      - 64
+    drawn: false
+    description: >-
+      [NIGHT] A lit torch is standing upright in the middle of a road with no
+      bracket or holder. It is not in the ground. It is simply standing.
+    _id: q37w2waiXoT3sSGT
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!ODi9Z7HM0djgpNVE.q37w2waiXoT3sSGT'
+  - type: text
+    weight: 1
+    range:
+      - 65
+      - 65
+    drawn: false
+    description: >-
+      [NIGHT] A sealed letter is nailed to a city gate post, addressed 'To the
+      next person who reads this.' It contains precise instructions in a neat,
+      calm hand.
+    _id: Sx8915XlgAl0wCcG
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!ODi9Z7HM0djgpNVE.Sx8915XlgAl0wCcG'
+  - type: text
+    weight: 1
+    range:
+      - 66
+      - 66
+    drawn: false
+    description: >-
+      [NIGHT] The upper floors of two buildings are connected by a rope. The
+      rope is taut. A weight hangs at the center.
+    _id: xY01MhudQT1AuHdX
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!ODi9Z7HM0djgpNVE.xY01MhudQT1AuHdX'
+  - type: text
+    weight: 1
+    range:
+      - 67
+      - 67
+    drawn: false
+    description: >-
+      [NIGHT] Someone is broadcasting a conversation from a rooftop — speaking
+      both parts of a two-person exchange, switching voices with precision, at
+      full volume.
+    _id: JBpfKSCC5nOrQgzv
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!ODi9Z7HM0djgpNVE.JBpfKSCC5nOrQgzv'
+  - type: text
+    weight: 1
+    range:
+      - 68
+      - 68
+    drawn: false
+    description: >-
+      [NIGHT] A line of damp footprints crosses the road from one wall to
+      another with no doors on either end. The footprints are going both
+      directions.
+    _id: BzZ76P2n5hSXBni3
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!ODi9Z7HM0djgpNVE.BzZ76P2n5hSXBni3'
+  - type: text
+    weight: 1
+    range:
+      - 69
+      - 69
+    drawn: false
+    description: >-
+      [NIGHT] Every window on a specific building is covered with paper from the
+      inside. The paper has text on it. The text is too small to read from the
+      street.
+    _id: Ol4dlVuHiTxv6CAm
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!ODi9Z7HM0djgpNVE.Ol4dlVuHiTxv6CAm'
+  - type: text
+    weight: 1
+    range:
+      - 70
+      - 70
+    drawn: false
+    description: >-
+      [NIGHT] A very large mirror has been propped against a wall, reflecting a
+      section of street that cannot physically be seen from that angle.
+    _id: aQnH8S2nGIH7yT5q
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!ODi9Z7HM0djgpNVE.aQnH8S2nGIH7yT5q'
+  - type: text
+    weight: 1
+    range:
+      - 71
+      - 71
+    drawn: false
+    description: >-
+      [NIGHT] A small group of people are standing perfectly still in the
+      street, eyes open, at three separate locations. None of them are asleep.
+      None respond to anything.
+    _id: BPgaMw8fD5efv1uY
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!ODi9Z7HM0djgpNVE.BPgaMw8fD5efv1uY'
+  - type: text
+    weight: 1
+    range:
+      - 72
+      - 72
+    drawn: false
+    description: >-
+      [NIGHT] A building has light coming from the gap under its door but
+      casting no shadow under the door frame. The light is moving.
+    _id: n1giUN5MfeaJC02b
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!ODi9Z7HM0djgpNVE.n1giUN5MfeaJC02b'
+  - type: text
+    weight: 1
+    range:
+      - 73
+      - 73
+    drawn: false
+    description: >-
+      [NIGHT] A chalk diagram covers a significant stretch of road — clean
+      lines, precise geometry, entirely unweathered. It was not here at dusk.
+    _id: iEKGiZsE1UWdLY4t
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!ODi9Z7HM0djgpNVE.iEKGiZsE1UWdLY4t'
+  - type: text
+    weight: 1
+    range:
+      - 74
+      - 74
+    drawn: false
+    description: >-
+      [NIGHT] A coin is spinning on a flat stone near a fountain. It has been
+      spinning for some time based on the worn groove beneath it.
+    _id: d1EpkzSkmqysmhUY
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!ODi9Z7HM0djgpNVE.d1EpkzSkmqysmhUY'
+  - type: text
+    weight: 1
+    range:
+      - 75
+      - 75
+    drawn: false
+    description: >-
+      [NIGHT] A small bell rings twice from inside a locked storage building on
+      a quiet side street. Thirty seconds later, it rings once. Then nothing.
+    _id: W5cjQDY2eDWVhRs7
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!ODi9Z7HM0djgpNVE.W5cjQDY2eDWVhRs7'
+  - type: text
+    weight: 1
+    range:
+      - 76
+      - 76
+    drawn: false
+    description: >-
+      [NIGHT] An open book sits on a bench in a public square. The pages are
+      turning steadily in rhythm, one at a time, though the air is still.
+    _id: ffGmyrHvZABeLO5Y
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!ODi9Z7HM0djgpNVE.ffGmyrHvZABeLO5Y'
+  - type: text
+    weight: 1
+    range:
+      - 77
+      - 77
+    drawn: false
+    description: >-
+      [NIGHT] A barber's pole is spinning slowly with no mechanism visible. The
+      barber's shop has been closed all day.
+    _id: ZJYdXbTCaaE8FRa6
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!ODi9Z7HM0djgpNVE.ZJYdXbTCaaE8FRa6'
+  - type: text
+    weight: 1
+    range:
+      - 78
+      - 78
+    drawn: false
+    description: >-
+      [NIGHT] The shadow of a chimney falls across a wall at an angle that does
+      not match the moon's current position.
+    _id: HeoqeXV8o94elea5
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!ODi9Z7HM0djgpNVE.HeoqeXV8o94elea5'
+  - type: text
+    weight: 1
+    range:
+      - 79
+      - 79
+    drawn: false
+    description: >-
+      [NIGHT] A ladder is propped against a wall leading to a missing window —
+      the wall is solid, the window frame is there, but there is no glass and no
+      opening behind it.
+    _id: pVya0sWohwuUbeHT
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!ODi9Z7HM0djgpNVE.pVya0sWohwuUbeHT'
+  - type: text
+    weight: 1
+    range:
+      - 80
+      - 80
+    drawn: false
+    description: >-
+      [NIGHT] Someone has removed all the numbers from the buildings on one side
+      of a street and rearranged them on the buildings on the other side. All of
+      them.
+    _id: KFJc8dMmIEtX0QEy
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!ODi9Z7HM0djgpNVE.KFJc8dMmIEtX0QEy'
+  - type: text
+    weight: 1
+    range:
+      - 81
+      - 81
+    drawn: false
+    description: >-
+      [NIGHT] A fire has been set in a fireplace that is outdoors — a full
+      hearth, fire irons, mantelpiece — arranged in the open air on the
+      pavement. Burning normally.
+    _id: ZXpkoqK4IPzqRch3
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!ODi9Z7HM0djgpNVE.ZXpkoqK4IPzqRch3'
+  - type: text
+    weight: 1
+    range:
+      - 82
+      - 82
+    drawn: false
+    description: >-
+      [NIGHT] A street vendor's cart is fully set up, goods displayed, scale out
+      — with no vendor. A box for coin sits open. It already contains coppers.
+    _id: Njji10qBl99d5ZRo
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!ODi9Z7HM0djgpNVE.Njji10qBl99d5ZRo'
+  - type: text
+    weight: 1
+    range:
+      - 83
+      - 83
+    drawn: false
+    description: >-
+      [NIGHT] A door that was locked yesterday has been replaced with an
+      identical door — same colour, same rusted lock, same scrape on the base —
+      but it is now on the opposite hinge.
+    _id: EX3frknEmCtDbA4g
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!ODi9Z7HM0djgpNVE.EX3frknEmCtDbA4g'
+  - type: text
+    weight: 1
+    range:
+      - 84
+      - 84
+    drawn: false
+    description: >-
+      [NIGHT] A large flock of birds is roosting impossibly closely together on
+      a narrow ledge, packed beak to tail, motionless. There is no sound from
+      them at all.
+    _id: 6Ze6DoeajPl4kFPq
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!ODi9Z7HM0djgpNVE.6Ze6DoeajPl4kFPq'
+  - type: text
+    weight: 1
+    range:
+      - 85
+      - 85
+    drawn: false
+    description: >-
+      [NIGHT] An unlit alley between two buildings is lit at the far end. The
+      light doesn't appear to come from anything. The alley stops there.
+    _id: bajywQ0TW1NiUKE1
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!ODi9Z7HM0djgpNVE.bajywQ0TW1NiUKE1'
+  - type: text
+    weight: 1
+    range:
+      - 86
+      - 86
+    drawn: false
+    description: >-
+      [NIGHT] A low, regular vibration can be felt through the soles of the feet
+      at regular intervals, like a very slow, very heavy heartbeat below the
+      street.
+    _id: 3yHjeXg7acw7OvH5
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!ODi9Z7HM0djgpNVE.3yHjeXg7acw7OvH5'
+  - type: text
+    weight: 1
+    range:
+      - 87
+      - 87
+    drawn: false
+    description: >-
+      [NIGHT] All the water in a fountain is flowing upward — rising without
+      spray or agitation — and collecting in nothing visible above.
+    _id: V20eGXj9kIJuVrpj
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!ODi9Z7HM0djgpNVE.V20eGXj9kIJuVrpj'
+  - type: text
+    weight: 1
+    range:
+      - 88
+      - 88
+    drawn: false
+    description: >-
+      [NIGHT] A signpost at a junction has had all its placards removed and
+      replaced with a single one reading 'Elsewhere.'
+    _id: TLrjuA2HYrPcdd2R
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!ODi9Z7HM0djgpNVE.TLrjuA2HYrPcdd2R'
+  - type: text
+    weight: 1
+    range:
+      - 89
+      - 89
+    drawn: false
+    description: >-
+      [NIGHT] A cloaked woman passes close to the party, nods knowingly at one
+      specific member, and continues without stopping.
+    _id: PqVmfjmgiLSctybj
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!ODi9Z7HM0djgpNVE.PqVmfjmgiLSctybj'
+  - type: text
+    weight: 1
+    range:
+      - 90
+      - 90
+    drawn: false
+    description: >-
+      [NIGHT] A room-sized chalk rectangle has been drawn on the road with a
+      table and two chairs chalked inside it. The table has a chalked cup on it.
+    _id: pHLepZRWmlgqSV6f
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!ODi9Z7HM0djgpNVE.pHLepZRWmlgqSV6f'
+  - type: text
+    weight: 1
+    range:
+      - 91
+      - 91
+    drawn: false
+    description: >-
+      [NIGHT] A very faint outline of a building — like a chalk sketch — is
+      visible on a cleared lot that has been empty for years. It is to scale.
+    _id: Imdia7WN0LiXjORA
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!ODi9Z7HM0djgpNVE.Imdia7WN0LiXjORA'
+  - type: text
+    weight: 1
+    range:
+      - 92
+      - 92
+    drawn: false
+    description: >-
+      [NIGHT] Every gate in a long street has been swung open and pinned. Every
+      single one. Without apparent purpose.
+    _id: dPooldDGlhPNKxXY
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!ODi9Z7HM0djgpNVE.dPooldDGlhPNKxXY'
+  - type: text
+    weight: 1
+    range:
+      - 93
+      - 93
+    drawn: false
+    description: >-
+      [NIGHT] The public weighing scales in the market square are tipped fully
+      to one side with nothing on either pan.
+    _id: klWoS4oQgp9tR5VM
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!ODi9Z7HM0djgpNVE.klWoS4oQgp9tR5VM'
+  - type: text
+    weight: 1
+    range:
+      - 94
+      - 94
+    drawn: false
+    description: >-
+      [NIGHT] A long piece of rope has been laid out across a road, coiled at
+      the center, with the two ends pointing toward opposite buildings. It is
+      brand new.
+    _id: UAQPuAk4gIYrvYFy
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!ODi9Z7HM0djgpNVE.UAQPuAk4gIYrvYFy'
+  - type: text
+    weight: 1
+    range:
+      - 95
+      - 95
+    drawn: false
+    description: '[NIGHT] A second moon is reflected in the canal that isn''t in the sky.'
+    _id: 7FO210fRbZH9H8LM
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!ODi9Z7HM0djgpNVE.7FO210fRbZH9H8LM'
+  - type: text
+    weight: 1
+    range:
+      - 96
+      - 96
+    drawn: false
+    description: >-
+      [NIGHT] A window shutter, long rusted shut, creaks open as the party
+      passes, holds for three seconds, and pulls slowly closed.
+    _id: jHemcEbMgkgNfCki
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!ODi9Z7HM0djgpNVE.jHemcEbMgkgNfCki'
+  - type: text
+    weight: 1
+    range:
+      - 97
+      - 97
+    drawn: false
+    description: >-
+      [NIGHT] Someone has installed a working hourglass into a crack in a city
+      wall. It still has sand in it. Both bulbs have sand in them.
+    _id: ry91WnJCTIPlQAwq
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!ODi9Z7HM0djgpNVE.ry91WnJCTIPlQAwq'
+  - type: text
+    weight: 1
+    range:
+      - 98
+      - 98
+    drawn: false
+    description: >-
+      [NIGHT] A message has been written in the condensation on every
+      glass-paned window down an entire street. The same word. Different
+      handwriting each time.
+    _id: znNpjm9gv2BgtXtd
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!ODi9Z7HM0djgpNVE.znNpjm9gv2BgtXtd'
+  - type: text
+    weight: 1
+    range:
+      - 99
+      - 99
+    drawn: false
+    description: >-
+      [NIGHT] A section of the road ahead appears to be the wrong colour — not
+      markedly different, just subtly off, as if a slightly different stone was
+      used. It does not end.
+    _id: sLdJtBnZ376x4I5Q
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!ODi9Z7HM0djgpNVE.sLdJtBnZ376x4I5Q'
+  - type: text
+    weight: 1
+    range:
+      - 100
+      - 100
+    drawn: false
+    description: '[NIGHT] The party''s footsteps echo from ahead of them, not behind.'
+    _id: GFN5dDIzE8Kj4Z1P
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!ODi9Z7HM0djgpNVE.GFN5dDIzE8Kj4Z1P'
+description: >-
+  100 fully original city encounters: 1–50 day, 51–100 night. Built from
+  scratch.
+replacement: true
+displayRoll: true
+img: icons/svg/d20-grey.svg
+folder: null
+ownership:
+  default: 0
+  HP3Vba5udEHYm4dW: 3
+flags: {}
+_stats:
+  compendiumSource: null
+  duplicateSource: null
+  exportSource: null
+  coreVersion: '13.348'
+  systemId: shadowdark
+  systemVersion: 3.6.1
+  createdTime: 1772760502141
+  modifiedTime: 1772760502256
+  lastModifiedBy: HP3Vba5udEHYm4dW
+_id: ODi9Z7HM0djgpNVE
+sort: 200000
+_key: '!tables!ODi9Z7HM0djgpNVE'

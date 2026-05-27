@@ -1,0 +1,20 @@
+type: Item
+folder: null
+name: Spells
+color: '#4374a3'
+sorting: a
+_id: vmqOYZjyo8VunyyP
+description: ''
+sort: 0
+flags: {}
+_stats:
+  compendiumSource: null
+  duplicateSource: null
+  exportSource: null
+  coreVersion: '13.348'
+  systemId: shadowdark
+  systemVersion: 3.6.1
+  createdTime: 1766719094323
+  modifiedTime: 1766719187340
+  lastModifiedBy: lDQovrTY32fJwPBR
+_key: '!folders!vmqOYZjyo8VunyyP'

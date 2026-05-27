@@ -26,78 +26,79 @@ export function initTemplateEffects() {
 
     // Hook for token movement detection
     Hooks.on("preUpdateToken", (tokenDoc, changes, options, userId) => {
-        // Store previous position before update
-        if (changes.x !== undefined || changes.y !== undefined) {
-            // ALWAYS calculate from doc data to ensure we get the pre-update state
-            // Do NOT use tokenDoc.object.center as it might be previewing the move
+        // Store previous position + level before any update that could affect template containment
+        if (changes.x !== undefined || changes.y !== undefined ||
+            changes.elevation !== undefined || changes.level !== undefined) {
             const gridSize = tokenDoc.parent?.grid?.size || canvas.grid.size || 100;
             const center = {
                 x: tokenDoc.x + (tokenDoc.width * gridSize) / 2,
                 y: tokenDoc.y + (tokenDoc.height * gridSize) / 2
             };
 
-            console.log(`shadowdark-extras | preUpdateToken: Storing pos for ${tokenDoc.name} (${tokenDoc.id}):`, center);
 
             _previousTokenPositions.set(tokenDoc.id, {
                 x: center.x,
-                y: center.y
+                y: center.y,
+                elevation: tokenDoc.elevation ?? 0,
+                level: tokenDoc.level ?? null
             });
         }
     });
 
     Hooks.on("updateToken", async (tokenDoc, changes, options, userId) => {
-        // Only process position changes
-        if (changes.x === undefined && changes.y === undefined) return;
+        // Process position, elevation, OR level changes — all affect template containment
+        if (changes.x === undefined && changes.y === undefined &&
+            changes.elevation === undefined && changes.level === undefined) return;
 
         // Only run on GM client to prevent duplicate processing
         if (!game.user.isGM) return;
 
-        console.log(`shadowdark-extras | updateToken: Processing movement for ${tokenDoc.name} (${tokenDoc.id})`);
         await processTokenMovement(tokenDoc, changes);
     });
 
-    // Hook for template creation - store initial contained tokens AND trigger onEnter
+    // Hook for template creation - store initial contained tokens AND trigger onCreation
     Hooks.on("createMeasuredTemplate", async (templateDoc, options, userId) => {
         if (!game.user.isGM) return;
 
-        // Small delay to ensure template is fully rendered
-        await new Promise(r => setTimeout(r, 100));
+        // Read config BEFORE any setFlag (v14 silently drops post-create setFlag on templates)
+        const config = templateDoc.flags?.[MODULE_ID]?.templateEffects;
 
+        // Wait for the template placeable and its shape to be ready (retry up to 1s)
+        let attempts = 0;
+        while (!templateDoc.object?.shape && attempts < 10) {
+            await new Promise(r => setTimeout(r, 100));
+            attempts++;
+        }
         const tokens = getTokensInTemplate(templateDoc);
+
         if (tokens.length > 0) {
             await templateDoc.setFlag(MODULE_ID, 'containedTokens', tokens.map(t => t.id));
-            console.log(`shadowdark-extras | Template created with ${tokens.length} tokens inside`);
+        }
 
-            // Trigger onEnter effects if enabled
-            // SKIP if already triggered manually (to avoid duplicate effects)
-            const config = templateDoc.flags?.[MODULE_ID]?.templateEffects;
-            if (config?.enabled && config.triggers?.onEnter && !config.initialEnterTriggered) {
-                console.log(`shadowdark-extras | Triggering onEnter effects for new template ${config.spellName || 'template'}`);
-                for (const token of tokens) {
-                    await applyTemplateEffect(templateDoc, token, 'enter');
-                }
+        // Trigger onCreation for tokens already inside at placement time.
+        // This is separate from onEnter (which only fires for tokens that move in afterwards).
+        if (config?.enabled && config.triggers?.onCreation && tokens.length > 0) {
+            console.log(`shadowdark-extras | Triggering onCreation effects for new template ${config.spellName || 'template'}`);
+            for (const token of tokens) {
+                await applyTemplateEffect(templateDoc, token, 'creation');
             }
         }
     });
 
-    // Hook for template deletion - clean up effects
-    Hooks.on("deleteMeasuredTemplate", async (templateDoc, options, userId) => {
+    // Hook for template/region deletion - clean up effects
+    const _onDeleteTemplate = async (doc) => {
         if (!game.user.isGM) return;
-
-        const config = templateDoc.flags?.[MODULE_ID]?.templateEffects;
+        const config = doc.flags?.[MODULE_ID]?.templateEffects;
         if (!config?.enabled) return;
-
-        // If template has onLeave trigger, remove effects from all contained tokens
         if (config.triggers?.onLeave) {
-            const containedTokenIds = templateDoc.flags?.[MODULE_ID]?.containedTokens || [];
+            const containedTokenIds = doc.flags?.[MODULE_ID]?.containedTokens || [];
             for (const tokenId of containedTokenIds) {
                 const token = canvas.tokens?.get(tokenId);
-                if (token) {
-                    await removeTemplateEffects(templateDoc, token);
-                }
+                if (token) await removeTemplateEffects(doc, token);
             }
         }
-    });
+    };
+    Hooks.on("deleteMeasuredTemplate", (doc) => _onDeleteTemplate(doc));
 
     // Clear per-turn tracking and process turn-based effects when combat advances
     Hooks.on("updateCombat", async (combat, changes, options, userId) => {
@@ -175,121 +176,136 @@ export function initTemplateEffects() {
     });
 
     // Hook for chat message buttons (Roll Save, Apply Damage)
-    Hooks.on("renderChatMessage", (message, html, data) => {
+    Hooks.on("renderChatMessageHTML", (message, html, context) => {
         // Handle Roll Save buttons
-        html.find('.sdx-template-roll-save-btn').on('click', async (event) => {
-            event.preventDefault();
-            const btn = event.currentTarget;
-            const $btn = $(btn);
+        const saveBtns = html.querySelectorAll('.sdx-template-roll-save-btn');
+        saveBtns.forEach(btn => {
+            btn.addEventListener('click', async (event) => {
+                event.preventDefault();
+                if (btn.disabled) return;
 
-            // Disable all save buttons immediately
-            const $allSaveBtns = html.find('.sdx-template-roll-save-btn');
-            if ($btn.prop('disabled')) return;
-            $allSaveBtns.prop('disabled', true);
+                // Disable all save buttons immediately
+                saveBtns.forEach(b => b.disabled = true);
 
-            const tokenId = btn.dataset.tokenId;
-            const actorId = btn.dataset.actorId;
-            const ability = btn.dataset.ability;
-            const dc = parseInt(btn.dataset.dc);
-            const halfOnSuccess = btn.dataset.halfOnSuccess === 'true';
-            const rollMode = btn.dataset.rollMode || 'normal';
+                const tokenId = btn.dataset.tokenId;
+                const actorId = btn.dataset.actorId;
+                const ability = btn.dataset.ability;
+                const dc = parseInt(btn.dataset.dc);
+                const halfOnSuccess = btn.dataset.halfOnSuccess === 'true';
+                const rollMode = btn.dataset.rollMode || 'normal';
 
-            // Get the actor
-            let actor = null;
-            const token = canvas.tokens?.get(tokenId);
-            if (token?.actor) {
-                actor = token.actor;
-            } else if (actorId) {
-                actor = game.actors.get(actorId);
-            }
-
-            if (!actor) {
-                ui.notifications.error("Could not find actor");
-                $allSaveBtns.prop('disabled', false);
-                return;
-            }
-
-            // Roll the save with the selected mode
-            const saveResult = await rollTemplateSave(actor, { ability, dc, rollMode });
-
-            // Update to show result - replace the button container
-            const saveText = saveResult.success ? "✓ SAVED" : "✗ FAILED";
-            const rollModeText = rollMode === 'advantage' ? ' (Adv)' : rollMode === 'disadvantage' ? ' (Dis)' : '';
-            const dieResult = saveResult.dieResults || saveResult.roll?.dice?.[0]?.results?.[0]?.result || "?";
-            const modifier = saveResult.modifier ?? 0;
-            const modifierStr = modifier >= 0 ? `+${modifier}` : `${modifier}`;
-
-            // Replace all buttons with the result
-            $allSaveBtns.parent().replaceWith(`
-                <div style="padding: 4px; text-align: center; background: #1a1a1a; border-radius: 3px;">
-                    <p style="margin: 2px 0; font-size: 12px;">
-                        Roll${rollModeText}: <strong>${dieResult}</strong> ${modifierStr} = <strong>${saveResult.total}</strong> vs DC ${dc}
-                    </p>
-                    <p style="margin: 2px 0; font-size: 13px;"><strong>${saveText}</strong></p>
-                </div>
-            `);
-
-            // If save succeeded with halfOnSuccess, update the damage buttons
-            if (saveResult.success && halfOnSuccess) {
-                const $fullBtn = html.find('.sdx-template-apply-damage-btn');
-                $fullBtn.hide();
-                html.find('.sdx-template-apply-half-damage-btn').css('background', '#3a5a3a');
-            } else if (!saveResult.success) {
-                // Failed save - hide half damage button
-                html.find('.sdx-template-apply-half-damage-btn').hide();
-            }
-        });
-
-        // Handle Apply Damage buttons
-        html.find('.sdx-template-apply-damage-btn, .sdx-template-apply-half-damage-btn').on('click', async (event) => {
-            event.preventDefault();
-            const btn = event.currentTarget;
-            const $btn = $(btn);
-
-            // Disable button immediately  
-            if ($btn.prop('disabled') || $btn.hasClass('sdx-applied')) return;
-            $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Applying...');
-
-            const tokenId = btn.dataset.tokenId;
-            const actorId = btn.dataset.actorId;
-            const damage = parseInt(btn.dataset.damage);
-            const damageType = btn.dataset.damageType;
-            const actorName = btn.dataset.actorName;
-
-            if (isNaN(damage)) {
-                $btn.prop('disabled', false).html('<i class="fas fa-heart-broken"></i> Apply Damage');
-                return;
-            }
-
-            try {
-                // Get the token and apply damage
+                // Get the actor
+                let actor = null;
                 const token = canvas.tokens?.get(tokenId);
-                let actor = token?.actor;
-                if (!actor && actorId) {
+                if (token?.actor) {
+                    actor = token.actor;
+                } else if (actorId) {
                     actor = game.actors.get(actorId);
                 }
 
                 if (!actor) {
-                    ui.notifications.error("Could not find target");
-                    $btn.prop('disabled', false).html('<i class="fas fa-heart-broken"></i> Apply Damage');
+                    ui.notifications.error("Could not find actor");
+                    saveBtns.forEach(b => b.disabled = false);
                     return;
                 }
 
-                const currentHp = actor.system?.attributes?.hp?.value ?? 0;
-                const newHp = Math.max(0, currentHp - damage);
-                await actor.update({ "system.attributes.hp.value": newHp });
+                // Roll the save with the selected mode
+                const saveResult = await rollTemplateSave(actor, { ability, dc, rollMode });
 
-                // Update button to show applied
-                $btn.addClass('sdx-applied').html(`<i class="fas fa-check"></i> Applied ${damage}`);
+                // Update to show result - replace the button container
+                const saveText = saveResult.success ? "✓ SAVED" : "✗ FAILED";
+                const rollModeText = rollMode === 'advantage' ? ' (Adv)' : rollMode === 'disadvantage' ? ' (Dis)' : '';
+                const dieResult = saveResult.dieResults || saveResult.roll?.dice?.[0]?.results?.[0]?.result || "?";
+                const modifier = saveResult.modifier ?? 0;
+                const modifierStr = modifier >= 0 ? `+${modifier}` : `${modifier}`;
 
-                // Hide other damage buttons
-                html.find('.sdx-template-apply-damage-btn, .sdx-template-apply-half-damage-btn').not($btn).hide();
+                // Replace the parent container of the buttons
+                const parent = btn.parentElement;
+                if (parent) {
+                    const resultDiv = document.createElement('div');
+                    resultDiv.style.cssText = "padding: 4px; text-align: center; background: #1a1a1a; border-radius: 3px;";
+                    resultDiv.innerHTML = `
+                        <p style="margin: 2px 0; font-size: 12px;">
+                            Roll${rollModeText}: <strong>${dieResult}</strong> ${modifierStr} = <strong>${saveResult.total}</strong> vs DC ${dc}
+                        </p>
+                        <p style="margin: 2px 0; font-size: 13px;"><strong>${saveText}</strong></p>
+                    `;
+                    parent.replaceWith(resultDiv);
+                }
 
-                ui.notifications.info(`Applied ${damage} ${damageType} damage to ${actorName}`);
-            } catch (err) {
-                console.error("shadowdark-extras | Error applying template damage:", err);
-                $btn.prop('disabled', false).html('<i class="fas fa-heart-broken"></i> Apply Damage');
-            }
+                // If save succeeded with halfOnSuccess, update the damage buttons
+                if (saveResult.success && halfOnSuccess) {
+                    const fullBtn = html.querySelector('.sdx-template-apply-damage-btn');
+                    if (fullBtn) fullBtn.style.display = 'none';
+                    const halfBtn = html.querySelector('.sdx-template-apply-half-damage-btn');
+                    if (halfBtn) halfBtn.style.background = '#3a5a3a';
+                } else if (!saveResult.success) {
+                    // Failed save - hide half damage button
+                    const halfBtn = html.querySelector('.sdx-template-apply-half-damage-btn');
+                    if (halfBtn) halfBtn.style.display = 'none';
+                }
+            });
+        });
+
+        // Handle Apply Damage buttons
+        const damageBtns = html.querySelectorAll('.sdx-template-apply-damage-btn, .sdx-template-apply-half-damage-btn');
+        damageBtns.forEach(btn => {
+            btn.addEventListener('click', async (event) => {
+                event.preventDefault();
+
+                // Disable button immediately  
+                if (btn.disabled || btn.classList.contains('sdx-applied')) return;
+                btn.disabled = true;
+                const originalHtml = btn.innerHTML;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Applying...';
+
+                const tokenId = btn.dataset.tokenId;
+                const actorId = btn.dataset.actorId;
+                const damage = parseInt(btn.dataset.damage);
+                const damageType = btn.dataset.damageType;
+                const actorName = btn.dataset.actorName;
+
+                if (isNaN(damage)) {
+                    btn.disabled = false;
+                    btn.innerHTML = originalHtml;
+                    return;
+                }
+
+                try {
+                    // Get the token and apply damage
+                    const token = canvas.tokens?.get(tokenId);
+                    let actor = token?.actor;
+                    if (!actor && actorId) {
+                        actor = game.actors.get(actorId);
+                    }
+
+                    if (!actor) {
+                        ui.notifications.error("Could not find target");
+                        btn.disabled = false;
+                        btn.innerHTML = originalHtml;
+                        return;
+                    }
+
+                    const currentHp = actor.system?.attributes?.hp?.value ?? 0;
+                    const newHp = Math.max(0, currentHp - damage);
+                    await actor.update({ "system.attributes.hp.value": newHp });
+
+                    // Update button to show applied
+                    btn.classList.add('sdx-applied');
+                    btn.innerHTML = `<i class="fas fa-check"></i> Applied ${damage}`;
+
+                    // Hide other damage buttons
+                    damageBtns.forEach(b => {
+                        if (b !== btn) b.style.display = 'none';
+                    });
+
+                    ui.notifications.info(`Applied ${damage} ${damageType} damage to ${actorName}`);
+                } catch (err) {
+                    console.error("shadowdark-extras | Error applying template damage:", err);
+                    btn.disabled = false;
+                    btn.innerHTML = originalHtml;
+                }
+            });
         });
     });
 
@@ -338,8 +354,6 @@ async function processTokenMovement(tokenDoc, changes) {
     const previousPos = _previousTokenPositions.get(tokenDoc.id);
     _previousTokenPositions.delete(tokenDoc.id);
 
-    console.log(`shadowdark-extras | processTokenMovement: Previous pos found?`, previousPos);
-
     if (!previousPos) return;
 
     const token = tokenDoc.object || canvas.tokens?.get(tokenDoc.id);
@@ -358,17 +372,15 @@ async function processTokenMovement(tokenDoc, changes) {
         y: newY + (tokenDoc.height * gridSize) / 2
     };
 
-    console.log(`shadowdark-extras | processTokenMovement: Coords - Old: ${previousPos.x},${previousPos.y} -> New: ${newCenter.x},${newCenter.y}`);
+    // Resolve level IDs and elevations from stored previous state and incoming changes
+    const prevLevel     = previousPos.level     ?? null;
+    const prevElevation = previousPos.elevation  ?? 0;
+    const newLevel      = changes?.level     !== undefined ? (changes.level     ?? null) : (tokenDoc.level     ?? null);
+    const newElevation  = changes?.elevation !== undefined ? (changes.elevation ??    0) : (tokenDoc.elevation ??    0);
 
-    // Use the stored center point for the old position check
-    const oldTemplates = getTemplatesContainingPoint(previousPos.x, previousPos.y, tokenDoc.parent);
+    const oldTemplates = getTemplatesContainingPoint(previousPos.x, previousPos.y, tokenDoc.parent, prevLevel, prevElevation);
+    const newTemplates = getTemplatesContainingPoint(newCenter.x,   newCenter.y,   tokenDoc.parent, newLevel,  newElevation);
 
-    // Use the calculated new center for the new position check (avoids stale token.center)
-    const newTemplates = getTemplatesContainingPoint(newCenter.x, newCenter.y, tokenDoc.parent);
-
-    console.log(`shadowdark-extras | processTokenMovement: Old templates: ${oldTemplates.length}, New templates: ${newTemplates.length}`);
-    if (oldTemplates.length > 0) console.log('shadowdark-extras | Old IDs:', oldTemplates.map(t => t.id));
-    if (newTemplates.length > 0) console.log('shadowdark-extras | New IDs:', newTemplates.map(t => t.id));
 
     // Find entered templates
     const enteredTemplates = newTemplates.filter(t => !oldTemplates.some(ot => ot.id === t.id));
@@ -376,7 +388,6 @@ async function processTokenMovement(tokenDoc, changes) {
     // Find left templates  
     const leftTemplates = oldTemplates.filter(t => !newTemplates.some(nt => nt.id === t.id));
 
-    console.log(`shadowdark-extras | processTokenMovement: Entered: ${enteredTemplates.length}, Left: ${leftTemplates.length}`);
 
     // Process entered templates
     for (const templateDoc of enteredTemplates) {
@@ -502,8 +513,8 @@ export async function applyTemplateEffect(templateDoc, token, trigger) {
         damageApplied = damageResult.damage;
     }
 
-    // Apply effects if configured
-    if (config.effects?.length > 0 && !savedSuccessfully) {
+    // Apply effects if configured — never on 'leave' (removeTemplateEffects handles that)
+    if (config.effects?.length > 0 && !savedSuccessfully && trigger !== 'leave') {
         await applyTemplateConditions(templateDoc, token, config.effects);
     }
 
@@ -532,6 +543,7 @@ async function createInteractiveTemplateCard(templateDoc, token, trigger, config
     const actor = token.actor;
 
     const triggerText = {
+        creation: "was caught in",
         enter: "entered",
         leave: "left",
         turnStart: "started turn in",
@@ -863,19 +875,12 @@ async function runTemplateItemMacro(templateDoc, token, trigger, config) {
             return;
         }
 
-        // Check if Item Macro module is available and spell has a macro
-        const itemMacro = spellItem.flags?.["itemacro"]?.macro;
-        if (!itemMacro?.command) {
-            console.log(`shadowdark-extras | No item macro configured for ${spellItem.name}`);
-            return;
-        }
+        // Import the native macro executor
+        const { executeItemMacro, hasItemMacro } = await import("./shadowdark-extras.mjs");
+        if (!hasItemMacro(spellItem)) return;
 
         // Get caster token
         const casterToken = config.casterTokenId ? canvas.tokens.get(config.casterTokenId) : null;
-
-        // Build the macro context similar to Item Macro's standard variables
-        const speaker = ChatMessage.getSpeaker({ actor: token.actor });
-        const character = game.user?.character || null;
 
         // Build args object with template-specific data
         const args = {
@@ -884,35 +889,17 @@ async function runTemplateItemMacro(templateDoc, token, trigger, config) {
             config: config,
             casterActor: casterActor,
             casterToken: casterToken,
-            saved: false,  // Could be passed in if we want to track this
-            damageApplied: 0  // Could be passed in if we want to track this
+            saved: false,
+            damageApplied: 0
         };
 
         console.log(`shadowdark-extras | Running item macro for ${spellItem.name} on ${token.name} (trigger: ${trigger})`);
 
-        // Execute the macro
-        // Use similar approach to Item Macro module
-        const macroBody = `(async () => {
-            ${itemMacro.command}
-        })();`;
-
-        // Create a function with the macro variables in scope
-        const fn = new Function(
-            "item", "actor", "token", "speaker", "character", "args",
-            `return ${macroBody}`
-        );
-
-        await fn.call(
-            null,
-            spellItem,        // item - the spell
-            token.actor,      // actor - the target actor
-            token,            // token - the target token
-            speaker,          // speaker
-            character,        // character
-            args              // args - template-specific data
-        );
-
-        console.log(`shadowdark-extras | Item macro completed for ${spellItem.name}`);
+        return executeItemMacro(spellItem, {
+            actor: token.actor,
+            token: token,
+            args: args
+        });
     } catch (err) {
         console.error(`shadowdark-extras | Error running item macro:`, err);
         ui.notifications.error(`Error running item macro: ${err.message}`);
@@ -1228,6 +1215,7 @@ async function createTemplateEffectMessage(templateDoc, token, trigger, result) 
     const spellName = config?.spellName || "Template";
 
     const triggerText = {
+        creation: "was caught in",
         enter: "entered",
         leave: "left",
         turnStart: "started turn in",
@@ -1314,28 +1302,98 @@ async function createTemplateEffectMessage(templateDoc, token, trigger, result) 
 // ============================================
 
 /**
+ * Decide whether a token (identified by its level ID from token.document.level)
+ * is on the same scene level as a template/region document.
+ *
+ * region.levels is an array of Level._id strings (Foundry stores it as a Set
+ * internally but it originates as an array). "defaultLevel0000" is always
+ * present and means "no restriction" — filter it out before checking.
+ *
+ * @param {string|null} tokenLevelId - token.document.level (the Level _id)
+ * @param {Document} templateDoc     - the template or region document
+ */
+function _isSameLevel(tokenLevelId, templateDoc) {
+    try {
+        // ── 1. Region.levels Set (v14, on RegionDocument) ────────────────────
+        const rawLevels = templateDoc.levels;
+        if (rawLevels != null) {
+            const levelsArr = rawLevels instanceof Set ? [...rawLevels]
+                : (Array.isArray(rawLevels) ? rawLevels : []);
+            const specificIds = levelsArr.filter(id => id !== "defaultLevel0000");
+            if (specificIds.length > 0) {
+                if (!tokenLevelId) return false;
+                return specificIds.includes(tokenLevelId);
+            }
+            // Only defaultLevel0000 or empty → fall through
+        }
+
+        // ── 2. casterLevelId in module flags (MeasuredTemplate, v14) ─────────
+        // MeasuredTemplate documents have no .levels field, but they carry
+        // flags[MODULE_ID].casterLevelId written into the creation data.
+        const casterLevelId = templateDoc.flags?.[MODULE_ID]?.casterLevelId ?? null;
+        if (casterLevelId) {
+            if (!tokenLevelId) return false;
+            return tokenLevelId === casterLevelId;
+        }
+    } catch (e) {
+        console.warn("shadowdark-extras | _isSameLevel failed:", e);
+    }
+    return true; // no level info → no restriction
+}
+
+/**
+ * v14 helper: force-compute a placeable template's .shape (lazy in v14).
+ * Returns true if shape is ready after the call.
+ */
+function ensureTemplateShape(template) {
+    if (!template) return false;
+    // Region placeables expose testPoint() but may not have .shape — accept them directly
+    if (typeof template.testPoint === "function") return true;
+    if (template.shape) return true;
+    if (typeof template._refreshShape === "function") {
+        try { template._refreshShape(); } catch (e) {
+            console.warn(`${MODULE_ID} | _refreshShape failed:`, e);
+        }
+    }
+    return !!template.shape;
+}
+
+/**
  * Get all tokens currently inside a template
  * @param {MeasuredTemplateDocument} templateDoc - The template document
  * @returns {Token[]} Array of tokens inside the template
  */
 export function getTokensInTemplate(templateDoc) {
+    // In v14 a MeasuredTemplate auto-creates a Region with the EXACT SAME document ID.
+    // The Region carries the levels field; use it for the level check when available.
+    let levelDoc = templateDoc;
+    if (!(templateDoc.levels instanceof Set) && templateDoc.parent) {
+        const region = templateDoc.parent.regions?.get(templateDoc.id);
+        if (region) levelDoc = region;
+    }
+
     const template = templateDoc.object;
-    if (!template?.shape) return [];
+    if (!ensureTemplateShape(template)) return [];
 
     const tokens = [];
     const scene = templateDoc.parent;
+
+    const useTestPoint = typeof template.testPoint === "function";
+    const anchorX = templateDoc.x ?? template.x;
+    const anchorY = templateDoc.y ?? template.y;
 
     for (const tokenDoc of scene.tokens) {
         const token = tokenDoc.object;
         if (!token) continue;
 
-        // Check if token center is inside template shape
-        const localX = token.center.x - template.x;
-        const localY = token.center.y - template.y;
+        // Skip tokens not on the same level as the template (use Region for level info)
+        if (!_isSameLevel(tokenDoc.level ?? null, levelDoc)) continue;
 
-        if (template.shape.contains(localX, localY)) {
-            tokens.push(token);
-        }
+        const inside = useTestPoint
+            ? template.testPoint(token.center)
+            : template.shape.contains(token.center.x - anchorX, token.center.y - anchorY);
+
+        if (inside) tokens.push(token);
     }
 
     return tokens;
@@ -1349,18 +1407,32 @@ export function getTokensInTemplate(templateDoc) {
 export function getTemplatesContainingToken(token) {
     if (!token || !canvas.scene) return [];
 
+    const tokenLevelId  = token.document?.level     ?? null;
+    const tokenElevation = token.document?.elevation ?? 0;
     const templates = [];
+    // v14: iterate Regions (carry levels + testPoint with elevation support)
+    const collection = canvas.scene.regions
+        ?? canvas.scene.getEmbeddedCollection?.("MeasuredTemplate")
+        ?? canvas.scene.templates;
+    for (const templateDoc of collection) {
+        if (!_isSameLevel(tokenLevelId, templateDoc)) continue;
 
-    for (const templateDoc of canvas.scene.templates) {
-        const template = templateDoc.object;
-        if (!template?.shape) continue;
-
-        const localX = token.center.x - template.x;
-        const localY = token.center.y - template.y;
-
-        if (template.shape.contains(localX, localY)) {
-            templates.push(templateDoc);
+        let inside = false;
+        if (typeof templateDoc.testPoint === "function") {
+            // v14: RegionDocument#testPoint({x, y, elevation})
+            inside = templateDoc.testPoint({ x: token.center.x, y: token.center.y, elevation: tokenElevation });
+        } else {
+            // Pre-v14 fallback
+            const template = templateDoc.object;
+            if (!ensureTemplateShape(template)) continue;
+            const anchorX = templateDoc.x ?? template.x;
+            const anchorY = templateDoc.y ?? template.y;
+            inside = typeof template.testPoint === "function"
+                ? template.testPoint(token.center)
+                : template.shape.contains(token.center.x - anchorX, token.center.y - anchorY);
         }
+
+        if (inside) templates.push(templateDoc);
     }
 
     return templates;
@@ -1374,29 +1446,98 @@ export function getTemplatesContainingToken(token) {
  * @param {Scene} scene - The scene to check
  * @returns {MeasuredTemplateDocument[]} Array of template documents
  */
-function getTemplatesContainingPoint(x, y, scene) {
+function getTemplatesContainingPoint(x, y, scene, tokenLevelId = null, tokenElevation = 0) {
     if (!scene) return [];
 
     const templates = [];
+    const collection = scene.regions
+        ?? scene.getEmbeddedCollection?.("MeasuredTemplate")
+        ?? scene.templates;
 
-    for (const templateDoc of scene.templates) {
-        const template = templateDoc.object;
-        if (!template?.shape) continue;
+    const regionCount = [...collection].length;
+    console.log(`SDX | getTemplatesContainingPoint (${x.toFixed(0)},${y.toFixed(0)}) level=${tokenLevelId} elev=${tokenElevation} — checking ${regionCount} regions`);
 
-        const localX = x - template.x;
-        const localY = y - template.y;
+    const pt = { x, y };
+    for (const templateDoc of collection) {
+        if (!_isSameLevel(tokenLevelId, templateDoc)) continue;
 
-        if (template.shape.contains(localX, localY)) {
-            templates.push(templateDoc);
+        let inside = false;
+        if (typeof templateDoc.testPoint === "function") {
+            // v14: RegionDocument#testPoint({x, y, elevation}) — correct API
+            inside = templateDoc.testPoint({ x, y, elevation: tokenElevation });
+        } else {
+            // Pre-v14 fallback: MeasuredTemplate placeable shape check
+            const obj = templateDoc.object;
+            if (!ensureTemplateShape(obj)) continue;
+            const anchorX = templateDoc.x ?? obj.x;
+            const anchorY = templateDoc.y ?? obj.y;
+            inside = typeof obj.testPoint === "function"
+                ? obj.testPoint(pt)
+                : obj.shape.contains(x - anchorX, y - anchorY);
         }
+        if (inside) templates.push(templateDoc);
     }
 
     return templates;
 }
 
 /**
- * Store template effect configuration on a template
- * Call this when placing a template from a spell with effects configured
+ * Build the templateEffects flag-data object (no I/O — pure).
+ *
+ * Returns the shape that's written to `templateDoc.flags[MODULE_ID].templateEffects`,
+ * OR null when the config is disabled. Used by the v14 path where the flag must
+ * be written at template creation time (Foundry v14 silently drops post-create
+ * setFlag on MeasuredTemplate documents as part of the template→region deprecation).
+ *
+ * @param {Object} config - The effect configuration from the spell
+ * @returns {Object|null}
+ */
+export function buildTemplateEffectsFlag(config) {
+    if (!config?.enabled) return null;
+    return {
+        enabled: true,
+        spellName: config.spellName || "Spell",
+        casterActorId: config.casterActorId,
+        casterTokenId: config.casterTokenId,
+        triggers: {
+            onCreation: config.onCreation || false,
+            onEnter: config.onEnter || false,
+            onTurnStart: config.onTurnStart || false,
+            onTurnEnd: config.onTurnEnd || false,
+            onLeave: config.onLeave || false
+        },
+        damage: {
+            formula: config.damageFormula || "",
+            type: config.damageType || ""
+        },
+        save: {
+            enabled: config.saveEnabled || false,
+            dcFormula: config.saveDCFormula || config.saveDC?.toString() || "10",
+            ability: config.saveAbility || "dex",
+            halfOnSuccess: config.halfOnSuccess || false
+        },
+        casterData: {
+            spellcastingCheck: config.spellcastingCheckTotal || 0,
+            level: config.casterLevel || 1,
+            abilities: config.casterAbilities || {}
+        },
+        effects: config.effects || [],
+        excludeCaster: config.excludeCaster || false,
+        runItemMacro: config.runItemMacro || false,
+        spellId: config.spellId || null,
+        initialEnterTriggered: config.initialEnterTriggered || false,
+        effectsRequirement: config.effectsRequirement || ""
+    };
+}
+
+/**
+ * Store template effect configuration on a template (SD 3.x / pre-v14 path).
+ * Call this when placing a template from a spell with effects configured.
+ *
+ * @deprecated v14 silently drops post-create setFlag on MeasuredTemplate documents.
+ *   Prefer `buildTemplateEffectsFlag(config)` and include the result in templateData.flags
+ *   passed to createEmbeddedDocuments (the v14-safe path).
+ *
  * @param {MeasuredTemplateDocument} templateDoc - The template
  * @param {Object} config - The effect configuration from the spell
  */
@@ -1409,6 +1550,7 @@ export async function setupTemplateEffectFlags(templateDoc, config) {
         casterActorId: config.casterActorId,
         casterTokenId: config.casterTokenId,
         triggers: {
+            onCreation: config.onCreation || false,
             onEnter: config.onEnter || false,
             onTurnStart: config.onTurnStart || false,
             onTurnEnd: config.onTurnEnd || false,

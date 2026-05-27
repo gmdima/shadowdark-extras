@@ -1,0 +1,86 @@
+effects: []
+folder: vmqOYZjyo8VunyyP
+img: icons/magic/movement/portal-vortex-orange.webp
+name: Hold Portal
+system:
+  description: >-
+    <p>You magically hold a portal closed for the duration. A creature must make
+    a successful STR check vs. your spellcasting check to open the
+    portal.</p><p>The knock spell ends this
+    spell.</p><p>@UUID[Compendium.shadowdark.spell-effects.q109XEqMceJBEX7m]{Spell
+    Effect: Hold Portal}</p>
+  source:
+    title: core-rules
+  class:
+    - Compendium.shadowdark.classes.Item.035nuVkU9q2wtMPs
+  duration:
+    type: rounds
+    value: '10'
+  range: near
+  tier: 1
+  lost: false
+  magicItem: false
+  predefinedEffects: ''
+type: Spell
+_stats:
+  compendiumSource: null
+  duplicateSource: null
+  exportSource: null
+  coreVersion: '13.348'
+  systemId: shadowdark
+  systemVersion: 3.6.1
+  createdTime: 1766975005563
+  modifiedTime: 1771295884104
+  lastModifiedBy: HP3Vba5udEHYm4dW
+ownership:
+  default: 0
+  lDQovrTY32fJwPBR: 3
+flags:
+  shadowdark-extras:
+    spellDamage:
+      enabled: false
+      damageType: ''
+      numDice: 0
+      dieType: d4
+      effects: >-
+        [{"uuid":"Compendium.shadowdark.spell-effects.q109XEqMceJBEX7m","duration":{}}]
+      effectsApplyToTarget: false
+      trackDuration: true
+      damageRequirement: ''
+      damageRequirementFailAction: zero
+      formulaType: basic
+      bonus: null
+      scaling: none
+      scalingDice: null
+      formula: undefined
+      tieredFormula: ''
+      criticalEffects: '[]'
+      effectsRequirement: ''
+      effectSelectionMode: all
+      perTurnTrigger: start
+      perTurnDamage: ''
+      reapplyEffects: false
+    summoning:
+      enabled: false
+      profiles: '[]'
+      deleteAtExpiry: false
+    itemGive:
+      enabled: false
+      profiles: '[]'
+    targeting:
+      mode: targeted
+      template:
+        type: circle
+        size: 30
+        fillColor: '#4e9a06'
+        placement: choose
+        deleteMode: none
+        hideOutline: false
+        excludeCaster: false
+        tokenMagic:
+          texture: ''
+          opacity: 0.5
+          preset: NOFX
+_id: f0bGgcgsT2NSYa9g
+sort: 5100000
+_key: '!items!f0bGgcgsT2NSYa9g'

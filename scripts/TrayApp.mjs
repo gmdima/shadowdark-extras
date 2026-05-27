@@ -22,17 +22,518 @@ import { PinListApp } from "./PinListApp.mjs";
 
 import { PlaceableNotesSD } from "./PlaceableNotesSD.mjs";
 
-import { setMapDimension, formatActiveScene, enablePainting, disablePainting, toggleTileSelection, clearTileSelection, setSearchFilter, toggleWaterEffect, toggleWindEffect, toggleFogAnimation, toggleTintEnabled, toggleBwEffect, isTintEnabled, setActiveTileTab, setCustomTileDimension, toggleColoredFolderCollapsed, toggleSymbolFolderCollapsed, undoLastPoi, redoLastPoi, canUndoPoi, canRedoPoi, getPoiScale, enablePreview, disablePreview, getActiveTileTab, adjustPoiScale, rotatePoiLeft, rotatePoiRight, togglePoiMirror, getPoiMirror, setDecorSearchFilter, toggleDecorFolderCollapsed, setDecorMode, setDecorElevation, setDecorSort } from "./HexPainterSD.mjs";
+import { setMapDimension, formatActiveScene, enablePainting, disablePainting, toggleTileSelection, clearTileSelection, setSearchFilter, toggleWaterEffect, toggleWindEffect, toggleFogAnimation, toggleTintEnabled, toggleBwEffect, isTintEnabled, setActiveTileTab, setCustomTileDimension, toggleColoredFolderCollapsed, toggleSymbolFolderCollapsed, undoLastPoi, redoLastPoi, canUndoPoi, canRedoPoi, getPoiScale, enablePreview, disablePreview, getActiveTileTab, adjustPoiScale, rotatePoiLeft, rotatePoiRight, togglePoiMirror, getPoiMirror, setDecorSearchFilter, toggleDecorFolderCollapsed, setDecorMode, setDecorElevation, setDecorSort, reloadDecorAssets, registerDecorAsset, appendCustomNavSegment, setCustomNavPath, reloadCustomTiles } from "./HexPainterSD.mjs";
 import { generateHexMap, clearGeneratedTiles } from "./HexGeneratorSD.mjs";
 import { flattenTiles, unflattenTile, getDungeonFloorLevels, getFlattendDungeonLevels, flattenDungeonLevel } from "./TileFlattenSD.mjs";
 import { setDungeonMode, selectFloorTile, selectWallTile, selectDoorTile, selectIntWallTile, selectIntDoorTile, enableDungeonPainting, disableDungeonPainting, setNoFoundryWalls, setWallShadows, setDungeonBackground } from "./DungeonPainterSD.mjs";
 import { toggleGeneratorPanel, isGeneratorExpanded, generateDungeon, generateRandomSeed, getGeneratorSeed, setGeneratorSeed, getGeneratorSettings, setGeneratorSettings } from "./DungeonGeneratorSD.mjs";
+// Side-effect import: loads the multi-level engine at startup so it can register the standalone
+// mlSliders client setting + the renderTrayApp persistence hook (Levels/Links/Variation/Variety).
+import "./DungeonMultiLevelSD.mjs";
 import { isHexFogEnabled, setHexFogEnabled, getActiveHexFogEffect, setHexFogEffect, getAvailableHexFogEffects, isFogEffectsEnabled } from "./SDXHexFogSD.mjs";
 import { isSoloMode, toggleSoloMode } from "./SoloHexMode.mjs";
 
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
 const MODULE_ID = "shadowdark-extras";
+const DECOR_IMPORT_DESTINATION = "decor";
+const DECOR_IMAGE_EXTENSIONS = [".png", ".jpg", ".jpeg", ".webp", ".gif", ".svg"];
+
+Hooks.on("sdx.decorAssetsImported", () => renderTray());
+
+function isSupportedDecorImage(file) {
+    const lower = String(file?.name || "").toLowerCase();
+    return DECOR_IMAGE_EXTENSIONS.some(ext => lower.endsWith(ext));
+}
+
+function isSupportedDecorPath(path) {
+    const lower = String(path || "").toLowerCase().split("?")[0];
+    return DECOR_IMAGE_EXTENSIONS.some(ext => lower.endsWith(ext));
+}
+
+function normalizeDecorPathPart(part) {
+    return String(part || "")
+        .replace(/\\/g, "/")
+        .replace(/[<>:"|?*\x00-\x1F]/g, "_")
+        .replace(/^\.+$/, "_")
+        .trim();
+}
+
+function splitDecorRelativePath(file) {
+    const raw = file.webkitRelativePath || file.name;
+    const parts = raw.split(/[\\/]+/).map(normalizeDecorPathPart).filter(Boolean);
+    if (parts.length > 1) parts.shift();
+    if (!parts.length) parts.push(normalizeDecorPathPart(file.name) || "decor-image");
+    if (parts.length === 1) parts.unshift("Imported");
+    return parts;
+}
+
+function joinDecorPath(parts) {
+    return parts.filter(Boolean).join("/");
+}
+
+function withDecorNumericSuffix(filename, index) {
+    const dot = filename.lastIndexOf(".");
+    if (dot <= 0) return `${filename}-${index}`;
+    return `${filename.slice(0, dot)}-${index}${filename.slice(dot)}`;
+}
+
+async function ensureDecorDirectory(path) {
+    const FP = foundry.applications.apps.FilePicker.implementation;
+    const parts = String(path || "").split("/").filter(Boolean);
+    let current = "";
+    for (const part of parts) {
+        current = current ? `${current}/${part}` : part;
+        try {
+            await FP.browse("data", current);
+        } catch {
+            await FP.createDirectory("data", current);
+        }
+    }
+}
+
+async function decorFileExists(path) {
+    const FP = foundry.applications.apps.FilePicker.implementation;
+    const parts = String(path || "").split("/").filter(Boolean);
+    const filename = parts.pop();
+    const folder = parts.join("/") || DECOR_IMPORT_DESTINATION;
+    try {
+        const listing = await FP.browse("data", folder);
+        return (listing.files || []).some(file => file === path || file.endsWith(`/${filename}`));
+    } catch {
+        return false;
+    }
+}
+
+async function resolveAvailableDecorUpload(parts) {
+    const fileName = parts.at(-1);
+    const folderParts = parts.slice(0, -1);
+    let candidateName = fileName;
+    let candidatePath = `${DECOR_IMPORT_DESTINATION}/${joinDecorPath([...folderParts, candidateName])}`;
+    let index = 2;
+    while (await decorFileExists(candidatePath)) {
+        candidateName = withDecorNumericSuffix(fileName, index++);
+        candidatePath = `${DECOR_IMPORT_DESTINATION}/${joinDecorPath([...folderParts, candidateName])}`;
+    }
+    return {
+        folder: joinDecorPath([DECOR_IMPORT_DESTINATION, ...folderParts]),
+        filename: candidateName
+    };
+}
+
+class DecorImportApp extends ApplicationV2 {
+    static DEFAULT_OPTIONS = {
+        id: "sdx-decor-import",
+        classes: ["sdx-decor-import"],
+        tag: "div",
+        window: {
+            frame: true,
+            positioned: true,
+            title: "Add Decor Asset",
+            resizable: true
+        },
+        position: {
+            width: 760,
+            height: 620
+        }
+    };
+
+    constructor(options = {}) {
+        super(options);
+        this.files = [];
+        this.selected = new Set();
+        this.objectUrls = new Map();
+        this.importing = false;
+        this.sourceMode = "foundry";
+        this.foundryPath = "";
+        this.webUrl = "";
+    }
+
+    async _renderHTML() {
+        const container = document.createElement("div");
+        container.className = "sdx-decor-import-root";
+        return container;
+    }
+
+    _replaceHTML(result, content) {
+        content.replaceChildren(result);
+    }
+
+    async _onRender() {
+        this._renderContent();
+    }
+
+    async _onClose() {
+        for (const url of this.objectUrls.values()) URL.revokeObjectURL(url);
+        this.objectUrls.clear();
+    }
+
+    _renderContent() {
+        const root = this.element.querySelector(".sdx-decor-import-root");
+        if (!root) return;
+        root.replaceChildren();
+
+        const header = document.createElement("div");
+        header.className = "sdx-decor-import-header";
+
+        const tabs = document.createElement("div");
+        tabs.className = "sdx-decor-source-tabs";
+        for (const [mode, label] of [["foundry", "Foundry Library"], ["local", "Local Upload"], ["web", "Web URL"]]) {
+            const tab = document.createElement("button");
+            tab.type = "button";
+            tab.className = "sdx-decor-source-tab";
+            if (this.sourceMode === mode) tab.classList.add("active");
+            tab.textContent = label;
+            tab.addEventListener("click", () => {
+                this.sourceMode = mode;
+                this._renderContent();
+            });
+            tabs.appendChild(tab);
+        }
+
+        const intro = document.createElement("p");
+        intro.className = "sdx-decor-import-intro";
+        intro.textContent = this._getIntroText();
+
+        const controls = document.createElement("div");
+        controls.className = "sdx-decor-import-controls";
+        if (this.sourceMode === "foundry") this._renderFoundryControls(controls);
+        else if (this.sourceMode === "web") this._renderWebControls(controls);
+        else this._renderLocalControls(controls);
+
+        header.append(tabs, intro, controls);
+
+        if (this.sourceMode === "local") {
+            const status = document.createElement("div");
+            status.className = "sdx-decor-import-status";
+            status.textContent = this.files.length
+                ? `${this.files.length} image${this.files.length === 1 ? "" : "s"} ready for preview.`
+                : "Choose individual files for one-off imports, or choose a folder for batch browsing.";
+            header.appendChild(status);
+        }
+
+        const grid = document.createElement("div");
+        grid.className = "sdx-decor-import-grid";
+        if (this.sourceMode === "local") {
+            for (const entry of this.files) grid.appendChild(this._createFileCard(entry));
+        } else {
+            grid.appendChild(this._createServerPreview());
+        }
+
+        root.append(header, grid);
+    }
+
+    _getIntroText() {
+        if (this.sourceMode === "foundry") return "Pick an image already visible to Foundry and add it to the Decor browser.";
+        if (this.sourceMode === "web") return "Paste a direct image URL and add it to the Decor browser.";
+        return "Choose local files or browse a folder, preview images, then upload only selected decor to Foundry Data/decor.";
+    }
+
+    _renderLocalControls(controls) {
+        const fileInput = document.createElement("input");
+        fileInput.type = "file";
+        fileInput.className = "sdx-decor-file-input";
+        fileInput.id = "sdx-decor-file-input";
+        fileInput.multiple = true;
+        fileInput.accept = "image/*";
+        fileInput.addEventListener("change", event => this._onFilesSelected(event));
+
+        const folderInput = document.createElement("input");
+        folderInput.type = "file";
+        folderInput.className = "sdx-decor-folder-input";
+        folderInput.id = "sdx-decor-folder-input";
+        folderInput.multiple = true;
+        folderInput.accept = "image/*";
+        folderInput.setAttribute("webkitdirectory", "");
+        folderInput.addEventListener("change", event => this._onFilesSelected(event));
+
+        const fileLabel = document.createElement("label");
+        fileLabel.className = "sdx-decor-folder-label";
+        fileLabel.htmlFor = fileInput.id;
+        fileLabel.textContent = "Choose Files";
+
+        const pickerLabel = document.createElement("label");
+        pickerLabel.className = "sdx-decor-folder-label";
+        pickerLabel.htmlFor = folderInput.id;
+        pickerLabel.textContent = "Choose Folder";
+
+        const importButton = document.createElement("button");
+        importButton.type = "button";
+        importButton.className = "sdx-decor-import-selected";
+        importButton.disabled = this.selected.size === 0 || this.importing;
+        importButton.textContent = this.importing ? "Importing..." : `Import Selected (${this.selected.size})`;
+        importButton.addEventListener("click", () => this._importSelected());
+
+        controls.append(fileLabel, fileInput, pickerLabel, folderInput, importButton);
+    }
+
+    _renderFoundryControls(controls) {
+        const browseButton = document.createElement("button");
+        browseButton.type = "button";
+        browseButton.className = "sdx-decor-folder-label";
+        browseButton.textContent = "Browse Image";
+        browseButton.addEventListener("click", () => this._browseFoundry());
+
+        const browseFolderButton = document.createElement("button");
+        browseFolderButton.type = "button";
+        browseFolderButton.className = "sdx-decor-folder-label";
+        browseFolderButton.textContent = "Browse Folder";
+        browseFolderButton.addEventListener("click", () => this._browseFoundryFolder());
+
+        const pathInput = document.createElement("input");
+        pathInput.type = "text";
+        pathInput.className = "sdx-decor-source-input";
+        pathInput.value = this.foundryPath;
+        pathInput.placeholder = "decor/path/to/image.webp or decor/folder";
+        pathInput.addEventListener("change", event => {
+            this.foundryPath = event.currentTarget.value.trim();
+            this._renderContent();
+        });
+
+        const addButton = document.createElement("button");
+        addButton.type = "button";
+        addButton.className = "sdx-decor-import-selected";
+        addButton.disabled = !isSupportedDecorPath(this.foundryPath);
+        addButton.textContent = "Add Image";
+        addButton.addEventListener("click", () => this._registerServerAsset(this.foundryPath, "foundry"));
+
+        const addFolderButton = document.createElement("button");
+        addFolderButton.type = "button";
+        addFolderButton.className = "sdx-decor-import-selected";
+        addFolderButton.disabled = !this.foundryPath;
+        addFolderButton.textContent = "Add Folder";
+        addFolderButton.addEventListener("click", () => this._registerFoundryFolder(this.foundryPath));
+
+        controls.append(browseButton, browseFolderButton, pathInput, addButton, addFolderButton);
+    }
+
+    _renderWebControls(controls) {
+        const urlInput = document.createElement("input");
+        urlInput.type = "url";
+        urlInput.className = "sdx-decor-source-input";
+        urlInput.value = this.webUrl;
+        urlInput.placeholder = "https://example.com/decor.webp";
+        urlInput.addEventListener("input", event => {
+            this.webUrl = event.currentTarget.value.trim();
+            this._renderContent();
+        });
+
+        const addButton = document.createElement("button");
+        addButton.type = "button";
+        addButton.className = "sdx-decor-import-selected";
+        addButton.disabled = !this.webUrl;
+        addButton.textContent = "Add URL";
+        addButton.addEventListener("click", () => this._registerServerAsset(this.webUrl, "web"));
+
+        controls.append(urlInput, addButton);
+    }
+
+    _createServerPreview() {
+        const path = this.sourceMode === "web" ? this.webUrl : this.foundryPath;
+        const wrapper = document.createElement("div");
+        wrapper.className = "sdx-decor-source-preview";
+        if (!path) {
+            wrapper.textContent = this.sourceMode === "web"
+                ? "Paste a direct image URL to preview it here."
+                : "Choose an image from Foundry to preview it here.";
+            return wrapper;
+        }
+
+        if (this.sourceMode === "foundry" && !isSupportedDecorPath(path)) {
+            const icon = document.createElement("i");
+            icon.className = "fas fa-folder-open";
+            icon.style.fontSize = "36px";
+            icon.style.color = "#c9aa58";
+            const label = document.createElement("div");
+            label.className = "sdx-decor-source-path";
+            label.textContent = path;
+            const hint = document.createElement("small");
+            hint.textContent = "Folder selected. Use Add Folder to register supported images inside it.";
+            wrapper.append(icon, label, hint);
+            return wrapper;
+        }
+
+        const img = document.createElement("img");
+        img.src = path;
+        img.alt = path.split("/").pop() || "Decor asset";
+        const label = document.createElement("div");
+        label.className = "sdx-decor-source-path";
+        label.textContent = path;
+        wrapper.append(img, label);
+        return wrapper;
+    }
+
+    _createFileCard(entry) {
+        const card = document.createElement("button");
+        card.type = "button";
+        card.className = "sdx-decor-import-card";
+        if (this.selected.has(entry.id)) card.classList.add("selected");
+        card.title = entry.relativePath;
+        const img = document.createElement("img");
+        img.src = entry.url;
+        img.alt = entry.file.name;
+        const label = document.createElement("span");
+        label.textContent = entry.file.name;
+        const path = document.createElement("small");
+        path.textContent = entry.relativePath;
+        card.append(img, label, path);
+        card.addEventListener("click", () => {
+            if (this.selected.has(entry.id)) this.selected.delete(entry.id);
+            else this.selected.add(entry.id);
+            this._renderContent();
+        });
+        return card;
+    }
+
+    _onFilesSelected(event) {
+        for (const url of this.objectUrls.values()) URL.revokeObjectURL(url);
+        this.objectUrls.clear();
+        this.selected.clear();
+        const files = [...(event.currentTarget.files || [])].filter(isSupportedDecorImage);
+        this.files = files.map((file, index) => {
+            const relativePath = splitDecorRelativePath(file).join("/");
+            const url = URL.createObjectURL(file);
+            const id = `${index}:${relativePath}:${file.size}`;
+            this.objectUrls.set(id, url);
+            return { id, file, relativePath, url };
+        });
+        this._renderContent();
+    }
+
+    async _importSelected() {
+        if (!game.user?.isGM) {
+            ui.notifications.warn("Only GMs can import decor assets.");
+            return;
+        }
+        const selected = this.files.filter(entry => this.selected.has(entry.id));
+        if (!selected.length) return;
+
+        this.importing = true;
+        this._renderContent();
+        try {
+            await ensureDecorDirectory(DECOR_IMPORT_DESTINATION);
+            let imported = 0;
+            const FP = foundry.applications.apps.FilePicker.implementation;
+            for (const entry of selected) {
+                const relativeParts = splitDecorRelativePath(entry.file);
+                const target = await resolveAvailableDecorUpload(relativeParts);
+                await ensureDecorDirectory(target.folder);
+                const uploadFile = target.filename === entry.file.name
+                    ? entry.file
+                    : new File([entry.file], target.filename, { type: entry.file.type, lastModified: entry.file.lastModified });
+                await FP.upload("data", target.folder, uploadFile, {}, { notify: false });
+                imported++;
+            }
+            await reloadDecorAssets();
+            Hooks.callAll("sdx.decorAssetsImported");
+            ui.notifications.info(`Imported ${imported} decor asset${imported === 1 ? "" : "s"} to ${DECOR_IMPORT_DESTINATION}/.`);
+            this.selected.clear();
+        } catch (err) {
+            console.error(`${MODULE_ID} | Failed to import decor assets:`, err);
+            ui.notifications.error(`Failed to import decor assets: ${err?.message || err}`);
+        } finally {
+            this.importing = false;
+            this._renderContent();
+        }
+    }
+
+    _browseFoundry() {
+        const FilePicker = foundry.applications.apps.FilePicker?.implementation ?? globalThis.FilePicker;
+        new FilePicker({
+            type: "image",
+            current: isSupportedDecorPath(this.foundryPath)
+                ? this.foundryPath
+                : (this.foundryPath || DECOR_IMPORT_DESTINATION),
+            callback: path => {
+                this.foundryPath = path;
+                this._renderContent();
+            }
+        }).browse();
+    }
+
+    _browseFoundryFolder() {
+        const FilePicker = foundry.applications.apps.FilePicker?.implementation ?? globalThis.FilePicker;
+        const current = isSupportedDecorPath(this.foundryPath)
+            ? this.foundryPath.split("/").slice(0, -1).join("/")
+            : this.foundryPath;
+        new FilePicker({
+            type: "folder",
+            current: current || DECOR_IMPORT_DESTINATION,
+            callback: path => {
+                this.foundryPath = path;
+                this._renderContent();
+            }
+        }).browse();
+    }
+
+    async _registerServerAsset(path, source) {
+        if (!game.user?.isGM) {
+            ui.notifications.warn("Only GMs can add decor assets.");
+            return;
+        }
+        try {
+            await registerDecorAsset(path, { source });
+            Hooks.callAll("sdx.decorAssetsImported");
+            ui.notifications.info("Added decor asset to the Decor browser.");
+        } catch (err) {
+            console.error(`${MODULE_ID} | Failed to add decor asset:`, err);
+            ui.notifications.error(`Failed to add decor asset: ${err?.message || err}`);
+        }
+    }
+
+    async _registerFoundryFolder(path) {
+        if (!game.user?.isGM) {
+            ui.notifications.warn("Only GMs can add decor folders.");
+            return;
+        }
+        const FP = foundry.applications.apps.FilePicker.implementation;
+        const root = String(path || "").replace(/\/+$/, "");
+        if (!root) return;
+
+        try {
+            const images = await this._scanFoundryFolder(root);
+            if (!images.length) {
+                ui.notifications.warn("No supported image files found in that folder.");
+                return;
+            }
+            for (const imagePath of images) {
+                await registerDecorAsset(imagePath, {
+                    source: "foundry-folder",
+                    category: this._decorCategoryForFoundryFolder(root, imagePath)
+                });
+            }
+            await reloadDecorAssets();
+            Hooks.callAll("sdx.decorAssetsImported");
+            ui.notifications.info(`Added ${images.length} decor asset${images.length === 1 ? "" : "s"} from Foundry folder.`);
+        } catch (err) {
+            console.error(`${MODULE_ID} | Failed to add decor folder:`, err);
+            ui.notifications.error(`Failed to add decor folder: ${err?.message || err}`);
+        }
+    }
+
+    async _scanFoundryFolder(folderPath, out = []) {
+        const FP = foundry.applications.apps.FilePicker.implementation;
+        const listing = await FP.browse("data", folderPath);
+        for (const filePath of listing.files || []) {
+            if (DECOR_IMAGE_EXTENSIONS.some(ext => filePath.toLowerCase().split("?")[0].endsWith(ext))) {
+                out.push(filePath);
+            }
+        }
+        for (const dir of listing.dirs || []) {
+            await this._scanFoundryFolder(dir, out);
+        }
+        return out;
+    }
+
+    _decorCategoryForFoundryFolder(root, imagePath) {
+        const cleanRoot = String(root || "").replace(/\/+$/, "");
+        const cleanPath = String(imagePath || "");
+        const parent = cleanPath.split("/").slice(0, -1).join("/");
+        let relative = parent.startsWith(cleanRoot) ? parent.slice(cleanRoot.length).replace(/^\/+/, "") : parent;
+        const rootLabel = cleanRoot.split("/").filter(Boolean).pop() || "Foundry Folder";
+        return relative ? `${rootLabel}/${relative}` : rootLabel;
+    }
+}
 
 export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
     static DEFAULT_OPTIONS = {
@@ -194,6 +695,13 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
         const elem = document.querySelector(".sdx-tray");
         if (elem) {
             elem.classList.toggle("expanded", this._isExpanded);
+            // Flip the chevron so the user has a visual cue: right when
+            // collapsed (click to open), left when expanded (click to close).
+            const icon = elem.querySelector(".tray-handle-button-toggle i");
+            if (icon) {
+                icon.classList.toggle("fa-chevron-right", !this._isExpanded);
+                icon.classList.toggle("fa-chevron-left", this._isExpanded);
+            }
         }
 
         const viewMode = getViewMode();
@@ -783,23 +1291,24 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
                     `<option value="${el}">Elevation ${el} — ${byElevation[el].length} tiles</option>`
                 ).join('');
                 elevation = await new Promise(resolve => {
-                    new Dialog({
-                        title: "Flatten Dungeon Level",
+                    new foundry.applications.api.DialogV2({
+                        window: { title: "Flatten Dungeon Level" },
                         content: `<div style="padding:8px 0"><label style="display:block;margin-bottom:6px">Select level to flatten:</label><select id="sdx-fl-sel" style="width:100%">${options}</select></div>`,
-                        buttons: {
-                            ok: {
-                                icon: '<i class="fas fa-layer-group"></i>',
+                        buttons: [
+                            {
+                                action: "ok",
+                                icon: "fas fa-layer-group",
                                 label: "Flatten",
-                                callback: (html) => {
-                                    const el = (html instanceof HTMLElement ? html : html[0]).querySelector("#sdx-fl-sel");
+                                default: true,
+                                callback: (event, button, dlg) => {
+                                    const el = dlg.element.querySelector("#sdx-fl-sel");
                                     resolve(el ? Number(el.value) : null);
                                 }
                             },
-                            cancel: { label: "Cancel", callback: () => resolve(null) }
-                        },
-                        default: "ok",
+                            { action: "cancel", label: "Cancel", callback: () => resolve(null) }
+                        ],
                         close: () => resolve(null)
-                    }).render(true);
+                    }).render({ force: true });
                 });
             }
             if (elevation !== null && elevation !== undefined) {
@@ -826,24 +1335,25 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
                     return `<option value="${t.id}">Elevation ${el} (${cnt} tiles)</option>`;
                 }).join('');
                 tileDoc = await new Promise(resolve => {
-                    new Dialog({
-                        title: "Unflatten Dungeon Level",
+                    new foundry.applications.api.DialogV2({
+                        window: { title: "Unflatten Dungeon Level" },
                         content: `<div style="padding:8px 0"><label style="display:block;margin-bottom:6px">Select level to unflatten:</label><select id="sdx-ufl-sel" style="width:100%">${options}</select></div>`,
-                        buttons: {
-                            ok: {
-                                icon: '<i class="fas fa-layer-group"></i>',
+                        buttons: [
+                            {
+                                action: "ok",
+                                icon: "fas fa-layer-group",
                                 label: "Unflatten",
-                                callback: (html) => {
-                                    const el = (html instanceof HTMLElement ? html : html[0]).querySelector("#sdx-ufl-sel");
+                                default: true,
+                                callback: (event, button, dlg) => {
+                                    const el = dlg.element.querySelector("#sdx-ufl-sel");
                                     const id = el?.value;
                                     resolve(flattenedTiles.find(t => t.id === id) ?? null);
                                 }
                             },
-                            cancel: { label: "Cancel", callback: () => resolve(null) }
-                        },
-                        default: "ok",
+                            { action: "cancel", label: "Cancel", callback: () => resolve(null) }
+                        ],
                         close: () => resolve(null)
-                    }).render(true);
+                    }).render({ force: true });
                 });
             }
             if (tileDoc) {
@@ -896,6 +1406,20 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
             texturedCheckbox.addEventListener("change", (e) => {
                 updateTexturedVisibility(e.target.checked);
             });
+        }
+
+        // Multi-level (Levels >= 2) uses inter-floor connection stairs instead of the
+        // decorative Stairs Up/Down, so hide those rows. Clutter still applies (it's decor).
+        const levelsSlider = elem.querySelector(".dgen-levels");
+        if (levelsSlider) {
+            const decorRows = [".dgen-stairs", ".dgen-stairsdown"]
+                .map(s => elem.querySelector(s)?.closest(".dgen-row")).filter(Boolean);
+            const updateMultiLevelUI = (n) => {
+                const multi = parseInt(n) >= 2;
+                for (const row of decorRows) row.style.display = multi ? "none" : "";
+            };
+            updateMultiLevelUI(levelsSlider.value);
+            levelsSlider.addEventListener("input", (e) => updateMultiLevelUI(e.target.value));
         }
 
         // Generator seed refresh
@@ -953,7 +1477,19 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
                 wallThickness: thick
             };
 
-            await generateDungeon(config);
+            const levels = parseInt(elem.querySelector(".dgen-levels")?.value || "1");
+            const links = parseInt(elem.querySelector(".dgen-links")?.value || "1");
+            if (levels >= 2) {
+                // Multi-level dungeon — standalone engine, loaded on demand.
+                const variation = parseFloat(elem.querySelector(".dgen-variation")?.value ?? "1");
+                const connectorVariety = parseFloat(elem.querySelector(".dgen-variety")?.value ?? "0.4");
+                const { generateMultiLevelDungeon } = await import("./DungeonMultiLevelSD.mjs");
+                await generateMultiLevelDungeon({
+                    ...config, levelCount: levels, connectionsPerPair: links, variation, connectorVariety,
+                });
+            } else {
+                await generateDungeon(config);
+            }
         });
 
 
@@ -1023,12 +1559,10 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
                 e.stopPropagation();
                 const folderId = btn.dataset.folderId;
                 const folderName = btn.dataset.folderName;
-                const confirmed = await Dialog.confirm({
-                    title: "Delete Folder",
+                const confirmed = await foundry.applications.api.DialogV2.confirm({
+                    window: { title: "Delete Folder" },
                     content: `<p>Delete folder <strong>${folderName}</strong>?</p><p>Scenes inside will become uncategorized.</p>`,
-                    yes: () => true,
-                    no: () => false,
-                    defaultYes: false
+                    modal: true
                 });
                 if (!confirmed) return;
                 const { TomStore } = await import("./data/TomStore.mjs");
@@ -1118,12 +1652,10 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
                 e.stopPropagation();
                 const sceneName = card.querySelector(".scene-name").textContent;
 
-                const confirmed = await Dialog.confirm({
-                    title: "Delete Scene",
+                const confirmed = await foundry.applications.api.DialogV2.confirm({
+                    window: { title: "Delete Scene" },
                     content: `<p>Are you sure you want to delete <strong>${sceneName}</strong>?</p><p>This action cannot be undone.</p>`,
-                    yes: () => true,
-                    no: () => false,
-                    defaultYes: false
+                    modal: true
                 });
 
                 if (confirmed) {
@@ -1269,14 +1801,12 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
                         }
                     }
                 } else if (action === "delete-pin") {
-                    Dialog.confirm({
-                        title: "Delete Pin",
+                    const confirmed = await foundry.applications.api.DialogV2.confirm({
+                        window: { title: "Delete Pin" },
                         content: "<p>Are you sure you want to delete this pin?</p>",
-                        yes: async () => {
-                            await JournalPinManager.delete(id);
-                        },
-                        defaultYes: false
+                        modal: true
                     });
+                    if (confirmed) await JournalPinManager.delete(id);
                 } else if (action === "copy-style") {
                     const pinData = JournalPinManager.get(id);
                     if (pinData) {
@@ -1335,8 +1865,8 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
                     canvas.animatePan({ x, y, scale: 1.5, duration: 500 });
                 } else if (action === "rename") {
                     const currentName = doc.getFlag("shadowdark-extras", "customName") || doc.name || "";
-                    new Dialog({
-                        title: "Rename Placeable Note",
+                    new foundry.applications.api.DialogV2({
+                        window: { title: "Rename Placeable Note" },
                         content: `
                             <form>
                                 <div class="form-group">
@@ -1345,43 +1875,40 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
                                 </div>
                             </form>
                         `,
-                        buttons: {
-                            save: {
+                        buttons: [
+                            {
+                                action: "save",
                                 label: "Save",
-                                icon: '<i class="fas fa-check"></i>',
-                                callback: async (html) => {
-                                    const newName = html.find("input[name='name']").val();
+                                icon: "fas fa-check",
+                                default: true,
+                                callback: async (event, button) => {
+                                    const newName = button.form.elements.name.value;
                                     await doc.setFlag("shadowdark-extras", "customName", newName);
-                                    // Tray will auto-update via hooks
                                 }
                             },
-                            reset: {
+                            {
+                                action: "reset",
                                 label: "Reset",
-                                icon: '<i class="fas fa-undo"></i>',
+                                icon: "fas fa-undo",
                                 callback: async () => {
                                     await doc.unsetFlag("shadowdark-extras", "customName");
                                 }
                             }
-                        },
-                        default: "save"
-                    }).render(true);
+                        ]
+                    }).render({ force: true });
                 } else if (action === "toggle-visibility") {
                     const isVisible = !!doc.getFlag("shadowdark-extras", "noteVisible");
                     await doc.setFlag("shadowdark-extras", "noteVisible", !isVisible);
                 } else if (action === "delete") {
-                    Dialog.confirm({
-                        title: "Delete Note",
+                    const ok = await foundry.applications.api.DialogV2.confirm({
+                        window: { title: "Delete Note" },
                         content: `<p>Are you sure you want to delete the note for <strong>${doc.name}</strong>?</p>`,
-                        yes: async () => {
-                            // If we are deleting a note on a token, and it was displaying fallback actor notes...
-                            // Actually, 'doc' is already resolved to the correct document (Token or Actor)
-                            // So we just delete the flag from 'doc'.
-                            await doc.unsetFlag("shadowdark-extras", "notes");
-                            // Also clear visibility flag? Yes.
-                            await doc.unsetFlag("shadowdark-extras", "noteVisible");
-                        },
-                        defaultYes: false
+                        modal: true
                     });
+                    if (ok) {
+                        await doc.unsetFlag("shadowdark-extras", "notes");
+                        await doc.unsetFlag("shadowdark-extras", "noteVisible");
+                    }
                 }
             });
         });
@@ -1473,12 +2000,12 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
                     const note = fromUuidSync(uuid);
                     if (!note) return;
 
-                    Dialog.confirm({
-                        title: "Delete Map Note",
+                    const ok = await foundry.applications.api.DialogV2.confirm({
+                        window: { title: "Delete Map Note" },
                         content: `<p>Are you sure you want to delete the map note <strong>${note.text || note.name}</strong>?</p>`,
-                        yes: () => note.delete(),
-                        defaultYes: false
+                        modal: true
                     });
+                    if (ok) await note.delete();
                 } else if (action === "open") {
                     const note = fromUuidSync(uuid);
                     if (note) note.sheet.render(true);
@@ -1601,12 +2128,10 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
             const tileDocs = allTiles.map(p => p.document).filter(d => d);
 
             // Ask for confirmation
-            const confirmed = await Dialog.confirm({
-                title: "Flatten All Tiles",
+            const confirmed = await foundry.applications.api.DialogV2.confirm({
+                window: { title: "Flatten All Tiles" },
                 content: `<p>This will flatten all <strong>${tileDocs.length}</strong> tiles on the scene into a single image.</p><p>You can unflatten later from the Tile HUD.</p>`,
-                yes: () => true,
-                no: () => false,
-                defaultYes: false
+                modal: true
             });
 
             if (!confirmed) return;
@@ -1795,6 +2320,52 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
             });
         });
 
+        elem.querySelectorAll(".hex-custom-chip").forEach(chip => {
+            chip.addEventListener("click", (e) => {
+                e.preventDefault();
+                const name = chip.dataset.chipName;
+                if (!name) return;
+                appendCustomNavSegment(name);
+                renderTray();
+            });
+        });
+
+        elem.querySelectorAll(".hex-custom-breadcrumb-segment").forEach(seg => {
+            seg.addEventListener("click", (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                const raw = seg.dataset.segments || "";
+                setCustomNavPath(raw.split("/").filter(Boolean));
+                renderTray();
+            });
+        });
+
+        elem.querySelectorAll(".hex-custom-up-btn").forEach(btn => {
+            btn.addEventListener("click", (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                const crumbs = Array.from(elem.querySelectorAll(".hex-custom-breadcrumb-segment"));
+                const currentRaw = crumbs.at(-1)?.dataset.segments || "";
+                const parent = currentRaw.split("/").filter(Boolean).slice(0, -1);
+                setCustomNavPath(parent);
+                renderTray();
+            });
+        });
+
+        elem.querySelectorAll(".hex-custom-reload-btn").forEach(btn => {
+            btn.addEventListener("click", async (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                btn.disabled = true;
+                try {
+                    await reloadCustomTiles();
+                } finally {
+                    btn.disabled = false;
+                    renderTray();
+                }
+            });
+        });
+
         // Custom tile size inputs
         elem.querySelectorAll(".hex-custom-size-input").forEach(input => {
             input.addEventListener("change", (e) => {
@@ -1912,6 +2483,25 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
                 const countEl = folder.querySelector(".hex-folder-count");
                 if (countEl) countEl.textContent = `(${visibleCount})`;
             });
+        });
+
+        elem.querySelector(".decor-import-btn")?.addEventListener("click", (e) => {
+            e.preventDefault();
+            if (!game.user?.isGM) {
+                ui.notifications.warn("Only GMs can import decor assets.");
+                return;
+            }
+            new DecorImportApp().render(true);
+        });
+
+        elem.querySelector(".decor-ddpack-btn")?.addEventListener("click", async (e) => {
+            e.preventDefault();
+            if (!game.user?.isGM) {
+                ui.notifications.warn("Only GMs can manage Dungeondraft packs.");
+                return;
+            }
+            const { DDPackSettingsApp } = await import("./DDPackSettingsAppSD.mjs");
+            new DDPackSettingsApp().render(true);
         });
 
         // Decor folder toggle (expand/collapse)
@@ -2368,12 +2958,10 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
             deleteBtn.addEventListener("click", async (e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                const confirmed = await Dialog.confirm({
-                    title: "Delete Scene",
+                const confirmed = await foundry.applications.api.DialogV2.confirm({
+                    window: { title: "Delete Scene" },
                     content: `<p>Are you sure you want to delete <strong>${scene.name}</strong>?</p><p>This action cannot be undone.</p>`,
-                    yes: () => true,
-                    no: () => false,
-                    defaultYes: false
+                    modal: true
                 });
                 if (!confirmed) return;
                 panel.remove();
@@ -2491,12 +3079,10 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
             deleteFolderBtn.addEventListener("click", async (e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                const confirmed = await Dialog.confirm({
-                    title: "Delete Folder",
+                const confirmed = await foundry.applications.api.DialogV2.confirm({
+                    window: { title: "Delete Folder" },
                     content: `<p>Delete folder <strong>${folder.name}</strong>?</p><p>Scenes inside will become uncategorized.</p>`,
-                    yes: () => true,
-                    no: () => false,
-                    defaultYes: false
+                    modal: true
                 });
                 if (!confirmed) return;
                 TomStore.deleteFolder(folder.id);
@@ -2614,30 +3200,32 @@ export class TrayApp extends HandlebarsApplicationMixin(ApplicationV2) {
      */
     async _promptFolderName(title, defaultName = "") {
         return new Promise((resolve) => {
-            new Dialog({
-                title,
+            const dialog = new foundry.applications.api.DialogV2({
+                window: { title },
                 content: `<div class="form-group"><label>Folder Name</label><input type="text" name="folderName" value="${defaultName}" autofocus></div>`,
-                buttons: {
-                    ok: {
-                        icon: '<i class="fas fa-check"></i>',
+                buttons: [
+                    {
+                        action: "ok",
+                        icon: "fas fa-check",
                         label: "OK",
-                        callback: (html) => {
-                            const name = html.find('[name="folderName"]').val()?.trim();
+                        default: true,
+                        callback: (event, button) => {
+                            const name = button.form.elements.folderName.value?.trim();
                             resolve(name || null);
                         }
                     },
-                    cancel: {
-                        icon: '<i class="fas fa-times"></i>',
+                    {
+                        action: "cancel",
+                        icon: "fas fa-times",
                         label: "Cancel",
                         callback: () => resolve(null)
                     }
-                },
-                default: "ok",
-                render: (html) => {
-                    // Auto-select text in input
-                    html.find('[name="folderName"]').select();
-                }
-            }).render(true);
+                ],
+                close: () => resolve(null)
+            });
+            dialog.render({ force: true }).then(() => {
+                dialog.element.querySelector('[name="folderName"]')?.select();
+            });
         });
     }
 }

@@ -1,0 +1,164 @@
+effects: []
+folder: vmqOYZjyo8VunyyP
+img: icons/commodities/metal/plate-steel-pink.webp
+name: Floating Disk
+system:
+  description: >-
+    <p>You create a floating, circular disk of force with a concave center. It
+    can carry up to 20 gear slots. It hovers at waist level and automatically
+    stays within near of you. It can’t cross over drop- offs or pits taller than
+    a
+    human.</p><p>@UUID[Compendium.shadowdark.spell-effects.VMkeCfccn7zp2up7]{Spell
+    Effect: Floating Disk}</p>
+  source:
+    title: core-rules
+  class:
+    - Compendium.shadowdark.classes.Item.035nuVkU9q2wtMPs
+  duration:
+    type: rounds
+    value: '10'
+  range: near
+  tier: 1
+  lost: false
+  magicItem: false
+  predefinedEffects: ''
+type: Spell
+_stats:
+  compendiumSource: null
+  duplicateSource: null
+  exportSource: null
+  coreVersion: '13.348'
+  systemId: shadowdark
+  systemVersion: 3.6.1
+  createdTime: 1766373809572
+  modifiedTime: 1771295884104
+  lastModifiedBy: HP3Vba5udEHYm4dW
+ownership:
+  default: 0
+  hRh1zMY3ZetzuMYw: 3
+flags:
+  scene-packer:
+    sourceId: Compendium.shadowdark.spells.Item.3nOduBggYvyIPykI
+    hash: e2ed287fd34a2b35904cfd338947af223a6a54d9
+  shadowdark-extras:
+    summoning:
+      enabled: true
+      profiles: >-
+        [{"creatureUuid":"Compendium.shadowdark-extras.pack-sdxactors.Actor.X2leBdJeqwKWrTlE","creatureName":"Floating
+        Disk","creatureImg":"tokenizer/npc-images/floating_disk.Avatar.webp?1766373876633","count":"1","displayName":""}]
+      deleteAtExpiry: true
+    spellDamage:
+      enabled: false
+      damageType: ''
+      damageRequirement: ''
+      damageRequirementFailAction: zero
+      formulaType: basic
+      numDice: 1
+      dieType: d6
+      bonus: 0
+      scaling: every-level
+      scalingDice: 1
+      formula: ''
+      tieredFormula: ''
+      effects: '[]'
+      effectsRequirement: ''
+      effectsApplyToTarget: true
+      criticalEffects: '[]'
+      effectSelectionMode: all
+      trackDuration: true
+      perTurnTrigger: start
+      perTurnDamage: ''
+      reapplyEffects: false
+    itemGive:
+      enabled: false
+      profiles: '[]'
+    alignment: ''
+    targeting:
+      mode: targeted
+      template:
+        type: circle
+        size: 30
+        fillColor: '#4e9a06'
+        placement: choose
+        deleteMode: none
+        hideOutline: false
+        excludeCaster: false
+        tokenMagic:
+          texture: ''
+          opacity: 0.5
+          preset: NOFX
+    templateEffects:
+      enabled: false
+      triggers:
+        onEnter: false
+        onTurnStart: false
+        onTurnEnd: false
+        onLeave: false
+      damage:
+        formula: ''
+        type: ''
+      save:
+        enabled: false
+        dc: '12'
+        ability: dex
+        halfOnSuccess: true
+      applyConfiguredEffects: false
+      runItemMacro: false
+    auraEffects:
+      enabled: false
+      attachTo: caster
+      radius: 30
+      triggers:
+        onEnter: false
+        onLeave: false
+        onSourceTurnStart: false
+        onSourceTurnEnd: false
+        onTargetTurnStart: false
+        onTargetTurnEnd: false
+      damage:
+        formula: ''
+        type: ''
+      damageTriggers:
+        onEnter: false
+        onLeave: false
+        onSourceTurnStart: false
+        onSourceTurnEnd: false
+        onTargetTurnStart: false
+        onTargetTurnEnd: false
+      save:
+        enabled: false
+        dc: 12
+        ability: con
+        halfOnSuccess: false
+      disposition: all
+      includeSelf: false
+      applyToOriginator: true
+      checkVisibility: false
+      animation:
+        enabled: true
+        style: circle
+        tint: '#4488ff'
+        scaleMultiplier: 1
+        opacity: 0.6
+      tokenFilters:
+        enabled: false
+        preset: ''
+      applyConfiguredEffects: false
+      effectsTriggers:
+        onEnter: false
+        onLeave: false
+        onSourceTurnStart: false
+        onSourceTurnEnd: false
+        onTargetTurnStart: false
+        onTargetTurnEnd: false
+      runItemMacro: false
+      macroTriggers:
+        onEnter: false
+        onLeave: false
+        onSourceTurnStart: false
+        onSourceTurnEnd: false
+        onTargetTurnStart: false
+        onTargetTurnEnd: false
+_id: ugaWCEuyn9tmute0
+sort: 7600000
+_key: '!items!ugaWCEuyn9tmute0'

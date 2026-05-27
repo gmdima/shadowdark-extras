@@ -1,0 +1,92 @@
+effects: []
+folder: r8O6TZuSRF9b0meC
+img: icons/weapons/crossbows/crossbow-purple.webp
+name: Crossbow of Purity
+system:
+  description: >-
+    <p>This weapon adds 1d4 damage. <br>If the target is an undead creature,
+    instead the damage extra is 1d6 instead.</p>
+  source:
+    title: ''
+    page: 0
+  broken: false
+  canBeEquipped: true
+  cost:
+    cp: 0
+    gp: 8
+    sp: 0
+  equipped: true
+  isAmmunition: false
+  isPhysical: true
+  magicItem: true
+  quantity: 1
+  slots:
+    free_carry: 0
+    per_slot: 1
+    slots_used: 1
+  stashed: false
+  ammoClass: crossbow-bolts
+  baseWeapon: ''
+  bonuses:
+    attackBonus: 0
+    critical:
+      failureThreshold: 1
+      multiplier: 2
+      successThreshold: 20
+    damageBonus: 0
+    damageMultiplier: 1
+  damage:
+    numDice: 1
+    oneHanded: ''
+    twoHanded: d6
+    bonus: 0
+    critMultiplier: 2
+  properties:
+    - Compendium.shadowdark.properties.Item.HyqHR9AhIDkm4La9
+    - Compendium.shadowdark.properties.Item.b6Gm2ULKj2qyy2xJ
+  range: far
+  type: ranged
+  weaponMastery: false
+  attackBonus: 0
+  predefinedEffects: ''
+type: Weapon
+_stats:
+  compendiumSource: null
+  duplicateSource: null
+  exportSource: null
+  coreVersion: '13.350'
+  systemId: shadowdark
+  systemVersion: 3.6.1
+  createdTime: 1766719214286
+  modifiedTime: 1766771079440
+  lastModifiedBy: 0ytHXTPwhcliLZRf
+ownership:
+  default: 0
+  lDQovrTY32fJwPBR: 3
+flags:
+  shadowdark-extras:
+    weaponBonus:
+      enabled: true
+      damageBonus: ''
+      criticalExtraDice: ''
+      criticalExtraDamage: ''
+      requirements: []
+      effects: []
+      damageBonuses:
+        - formula: 1d6
+          label: vs Skeletons
+          exclusive: true
+          requirements:
+            - type: targetName
+              operator: contains
+              value: >-
+                Skeleton, lich, ghoul, ghast, zombie, wraith, ghost, shadow,
+                wight, vampire 
+        - formula: 1d4
+          label: Magic Crossbow
+          exclusive: false
+          requirements: []
+    unidentified: false
+_id: YeJri7h6t8P1acuP
+sort: 0
+_key: '!items!YeJri7h6t8P1acuP'

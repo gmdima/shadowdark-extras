@@ -1,0 +1,2223 @@
+name: Clerical Punishments
+formula: 1d100
+results:
+  - type: text
+    weight: 1
+    range:
+      - 1
+      - 1
+    drawn: false
+    description: >-
+      All food must be eaten cold — no cooked meals until a senior priest
+      declares the penance fulfilled
+    _id: O8NJ4wSO9xwy8ypG
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!BQ5OcjnSWOOApxuG.O8NJ4wSO9xwy8ypG'
+  - type: text
+    weight: 1
+    range:
+      - 2
+      - 2
+    drawn: false
+    description: >-
+      All prayers must be spoken while kneeling on bare stone, regardless of
+      weather or surface
+    _id: cX80nRWtS4Bekkjt
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!BQ5OcjnSWOOApxuG.cX80nRWtS4Bekkjt'
+  - type: text
+    weight: 1
+    range:
+      - 3
+      - 3
+    drawn: false
+    description: >-
+      An iron circlet engraved with penitent runes must be worn visibly on the
+      brow at all times
+    _id: iOvPUiFJR01fgP15
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!BQ5OcjnSWOOApxuG.iOvPUiFJR01fgP15'
+  - type: text
+    weight: 1
+    range:
+      - 4
+      - 4
+    drawn: false
+    description: >-
+      Any gold earned must be divided equally among beggars before you may keep
+      a single coin
+    _id: tcXQi8atiIP1Jd2C
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!BQ5OcjnSWOOApxuG.tcXQi8atiIP1Jd2C'
+  - type: text
+    weight: 1
+    range:
+      - 5
+      - 5
+    drawn: false
+    description: >-
+      Any healing you receive from divine magic is halved until you complete a
+      task set by the temple
+    _id: 7vEA8c9utJ8mVR7m
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!BQ5OcjnSWOOApxuG.7vEA8c9utJ8mVR7m'
+  - type: text
+    weight: 1
+    range:
+      - 6
+      - 6
+    drawn: false
+    description: >-
+      Ashes of a burnt holy text must be mixed into every drink you consume for
+      one full moon cycle
+    _id: VS3ZbMJoNu7pkzdL
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!BQ5OcjnSWOOApxuG.VS3ZbMJoNu7pkzdL'
+  - type: text
+    weight: 1
+    range:
+      - 7
+      - 7
+    drawn: false
+    description: >-
+      At dawn and dusk you must stand facing the nearest temple and recite every
+      transgression aloud
+    _id: a2RzdTCyY64YkvCL
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!BQ5OcjnSWOOApxuG.a2RzdTCyY64YkvCL'
+  - type: text
+    weight: 1
+    range:
+      - 8
+      - 8
+    drawn: false
+    description: >-
+      At every crossroads you must stop and offer a prayer before choosing your
+      path — no exceptions
+    _id: 35HqFhIE8Lg3XXFK
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!BQ5OcjnSWOOApxuG.35HqFhIE8Lg3XXFK'
+  - type: text
+    weight: 1
+    range:
+      - 9
+      - 9
+    drawn: false
+    description: >-
+      Attend to the washing and preparation of the dead in the temple mortuary
+      for a full season
+    _id: 9Es023yqN5xeEZT7
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!BQ5OcjnSWOOApxuG.9Es023yqN5xeEZT7'
+  - type: text
+    weight: 1
+    range:
+      - 10
+      - 10
+    drawn: false
+    description: >-
+      Before entering any building you must kneel at the threshold and ask
+      permission of the divine
+    _id: OzVA8BfivveZgzFD
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!BQ5OcjnSWOOApxuG.OzVA8BfivveZgzFD'
+  - type: text
+    weight: 1
+    range:
+      - 11
+      - 11
+    drawn: false
+    description: >-
+      Blessed salt must be rubbed into your palms each morning until the skin
+      cracks and heals over
+    _id: OyA9N4NCC2d9P1D1
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!BQ5OcjnSWOOApxuG.OyA9N4NCC2d9P1D1'
+  - type: text
+    weight: 1
+    range:
+      - 12
+      - 12
+    drawn: false
+    description: >-
+      Carry a clay tablet inscribed with your sin — if it breaks you must fire a
+      new one and start over
+    _id: 2lYUg9eebJ3v0RwA
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!BQ5OcjnSWOOApxuG.2lYUg9eebJ3v0RwA'
+  - type: text
+    weight: 1
+    range:
+      - 13
+      - 13
+    drawn: false
+    description: >-
+      Carry a lantern filled with sanctified oil that must never be allowed to
+      go out, day or night
+    _id: r3vnuorhY4KXspU7
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!BQ5OcjnSWOOApxuG.r3vnuorhY4KXspU7'
+  - type: text
+    weight: 1
+    range:
+      - 14
+      - 14
+    drawn: false
+    description: >-
+      Carry a stone from the temple grounds in each shoe until the stones are
+      worn smooth
+    _id: bKBVELIwSXtzavWy
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!BQ5OcjnSWOOApxuG.bKBVELIwSXtzavWy'
+  - type: text
+    weight: 1
+    range:
+      - 15
+      - 15
+    drawn: false
+    description: >-
+      Cast no shadow upon any altar — you must remain outside during services,
+      listening from the door
+    _id: sc3XyxUCFM25RmV7
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!BQ5OcjnSWOOApxuG.sc3XyxUCFM25RmV7'
+  - type: text
+    weight: 1
+    range:
+      - 16
+      - 16
+    drawn: false
+    description: >-
+      Catch and release a living creature each day while speaking a prayer of
+      mercy over it
+    _id: ZY31ik6jjj7rpjFj
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!BQ5OcjnSWOOApxuG.ZY31ik6jjj7rpjFj'
+  - type: text
+    weight: 1
+    range:
+      - 17
+      - 17
+    drawn: false
+    description: >-
+      Clean the boots or sandals of every member of your order you encounter,
+      without being asked
+    _id: ojF5dTOKZrDFnBxK
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!BQ5OcjnSWOOApxuG.ojF5dTOKZrDFnBxK'
+  - type: text
+    weight: 1
+    range:
+      - 18
+      - 18
+    drawn: false
+    description: >-
+      Collect rainwater in a blessed vessel and pour it over your head while
+      reciting dawn prayers
+    _id: QtJoBYVpFLMzAd6b
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!BQ5OcjnSWOOApxuG.QtJoBYVpFLMzAd6b'
+  - type: text
+    weight: 1
+    range:
+      - 19
+      - 19
+    drawn: false
+    description: >-
+      Compose and deliver a sermon to an empty room each evening — the walls are
+      your congregation
+    _id: Mon3UqwXIYzO7bYd
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!BQ5OcjnSWOOApxuG.Mon3UqwXIYzO7bYd'
+  - type: text
+    weight: 1
+    range:
+      - 20
+      - 20
+    drawn: false
+    description: Confess your failing to every stranger you share a meal with before eating
+    _id: LcwPPvORsFgooluX
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!BQ5OcjnSWOOApxuG.LcwPPvORsFgooluX'
+  - type: text
+    weight: 1
+    range:
+      - 21
+      - 21
+    drawn: false
+    description: >-
+      Construct a shrine from found materials at every campsite and dismantle it
+      upon departure
+    _id: 9MidsC7xKh1IPVKW
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!BQ5OcjnSWOOApxuG.9MidsC7xKh1IPVKW'
+  - type: text
+    weight: 1
+    range:
+      - 22
+      - 22
+    drawn: false
+    description: >-
+      Deny yourself the comfort of a roof — sleep outdoors even when shelter is
+      freely offered
+    _id: PUJpY5IgyO4cQXCx
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!BQ5OcjnSWOOApxuG.PUJpY5IgyO4cQXCx'
+  - type: text
+    weight: 1
+    range:
+      - 23
+      - 23
+    drawn: false
+    description: >-
+      Dig a grave-sized pit each morning, lie in it for one hour of reflection,
+      then fill it back in
+    _id: YV2XKvwMQ7V0qZdD
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!BQ5OcjnSWOOApxuG.YV2XKvwMQ7V0qZdD'
+  - type: text
+    weight: 1
+    range:
+      - 24
+      - 24
+    drawn: false
+    description: >-
+      Do not look upon your own reflection until the penance is lifted — cover
+      or avoid all mirrors
+    _id: zYUzJW0RUPG5be3S
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!BQ5OcjnSWOOApxuG.zYUzJW0RUPG5be3S'
+  - type: text
+    weight: 1
+    range:
+      - 25
+      - 25
+    drawn: false
+    description: >-
+      Do not speak the name of your deity — refer to them only through epithets
+      and titles
+    _id: oHRSiCRIRxllPB7y
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!BQ5OcjnSWOOApxuG.oHRSiCRIRxllPB7y'
+  - type: text
+    weight: 1
+    range:
+      - 26
+      - 26
+    drawn: false
+    description: >-
+      Drink only from cupped hands — no vessels, cups, waterskins, or containers
+      of any kind
+    _id: 3l3VDbLT8hTmQZKo
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!BQ5OcjnSWOOApxuG.3l3VDbLT8hTmQZKo'
+  - type: text
+    weight: 1
+    range:
+      - 27
+      - 27
+    drawn: false
+    description: >-
+      Each morning, tie a new knot in a consecrated rope — when it holds a
+      hundred knots, you are forgiven
+    _id: nCIkZahrGWCCSfdD
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!BQ5OcjnSWOOApxuG.nCIkZahrGWCCSfdD'
+  - type: text
+    weight: 1
+    range:
+      - 28
+      - 28
+    drawn: false
+    description: >-
+      Eat only what others leave behind or discard — accept no fresh portion
+      offered directly to you
+    _id: Y1UCayGxHL6fcxG8
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!BQ5OcjnSWOOApxuG.Y1UCayGxHL6fcxG8'
+  - type: text
+    weight: 1
+    range:
+      - 29
+      - 29
+    drawn: false
+    description: >-
+      Embroider your transgressions in thread upon your vestments for all to
+      read
+    _id: sT1rsZg3LC37aoLm
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!BQ5OcjnSWOOApxuG.sT1rsZg3LC37aoLm'
+  - type: text
+    weight: 1
+    range:
+      - 30
+      - 30
+    drawn: false
+    description: >-
+      Every coin you spend must first be pressed against your holy symbol and
+      held there for a full minute
+    _id: eGejTvLJjkMZgiVf
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!BQ5OcjnSWOOApxuG.eGejTvLJjkMZgiVf'
+  - type: text
+    weight: 1
+    range:
+      - 31
+      - 31
+    drawn: false
+    description: >-
+      Every weapon you carry must be bound in cloth wrappings blessed by a
+      different cleric
+    _id: l9zP8LZ3vWyHZFOa
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!BQ5OcjnSWOOApxuG.l9zP8LZ3vWyHZFOa'
+  - type: text
+    weight: 1
+    range:
+      - 32
+      - 32
+    drawn: false
+    description: Cover your face with melted wax from your temple's candles
+    _id: z8KQ0I0NqyLVaWeD
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!BQ5OcjnSWOOApxuG.z8KQ0I0NqyLVaWeD'
+  - type: text
+    weight: 1
+    range:
+      - 33
+      - 33
+    drawn: false
+    description: >-
+      Find a wounded animal and nurse it back to full health before any other
+      obligation
+    _id: EFfsgrvXe96oOwKN
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!BQ5OcjnSWOOApxuG.EFfsgrvXe96oOwKN'
+  - type: text
+    weight: 1
+    range:
+      - 34
+      - 34
+    drawn: false
+    description: >-
+      For each lie you told, you must speak an uncomfortable truth to someone
+      who does not wish to hear it
+    _id: BbLImuQy2eWf7aO3
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!BQ5OcjnSWOOApxuG.BbLImuQy2eWf7aO3'
+  - type: text
+    weight: 1
+    range:
+      - 35
+      - 35
+    drawn: false
+    description: >-
+      Forge a new set of prayer beads from scratch — carving, stringing, and
+      blessing each one yourself
+    _id: PpZkBXnXzaTBkHi4
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!BQ5OcjnSWOOApxuG.PpZkBXnXzaTBkHi4'
+  - type: text
+    weight: 1
+    range:
+      - 36
+      - 36
+    drawn: false
+    description: >-
+      Gift your most prized possession to an enemy or rival of your faith as an
+      act of humility
+    _id: ltUazwOPrrjOaEfe
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!BQ5OcjnSWOOApxuG.ltUazwOPrrjOaEfe'
+  - type: text
+    weight: 1
+    range:
+      - 37
+      - 37
+    drawn: false
+    description: >-
+      Go unarmored until you have taken a blow meant for an innocent and
+      survived it
+    _id: y4RcfcYK7WwqA1u4
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!BQ5OcjnSWOOApxuG.y4RcfcYK7WwqA1u4'
+  - type: text
+    weight: 1
+    range:
+      - 38
+      - 38
+    drawn: false
+    description: >-
+      Guard a sacred flame in a temple hearth for seven consecutive nights
+      without sleeping
+    _id: SJM1EfKR367KXBQA
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!BQ5OcjnSWOOApxuG.SJM1EfKR367KXBQA'
+  - type: text
+    weight: 1
+    range:
+      - 39
+      - 39
+    drawn: false
+    description: >-
+      Hand-copy a holy manuscript onto fresh vellum using ink mixed with your
+      own tears
+    _id: MrMumfoZ8sycESgx
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!BQ5OcjnSWOOApxuG.MrMumfoZ8sycESgx'
+  - type: text
+    weight: 1
+    range:
+      - 40
+      - 40
+    drawn: false
+    description: >-
+      Harvest and dry herbs for the temple infirmary — a full bushel required
+      before release
+    _id: gZMERKDomQKU59lC
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!BQ5OcjnSWOOApxuG.gZMERKDomQKU59lC'
+  - type: text
+    weight: 1
+    range:
+      - 41
+      - 41
+    drawn: false
+    description: >-
+      Hold silence from sunset to sunrise — gestures only, no written
+      communication either
+    _id: 9F82F3RJOWRV4LBG
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!BQ5OcjnSWOOApxuG.9F82F3RJOWRV4LBG'
+  - type: text
+    weight: 1
+    range:
+      - 42
+      - 42
+    drawn: false
+    description: >-
+      If you draw blood in combat, you must tend to your opponent's wounds
+      afterward if they survive
+    _id: YLq3EMkLunNp6vNN
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!BQ5OcjnSWOOApxuG.YLq3EMkLunNp6vNN'
+  - type: text
+    weight: 1
+    range:
+      - 43
+      - 43
+    drawn: false
+    description: >-
+      Immerse yourself completely in a sacred spring or river three times while
+      confessing three failures
+    _id: kDKrikpJJlRGMW9b
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!BQ5OcjnSWOOApxuG.kDKrikpJJlRGMW9b'
+  - type: text
+    weight: 1
+    range:
+      - 44
+      - 44
+    drawn: false
+    description: >-
+      Journey to the highest local peak and leave an offering at the summit,
+      returning without looking back
+    _id: ulfEpKGb3DRqix5f
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!BQ5OcjnSWOOApxuG.ulfEpKGb3DRqix5f'
+  - type: text
+    weight: 1
+    range:
+      - 45
+      - 45
+    drawn: false
+    description: >-
+      Keep a tally of every kind act you witness and report them to your
+      confessor weekly
+    _id: pLVP0cSRniX4EGGt
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!BQ5OcjnSWOOApxuG.pLVP0cSRniX4EGGt'
+  - type: text
+    weight: 1
+    range:
+      - 46
+      - 46
+    drawn: false
+    description: >-
+      Keep a vigil candle burning beside you at all hours — it must be lit from
+      a temple flame
+    _id: s35BVjYkAxm63g1L
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!BQ5OcjnSWOOApxuG.s35BVjYkAxm63g1L'
+  - type: text
+    weight: 1
+    range:
+      - 47
+      - 47
+    drawn: false
+    description: >-
+      Kneel and offer a prayer whenever you hear a bell ring, regardless of
+      circumstance
+    _id: Hrjy3oJB2v5LCiRX
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!BQ5OcjnSWOOApxuG.Hrjy3oJB2v5LCiRX'
+  - type: text
+    weight: 1
+    range:
+      - 48
+      - 48
+    drawn: false
+    description: >-
+      Labor in the fields of a temple farm until the harvest is brought in,
+      taking no share for yourself
+    _id: xwQiENcgIrOqe6Em
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!BQ5OcjnSWOOApxuG.xwQiENcgIrOqe6Em'
+  - type: text
+    weight: 1
+    range:
+      - 49
+      - 49
+    drawn: false
+    description: >-
+      Lead a lost traveler safely to their destination before pursuing any of
+      your own goals
+    _id: m3VaAx9PyDTyzBVE
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!BQ5OcjnSWOOApxuG.m3VaAx9PyDTyzBVE'
+  - type: text
+    weight: 1
+    range:
+      - 50
+      - 50
+    drawn: false
+    description: >-
+      Lend your weapon arm to the defense of any temple you encounter, for no
+      fewer than three days
+    _id: jmxoJ69NymhTHIIw
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!BQ5OcjnSWOOApxuG.jmxoJ69NymhTHIIw'
+  - type: text
+    weight: 1
+    range:
+      - 51
+      - 51
+    drawn: false
+    description: >-
+      Make a circuit of the temple walls on your hands and knees once per day at
+      high noon
+    _id: TXMSamPKFn8Jh263
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!BQ5OcjnSWOOApxuG.TXMSamPKFn8Jh263'
+  - type: text
+    weight: 1
+    range:
+      - 52
+      - 52
+    drawn: false
+    description: >-
+      Mark each day of penance by pressing a heated holy symbol briefly against
+      your forearm
+    _id: 3q6aXphJisuafGfY
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!BQ5OcjnSWOOApxuG.3q6aXphJisuafGfY'
+  - type: text
+    weight: 1
+    range:
+      - 53
+      - 53
+    drawn: false
+    description: >-
+      Mend torn or damaged holy texts with your own needle and thread — no magic
+      permitted
+    _id: wVFzTdsKsV88mN7X
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!BQ5OcjnSWOOApxuG.wVFzTdsKsV88mN7X'
+  - type: text
+    weight: 1
+    range:
+      - 54
+      - 54
+    drawn: false
+    description: >-
+      Must walk at the rear of any group and may not lead or give orders until
+      absolved
+    _id: 594b9OB3PZwwPzHA
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!BQ5OcjnSWOOApxuG.594b9OB3PZwwPzHA'
+  - type: text
+    weight: 1
+    range:
+      - 55
+      - 55
+    drawn: false
+    description: >-
+      Never be the first to eat or the last to rise — practice humility in every
+      communal act
+    _id: lEhtRdzftIBQAjnp
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!BQ5OcjnSWOOApxuG.lEhtRdzftIBQAjnp'
+  - type: text
+    weight: 1
+    range:
+      - 56
+      - 56
+    drawn: false
+    description: >-
+      No armor heavier than leather may be worn — your faith must serve as your
+      shield
+    _id: 3vhU3F1Pt56txHYx
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!BQ5OcjnSWOOApxuG.3vhU3F1Pt56txHYx'
+  - type: text
+    weight: 1
+    range:
+      - 57
+      - 57
+    drawn: false
+    description: >-
+      No meat may pass your lips — subsist on bread, root vegetables, and water
+      only
+    _id: bazq2E9daO54lp4K
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!BQ5OcjnSWOOApxuG.bazq2E9daO54lp4K'
+  - type: text
+    weight: 1
+    range:
+      - 58
+      - 58
+    drawn: false
+    description: >-
+      No shelter may be taken in any building that charges for lodging — inns
+      and taverns are forbidden
+    _id: ri6iGyK4epo7vv0z
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!BQ5OcjnSWOOApxuG.ri6iGyK4epo7vv0z'
+  - type: text
+    weight: 1
+    range:
+      - 59
+      - 59
+    drawn: false
+    description: >-
+      Offer your services freely as a laborer to any community you pass through
+      for at least one day
+    _id: bpvNilajTma24pX5
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!BQ5OcjnSWOOApxuG.bpvNilajTma24pX5'
+  - type: text
+    weight: 1
+    range:
+      - 60
+      - 60
+    drawn: false
+    description: >-
+      Only speak when spoken to — never initiate conversation until the penance
+      is complete
+    _id: WA8dBgn63pD6chy5
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!BQ5OcjnSWOOApxuG.WA8dBgn63pD6chy5'
+  - type: text
+    weight: 1
+    range:
+      - 61
+      - 61
+    drawn: false
+    description: >-
+      Paint or chalk a holy symbol on every door you pass through, asking
+      blessing upon the household within
+    _id: cXBbG0RtL6dLPBpx
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!BQ5OcjnSWOOApxuG.cXBbG0RtL6dLPBpx'
+  - type: text
+    weight: 1
+    range:
+      - 62
+      - 62
+    drawn: false
+    description: >-
+      Perform last rites for every corpse you encounter regardless of faith,
+      race, or allegiance
+    _id: KukrtOBFoIlnCquY
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!BQ5OcjnSWOOApxuG.KukrtOBFoIlnCquY'
+  - type: text
+    weight: 1
+    range:
+      - 63
+      - 63
+    drawn: false
+    description: >-
+      Pour a measure of clean water onto bare earth each morning as an offering
+      before drinking any yourself
+    _id: U3dpxF4umxsnTFPo
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!BQ5OcjnSWOOApxuG.U3dpxF4umxsnTFPo'
+  - type: text
+    weight: 1
+    range:
+      - 64
+      - 64
+    drawn: false
+    description: >-
+      Pray while holding a heavy stone above your head — arms may not lower
+      until the prayer is finished
+    _id: BkiYCCbfLzPtJfj0
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!BQ5OcjnSWOOApxuG.BkiYCCbfLzPtJfj0'
+  - type: text
+    weight: 1
+    range:
+      - 65
+      - 65
+    drawn: false
+    description: >-
+      Present yourself to the nearest temple of your faith and submit to
+      whatever labor they assign
+    _id: xuANgRsd0osab419
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!BQ5OcjnSWOOApxuG.xuANgRsd0osab419'
+  - type: text
+    weight: 1
+    range:
+      - 66
+      - 66
+    drawn: false
+    description: >-
+      Purchase and free a caged animal or bonded servant — the cost must come
+      from your own funds
+    _id: cWcXZbaelY1tC6Cv
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!BQ5OcjnSWOOApxuG.cWcXZbaelY1tC6Cv'
+  - type: text
+    weight: 1
+    range:
+      - 67
+      - 67
+    drawn: false
+    description: >-
+      Read aloud from a holy text at every rest stop, whether others wish to
+      hear it or not
+    _id: f3KGR7i6A0po9hBc
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!BQ5OcjnSWOOApxuG.f3KGR7i6A0po9hBc'
+  - type: text
+    weight: 1
+    range:
+      - 68
+      - 68
+    drawn: false
+    description: >-
+      Refuse all magical healing directed at you — only natural rest and mundane
+      medicine are permitted
+    _id: WP5tY3MfsnUcWxHr
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!BQ5OcjnSWOOApxuG.WP5tY3MfsnUcWxHr'
+  - type: text
+    weight: 1
+    range:
+      - 69
+      - 69
+    drawn: false
+    description: >-
+      Remove all dye and color from your clothing — wear only undyed cloth until
+      restoration
+    _id: 4sp8sDrYwe9SHdOh
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!BQ5OcjnSWOOApxuG.4sp8sDrYwe9SHdOh'
+  - type: text
+    weight: 1
+    range:
+      - 70
+      - 70
+    drawn: false
+    description: >-
+      Renounce one comfort you currently enjoy and live without it for a full
+      turning of the moon
+    _id: siQDlOvxyiB3GNl6
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!BQ5OcjnSWOOApxuG.siQDlOvxyiB3GNl6'
+  - type: text
+    weight: 1
+    range:
+      - 71
+      - 71
+    drawn: false
+    description: >-
+      Replace every meal with a single mouthful of sanctified bread and a sip of
+      blessed wine
+    _id: whgmfDfk1ISLx4d0
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!BQ5OcjnSWOOApxuG.whgmfDfk1ISLx4d0'
+  - type: text
+    weight: 1
+    range:
+      - 72
+      - 72
+    drawn: false
+    description: >-
+      Return to the site of your transgression and maintain a vigil there for
+      three days and nights
+    _id: UKq3Lc0wFmIyLjP6
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!BQ5OcjnSWOOApxuG.UKq3Lc0wFmIyLjP6'
+  - type: text
+    weight: 1
+    range:
+      - 73
+      - 73
+    drawn: false
+    description: >-
+      Scrub the floors of a temple using only a brush made from thorns and your
+      own effort
+    _id: uZx0XjJ3Kdcj8l8q
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!BQ5OcjnSWOOApxuG.uZx0XjJ3Kdcj8l8q'
+  - type: text
+    weight: 1
+    range:
+      - 74
+      - 74
+    drawn: false
+    description: >-
+      Seek out a hermit of your faith and serve them in isolation until they
+      declare you worthy again
+    _id: JSRtNulJV4opUZxr
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!BQ5OcjnSWOOApxuG.JSRtNulJV4opUZxr'
+  - type: text
+    weight: 1
+    range:
+      - 75
+      - 75
+    drawn: false
+    description: >-
+      Shave your head and keep it bare — hair may not be allowed to grow until
+      forgiveness is granted
+    _id: 6GCiwbMfiXsYerGS
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!BQ5OcjnSWOOApxuG.6GCiwbMfiXsYerGS'
+  - type: text
+    weight: 1
+    range:
+      - 76
+      - 76
+    drawn: false
+    description: >-
+      Sleep with your holy symbol clutched in both hands — if you wake without
+      holding it, add another day
+    _id: D3Rj7iAUueHm8aeg
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!BQ5OcjnSWOOApxuG.D3Rj7iAUueHm8aeg'
+  - type: text
+    weight: 1
+    range:
+      - 77
+      - 77
+    drawn: false
+    description: >-
+      Speak a public apology at the next gathering of faithful — holding nothing
+      back about your failure
+    _id: Y2JpNUU1MB06Q7Cc
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!BQ5OcjnSWOOApxuG.Y2JpNUU1MB06Q7Cc'
+  - type: text
+    weight: 1
+    range:
+      - 78
+      - 78
+    drawn: false
+    description: >-
+      Spend a full day caring for the elderly in a poor quarter, attending to
+      whatever they need
+    _id: B9tgLNUDbrZ0rfx7
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!BQ5OcjnSWOOApxuG.B9tgLNUDbrZ0rfx7'
+  - type: text
+    weight: 1
+    range:
+      - 79
+      - 79
+    drawn: false
+    description: >-
+      Stitch shut your coin purse — you may not access personal wealth until the
+      penance concludes
+    _id: Se2Wptor0fQVhLGY
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!BQ5OcjnSWOOApxuG.Se2Wptor0fQVhLGY'
+  - type: text
+    weight: 1
+    range:
+      - 80
+      - 80
+    drawn: false
+    description: >-
+      Surrender your holy symbol to a superior and earn a replacement through
+      acts of devotion
+    _id: d3L6Q0XbtAOSTbQl
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!BQ5OcjnSWOOApxuG.d3L6Q0XbtAOSTbQl'
+  - type: text
+    weight: 1
+    range:
+      - 81
+      - 81
+    drawn: false
+    description: >-
+      Sweep the steps of every shrine you encounter, no matter how clean or how
+      filthy
+    _id: KlZpfbuJlqHSc1Zi
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!BQ5OcjnSWOOApxuG.KlZpfbuJlqHSc1Zi'
+  - type: text
+    weight: 1
+    range:
+      - 82
+      - 82
+    drawn: false
+    description: >-
+      Take no action to defend yourself for one full day — trust entirely in
+      divine protection
+    _id: XaapOQue5OTBSt3u
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!BQ5OcjnSWOOApxuG.XaapOQue5OTBSt3u'
+  - type: text
+    weight: 1
+    range:
+      - 83
+      - 83
+    drawn: false
+    description: >-
+      The next creature you slay must be offered as a burnt sacrifice with
+      proper ritual and prayer
+    _id: udfaSz1qfPnqKr16
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!BQ5OcjnSWOOApxuG.udfaSz1qfPnqKr16'
+  - type: text
+    weight: 1
+    range:
+      - 84
+      - 84
+    drawn: false
+    description: >-
+      Travel to a crossroads at midnight and bury a written confession beneath a
+      cairn of white stones
+    _id: Dx0AADSgG9Sxdwz1
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!BQ5OcjnSWOOApxuG.Dx0AADSgG9Sxdwz1'
+  - type: text
+    weight: 1
+    range:
+      - 85
+      - 85
+    drawn: false
+    description: >-
+      Undertake a three-day fast broken only by water blessed at a consecrated
+      font
+    _id: AKHVBFjvxeYTEhkp
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!BQ5OcjnSWOOApxuG.AKHVBFjvxeYTEhkp'
+  - type: text
+    weight: 1
+    range:
+      - 86
+      - 86
+    drawn: false
+    description: >-
+      Visit the sick in every settlement you enter and lay hands upon them,
+      praying for their recovery
+    _id: 31nTh2GExbeoWBs1
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!BQ5OcjnSWOOApxuG.31nTh2GExbeoWBs1'
+  - type: text
+    weight: 1
+    range:
+      - 87
+      - 87
+    drawn: false
+    description: >-
+      Vow to undertake the next dangerous task presented to you, regardless of
+      personal risk or reward
+    _id: LJ7uQxZhZsajjizE
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!BQ5OcjnSWOOApxuG.LJ7uQxZhZsajjizE'
+  - type: text
+    weight: 1
+    range:
+      - 88
+      - 88
+    drawn: false
+    description: >-
+      Wade upstream in a river while reciting prayers — each step taken against
+      the current is a step toward grace
+    _id: LcpddyvrVZEEbaer
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!BQ5OcjnSWOOApxuG.LcpddyvrVZEEbaer'
+  - type: text
+    weight: 1
+    range:
+      - 89
+      - 89
+    drawn: false
+    description: >-
+      Walk barefoot for seven days while carrying a vessel of sanctified water
+      that must not spill
+    _id: czIBF65xgHXrzRBG
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!BQ5OcjnSWOOApxuG.czIBF65xgHXrzRBG'
+  - type: text
+    weight: 1
+    range:
+      - 90
+      - 90
+    drawn: false
+    description: >-
+      Wash the feet of seven strangers and speak a blessing over each before you
+      may rest
+    _id: 3eavkJ2kIiAeoNEm
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!BQ5OcjnSWOOApxuG.3eavkJ2kIiAeoNEm'
+  - type: text
+    weight: 1
+    range:
+      - 91
+      - 91
+    drawn: false
+    description: >-
+      Wear a rough hemp cord tied tightly around each wrist as a constant
+      reminder of your binding oath
+    _id: xDpjt06IRXwm2F3E
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!BQ5OcjnSWOOApxuG.xDpjt06IRXwm2F3E'
+  - type: text
+    weight: 1
+    range:
+      - 92
+      - 92
+    drawn: false
+    description: >-
+      Wear your clothing inside-out so that all may see the unfinished seams of
+      your repentance
+    _id: fg41kQY8562jOkni
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!BQ5OcjnSWOOApxuG.fg41kQY8562jOkni'
+  - type: text
+    weight: 1
+    range:
+      - 93
+      - 93
+    drawn: false
+    description: >-
+      Weave a burial shroud from raw flax with your own hands and deliver it to
+      a temple of the dead
+    _id: K1kmNmlcD75pvEzE
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!BQ5OcjnSWOOApxuG.K1kmNmlcD75pvEzE'
+  - type: text
+    weight: 1
+    range:
+      - 94
+      - 94
+    drawn: false
+    description: >-
+      Whisper a prayer of forgiveness into a clay jar each night, then seal it —
+      deliver the filled jar to a priest
+    _id: lVZVY8NA75GuHFrL
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!BQ5OcjnSWOOApxuG.lVZVY8NA75GuHFrL'
+  - type: text
+    weight: 1
+    range:
+      - 95
+      - 95
+    drawn: false
+    description: >-
+      Write the name of every person you have wronged on a strip of parchment,
+      burn it, and scatter the ash at a temple gate
+    _id: 8gHIHk7HQMOAxxGA
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!BQ5OcjnSWOOApxuG.8gHIHk7HQMOAxxGA'
+  - type: text
+    weight: 1
+    range:
+      - 96
+      - 96
+    drawn: false
+    description: >-
+      You may carry no more possessions than fit in your two hands until the
+      faith is restored
+    _id: yklkokIZwnTO1ah4
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!BQ5OcjnSWOOApxuG.yklkokIZwnTO1ah4'
+  - type: text
+    weight: 1
+    range:
+      - 97
+      - 97
+    drawn: false
+    description: >-
+      You may not pass through a doorway at the same time as another — always
+      yield and enter last
+    _id: J4oSDOdyhu5K4CQK
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!BQ5OcjnSWOOApxuG.J4oSDOdyhu5K4CQK'
+  - type: text
+    weight: 1
+    range:
+      - 98
+      - 98
+    drawn: false
+    description: >-
+      You must answer honestly any question put to you by a child, no matter how
+      inconvenient the truth
+    _id: wFFo94i88QlFYKvH
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!BQ5OcjnSWOOApxuG.wFFo94i88QlFYKvH'
+  - type: text
+    weight: 1
+    range:
+      - 99
+      - 99
+    drawn: false
+    description: >-
+      You must greet every dawn with arms outstretched and face upturned,
+      standing motionless until the sun fully clears the horizon
+    _id: acjCScnMwsbq3VNz
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!BQ5OcjnSWOOApxuG.acjCScnMwsbq3VNz'
+  - type: text
+    weight: 1
+    range:
+      - 100
+      - 100
+    drawn: false
+    description: >-
+      Your bedding must be the bare ground — no blanket, mat, or padding of any
+      kind until absolved
+    _id: uUfPmijd8AoH7jYL
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!BQ5OcjnSWOOApxuG.uUfPmijd8AoH7jYL'
+description: >-
+  100 penances and acts of contrition for Clerics who have fallen from divine
+  favor.
+replacement: true
+displayRoll: true
+img: icons/svg/d20-grey.svg
+folder: null
+ownership:
+  default: 0
+  HP3Vba5udEHYm4dW: 3
+flags: {}
+_stats:
+  compendiumSource: null
+  duplicateSource: null
+  exportSource: null
+  coreVersion: '13.348'
+  systemId: shadowdark
+  systemVersion: 3.6.1
+  createdTime: 1772832508220
+  modifiedTime: 1772832508220
+  lastModifiedBy: HP3Vba5udEHYm4dW
+_id: BQ5OcjnSWOOApxuG
+sort: 0
+_key: '!tables!BQ5OcjnSWOOApxuG'

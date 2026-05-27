@@ -3765,3 +3765,373 @@ body.sdx-tray-enabled #camera-views.vertical.left {
     margin-right: 5px;
     font-size: 0.9em;
 }
+
+/* Local decor import */
+.sdx-tray .decor-import-section {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin: 0 8px 8px;
+    padding: 7px;
+    border: 1px solid rgba(160, 126, 212, 0.22);
+    border-radius: 4px;
+    background: rgba(0, 0, 0, 0.22);
+}
+
+.sdx-tray .decor-import-btn,
+.sdx-tray .decor-ddpack-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    width: 100%;
+    padding: 5px 8px;
+    border: 1px solid rgba(160, 126, 212, 0.38);
+    border-radius: 4px;
+    background: rgba(120, 90, 170, 0.18);
+    color: #d8c7ef;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+.sdx-tray .decor-ddpack-btn {
+    border-color: rgba(201, 170, 88, 0.42);
+    background: rgba(145, 110, 45, 0.18);
+    color: #e7d49c;
+}
+
+.sdx-tray .decor-import-btn:hover,
+.sdx-tray .decor-ddpack-btn:hover {
+    background: rgba(140, 105, 190, 0.28);
+    border-color: rgba(190, 165, 230, 0.55);
+}
+
+.sdx-tray .decor-ddpack-btn:hover {
+    background: rgba(160, 120, 45, 0.28);
+    border-color: rgba(230, 200, 130, 0.55);
+}
+
+.sdx-tray .decor-import-hint {
+    color: rgba(220, 210, 235, 0.62);
+    font-size: 10px;
+    line-height: 1.25;
+}
+
+.sdx-tray .decor-import-hint code {
+    color: #e5d5ff;
+}
+
+.sdx-decor-import-root {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    gap: 10px;
+}
+
+.sdx-decor-import-header {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.sdx-decor-source-tabs {
+    display: flex;
+    gap: 4px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+    padding-bottom: 6px;
+}
+
+.sdx-decor-source-tab {
+    padding: 5px 8px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 4px;
+    background: rgba(0, 0, 0, 0.25);
+    color: rgba(230, 220, 245, 0.72);
+    cursor: pointer;
+    font-size: 12px;
+}
+
+.sdx-decor-source-tab.active {
+    border-color: rgba(160, 126, 212, 0.58);
+    background: rgba(120, 90, 170, 0.28);
+    color: #f0e7ff;
+}
+
+.sdx-decor-import-intro {
+    margin: 0;
+    color: #d7d0df;
+    font-size: 13px;
+}
+
+.sdx-decor-import-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.sdx-decor-file-input,
+.sdx-decor-folder-input {
+    display: none;
+}
+
+.sdx-decor-folder-label,
+.sdx-decor-import-selected {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 10px;
+    border: 1px solid rgba(160, 126, 212, 0.4);
+    border-radius: 4px;
+    background: rgba(120, 90, 170, 0.2);
+    color: #e8dcf6;
+    cursor: pointer;
+}
+
+.sdx-decor-folder-label:hover,
+.sdx-decor-import-selected:hover:not(:disabled) {
+    background: rgba(140, 105, 190, 0.3);
+}
+
+.sdx-decor-import-selected:disabled {
+    opacity: 0.55;
+    cursor: default;
+}
+
+.sdx-decor-import-status {
+    color: rgba(220, 210, 235, 0.68);
+    font-size: 12px;
+}
+
+.sdx-decor-source-input {
+    flex: 1 1 280px;
+    min-width: 180px;
+    padding: 6px 8px;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 4px;
+    background: rgba(0, 0, 0, 0.32);
+    color: #e8dcf6;
+}
+
+.sdx-decor-source-preview {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    min-height: 220px;
+    padding: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 4px;
+    background: rgba(0, 0, 0, 0.22);
+    color: rgba(220, 210, 235, 0.68);
+}
+
+.sdx-decor-source-preview img {
+    max-width: min(360px, 100%);
+    max-height: 360px;
+    object-fit: contain;
+    background: rgba(0, 0, 0, 0.36);
+    border-radius: 4px;
+}
+
+.sdx-decor-source-path {
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    color: rgba(220, 210, 235, 0.72);
+    font-size: 12px;
+}
+
+.sdx-decor-import-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(116px, 1fr));
+    gap: 8px;
+    overflow-y: auto;
+    min-height: 0;
+    padding-right: 3px;
+}
+
+.sdx-decor-import-card {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+    padding: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.13);
+    border-radius: 4px;
+    background: rgba(0, 0, 0, 0.28);
+    color: #ddd;
+    cursor: pointer;
+    text-align: left;
+}
+
+.sdx-decor-import-card.selected {
+    border-color: rgba(120, 190, 145, 0.85);
+    background: rgba(45, 100, 62, 0.35);
+}
+
+.sdx-decor-import-card img {
+    width: 100%;
+    aspect-ratio: 1;
+    object-fit: contain;
+    background: rgba(0, 0, 0, 0.36);
+    border-radius: 3px;
+}
+
+.sdx-decor-import-card span,
+.sdx-decor-import-card small {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.sdx-decor-import-card span {
+    font-size: 12px;
+}
+
+.sdx-decor-import-card small {
+    color: rgba(220, 210, 235, 0.58);
+    font-size: 10px;
+}
+
+/* Custom hex tile folder navigation */
+.sdx-tray .hex-custom-breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    min-width: 0;
+    margin: 0 2px 4px 2px;
+    padding: 4px 6px;
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(159, 146, 117, 0.2);
+    border-radius: 4px;
+    font-size: 0.75em;
+    line-height: 1.4;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+.sdx-tray .hex-custom-breadcrumb-segment {
+    appearance: none;
+    background: transparent;
+    border: 0;
+    color: rgba(232, 220, 200, 0.75);
+    padding: 2px 5px;
+    border-radius: 3px;
+    cursor: pointer;
+    max-width: 12em;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    transition: background 0.12s, color 0.12s;
+}
+
+.sdx-tray .hex-custom-breadcrumb-segment:hover {
+    background: rgba(159, 146, 117, 0.2);
+    color: #e8dcc8;
+}
+
+.sdx-tray .hex-custom-breadcrumb-sep {
+    color: rgba(232, 220, 200, 0.35);
+    margin: 0 1px;
+    flex-shrink: 0;
+}
+
+.sdx-tray .hex-custom-reload-btn {
+    margin-left: auto;
+    background: transparent;
+    border: 1px solid transparent;
+    color: rgba(232, 220, 200, 0.55);
+    cursor: pointer;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 0.9em;
+    line-height: 1;
+    flex-shrink: 0;
+    transition: background 0.12s, color 0.12s, border-color 0.12s;
+}
+
+.sdx-tray .hex-custom-up-btn {
+    margin-left: auto;
+    background: transparent;
+    border: 1px solid rgba(159, 146, 117, 0.25);
+    color: rgba(232, 220, 200, 0.65);
+    cursor: pointer;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 0.9em;
+    line-height: 1;
+    flex-shrink: 0;
+    transition: background 0.12s, color 0.12s, border-color 0.12s;
+}
+
+.sdx-tray .hex-custom-up-btn:hover {
+    background: rgba(159, 146, 117, 0.2);
+    border-color: rgba(159, 146, 117, 0.4);
+    color: #e8dcc8;
+}
+
+.sdx-tray .hex-custom-up-btn + .hex-custom-reload-btn {
+    margin-left: 2px;
+}
+
+.sdx-tray .hex-custom-reload-btn:hover {
+    background: rgba(159, 146, 117, 0.2);
+    border-color: rgba(159, 146, 117, 0.3);
+    color: #e8dcc8;
+}
+
+.sdx-tray .hex-custom-reload-btn:disabled {
+    opacity: 0.5;
+    cursor: progress;
+}
+
+@keyframes sdx-hex-reload-spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.sdx-tray .hex-custom-reload-btn:disabled .fa-rotate {
+    animation: sdx-hex-reload-spin 0.9s linear infinite;
+    display: inline-block;
+}
+
+.sdx-tray .hex-custom-chip-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin: 0 2px 6px 2px;
+    padding: 4px;
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(159, 146, 117, 0.2);
+    border-radius: 4px;
+}
+
+.sdx-tray .hex-custom-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(159, 146, 117, 0.3);
+    color: #e8dcc8;
+    padding: 3px 8px;
+    border-radius: 12px;
+    font-size: 0.75em;
+    line-height: 1.4;
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.12s, border-color 0.12s, color 0.12s;
+}
+
+.sdx-tray .hex-custom-chip:hover {
+    background: rgba(0, 0, 0, 0.4);
+    border-color: rgba(159, 146, 117, 0.5);
+}
+
+.sdx-tray .hex-custom-chip:active {
+    background: rgba(159, 146, 117, 0.25);
+    border-color: rgba(159, 146, 117, 0.55);
+}
+
+.sdx-tray .hex-custom-chip-count {
+    color: rgba(232, 220, 200, 0.45);
+    font-size: 0.85em;
+}

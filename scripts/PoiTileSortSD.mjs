@@ -1,23 +1,32 @@
 
 const MODULE_ID = "shadowdark-extras";
 
-export class PoiTileSortApp extends Application {
+const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
+
+export class PoiTileSortApp extends HandlebarsApplicationMixin(ApplicationV2) {
     static _instance = null;
 
-    static get defaultOptions() {
-        return foundry.utils.mergeObject(super.defaultOptions, {
-            id: "sdx-poi-tile-sort",
+    static DEFAULT_OPTIONS = {
+        id: "sdx-poi-tile-sort",
+        classes: ["shadowdark", "shadowdark-extras", "poi-tile-sort-app"],
+        window: {
             title: "POI Tile Sort",
-            template: `modules/${MODULE_ID}/templates/poi-tile-sort.hbs`,
-            classes: ["shadowdark", "shadowdark-extras", "poi-tile-sort-app"],
+            resizable: true
+        },
+        position: {
             width: 280,
             height: 500,
             top: 80,
-            left: window.innerWidth - 320,
-            resizable: true,
-            scrollY: [".poi-sort-list"]
-        });
-    }
+            left: window.innerWidth - 320
+        }
+    };
+
+    static PARTS = {
+        content: {
+            template: `modules/${MODULE_ID}/templates/poi-tile-sort.hbs`,
+            scrollable: [".poi-sort-list"]
+        }
+    };
 
     constructor(options = {}) {
         super(options);
@@ -26,7 +35,6 @@ export class PoiTileSortApp extends Application {
         this._searchTerm = "";
         this._hookIds = [];
         this._renderDebounceTimer = null;
-        // Trackpoint state
         this._trackpoint = null;
     }
 
@@ -39,7 +47,7 @@ export class PoiTileSortApp extends Application {
         if (!this._instance) {
             this._instance = new PoiTileSortApp();
         }
-        this._instance.render(true);
+        this._instance.render({ force: true });
     }
 
     static hide() {
@@ -52,12 +60,12 @@ export class PoiTileSortApp extends Application {
     /*  Data Preparation                        */
     /* ---------------------------------------- */
 
-    getData(options = {}) {
-        if (!canvas.scene) return { tiles: [] };
+    async _prepareContext(options) {
+        if (!canvas.scene) return { tiles: [], searchTerm: this._searchTerm };
 
         const tiles = canvas.tiles.placeables
             .filter(t => t.document.getFlag(MODULE_ID, "painted") && t.document.getFlag(MODULE_ID, "isSymbol"))
-            .sort((a, b) => b.document.sort - a.document.sort) // highest sort on top
+            .sort((a, b) => b.document.sort - a.document.sort)
             .map(t => {
                 const doc = t.document;
                 const src = doc.texture?.src || "";
@@ -80,85 +88,77 @@ export class PoiTileSortApp extends Application {
     /*  Rendering                               */
     /* ---------------------------------------- */
 
-    activateListeners(html) {
-        super.activateListeners(html);
+    _onRender(context, options) {
+        const html = this.element;
+        if (!html) return;
 
-        const list = html.find(".poi-sort-list")[0];
+        const list = html.querySelector(".poi-sort-list");
         if (!list) return;
 
         // Search
-        html.find(".poi-sort-search").on("input", (e) => {
-            this._searchTerm = e.target.value.toLowerCase();
-            this._filterList(list);
-        });
+        const search = html.querySelector(".poi-sort-search");
+        if (search) {
+            search.addEventListener("input", (e) => {
+                this._searchTerm = e.target.value.toLowerCase();
+                this._filterList(list);
+            });
+        }
 
         // Item event handlers
         list.querySelectorAll(".poi-sort-item").forEach(li => {
             const tileId = li.dataset.tileId;
 
-            // Click → select tile
             li.addEventListener("click", (e) => {
-                if (e.target.closest(".poi-sort-btn")) return; // skip action button clicks
+                if (e.target.closest(".poi-sort-btn")) return;
                 const tile = canvas.tiles.get(tileId);
                 if (!tile) return;
 
                 if (e.ctrlKey || e.metaKey) {
-                    // Ctrl+click → pan to tile
                     canvas.animatePan({ x: tile.center.x, y: tile.center.y, duration: 500 });
                 } else {
-                    // Normal click → control tile
                     tile.control({ releaseOthers: !e.shiftKey });
                 }
             });
 
-            // Double-click → open tile sheet
             li.addEventListener("dblclick", (e) => {
                 if (e.target.closest(".poi-sort-btn")) return;
                 const tile = canvas.tiles.get(tileId);
                 tile?.document.sheet.render(true);
             });
 
-            // Hover → highlight
             li.addEventListener("mouseenter", () => this._createHighlight(tileId));
             li.addEventListener("mouseleave", () => this._removeHighlight());
 
-            // Rotate left
             li.querySelector(".poi-sort-rotate-left")?.addEventListener("click", (e) => {
                 e.stopPropagation();
                 this._rotateTile(tileId, -90);
             });
 
-            // Rotate right
             li.querySelector(".poi-sort-rotate-right")?.addEventListener("click", (e) => {
                 e.stopPropagation();
                 this._rotateTile(tileId, 90);
             });
 
-            // Scale down
             li.querySelector(".poi-sort-scale-down")?.addEventListener("click", (e) => {
                 e.stopPropagation();
                 this._scaleTile(tileId, 0.8);
             });
 
-            // Scale up
             li.querySelector(".poi-sort-scale-up")?.addEventListener("click", (e) => {
                 e.stopPropagation();
                 this._scaleTile(tileId, 1.25);
             });
 
-            // Eye toggle
             li.querySelector(".poi-sort-eye")?.addEventListener("click", (e) => {
                 e.stopPropagation();
                 this._toggleHidden(tileId, li);
             });
 
-            // Delete tile
             li.querySelector(".poi-sort-delete")?.addEventListener("click", (e) => {
                 e.stopPropagation();
                 this._deleteTile(tileId);
             });
 
-            // Trackpoint nudge
             const trackpoint = li.querySelector(".poi-sort-trackpoint");
             if (trackpoint) {
                 trackpoint.addEventListener("mousedown", (e) => {
@@ -169,10 +169,7 @@ export class PoiTileSortApp extends Application {
             }
         });
 
-        // Setup drag-drop
         this._setupDragDrop(list);
-
-        // Register hooks
         this._registerHooks();
     }
 
@@ -248,11 +245,9 @@ export class PoiTileSortApp extends Application {
         const updates = [];
         const count = items.length;
 
-        // Top of list = highest sort, step of 100
         items.forEach((li, idx) => {
             const sort = 100000 + (count - idx) * 100;
             updates.push({ _id: li.dataset.tileId, sort });
-            // Update displayed sort value
             const meta = li.querySelector(".poi-sort-meta");
             if (meta) {
                 const elev = meta.dataset.elevation || "0";
@@ -353,8 +348,8 @@ export class PoiTileSortApp extends Application {
 
     updateControlled() {
         const el = this.element;
-        if (!el?.length) return;
-        el[0].querySelectorAll(".poi-sort-item").forEach(li => {
+        if (!el) return;
+        el.querySelectorAll(".poi-sort-item").forEach(li => {
             const tile = canvas.tiles.get(li.dataset.tileId);
             li.classList.toggle("selected", !!tile?.controlled);
         });
@@ -376,7 +371,6 @@ export class PoiTileSortApp extends Application {
     /* ---------------------------------------- */
 
     _registerHooks() {
-        // Unregister any prior hooks
         this._unregisterHooks();
 
         const on = (event, fn) => {
@@ -392,7 +386,7 @@ export class PoiTileSortApp extends Application {
                 if (tile.mesh) tile.mesh.alpha = 0;
             }
         });
-        on("canvasReady", () => this.render(true));
+        on("canvasReady", () => this.render({ force: true }));
     }
 
     _unregisterHooks() {
@@ -405,7 +399,7 @@ export class PoiTileSortApp extends Application {
     _debouncedRender() {
         clearTimeout(this._renderDebounceTimer);
         this._renderDebounceTimer = setTimeout(() => {
-            if (this.rendered) this.render(true);
+            if (this.rendered) this.render({ force: true });
         }, 200);
     }
 
@@ -418,8 +412,8 @@ export class PoiTileSortApp extends Application {
 
         const originX = e.clientX;
         const originY = e.clientY;
-        const maxRadius = 60; // max pixel displacement for full speed
-        const speed = 1;      // pixels per frame at max deflection
+        const maxRadius = 60;
+        const speed = 1;
 
         el.classList.add("active");
 
@@ -452,7 +446,6 @@ export class PoiTileSortApp extends Application {
             state.accX += state.vx;
             state.accY += state.vy;
 
-            // Only push an update when accumulated at least 1 whole pixel
             const intX = Math.trunc(state.accX);
             const intY = Math.trunc(state.accY);
             if ((intX !== 0 || intY !== 0) && !state.pending) {

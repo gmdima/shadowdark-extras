@@ -1,0 +1,73 @@
+effects: []
+folder: vmqOYZjyo8VunyyP
+img: icons/skills/wounds/injury-face-impact-orange.webp
+name: Evoke Rage
+system:
+  description: >-
+    <p>You call out the berserk rage locked inside someone.</p><p>One willing
+    humanoid you touch enters a berserk state. The target is immune to morale
+    checks, has ADV on STR checks and melee attacks, and deals +1d4 damage for
+    the spell's duration.</p><p>If the target does not attack another creature
+    on its turn, the spell
+    ends.</p><p>@UUID[Compendium.shadowdark.spell-effects.Item.79D3CwKRi78k9BM7]{Spell
+    Effect: Evoke Rage}</p>
+  source:
+    title: cursed-scroll-3
+  class:
+    - Compendium.shadowdark.classes.Item.xdjod5gPhNPIkLth
+  duration:
+    type: rounds
+    value: 1d4
+  range: touch
+  tier: 1
+  lost: false
+  predefinedEffects: ''
+type: Spell
+_stats:
+  compendiumSource: null
+  duplicateSource: null
+  exportSource: null
+  coreVersion: '13.348'
+  systemId: shadowdark
+  systemVersion: 3.6.1
+  createdTime: 1766804312274
+  modifiedTime: 1771295884104
+  lastModifiedBy: HP3Vba5udEHYm4dW
+ownership:
+  default: 0
+  lDQovrTY32fJwPBR: 3
+flags:
+  shadowdark-extras:
+    spellDamage:
+      enabled: false
+      damageType: ''
+      damageRequirement: ''
+      damageRequirementFailAction: zero
+      formulaType: basic
+      numDice: 1
+      dieType: d6
+      bonus: 0
+      scaling: none
+      scalingDice: 0
+      formula: ''
+      tieredFormula: ''
+      effects: >-
+        [{"uuid":"Compendium.shadowdark-extras.pack-sdxitems.Item.Woqn9fSsYqcViO13","duration":{}}]
+      effectsRequirement: ''
+      effectsApplyToTarget: true
+      criticalEffects: '[]'
+      effectSelectionMode: all
+      trackDuration: false
+      perTurnTrigger: start
+      perTurnDamage: ''
+      reapplyEffects: false
+    summoning:
+      enabled: false
+      profiles: '[]'
+      deleteAtExpiry: false
+    itemGive:
+      enabled: false
+      profiles: '[]'
+_id: Lj90l1JLPzuxLaho
+sort: 5800000
+_key: '!items!Lj90l1JLPzuxLaho'

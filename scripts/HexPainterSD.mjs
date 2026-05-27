@@ -2,6 +2,7 @@ import { cache } from "./SDXCache.mjs";
 import { BIOME_TILES, BIOME_TINTS } from "./HexGeneratorSD.mjs";
 import { getDoorTiles } from "./DungeonPainterSD.mjs";
 import { setHexTerrain } from "./HexTooltipSD.mjs";
+import { loadDDPackDecorTiles } from "./DDPackManagerSD.mjs";
 
 // Maps default-tile biome keys to user-friendly terrain labels
 const BIOME_TO_TERRAIN = {
@@ -25,6 +26,9 @@ const TILE_FOLDER = `modules/${MODULE_ID}/assets/tiles`;
 const CUSTOM_TILE_FOLDER = "hexes";
 const COLORED_TILE_FOLDER = `modules/${MODULE_ID}/assets/Hexes`;
 const SYMBOLS_TILE_FOLDER = `modules/${MODULE_ID}/assets/symbols`;
+const DECOR_IMPORT_FOLDER = "decor";
+const DECOR_DDPACK_FOLDER = "decor/ddpacks";
+const DECOR_IMAGE_EXTENSIONS = [".png", ".jpg", ".jpeg", ".webp", ".gif", ".svg"];
 const HEX_TILE_W = 296;
 const HEX_TILE_H = 256;
 const COLORED_HEX_TILE_W = 572;
@@ -44,6 +48,9 @@ let _tiles = null;           // Default tiles from module
 let _customTiles = null;     // Custom tiles from data/hexes
 let _coloredTiles = null;    // Colored tiles from assets/Hexes
 let _symbolTiles = null;     // Symbol tiles from assets/symbols
+let _importedDecorTiles = null; // Decor images imported into data/decor
+let _ddPackDecorTiles = null; // Dungeondraft decor images extracted into data/decor/ddpacks
+let _customTileBoundsCache = new Map();
 let _chosenTiles = new Set();
 let _searchFilter = "";
 let _waterEffect = false;
@@ -75,6 +82,7 @@ let _customTileHeight = 256;
 
 // Active tile tab ("default", "custom", or "colored")
 let _activeTileTab = "default";
+let _customNavPath = [];
 
 // POI (Symbol) tile state
 let _poiScale = 0.5;             // Scale factor for POI tiles (0.1 - 2.0)
@@ -110,7 +118,7 @@ export async function loadTileAssets() {
         }
     } else {
         try {
-            const listing = await FilePicker.browse("data", TILE_FOLDER);
+            const listing = await foundry.applications.apps.FilePicker.implementation.browse("data", TILE_FOLDER);
             const pngFiles = (listing.files || []).filter(f => f.endsWith(".png"));
 
             _tiles = pngFiles
@@ -141,20 +149,27 @@ export async function loadTileAssets() {
     await loadCustomTileAssets();
     await loadColoredTileAssets();
     await loadSymbolTileAssets();
+    await loadImportedDecorAssets();
 
     // Start background preloading
     preloadHexImages();
 }
 
 /**
- * Ensure the custom hexes folder structure exists
+ * Ensure the custom hexes folder structure exists.
+ * Only GMs can create directories or browse the data folder, so skip
+ * non-GM users entirely. Even for GMs, Foundry v14 sometimes rejects
+ * the FilePicker calls during early boot phases — downgrade the
+ * fallback message to console.log so it doesn't surface as a warning
+ * in the noise.
  */
 async function ensureCustomFolderStructure() {
+    if (!game.user?.isGM) return;
     try {
         // Check if data/hexes folder exists
         let hexesExists = false;
         try {
-            await FilePicker.browse("data", CUSTOM_TILE_FOLDER);
+            await foundry.applications.apps.FilePicker.implementation.browse("data", CUSTOM_TILE_FOLDER);
             hexesExists = true;
         } catch (e) {
             hexesExists = false;
@@ -162,7 +177,7 @@ async function ensureCustomFolderStructure() {
 
         // Create main hexes folder if it doesn't exist
         if (!hexesExists) {
-            await FilePicker.createDirectory("data", CUSTOM_TILE_FOLDER);
+            await foundry.applications.apps.FilePicker.implementation.createDirectory("data", CUSTOM_TILE_FOLDER);
             console.log(`${MODULE_ID} | Created ${CUSTOM_TILE_FOLDER} folder`);
         }
 
@@ -170,79 +185,101 @@ async function ensureCustomFolderStructure() {
         for (const biome of BIOME_SUBDIRS) {
             const biomePath = `${CUSTOM_TILE_FOLDER}/${biome}`;
             try {
-                await FilePicker.browse("data", biomePath);
+                await foundry.applications.apps.FilePicker.implementation.browse("data", biomePath);
             } catch (e) {
                 // Folder doesn't exist, create it
-                await FilePicker.createDirectory("data", biomePath);
+                await foundry.applications.apps.FilePicker.implementation.createDirectory("data", biomePath);
                 console.log(`${MODULE_ID} | Created ${biomePath} folder`);
             }
         }
     } catch (err) {
-        console.warn(`${MODULE_ID} | Could not create custom tile folder structure:`, err);
+        console.log(`${MODULE_ID} | Skipped custom tile folder setup (filesystem permission deferred):`, err?.message || err);
     }
 }
 
+async function _scanCustomDir(dir, segments) {
+    const FP = foundry.applications.apps.FilePicker.implementation;
+    let listing;
+    try {
+        listing = await FP.browse("data", dir);
+    } catch (err) {
+        console.log(`${MODULE_ID} | Skipped ${dir} (${err?.message || err})`);
+        return [];
+    }
+
+    const results = [];
+    for (const path of (listing.files || [])) {
+        const filename = path.split("/").pop();
+        if (!filename || filename.startsWith(".") || filename === "Thumbs.db") continue;
+        if (!/\.(png|webp)$/i.test(filename)) continue;
+
+        const stem = filename.replace(/\.(png|webp)$/i, "");
+        const biome = (segments[0] && BIOME_SUBDIRS.includes(segments[0])) ? segments[0] : null;
+        results.push({
+            key: stem,
+            label: _formatLabel(_decodePathLabel(stem)),
+            path,
+            isCustom: true,
+            segments: segments.slice(),
+            biome
+        });
+    }
+
+    const subdirs = (listing.dirs || []).filter(d => {
+        const name = d.split("/").pop();
+        return name && !name.startsWith(".");
+    });
+    const childResults = await Promise.all(subdirs.map(d => {
+        const name = d.split("/").pop();
+        return _scanCustomDir(d, segments.concat([name]));
+    }));
+    for (const arr of childResults) results.push(...arr);
+
+    return results;
+}
+
 /**
- * Load custom tiles from data/hexes folder
+ * Load custom tiles from data/hexes folder, recursively.
  */
 async function loadCustomTileAssets() {
     _customTiles = [];
 
-    const metadataKey = `hex_tiles_metadata_custom`;
+    const metadataKey = `hex_tiles_metadata_custom_v2`;
     const cached = await cache.getMetadata(metadataKey);
     if (cached) {
         _customTiles = cached;
         return;
     }
 
-    // First ensure the folder structure exists
+    // FilePicker.browse requires GM permission. Skip for non-GMs; they'll
+    // get whatever the GM has cached, but never produce permission warnings.
+    if (!game.user?.isGM) return;
+
     await ensureCustomFolderStructure();
-    // ... (rest of loading logic) ...
 
     try {
-        // Load tiles from main hexes folder
-        const mainListing = await FilePicker.browse("data", CUSTOM_TILE_FOLDER);
-        const mainPngFiles = (mainListing.files || []).filter(f => f.endsWith(".png") || f.endsWith(".webp"));
-
-        for (const path of mainPngFiles) {
-            const filename = path.split("/").pop().replace(/\.(png|webp)$/, "");
-            _customTiles.push({
-                key: filename,
-                label: _formatLabel(filename),
-                path,
-                isCustom: true,
-                biome: null  // No biome for root folder tiles
-            });
-        }
-
-        // Load tiles from each biome subdirectory
-        for (const biome of BIOME_SUBDIRS) {
-            const biomePath = `${CUSTOM_TILE_FOLDER}/${biome}`;
-            try {
-                const biomeListing = await FilePicker.browse("data", biomePath);
-                const biomePngFiles = (biomeListing.files || []).filter(f => f.endsWith(".png") || f.endsWith(".webp"));
-
-                for (const path of biomePngFiles) {
-                    const filename = path.split("/").pop().replace(/\.(png|webp)$/, "");
-                    _customTiles.push({
-                        key: filename,
-                        label: _formatLabel(filename),
-                        path,
-                        isCustom: true,
-                        biome: biome
-                    });
-                }
-            } catch (err) {
-                // Subdirectory might not exist yet, that's okay
-            }
-        }
-
+        _customTiles = await _scanCustomDir(CUSTOM_TILE_FOLDER, []);
         _customTiles.sort((a, b) => a.key.localeCompare(b.key));
-        console.log(`${MODULE_ID} | Loaded ${_customTiles.length} custom tiles`);
+        await cache.setMetadata(metadataKey, _customTiles);
+        console.log(`${MODULE_ID} | Loaded ${_customTiles.length} custom tiles (recursive scan)`);
     } catch (err) {
-        console.warn(`${MODULE_ID} | Could not load custom tiles:`, err);
+        // Filesystem browse can fail during early boot phases even for GMs
+        // in Foundry v14. Recoverable: log only, do not surface warnings.
+        console.log(`${MODULE_ID} | Skipped custom tile load (filesystem permission deferred):`, err?.message || err);
         _customTiles = [];
     }
+}
+
+export async function reloadCustomTiles() {
+    try {
+        await cache.setMetadata(`hex_tiles_metadata_custom_v2`, null);
+    } catch (_) {
+        // Ignore cache clear failures; the in-memory scan still refreshes.
+    }
+    _customTiles = null;
+    _customNavPath = [];
+    _customTileBoundsCache.clear();
+    await loadCustomTileAssets();
 }
 
 /**
@@ -260,7 +297,7 @@ async function loadColoredTileAssets() {
 
     try {
         // Load tiles from main Hexes folder
-        const mainListing = await FilePicker.browse("data", COLORED_TILE_FOLDER);
+        const mainListing = await foundry.applications.apps.FilePicker.implementation.browse("data", COLORED_TILE_FOLDER);
         const mainPngFiles = (mainListing.files || []).filter(f => f.endsWith(".png") || f.endsWith(".webp"));
 
         for (const path of mainPngFiles) {
@@ -279,7 +316,7 @@ async function loadColoredTileAssets() {
         for (const dirPath of subdirs) {
             const biome = dirPath.split("/").pop();
             try {
-                const biomeListing = await FilePicker.browse("data", dirPath);
+                const biomeListing = await foundry.applications.apps.FilePicker.implementation.browse("data", dirPath);
                 const biomePngFiles = (biomeListing.files || []).filter(f => f.endsWith(".png") || f.endsWith(".webp"));
 
                 for (const path of biomePngFiles) {
@@ -321,7 +358,7 @@ async function loadSymbolTileAssets() {
 
     try {
         // Load tiles from main symbols folder
-        const mainListing = await FilePicker.browse("data", SYMBOLS_TILE_FOLDER);
+        const mainListing = await foundry.applications.apps.FilePicker.implementation.browse("data", SYMBOLS_TILE_FOLDER);
         const mainPngFiles = (mainListing.files || []).filter(f => f.endsWith(".png") || f.endsWith(".webp"));
 
         for (const path of mainPngFiles) {
@@ -340,7 +377,7 @@ async function loadSymbolTileAssets() {
         for (const dirPath of subdirs) {
             const category = dirPath.split("/").pop();
             try {
-                const categoryListing = await FilePicker.browse("data", dirPath);
+                const categoryListing = await foundry.applications.apps.FilePicker.implementation.browse("data", dirPath);
                 const categoryPngFiles = (categoryListing.files || []).filter(f => f.endsWith(".png") || f.endsWith(".webp"));
 
                 for (const path of categoryPngFiles) {
@@ -386,6 +423,131 @@ export function getFilteredSymbolTiles(excludeCategories = []) {
     }
     if (!_searchFilter) return tiles;
     return tiles.filter(t => t.label.toLowerCase().includes(_searchFilter));
+}
+
+function isDecorImagePath(path) {
+    const lower = String(path || "").toLowerCase();
+    return DECOR_IMAGE_EXTENSIONS.some(ext => lower.split("?")[0].endsWith(ext));
+}
+
+function decorLabelFromPath(path) {
+    const file = String(path || "").split("/").pop() || "decor";
+    return _formatLabel(file.replace(/\.(png|jpe?g|webp|gif|svg)$/i, ""));
+}
+
+function decorCategoryFromPath(path) {
+    const relative = String(path || "").replace(/^decor\/?/, "");
+    const parts = relative.split("/").filter(Boolean);
+    if (parts.length <= 1) return "__root__";
+    return parts.slice(0, -1).join("/");
+}
+
+function getRegisteredDecorTiles() {
+    let assets = [];
+    try {
+        assets = game.settings.get(MODULE_ID, "customDecorAssets") || [];
+    } catch {
+        assets = [];
+    }
+    return assets
+        .filter(asset => asset?.path && isDecorImagePath(asset.path))
+        .map(asset => ({
+            key: asset.path,
+            label: asset.label || decorLabelFromPath(asset.path),
+            path: asset.path,
+            category: asset.category || (asset.source === "web" ? "Web URL" : "Foundry Library"),
+            registered: true,
+            source: asset.source || "foundry"
+        }));
+}
+
+export async function registerDecorAsset(path, { label = null, source = "foundry", category = null } = {}) {
+    if (!isDecorImagePath(path)) {
+        throw new Error(`Unsupported decor image path: ${path}`);
+    }
+    const assets = game.settings.get(MODULE_ID, "customDecorAssets") || [];
+    const next = assets.filter(asset => asset?.path !== path);
+    next.push({
+        path,
+        label: label || decorLabelFromPath(path),
+        source,
+        category: category || (source === "web" ? "Web URL" : "Foundry Library")
+    });
+    await game.settings.set(MODULE_ID, "customDecorAssets", next);
+}
+
+function decorFolderLabel(folderKey) {
+    if (folderKey === "__root__") return "Imported Decor";
+    let parts = folderKey
+        .split("/")
+        .filter(Boolean);
+    if (parts.length > 1 && parts[0].toLowerCase() === "imported") {
+        parts = parts.slice(1);
+    }
+    return parts
+        .map(part => {
+            const decoded = decodeURIComponent(part).replace(/[_-]+/g, " ");
+            return _formatLabel(decoded);
+        })
+        .join(" / ");
+}
+
+async function browseDecorFolderRecursive(folderPath, out = []) {
+    const normalizedFolder = String(folderPath || "").replace(/\\/g, "/").replace(/\/+$/, "");
+    if (normalizedFolder === DECOR_DDPACK_FOLDER || normalizedFolder.startsWith(`${DECOR_DDPACK_FOLDER}/`)) {
+        return out;
+    }
+    const FP = foundry.applications.apps.FilePicker.implementation;
+    const listing = await FP.browse("data", folderPath);
+    for (const file of listing.files || []) {
+        if (!isDecorImagePath(file)) continue;
+        out.push({
+            key: file,
+            label: decorLabelFromPath(file),
+            path: file,
+            category: decorCategoryFromPath(file),
+            imported: true
+        });
+    }
+    for (const dir of listing.dirs || []) {
+        const normalizedDir = String(dir || "").replace(/\\/g, "/").replace(/\/+$/, "");
+        if (normalizedDir === DECOR_DDPACK_FOLDER || normalizedDir.startsWith(`${DECOR_DDPACK_FOLDER}/`)) continue;
+        await browseDecorFolderRecursive(dir, out);
+    }
+    return out;
+}
+
+export async function loadImportedDecorAssets({ force = false } = {}) {
+    if (_importedDecorTiles && !force) return _importedDecorTiles;
+    _importedDecorTiles = [];
+    if (!game.user?.isGM) return _importedDecorTiles;
+
+    try {
+        _importedDecorTiles = await browseDecorFolderRecursive(DECOR_IMPORT_FOLDER, []);
+        _importedDecorTiles.sort((a, b) => a.path.localeCompare(b.path));
+    } catch (err) {
+        console.log(`${MODULE_ID} | Imported decor folder not available yet:`, err?.message || err);
+        _importedDecorTiles = [];
+    }
+    return _importedDecorTiles;
+}
+
+export async function reloadDecorAssets() {
+    _importedDecorTiles = null;
+    _ddPackDecorTiles = null;
+    await loadImportedDecorAssets({ force: true });
+    await getDDPackDecorAssets({ force: true });
+}
+
+async function getDDPackDecorAssets({ force = false } = {}) {
+    if (_ddPackDecorTiles && !force) return _ddPackDecorTiles;
+    try {
+        _ddPackDecorTiles = await loadDDPackDecorTiles();
+    } catch (err) {
+        console.warn(`${MODULE_ID} | Dungeondraft decor packs not available yet:`, err?.message || err);
+        _ddPackDecorTiles = [];
+    }
+    return _ddPackDecorTiles;
 }
 
 /**
@@ -508,6 +670,84 @@ export function loadCustomTileDimensions() {
         // Settings not registered yet, use defaults
         _customTileWidth = 296;
         _customTileHeight = 256;
+    }
+}
+
+async function getImageAlphaBounds(src) {
+    if (_customTileBoundsCache.has(src)) return _customTileBoundsCache.get(src);
+
+    const image = new Image();
+    const loaded = new Promise((resolve, reject) => {
+        image.onload = () => resolve();
+        image.onerror = reject;
+    });
+    image.src = src;
+    await loaded;
+
+    const width = image.naturalWidth || image.width;
+    const height = image.naturalHeight || image.height;
+    if (!width || !height) {
+        const empty = { imageWidth: 0, imageHeight: 0, minX: 0, minY: 0, width: 0, height: 0 };
+        _customTileBoundsCache.set(src, empty);
+        return empty;
+    }
+
+    const canvasEl = document.createElement("canvas");
+    canvasEl.width = width;
+    canvasEl.height = height;
+    const ctx = canvasEl.getContext("2d");
+    ctx.drawImage(image, 0, 0);
+
+    const pixels = ctx.getImageData(0, 0, width, height).data;
+    let minX = width;
+    let minY = height;
+    let maxX = -1;
+    let maxY = -1;
+    for (let y = 0; y < height; y++) {
+        for (let x = 0; x < width; x++) {
+            if (pixels[(y * width + x) * 4 + 3] <= 8) continue;
+            if (x < minX) minX = x;
+            if (y < minY) minY = y;
+            if (x > maxX) maxX = x;
+            if (y > maxY) maxY = y;
+        }
+    }
+
+    const bounds = maxX >= 0
+        ? { imageWidth: width, imageHeight: height, minX, minY, width: maxX - minX + 1, height: maxY - minY + 1 }
+        : { imageWidth: width, imageHeight: height, minX: 0, minY: 0, width, height };
+    _customTileBoundsCache.set(src, bounds);
+    return bounds;
+}
+
+export async function getCustomTilePlacement(src, center, verticalNudge = 0) {
+    try {
+        const bounds = await getImageAlphaBounds(src);
+        if (!bounds.imageWidth || !bounds.imageHeight || !bounds.width || !bounds.height) {
+            throw new Error("No image bounds");
+        }
+
+        const scaleX = _customTileWidth / bounds.width;
+        const scaleY = _customTileHeight / bounds.height;
+        const width = Math.round(bounds.imageWidth * scaleX);
+        const height = Math.round(bounds.imageHeight * scaleY);
+        const visibleOffsetX = bounds.minX * scaleX;
+        const visibleOffsetY = bounds.minY * scaleY;
+
+        return {
+            width,
+            height,
+            x: center.x - (_customTileWidth / 2) - visibleOffsetX,
+            y: center.y - (_customTileHeight / 2) - visibleOffsetY - verticalNudge
+        };
+    } catch (err) {
+        console.log(`${MODULE_ID} | Could not auto-fit custom tile ${src}:`, err?.message || err);
+        return {
+            width: _customTileWidth,
+            height: _customTileHeight,
+            x: center.x - _customTileWidth / 2,
+            y: center.y - _customTileHeight / 2 - verticalNudge
+        };
     }
 }
 
@@ -725,7 +965,8 @@ export function getDecorSearchFilter() {
  * Toggle collapsed state of a decor tile folder
  */
 export function toggleDecorFolderCollapsed(folderKey) {
-    _decorFoldersCollapsed[folderKey] = !_decorFoldersCollapsed[folderKey];
+    const currentlyCollapsed = _decorFoldersCollapsed[folderKey] ?? true;
+    _decorFoldersCollapsed[folderKey] = !currentlyCollapsed;
 }
 
 /**
@@ -755,7 +996,18 @@ export function setDecorSort(v) { _decorSort = parseInt(v, 10) || 0; }
  * Only includes Dysonstyle category tiles.
  */
 export async function getDecorTileFolders() {
-    let tiles = (_symbolTiles || []).filter(t => t.category === "dysonstyle");
+    let tiles = [
+        ...((_symbolTiles || []).filter(t => t.category === "dysonstyle")),
+        ...(_importedDecorTiles || []),
+        ...(await getDDPackDecorAssets()),
+        ...getRegisteredDecorTiles()
+    ];
+    const seenPaths = new Set();
+    tiles = tiles.filter(tile => {
+        if (seenPaths.has(tile.path)) return false;
+        seenPaths.add(tile.path);
+        return true;
+    });
     if (_decorSearchFilter) {
         tiles = tiles.filter(t => t.label.toLowerCase().includes(_decorSearchFilter));
     }
@@ -766,7 +1018,10 @@ export async function getDecorTileFolders() {
         if (!folderMap.has(folderKey)) folderMap.set(folderKey, []);
         folderMap.get(folderKey).push({
             key: tile.key, label: tile.label, path: tile.path,
-            active: _chosenTiles.has(tile.path), category: tile.category
+            active: _chosenTiles.has(tile.path), category: tile.category,
+            imported: !!tile.imported,
+            registered: !!tile.registered,
+            isDDPack: !!tile.isDDPack
         });
     }
 
@@ -789,14 +1044,15 @@ export async function getDecorTileFolders() {
 
     const folders = [];
     for (const [key, folderTiles] of folderMap) {
-        const label = key === "__root__" ? "Root" : key.charAt(0).toUpperCase() + key.slice(1);
+        const customLabel = folderTiles.find(t => t.categoryLabel)?.categoryLabel;
+        const label = customLabel || decorFolderLabel(key);
 
         const processedTiles = await Promise.all(folderTiles.map(async t => ({
             ...t,
             src: await cache.getCachedSrc(t.path)
         })));
 
-        folders.push({ folder: key, label, collapsed: !!_decorFoldersCollapsed[key], tiles: processedTiles });
+        folders.push({ folder: key, label, collapsed: _decorFoldersCollapsed[key] ?? true, tiles: processedTiles });
     }
     return folders;
 }
@@ -841,7 +1097,10 @@ export async function getHexPainterData() {
         decorFolders: [],
         decorSearchFilter: _decorSearchFilter,
         decorElevation: _decorElevation,
-        decorSort: _decorSort
+        decorSort: _decorSort,
+        customNavPath: [],
+        customNavChips: [],
+        customNavBreadcrumb: [{ label: "All", segments: [] }]
     };
 
     const processTiles = async (tiles) => {
@@ -930,14 +1189,73 @@ export async function getHexPainterData() {
         decorFolders,
         decorSearchFilter: _decorSearchFilter,
         decorElevation: _decorElevation,
-        decorSort: _decorSort
+        decorSort: _decorSort,
+        customNavPath: _customNavPath.slice(),
+        customNavChips: getCustomNavChips(),
+        customNavBreadcrumb: [
+            { label: "All", segments: [] },
+            ..._customNavPath.map((seg, i) => ({
+                label: _decodePathLabel(seg),
+                segments: _customNavPath.slice(0, i + 1)
+            }))
+        ]
     };
 }
 
 export function getFilteredCustomTiles() {
     if (!_customTiles) return [];
-    if (!_searchFilter) return _customTiles;
-    return _customTiles.filter(t => t.label.toLowerCase().includes(_searchFilter));
+    const depth = _customNavPath.length;
+    let tiles = _customTiles.filter(t => {
+        const segments = Array.isArray(t.segments) ? t.segments : [];
+        for (let i = 0; i < depth; i++) {
+            if (segments[i] !== _customNavPath[i]) return false;
+        }
+        return _searchFilter || segments.length === depth;
+    });
+    if (_searchFilter) {
+        tiles = tiles.filter(t => t.label.toLowerCase().includes(_searchFilter));
+    }
+    return tiles;
+}
+
+export function getCustomNavPath() {
+    return _customNavPath.slice();
+}
+
+export function setCustomNavPath(segments) {
+    _customNavPath = Array.isArray(segments) ? segments.slice() : [];
+}
+
+export function appendCustomNavSegment(segment) {
+    if (typeof segment === "string" && segment.length) {
+        _customNavPath.push(segment);
+    }
+}
+
+export function getCustomNavChips() {
+    if (!_customTiles || !_customTiles.length) return [];
+    const depth = _customNavPath.length;
+    const counts = new Map();
+    for (const tile of _customTiles) {
+        const segments = Array.isArray(tile.segments) ? tile.segments : [];
+        if (segments.length <= depth) continue;
+
+        let inScope = true;
+        for (let i = 0; i < depth; i++) {
+            if (segments[i] !== _customNavPath[i]) {
+                inScope = false;
+                break;
+            }
+        }
+        if (!inScope) continue;
+
+        const name = segments[depth];
+        counts.set(name, (counts.get(name) || 0) + 1);
+    }
+
+    return Array.from(counts.entries())
+        .map(([name, count]) => ({ name, label: _decodePathLabel(name), count }))
+        .sort((a, b) => a.label.localeCompare(b.label, undefined, { sensitivity: "base" }));
 }
 
 export function toggleTileSelection(tilePath) {
@@ -962,7 +1280,7 @@ export function toggleTileSelection(tilePath) {
                 } else if (_previewSprite) {
                     // Update texture to current tile
                     const currentPath = availableTiles[_currentPreviewIndex % availableTiles.length];
-                    loadTexture(currentPath).then(texture => {
+                    foundry.canvas.loadTexture(currentPath).then(texture => {
                         if (texture && _previewSprite) {
                             _previewSprite.texture = texture;
                             _previewSprite._sdxTexturePath = currentPath;
@@ -1250,7 +1568,7 @@ function _onRightClick(ev) {
     // Update preview texture
     if (_previewEnabled && _previewSprite) {
         const nextPath = availableTiles[_currentPreviewIndex % availableTiles.length];
-        loadTexture(nextPath).then(texture => {
+        foundry.canvas.loadTexture(nextPath).then(texture => {
             if (texture && _previewSprite) {
                 _previewSprite.texture = texture;
                 _previewSprite._sdxTexturePath = nextPath;
@@ -1315,8 +1633,12 @@ async function _stampAtPointer(ev, forceStamp = false) {
 
     if (_activeTileTab === "symbols" || _decorMode) {
         const doorTiles = getDoorTiles();
+        const ddPackDecorTiles = _decorMode ? await getDDPackDecorAssets() : [];
         availableTiles = availableTiles.filter(path =>
             (_symbolTiles && _symbolTiles.some(t => t.path === path)) ||
+            (_decorMode && _importedDecorTiles && _importedDecorTiles.some(t => t.path === path)) ||
+            (_decorMode && ddPackDecorTiles.some(t => t.path === path)) ||
+            (_decorMode && getRegisteredDecorTiles().some(t => t.path === path)) ||
             (_decorMode && doorTiles.some(t => t.path === path))
         );
     } else if (_activeTileTab === "custom") {
@@ -1349,7 +1671,10 @@ async function _stampAtPointer(ev, forceStamp = false) {
 
     // Check if the chosen tile is a symbol, custom, or colored tile
     const isDoorTile = _decorMode && getDoorTiles().some(t => t.path === chosenTile);
-    const isSymbolTile = isDoorTile || (_symbolTiles && _symbolTiles.some(t => t.path === chosenTile));
+    const isImportedDecorTile = _decorMode && _importedDecorTiles && _importedDecorTiles.some(t => t.path === chosenTile);
+    const isDDPackDecorTile = _decorMode && _ddPackDecorTiles && _ddPackDecorTiles.some(t => t.path === chosenTile);
+    const isRegisteredDecorTile = _decorMode && getRegisteredDecorTiles().some(t => t.path === chosenTile);
+    const isSymbolTile = isDoorTile || isImportedDecorTile || isDDPackDecorTile || isRegisteredDecorTile || (_symbolTiles && _symbolTiles.some(t => t.path === chosenTile));
     const isCustomTile = _customTiles && _customTiles.some(t => t.path === chosenTile);
     const isColoredTile = _coloredTiles && _coloredTiles.some(t => t.path === chosenTile);
 
@@ -1359,11 +1684,11 @@ async function _stampAtPointer(ev, forceStamp = false) {
     }
 
     // Determine tile dimensions based on type
-    let tw, th;
+    let tw, th, tx, ty;
     if (isSymbolTile) {
         // For symbols, get original image size and scale by _poiScale
         try {
-            const img = await loadTexture(chosenTile);
+            const img = await foundry.canvas.loadTexture(chosenTile);
             tw = Math.floor(img.width * _poiScale);
             th = Math.floor(img.height * _poiScale);
         } catch (e) {
@@ -1375,8 +1700,11 @@ async function _stampAtPointer(ev, forceStamp = false) {
         tw = COLORED_HEX_TILE_W;
         th = COLORED_HEX_TILE_H;
     } else if (isCustomTile) {
-        tw = _customTileWidth;
-        th = _customTileHeight;
+        const placement = await getCustomTilePlacement(chosenTile, center, verticalNudge);
+        tw = placement.width;
+        th = placement.height;
+        tx = placement.x;
+        ty = placement.y;
     } else {
         tw = HEX_TILE_W;
         th = HEX_TILE_H;
@@ -1430,10 +1758,14 @@ async function _stampAtPointer(ev, forceStamp = false) {
             src: chosenTile,
             tint: tintData,
             scaleX: isSymbolTile && _poiMirror ? -1 : 1,
-            scaleY: 1
+            scaleY: 1,
+            // v14: default texture anchor changed to (0.5, 0.5). Explicit (0, 0)
+            // matches V1 behavior so tile (x, y) is the top-left, not the center.
+            anchorX: 0,
+            anchorY: 0
         },
-        x: (isSymbolTile ? pos.x : center.x) - tw / 2,
-        y: (isSymbolTile ? pos.y : center.y) - th / 2 - verticalNudge,
+        x: tx ?? ((isSymbolTile ? pos.x : center.x) - tw / 2),
+        y: ty ?? ((isSymbolTile ? pos.y : center.y) - th / 2 - verticalNudge),
         width: tw,
         height: th,
         elevation: isSymbolTile ? (_decorMode ? _decorElevation : 0.1) : 0,
@@ -1512,7 +1844,7 @@ async function _stampAtPointer(ev, forceStamp = false) {
             const availablePoiTiles = _getAvailablePoiTiles();
             if (availablePoiTiles.length > 0) {
                 const nextPath = availablePoiTiles[_currentPreviewIndex % availablePoiTiles.length];
-                loadTexture(nextPath).then(texture => {
+                foundry.canvas.loadTexture(nextPath).then(texture => {
                     if (texture && _previewSprite) {
                         _previewSprite.texture = texture;
                         _previewSprite._sdxTexturePath = nextPath;
@@ -1694,6 +2026,14 @@ function _formatLabel(key) {
         .join(" ");
 }
 
+function _decodePathLabel(value) {
+    try {
+        return decodeURIComponent(String(value || ""));
+    } catch (_) {
+        return String(value || "");
+    }
+}
+
 /* ═══════════════════════════════════════════════════════════════
    POI UNDO/REDO
    ═══════════════════════════════════════════════════════════════ */
@@ -1794,7 +2134,7 @@ export async function createPreview() {
     // Load texture for the first tile
     const tilePath = availableTiles[_currentPreviewIndex % availableTiles.length];
     try {
-        const texture = await loadTexture(tilePath);
+        const texture = await foundry.canvas.loadTexture(tilePath);
         if (texture) {
             _previewSprite = new PIXI.Sprite(texture);
             _previewSprite.anchor.set(0.5, 0.5);
@@ -1836,7 +2176,7 @@ export async function updatePreviewPosition(pos) {
     const currentPath = availableTiles[_currentPreviewIndex % availableTiles.length];
     if (_previewSprite._sdxTexturePath !== currentPath) {
         try {
-            const texture = await loadTexture(currentPath);
+            const texture = await foundry.canvas.loadTexture(currentPath);
             if (texture) {
                 _previewSprite.texture = texture;
                 _previewSprite._sdxTexturePath = currentPath;
@@ -1911,6 +2251,9 @@ function _getAvailablePoiTiles() {
     const doorTiles = getDoorTiles();
     return Array.from(_chosenTiles).filter(path =>
         (_symbolTiles && _symbolTiles.some(t => t.path === path)) ||
+        (_decorMode && _importedDecorTiles && _importedDecorTiles.some(t => t.path === path)) ||
+        (_decorMode && _ddPackDecorTiles && _ddPackDecorTiles.some(t => t.path === path)) ||
+        (_decorMode && getRegisteredDecorTiles().some(t => t.path === path)) ||
         (_decorMode && doorTiles.some(t => t.path === path))
     );
 }
@@ -1922,7 +2265,10 @@ async function preloadHexImages() {
         ...(_tiles || []),
         ...(_customTiles || []),
         ...(_coloredTiles || []),
-        ...(_symbolTiles || [])
+        ...(_symbolTiles || []),
+        ...(_importedDecorTiles || []),
+        ...(_ddPackDecorTiles || []),
+        ...getRegisteredDecorTiles()
     ];
 
     // Preload process: fetch image and store as blob in cache if not already there

@@ -1,3 +1,6 @@
+// v13+ FilePicker namespaced under foundry.applications.apps.
+const FilePicker = foundry.applications.apps.FilePicker?.implementation ?? globalThis.FilePicker;
+
 /**
  * Weapon Animation for Shadowdark Extras
  * Displays weapon images on tokens when weapons are equipped
@@ -155,8 +158,9 @@ function getImageName(filePath) {
  * Play weapon animation on a token
  * @param {Token} token - The token to animate
  * @param {Item} item - The weapon item
+ * @param {Object|null} configOverride - Optional config object for live preview (skips DB read)
  */
-export async function playWeaponAnimation(token, item) {
+export async function playWeaponAnimation(token, item, configOverride = null) {
     if (!isEnabled()) return;
 
     const deps = checkDependencies();
@@ -167,8 +171,8 @@ export async function playWeaponAnimation(token, item) {
         return;
     }
 
-    // Get animation config from item flags
-    const animConfig = item.getFlag(MODULE_ID, "weaponAnimation");
+    // Use the provided override (for live preview in the config dialog) or read from saved flags
+    const animConfig = configOverride ?? item.getFlag(MODULE_ID, "weaponAnimation");
     if (!animConfig?.enabled || !animConfig?.imagePath) {
         return; // No animation configured
     }

@@ -1,0 +1,125 @@
+effects:
+  - name: Advantage on Wisdom Checks
+    img: icons/magic/perception/eye-ringed-glow-angry-large-teal.webp
+    disabled: false
+    origin: Compendium.shadowdark-extras.pack-sdxitems.Item.omleYUNJIBD5mbM4
+    transfer: true
+    _id: RJhnXMnEMU9kEuD3
+    type: base
+    system:
+      changes:
+        - key: system.bonuses.advantage
+          value: wis
+          type: add
+    duration:
+      value: null
+      units: seconds
+      expiry: null
+      expired: false
+    description: ''
+    tint: '#ffffff'
+    statuses: []
+    sort: 0
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '14.360'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      createdTime: 1767053429026
+      modifiedTime: 1767053429026
+      lastModifiedBy: lDQovrTY32fJwPBR
+    start: null
+    showIcon: 1
+    folder: null
+    _key: '!items.effects!omleYUNJIBD5mbM4.RJhnXMnEMU9kEuD3'
+  - name: Spellcasting Advantage (All)
+    img: icons/magic/symbols/chevron-elipse-circle-blue.webp
+    disabled: false
+    origin: Compendium.shadowdark-extras.pack-sdxitems.Item.omleYUNJIBD5mbM4
+    transfer: true
+    _id: v6TQJfTxUrR1ZdeK
+    type: base
+    system:
+      changes:
+        - key: system.bonuses.advantage
+          value: spellcasting
+          priority: null
+          type: add
+    duration:
+      value: null
+      units: seconds
+      expiry: null
+      expired: false
+    description: ''
+    tint: '#ffffff'
+    statuses: []
+    sort: 0
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '14.360'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      createdTime: 1767054706271
+      modifiedTime: 1767054815619
+      lastModifiedBy: lDQovrTY32fJwPBR
+    start: null
+    showIcon: 1
+    folder: null
+    _key: '!items.effects!omleYUNJIBD5mbM4.v6TQJfTxUrR1ZdeK'
+folder: qj1zzZaF60XW0BZc
+img: icons/magic/defensive/shield-barrier-blades-teal.webp
+name: 'Spell Effect: Odin''s Wisdom'
+system:
+  description: >-
+    <p>For the spell's duration, add your level as an additional bonus to your
+    Wisdom checks and spellcasting checks.</p>
+  source:
+    title: cursed-scroll-3
+  light:
+    active: false
+    hasBeenUsed: false
+    isSource: false
+    longevityMins: 60
+    remainingSecs: 3600
+    template: torch
+  category: effect
+  duration:
+    type: rounds
+    value: '1'
+  effectPanel:
+    show: true
+  start:
+    combatTime: '1.0'
+    value: 53505
+  tokenIcon:
+    show: true
+  magicItem: false
+  predefinedEffects: ''
+  bonuses:
+    advantage:
+      - wis
+      - spellcasting
+type: Effect
+_stats:
+  compendiumSource: null
+  duplicateSource: null
+  exportSource: null
+  coreVersion: '14.360'
+  systemId: shadowdark
+  systemVersion: 3.6.1
+  createdTime: 1767053414365
+  modifiedTime: 1769435793155
+  lastModifiedBy: lDQovrTY32fJwPBR
+ownership:
+  default: 0
+  lDQovrTY32fJwPBR: 3
+flags: {}
+_id: omleYUNJIBD5mbM4
+sort: 200000
+_key: '!items!omleYUNJIBD5mbM4'

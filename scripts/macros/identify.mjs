@@ -205,7 +205,6 @@ export async function identifyItem(item, identifySpell) {
     await ChatMessage.create({
         content: chatContent,
         speaker: ChatMessage.getSpeaker({ actor: item.actor }),
-        type: CONST.CHAT_MESSAGE_STYLES.OTHER
     });
 
     ui.notifications.info(game.i18n.format("SHADOWDARK_EXTRAS.identify.success", { name: item.name }));

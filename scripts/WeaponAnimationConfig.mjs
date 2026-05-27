@@ -8,8 +8,8 @@ const MODULE_ID = "shadowdark-extras";
 // Use the Handlebars mixin for AppV2
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
-// Import the image scanner
-import { scanItemImages } from "./WeaponAnimationSD.mjs";
+// Import animation helpers
+import { scanItemImages, playWeaponAnimation, stopWeaponAnimation } from "./WeaponAnimationSD.mjs";
 
 /**
  * Configuration dialog for weapon animations
@@ -205,8 +205,8 @@ export default class WeaponAnimationConfig extends HandlebarsApplicationMixin(Ap
 
         const inputs = html.querySelectorAll('input, select');
         inputs.forEach(input => {
-            input.addEventListener("input", () => this._updatePreview());
-            input.addEventListener("change", () => this._updatePreview());
+            input.addEventListener("input", () => { this._updatePreview(); this._scheduleLivePreview(); });
+            input.addEventListener("change", () => { this._updatePreview(); this._scheduleLivePreview(); });
         });
 
         const rangeInputs = html.querySelectorAll('input[type="range"]');
@@ -235,11 +235,13 @@ export default class WeaponAnimationConfig extends HandlebarsApplicationMixin(Ap
                 colorInput.addEventListener("input", (e) => {
                     textInput.value = e.target.value;
                     this._updatePreview();
+                    this._scheduleLivePreview();
                 });
                 textInput.addEventListener("input", (e) => {
                     if (/^#[0-9A-F]{6}$/i.test(e.target.value)) {
                         colorInput.value = e.target.value;
                         this._updatePreview();
+                        this._scheduleLivePreview();
                     }
                 });
             }
@@ -300,8 +302,9 @@ export default class WeaponAnimationConfig extends HandlebarsApplicationMixin(Ap
                     `;
                 }
 
-                // Update preview
+                // Update preview and live animation
                 this._updatePreview();
+                this._scheduleLivePreview();
             });
         });
 
@@ -390,6 +393,77 @@ export default class WeaponAnimationConfig extends HandlebarsApplicationMixin(Ap
         });
     }
 
+    /** Read all current form values into a config object (same shape as the saved flag). */
+    _readCurrentConfig() {
+        const html = this.element;
+        return {
+            enabled:       html.querySelector(".weapon-animation-enabled")?.checked ?? false,
+            imagePath:     html.querySelector(".weapon-image-select")?.value ?? "",
+            offsetX:       parseFloat(html.querySelector('input[name="offsetX"]')?.value ?? 0.35),
+            offsetY:       parseFloat(html.querySelector('input[name="offsetY"]')?.value ?? 0.1),
+            rotation:      parseInt(html.querySelector('input[name="rotation"]')?.value ?? 0),
+            scale:         parseFloat(html.querySelector('input[name="scale"]')?.value ?? 1.0),
+            animationType: html.querySelector('select[name="animationType"]')?.value ?? "none",
+            flipX:         html.querySelector('input[name="flipX"]')?.checked ?? false,
+            flipY:         html.querySelector('input[name="flipY"]')?.checked ?? false,
+            filters: {
+                colorMatrix: {
+                    hue:        parseInt(html.querySelector('input[name="filters.colorMatrix.hue"]')?.value ?? 0),
+                    brightness: parseFloat(html.querySelector('input[name="filters.colorMatrix.brightness"]')?.value ?? 1),
+                    contrast:   parseFloat(html.querySelector('input[name="filters.colorMatrix.contrast"]')?.value ?? 1),
+                    saturate:   parseFloat(html.querySelector('input[name="filters.colorMatrix.saturate"]')?.value ?? 0)
+                },
+                glow: {
+                    enabled:       html.querySelector('input[name="filters.glow.enabled"]')?.checked ?? false,
+                    distance:      parseInt(html.querySelector('input[name="filters.glow.distance"]')?.value ?? 10),
+                    outerStrength: parseInt(html.querySelector('input[name="filters.glow.outerStrength"]')?.value ?? 4),
+                    innerStrength: parseInt(html.querySelector('input[name="filters.glow.innerStrength"]')?.value ?? 0),
+                    color:         html.querySelector('input[name="filters.glow.color"]')?.value || "#ffffff",
+                    quality:       parseFloat(html.querySelector('input[name="filters.glow.quality"]')?.value ?? 0.1),
+                    knockout:      html.querySelector('input[name="filters.glow.knockout"]')?.checked ?? false
+                },
+                dropShadow: {
+                    enabled:  html.querySelector('input[name="filters.dropShadow.enabled"]')?.checked ?? false,
+                    color:    html.querySelector('input[name="filters.dropShadow.color"]')?.value || "#000000",
+                    alpha:    parseFloat(html.querySelector('input[name="filters.dropShadow.alpha"]')?.value ?? 0.5),
+                    blur:     parseFloat(html.querySelector('input[name="filters.dropShadow.blur"]')?.value ?? 2),
+                    distance: parseInt(html.querySelector('input[name="filters.dropShadow.distance"]')?.value ?? 5),
+                    rotation: parseInt(html.querySelector('input[name="filters.dropShadow.rotation"]')?.value ?? 45)
+                }
+            }
+        };
+    }
+
+    /**
+     * Debounced live preview — call on any input change.
+     * Replays the on-canvas animation using current form values without saving to the DB.
+     */
+    _scheduleLivePreview() {
+        clearTimeout(this._livePreviewTimer);
+        this._livePreviewTimer = setTimeout(() => this._livePreviewAnimation(), 350);
+    }
+
+    async _livePreviewAnimation() {
+        const actor = this.item?.parent;
+        if (!actor) return;
+
+        const config = this._readCurrentConfig();
+
+        // If disabled or no image, stop any running preview instead of playing a blank one
+        if (!config.enabled || !config.imagePath) {
+            const tokens = actor.getActiveTokens();
+            for (const token of tokens) {
+                await stopWeaponAnimation(token, this.item.id);
+            }
+            return;
+        }
+
+        const tokens = actor.getActiveTokens();
+        for (const token of tokens) {
+            await playWeaponAnimation(token, this.item, config);
+        }
+    }
+
     _updatePreview() {
         const html = this.element;
         if (!html) return;
@@ -470,56 +544,37 @@ export default class WeaponAnimationConfig extends HandlebarsApplicationMixin(Ap
         }
     }
 
-    static async #onSave(event, target) {
-        const html = this.element;
-        const enabled = html.querySelector(".weapon-animation-enabled")?.checked ?? false;
-        const imagePath = html.querySelector(".weapon-image-select")?.value ?? "";
-        const offsetX = parseFloat(html.querySelector('input[name="offsetX"]')?.value ?? 0.35);
-        const offsetY = parseFloat(html.querySelector('input[name="offsetY"]')?.value ?? 0.1);
-        const rotation = parseInt(html.querySelector('input[name="rotation"]')?.value ?? 0);
-        const scale = parseFloat(html.querySelector('input[name="scale"]')?.value ?? 1.0);
-        const animationType = html.querySelector('select[name="animationType"]')?.value ?? "none";
-        const flipX = html.querySelector('input[name="flipX"]')?.checked ?? false;
-        const flipY = html.querySelector('input[name="flipY"]')?.checked ?? false;
+    static async #onSave(_event, _target) {
+        clearTimeout(this._livePreviewTimer);
 
+        // Reuse _readCurrentConfig() — single source of truth for form → data mapping
+        const newConfig = this._readCurrentConfig();
         const existingFlags = this.item.getFlag(MODULE_ID, "weaponAnimation") || {};
-        const newConfig = {
-            enabled, imagePath, offsetX, offsetY, rotation, scale, animationType, flipX, flipY,
-            filters: {
-                colorMatrix: {
-                    hue: parseInt(html.querySelector('input[name="filters.colorMatrix.hue"]')?.value ?? 0),
-                    brightness: parseFloat(html.querySelector('input[name="filters.colorMatrix.brightness"]')?.value ?? 1),
-                    contrast: parseFloat(html.querySelector('input[name="filters.colorMatrix.contrast"]')?.value ?? 1),
-                    saturate: parseFloat(html.querySelector('input[name="filters.colorMatrix.saturate"]')?.value ?? 0)
-                },
-                glow: {
-                    enabled: html.querySelector('input[name="filters.glow.enabled"]')?.checked ?? false,
-                    distance: parseInt(html.querySelector('input[name="filters.glow.distance"]')?.value ?? 10),
-                    outerStrength: parseInt(html.querySelector('input[name="filters.glow.outerStrength"]')?.value ?? 4),
-                    innerStrength: parseInt(html.querySelector('input[name="filters.glow.innerStrength"]')?.value ?? 0),
-                    color: html.querySelector('input[name="filters.glow.color"]')?.value || "#ffffff",
-                    quality: parseFloat(html.querySelector('input[name="filters.glow.quality"]')?.value ?? 0.1),
-                    knockout: html.querySelector('input[name="filters.glow.knockout"]')?.checked ?? false
-                },
-                dropShadow: {
-                    enabled: html.querySelector('input[name="filters.dropShadow.enabled"]')?.checked ?? false,
-                    color: html.querySelector('input[name="filters.dropShadow.color"]')?.value || "#000000",
-                    alpha: parseFloat(html.querySelector('input[name="filters.dropShadow.alpha"]')?.value ?? 0.5),
-                    blur: parseFloat(html.querySelector('input[name="filters.dropShadow.blur"]')?.value ?? 2),
-                    distance: parseInt(html.querySelector('input[name="filters.dropShadow.distance"]')?.value ?? 5),
-                    rotation: parseInt(html.querySelector('input[name="filters.dropShadow.rotation"]')?.value ?? 45)
-                }
-            }
-        };
-
         const merged = foundry.utils.mergeObject(existingFlags, newConfig, { inplace: false });
         await this.item.setFlag(MODULE_ID, "weaponAnimation", merged);
+
+        // Replay from the now-saved flag so the on-canvas animation is "official"
+        const actor = this.item?.parent;
+        if (actor) {
+            for (const token of actor.getActiveTokens()) {
+                await playWeaponAnimation(token, this.item);
+            }
+        }
 
         ui.notifications.info(game.i18n.localize("SHADOWDARK_EXTRAS.weaponAnimation.saved"));
         this.close();
     }
 
-    static #onCancel(event, target) {
+    static async #onCancel(_event, _target) {
+        clearTimeout(this._livePreviewTimer);
+
+        // Restore on-canvas animation to the last *saved* state (reads from flag, not form)
+        const actor = this.item?.parent;
+        if (actor) {
+            for (const token of actor.getActiveTokens()) {
+                await playWeaponAnimation(token, this.item);
+            }
+        }
         this.close();
     }
 }

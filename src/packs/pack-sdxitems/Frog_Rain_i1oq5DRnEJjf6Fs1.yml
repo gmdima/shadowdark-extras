@@ -1,0 +1,112 @@
+effects: []
+folder: vmqOYZjyo8VunyyP
+img: icons/creatures/amphibians/frog-water-teal.webp
+name: Frog Rain
+system:
+  description: >-
+    <p>A rain of indignant frogs pelts a near-sized cube around a point you can
+    see within range. </p><p>All creatures within the frog rain take 1d6 damage.
+    Any surviving frogs hop away and disappear.</p>
+  source:
+    title: cursed-scroll-1
+  class:
+    - Compendium.shadowdark.classes.Item.KGnBAFiTiLHZJUND
+  duration:
+    type: instant
+    value: 1
+  range: far
+  tier: 2
+  lost: false
+  magicItem: false
+  formula: '1d6'
+  damageType: damage
+  predefinedEffects: ''
+type: Spell
+_stats:
+  compendiumSource: null
+  duplicateSource: null
+  exportSource: null
+  coreVersion: '13.348'
+  systemId: shadowdark
+  systemVersion: 3.6.1
+  createdTime: 1766971262331
+  modifiedTime: 1771295884104
+  lastModifiedBy: HP3Vba5udEHYm4dW
+ownership:
+  default: 0
+  lDQovrTY32fJwPBR: 3
+flags:
+  shadowdark-extras:
+    spellDamage:
+      enabled: true
+      damageType: Force
+      damageRequirement: ''
+      damageRequirementFailAction: zero
+      formulaType: basic
+      numDice: 1
+      dieType: d6
+      bonus: 0
+      scaling: none
+      scalingDice: 0
+      formula: ''
+      tieredFormula: ''
+      effects: '[]'
+      effectsRequirement: ''
+      effectsApplyToTarget: true
+      criticalEffects: '[]'
+      effectSelectionMode: all
+      trackDuration: false
+      perTurnTrigger: start
+      perTurnDamage: ''
+      reapplyEffects: false
+    summoning:
+      enabled: false
+      profiles: '[]'
+      deleteAtExpiry: false
+    itemGive:
+      enabled: false
+      profiles: '[]'
+    itemMacro:
+      runAsGm: false
+      triggers: []
+    targeting:
+      mode: template
+      template:
+        tokenMagic:
+          preset: Living Fluid
+          texture: ''
+          opacity: 0.5
+          tint: '#2aa26a'
+        deleteMode: seconds
+        deleteSeconds: 3
+        type: circle
+        size: 30
+        fillColor: '#4e9a06'
+        placement: choose
+        hideOutline: false
+        excludeCaster: false
+  itemacro:
+    macro:
+      name: Frog Rain
+      type: script
+      scope: global
+      command: ''
+      author: lDQovrTY32fJwPBR
+      _id: null
+      img: icons/svg/dice-target.svg
+      folder: null
+      sort: 0
+      ownership:
+        default: 0
+      flags: {}
+      _stats:
+        coreVersion: '13.348'
+        systemId: shadowdark
+        systemVersion: 3.6.1
+        lastModifiedBy: null
+        compendiumSource: null
+        duplicateSource: null
+        exportSource: null
+_id: i1oq5DRnEJjf6Fs1
+sort: 5200000
+_key: '!items!i1oq5DRnEJjf6Fs1'

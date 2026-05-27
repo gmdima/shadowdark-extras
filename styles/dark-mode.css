@@ -283,7 +283,10 @@ body.sdx-dark-mode .sdx-movement-option {
     transition: all 0.2s ease;
 }
 
-body.sdx-dark-mode .sdx-movement-mode-dialog button {
+/* Scoped to content/footer buttons — :not(.header-control) prevents this from
+ * clobbering V2 window-header chrome (close, toggleControls) which need the
+ * FontAwesome font for their glyph rendering. */
+body.sdx-dark-mode .sdx-movement-mode-dialog button:not(.header-control) {
     width: 49%;
     margin: 0 1px;
     background: rgb(0 0 0 / 80%);
@@ -334,6 +337,14 @@ body.sdx-dark-mode {
 
     --font-body: "Montserrat-Medium", sans-serif;
     --font-header: "Montserrat-medium", sans-serif;
+}
+
+/* SDX dark-mode overrides --font-header globally to Montserrat for its own
+   themed UI, but that cascades to SD system selectors that explicitly use
+   `var(--font-header)` — most visibly #pause figcaption ("Game Paused" text),
+   which should stay in JSL Blackletter. Restore SD's intended pause font. */
+body.sdx-dark-mode #pause figcaption {
+    font-family: "JSL Blackletter", sans-serif;
 }
 
 body.sdx-dark-mode .sidebar-tab {
@@ -450,6 +461,10 @@ body.sdx-dark-mode .dice-roll .dice-total {
     font-family: var(--font-header);
     font-size: 22px;
     line-height: 140%;
+    align-self: center;
+    text-align: center;
+    width: 100%;
+    justify-content: center;
 }
 
 body.sdx-dark-mode .dice-roll .dice-total.success,
@@ -483,6 +498,12 @@ body.sdx-dark-mode .dice-roll .dice-total.critical {
 body.sdx-dark-mode .dice-roll .dice-result {
     background-color: var(--lights-out-color-chat-message-background-secondary);
     padding: 1px 1px;
+    /* Force vertical stack: formula on top, tooltip middle, total at bottom.
+       Some layouts (e.g. plain ChatMessage with rolls but no chat-card class)
+       leave dice-result as flex-direction: row, which makes dice-formula eat
+       the full width and pushes dice-total off the right edge of the chat panel. */
+    display: flex;
+    flex-direction: column;
 }
 
 body.sdx-dark-mode .dice-roll .dice-formula,
@@ -499,6 +520,7 @@ body.sdx-dark-mode .chat-portrait-text-size-name-generic {
 body.sdx-dark-mode .message-sender {
     font-family: "Montserrat-medium";
     font-size: 16px;
+    color: white;
 }
 
 

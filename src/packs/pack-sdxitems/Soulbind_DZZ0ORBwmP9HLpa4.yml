@@ -1,0 +1,135 @@
+effects: []
+folder: vmqOYZjyo8VunyyP
+img: icons/magic/control/debuff-energy-hold-blue-yellow.webp
+name: Soulbind
+system:
+  description: >-
+    <p>You seal the soul of a living creature, preventing magic from leeching
+    into it.</p><p>One creature you touch becomes nearly impervious to all
+    magic. For the spell's duration, all other spells targeting the creature
+    (harmful or helpful) are DC 18 to cast.</p><p>This spell ends as soon as the
+    target is affected by another spell.</p><p><strong>Automated:</strong> The
+    effect is applied automatically. The DC 18 restriction and spell ending
+    condition must be enforced manually by the
+    GM.</p><p>@UUID[Compendium.shadowdark.spell-effects.Item.z7X1jRQHFTnSXpds]{Spell
+    Effect: Soulbind}</p>
+  source:
+    title: cursed-scroll-3
+  class:
+    - Compendium.shadowdark.classes.Item.xdjod5gPhNPIkLth
+  duration:
+    type: focus
+    value: 1
+  range: touch
+  tier: 2
+  lost: false
+  predefinedEffects: ''
+type: Spell
+_stats:
+  compendiumSource: null
+  duplicateSource: null
+  exportSource: null
+  coreVersion: '13.348'
+  systemId: shadowdark
+  systemVersion: 3.6.1
+  createdTime: 1767230506330
+  modifiedTime: 1771295884104
+  lastModifiedBy: HP3Vba5udEHYm4dW
+ownership:
+  default: 0
+  lDQovrTY32fJwPBR: 3
+flags:
+  shadowdark-extras:
+    spellDamage:
+      enabled: false
+      damageType: ''
+      numDice: 0
+      dieType: d4
+      effects: >-
+        [{"uuid":"Compendium.shadowdark.spell-effects.Item.z7X1jRQHFTnSXpds","duration":{}}]
+      effectsApplyToTarget: true
+      damageRequirement: ''
+      damageRequirementFailAction: zero
+      formulaType: basic
+      bonus: null
+      scaling: none
+      scalingDice: null
+      formula: undefined
+      tieredFormula: ''
+      criticalEffects: '[]'
+      effectsRequirement: ''
+      effectSelectionMode: all
+      trackDuration: false
+      perTurnTrigger: start
+      perTurnDamage: ''
+      reapplyEffects: false
+    summoning:
+      enabled: false
+      profiles: '[]'
+      deleteAtExpiry: false
+    itemGive:
+      enabled: false
+      profiles: '[]'
+    targeting:
+      mode: targeted
+      template:
+        type: circle
+        size: 30
+        fillColor: '#4e9a06'
+        placement: choose
+        deleteMode: none
+        hideOutline: false
+        excludeCaster: false
+        tokenMagic:
+          texture: ''
+          opacity: 0.5
+          preset: NOFX
+    templateEffects:
+      enabled: false
+      triggers:
+        onEnter: false
+        onTurnStart: false
+        onTurnEnd: false
+        onLeave: false
+      damage:
+        formula: ''
+        type: ''
+      save:
+        enabled: false
+        dc: 12
+        ability: dex
+        halfOnSuccess: true
+      applyConfiguredEffects: false
+      runItemMacro: false
+    auraEffects:
+      enabled: false
+      attachTo: caster
+      radius: 30
+      triggers:
+        onEnter: false
+        onTurnStart: false
+        onTurnEnd: false
+        onLeave: false
+      damage:
+        formula: ''
+        type: ''
+      save:
+        enabled: false
+        dc: 12
+        ability: con
+        halfOnSuccess: false
+      disposition: all
+      includeSelf: false
+      applyToOriginator: true
+      checkVisibility: false
+      animation:
+        enabled: true
+        style: circle
+        tint: '#4488ff'
+        scaleMultiplier: 1
+        opacity: 0.6
+      applyConfiguredEffects: false
+      runItemMacro: false
+_id: DZZ0ORBwmP9HLpa4
+sort: 1500000
+_key: '!items!DZZ0ORBwmP9HLpa4'

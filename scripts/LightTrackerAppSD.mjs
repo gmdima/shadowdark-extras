@@ -239,7 +239,7 @@ export class LightTrackerAppSD extends HandlebarsApplicationMixin(ApplicationV2)
 
         await ChatMessage.create({
             content,
-            rollMode: CONST.DICE_ROLL_MODES.PUBLIC
+            rollMode: "publicroll"
         });
 
         // Mark tracker as dirty and refresh

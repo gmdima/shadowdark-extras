@@ -5,37 +5,44 @@ import { JournalPinManager } from "./JournalPinsSD.mjs";
 
 const MODULE_ID = "shadowdark-extras";
 
-export class PinListApp extends FormApplication {
-    static get defaultOptions() {
-        return foundry.utils.mergeObject(super.defaultOptions, {
-            id: "sdx-pin-list",
-            title: game.i18n.localize("SHADOWDARK_EXTRAS.pinList.title") || "Journal Pin List",
-            template: `modules/${MODULE_ID}/templates/pin-list.hbs`,
-            classes: ["shadowdark", "shadowdark-extras", "pin-list-app"],
-            width: 400,
-            height: 500,
-            resizable: true,
-            closeOnSubmit: false,
-            submitOnChange: false,
-            scrollY: [".pin-list-container"]
-        });
-    }
+const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
+export class PinListApp extends HandlebarsApplicationMixin(ApplicationV2) {
     static _instance = null;
+
+    static DEFAULT_OPTIONS = {
+        id: "sdx-pin-list",
+        classes: ["shadowdark", "shadowdark-extras", "pin-list-app"],
+        window: {
+            title: "SHADOWDARK_EXTRAS.pinList.title",
+            resizable: true
+        },
+        position: {
+            width: 400,
+            height: 500
+        }
+    };
+
+    static PARTS = {
+        form: {
+            template: `modules/${MODULE_ID}/templates/pin-list.hbs`,
+            scrollable: [".pin-list-container"]
+        }
+    };
 
     static show() {
         if (this._instance) {
-            this._instance.render(true);
+            this._instance.render({ force: true });
         } else {
             this._instance = new PinListApp();
-            this._instance.render(true);
+            this._instance.render({ force: true });
         }
         return this._instance;
     }
 
-    async getData(options = {}) {
+    async _prepareContext(options) {
         if (!canvas.scene) {
-            return { pins: [] };
+            return { pins: [], MODULE_ID };
         }
 
         // Get all pins for the current scene
@@ -45,7 +52,6 @@ export class PinListApp extends FormApplication {
         const enrichedPins = pins.map(pin => {
             let pinName = pin.label || "Unnamed Pin";
             let pageName = "";
-            let icon = pin.style?.iconClass || "fas fa-map-pin";
 
             // If the pin is linked to a journal/page, try to get its name
             if (pin.journalId) {
@@ -54,11 +60,9 @@ export class PinListApp extends FormApplication {
                     if (pin.pageId) {
                         const page = journal.pages.get(pin.pageId);
                         if (page) {
-                            // If label is default "New Pin" or "Journal Pin", use page name
                             if (pinName === "New Pin" || pinName === "Journal Pin") {
                                 pinName = page.name;
                             }
-                            // Or maybe show Journal Name > Page Name
                             pageName = `${journal.name} • ${page.name}`;
                         } else {
                             pageName = journal.name;
@@ -71,7 +75,7 @@ export class PinListApp extends FormApplication {
                 }
             }
 
-            // Fallback: If still default name "New Pin", try to use Tooltip Title
+            // Fallback: If still default name, try to use Tooltip Title
             if ((pinName === "New Pin" || pinName === "Journal Pin") && pin.tooltipTitle) {
                 pinName = pin.tooltipTitle;
             }
@@ -95,10 +99,9 @@ export class PinListApp extends FormApplication {
                 displayContent = style.customIconPath;
             }
             else {
-                // Text or Number
                 displayType = "text";
                 displayStyle = `
-                    color: ${style.fontColor || "#ffffff"}; 
+                    color: ${style.fontColor || "#ffffff"};
                     font-family: ${style.fontFamily || "Arial"};
                     font-weight: ${style.fontWeight || "bold"};
                     font-size: 16px;
@@ -107,9 +110,7 @@ export class PinListApp extends FormApplication {
                 if (contentType === "text") {
                     displayContent = style.customText || "";
                 } else {
-                    // Number logic
                     if (pin.journalId && pin.pageId) {
-                        // Find page index
                         const journal = game.journal.get(pin.journalId);
                         if (journal) {
                             const sortedPages = journal.pages.contents.sort((a, b) => a.sort - b.sort);
@@ -124,75 +125,67 @@ export class PinListApp extends FormApplication {
                 }
             }
 
-            let backgroundColor = style.fillColor || "#000000";
-            let borderColor = style.ringColor || "#ffffff";
+            const backgroundColor = style.fillColor || "#000000";
+            const borderColor = style.ringColor || "#ffffff";
 
             return {
                 id: pin.id,
                 x: pin.x,
                 y: pin.y,
                 name: pinName,
-                pageName: pageName,
+                pageName,
                 displayType,
                 displayContent,
                 displayStyle,
                 displayClass,
                 backgroundColor,
                 borderColor,
-                // Legacy support
-                icon: displayType === 'icon' ? displayClass : "fas fa-map-pin"
+                icon: displayType === "icon" ? displayClass : "fas fa-map-pin"
             };
         });
 
         // Sort alphabetically
         enrichedPins.sort((a, b) => a.name.localeCompare(b.name));
 
-        return {
-            pins: enrichedPins,
-            MODULE_ID
-        };
+        return { pins: enrichedPins, MODULE_ID };
     }
 
-    activateListeners(html) {
-        super.activateListeners(html);
+    _onRender(context, options) {
+        const html = this.element;
+        if (!html) return;
 
-        // Pan to pin
-        html.find(".pin-entry, .pin-control[data-action='pan']").on("click", (ev) => {
-            const $entry = $(ev.currentTarget).closest(".pin-entry");
-            const x = parseInt($entry.data("x"));
-            const y = parseInt($entry.data("y"));
+        // Pan to pin (event delegation handles both .pin-entry click and pan control)
+        html.addEventListener("click", (ev) => {
+            const entry = ev.target.closest(".pin-entry");
+            if (!entry) return;
+            // Ignore clicks on other controls (none today, but future-proof)
+            if (ev.target.closest(".pin-control") && ev.target.closest(".pin-control").dataset.action !== "pan") return;
 
+            const x = parseInt(entry.dataset.x);
+            const y = parseInt(entry.dataset.y);
             if (!isNaN(x) && !isNaN(y)) {
                 canvas.animatePan({ x, y, scale: 1.5, duration: 500 });
             }
         });
     }
 
-    // Override close to clear the instance
     async close(options) {
         PinListApp._instance = null;
         return super.close(options);
-    }
-
-    async _updateObject(event, formData) {
-        // No form data to save
     }
 }
 
 // Hooks to ensure the Pin List updates when pins change or scene changes
 Hooks.on("updateScene", (document, change, options, userId) => {
-    // Check if the update involves the flags for this module
     if (change.flags?.[MODULE_ID]?.journalPins) {
-        // Refresh if the app is open
         if (PinListApp._instance && PinListApp._instance.rendered) {
-            PinListApp._instance.render(true);
+            PinListApp._instance.render();
         }
     }
 });
 
 Hooks.on("canvasReady", () => {
-    // specific hook to update when switching scenes
     if (PinListApp._instance && PinListApp._instance.rendered) {
-        PinListApp._instance.render(true);
+        PinListApp._instance.render();
     }
 });

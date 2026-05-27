@@ -1,3 +1,6 @@
+// v13+ FilePicker namespaced under foundry.applications.apps.
+const FilePicker = foundry.applications.apps.FilePicker?.implementation ?? globalThis.FilePicker;
+
 /**
  * Sheet Editor Configuration Dialog
  * AppV2 dialog for configuring player sheet visual styles with live preview

@@ -1,3 +1,6 @@
+// v13+ FilePicker namespaced under foundry.applications.apps.
+const FilePicker = foundry.applications.apps.FilePicker?.implementation ?? globalThis.FilePicker;
+
 /**
  * Icon Picker Modal for selecting SVG icons
  * Displays icons from assets/icons folder with search and category filter

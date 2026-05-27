@@ -1,0 +1,85 @@
+effects: []
+folder: F3AKMIJQch1KV4FP
+img: icons/commodities/flowers/lily-white.webp
+name: Curative
+system:
+  description: >-
+    <p><strong>Benefit</strong>. The imbiber of this herb regains hit points
+    based on its level.</p><p><strong>LV 1-3</strong>: [[/r 1d6]] hit
+    points.</p><p><strong>LV 4-6</strong>: [[/r 2d8]] hit
+    points.</p><p><strong>LV 7-9</strong>: [[/r 3d10]] hit
+    points.</p><p><strong>LV 10+</strong>: [[/r 4d12]] hit points.</p>
+  source:
+    title: core-rules
+  class: []
+  duration:
+    type: ''
+    value: ''
+  range: ''
+  tier: 1
+  broken: false
+  canBeEquipped: false
+  cost:
+    cp: 0
+    gp: 0
+    sp: 0
+  equipped: false
+  isAmmunition: false
+  isPhysical: true
+  magicItem: true
+  quantity: 1
+  slots:
+    free_carry: 0
+    per_slot: 1
+    slots_used: 1
+  stashed: false
+  spellName: ''
+  predefinedEffects: ''
+type: Potion
+_stats:
+  compendiumSource: null
+  duplicateSource: null
+  exportSource: null
+  coreVersion: '13.350'
+  systemId: shadowdark
+  systemVersion: 3.6.0
+  createdTime: 1766771070254
+  modifiedTime: 1766771070254
+  lastModifiedBy: 0ytHXTPwhcliLZRf
+ownership:
+  default: 0
+  0ytHXTPwhcliLZRf: 3
+flags:
+  shadowdark-extras:
+    spellDamage:
+      enabled: true
+      damageType: Healing
+      formulaType: tiered
+      tieredFormula: 1-3:1d6,4-6:2d8,7-9:3d10,10+:4d12
+      damageRequirement: ''
+      damageRequirementFailAction: zero
+      numDice: 1
+      dieType: d6
+      bonus: 0
+      scaling: none
+      scalingDice: 0
+      formula: ''
+      effects: '[]'
+      criticalEffects: '[]'
+      effectsRequirement: ''
+      effectsApplyToTarget: false
+      effectSelectionMode: all
+      trackDuration: false
+      perTurnTrigger: start
+      perTurnDamage: ''
+      reapplyEffects: false
+    summoning:
+      enabled: false
+      profiles: '[]'
+      deleteAtExpiry: false
+    itemGive:
+      enabled: false
+      profiles: '[]'
+_id: vrnZy3BjbOCS5m18
+sort: 0
+_key: '!items!vrnZy3BjbOCS5m18'

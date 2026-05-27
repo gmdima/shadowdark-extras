@@ -1,0 +1,82 @@
+effects:
+  - disabled: false
+    img: icons/magic/nature/leaf-drip-light-green.webp
+    name: Poison
+    origin: Item.OCjmJyxqWmqdDw14
+    _id: F41I2Am0ZewZFqS8
+    type: base
+    system:
+      changes: []
+    duration:
+      value: null
+      units: seconds
+      expiry: null
+      expired: false
+    description: ''
+    tint: '#ffffff'
+    transfer: true
+    statuses: []
+    sort: 0
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '14.360'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+      createdTime: null
+      modifiedTime: null
+    start: null
+    showIcon: 1
+    folder: null
+    _key: '!items.effects!SA4PtYZRssGhjEjf.F41I2Am0ZewZFqS8'
+folder: qj1zzZaF60XW0BZc
+img: icons/magic/death/skull-poison-green.webp
+name: 'Spell Effect: Poison'
+system:
+  description: ''
+  source:
+    title: core-rules
+  light:
+    active: false
+    hasBeenUsed: false
+    isSource: false
+    longevityMins: 60
+    remainingSecs: 3600
+    template: torch
+  category: condition
+  duration:
+    type: rounds
+    value: '5'
+  effectPanel:
+    show: true
+  start:
+    combatTime: '24.3'
+    value: 58578
+  tokenIcon:
+    show: true
+  abilities:
+    con:
+      bonus: '-1'
+  magicItem: false
+  predefinedEffects: ''
+type: Effect
+_stats:
+  compendiumSource: null
+  duplicateSource: null
+  exportSource: null
+  coreVersion: '14.360'
+  systemId: shadowdark
+  systemVersion: 3.6.1
+  createdTime: 1767137243357
+  modifiedTime: 1769435793155
+  lastModifiedBy: lDQovrTY32fJwPBR
+ownership:
+  default: 0
+  lDQovrTY32fJwPBR: 3
+flags: {}
+_id: SA4PtYZRssGhjEjf
+sort: 800000
+_key: '!items!SA4PtYZRssGhjEjf'

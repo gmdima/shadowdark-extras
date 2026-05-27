@@ -1,0 +1,622 @@
+name: Town Festivities and Hooks
+formula: 1d20
+results:
+  - type: text
+    weight: 1
+    range:
+      - 1
+      - 1
+    drawn: false
+    description: >-
+      <strong>The Night of Unlocked Doors</strong><br /><em>Description:</em>
+      Once a year, every household in town leaves their front door unlocked from
+      dusk to dawn as a gesture of communal trust. Candles are placed on every
+      windowsill and a shared meal is left outside for strangers. The tradition
+      dates to a famine long ago when neighbors fed one another through an
+      open-door chain that lasted a winter.<br /><em>Hook:</em> By morning,
+      something has entered one of the homes and left behind a gift no one can
+      identify — elegant, valuable, and from nowhere anyone recognizes.
+    _id: 9a9era0pyMlSDLZL
+    name: ''
+    img: icons/svg/d20-black.svg
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!nDE1qohP5vYjOxoH.9a9era0pyMlSDLZL'
+  - type: text
+    weight: 1
+    range:
+      - 2
+      - 2
+    drawn: false
+    description: >-
+      <strong>The Salt Crown Festival</strong><br /><em>Description:</em>
+      Fishermen and sailors crown a 'Salt King' or 'Salt Queen' from among the
+      season's most successful crews. The crowned figure is carried through town
+      on a chair made of driftwood and old rope, while the crowd throws dried
+      sea-herbs and shouts old fishing chants. A feast of salted and fresh
+      seafood follows, with the first toast traditionally poured into the
+      harbor.<br /><em>Hook:</em> This year's Salt King disappeared between the
+      crowning ceremony and the feast. His chair was found empty at the harbor's
+      edge, his crown floating in the water below.
+    _id: RO44GCSBZzZKLVwV
+    name: ''
+    img: icons/svg/d20-black.svg
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!nDE1qohP5vYjOxoH.RO44GCSBZzZKLVwV'
+  - type: text
+    weight: 1
+    range:
+      - 3
+      - 3
+    drawn: false
+    description: >-
+      <strong>The Burning of the Hollow Man</strong><br /><em>Description:</em>
+      A large wickerwork figure — the 'Hollow Man' — is built over several days
+      by volunteers. Citizens write their regrets, bad debts, and petty grudges
+      on scraps of paper and tuck them inside the figure. On the final evening
+      it is set alight in the town square and the crowd watches their written
+      grievances burn away, drinking spiced wine as the effigy collapses.<br
+      /><em>Hook:</em> This year's Hollow Man was found pre-burned the night
+      before the ceremony. Among the ash, a few scraps survived — and the
+      readable fragments describe something that hasn't happened yet.
+    _id: YEKTD4MGgxEJnkOk
+    name: ''
+    img: icons/svg/d20-black.svg
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!nDE1qohP5vYjOxoH.YEKTD4MGgxEJnkOk'
+  - type: text
+    weight: 1
+    range:
+      - 4
+      - 4
+    drawn: false
+    description: >-
+      <strong>The Festival of Borrowed Names</strong><br /><em>Description:</em>
+      For one full day, every citizen draws a name from a communal pot and goes
+      by that name until midnight, regardless of gender or status. Lord becomes
+      laborer, cobbler becomes cleric — and all disputes or obligations made
+      under a borrowed name are, by ancient tradition, considered null and void.
+      The evening sees all names returned at a bonfire ceremony.<br
+      /><em>Hook:</em> Someone used the cover of the festival to do something
+      serious under a borrowed identity. The victim knows the borrowed name —
+      but not the real one.
+    _id: vCZfv63R3K1xrsox
+    name: ''
+    img: icons/svg/d20-black.svg
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!nDE1qohP5vYjOxoH.vCZfv63R3K1xrsox'
+  - type: text
+    weight: 1
+    range:
+      - 5
+      - 5
+    drawn: false
+    description: >-
+      <strong>The Lantern Drift</strong><br /><em>Description:</em> Families
+      build small paper boats fitted with a candle and a message to a deceased
+      loved one. At nightfall, the boats are launched from the bridge into the
+      river in a long, glowing procession. The tradition holds that if a boat
+      reaches the mouth of the river still lit, the message was received. It is
+      the town's most solemn and well-attended occasion.<br /><em>Hook:</em> One
+      boat came back upstream carrying a message. Not the same message that was
+      sent — a different one. The handwriting matches the deceased the sending
+      family had hoped to reach.
+    _id: B0BRDbSLfbh2hEvq
+    name: ''
+    img: icons/svg/d20-black.svg
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!nDE1qohP5vYjOxoH.B0BRDbSLfbh2hEvq'
+  - type: text
+    weight: 1
+    range:
+      - 6
+      - 6
+    drawn: false
+    description: >-
+      <strong>The Grand Dispute</strong><br /><em>Description:</em> Every year,
+      the town officially litigates a long-standing mock feud between two of its
+      founding families. Neither family has believed in the feud for
+      generations, but a judge, witnesses, and advocates are appointed,
+      arguments are made with theatrical seriousness, and the 'victor' is feted
+      at a lavish dinner paid for by the 'loser.' The cycle alternates win/loss
+      each year.<br /><em>Hook:</em> This year both families are refusing to
+      participate. Neither will say exactly why, but they've reportedly both
+      hired the same discrete investigator.
+    _id: Sdeii5yRRQT0cYYl
+    name: ''
+    img: icons/svg/d20-black.svg
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!nDE1qohP5vYjOxoH.Sdeii5yRRQT0cYYl'
+  - type: text
+    weight: 1
+    range:
+      - 7
+      - 7
+    drawn: false
+    description: >-
+      <strong>The Feast of the Empty Chair</strong><br /><em>Description:</em>
+      Every table in every home sets an extra place at the evening meal — for
+      the traveler who might need it. Strangers who knock on any door during the
+      feast are welcomed, fed, and sent on their way with provisions. The
+      tradition is strictly voluntary but near-universally observed. The town
+      sees some of its highest foot traffic of the year.<br /><em>Hook:</em> One
+      of this year's unexpected guests arrived already knowing the host's name,
+      and the names of everyone at the table, before introductions were made.
+    _id: EchHRo4XubJYUD0i
+    name: ''
+    img: icons/svg/d20-black.svg
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!nDE1qohP5vYjOxoH.EchHRo4XubJYUD0i'
+  - type: text
+    weight: 1
+    range:
+      - 8
+      - 8
+    drawn: false
+    description: >-
+      <strong>The Longest Step</strong><br /><em>Description:</em> A footrace
+      that takes runners from the town's oldest building to its newest, touching
+      the wall of each at the start and end. The route changes every year as
+      buildings age and are added. The winner receives a deed signed by the
+      mayor declaring them 'Furthest Foot of [Year]' — a worthless but deeply
+      coveted honor. Betting on the race is the town's single largest commercial
+      event.<br /><em>Hook:</em> This year's winner reached the finish line
+      before anyone else despite not being seen at any point along the route.
+      She insists she ran the whole way. The bookmaker who took the longest odds
+      on her has vanished.
+    _id: xwouGx0Br45ZjZiu
+    name: ''
+    img: icons/svg/d20-black.svg
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!nDE1qohP5vYjOxoH.xwouGx0Br45ZjZiu'
+  - type: text
+    weight: 1
+    range:
+      - 9
+      - 9
+    drawn: false
+    description: >-
+      <strong>The Painting of the Mill</strong><br /><em>Description:</em> Every
+      five years, the entire town turns out to repaint the mill from top to
+      bottom. The project takes three days, includes citizens of all ages, and
+      by tradition, the miller's family is locked out of the building and kept
+      occupied with a separate feast while everyone else works. The finished
+      mill is unveiled at a ceremony where the miller pretends to be shocked.<br
+      /><em>Hook:</em> During this year's painting, workers found a sealed room
+      inside the mill that appears on none of the building's original plans, and
+      that the miller's family insists has never existed.
+    _id: Ni5WkixapDSvQor0
+    name: ''
+    img: icons/svg/d20-black.svg
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!nDE1qohP5vYjOxoH.Ni5WkixapDSvQor0'
+  - type: text
+    weight: 1
+    range:
+      - 10
+      - 10
+    drawn: false
+    description: >-
+      <strong>The Night Market of Second Chances</strong><br
+      /><em>Description:</em> One night per year, a market operates from
+      midnight to dawn exclusively for goods people wish they'd never sold or
+      given away. Sellers list items with their original story. Buyers must
+      acknowledge the story before purchasing. There is no haggling — the seller
+      names a price and it is accepted or rejected. The market has a reputation
+      for reuniting people with things they thought were gone forever.<br
+      /><em>Hook:</em> An item appeared at this year's market that the city's
+      records list as having been destroyed in a fire forty years ago. The
+      seller claims they found it 'on the road.' They arrived in town that
+      afternoon and have no other belongings.
+    _id: pUCLmmoY8pVGaddt
+    name: ''
+    img: icons/svg/d20-black.svg
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!nDE1qohP5vYjOxoH.pUCLmmoY8pVGaddt'
+  - type: text
+    weight: 1
+    range:
+      - 11
+      - 11
+    drawn: false
+    description: >-
+      <strong>The Festival of Small Gods</strong><br /><em>Description:</em>
+      Citizens build tiny shrines at every crossroad, doorstep and windowsill to
+      honor 'small gods' — the spirits of hearth, threshold, well, and road.
+      Each shrine receives a miniature offering of food, thread, or oil. By
+      tradition, nothing large should be moved or repaired during the festival,
+      out of respect for spirits who 'live in the joints of things.' The day is
+      quiet, domestic, and deeply local.<br /><em>Hook:</em> One of the shrines
+      has begun attracting insects, birds, and small animals in unusual numbers.
+      By nightfall the animals are queuing. Whatever is in the shrine is
+      receiving worship it should not, at its size, be capable of generating.
+    _id: br45bfzxjvHlDtWm
+    name: ''
+    img: icons/svg/d20-black.svg
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!nDE1qohP5vYjOxoH.br45bfzxjvHlDtWm'
+  - type: text
+    weight: 1
+    range:
+      - 12
+      - 12
+    drawn: false
+    description: >-
+      <strong>The Champions' Compact</strong><br /><em>Description:</em> Town
+      champions selected by each quarter of the city compete in a series of
+      non-lethal contests: lifting, riddle-solving, archery, negotiation, and a
+      final event that changes each year. The winner's quarter earns first pick
+      of market stalls for the following season. The day draws traders from
+      surrounding areas and is one of the liveliest events of the year.<br
+      /><em>Hook:</em> This year's final mysterious event has been announced as
+      'locating a thing that has been hidden in plain sight for sixty years.'
+      The champion who finds it keeps it. Several non-competitors have started
+      searching early.
+    _id: j73O7WRniXhpTtpe
+    name: ''
+    img: icons/svg/d20-black.svg
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!nDE1qohP5vYjOxoH.j73O7WRniXhpTtpe'
+  - type: text
+    weight: 1
+    range:
+      - 13
+      - 13
+    drawn: false
+    description: >-
+      <strong>The Eve of Agreements</strong><br /><em>Description:</em> All
+      contracts, debts, and long-standing business arrangements in the town are
+      traditionally renewed or renegotiated on this date. The town scribe's
+      office stays open all night, notary seals are at a discount, and the
+      taverns are full of handshakes. Agreements made on this night are
+      considered especially binding by local custom, and breaking them carries
+      social consequences beyond any legal ones.<br /><em>Hook:</em> A
+      significant contract renewed this year contains a small change from last
+      year's version — a clause that dramatically shifts who owns a specific
+      piece of land. The change is subtle enough that both signatories may not
+      have noticed. Someone clearly intended them not to.
+    _id: pDHaAFBbKkGw5FjU
+    name: ''
+    img: icons/svg/d20-black.svg
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!nDE1qohP5vYjOxoH.pDHaAFBbKkGw5FjU'
+  - type: text
+    weight: 1
+    range:
+      - 14
+      - 14
+    drawn: false
+    description: >-
+      <strong>The Ghost Walk</strong><br /><em>Description:</em> On the last
+      night of the autumn, citizens walk from burial site to burial site across
+      town, leaving a lit candle at each grave of someone who died in the past
+      year. The walk is conducted in near-silence. The route lengthens as the
+      town ages. Afterward, everyone gathers for a meal in the town hall — the
+      one night per year when the hall is open to all without invitation.<br
+      /><em>Hook:</em> Three of the new graves on this year's walk are occupied
+      by people nobody in town can account for. The deaths were recorded
+      properly, the burial fees paid in coin — but no one remembers the
+      funerals, and no mourners have come forward.
+    _id: xX9u23hkX82tPOLJ
+    name: ''
+    img: icons/svg/d20-black.svg
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!nDE1qohP5vYjOxoH.xX9u23hkX82tPOLJ'
+  - type: text
+    weight: 1
+    range:
+      - 15
+      - 15
+    drawn: false
+    description: >-
+      <strong>The Festival of Wrong Answers</strong><br /><em>Description:</em>
+      A tongue-in-cheek scholarly festival where citizens compete to give the
+      most creatively incorrect answer to a question posed by the town's senior
+      academic. Previous winning wrong answers are recorded and displayed in the
+      town archive. The event is aggressively defended by the academic community
+      as 'essential to epistemological humility.' Most people just enjoy the
+      absurdity.<br /><em>Hook:</em> This year's question was drawn from a
+      sealed box that has been locked in the archive since the festival was
+      founded. The question on the paper was written in a hand no archivist can
+      identify — and one of the submitted 'wrong' answers appears to be exactly,
+      verifiably correct.
+    _id: aB2oPuauqtLyS98J
+    name: ''
+    img: icons/svg/d20-black.svg
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!nDE1qohP5vYjOxoH.aB2oPuauqtLyS98J'
+  - type: text
+    weight: 1
+    range:
+      - 16
+      - 16
+    drawn: false
+    description: >-
+      <strong>The Tide Blessing</strong><br /><em>Description:</em> At the
+      highest tide of the year, the harbor's oldest boat is sailed to the harbor
+      mouth by the most experienced remaining sailor in town. She anchors there
+      at exactly high tide, stands in the bow, and speaks the traditional
+      tide-blessing aloud. The words of the blessing are passed down only
+      between outgoing and incoming bearers — they have never been written down.
+      The ceremony is considered essential to the season's safety at sea.<br
+      /><em>Hook:</em> The traditional bearer of the blessing died two weeks
+      before the tide. She told no one the words. The tide is three days away,
+      and every sailor in town is quietly terrified.
+    _id: Gs15rCT5J8CZxmYp
+    name: ''
+    img: icons/svg/d20-black.svg
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!nDE1qohP5vYjOxoH.Gs15rCT5J8CZxmYp'
+  - type: text
+    weight: 1
+    range:
+      - 17
+      - 17
+    drawn: false
+    description: >-
+      <strong>The Iron Remembrance</strong><br /><em>Description:</em> Citizens
+      wear a small iron nail pinned to their clothing for three days to
+      commemorate a siege the town survived generations ago. On the final day,
+      nails are hammered into the town wall — one per citizen — in a ceremony
+      that has given one wall a surface like a hedgehog. The symbolism is
+      persistence: the town bent but held. Ale is provided free from public
+      funds and the speeches are mercifully short.<br /><em>Hook:</em> This
+      year, several nails hammered into the wall fell out by morning — reversing
+      the direction they were driven, lying on the ground pointing outward, away
+      from the wall. The citizens who drove those particular nails are all
+      refusing to speak about it.
+    _id: PhUdgjEgv20kjxZf
+    name: ''
+    img: icons/svg/d20-black.svg
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!nDE1qohP5vYjOxoH.PhUdgjEgv20kjxZf'
+  - type: text
+    weight: 1
+    range:
+      - 18
+      - 18
+    drawn: false
+    description: >-
+      <strong>The Feast of the Returning Road</strong><br
+      /><em>Description:</em> This festival marks the traditional end of the
+      dangerous-weather season when major roads were historically impassable. A
+      single gate in the town wall is ceremonially reopened after being bolted
+      for a symbolic winter, traders who overwinter in town are given an
+      honorary 'road name,' and the first wagon to come through the gate is met
+      with music and a shared meal at the crossroads.<br /><em>Hook:</em> The
+      first wagon through the gate this year was already inside the walls — no
+      one saw it enter, the gate was sealed, and the driver claims they've been
+      on the road for three days from the south with no stop.
+    _id: gFzxw3H8hXR4Cr7a
+    name: ''
+    img: icons/svg/d20-black.svg
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!nDE1qohP5vYjOxoH.gFzxw3H8hXR4Cr7a'
+  - type: text
+    weight: 1
+    range:
+      - 19
+      - 19
+    drawn: false
+    description: >-
+      <strong>The Festival of Fixed Stars</strong><br /><em>Description:</em> An
+      astronomical festival held when a particular star — locally named 'the
+      Anchor' — rises at the exact center of the sky at midnight. The town's
+      astronomers announce the date weeks in advance and citizens gather on the
+      hill above town to observe it. Traditional star-charts are distributed and
+      the night is considered one of the most auspicious of the year for making
+      long-term decisions.<br /><em>Hook:</em> The Anchor star is not in its
+      predicted position this year. It rose — but thirty degrees to the east of
+      where it should be. The town's chief astronomer has locked herself in her
+      observatory and is refusing to comment.
+    _id: Tn1g63CApQjpQ4Kf
+    name: ''
+    img: icons/svg/d20-black.svg
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!nDE1qohP5vYjOxoH.Tn1g63CApQjpQ4Kf'
+  - type: text
+    weight: 1
+    range:
+      - 20
+      - 20
+    drawn: false
+    description: >-
+      <strong>The Wren's Procession</strong><br /><em>Description:</em> Children
+      carry a caged wren in procession through every street in town, decorated
+      with ribbons and accompanied by drums. At each corner, the procession
+      stops and a verse is sung about the wren's 'great journey.' The wren is
+      released at the town center at sunset in a ceremony considered to bring
+      good fortune for the coming year. The bird is never harmed and always
+      returns, according to tradition, within a day.<br /><em>Hook:</em> This
+      year's wren was released as always — and did not fly. It sat on the
+      release-post and stared at the town's eastern quarter for an hour before
+      leaving, flying not south as tradition says it always does, but straight
+      toward the old tower no one uses anymore.
+    _id: v0xoczQHiIv5qRe6
+    name: ''
+    img: icons/svg/d20-black.svg
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!nDE1qohP5vYjOxoH.v0xoczQHiIv5qRe6'
+description: >-
+  <p>20 original town festivities and celebrations, each with a full description
+  and an adventure hook.</p>
+replacement: true
+displayRoll: true
+img: icons/svg/d20-grey.svg
+folder: null
+ownership:
+  default: 0
+  HP3Vba5udEHYm4dW: 3
+flags: {}
+_stats:
+  compendiumSource: null
+  duplicateSource: null
+  exportSource: null
+  coreVersion: '13.348'
+  systemId: shadowdark
+  systemVersion: 3.6.1
+  createdTime: 1772674439975
+  modifiedTime: 1772760502256
+  lastModifiedBy: HP3Vba5udEHYm4dW
+_id: nDE1qohP5vYjOxoH
+sort: 300000
+_key: '!tables!nDE1qohP5vYjOxoH'

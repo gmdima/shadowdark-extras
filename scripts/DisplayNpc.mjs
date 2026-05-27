@@ -8,6 +8,8 @@
  * Based on Dragonbane's DisplayMonsterCard implementation.
  */
 
+import { getEffectiveCreatureType } from "./CreatureTypesApp.mjs";
+
 const MODULE_ID = "shadowdark-extras";
 
 /**
@@ -129,7 +131,7 @@ function getLocalizedMove(moveKey) {
  * @returns {String} Creature type or empty string
  */
 function getCreatureType(npc) {
-    return npc.flags?.[MODULE_ID]?.creatureType ?? "";
+    return getEffectiveCreatureType(npc);
 }
 
 /**

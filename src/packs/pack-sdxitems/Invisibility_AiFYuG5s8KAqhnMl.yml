@@ -1,0 +1,85 @@
+effects: []
+folder: vmqOYZjyo8VunyyP
+img: icons/magic/light/explosion-star-glow-silhouette.webp
+name: Invisibility
+system:
+  description: >-
+    <p>A creature you touch becomes invisible for the spell’s
+    duration.</p><p>The spell ends if the target attacks or casts a
+    spell.</p><p>@UUID[Compendium.shadowdark.spell-effects.SMXbMbXcj5hLvTjY]{Spell
+    Effect: Invisibility}</p>
+  source:
+    title: core-rules
+  class:
+    - Compendium.shadowdark.classes.Item.035nuVkU9q2wtMPs
+  duration:
+    type: rounds
+    value: '10'
+  range: close
+  tier: 2
+  lost: false
+  magicItem: false
+  predefinedEffects: ''
+type: Spell
+_stats:
+  compendiumSource: null
+  duplicateSource: null
+  exportSource: null
+  coreVersion: '13.348'
+  systemId: shadowdark
+  systemVersion: 3.6.1
+  createdTime: 1766984974057
+  modifiedTime: 1771295884104
+  lastModifiedBy: HP3Vba5udEHYm4dW
+ownership:
+  default: 0
+  lDQovrTY32fJwPBR: 3
+flags:
+  shadowdark-extras:
+    spellDamage:
+      enabled: false
+      damageType: ''
+      damageRequirement: ''
+      damageRequirementFailAction: zero
+      formulaType: basic
+      numDice: 1
+      dieType: d6
+      bonus: 0
+      scaling: none
+      scalingDice: 0
+      formula: ''
+      tieredFormula: ''
+      effects: >-
+        [{"uuid":"Compendium.shadowdark-extras.pack-sdxitems.Item.Bhgl5w1OWnWDf9J8","duration":{}}]
+      effectsRequirement: ''
+      effectsApplyToTarget: true
+      criticalEffects: '[]'
+      effectSelectionMode: all
+      trackDuration: false
+      perTurnTrigger: start
+      perTurnDamage: ''
+      reapplyEffects: false
+    summoning:
+      enabled: false
+      profiles: '[]'
+      deleteAtExpiry: false
+    itemGive:
+      enabled: false
+      profiles: '[]'
+    targeting:
+      mode: targeted
+      template:
+        type: circle
+        size: 30
+        fillColor: '#4e9a06'
+        placement: choose
+        deleteMode: none
+        hideOutline: false
+        excludeCaster: false
+        tokenMagic:
+          texture: ''
+          opacity: 0.5
+          preset: NOFX
+_id: AiFYuG5s8KAqhnMl
+sort: 3600000
+_key: '!items!AiFYuG5s8KAqhnMl'

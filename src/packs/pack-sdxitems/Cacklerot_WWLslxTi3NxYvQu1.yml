@@ -1,0 +1,71 @@
+effects: []
+folder: vmqOYZjyo8VunyyP
+img: icons/magic/control/mouth-smile-deception-purple.webp
+name: Cacklerot
+system:
+  description: >-
+    <p>One target you touch of LV 4 or less collapses helplessly with
+    disturbing, pained laughter for the spell's
+    duration.</p><p>@UUID[Compendium.shadowdark.spell-effects.Item.9E4RVp3xfAK1uxrl]{Spell
+    Effect: Cacklerot}</p>
+  source:
+    title: cursed-scroll-1
+  class:
+    - Compendium.shadowdark.classes.Item.KGnBAFiTiLHZJUND
+  duration:
+    type: focus
+    value: 1
+  range: touch
+  tier: 2
+  lost: false
+  magicItem: false
+  predefinedEffects: ''
+type: Spell
+_stats:
+  compendiumSource: null
+  duplicateSource: null
+  exportSource: null
+  coreVersion: '13.348'
+  systemId: shadowdark
+  systemVersion: 3.6.1
+  createdTime: 1766712628229
+  modifiedTime: 1771295884104
+  lastModifiedBy: HP3Vba5udEHYm4dW
+ownership:
+  default: 0
+  lDQovrTY32fJwPBR: 3
+flags:
+  shadowdark-extras:
+    spellDamage:
+      enabled: false
+      damageType: ''
+      numDice: 0
+      dieType: d4
+      effects: >-
+        [{"uuid":"Compendium.shadowdark.spell-effects.Item.9E4RVp3xfAK1uxrl","duration":{}}]
+      effectsRequirement: '@target.level < 5'
+      damageRequirement: ''
+      damageRequirementFailAction: zero
+      formulaType: basic
+      bonus: null
+      scaling: none
+      scalingDice: null
+      formula: undefined
+      tieredFormula: ''
+      criticalEffects: '[]'
+      effectsApplyToTarget: true
+      effectSelectionMode: all
+      trackDuration: false
+      perTurnTrigger: start
+      perTurnDamage: ''
+      reapplyEffects: false
+    summoning:
+      enabled: false
+      profiles: '[]'
+      deleteAtExpiry: false
+    itemGive:
+      enabled: false
+      profiles: '[]'
+_id: WWLslxTi3NxYvQu1
+sort: 7400000
+_key: '!items!WWLslxTi3NxYvQu1'

@@ -1,3 +1,6 @@
+// v13+ FilePicker namespaced under foundry.applications.apps.
+const FilePicker = foundry.applications.apps.FilePicker?.implementation ?? globalThis.FilePicker;
+
 /**
  * NPC Attack Item Sheet - AppV2
  * Modern redesigned NPC Attack sheet with damage types and multiple damage sources

@@ -1,0 +1,87 @@
+folder: K6zOr2GTFzOnckMq
+name: 'Absorption: Physical'
+type: Effect
+img: icons/magic/defensive/shield-barrier-blue.webp
+system:
+  description: <p>Physical damage heals you.</p>
+  source:
+    title: ''
+  light:
+    active: false
+    hasBeenUsed: false
+    isSource: false
+    longevityMins: 60
+    remainingSecs: 3600
+    template: torch
+  category: effect
+  duration:
+    type: unlimited
+    value: 1
+  effectPanel:
+    show: true
+  start:
+    combatTime: '1.0'
+    value: 201331
+  tokenIcon:
+    show: true
+effects:
+  - name: SHADOWDARK.item.effect.predefined_effect.absorptionPhysical
+    img: icons/magic/defensive/shield-barrier-blue.webp
+    disabled: false
+    transfer: true
+    type: base
+    system:
+      changes:
+        - key: flags.shadowdark-extras.absorption.physical
+          value: -1
+          priority: null
+          type: override
+    duration:
+      value: null
+      units: seconds
+      expiry: null
+      expired: false
+    description: ''
+    tint: '#ffffff'
+    statuses: []
+    sort: 0
+    flags:
+      shadowdark-extras:
+        requireEquipped: false
+        sourceRequirement: ''
+    _id: XJGMO68Hc7FCUUV5
+    origin: null
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '14.360'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+      createdTime: null
+      modifiedTime: null
+    start: null
+    showIcon: 1
+    folder: null
+    _key: '!items.effects!Q0rviuqSDqjTzeZo.XJGMO68Hc7FCUUV5'
+flags:
+  shadowdark-extras:
+    absorption:
+      physical: '-1'
+ownership:
+  default: 0
+  lDQovrTY32fJwPBR: 3
+_stats:
+  compendiumSource: null
+  duplicateSource: null
+  exportSource: null
+  coreVersion: '14.360'
+  systemId: shadowdark
+  systemVersion: 3.6.1
+  createdTime: 1768096136098
+  modifiedTime: 1768096139170
+  lastModifiedBy: lDQovrTY32fJwPBR
+_id: Q0rviuqSDqjTzeZo
+sort: 1400000
+_key: '!items!Q0rviuqSDqjTzeZo'

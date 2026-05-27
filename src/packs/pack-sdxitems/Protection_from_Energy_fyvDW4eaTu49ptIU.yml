@@ -1,0 +1,89 @@
+effects: []
+folder: vmqOYZjyo8VunyyP
+img: icons/magic/defensive/shield-barrier-flaming-pentagon-blue-yellow.webp
+name: Protection from Energy
+system:
+  description: >-
+    <p>One creature you touch becomes impervious to the wild fury of the
+    elements.</p><p>Choose fire, cold, or electricity. For the spell's duration,
+    the target is immune to harm from energy of the chosen
+    type.</p><p>@UUID[Compendium.shadowdark.spell-effects.Item.KXfv6edqcRQdnc7m]{Spell
+    Effect: Protection from Energy
+    (Fire)}</p><p>@UUID[Compendium.shadowdark.spell-effects.Item.8mFFTIDKLulz3Yp6]{Spell
+    Effect: Protection from Energy
+    (Cold)}</p><p>@UUID[Compendium.shadowdark.spell-effects.Item.HxMd3lV8CPpvL3my]{Spell
+    Effect: Protection from Energy (Electricity)}</p>
+  source:
+    title: core-rules
+  class:
+    - Compendium.shadowdark.classes.Item.035nuVkU9q2wtMPs
+  duration:
+    type: focus
+    value: 1
+  range: close
+  tier: 3
+  lost: false
+  predefinedEffects: ''
+type: Spell
+_stats:
+  compendiumSource: null
+  duplicateSource: null
+  exportSource: null
+  coreVersion: '13.348'
+  systemId: shadowdark
+  systemVersion: 3.6.1
+  createdTime: 1767138194127
+  modifiedTime: 1771295884104
+  lastModifiedBy: HP3Vba5udEHYm4dW
+ownership:
+  default: 0
+  lDQovrTY32fJwPBR: 3
+flags:
+  shadowdark-extras:
+    spellDamage:
+      enabled: false
+      damageType: ''
+      damageRequirement: ''
+      damageRequirementFailAction: zero
+      formulaType: basic
+      numDice: 1
+      dieType: d6
+      bonus: 0
+      scaling: none
+      scalingDice: 0
+      formula: ''
+      tieredFormula: ''
+      effects: >-
+        [{"uuid":"Compendium.shadowdark.spell-effects.Item.KXfv6edqcRQdnc7m","duration":{}},{"uuid":"Compendium.shadowdark.spell-effects.Item.HxMd3lV8CPpvL3my","duration":{}},{"uuid":"Compendium.shadowdark.spell-effects.Item.8mFFTIDKLulz3Yp6","duration":{}}]
+      effectsRequirement: ''
+      effectsApplyToTarget: true
+      effectSelectionMode: prompt
+      criticalEffects: '[]'
+      trackDuration: false
+      perTurnTrigger: start
+      perTurnDamage: ''
+      reapplyEffects: false
+    summoning:
+      enabled: false
+      profiles: '[]'
+      deleteAtExpiry: false
+    itemGive:
+      enabled: false
+      profiles: '[]'
+    targeting:
+      mode: targeted
+      template:
+        type: circle
+        size: 30
+        fillColor: '#4e9a06'
+        placement: choose
+        deleteMode: none
+        hideOutline: false
+        excludeCaster: false
+        tokenMagic:
+          texture: ''
+          opacity: 0.5
+          preset: NOFX
+_id: fyvDW4eaTu49ptIU
+sort: 2300000
+_key: '!items!fyvDW4eaTu49ptIU'

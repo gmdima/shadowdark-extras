@@ -313,7 +313,7 @@ export default class SheetLockManager {
         if (config.coins && Object.keys(flattened).some(k => k.startsWith("system.coins"))) blocked = true;
         if (config.gems && "system.gems" in flattened) blocked = true;
         if (config.hp && ("system.attributes.hp.value" in flattened || "system.attributes.hp.max" in flattened)) blocked = true;
-        if (config.stats && Object.keys(flattened).some(k => k.match(/system\.abilities\.\w+\.base/))) blocked = true;
+        if (config.stats && Object.keys(flattened).some(k => k.match(/system\.abilities\.\w+\.value/))) blocked = true;
         if (config.luck && "system.luck.available" in flattened) blocked = true;
 
         if (blocked) {

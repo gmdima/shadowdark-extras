@@ -1,0 +1,158 @@
+folder: F3AKMIJQch1KV4FP
+name: Enlarge
+type: Potion
+img: icons/consumables/potions/bottle-corked-red.webp
+system:
+  description: ''
+  source:
+    title: ''
+  class: []
+  duration:
+    type: ''
+    value: 1
+  range: ''
+  tier: 1
+  broken: false
+  canBeEquipped: false
+  cost:
+    cp: 0
+    gp: 0
+    sp: 0
+  equipped: false
+  isAmmunition: false
+  isPhysical: true
+  magicItem: true
+  quantity: 1
+  slots:
+    free_carry: 0
+    per_slot: 1
+    slots_used: 1
+  stashed: false
+  spellName: ''
+effects: []
+ownership:
+  default: 0
+  lDQovrTY32fJwPBR: 3
+flags:
+  shadowdark-extras:
+    spellDamage:
+      enabled: false
+      damageType: ''
+      damageRequirement: ''
+      damageRequirementFailAction: zero
+      formulaType: basic
+      numDice: 1
+      dieType: d6
+      bonus: 0
+      scaling: none
+      scalingDice: 0
+      formula: ''
+      tieredFormula: ''
+      effects: '[]'
+      criticalEffects: '[]'
+      effectsRequirement: ''
+      effectsApplyToTarget: false
+      effectSelectionMode: all
+      trackDuration: false
+      perTurnTrigger: start
+      perTurnDamage: ''
+      reapplyEffects: false
+    summoning:
+      enabled: false
+      profiles: '[]'
+      deleteAtExpiry: false
+    itemGive:
+      enabled: false
+      profiles: '[]'
+    itemMacro:
+      runAsGm: true
+      triggers:
+        - onCast
+  itemacro:
+    macro:
+      name: Enlarge
+      type: script
+      scope: global
+      command: |-
+        // Enlarge Potion Macro
+        // Requires: Tagger module
+        // Trigger: onCast (or onSuccess for spells)
+
+        if (!token) {
+            ui.notifications.warn("No token found for the drinker!");
+            return;
+        }
+
+        // Check if Tagger module is available
+        if (!game.modules.get("tagger")?.active) {
+            ui.notifications.error("Tagger module is required for this potion!");
+            return;
+        }
+
+        const tags = Tagger.getTags(token);
+        const isEnlarged = tags.includes("Enlarged");
+        const isDiminished = tags.includes("Diminished");
+
+        if (isEnlarged) {
+            ui.notifications.warn(`${token.name} is already enlarged!`);
+            return;
+        }
+
+        let currentWidth = token.document.width;
+        let currentHeight = token.document.height;
+        let newWidth, newHeight;
+
+        if (isDiminished) {
+            // If diminished, remove the tag and increase size by 0.5 (returning to base)
+            newWidth = currentWidth + 0.5;
+            newHeight = currentHeight + 0.5;
+            await Tagger.removeTags(token, ["Diminished"]);
+            ui.notifications.info(`${token.name} is no longer diminished.`);
+        } else {
+            // If not diminished (and not enlarged), add enlarged tag and increase size by 1
+            newWidth = currentWidth + 1;
+            newHeight = currentHeight + 1;
+            await Tagger.addTags(token, ["Enlarged"]);
+            ui.notifications.info(`${token.name} grew to size ${newWidth}x${newHeight}!`);
+        }
+
+        // Update token size
+        await token.document.update({
+            width: newWidth,
+            height: newHeight
+        });
+
+        // Optional: Create chat message
+        ChatMessage.create({
+            content: `<b>${token.name}</b> drinks the Enlarge Potion and grows larger!`,
+            speaker: ChatMessage.getSpeaker({ token: token })
+        });
+      author: lDQovrTY32fJwPBR
+      _id: null
+      img: icons/svg/dice-target.svg
+      folder: null
+      sort: 0
+      ownership:
+        default: 0
+      flags: {}
+      _stats:
+        coreVersion: '13.348'
+        systemId: shadowdark
+        systemVersion: 3.6.1
+        lastModifiedBy: null
+        compendiumSource: null
+        duplicateSource: null
+        exportSource: null
+_stats:
+  compendiumSource: null
+  duplicateSource: null
+  exportSource: null
+  coreVersion: '13.348'
+  systemId: shadowdark
+  systemVersion: 3.6.1
+  createdTime: 1767239747574
+  modifiedTime: 1767239747588
+  lastModifiedBy: lDQovrTY32fJwPBR
+_id: bnVMZF0dmHLBaXQS
+sort: 100000
+_key: '!items!bnVMZF0dmHLBaXQS'

@@ -1,0 +1,71 @@
+effects: []
+folder: vmqOYZjyo8VunyyP
+img: icons/magic/holy/angel-wings-gray.webp
+name: Freya's Omen
+system:
+  description: >-
+    <p>For the spell's duration, you do not lose the ability to cast a spell if
+    you fail its spellcasting check.</p><p>If you critically fail a spellcasting
+    check, you may reroll your check once. You must use the new
+    result.</p><p>@UUID[Compendium.shadowdark.spell-effects.Item.HBIVwYRcojImlOOx]{Spell
+    Effect: Freya's Omen}</p>
+  source:
+    title: cursed-scroll-3
+  class:
+    - Compendium.shadowdark.classes.Item.xdjod5gPhNPIkLth
+  duration:
+    type: rounds
+    value: 1d6
+  range: self
+  tier: 4
+  lost: false
+  predefinedEffects: ''
+type: Spell
+_stats:
+  compendiumSource: null
+  duplicateSource: null
+  exportSource: null
+  coreVersion: '13.348'
+  systemId: shadowdark
+  systemVersion: 3.6.1
+  createdTime: 1766892321504
+  modifiedTime: 1771295884104
+  lastModifiedBy: HP3Vba5udEHYm4dW
+ownership:
+  default: 0
+  lDQovrTY32fJwPBR: 3
+flags:
+  shadowdark-extras:
+    spellDamage:
+      enabled: false
+      damageType: ''
+      numDice: 0
+      dieType: d4
+      effects: >-
+        [{"uuid":"Compendium.shadowdark.spell-effects.Item.HBIVwYRcojImlOOx","duration":{}}]
+      damageRequirement: ''
+      damageRequirementFailAction: zero
+      formulaType: basic
+      bonus: null
+      scaling: none
+      scalingDice: null
+      formula: undefined
+      tieredFormula: ''
+      criticalEffects: '[]'
+      effectsRequirement: ''
+      effectsApplyToTarget: true
+      effectSelectionMode: all
+      trackDuration: false
+      perTurnTrigger: start
+      perTurnDamage: ''
+      reapplyEffects: false
+    summoning:
+      enabled: false
+      profiles: '[]'
+      deleteAtExpiry: false
+    itemGive:
+      enabled: false
+      profiles: '[]'
+_id: K9hbqmdXhfE9u7bS
+sort: 4800000
+_key: '!items!K9hbqmdXhfE9u7bS'

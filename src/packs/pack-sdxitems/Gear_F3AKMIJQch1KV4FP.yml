@@ -1,0 +1,20 @@
+type: Item
+folder: null
+name: Gear
+color: null
+sorting: a
+_id: F3AKMIJQch1KV4FP
+description: ''
+sort: 100000
+flags: {}
+_stats:
+  compendiumSource: null
+  duplicateSource: null
+  exportSource: null
+  coreVersion: '13.348'
+  systemId: shadowdark
+  systemVersion: 3.6.1
+  createdTime: 1766719197426
+  modifiedTime: 1767309610382
+  lastModifiedBy: lDQovrTY32fJwPBR
+_key: '!folders!F3AKMIJQch1KV4FP'

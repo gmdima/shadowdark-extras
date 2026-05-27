@@ -1,0 +1,499 @@
+name: Abandoned Buildings - Legends & Rumors
+formula: 1d20
+results:
+  - type: text
+    weight: 1
+    range:
+      - 1
+      - 1
+    drawn: false
+    description: >-
+      They say a renowned artisan sealed her life's masterwork — a painting that
+      shows whoever looks at it their own death — inside the building the night
+      it was abandoned. She never came back for it.
+    _id: Zf3VT6qmQTAwQr7o
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!SU9SpmtrpZqeG2Ll.Zf3VT6qmQTAwQr7o'
+  - type: text
+    weight: 1
+    range:
+      - 2
+      - 2
+    drawn: false
+    description: >-
+      Every cat in the district gives the place a wide berth. The rat population
+      around the building is, paradoxically, also zero. Locals say something in
+      there hunts both and has been doing so for years.
+    _id: j8Vj8zeZX1X22x5B
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!SU9SpmtrpZqeG2Ll.j8Vj8zeZX1X22x5B'
+  - type: text
+    weight: 1
+    range:
+      - 3
+      - 3
+    drawn: false
+    description: >-
+      The building was purchased legitimately, deeded properly, taxed faithfully
+      — and then simply abandoned one morning with the breakfast dishes still on
+      the table. The owner was never found. The investigators assigned to the
+      case resigned within a week.
+    _id: YWWZknn7GqdxrHZp
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!SU9SpmtrpZqeG2Ll.YWWZknn7GqdxrHZp'
+  - type: text
+    weight: 1
+    range:
+      - 4
+      - 4
+    drawn: false
+    description: >-
+      A wealthy merchant used this place as a private counting house. He died in
+      debt. His heirs insist the books were falsified and the real ledgers —
+      showing where the money actually went — are still somewhere inside.
+    _id: vsiHKLHjz7BcHWCJ
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!SU9SpmtrpZqeG2Ll.vsiHKLHjz7BcHWCJ'
+  - type: text
+    weight: 1
+    range:
+      - 5
+      - 5
+    drawn: false
+    description: >-
+      The old guild that operated from this building was dissolved under
+      mysterious circumstances. Their charter, their seal, and their accumulated
+      records were supposedly destroyed. Three different parties are quietly
+      looking for evidence that none of that happened.
+    _id: 4g64vCVURAqVCXmo
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!SU9SpmtrpZqeG2Ll.4g64vCVURAqVCXmo'
+  - type: text
+    weight: 1
+    range:
+      - 6
+      - 6
+    drawn: false
+    description: >-
+      The building has been condemned eleven times over sixty years. Each
+      condemnation order was revoked — once by city decree, once by court order,
+      once because the inspector's notes were found replaced by a single pressed
+      flower.
+    _id: uHJ0O1rs3LH85uTU
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!SU9SpmtrpZqeG2Ll.uHJ0O1rs3LH85uTU'
+  - type: text
+    weight: 1
+    range:
+      - 7
+      - 7
+    drawn: false
+    description: >-
+      It was once used as a waystation for a covert courier network that moved
+      information between factions that were officially at war. The dead drops
+      were built into the structure itself. Some of them are probably still
+      active.
+    _id: juIGVlIxeBcwl06t
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!SU9SpmtrpZqeG2Ll.juIGVlIxeBcwl06t'
+  - type: text
+    weight: 1
+    range:
+      - 8
+      - 8
+    drawn: false
+    description: >-
+      The well in the building's rear courtyard doesn't connect to the city's
+      water system. Where it actually draws from, given the local geology, is
+      something engineers who've looked at it describe as 'not possible, so I
+      must have measured wrong.'
+    _id: aAmD28pW3vDNnDuB
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!SU9SpmtrpZqeG2Ll.aAmD28pW3vDNnDuB'
+  - type: text
+    weight: 1
+    range:
+      - 9
+      - 9
+    drawn: false
+    description: >-
+      A chronicler documenting the city's forgotten histories recorded that this
+      building stands on the original site of the city's first execution ground.
+      The chronicle was later officially retracted and is now quite difficult to
+      find.
+    _id: aJUqiQUjoM0NEI65
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!SU9SpmtrpZqeG2Ll.aJUqiQUjoM0NEI65'
+  - type: text
+    weight: 1
+    range:
+      - 10
+      - 10
+    drawn: false
+    description: >-
+      Locals swear the building is taller at night than during the day. Not by
+      much. But by exactly one storey — a floor that can apparently only be
+      reached after sundown, from the inside.
+    _id: UNyl4ymQpbKl4wj7
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!SU9SpmtrpZqeG2Ll.UNyl4ymQpbKl4wj7'
+  - type: text
+    weight: 1
+    range:
+      - 11
+      - 11
+    drawn: false
+    description: >-
+      The structure was a sanitarium for exactly three years before the city
+      quietly shuttered it. The official records cite 'administrative reasons.'
+      The former patients, most of whom recovered and left, refuse to discuss
+      what happened in the final month.
+    _id: PmA7iI8m2JA8jRBt
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!SU9SpmtrpZqeG2Ll.PmA7iI8m2JA8jRBt'
+  - type: text
+    weight: 1
+    range:
+      - 12
+      - 12
+    drawn: false
+    description: >-
+      A famous siege engineer once declared the building's foundations the most
+      structurally sound she had ever assessed. She was baffled by this, given
+      the state of everything above them, and left a footnote recommending
+      'someone qualified in older disciplines' investigate further.
+    _id: xKVN6aD0yHch9Pv8
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!SU9SpmtrpZqeG2Ll.xKVN6aD0yHch9Pv8'
+  - type: text
+    weight: 1
+    range:
+      - 13
+      - 13
+    drawn: false
+    description: >-
+      Three generations of the same family of squatters have lived in and around
+      the ruin across the years. Each generation is driven out by something they
+      won't describe. Each generation returns within a year. The current family
+      treats certain rooms as simply off-limits and has never explained why.
+    _id: NV7GwrzkHTmiQAt1
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!SU9SpmtrpZqeG2Ll.NV7GwrzkHTmiQAt1'
+  - type: text
+    weight: 1
+    range:
+      - 14
+      - 14
+    drawn: false
+    description: >-
+      The original architect's plans for the building don't match its current
+      layout at all — not due to alterations, but because there are rooms in the
+      structure that clearly exist but do not appear on any draft ever filed
+      with the city.
+    _id: WO7ASTmda2xnT5qt
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!SU9SpmtrpZqeG2Ll.WO7ASTmda2xnT5qt'
+  - type: text
+    weight: 1
+    range:
+      - 15
+      - 15
+    drawn: false
+    description: >-
+      It is locally believed that saying the building's original name aloud
+      after dark causes the speaker to dream of someone else's memories for
+      three nights. Most locals have stopped using the name entirely. Some of
+      the older ones won't say what it was.
+    _id: 1BvK8dE3QMw32E8T
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!SU9SpmtrpZqeG2Ll.1BvK8dE3QMw32E8T'
+  - type: text
+    weight: 1
+    range:
+      - 16
+      - 16
+    drawn: false
+    description: >-
+      A minor but respected historian wrote that the building appears in city
+      records predating any of the surrounding streets by roughly a century. Her
+      colleagues challenged this; she died before the dispute was resolved.
+    _id: 47KwTXMY9CCME7KD
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!SU9SpmtrpZqeG2Ll.47KwTXMY9CCME7KD'
+  - type: text
+    weight: 1
+    range:
+      - 17
+      - 17
+    drawn: false
+    description: >-
+      It is said the building was used to store something confiscated during the
+      civil purges — not weapons or valuables, but documents. What those
+      documents recorded, and who wanted them destroyed badly enough to seal
+      them in a building instead of burning them, is unknown.
+    _id: uDLtOYYB2SQi8CNr
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!SU9SpmtrpZqeG2Ll.uDLtOYYB2SQi8CNr'
+  - type: text
+    weight: 1
+    range:
+      - 18
+      - 18
+    drawn: false
+    description: >-
+      The ivy covering the eastern wall grows in flat denial of seasonal change
+      — green in winter, apparently dormant in summer — and has been doing so
+      for as long as anyone can recall. A druid examined it once and left the
+      city the following week.
+    _id: kHGaKWDHndELnB82
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!SU9SpmtrpZqeG2Ll.kHGaKWDHndELnB82'
+  - type: text
+    weight: 1
+    range:
+      - 19
+      - 19
+    drawn: false
+    description: >-
+      A previous owner tried to have the building demolished and found the crew
+      unwilling to start after the first morning. They reported that every
+      measurement reading was different from the one taken five minutes before,
+      and that the walls seemed to be 'arguing back.'
+    _id: svkMWVWMBtZriLlW
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!SU9SpmtrpZqeG2Ll.svkMWVWMBtZriLlW'
+  - type: text
+    weight: 1
+    range:
+      - 20
+      - 20
+    drawn: false
+    description: >-
+      The building has no ghost stories attached to it. In a district where
+      every other old ruin has two or three, this is considered by experienced
+      investigators to be a substantially worse sign than if it had dozens.
+    _id: K1yd1KDwgzC3lIyd
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!SU9SpmtrpZqeG2Ll.K1yd1KDwgzC3lIyd'
+description: 20 original legends and rumors about abandoned buildings for urban encounters.
+replacement: true
+displayRoll: true
+img: icons/svg/d20-grey.svg
+folder: null
+ownership:
+  default: 0
+  HP3Vba5udEHYm4dW: 3
+flags: {}
+_stats:
+  compendiumSource: null
+  duplicateSource: null
+  exportSource: null
+  coreVersion: '13.348'
+  systemId: shadowdark
+  systemVersion: 3.6.1
+  createdTime: 1772656479522
+  modifiedTime: 1772760502256
+  lastModifiedBy: HP3Vba5udEHYm4dW
+_id: SU9SpmtrpZqeG2Ll
+sort: 600000
+_key: '!tables!SU9SpmtrpZqeG2Ll'

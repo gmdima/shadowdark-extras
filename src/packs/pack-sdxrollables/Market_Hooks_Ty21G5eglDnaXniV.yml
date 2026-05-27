@@ -1,0 +1,493 @@
+name: Market Hooks
+formula: 1d20
+results:
+  - type: text
+    weight: 1
+    range:
+      - 1
+      - 1
+    drawn: false
+    description: >-
+      A merchant is selling 'genuine antique maps,' all of which turn out to be
+      maps of real places — but as they appeared two hundred years ago, before
+      several of those places ceased to exist.
+    _id: dbWxLcgyUbrocQtI
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!Ty21G5eglDnaXniV.dbWxLcgyUbrocQtI'
+  - type: text
+    weight: 1
+    range:
+      - 2
+      - 2
+    drawn: false
+    description: >-
+      A large, cheerful vendor is loudly hawking 'guaranteed fresh' produce.
+      Guaranteeing freshness is not the issue — the produce seems to be
+      ripening, wilting, and rotting at several times the normal speed.
+    _id: vXn6DvUzPecz3lWR
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!Ty21G5eglDnaXniV.vXn6DvUzPecz3lWR'
+  - type: text
+    weight: 1
+    range:
+      - 3
+      - 3
+    drawn: false
+    description: >-
+      A well-dressed young man is moving from stall to stall taking meticulous
+      notes and sketches. Every vendor is watching him nervously. He is,
+      apparently, a tax assessor's apprentice on his first day.
+    _id: 8OKxUgGz8TI58qZ6
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!Ty21G5eglDnaXniV.8OKxUgGz8TI58qZ6'
+  - type: text
+    weight: 1
+    range:
+      - 4
+      - 4
+    drawn: false
+    description: >-
+      Two stall owners are conducting a fierce, whispered bidding war for the
+      same customer — not for their business, but because whoever loses must,
+      per an old bet, dress as a goose for the next market day.
+    _id: UCeb32TdWVmOIIwG
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!Ty21G5eglDnaXniV.UCeb32TdWVmOIIwG'
+  - type: text
+    weight: 1
+    range:
+      - 5
+      - 5
+    drawn: false
+    description: >-
+      A troupe of three musicians has set up directly between two competing
+      spice vendors. Each vendor insists the musicians are 'working for the
+      other one' and is demanding the market warden remove them.
+    _id: c7BBsj9jVWXzvzay
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!Ty21G5eglDnaXniV.c7BBsj9jVWXzvzay'
+  - type: text
+    weight: 1
+    range:
+      - 6
+      - 6
+    drawn: false
+    description: >-
+      A stall appears empty of any vendor but has a handwritten sign reading
+      'Take what you need, leave what you can.' The goods are quality. Anyone
+      who takes without leaving reports a profound sense of guilt for the rest
+      of the day.
+    _id: K4guX8dgIwTrlMBn
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!Ty21G5eglDnaXniV.K4guX8dgIwTrlMBn'
+  - type: text
+    weight: 1
+    range:
+      - 7
+      - 7
+    drawn: false
+    description: >-
+      An irate herbalist is chasing a pig through the market. The pig has eaten
+      most of her rare dried-herb stock and shows no signs of slowing. The
+      herbalist is offering a reward.
+    _id: tnmURqpZVnZF9Lm1
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!Ty21G5eglDnaXniV.tnmURqpZVnZF9Lm1'
+  - type: text
+    weight: 1
+    range:
+      - 8
+      - 8
+    drawn: false
+    description: >-
+      A child is selling handmade amulets for 1 copper each, solemnly insisting
+      each one prevents a specific misfortune. The misfortunes she lists are
+      highly specific and oddly plausible.
+    _id: BS6RfRhGnBQ6qoJw
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!Ty21G5eglDnaXniV.BS6RfRhGnBQ6qoJw'
+  - type: text
+    weight: 1
+    range:
+      - 9
+      - 9
+    drawn: false
+    description: >-
+      A well-known local merchant has set up their cart in a completely new
+      location and is refusing to say why. The old location, apparently
+      perfectly good, has been abandoned mid-day.
+    _id: pfs9iJo4XMT8DF98
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!Ty21G5eglDnaXniV.pfs9iJo4XMT8DF98'
+  - type: text
+    weight: 1
+    range:
+      - 10
+      - 10
+    drawn: false
+    description: >-
+      A fast-talking vendor offers to buy any mundane item from the party for
+      five times its market value, asking no questions. He is clearly in a hurry
+      and equally clearly not interested in haggling down.
+    _id: lPP5D3KbIGAcbRfe
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!Ty21G5eglDnaXniV.lPP5D3KbIGAcbRfe'
+  - type: text
+    weight: 1
+    range:
+      - 11
+      - 11
+    drawn: false
+    description: >-
+      A seamstress at the cloth stalls is showing a bolt of fabric that shifts
+      color based on the emotional state of whoever touches it. She is trying to
+      sell it as 'novelty goods.' Several people are arguing about whether it is
+      cursed.
+    _id: xgOOxjNzFVDtrzZ2
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!Ty21G5eglDnaXniV.xgOOxjNzFVDtrzZ2'
+  - type: text
+    weight: 1
+    range:
+      - 12
+      - 12
+    drawn: false
+    description: >-
+      A market warden is systematically measuring every stall with a very long
+      tape measure and making stern notations in a ledger. No one is sure if
+      this is an official inspection or a personal vendetta.
+    _id: rSRWn0ARb6OJVEf2
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!Ty21G5eglDnaXniV.rSRWn0ARb6OJVEf2'
+  - type: text
+    weight: 1
+    range:
+      - 13
+      - 13
+    drawn: false
+    description: >-
+      A renowned traveling chef has set up a temporary stall and is selling
+      single servings of a stew so famous that the queue stretches half the
+      market's length. Those who reach the front often find him 'just sold out,'
+      then see a suspicious figure in a cloak eating the last bowl.
+    _id: 3yBdaqHkv8r9Z6rV
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!Ty21G5eglDnaXniV.3yBdaqHkv8r9Z6rV'
+  - type: text
+    weight: 1
+    range:
+      - 14
+      - 14
+    drawn: false
+    description: >-
+      Several vendors near the market center have noticed that their scales are
+      giving slightly different readings than yesterday. The discrepancy is too
+      consistent to be coincidence and seems to favor whoever is carrying the
+      scales.
+    _id: uuF4VtYwBeq9OHlI
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!Ty21G5eglDnaXniV.uuF4VtYwBeq9OHlI'
+  - type: text
+    weight: 1
+    range:
+      - 15
+      - 15
+    drawn: false
+    description: >-
+      A jeweler is showcasing a collection of rings, each inscribed with a
+      different word in an archaic script. She cannot read the script but priced
+      them herself. A passing scholar goes pale when she reads the inscriptions
+      aloud.
+    _id: 09PofYeH2iglfXhh
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!Ty21G5eglDnaXniV.09PofYeH2iglfXhh'
+  - type: text
+    weight: 1
+    range:
+      - 16
+      - 16
+    drawn: false
+    description: >-
+      A shouting match has broken out between two potion vendors over whose
+      cure-all tonic is superior. They begin demonstrating their own products.
+      One passes out within moments. The other starts levitating, very slowly.
+    _id: 1QkSapGnBvVhUCiW
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!Ty21G5eglDnaXniV.1QkSapGnBvVhUCiW'
+  - type: text
+    weight: 1
+    range:
+      - 17
+      - 17
+    drawn: false
+    description: >-
+      A very old woman is selling a collection of mundane, clearly second-hand
+      objects, each with a small handwritten card explaining its origin. The
+      histories are detailed, sad, and entirely plausible — and cannot all be
+      from one lifetime.
+    _id: wzhCJx6gKgmpDu3J
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!Ty21G5eglDnaXniV.wzhCJx6gKgmpDu3J'
+  - type: text
+    weight: 1
+    range:
+      - 18
+      - 18
+    drawn: false
+    description: >-
+      A merchant's entire stock of padlocked strongboxes is for sale at
+      suspiciously low prices. He does not have the keys. He is certain they are
+      empty. He is not entirely certain of this.
+    _id: pGAH2MKZ2pZ2Zc9j
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!Ty21G5eglDnaXniV.pGAH2MKZ2pZ2Zc9j'
+  - type: text
+    weight: 1
+    range:
+      - 19
+      - 19
+    drawn: false
+    description: >-
+      The market is briefly brought to a standstill when a very large cart gets
+      stuck in the main thoroughfare. The driver insists it will be a moment.
+      The cart does not move. It has been a moment for forty-five minutes.
+    _id: HeOe3safyt446O6w
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!Ty21G5eglDnaXniV.HeOe3safyt446O6w'
+  - type: text
+    weight: 1
+    range:
+      - 20
+      - 20
+    drawn: false
+    description: >-
+      A stranger is moving through the stalls purchasing single items from many
+      different vendors — a thread here, a carved button there, a vial of ink, a
+      dried sprig of a rare herb. No one can identify what he is making.
+    _id: iFfmO3KP24j462lQ
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!Ty21G5eglDnaXniV.iFfmO3KP24j462lQ'
+description: >-
+  20 original market stall hooks, complications, and opportunities for urban
+  market encounters.
+replacement: true
+displayRoll: true
+img: icons/svg/d20-grey.svg
+folder: null
+ownership:
+  default: 0
+  HP3Vba5udEHYm4dW: 3
+flags: {}
+_stats:
+  compendiumSource: null
+  duplicateSource: null
+  exportSource: null
+  coreVersion: '13.348'
+  systemId: shadowdark
+  systemVersion: 3.6.1
+  createdTime: 1772655536096
+  modifiedTime: 1772760502256
+  lastModifiedBy: HP3Vba5udEHYm4dW
+_id: Ty21G5eglDnaXniV
+sort: 900000
+_key: '!tables!Ty21G5eglDnaXniV'

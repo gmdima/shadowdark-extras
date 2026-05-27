@@ -1,0 +1,407 @@
+effects: []
+folder: vmqOYZjyo8VunyyP
+img: icons/creatures/magical/spirit-undead-ghost-tan-teal.webp
+name: Turn Undead
+system:
+  description: >-
+    <p>You rebuke undead creatures, forcing them to flee. You must present a
+    holy symbol to cast this spell.</p><p>Undead creatures within near of you
+    must make a CHA check opposed by your spellcasting check. If a creature
+    fails by 10+ points and is equal to or less than your level, it is
+    destroyed. Otherwise, on a fail, it flees from you for 5
+    rounds.</p><p>@UUID[Compendium.shadowdark.spell-effects.Item.T4LUCIffieQPMGsN]{Spell
+    Effect: Turn Undead}</p>
+  source:
+    title: core-rules
+  class:
+    - Compendium.shadowdark.classes.Item.oZWzXx1WRLg286zD
+  duration:
+    type: rounds
+    value: '5'
+  range: near
+  tier: 1
+  lost: false
+  predefinedEffects: ''
+type: Spell
+_stats:
+  compendiumSource: null
+  duplicateSource: null
+  exportSource: null
+  coreVersion: '13.348'
+  systemId: shadowdark
+  systemVersion: 3.6.1
+  createdTime: 1769881185758
+  modifiedTime: 1771295884104
+  lastModifiedBy: HP3Vba5udEHYm4dW
+ownership:
+  default: 0
+  lDQovrTY32fJwPBR: 3
+flags:
+  shadowdark-extras:
+    spellDamage:
+      enabled: false
+      damageType: ''
+      numDice: 0
+      dieType: d4
+      effects: >-
+        [{"uuid":"Compendium.shadowdark.spell-effects.Item.T4LUCIffieQPMGsN","duration":{"rounds":5}}]
+      damageRequirement: ''
+      damageRequirementFailAction: zero
+      formulaType: basic
+      bonus: null
+      scaling: none
+      scalingDice: null
+      formula: undefined
+      tieredFormula: ''
+      criticalEffects: '[]'
+      effectsRequirement: ''
+      effectsApplyToTarget: true
+      effectSelectionMode: all
+      trackDuration: true
+      perTurnTrigger: start
+      perTurnDamage: ''
+      reapplyEffects: false
+    summoning:
+      enabled: false
+      profiles: '[]'
+      deleteAtExpiry: false
+    itemGive:
+      enabled: false
+      profiles: '[]'
+    alignment: ''
+    targeting:
+      mode: targeted
+      template:
+        type: circle
+        size: 30
+        fillColor: '#4e9a06'
+        placement: choose
+        deleteMode: none
+        hideOutline: false
+        excludeCaster: false
+        tokenMagic:
+          texture: ''
+          opacity: 0.5
+          preset: NOFX
+    templateEffects:
+      enabled: false
+      triggers:
+        onEnter: false
+        onTurnStart: false
+        onTurnEnd: false
+        onLeave: false
+      damage:
+        formula: ''
+        type: ''
+      save:
+        enabled: false
+        dc: '12'
+        ability: dex
+        halfOnSuccess: true
+      applyConfiguredEffects: false
+      runItemMacro: false
+    auraEffects:
+      enabled: false
+      attachTo: caster
+      radius: 30
+      triggers:
+        onEnter: false
+        onLeave: false
+        onSourceTurnStart: false
+        onSourceTurnEnd: false
+        onTargetTurnStart: false
+        onTargetTurnEnd: false
+      damage:
+        formula: ''
+        type: ''
+      damageTriggers:
+        onEnter: false
+        onLeave: false
+        onSourceTurnStart: false
+        onSourceTurnEnd: false
+        onTargetTurnStart: false
+        onTargetTurnEnd: false
+      save:
+        enabled: false
+        dc: 12
+        ability: con
+        halfOnSuccess: false
+      disposition: all
+      includeSelf: false
+      applyToOriginator: true
+      checkVisibility: false
+      animation:
+        enabled: true
+        style: circle
+        tint: '#4488ff'
+        scaleMultiplier: 1
+        opacity: 0.6
+      tokenFilters:
+        enabled: false
+        preset: ''
+      applyConfiguredEffects: false
+      effectsTriggers:
+        onEnter: false
+        onLeave: false
+        onSourceTurnStart: false
+        onSourceTurnEnd: false
+        onTargetTurnStart: false
+        onTargetTurnEnd: false
+      runItemMacro: false
+      macroTriggers:
+        onEnter: false
+        onLeave: false
+        onSourceTurnStart: false
+        onSourceTurnEnd: false
+        onTargetTurnStart: false
+        onTargetTurnEnd: false
+    itemMacro:
+      triggers:
+        - onSuccess
+      runAsGm: true
+  itemacro:
+    macro:
+      name: Turn Undead
+      type: script
+      scope: global
+      command: >-
+        // Turn Undead Macro
+
+        // Run on Success
+
+
+        // 1. Get Setup Data
+
+        const casterToken = token;
+
+        const casterActor = actor;
+
+
+        // Ensure spellCheckResult is a number
+
+        const spellCheckResult = Number(args.rollResult);
+
+
+        if (!casterToken || !casterActor || isNaN(spellCheckResult)) {
+            ui.notifications.warn("Turn Undead: Missing caster data or invalid roll result.");
+            console.warn("Turn Undead Debug:", { casterToken, casterActor, rollResult: args.rollResult });
+            return;
+        }
+
+
+        // 2. Define Constants
+
+        const RANGE_FEET = 30; // "Near"
+
+        const FLEE_ROUNDS = 5;
+
+
+        // 3. Wait a moment for the duration tracking to be set up by the system
+
+        await new Promise(resolve => setTimeout(resolve, 100));
+
+
+        // 4. Get the Turn Undead spell from the caster
+
+        const turnUndeadSpell = casterActor.items.find(i => i.name === "Turn
+        Undead" && (i.type === "Spell" || i.type === "NPC Spell"));
+
+        if (!turnUndeadSpell) {
+            ui.notifications.warn("Turn Undead: Could not find Turn Undead spell on caster.");
+            return;
+        }
+
+
+        // 5. Get the active duration spell instance for Turn Undead
+
+        const activeDurationSpells = casterActor.getFlag("shadowdark-extras",
+        "activeDurationSpells") || [];
+
+        let turnUndeadDuration = activeDurationSpells.find(d => d.spellId ===
+        turnUndeadSpell.id);
+
+
+        if (!turnUndeadDuration) {
+            console.warn("Turn Undead: Duration tracking not found yet, will proceed without auto-cleanup.");
+        }
+
+
+        // 6. Find Targets
+
+        const targets = canvas.tokens.placeables.filter(t => {
+            if (t.id === casterToken.id) return false;
+            
+            // Foundry v13+ removed canvas.grid.measureDistance; use measurePath (point-based).
+            const a = casterToken.center ?? { x: casterToken.x, y: casterToken.y };
+            const b = t.center ?? { x: t.x, y: t.y };
+            const dist = (typeof canvas.grid.measurePath === "function")
+                ? canvas.grid.measurePath([a, b]).distance
+                : canvas.grid.measureDistance(a, b);
+            if (dist > RANGE_FEET) return false;
+            
+            const tActor = t.actor;
+            if (!tActor) return false;
+            
+            const subtype = tActor.system?.subtype || "";
+            const ancestry = tActor.system?.ancestry || "";
+            const sdxType = tActor.flags?.["shadowdark-extras"]?.creatureType || "";
+            
+            const isUndead = (subtype.toLowerCase().includes("undead") ||
+                ancestry.toLowerCase().includes("undead") ||
+                sdxType.toLowerCase().includes("undead"));
+            
+            return isUndead;
+        });
+
+
+        if (targets.length === 0) {
+            ui.notifications.info("Turn Undead: No undead creatures found within range.");
+            return;
+        }
+
+
+        // 7. Process Each Target
+
+        let chatContent = `<h3>Turn Undead Results</h3>
+
+        <p><strong>Spellcasting Check:</strong> ${spellCheckResult}</p>
+
+        <hr>`;
+
+
+        for (const t of targets) {
+            const tActor = t.actor;
+            const tName = t.name;
+            
+            // Roll CHA check
+            let chaTotal = NaN;
+            
+            try {
+                // SD 4.x removed actor.rollAbility; its replacement
+                // (actor.system.rollStatCheck) always posts a chat card, which would
+                // spam one message per undead. Roll CHA directly so we stay silent
+                // and feed the aggregated Turn Undead chat card built below.
+                const rollData = tActor.getRollData?.() ?? {};
+                const chaMod = Number(
+                    tActor.system?.abilities?.cha?.mod
+                    ?? rollData?.abilities?.cha?.mod
+                    ?? rollData?.cha
+                    ?? 0
+                );
+                const chaRoll = await (new Roll(`1d20 + ${chaMod}`)).evaluate();
+                chaTotal = Number(chaRoll.total);
+            } catch (e) {
+                console.error(`Turn Undead: System roll failed for ${tName}`, e);
+            }
+            
+            // If we still don't have a valid total, show error
+            if (isNaN(chaTotal)) {
+                console.error(`Turn Undead: Could not extract roll total for ${tName}`);
+                chatContent += `<p><strong>${tName}:</strong> <span style="color:red">Error extracting CHA roll result</span></p>`;
+                continue;
+            }
+            
+            let resultMsg = "";
+            
+            if (chaTotal >= spellCheckResult) {
+                resultMsg = `<span style="color:green"><strong>Resists</strong></span> (CHA Check: ${chaTotal} vs ${spellCheckResult})`;
+            } else {
+                const diff = spellCheckResult - chaTotal;
+                const targetLevel = Number(tActor.system.level?.value ?? tActor.system.level ?? 0);
+                const casterLevel = Number(casterActor.system.level?.value ?? casterActor.system.level ?? 0);
+                
+                if (diff >= 10 && targetLevel <= casterLevel) {
+                    resultMsg = `<span style="color:red"><strong>DESTROYED!</strong></span> (CHA Check: ${chaTotal}, Failed by ${diff}, Level ${targetLevel} ≤ ${casterLevel})`;
+                    await tActor.update({ "system.attributes.hp.value": 0 });
+                } else {
+                    resultMsg = `<span style="color:orange"><strong>Flees</strong></span> for ${FLEE_ROUNDS} rounds (CHA Check: ${chaTotal}, Failed by ${diff})`;
+                    
+                    // Create Flee Effect Item
+                    const fleeEffectData = {
+                        name: "Condition: Fleeing",
+                        type: "Effect",
+                        img: "icons/magic/control/fear-fright-white.webp",
+                        system: {
+                            description: "<p>This creature is fleeing from the caster of Turn Undead.</p>",
+                            duration: {
+                                type: "rounds",
+                                value: String(FLEE_ROUNDS)
+                            }
+                        },
+                        effects: [{
+                            name: "Fleeing",
+                            icon: "icons/magic/control/fear-fright-white.webp",
+                            origin: casterActor.uuid,
+                            transfer: true,
+                            duration: {
+                                rounds: FLEE_ROUNDS,
+                                startRound: game.combat.round,
+                                startTime: game.time.worldTime,
+                                startTurn: game.combat.turn,
+                                combat: game.combat.id
+                            },
+                            flags: {
+                                core: {
+                                    statusId: "fleeing"
+                                }
+                            },
+                            changes: []
+                        }]
+                    };
+                    
+                    try {
+                        const createdItems = await tActor.createEmbeddedDocuments("Item", [fleeEffectData]);
+                        const fleeEffectItemId = createdItems[0].id;
+                        
+                        // Link to duration spell if it exists
+                        if (turnUndeadDuration) {
+                            const currentDurationSpells = casterActor.getFlag("shadowdark-extras", "activeDurationSpells") || [];
+                            const durationIndex = currentDurationSpells.findIndex(d => d.instanceId === turnUndeadDuration.instanceId);
+                            
+                            if (durationIndex >= 0) {
+                                currentDurationSpells[durationIndex].targetEffects = currentDurationSpells[durationIndex].targetEffects || [];
+                                currentDurationSpells[durationIndex].targetEffects.push({
+                                    targetActorId: tActor.id,
+                                    targetTokenId: t.id,
+                                    effectItemId: fleeEffectItemId,
+                                    targetName: tName
+                                });
+                                
+                                await casterActor.setFlag("shadowdark-extras", "activeDurationSpells", currentDurationSpells);
+                            }
+                        }
+                    } catch (effectError) {
+                        console.error(`Turn Undead: Failed to create flee effect for ${tName}:`, effectError);
+                        resultMsg += ` <span style="color:red">(Effect creation failed)</span>`;
+                    }
+                }
+            }
+            
+            chatContent += `<p><strong>${tName}:</strong> ${resultMsg}</p>`;
+        }
+
+
+        ChatMessage.create({
+            user: game.user.id,
+            speaker: ChatMessage.getSpeaker({ token: casterToken }),
+            content: chatContent
+        });
+      author: lDQovrTY32fJwPBR
+      _id: null
+      img: icons/svg/dice-target.svg
+      folder: null
+      sort: 0
+      ownership:
+        default: 0
+      flags: {}
+      _stats:
+        coreVersion: '13.348'
+        systemId: shadowdark
+        systemVersion: 3.6.1
+        lastModifiedBy: null
+        compendiumSource: null
+        duplicateSource: null
+        exportSource: null
+_id: 4929OCXacfoN65Sx
+sort: 100000
+_key: '!items!4929OCXacfoN65Sx'

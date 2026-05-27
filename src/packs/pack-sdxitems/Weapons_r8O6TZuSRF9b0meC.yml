@@ -1,0 +1,18 @@
+type: Item
+folder: F3AKMIJQch1KV4FP
+name: Weapons
+color: null
+sorting: a
+_id: r8O6TZuSRF9b0meC
+description: ''
+sort: 0
+flags: {}
+_stats:
+  compendiumSource: null
+  duplicateSource: null
+  exportSource: null
+  coreVersion: '13.348'
+  systemId: shadowdark
+  systemVersion: 3.6.1
+  lastModifiedBy: null
+_key: '!folders!r8O6TZuSRF9b0meC'

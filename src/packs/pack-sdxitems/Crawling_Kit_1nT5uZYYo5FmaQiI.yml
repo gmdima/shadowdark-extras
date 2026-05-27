@@ -1,0 +1,431 @@
+effects: []
+folder: F3AKMIJQch1KV4FP
+img: icons/containers/bags/satchel-worn-leather-brown.webp
+name: Crawling Kit
+system:
+  description: >-
+    <p>A crawling kit costs 7 gp. It uses 7 gear slots and contains the
+    following
+    items.</p><ul><li><p>@UUID[Compendium.shadowdark.gear.oSnfz4qcWlUL6cDZ]{Backpack}</p></li><li><p>@UUID[Compendium.shadowdark.gear.ERprfuTIFRFEix9G]{Flint
+    and Steel}</p></li><li><p>2x
+    @UUID[Compendium.shadowdark.gear.z3xc7HGysC4ZCU8e]{Torch}</p></li><li><p>@UUID[Compendium.shadowdark.gear.EPndk3DPOEOSvbga]{Iron
+    Spikes}</p></li><li><p>@UUID[Compendium.shadowdark.gear.GX6OmWQiE7MzTmjX]{Rations}</p></li><li><p>@UUID[Compendium.shadowdark.gear.fqsLWV46NWH0L53l]{Grappling
+    Hook}</p></li><li><p>@UUID[Compendium.shadowdark.gear.6ZRwVHFlh5QiyZWC]{Rope,
+    60'}</p></li></ul>
+  source:
+    title: core-rules
+  light:
+    active: false
+    hasBeenUsed: false
+    isSource: false
+    longevityMins: 60
+    remainingSecs: 3600
+    template: torch
+  broken: false
+  canBeEquipped: false
+  cost:
+    cp: 0
+    gp: 7
+    sp: 0
+  equipped: false
+  isAmmunition: false
+  isPhysical: true
+  magicItem: false
+  quantity: 1
+  slots:
+    free_carry: 0
+    per_slot: 1
+    slots_used: 7
+  stashed: false
+  scroll: false
+  treasure: false
+type: Basic
+_stats:
+  compendiumSource: null
+  duplicateSource: null
+  exportSource: null
+  coreVersion: '13.348'
+  systemId: shadowdark
+  systemVersion: 3.6.1
+  createdTime: 1768017732118
+  modifiedTime: 1768017781270
+  lastModifiedBy: lDQovrTY32fJwPBR
+ownership:
+  default: 0
+  lDQovrTY32fJwPBR: 3
+flags:
+  shadowdark-extras:
+    isContainer: true
+    containerPackedItems:
+      - effects: []
+        folder: 0ws7y8D3IktigkiB
+        img: icons/commodities/stone/paver-grey.webp
+        name: Flint and Steel
+        system:
+          description: >-
+            <p>A small fire starter. With it, routine attempts to light a fire
+            always succeed.</p>
+          source:
+            title: core-rules
+          light:
+            active: false
+            hasBeenUsed: false
+            isSource: false
+            longevityMins: 60
+            remainingSecs: 3600
+            template: torch
+          broken: false
+          canBeEquipped: false
+          cost:
+            cp: 0
+            gp: 0
+            sp: 5
+          equipped: false
+          isAmmunition: false
+          isPhysical: true
+          magicItem: false
+          quantity: 1
+          slots:
+            free_carry: 0
+            per_slot: 1
+            slots_used: 1
+          stashed: false
+          scroll: false
+          treasure: false
+        type: Basic
+        _stats:
+          coreVersion: '13.348'
+          systemId: null
+          systemVersion: null
+          createdTime: null
+          modifiedTime: null
+          lastModifiedBy: null
+          compendiumSource: null
+          duplicateSource: null
+          exportSource: null
+        sort: 0
+        ownership:
+          default: 0
+        flags:
+          shadowdark-extras:
+            containerId: null
+            packedKey: TPLrlWOi9Id5C7xe
+      - effects: []
+        folder: 0ws7y8D3IktigkiB
+        img: icons/sundries/lights/torch-purple.webp
+        name: Torch
+        system:
+          description: >-
+            <p>Sheds light to a near distance (see Light Sources, pg. 46). Burns
+            for one hour of real time.</p>
+          source:
+            title: core-rules
+          light:
+            active: false
+            hasBeenUsed: false
+            isSource: true
+            longevityMins: 60
+            remainingSecs: 3600
+            template: torch
+          broken: false
+          canBeEquipped: false
+          cost:
+            cp: 0
+            gp: 0
+            sp: 5
+          equipped: false
+          isAmmunition: false
+          isPhysical: false
+          magicItem: false
+          quantity: 1
+          slots:
+            free_carry: 0
+            per_slot: 1
+            slots_used: 1
+          stashed: false
+          scroll: false
+          treasure: false
+        type: Basic
+        _stats:
+          coreVersion: '13.348'
+          systemId: null
+          systemVersion: null
+          createdTime: null
+          modifiedTime: null
+          lastModifiedBy: null
+          compendiumSource: null
+          duplicateSource: null
+          exportSource: null
+        sort: 0
+        ownership:
+          default: 0
+        flags:
+          shadowdark-extras:
+            containerId: null
+            packedKey: Zi8QkvzJN0eaS5gq
+      - effects: []
+        folder: 0ws7y8D3IktigkiB
+        img: icons/sundries/lights/torch-purple.webp
+        name: Torch
+        system:
+          description: >-
+            <p>Sheds light to a near distance (see Light Sources, pg. 46). Burns
+            for one hour of real time.</p>
+          source:
+            title: core-rules
+          light:
+            active: false
+            hasBeenUsed: false
+            isSource: true
+            longevityMins: 60
+            remainingSecs: 3600
+            template: torch
+          broken: false
+          canBeEquipped: false
+          cost:
+            cp: 0
+            gp: 0
+            sp: 5
+          equipped: false
+          isAmmunition: false
+          isPhysical: true
+          magicItem: false
+          quantity: 1
+          slots:
+            free_carry: 0
+            per_slot: 1
+            slots_used: 1
+          stashed: false
+          scroll: false
+          treasure: false
+        type: Basic
+        _stats:
+          coreVersion: '13.348'
+          systemId: null
+          systemVersion: null
+          createdTime: null
+          modifiedTime: null
+          lastModifiedBy: null
+          compendiumSource: null
+          duplicateSource: null
+          exportSource: null
+        sort: 0
+        ownership:
+          default: 0
+        flags:
+          shadowdark-extras:
+            containerId: null
+            packedKey: g1UOIexTETRaYklM
+      - effects: []
+        folder: 0ws7y8D3IktigkiB
+        img: icons/tools/fasteners/pin-spiked.webp
+        name: Iron Spikes
+        system:
+          description: >-
+            <p>Strong spikes. Each has a hole for threading</p><p>rope. Can be
+            hammered in with weapons or other iron spikes.</p>
+          source:
+            title: core-rules
+          light:
+            active: false
+            hasBeenUsed: false
+            isSource: false
+            longevityMins: 60
+            remainingSecs: 3600
+            template: torch
+          broken: false
+          canBeEquipped: false
+          cost:
+            cp: 0
+            gp: 1
+            sp: 0
+          equipped: false
+          isAmmunition: false
+          isPhysical: true
+          magicItem: false
+          quantity: 10
+          slots:
+            free_carry: 0
+            per_slot: 10
+            slots_used: 1
+          stashed: false
+          scroll: false
+          treasure: false
+        type: Basic
+        _stats:
+          coreVersion: '13.348'
+          systemId: null
+          systemVersion: null
+          createdTime: null
+          modifiedTime: null
+          lastModifiedBy: null
+          compendiumSource: null
+          duplicateSource: null
+          exportSource: null
+        sort: 0
+        ownership:
+          default: 0
+        flags:
+          shadowdark-extras:
+            containerId: null
+            packedKey: 654m0vNtRnlQpmOY
+      - effects: []
+        folder: 0ws7y8D3IktigkiB
+        img: icons/consumables/food/berries-ration-round-red.webp
+        name: Rations
+        system:
+          description: <p>One day of food and water supply for one person.</p>
+          source:
+            title: core-rules
+          light:
+            active: false
+            hasBeenUsed: false
+            isSource: false
+            longevityMins: 60
+            remainingSecs: 3600
+            template: torch
+          broken: false
+          canBeEquipped: false
+          cost:
+            cp: 0
+            gp: 0
+            sp: 5
+          equipped: false
+          isAmmunition: false
+          isPhysical: true
+          magicItem: false
+          quantity: 3
+          slots:
+            free_carry: 0
+            per_slot: 3
+            slots_used: 1
+          stashed: false
+          scroll: false
+          treasure: false
+        type: Basic
+        _stats:
+          coreVersion: '13.348'
+          systemId: null
+          systemVersion: null
+          createdTime: null
+          modifiedTime: null
+          lastModifiedBy: null
+          compendiumSource: null
+          duplicateSource: null
+          exportSource: null
+        sort: 0
+        ownership:
+          default: 0
+        flags:
+          shadowdark-extras:
+            containerId: null
+            packedKey: EyIVFUlEA3hW41Zr
+      - effects: []
+        folder: 0ws7y8D3IktigkiB
+        img: icons/tools/fishing/hook-multi-steel-brown.webp
+        name: Grappling Hook
+        system:
+          description: <p>A rope anchor with three, curved tines.</p>
+          source:
+            title: core-rules
+          light:
+            active: false
+            hasBeenUsed: false
+            isSource: false
+            longevityMins: 60
+            remainingSecs: 3600
+            template: torch
+          broken: false
+          canBeEquipped: false
+          cost:
+            cp: 0
+            gp: 1
+            sp: 0
+          equipped: false
+          isAmmunition: false
+          isPhysical: true
+          magicItem: false
+          quantity: 1
+          slots:
+            free_carry: 0
+            per_slot: 1
+            slots_used: 1
+          stashed: false
+          scroll: false
+          treasure: false
+        type: Basic
+        _stats:
+          coreVersion: '13.348'
+          systemId: null
+          systemVersion: null
+          createdTime: null
+          modifiedTime: null
+          lastModifiedBy: null
+          compendiumSource: null
+          duplicateSource: null
+          exportSource: null
+        sort: 0
+        ownership:
+          default: 0
+        flags:
+          shadowdark-extras:
+            containerId: null
+            packedKey: WBhywU7Bp03ZMLOU
+      - effects: []
+        folder: 0ws7y8D3IktigkiB
+        img: icons/sundries/survival/rope-wrapped-brown.webp
+        name: Rope, 60'
+        system:
+          description: <p>Hemp, 60’ long.</p>
+          source:
+            title: core-rules
+          light:
+            active: false
+            hasBeenUsed: false
+            isSource: false
+            longevityMins: 60
+            remainingSecs: 3600
+            template: torch
+          broken: false
+          canBeEquipped: false
+          cost:
+            cp: 0
+            gp: 1
+            sp: 0
+          equipped: false
+          isAmmunition: false
+          isPhysical: true
+          magicItem: false
+          quantity: 1
+          slots:
+            free_carry: 0
+            per_slot: 1
+            slots_used: 1
+          stashed: false
+          scroll: false
+          treasure: false
+        type: Basic
+        _stats:
+          coreVersion: '13.348'
+          systemId: null
+          systemVersion: null
+          createdTime: null
+          modifiedTime: null
+          lastModifiedBy: null
+          compendiumSource: null
+          duplicateSource: null
+          exportSource: null
+        sort: 0
+        ownership:
+          default: 0
+        flags:
+          shadowdark-extras:
+            containerId: null
+            packedKey: 55eSLcITD90QKtEv
+    containerBaseSlots:
+      slots_used: 7
+      per_slot: 1
+      max: 1
+_id: 1nT5uZYYo5FmaQiI
+sort: 0
+_key: '!items!1nT5uZYYo5FmaQiI'

@@ -9,33 +9,55 @@
 const MODULE_ID = "shadowdark-extras";
 const SETTING_KEY_FORMATION = "currentFormation";
 
+const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
+
 /**
  * Formation Spawner Application
  */
-export class FormationSpawnerSD extends FormApplication {
+export class FormationSpawnerSD extends HandlebarsApplicationMixin(ApplicationV2) {
     static _instance = null;
+
+    static DEFAULT_OPTIONS = {
+        id: "sdx-formation-spawner",
+        classes: ["sdx-formation-spawner-app", "shadowdark"],
+        window: {
+            title: "SDX.formationSpawner.title",
+            resizable: true
+        },
+        position: {
+            width: 420,
+            height: "auto"
+        },
+        dragDrop: [
+            { dragSelector: ".pool-member", dropSelector: ".formation-grid" },
+            { dragSelector: ".grid-marker", dropSelector: ".formation-grid" },
+            { dragSelector: ".spawn-btn" }
+        ]
+    };
+
+    static PARTS = {
+        content: {
+            template: "modules/shadowdark-extras/templates/formation-spawner.hbs"
+        }
+    };
 
     constructor(options = {}) {
         super(options);
         this.gridSize = 7; // Default 7x7 grid
         this.formation = null;
         this.tempFormation = null;
+        this.#dragDrop = this.#createDragDropHandlers();
     }
 
-    static get defaultOptions() {
-        return foundry.utils.mergeObject(super.defaultOptions, {
-            id: "sdx-formation-spawner",
-            title: game.i18n?.localize("SDX.formationSpawner.title") || "Formation Spawner",
-            classes: ["sdx-formation-spawner-app", "shadowdark"],
-            template: "modules/shadowdark-extras/templates/formation-spawner.hbs",
-            width: 420,
-            height: "auto",
-            resizable: true,
-            dragDrop: [
-                { dragSelector: ".pool-member", dropSelector: ".formation-grid" },
-                { dragSelector: ".grid-marker", dropSelector: ".formation-grid" },
-                { dragSelector: ".spawn-btn" }
-            ]
+    #dragDrop;
+
+    #createDragDropHandlers() {
+        return this.options.dragDrop.map(d => {
+            d.callbacks = {
+                dragstart: this._onDragStart.bind(this),
+                drop: this._onDrop.bind(this)
+            };
+            return new foundry.applications.ux.DragDrop.implementation(d);
         });
     }
 
@@ -51,7 +73,7 @@ export class FormationSpawnerSD extends FormApplication {
         if (!FormationSpawnerSD._instance) {
             FormationSpawnerSD._instance = new FormationSpawnerSD();
         }
-        FormationSpawnerSD._instance.render(true);
+        FormationSpawnerSD._instance.render({ force: true });
     }
 
     /**
@@ -70,21 +92,14 @@ export class FormationSpawnerSD extends FormApplication {
     /**
      * Get data for template rendering
      */
-    async getData(options = {}) {
-        const context = await super.getData(options);
-
-        // Load or create formation data
+    async _prepareContext(options) {
         await this._loadFormation();
-
-        // Refresh pool to ensure validity (removes deleted actors)
         await this.refreshPool();
-
-        // Get party members for the pool
-        context.pool = this.formation.pool;
-        context.gridHtml = this._generateGrid();
-        context.gridSize = this.gridSize;
-
-        return context;
+        return {
+            pool: this.formation.pool,
+            gridHtml: this._generateGrid(),
+            gridSize: this.gridSize
+        };
     }
 
     /**
@@ -180,29 +195,36 @@ export class FormationSpawnerSD extends FormApplication {
     /**
      * Activate event listeners
      */
-    activateListeners(html) {
-        super.activateListeners(html);
+    _onRender(context, options) {
+        const html = this.element;
+        if (!html) return;
+
+        // Bind drag-drop on each render (handlers stay across re-renders)
+        for (const dd of this.#dragDrop) dd.bind(html);
 
         // Rotate button
-        html.find(".rotate-btn").on("click", () => this._rotateFormation());
+        html.querySelector(".rotate-btn")?.addEventListener("click", () => this._rotateFormation());
 
         // Grid size change
-        html.find(".grid-size-select").on("change", (e) => {
-            this._changeGridSize(parseInt(e.target.value));
-        });
+        const sizeSelect = html.querySelector(".grid-size-select");
+        if (sizeSelect) {
+            sizeSelect.addEventListener("change", (e) => {
+                this._changeGridSize(parseInt(e.target.value));
+            });
+            sizeSelect.value = this.gridSize;
+        }
 
         // Marker delete buttons
-        html.find(".marker-delete").on("click", (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            const cell = e.target.closest(".grid-cell");
-            const row = parseInt(cell.dataset.row);
-            const col = parseInt(cell.dataset.cell);
-            this._removeFromGrid(row, col);
+        html.querySelectorAll(".marker-delete").forEach(btn => {
+            btn.addEventListener("click", (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                const cell = e.target.closest(".grid-cell");
+                const row = parseInt(cell.dataset.row);
+                const col = parseInt(cell.dataset.cell);
+                this._removeFromGrid(row, col);
+            });
         });
-
-        // Set current grid size in select
-        html.find(".grid-size-select").val(this.gridSize);
     }
 
     /**
@@ -287,7 +309,7 @@ export class FormationSpawnerSD extends FormApplication {
     async _onDrop(event) {
         if (!game.user.isGM) return;
 
-        const dragData = TextEditor.getDragEventData(event);
+        const dragData = foundry.applications.ux.TextEditor.implementation.getDragEventData(event);
         if (dragData.type !== "Actor" || !dragData.uuid) return;
 
         const actor = await fromUuid(dragData.uuid);

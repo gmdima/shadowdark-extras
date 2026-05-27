@@ -1,40 +1,40 @@
-<form class="sdx-journal-editor-form" autocomplete="off">
+<div class="sdx-journal-editor-form" autocomplete="off">
 	<!-- Quick Insert Toolbar -->
 	<div class="sdx-editor-quick-toolbar">
 		<span style="color: #888; font-size: 10px; margin-right: 8px; align-self: center;">Insert:</span>
 
 		<!-- Callout Boxes -->
-		<button type="button" class="sdx-quick-insert-btn sdx-btn-info" data-insert="callout-info" title="Info Box">
+		<button type="button" class="sdx-quick-insert-btn sdx-btn-info" data-action="insertSnippet" data-insert="callout-info" title="Info Box">
 			<i class="fas fa-info-circle"></i> Info
 		</button>
-		<button type="button" class="sdx-quick-insert-btn sdx-btn-warning" data-insert="callout-warning"
+		<button type="button" class="sdx-quick-insert-btn sdx-btn-warning" data-action="insertSnippet" data-insert="callout-warning"
 			title="Warning Box">
 			<i class="fas fa-exclamation-triangle"></i> Warning
 		</button>
-		<button type="button" class="sdx-quick-insert-btn sdx-btn-quest" data-insert="callout-quest" title="Quest Box">
+		<button type="button" class="sdx-quick-insert-btn sdx-btn-quest" data-action="insertSnippet" data-insert="callout-quest" title="Quest Box">
 			<i class="fas fa-scroll"></i> Quest
 		</button>
-		<button type="button" class="sdx-quick-insert-btn sdx-btn-loot" data-insert="callout-loot" title="Loot Box">
+		<button type="button" class="sdx-quick-insert-btn sdx-btn-loot" data-action="insertSnippet" data-insert="callout-loot" title="Loot Box">
 			<i class="fas fa-gem"></i> Loot
 		</button>
-		<button type="button" class="sdx-quick-insert-btn sdx-btn-npc" data-insert="callout-npc" title="NPC Quote">
+		<button type="button" class="sdx-quick-insert-btn sdx-btn-npc" data-action="insertSnippet" data-insert="callout-npc" title="NPC Quote">
 			<i class="fas fa-comment-dots"></i> NPC
 		</button>
 
 		<div class="sdx-quick-insert-separator"></div>
 
 		<!-- Dividers -->
-		<button type="button" class="sdx-quick-insert-btn" data-insert="divider-swords" title="Sword Divider">
+		<button type="button" class="sdx-quick-insert-btn" data-action="insertSnippet" data-insert="divider-swords" title="Sword Divider">
 			<i class="fas fa-minus"></i> ⚔
 		</button>
-		<button type="button" class="sdx-quick-insert-btn" data-insert="divider-stars" title="Star Divider">
+		<button type="button" class="sdx-quick-insert-btn" data-action="insertSnippet" data-insert="divider-stars" title="Star Divider">
 			<i class="fas fa-minus"></i> ✦
 		</button>
 	</div>
 
-	<!-- Editor Area -->
+	<!-- Editor Area: V2-native <prose-mirror> custom element -->
 	<div class="form-group stacked sdx-editor-container">
-		{{editor content target="content" button=false editable=true engine="prosemirror" collaborate=false}}
+		<prose-mirror name="content" toggled="true" collaborate="false">{{content}}</prose-mirror>
 	</div>
 
 	<!-- Footer -->
@@ -43,4 +43,4 @@
 			<i class="fas fa-save"></i> {{localize "SHADOWDARK_EXTRAS.journal.save"}}
 		</button>
 	</footer>
-</form>
+</div>

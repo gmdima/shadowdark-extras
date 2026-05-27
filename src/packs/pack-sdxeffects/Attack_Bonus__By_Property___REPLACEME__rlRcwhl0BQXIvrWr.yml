@@ -1,0 +1,38 @@
+name: Attack Bonus (By Property — REPLACEME)
+img: icons/skills/melee/hand-grip-sword-orange.webp
+transfer: false
+type: base
+disabled: false
+duration:
+  value: null
+  units: seconds
+  expiry: null
+  expired: false
+description: ''
+origin: null
+tint: '#ffffff'
+statuses: []
+showIcon: 1
+sort: 0
+flags: {}
+system:
+  changes:
+    - key: system.roll.attack.bonus.REPLACEME
+      value: '1'
+      priority: 20
+      type: add
+      phase: initial
+_id: rlRcwhl0BQXIvrWr
+start: null
+folder: null
+_stats:
+  coreVersion: '14.361'
+  systemId: shadowdark
+  systemVersion: 4.0.4
+  createdTime: 1779027664609
+  modifiedTime: 1779027664609
+  lastModifiedBy: lgz0hScAHYW4VnVt
+  compendiumSource: null
+  duplicateSource: null
+  exportSource: null
+_key: '!effects!rlRcwhl0BQXIvrWr'

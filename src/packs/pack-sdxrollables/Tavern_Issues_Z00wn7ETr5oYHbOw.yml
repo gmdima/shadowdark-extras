@@ -1,0 +1,1193 @@
+name: Tavern Issues
+formula: 1d100
+results:
+  - type: text
+    weight: 1
+    range:
+      - 1
+      - 2
+    drawn: false
+    description: >-
+      The Retired Cartographer: An old man is insisting, loudly and with
+      drawings, that the tavern's interior dimensions do not match its exterior
+      walls. He has measured both with a length of knotted cord. The innkeeper
+      refuses to discuss it.
+    _id: D5iP1KoqwefZcOTv
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!Z00wn7ETr5oYHbOw.D5iP1KoqwefZcOTv'
+  - type: text
+    weight: 1
+    range:
+      - 3
+      - 4
+    drawn: false
+    description: >-
+      The Obsessive Counter: A fletcher is sitting at the bar carving small
+      notches into the counter's edge, one every few minutes, counting under his
+      breath. He has been here since noon and won't say what he's counting.
+    _id: uXoM7sheJ9bepk1H
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!Z00wn7ETr5oYHbOw.uXoM7sheJ9bepk1H'
+  - type: text
+    weight: 1
+    range:
+      - 5
+      - 6
+    drawn: false
+    description: >-
+      The Loyal Customer: A woman has ordered the same meal every evening for
+      three years. Tonight it arrived slightly different. She has not touched
+      it. She is waiting for someone to acknowledge the change.
+    _id: evlHiWjznU9ax92h
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!Z00wn7ETr5oYHbOw.evlHiWjznU9ax92h'
+  - type: text
+    weight: 1
+    range:
+      - 7
+      - 8
+    drawn: false
+    description: >-
+      The Debt Burner: A moneylender is methodically tearing up his own debt
+      contracts into the fire, one at a time, with the calm expression of a man
+      who has made a decision and is at peace with it.
+    _id: zfQw3izs7HtJVf94
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!Z00wn7ETr5oYHbOw.zfQw3izs7HtJVf94'
+  - type: text
+    weight: 1
+    range:
+      - 9
+      - 10
+    drawn: false
+    description: >-
+      The Shadowless Man: A pale figure claims he cannot be seen properly in
+      candlelight and insists this is a medical condition. His shadow on the
+      wall appears to belong to someone else — the wrong height, gesturing
+      differently.
+    _id: NZ7Giu63eKkuM1HB
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!Z00wn7ETr5oYHbOw.NZ7Giu63eKkuM1HB'
+  - type: text
+    weight: 1
+    range:
+      - 11
+      - 12
+    drawn: false
+    description: >-
+      The Surgical Demonstrator: A traveling physician has spread a cloth on the
+      table and is demonstrating a new procedure — on himself, for an audience
+      of increasingly uncomfortable onlookers who cannot look away.
+    _id: I6boNsJXJDkHzVip
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!Z00wn7ETr5oYHbOw.I6boNsJXJDkHzVip'
+  - type: text
+    weight: 1
+    range:
+      - 13
+      - 14
+    drawn: false
+    description: >-
+      The Agreeing Twins: Two identical siblings have been arguing since the
+      party arrived. One claims the other has been replaced. The other agrees —
+      but both claim to be the original. Both seem equally sincere.
+    _id: WTJbEv1619K7Fl8N
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!Z00wn7ETr5oYHbOw.WTJbEv1619K7Fl8N'
+  - type: text
+    weight: 1
+    range:
+      - 15
+      - 16
+    drawn: false
+    description: >-
+      The Letter Writer: A well-dressed man has been writing the same letter for
+      eight hours. Each version is indistinguishable from the last. He destroys
+      each one on completion and starts fresh. He appears entirely calm.
+    _id: GYzQehJyW8rkTQSf
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!Z00wn7ETr5oYHbOw.GYzQehJyW8rkTQSf'
+  - type: text
+    weight: 1
+    range:
+      - 17
+      - 18
+    drawn: false
+    description: >-
+      The Question Speaker: A woman at the bar communicates exclusively in
+      questions. She orders in questions, complains in questions, and responds
+      to questions with further questions. The barkeep has begun doing the same.
+    _id: jQTMCxG3YYvjUGAo
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!Z00wn7ETr5oYHbOw.jQTMCxG3YYvjUGAo'
+  - type: text
+    weight: 1
+    range:
+      - 19
+      - 20
+    drawn: false
+    description: >-
+      The Floor Corrector: A cartwright has become convinced the floor is
+      slightly tilted. He has been adjusting his chair with folded cloth for
+      over an hour and is now engineering a spirit level from a cup of water.
+    _id: QoB4F1scunMqWbVm
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!Z00wn7ETr5oYHbOw.QoB4F1scunMqWbVm'
+  - type: text
+    weight: 1
+    range:
+      - 21
+      - 22
+    drawn: false
+    description: >-
+      The Transcriptionist: A scribe is writing down everything said in the
+      tavern verbatim, including side conversations. Her notes are currently six
+      pages long. When the party speaks, she writes that too.
+    _id: p1lexLEUU5H54Cmb
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!Z00wn7ETr5oYHbOw.p1lexLEUU5H54Cmb'
+  - type: text
+    weight: 1
+    range:
+      - 23
+      - 24
+    drawn: false
+    description: >-
+      The Transparent Alias: Someone is wearing a very obvious disguise — a
+      false moustache, a theatrical cloak — and behaving as if it is
+      undetectable. Whether this is confidence or a deliberate act is unclear.
+    _id: Wvpc6sjKRLA16NoV
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!Z00wn7ETr5oYHbOw.Wvpc6sjKRLA16NoV'
+  - type: text
+    weight: 1
+    range:
+      - 25
+      - 26
+    drawn: false
+    description: >-
+      The Architectural Grievance: An architect is demanding that the innkeeper
+      explain a room she has found that does not appear on the building's
+      exterior. The innkeeper says there is no such room. She has been in it.
+    _id: HFL5tbiy2P5lGCn4
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!Z00wn7ETr5oYHbOw.HFL5tbiy2P5lGCn4'
+  - type: text
+    weight: 1
+    range:
+      - 27
+      - 28
+    drawn: false
+    description: >-
+      The Wrong Contact: A smuggler is using elaborate signals and coded
+      language. The person opposite him has no idea they're in a meeting, but is
+      playing along hoping to learn something. Neither is getting useful
+      information.
+    _id: qnOyNwggImsnXYAq
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!Z00wn7ETr5oYHbOw.qnOyNwggImsnXYAq'
+  - type: text
+    weight: 1
+    range:
+      - 29
+      - 30
+    drawn: false
+    description: >-
+      The Uncertain Illusionist: A retired stage magician is quietly unsure
+      which of her current perceptions are real. She has not eaten the food in
+      front of her because she isn't certain it's there.
+    _id: byhWJBvkTWUFVaSg
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!Z00wn7ETr5oYHbOw.byhWJBvkTWUFVaSg'
+  - type: text
+    weight: 1
+    range:
+      - 31
+      - 32
+    drawn: false
+    description: >-
+      The Ambient Authority: A woman who has been here so long she has begun
+      giving directions to the tavern from inside it, helpfully orientating new
+      arrivals by pointing at walls and naming the streets beyond them.
+    _id: 4XNaqgP9FDooCnZp
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!Z00wn7ETr5oYHbOw.4XNaqgP9FDooCnZp'
+  - type: text
+    weight: 1
+    range:
+      - 33
+      - 34
+    drawn: false
+    description: >-
+      The Unaddressed Message: A courier has memorized a message rather than
+      written it down and has forgotten who it was for. He is reciting it
+      quietly to strangers, asking if any of it sounds familiar.
+    _id: Wk5MRCVaxhaDwLpX
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!Z00wn7ETr5oYHbOw.Wk5MRCVaxhaDwLpX'
+  - type: text
+    weight: 1
+    range:
+      - 35
+      - 36
+    drawn: false
+    description: >-
+      The Theoretical Payment: A man is firmly insisting he already paid for
+      everything — his table, the next table, the bar — with a single coin he
+      has not yet presented, on the grounds that he intends to.
+    _id: lME7KBLUQ5Wmzg48
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!Z00wn7ETr5oYHbOw.lME7KBLUQ5Wmzg48'
+  - type: text
+    weight: 1
+    range:
+      - 37
+      - 38
+    drawn: false
+    description: >-
+      The Vague Planner: A young woman is narrating increasingly detailed plans
+      for 'the thing' to herself at her table. The plans are specific,
+      structured, and she refers to the goal only as 'the thing' throughout.
+    _id: EacsI0pEOV0682rQ
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!Z00wn7ETr5oYHbOw.EacsI0pEOV0682rQ'
+  - type: text
+    weight: 1
+    range:
+      - 39
+      - 40
+    drawn: false
+    description: >-
+      The Travelling Barber: A barber who has set up his chair in the corner and
+      has been cutting hair all evening for coin. He has given four people
+      subtly different faces. None of them have noticed yet.
+    _id: YYXdJWmHEMsGkZkv
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!Z00wn7ETr5oYHbOw.YYXdJWmHEMsGkZkv'
+  - type: text
+    weight: 1
+    range:
+      - 41
+      - 42
+    drawn: false
+    description: >-
+      The Concerned Botanist: A botanist has been growing something in a small
+      pot on the table all evening. It has tripled in size since she arrived.
+      She is writing notes with one hand and discretely moving her chair back
+      with the other.
+    _id: D4aWQ03HLVYmiSst
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!Z00wn7ETr5oYHbOw.D4aWQ03HLVYmiSst'
+  - type: text
+    weight: 1
+    range:
+      - 43
+      - 44
+    drawn: false
+    description: >-
+      The Candle Problem: A chandler has twenty of his own candles lit on his
+      table. Every other candle in the tavern is burning fine. His keep going
+      out. He is methodically relighting them and making notes.
+    _id: JzF6ocPgUICIZe33
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!Z00wn7ETr5oYHbOw.JzF6ocPgUICIZe33'
+  - type: text
+    weight: 1
+    range:
+      - 45
+      - 46
+    drawn: false
+    description: >-
+      The Reserved Chair: A man is conducting an intense negotiation with the
+      innkeeper over which specific chair he was promised when he made his
+      reservation two weeks ago. Both parties have surprisingly strong feelings.
+    _id: Rs7KDqnYHiSt47So
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!Z00wn7ETr5oYHbOw.Rs7KDqnYHiSt47So'
+  - type: text
+    weight: 1
+    range:
+      - 47
+      - 48
+    drawn: false
+    description: >-
+      The Dockhand's Hands: A dockhand found something in a cargo hold this
+      morning and hasn't been able to stop looking at his own hands since. He
+      has ordered four drinks. He hasn't touched one.
+    _id: QNFdFIY1ZOvrJH2G
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!Z00wn7ETr5oYHbOw.QNFdFIY1ZOvrJH2G'
+  - type: text
+    weight: 1
+    range:
+      - 49
+      - 50
+    drawn: false
+    description: >-
+      The Sleeping Strategist: A woman who claimed to be resting has been asleep
+      for twenty minutes but is muttering detailed tactical instructions — troop
+      numbers, terrain features, fallback positions — without pause.
+    _id: z5QIrnmcJ8JsO65B
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!Z00wn7ETr5oYHbOw.z5QIrnmcJ8JsO65B'
+  - type: text
+    weight: 1
+    range:
+      - 51
+      - 52
+    drawn: false
+    description: >-
+      The Self-Locked Locksmith: A locksmith picks every lock he encounters by
+      reflex. He has absent-mindedly locked himself out of his own belt pouch
+      and has been working on it for half an hour with increasing frustration.
+    _id: hDfCNXQBLb93LaKf
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!Z00wn7ETr5oYHbOw.hDfCNXQBLb93LaKf'
+  - type: text
+    weight: 1
+    range:
+      - 53
+      - 54
+    drawn: false
+    description: >-
+      The Committed Portrait: A painter has been working on a portrait for
+      ninety minutes. His subject left an hour ago. The portrait is almost done
+      and is extremely accurate.
+    _id: T4JdXxTaLLGpVC4f
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!Z00wn7ETr5oYHbOw.T4JdXxTaLLGpVC4f'
+  - type: text
+    weight: 1
+    range:
+      - 55
+      - 56
+    drawn: false
+    description: >-
+      The Mechanical Hands: A woman is testing a pair of articulated mechanical
+      gauntlets over dinner, making notes. One of them has been gripping her
+      fork too hard. The fork has become significantly shorter.
+    _id: B4aQJGBf3QPMPZ2u
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!Z00wn7ETr5oYHbOw.B4aQJGBf3QPMPZ2u'
+  - type: text
+    weight: 1
+    range:
+      - 57
+      - 58
+    drawn: false
+    description: >-
+      The Mutual Wait: Two entirely separate groups are waiting for the other
+      group to leave so their own meeting can begin. They have been doing this
+      since before noon. Neither group knows what meeting the other is waiting
+      to have.
+    _id: DbAzeTzPWFZBseiV
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!Z00wn7ETr5oYHbOw.DbAzeTzPWFZBseiV'
+  - type: text
+    weight: 1
+    range:
+      - 59
+      - 60
+    drawn: false
+    description: >-
+      The Disputing Mapmaker: A mapmaker insists this tavern does not exist on
+      any current survey and is therefore technically not present. She is
+      sitting inside it. She does not find this contradictory.
+    _id: BgMjpn7fb35KoTNF
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!Z00wn7ETr5oYHbOw.BgMjpn7fb35KoTNF'
+  - type: text
+    weight: 1
+    range:
+      - 61
+      - 62
+    drawn: false
+    description: >-
+      The Generous Stranger: A woman has been buying rounds for a full table of
+      people she's never met, referring to them warmly as 'my people.' She has
+      not explained further. They are starting to feel responsible for her.
+    _id: evxSHz9Kr1LbS5Hy
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!Z00wn7ETr5oYHbOw.evxSHz9Kr1LbS5Hy'
+  - type: text
+    weight: 1
+    range:
+      - 63
+      - 64
+    drawn: false
+    description: >-
+      The Structural Casualty: An extraordinarily tall man got into a
+      conversation while leaning sideways to reach table height and has been
+      stuck in this position for some time. He is conducting all further
+      business from the lean.
+    _id: 0PpKaYisHWIPnNLx
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!Z00wn7ETr5oYHbOw.0PpKaYisHWIPnNLx'
+  - type: text
+    weight: 1
+    range:
+      - 65
+      - 66
+    drawn: false
+    description: >-
+      The Knowing Sleeper: A herbalist fell asleep at the third hour. She is
+      still answering questions correctly when addressed, eyes closed, without
+      waking. She has been right every time.
+    _id: Tudq4tzKssBkVsrG
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!Z00wn7ETr5oYHbOw.Tudq4tzKssBkVsrG'
+  - type: text
+    weight: 1
+    range:
+      - 67
+      - 68
+    drawn: false
+    description: >-
+      The Directional Complaint: A very serious man has sent back his meal
+      because, he says, it was prepared counterclockwise. He has produced a
+      small sketch to illustrate the correct method. The cook has not come out
+      from the kitchen.
+    _id: ykGgVaG4iTFGaoeH
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!Z00wn7ETr5oYHbOw.ykGgVaG4iTFGaoeH'
+  - type: text
+    weight: 1
+    range:
+      - 69
+      - 70
+    drawn: false
+    description: >-
+      The Impossible Glass: A glassblower is displaying a piece of work at the
+      bar that has no business being in a tavern — too beautiful, too fragile,
+      too large. She is trying to sell it. She will not accept less than it is
+      worth.
+    _id: JOPCq9yAxFKNnJCD
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!Z00wn7ETr5oYHbOw.JOPCq9yAxFKNnJCD'
+  - type: text
+    weight: 1
+    range:
+      - 71
+      - 72
+    drawn: false
+    description: >-
+      The Unconscious Director: A woman has written a short play, cast it from
+      the other patrons, and is now directing it without having informed anyone
+      they are in it. The play is about a woman writing a play.
+    _id: b5b8vlULh1C0UNSm
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!Z00wn7ETr5oYHbOw.b5b8vlULh1C0UNSm'
+  - type: text
+    weight: 1
+    range:
+      - 73
+      - 74
+    drawn: false
+    description: >-
+      The Test Proposal: A rat catcher is advertising for volunteers to test
+      whether his new trap works by entering it first. He has written down the
+      hazards honestly. He genuinely believes someone will agree.
+    _id: Ao0eAkZ4LBS3aJt2
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!Z00wn7ETr5oYHbOw.Ao0eAkZ4LBS3aJt2'
+  - type: text
+    weight: 1
+    range:
+      - 75
+      - 76
+    drawn: false
+    description: >-
+      The Professional Witness: A woman presents credentials identifying her as
+      a licensed observer-for-hire. She is in the tavern tonight in an official
+      capacity and will not say for whom. She is watching everything with a
+      professional absence of expression.
+    _id: Ij7mvza2gjY2Ruhv
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!Z00wn7ETr5oYHbOw.Ij7mvza2gjY2Ruhv'
+  - type: text
+    weight: 1
+    range:
+      - 77
+      - 78
+    drawn: false
+    description: >-
+      The Ballad Debt: An older man lost a bet and must recite every verse of a
+      very long ballad correctly or pay triple his tab. He is on verse eleven of
+      what appears to be forty or more. The bar is increasingly invested.
+    _id: TuS6wt3WTHUpt8wj
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!Z00wn7ETr5oYHbOw.TuS6wt3WTHUpt8wj'
+  - type: text
+    weight: 1
+    range:
+      - 79
+      - 80
+    drawn: false
+    description: >-
+      The Disputed Barrel: A brewer is arguing that a specific barrel the
+      innkeeper is serving from is technically his — brewed for him, paid for in
+      advance — and that the innkeeper obtained it by irregular means. He has
+      documentation.
+    _id: ghvzyXb9EB9XousJ
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!Z00wn7ETr5oYHbOw.ghvzyXb9EB9XousJ'
+  - type: text
+    weight: 1
+    range:
+      - 81
+      - 82
+    drawn: false
+    description: >-
+      The Approximate Guest: A woman is clearly waiting for someone, describing
+      them differently each time someone asks — the description shifts slightly
+      every time, as though she is refining it or remembering less.
+    _id: IWgfeOHNESC4IBSo
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!Z00wn7ETr5oYHbOw.IWgfeOHNESC4IBSo'
+  - type: text
+    weight: 1
+    range:
+      - 83
+      - 84
+    drawn: false
+    description: >-
+      The Compulsive Navigator: A navigator cannot stop calculating. The entire
+      surface of his table is covered in working. He arrived before the tavern
+      opened. He has not eaten. The calculations have not resolved.
+    _id: c7nMeik7LadCQqqQ
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!Z00wn7ETr5oYHbOw.c7nMeik7LadCQqqQ'
+  - type: text
+    weight: 1
+    range:
+      - 85
+      - 86
+    drawn: false
+    description: >-
+      The Poster Review: Someone is distributing their own wanted poster and
+      asking nearby patrons whether the likeness is accurate. It is not
+      exceptionally accurate. They seem to want an honest answer.
+    _id: Kdg95hIdEbpVVUcv
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!Z00wn7ETr5oYHbOw.Kdg95hIdEbpVVUcv'
+  - type: text
+    weight: 1
+    range:
+      - 87
+      - 88
+    drawn: false
+    description: >-
+      The Solo Meeting: A man is running a business meeting with himself,
+      changing voices and positions to represent two separate parties. He is
+      making notes, raising objections, conceding points, and appears to be
+      reaching a fair agreement.
+    _id: JX111MyMslvA3dUi
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!Z00wn7ETr5oYHbOw.JX111MyMslvA3dUi'
+  - type: text
+    weight: 1
+    range:
+      - 89
+      - 90
+    drawn: false
+    description: >-
+      The Regulatory Closure: A woman has informed the innkeeper she is here to
+      process the closure of the establishment and is waiting for the relevant
+      paperwork to arrive. She remains confident it is coming. The innkeeper is
+      asking around to see if anyone sent her.
+    _id: CeOT3KTjLqZSk2vR
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!Z00wn7ETr5oYHbOw.CeOT3KTjLqZSk2vR'
+  - type: text
+    weight: 1
+    range:
+      - 91
+      - 92
+    drawn: false
+    description: >-
+      The Former Executioner: Perfectly pleasant company, engaged in cheerful
+      conversation with the party. He keeps making brief professional
+      observations about structural features of the room — weight tolerances,
+      anchor points — then returning smoothly to the topic at hand.
+    _id: 5Hwfuqm5mnVRKmqh
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!Z00wn7ETr5oYHbOw.5Hwfuqm5mnVRKmqh'
+  - type: text
+    weight: 1
+    range:
+      - 93
+      - 94
+    drawn: false
+    description: >-
+      The Relocated Building: A surveyor insists the tavern is twelve feet
+      further east than it was on her last visit. She has checked this three
+      times. She considers it a significant problem. The innkeeper does not.
+    _id: xa8DabkdSM22ERR4
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!Z00wn7ETr5oYHbOw.xa8DabkdSM22ERR4'
+  - type: text
+    weight: 1
+    range:
+      - 95
+      - 96
+    drawn: false
+    description: >-
+      The Ordered Round: A woman paid for a drink an hour before she wanted it,
+      told the barkeep to bring it at the specified time, and has been watching
+      the door since. The time has passed. The drink has not arrived. She has
+      not yet said anything.
+    _id: TkEAPi3QE6cMetp1
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!Z00wn7ETr5oYHbOw.TkEAPi3QE6cMetp1'
+  - type: text
+    weight: 1
+    range:
+      - 97
+      - 98
+    drawn: false
+    description: >-
+      The Looping Conversation: Two people at a corner table are having an
+      extended exchange that, on closer listening, is the same conversation they
+      apparently had already — the same questions, the same answers, the same
+      pauses. Neither seems to notice.
+    _id: Nxbt9rNUCsmsZjkF
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!Z00wn7ETr5oYHbOw.Nxbt9rNUCsmsZjkF'
+  - type: text
+    weight: 1
+    range:
+      - 99
+      - 100
+    drawn: false
+    description: >-
+      The Confident Guesser: A man has loudly identified the occupation of every
+      patron present from the state of their hands. He has been wrong about
+      every single person. He remains entirely certain and is now approaching
+      the party.
+    _id: aBllJrPXLBp0Ssza
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!Z00wn7ETr5oYHbOw.aBllJrPXLBp0Ssza'
+description: >-
+  50 fully original tavern patron problems mapped across D100 (each entry covers
+  two results). Built from scratch.
+replacement: true
+displayRoll: true
+img: icons/svg/d20-grey.svg
+folder: null
+ownership:
+  default: 0
+  HP3Vba5udEHYm4dW: 3
+flags: {}
+_stats:
+  compendiumSource: null
+  duplicateSource: null
+  exportSource: null
+  coreVersion: '13.348'
+  systemId: shadowdark
+  systemVersion: 3.6.1
+  createdTime: 1772760928802
+  modifiedTime: 1772760928802
+  lastModifiedBy: HP3Vba5udEHYm4dW
+_id: Z00wn7ETr5oYHbOw
+sort: 0
+_key: '!tables!Z00wn7ETr5oYHbOw'

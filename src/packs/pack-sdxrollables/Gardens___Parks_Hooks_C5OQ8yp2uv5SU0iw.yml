@@ -1,0 +1,489 @@
+name: Gardens & Parks Hooks
+formula: 1d20
+results:
+  - type: text
+    weight: 1
+    range:
+      - 1
+      - 1
+    drawn: false
+    description: >-
+      A renowned topiarist has sculpted the park's hedges into the likenesses of
+      the city's founding families — all of whom are depicted fleeing something
+      that has no shape, approaching from the east.
+    _id: dZJnUX9OuhKznkim
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!C5OQ8yp2uv5SU0iw.dZJnUX9OuhKznkim'
+  - type: text
+    weight: 1
+    range:
+      - 2
+      - 2
+    drawn: false
+    description: >-
+      A flock of brightly colored birds, not native to this region, has
+      colonized the park's central fountain. They are not aggressive, but they
+      repeat, perfectly, any conversation held within thirty feet of them.
+    _id: OHaBaog3tGY1nehK
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!C5OQ8yp2uv5SU0iw.OHaBaog3tGY1nehK'
+  - type: text
+    weight: 1
+    range:
+      - 3
+      - 3
+    drawn: false
+    description: >-
+      The bench nearest the park's oldest tree has a small brass plaque that
+      reads 'Reserved.' It has read this for forty years. No one has ever sat
+      here. Anyone who tries finds a reason not to.
+    _id: 39NENaXo4vtb2uXR
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!C5OQ8yp2uv5SU0iw.39NENaXo4vtb2uXR'
+  - type: text
+    weight: 1
+    range:
+      - 4
+      - 4
+    drawn: false
+    description: >-
+      A groundskeeper is carefully painting over a message that has appeared in
+      the flower beds — the flowers themselves arranged to form legible letters.
+      He refuses to say what it said.
+    _id: ELNmze8mqtMUFUOV
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!C5OQ8yp2uv5SU0iw.ELNmze8mqtMUFUOV'
+  - type: text
+    weight: 1
+    range:
+      - 5
+      - 5
+    drawn: false
+    description: >-
+      A sculptor has appeared overnight, setting up to carve a memorial to no
+      one the city records can identify. His commission paperwork is entirely in
+      order. The seal on it belongs to a city office that closed decades ago.
+    _id: tG9douNIXdPloxcc
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!C5OQ8yp2uv5SU0iw.tG9douNIXdPloxcc'
+  - type: text
+    weight: 1
+    range:
+      - 6
+      - 6
+    drawn: false
+    description: >-
+      Several park visitors are reporting that the sundial is giving wrong
+      readings — consistently twelve hours behind. The shadow falls correctly.
+      The mathematics simply don't work.
+    _id: Rje5yDgUXGvFZ1kC
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!C5OQ8yp2uv5SU0iw.Rje5yDgUXGvFZ1kC'
+  - type: text
+    weight: 1
+    range:
+      - 7
+      - 7
+    drawn: false
+    description: >-
+      A pair of naturalists are in a heated public debate over whether the
+      park's ancient oak is the same tree recorded in the city's founding
+      documents, or its direct descendant. The argument has drawn a crowd.
+      Neither will yield.
+    _id: r5UF9lND7nJconC5
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!C5OQ8yp2uv5SU0iw.r5UF9lND7nJconC5'
+  - type: text
+    weight: 1
+    range:
+      - 8
+      - 8
+    drawn: false
+    description: >-
+      The grass in a perfectly circular patch at the park's center is growing
+      upward at five times the speed of the surrounding lawn. The circle expands
+      by roughly one foot each morning.
+    _id: GghlZOZ3g6WQiB0e
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!C5OQ8yp2uv5SU0iw.GghlZOZ3g6WQiB0e'
+  - type: text
+    weight: 1
+    range:
+      - 9
+      - 9
+    drawn: false
+    description: >-
+      A children's puppet show in the park has attracted an unusually large and
+      rapt adult audience. The puppets are depicting, with unsettling accuracy,
+      something that has not happened yet.
+    _id: zrJasfkb5OmZWsa5
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!C5OQ8yp2uv5SU0iw.zrJasfkb5OmZWsa5'
+  - type: text
+    weight: 1
+    range:
+      - 10
+      - 10
+    drawn: false
+    description: >-
+      An off-duty city constable is sitting by the reflecting pool, taking
+      careful notes on everyone who looks at a specific topiary hedge for more
+      than a few seconds. He has been here since dawn.
+    _id: zkjfrErU1cezGGZV
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!C5OQ8yp2uv5SU0iw.zkjfrErU1cezGGZV'
+  - type: text
+    weight: 1
+    range:
+      - 11
+      - 11
+    drawn: false
+    description: >-
+      A well-dressed philosopher is offering anyone who bests him in a short
+      debate — on any topic — a gold coin. He has been here all morning and has
+      not yet paid a coin. The growing crowd of failed challengers is getting
+      surly.
+    _id: 3FWPgzK5bOIXgqjc
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!C5OQ8yp2uv5SU0iw.3FWPgzK5bOIXgqjc'
+  - type: text
+    weight: 1
+    range:
+      - 12
+      - 12
+    drawn: false
+    description: >-
+      The park's central statue has been given a new hat — a magnificent velvet
+      tricorn — that was not there yesterday. The city has no record of any
+      maintenance work. The statue seems somehow to suit it.
+    _id: IsatxIldsxFMExsl
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!C5OQ8yp2uv5SU0iw.IsatxIldsxFMExsl'
+  - type: text
+    weight: 1
+    range:
+      - 13
+      - 13
+    drawn: false
+    description: >-
+      A young woman is distributing hand-drawn star charts in the park and
+      insisting, politely but urgently, that 'the conjunction is closer than the
+      official almanack admits.' She seems frightened rather than mad.
+    _id: 5vOPgnyW5RdeYb2V
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!C5OQ8yp2uv5SU0iw.5vOPgnyW5RdeYb2V'
+  - type: text
+    weight: 1
+    range:
+      - 14
+      - 14
+    drawn: false
+    description: >-
+      Three separate people are standing at different points around the garden,
+      all staring at the same spot in the middle distance. None of them appear
+      to know each other. None respond when spoken to.
+    _id: i7wDpBYd0Nzo5UJl
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!C5OQ8yp2uv5SU0iw.i7wDpBYd0Nzo5UJl'
+  - type: text
+    weight: 1
+    range:
+      - 15
+      - 15
+    drawn: false
+    description: >-
+      A food vendor has set up in the park without a license and is selling
+      something that smells extraordinary. Every city inspector who approaches
+      to cite him somehow ends up purchasing a bowl instead.
+    _id: oka3F905XQsly9Wu
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!C5OQ8yp2uv5SU0iw.oka3F905XQsly9Wu'
+  - type: text
+    weight: 1
+    range:
+      - 16
+      - 16
+    drawn: false
+    description: >-
+      The park's old wishing well has been bricked up by the city — officially
+      'for safety.' Local children insist that the things thrown in were
+      starting to come back out.
+    _id: 4WGBfb7Bnh1Y1vMs
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!C5OQ8yp2uv5SU0iw.4WGBfb7Bnh1Y1vMs'
+  - type: text
+    weight: 1
+    range:
+      - 17
+      - 17
+    drawn: false
+    description: >-
+      A troupe of actors is rehearsing a play that appears to be a detailed,
+      dramatized account of something the party has done. The script is
+      accurate. The actors will not say who commissioned it.
+    _id: ru6MhXfZaAnrwlqV
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!C5OQ8yp2uv5SU0iw.ru6MhXfZaAnrwlqV'
+  - type: text
+    weight: 1
+    range:
+      - 18
+      - 18
+    drawn: false
+    description: >-
+      Every pigeon in the park has simultaneously taken to roosting on rooftops,
+      refusing to descend to ground level. The birds appear agitated but
+      unharmed. Locals are placing bets on what this presages.
+    _id: hAx3w0rVjGqyKXI3
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!C5OQ8yp2uv5SU0iw.hAx3w0rVjGqyKXI3'
+  - type: text
+    weight: 1
+    range:
+      - 19
+      - 19
+    drawn: false
+    description: >-
+      A very old dog has dug up something in the east garden and is sitting over
+      it, growling at anyone who approaches. The dog belongs to no one. What it
+      has unearthed is partially visible and appears to be wrapped in oilcloth.
+    _id: kWvF8iRxx091iW0A
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!C5OQ8yp2uv5SU0iw.kWvF8iRxx091iW0A'
+  - type: text
+    weight: 1
+    range:
+      - 20
+      - 20
+    drawn: false
+    description: >-
+      A street painter is selling portraits of parkgoers, but every painting —
+      regardless of the subject — contains, somewhere in the background, the
+      same hooded figure that no one remembers being there.
+    _id: AIjRGaSYHUXto3eK
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!C5OQ8yp2uv5SU0iw.AIjRGaSYHUXto3eK'
+description: >-
+  20 original parks and gardens hooks, complications, and opportunities for
+  urban outdoor encounters.
+replacement: true
+displayRoll: true
+img: icons/svg/d20-grey.svg
+folder: null
+ownership:
+  default: 0
+  HP3Vba5udEHYm4dW: 3
+flags: {}
+_stats:
+  compendiumSource: null
+  duplicateSource: null
+  exportSource: null
+  coreVersion: '13.348'
+  systemId: shadowdark
+  systemVersion: 3.6.1
+  createdTime: 1772655940106
+  modifiedTime: 1772760502256
+  lastModifiedBy: HP3Vba5udEHYm4dW
+_id: C5OQ8yp2uv5SU0iw
+sort: 800000
+_key: '!tables!C5OQ8yp2uv5SU0iw'

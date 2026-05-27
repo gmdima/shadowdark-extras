@@ -5,6 +5,8 @@
 
 const MODULE_ID = "shadowdark-extras";
 
+const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
+
 // Default settings
 const DEFAULT_HP_WAVES_SETTINGS = {
 	enabled: true,
@@ -17,32 +19,43 @@ const DEFAULT_HP_WAVES_SETTINGS = {
 /**
  * HP Waves Settings Application
  */
-export class HpWavesSettingsApp extends FormApplication {
-	static get defaultOptions() {
-		return foundry.utils.mergeObject(super.defaultOptions, {
-			id: "sdx-hp-waves-settings",
-			title: game.i18n.localize("SHADOWDARK_EXTRAS.hp_waves.title"),
-			template: `modules/${MODULE_ID}/templates/hp-waves-settings.hbs`,
-			classes: ["shadowdark", "shadowdark-extras", "hp-waves-settings-app"],
-			width: 500,
-			height: "auto",
-			resizable: true,
-			closeOnSubmit: false,
-			submitOnChange: true
-		});
-	}
-
+export class HpWavesSettingsApp extends HandlebarsApplicationMixin(ApplicationV2) {
 	static _instance = null;
+
+	static DEFAULT_OPTIONS = {
+		id: "sdx-hp-waves-settings",
+		classes: ["shadowdark", "shadowdark-extras", "hp-waves-settings-app"],
+		tag: "form",
+		window: {
+			title: "SHADOWDARK_EXTRAS.hp_waves.title",
+			resizable: true
+		},
+		position: {
+			width: 500,
+			height: "auto"
+		},
+		form: {
+			handler: HpWavesSettingsApp.formHandler,
+			submitOnChange: true,
+			closeOnSubmit: false
+		}
+	};
+
+	static PARTS = {
+		form: {
+			template: `modules/${MODULE_ID}/templates/hp-waves-settings.hbs`
+		}
+	};
 
 	static show() {
 		if (!this._instance) {
 			this._instance = new HpWavesSettingsApp();
 		}
-		this._instance.render(true);
+		this._instance.render({ force: true });
 		return this._instance;
 	}
 
-	getData(options = {}) {
+	async _prepareContext(options) {
 		const savedSettings = game.settings.get(MODULE_ID, "hpWavesSettings");
 		const settings = foundry.utils.mergeObject(
 			foundry.utils.deepClone(DEFAULT_HP_WAVES_SETTINGS),
@@ -58,82 +71,89 @@ export class HpWavesSettingsApp extends FormApplication {
 		};
 	}
 
-	activateListeners(html) {
-		super.activateListeners(html);
+	_onRender(context, options) {
+		const html = this.element;
+		if (!html) return;
 
 		// Add new ancestry color row
-		html.find(".sdx-add-ancestry").on("click", (ev) => {
+		html.querySelector(".sdx-add-ancestry")?.addEventListener("click", (ev) => {
 			ev.preventDefault();
-			const $list = html.find(".sdx-ancestry-list");
-			const newIndex = $list.find(".sdx-ancestry-row").length;
-			
-			const newRow = `
-				<div class="sdx-ancestry-row" data-index="${newIndex}">
-					<input type="text" name="ancestryColors.${newIndex}.ancestry" 
-						placeholder="${game.i18n.localize("SHADOWDARK_EXTRAS.hp_waves.ancestry_placeholder")}" 
-						value="" class="sdx-ancestry-name"/>
-					<input type="color" name="ancestryColors.${newIndex}.color" value="#dc2626" class="sdx-ancestry-color"/>
-					<button type="button" class="sdx-remove-ancestry" data-tooltip="${game.i18n.localize("SHADOWDARK_EXTRAS.hp_waves.remove")}">
-						<i class="fas fa-trash"></i>
-					</button>
-				</div>
+			const list = html.querySelector(".sdx-ancestry-list");
+			if (!list) return;
+			const newIndex = list.querySelectorAll(".sdx-ancestry-row").length;
+
+			const row = document.createElement("div");
+			row.className = "sdx-ancestry-row";
+			row.dataset.index = String(newIndex);
+			row.innerHTML = `
+				<input type="text" name="ancestryColors.${newIndex}.ancestry"
+					placeholder="${game.i18n.localize("SHADOWDARK_EXTRAS.hp_waves.ancestry_placeholder")}"
+					value="" class="sdx-ancestry-name"/>
+				<input type="color" name="ancestryColors.${newIndex}.color" value="#dc2626" class="sdx-ancestry-color"/>
+				<button type="button" class="sdx-remove-ancestry" data-tooltip="${game.i18n.localize("SHADOWDARK_EXTRAS.hp_waves.remove")}">
+					<i class="fas fa-trash"></i>
+				</button>
 			`;
-			$list.append(newRow);
+			list.appendChild(row);
 			this.setPosition({ height: "auto" });
 		});
 
-		// Remove ancestry color row
-		html.on("click", ".sdx-remove-ancestry", (ev) => {
+		// Remove ancestry color row (event delegation)
+		html.addEventListener("click", (ev) => {
+			const removeBtn = ev.target.closest(".sdx-remove-ancestry");
+			if (!removeBtn) return;
 			ev.preventDefault();
-			$(ev.currentTarget).closest(".sdx-ancestry-row").remove();
+
+			removeBtn.closest(".sdx-ancestry-row")?.remove();
+
 			// Re-index remaining rows
-			html.find(".sdx-ancestry-row").each((i, row) => {
-				$(row).attr("data-index", i);
-				$(row).find("input").each((j, input) => {
-					const $input = $(input);
-					const oldName = $input.attr("name");
+			html.querySelectorAll(".sdx-ancestry-row").forEach((row, i) => {
+				row.dataset.index = String(i);
+				row.querySelectorAll("input").forEach(input => {
+					const oldName = input.getAttribute("name");
 					if (oldName) {
 						const field = oldName.split(".").pop();
-						$input.attr("name", `ancestryColors.${i}.${field}`);
+						input.setAttribute("name", `ancestryColors.${i}.${field}`);
 					}
 				});
 			});
 			this.setPosition({ height: "auto" });
-			// Trigger form change to save
-			this._onSubmit(ev);
+			// Trigger form submit to persist
+			html.dispatchEvent(new SubmitEvent("submit", { cancelable: true }));
 		});
 
 		// Reset to defaults
-		html.find(".sdx-reset-defaults").on("click", async (ev) => {
+		html.querySelector(".sdx-reset-defaults")?.addEventListener("click", async (ev) => {
 			ev.preventDefault();
-			const confirmed = await Dialog.confirm({
-				title: game.i18n.localize("SHADOWDARK_EXTRAS.hp_waves.reset_confirm_title"),
-				content: `<p>${game.i18n.localize("SHADOWDARK_EXTRAS.hp_waves.reset_confirm_content")}</p>`
+			const confirmed = await foundry.applications.api.DialogV2.confirm({
+				window: { title: game.i18n.localize("SHADOWDARK_EXTRAS.hp_waves.reset_confirm_title") },
+				content: `<p>${game.i18n.localize("SHADOWDARK_EXTRAS.hp_waves.reset_confirm_content")}</p>`,
+				modal: true
 			});
 			if (confirmed) {
 				await game.settings.set(MODULE_ID, "hpWavesSettings", foundry.utils.deepClone(DEFAULT_HP_WAVES_SETTINGS));
-				this.render(true);
+				this.render({ force: true });
 				ui.notifications.info(game.i18n.localize("SHADOWDARK_EXTRAS.hp_waves.reset_complete"));
 			}
 		});
 
 		// Save button - close after submit
-		html.find('button[name="submit"]').on("click", () => {
+		html.querySelector('button[name="submit"]')?.addEventListener("click", () => {
 			setTimeout(() => this.close(), 100);
 		});
 	}
 
-	async _updateObject(event, formData) {
-		// Process form data into settings object
+	static async formHandler(event, form, formData) {
+		const flat = formData.object;
 		const settings = {
-			enabled: formData.enabled ?? true,
-			defaultColor: formData.defaultColor || "#dc2626",
+			enabled: flat.enabled ?? true,
+			defaultColor: flat.defaultColor || "#dc2626",
 			ancestryColors: []
 		};
 
 		// Collect ancestry colors from form data
 		const ancestryData = {};
-		for (const [key, value] of Object.entries(formData)) {
+		for (const [key, value] of Object.entries(flat)) {
 			if (key.startsWith("ancestryColors.")) {
 				const parts = key.split(".");
 				const index = parseInt(parts[1]);
@@ -143,8 +163,7 @@ export class HpWavesSettingsApp extends FormApplication {
 			}
 		}
 
-		// Convert to array, filtering out empty entries
-		for (const [index, data] of Object.entries(ancestryData)) {
+		for (const [, data] of Object.entries(ancestryData)) {
 			if (data.ancestry && data.ancestry.trim()) {
 				settings.ancestryColors.push({
 					ancestry: data.ancestry.trim(),
@@ -154,9 +173,9 @@ export class HpWavesSettingsApp extends FormApplication {
 		}
 
 		await game.settings.set(MODULE_ID, "hpWavesSettings", settings);
-		
+
 		// Refresh any open sheets to show changes
-		for (const app of Object.values(ui.windows)) {
+		for (const app of foundry.applications.instances.values()) {
 			if (app.constructor.name === "PlayerSheetSD" || app.constructor.name === "ShadowdarkPartySheet") {
 				app.render(false);
 			}
@@ -176,7 +195,7 @@ export function getHpWaveColor(actor, ancestryName = "") {
 
 	if (ancestryName && settings.ancestryColors) {
 		// Find matching ancestry (case-insensitive)
-		const match = settings.ancestryColors.find(ac => 
+		const match = settings.ancestryColors.find(ac =>
 			ac.ancestry.toLowerCase() === ancestryName.toLowerCase()
 		);
 		if (match) return match.color;

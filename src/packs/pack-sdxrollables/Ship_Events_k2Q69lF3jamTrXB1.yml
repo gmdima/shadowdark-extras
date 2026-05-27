@@ -1,0 +1,2243 @@
+name: Ship Events
+formula: 1d101
+results:
+  - type: text
+    weight: 1
+    range:
+      - 1
+      - 1
+    drawn: false
+    description: >-
+      A thick greenish film coats the waterline overnight — the Hull Doctor
+      insists it's alive and growing
+    _id: 9gI5iWAWFvRHxVQM
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!k2Q69lF3jamTrXB1.9gI5iWAWFvRHxVQM'
+  - type: text
+    weight: 1
+    range:
+      - 2
+      - 2
+    drawn: false
+    description: Anchor chain goes taut in open water where charts show no bottom for miles
+    _id: n0DYXSy7oVVZy9ti
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!k2Q69lF3jamTrXB1.n0DYXSy7oVVZy9ti'
+  - type: text
+    weight: 1
+    range:
+      - 3
+      - 3
+    drawn: false
+    description: >-
+      Barrel of salt pork bursts open revealing nothing but clean white sand
+      packed tight inside
+    _id: LSd6OvFEnQPCHcmF
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!k2Q69lF3jamTrXB1.LSd6OvFEnQPCHcmF'
+  - type: text
+    weight: 1
+    range:
+      - 4
+      - 4
+    drawn: false
+    description: >-
+      Below decks, someone has scratched tally marks into a beam — far more than
+      the days since departure
+    _id: Cvl6EcH3n7O9WG9J
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!k2Q69lF3jamTrXB1.Cvl6EcH3n7O9WG9J'
+  - type: text
+    weight: 1
+    range:
+      - 5
+      - 5
+    drawn: false
+    description: >-
+      Bilge pump handle snaps clean off during routine drainage, water rising
+      steadily
+    _id: SzVnog1zhRgCzINs
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!k2Q69lF3jamTrXB1.SzVnog1zhRgCzINs'
+  - type: text
+    weight: 1
+    range:
+      - 6
+      - 6
+    drawn: false
+    description: >-
+      Bird lands on the bowsprit carrying a strip of cloth with coordinates
+      stitched into the hem
+    _id: HKqAsNnZ7iXc1mQZ
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!k2Q69lF3jamTrXB1.HKqAsNnZ7iXc1mQZ'
+  - type: text
+    weight: 1
+    range:
+      - 7
+      - 7
+    drawn: false
+    description: >-
+      Bosun discovers that every compass aboard now points in a slightly
+      different direction
+    _id: 2JjhjAcWeWOG6qOG
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!k2Q69lF3jamTrXB1.2JjhjAcWeWOG6qOG'
+  - type: text
+    weight: 1
+    range:
+      - 8
+      - 8
+    drawn: false
+    description: >-
+      Bow lookout swears the horizon line bends the wrong way — upward instead
+      of down
+    _id: rvGK0W5Ffg8TcJ6V
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!k2Q69lF3jamTrXB1.rvGK0W5Ffg8TcJ6V'
+  - type: text
+    weight: 1
+    range:
+      - 9
+      - 9
+    drawn: false
+    description: >-
+      Cabin boy found sleepwalking the bowsprit at midnight, has no memory of
+      climbing out
+    _id: FwHPpQ3L4FIrz1Vo
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!k2Q69lF3jamTrXB1.FwHPpQ3L4FIrz1Vo'
+  - type: text
+    weight: 1
+    range:
+      - 10
+      - 10
+    drawn: false
+    description: >-
+      Captain receives a sealed bottle from the sea — the handwriting inside is
+      unmistakably their own
+    _id: NDQYZ7uNV0B9MK5g
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!k2Q69lF3jamTrXB1.NDQYZ7uNV0B9MK5g'
+  - type: text
+    weight: 1
+    range:
+      - 11
+      - 11
+    drawn: false
+    description: >-
+      Cargo manifest doesn't match what's actually in the hold: an extra
+      unmarked crate appeared
+    _id: rYsD4Xt5sycfbGSL
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!k2Q69lF3jamTrXB1.rYsD4Xt5sycfbGSL'
+  - type: text
+    weight: 1
+    range:
+      - 12
+      - 12
+    drawn: false
+    description: >-
+      Charts in the navigation room have been redrawn overnight in a hand no one
+      recognizes
+    _id: AWdgPfp7o8bKriGY
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!k2Q69lF3jamTrXB1.AWdgPfp7o8bKriGY'
+  - type: text
+    weight: 1
+    range:
+      - 13
+      - 13
+    drawn: false
+    description: >-
+      Cleat rips clean out of the deck under normal strain, revealing the wood
+      beneath is rotten to the core
+    _id: zQ8JCbfNs1yXeYJj
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!k2Q69lF3jamTrXB1.zQ8JCbfNs1yXeYJj'
+  - type: text
+    weight: 1
+    range:
+      - 14
+      - 14
+    drawn: false
+    description: >-
+      Cook discovers that the freshwater barrel tastes faintly of honey and no
+      one can explain it
+    _id: 1QNUHiYC5GZPTXi0
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!k2Q69lF3jamTrXB1.1QNUHiYC5GZPTXi0'
+  - type: text
+    weight: 1
+    range:
+      - 15
+      - 15
+    drawn: false
+    description: >-
+      Cook's galley fire refuses to light no matter what fuel or tinder is used
+      — resolved only by singing to it
+    _id: ykA0xye8VTPVCKmE
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!k2Q69lF3jamTrXB1.ykA0xye8VTPVCKmE'
+  - type: text
+    weight: 1
+    range:
+      - 16
+      - 16
+    drawn: false
+    description: >-
+      Crew finds a glass bottle wedged in the keel during hull inspection
+      containing a tiny perfect ship model
+    _id: xt4KrfoDMCmO0MET
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!k2Q69lF3jamTrXB1.xt4KrfoDMCmO0MET'
+  - type: text
+    weight: 1
+    range:
+      - 17
+      - 17
+    drawn: false
+    description: >-
+      Crew member claims to have seen themselves standing at the stern rail from
+      the crow's nest
+    _id: miNPsH11K7ZZGaLO
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!k2Q69lF3jamTrXB1.miNPsH11K7ZZGaLO'
+  - type: text
+    weight: 1
+    range:
+      - 18
+      - 18
+    drawn: false
+    description: >-
+      Crew member's hammock is slashed in the night — they were sleeping in it
+      and felt nothing
+    _id: 7GnePO4lybezrKUg
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!k2Q69lF3jamTrXB1.7GnePO4lybezrKUg'
+  - type: text
+    weight: 1
+    range:
+      - 19
+      - 19
+    drawn: false
+    description: >-
+      Crew wakes to find every knot on the ship has been untied and carefully
+      coiled beside each line
+    _id: tkSyPeq4wt12NGuu
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!k2Q69lF3jamTrXB1.tkSyPeq4wt12NGuu'
+  - type: text
+    weight: 1
+    range:
+      - 20
+      - 20
+    drawn: false
+    description: >-
+      Dead calm sea reflects the stars so perfectly that the helmsman cannot
+      tell which way is up
+    _id: lxdsrOwO6qnEvAsc
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!k2Q69lF3jamTrXB1.lxdsrOwO6qnEvAsc'
+  - type: text
+    weight: 1
+    range:
+      - 21
+      - 21
+    drawn: false
+    description: >-
+      Dense fog rolls in from a single point on the horizon like smoke from an
+      unseen chimney
+    _id: xJcyeasZFUrBvGDv
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!k2Q69lF3jamTrXB1.xJcyeasZFUrBvGDv'
+  - type: text
+    weight: 1
+    range:
+      - 22
+      - 22
+    drawn: false
+    description: >-
+      Distinct smell of woodsmoke and roasting meat drifts across open water
+      with no land in sight
+    _id: FbEadwWsuAuGF6bu
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!k2Q69lF3jamTrXB1.FbEadwWsuAuGF6bu'
+  - type: text
+    weight: 1
+    range:
+      - 23
+      - 23
+    drawn: false
+    description: >-
+      Dredging the anchor brings up a mud-caked strongbox that is warm to the
+      touch
+    _id: VSW0iILPQJPgK9R6
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!k2Q69lF3jamTrXB1.VSW0iILPQJPgK9R6'
+  - type: text
+    weight: 1
+    range:
+      - 24
+      - 24
+    drawn: false
+    description: >-
+      Drinking water develops an iridescent sheen — still tastes fine, but
+      nobody wants to be the one to test it
+    _id: bvmiQOIUHwdGvmGF
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!k2Q69lF3jamTrXB1.bvmiQOIUHwdGvmGF'
+  - type: text
+    weight: 1
+    range:
+      - 25
+      - 25
+    drawn: false
+    description: >-
+      During a calm night, the ship drifts backward three leagues despite no
+      current or wind
+    _id: yQLBBo3O0WI6KviK
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!k2Q69lF3jamTrXB1.yQLBBo3O0WI6KviK'
+  - type: text
+    weight: 1
+    range:
+      - 26
+      - 26
+    drawn: false
+    description: >-
+      During a squall, lightning strikes the mainmast and leaves behind a
+      perfect glass sculpture fused to the wood
+    _id: cmXIByN0moCrkrV2
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!k2Q69lF3jamTrXB1.cmXIByN0moCrkrV2'
+  - type: text
+    weight: 1
+    range:
+      - 27
+      - 27
+    drawn: false
+    description: >-
+      During hull scraping, divers find words carved into the underside of the
+      keel in an ancient script
+    _id: SWkRiDD2GJfzaSH2
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!k2Q69lF3jamTrXB1.SWkRiDD2GJfzaSH2'
+  - type: text
+    weight: 1
+    range:
+      - 28
+      - 28
+    drawn: false
+    description: >-
+      Every candle and lantern aboard flickers in unison for exactly one minute,
+      then stops
+    _id: Kwc9j2nKOI1Qivia
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!k2Q69lF3jamTrXB1.Kwc9j2nKOI1Qivia'
+  - type: text
+    weight: 1
+    range:
+      - 29
+      - 29
+    drawn: false
+    description: >-
+      Every fishing line cast off the stern comes back bitten clean through at
+      exactly the same length
+    _id: BwTziOIV6CjDUEzd
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!k2Q69lF3jamTrXB1.BwTziOIV6CjDUEzd'
+  - type: text
+    weight: 1
+    range:
+      - 30
+      - 30
+    drawn: false
+    description: >-
+      Every mirror and reflective surface below decks fogs over simultaneously
+      for no apparent reason
+    _id: 1Y0SIh3XMGlIgSHQ
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!k2Q69lF3jamTrXB1.1Y0SIh3XMGlIgSHQ'
+  - type: text
+    weight: 1
+    range:
+      - 31
+      - 31
+    drawn: false
+    description: >-
+      Figurehead's expression seems to have changed — crew disagrees on whether
+      it was always frowning
+    _id: O40TaaoKmiCpWuR2
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!k2Q69lF3jamTrXB1.O40TaaoKmiCpWuR2'
+  - type: text
+    weight: 1
+    range:
+      - 32
+      - 32
+    drawn: false
+    description: >-
+      First mate develops an obsessive need to polish brass fittings, neglecting
+      all other duties
+    _id: RRm5BO8LdMItFSRB
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!k2Q69lF3jamTrXB1.RRm5BO8LdMItFSRB'
+  - type: text
+    weight: 1
+    range:
+      - 33
+      - 33
+    drawn: false
+    description: >-
+      Flock of small black birds circles the ship for exactly one hour then
+      veers off due south
+    _id: z6Jt67ReIBOBI5Zn
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!k2Q69lF3jamTrXB1.z6Jt67ReIBOBI5Zn'
+  - type: text
+    weight: 1
+    range:
+      - 34
+      - 34
+    drawn: false
+    description: Fog horn sounds from somewhere ahead — but the ship carries no fog horn
+    _id: SRofeXClk2gKioY4
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!k2Q69lF3jamTrXB1.SRofeXClk2gKioY4'
+  - type: text
+    weight: 1
+    range:
+      - 35
+      - 35
+    drawn: false
+    description: >-
+      Galley cat deposits a very dead and extremely unusual fish at the
+      captain's cabin door
+    _id: HH3thvImcSDh5d7x
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!k2Q69lF3jamTrXB1.HH3thvImcSDh5d7x'
+  - type: text
+    weight: 1
+    range:
+      - 36
+      - 36
+    drawn: false
+    description: >-
+      Glass pane in the captain's cabin cracks in a perfect spiral pattern
+      during calm weather
+    _id: Iu4diyCGlUYtBOnQ
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!k2Q69lF3jamTrXB1.Iu4diyCGlUYtBOnQ'
+  - type: text
+    weight: 1
+    range:
+      - 37
+      - 37
+    drawn: false
+    description: >-
+      Grappling hook found embedded in the stern rail — nobody aboard claims to
+      have thrown it
+    _id: ZbNYOT5Z92IeM8o4
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!k2Q69lF3jamTrXB1.ZbNYOT5Z92IeM8o4'
+  - type: text
+    weight: 1
+    range:
+      - 38
+      - 38
+    drawn: false
+    description: >-
+      Green flash at sunset lasts far too long — a full thirty seconds instead
+      of an instant
+    _id: YepS0fxlXzDa4VQC
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!k2Q69lF3jamTrXB1.YepS0fxlXzDa4VQC'
+  - type: text
+    weight: 1
+    range:
+      - 39
+      - 39
+    drawn: false
+    description: >-
+      Hammock nails keep working themselves loose in a specific section of the
+      crew quarters
+    _id: 06LVS6XdogyATSS2
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!k2Q69lF3jamTrXB1.06LVS6XdogyATSS2'
+  - type: text
+    weight: 1
+    range:
+      - 40
+      - 40
+    drawn: false
+    description: >-
+      Helmsman reports the wheel fought against a course correction as if
+      something below preferred the old heading
+    _id: gVTMVv6Mm9t6prRA
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!k2Q69lF3jamTrXB1.gVTMVv6Mm9t6prRA'
+  - type: text
+    weight: 1
+    range:
+      - 41
+      - 41
+    drawn: false
+    description: >-
+      Hull groans and flexes in a rhythmic pattern that matches the breathing of
+      everyone sleeping below
+    _id: 1a12tsCdPCnaKL10
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!k2Q69lF3jamTrXB1.1a12tsCdPCnaKL10'
+  - type: text
+    weight: 1
+    range:
+      - 42
+      - 42
+    drawn: false
+    description: >-
+      Impossible sight: a campfire burning on the surface of the open ocean,
+      about two hundred yards out
+    _id: wl8xIBWIWBUrFeXS
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!k2Q69lF3jamTrXB1.wl8xIBWIWBUrFeXS'
+  - type: text
+    weight: 1
+    range:
+      - 43
+      - 43
+    drawn: false
+    description: >-
+      Iron fittings throughout the ship develop rust overnight in the shape of
+      tiny handprints
+    _id: VoYyMVFcjwIJvDa4
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!k2Q69lF3jamTrXB1.VoYyMVFcjwIJvDa4'
+  - type: text
+    weight: 1
+    range:
+      - 44
+      - 44
+    drawn: false
+    description: >-
+      Jellyfish bloom so dense and luminous it turns the surrounding sea into a
+      field of pale blue light
+    _id: avwUaedQfLT2EV39
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!k2Q69lF3jamTrXB1.avwUaedQfLT2EV39'
+  - type: text
+    weight: 1
+    range:
+      - 45
+      - 45
+    drawn: false
+    description: >-
+      Keel shudders as if the ship scraped something massive just beneath the
+      surface — depth check shows nothing
+    _id: G1ZmHHrR9VQvJB2E
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!k2Q69lF3jamTrXB1.G1ZmHHrR9VQvJB2E'
+  - type: text
+    weight: 1
+    range:
+      - 46
+      - 46
+    drawn: false
+    description: >-
+      Lantern oil consumption has tripled this week despite reduced night
+      watches
+    _id: C836Z5xEtU45bWJt
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!k2Q69lF3jamTrXB1.C836Z5xEtU45bWJt'
+  - type: text
+    weight: 1
+    range:
+      - 47
+      - 47
+    drawn: false
+    description: >-
+      Large dark shape paces the ship beneath the waterline — visible only when
+      the sun is directly overhead
+    _id: ek4RhM73NZmuqoHb
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!k2Q69lF3jamTrXB1.ek4RhM73NZmuqoHb'
+  - type: text
+    weight: 1
+    range:
+      - 48
+      - 48
+    drawn: false
+    description: >-
+      Lookout reports another vessel on a parallel course that vanishes whenever
+      anyone else looks
+    _id: M3eejcuGpyO9I3ya
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!k2Q69lF3jamTrXB1.M3eejcuGpyO9I3ya'
+  - type: text
+    weight: 1
+    range:
+      - 49
+      - 49
+    drawn: false
+    description: >-
+      Loose plank in the deck reveals a hidden compartment containing a previous
+      captain's journal, final entry mid-sentence
+    _id: bZLCLuEosfPyqIL0
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!k2Q69lF3jamTrXB1.bZLCLuEosfPyqIL0'
+  - type: text
+    weight: 1
+    range:
+      - 50
+      - 50
+    drawn: false
+    description: >-
+      Magnetic anomaly causes every piece of iron on the ship to become briefly
+      magnetized, sticking together
+    _id: O1BcvpNRdlVIQZnz
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!k2Q69lF3jamTrXB1.O1BcvpNRdlVIQZnz'
+  - type: text
+    weight: 1
+    range:
+      - 51
+      - 51
+    drawn: false
+    description: >-
+      Map in the chart room has developed a new island that wasn't there
+      yesterday — the ink is still wet
+    _id: NvjpsOIz977sVBuz
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!k2Q69lF3jamTrXB1.NvjpsOIz977sVBuz'
+  - type: text
+    weight: 1
+    range:
+      - 52
+      - 52
+    drawn: false
+    description: >-
+      Masthead pennant wraps itself into a perfect knot despite steady wind —
+      rigger says it's physically impossible
+    _id: oxnn6AbXSHV5DSFt
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!k2Q69lF3jamTrXB1.oxnn6AbXSHV5DSFt'
+  - type: text
+    weight: 1
+    range:
+      - 53
+      - 53
+    drawn: false
+    description: >-
+      Message carved into the inside of the ship's bell reads 'do not ring at
+      midnight' in the common tongue
+    _id: zxVeUEJP1R9B8ewj
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!k2Q69lF3jamTrXB1.zxVeUEJP1R9B8ewj'
+  - type: text
+    weight: 1
+    range:
+      - 54
+      - 54
+    drawn: false
+    description: >-
+      Moonlight hits the deck at an angle that creates the shadow of a ship much
+      larger than this one
+    _id: vXf1rqYbVi2bcVJk
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!k2Q69lF3jamTrXB1.vXf1rqYbVi2bcVJk'
+  - type: text
+    weight: 1
+    range:
+      - 55
+      - 55
+    drawn: false
+    description: >-
+      Morning muster reveals a sailor no one recognizes — claims to have been
+      aboard since departure
+    _id: QcfEkB15wu9aNs11
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!k2Q69lF3jamTrXB1.QcfEkB15wu9aNs11'
+  - type: text
+    weight: 1
+    range:
+      - 56
+      - 56
+    drawn: false
+    description: >-
+      Music drifts up from the bilge — faint strings, almost too quiet to hear,
+      stopping whenever someone listens closely
+    _id: t9q0pt09StjMKYlu
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!k2Q69lF3jamTrXB1.t9q0pt09StjMKYlu'
+  - type: text
+    weight: 1
+    range:
+      - 57
+      - 57
+    drawn: false
+    description: >-
+      Mysterious sticky residue coats the starboard gunwale — smells of pine
+      resin but the nearest forest is weeks away
+    _id: hx2upAy0ri4cfJax
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!k2Q69lF3jamTrXB1.hx2upAy0ri4cfJax'
+  - type: text
+    weight: 1
+    range:
+      - 58
+      - 58
+    drawn: false
+    description: >-
+      Navigator's sextant gives readings that place the ship on dry land three
+      hundred miles inland
+    _id: aeWgN96mqXpr3uNq
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!k2Q69lF3jamTrXB1.aeWgN96mqXpr3uNq'
+  - type: text
+    weight: 1
+    range:
+      - 59
+      - 59
+    drawn: false
+    description: >-
+      Net cast for fish brings up a bundle of waterlogged letters addressed to
+      people on this very ship
+    _id: EpndcbvKM4xuGdjb
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!k2Q69lF3jamTrXB1.EpndcbvKM4xuGdjb'
+  - type: text
+    weight: 1
+    range:
+      - 60
+      - 60
+    drawn: false
+    description: >-
+      Night watch reports the wake behind the ship glows faintly orange instead
+      of the usual bioluminescence
+    _id: 9Q4OZZ8aIfKX6ndz
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!k2Q69lF3jamTrXB1.9Q4OZZ8aIfKX6ndz'
+  - type: text
+    weight: 1
+    range:
+      - 61
+      - 61
+    drawn: false
+    description: >-
+      No wind for three days, yet the sails remain taut and the ship holds
+      course perfectly
+    _id: MX0BBmMEX64Zm0ZH
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!k2Q69lF3jamTrXB1.MX0BBmMEX64Zm0ZH'
+  - type: text
+    weight: 1
+    range:
+      - 62
+      - 62
+    drawn: false
+    description: >-
+      Noon shadow of the mainmast falls in the wrong direction for a full ten
+      minutes before correcting itself
+    _id: uqlUrpNv9jzdP4hx
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!k2Q69lF3jamTrXB1.uqlUrpNv9jzdP4hx'
+  - type: text
+    weight: 1
+    range:
+      - 63
+      - 63
+    drawn: false
+    description: >-
+      Old sailor recognizes a reef formation and insists it shouldn't be here —
+      it's from waters a thousand miles south
+    _id: IqpKrWxm3HUDyCoF
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!k2Q69lF3jamTrXB1.IqpKrWxm3HUDyCoF'
+  - type: text
+    weight: 1
+    range:
+      - 64
+      - 64
+    drawn: false
+    description: >-
+      One of the lifeboats has been lowered, used, and re-secured overnight —
+      the oarlocks are still damp
+    _id: CKULSR70mUvkOzcM
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!k2Q69lF3jamTrXB1.CKULSR70mUvkOzcM'
+  - type: text
+    weight: 1
+    range:
+      - 65
+      - 65
+    drawn: false
+    description: >-
+      Overnight the ship's name on the stern has changed by one letter — records
+      confirm the original spelling
+    _id: TbWIjA3EIlIzorl2
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!k2Q69lF3jamTrXB1.TbWIjA3EIlIzorl2'
+  - type: text
+    weight: 1
+    range:
+      - 66
+      - 66
+    drawn: false
+    description: >-
+      Paint on the port side peels away in sheets revealing a different color
+      underneath than what was originally applied
+    _id: qOMcpeE75JhSc3Nv
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!k2Q69lF3jamTrXB1.qOMcpeE75JhSc3Nv'
+  - type: text
+    weight: 1
+    range:
+      - 67
+      - 67
+    drawn: false
+    description: >-
+      Perfectly calm seas, yet the ship slowly rotates in place as if sitting on
+      a lazy turntable
+    _id: l9X2lwvBprvQOeTt
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!k2Q69lF3jamTrXB1.l9X2lwvBprvQOeTt'
+  - type: text
+    weight: 1
+    range:
+      - 68
+      - 68
+    drawn: false
+    description: >-
+      Piece of driftwood hauled aboard for fuel won't burn — instead it weeps
+      clear sap that smells of cloves
+    _id: LzptQTytoQPzQRB3
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!k2Q69lF3jamTrXB1.LzptQTytoQPzQRB3'
+  - type: text
+    weight: 1
+    range:
+      - 69
+      - 69
+    drawn: false
+    description: >-
+      Planks in the officer's mess warp upward forming a ridge that looks
+      disturbingly like a sleeping face
+    _id: uFdwRp9wpT07aauZ
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!k2Q69lF3jamTrXB1.uFdwRp9wpT07aauZ'
+  - type: text
+    weight: 1
+    range:
+      - 70
+      - 70
+    drawn: false
+    description: >-
+      Porthole below the waterline shows clear bright sky instead of ocean —
+      looking from outside shows only water
+    _id: w20wxGe2BnFWTw7R
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!k2Q69lF3jamTrXB1.w20wxGe2BnFWTw7R'
+  - type: text
+    weight: 1
+    range:
+      - 71
+      - 71
+    drawn: false
+    description: >-
+      Quarterdeck stairs creak out a recognizable melody when climbed in
+      sequence, but only at dawn
+    _id: R08Z2y7D5UFjq324
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!k2Q69lF3jamTrXB1.R08Z2y7D5UFjq324'
+  - type: text
+    weight: 1
+    range:
+      - 72
+      - 72
+    drawn: false
+    description: >-
+      Rain falls exclusively on the ship while the sea around it remains dry
+      under a cloudless sky
+    _id: RszFQNucPzejfG3E
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!k2Q69lF3jamTrXB1.RszFQNucPzejfG3E'
+  - type: text
+    weight: 1
+    range:
+      - 73
+      - 73
+    drawn: false
+    description: >-
+      Rigging produces a low harmonic tone in certain winds that puts crew
+      members into a light trance
+    _id: Zn43VPtaG1Xz6dtn
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!k2Q69lF3jamTrXB1.Zn43VPtaG1Xz6dtn'
+  - type: text
+    weight: 1
+    range:
+      - 74
+      - 74
+    drawn: false
+    description: >-
+      Rope locker is found arranged with every line coiled identically — three
+      crew members swear they left it a mess
+    _id: N4RphQRmQZ9JK3cx
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!k2Q69lF3jamTrXB1.N4RphQRmQZ9JK3cx'
+  - type: text
+    weight: 1
+    range:
+      - 75
+      - 75
+    drawn: false
+    description: >-
+      Row of barnacles on the hull forms a line of symbols that the ship's
+      scholar says resemble an old trade language
+    _id: sskMaEp4oUHYNqei
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!k2Q69lF3jamTrXB1.sskMaEp4oUHYNqei'
+  - type: text
+    weight: 1
+    range:
+      - 76
+      - 76
+    drawn: false
+    description: >-
+      Rudder chain develops a rhythmic clinking that sounds like it's spelling
+      something in ship's code
+    _id: FnTVTfjKXXjsVVcn
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!k2Q69lF3jamTrXB1.FnTVTfjKXXjsVVcn'
+  - type: text
+    weight: 1
+    range:
+      - 77
+      - 77
+    drawn: false
+    description: >-
+      Salt crystals form geometric patterns on the deck overnight that dissolve
+      the moment someone touches them
+    _id: jyRrDDhSz96VUEO5
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!k2Q69lF3jamTrXB1.jyRrDDhSz96VUEO5'
+  - type: text
+    weight: 1
+    range:
+      - 78
+      - 78
+    drawn: false
+    description: >-
+      Sandbar appears directly ahead in waters charted as deep — navigation
+      confirms position is correct
+    _id: D9Qag9pDvgt62wk2
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!k2Q69lF3jamTrXB1.D9Qag9pDvgt62wk2'
+  - type: text
+    weight: 1
+    range:
+      - 79
+      - 79
+    drawn: false
+    description: >-
+      Sea chest belonging to a deceased former crewmate washes up against the
+      hull, rope still knotted to the handles
+    _id: Q9DzTbS19mKLYBKC
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!k2Q69lF3jamTrXB1.Q9DzTbS19mKLYBKC'
+  - type: text
+    weight: 1
+    range:
+      - 80
+      - 80
+    drawn: false
+    description: >-
+      Seabird deposits a gold ring on the deck, circles the ship three times,
+      and flies directly into the sunset
+    _id: ElrL0NcSqvjlqsau
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!k2Q69lF3jamTrXB1.ElrL0NcSqvjlqsau'
+  - type: text
+    weight: 1
+    range:
+      - 81
+      - 81
+    drawn: false
+    description: >-
+      Severed figurehead from another vessel bumps against the hull all night
+      despite currents moving the other way
+    _id: AjITy42lI5sYta0i
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!k2Q69lF3jamTrXB1.AjITy42lI5sYta0i'
+  - type: text
+    weight: 1
+    range:
+      - 82
+      - 82
+    drawn: false
+    description: >-
+      Ship's bell rings once by itself in the dead of night — the clapper was
+      tied down
+    _id: l18BXCvSh0qyYJcq
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!k2Q69lF3jamTrXB1.l18BXCvSh0qyYJcq'
+  - type: text
+    weight: 1
+    range:
+      - 83
+      - 83
+    drawn: false
+    description: >-
+      Ship's dog stares at a fixed point in the empty ocean and whimpers for the
+      entire middle watch
+    _id: NcRI2Mn9mywZskp8
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!k2Q69lF3jamTrXB1.NcRI2Mn9mywZskp8'
+  - type: text
+    weight: 1
+    range:
+      - 84
+      - 84
+    drawn: false
+    description: >-
+      Ship's log from the previous captain is found behind a loose panel — final
+      entry warns about this exact stretch of water
+    _id: wFOTmrCChFlZHTkn
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!k2Q69lF3jamTrXB1.wFOTmrCChFlZHTkn'
+  - type: text
+    weight: 1
+    range:
+      - 85
+      - 85
+    drawn: false
+    description: >-
+      Ship's wake curves behind the vessel in a slow spiral instead of a
+      straight line
+    _id: ktro28MFjgMtzD8t
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!k2Q69lF3jamTrXB1.ktro28MFjgMtzD8t'
+  - type: text
+    weight: 1
+    range:
+      - 86
+      - 86
+    drawn: false
+    description: >-
+      Small whirlpool forms off the port bow, barely three feet across, and
+      follows the ship at exact pace for an hour
+    _id: 2ZM04ZQd1ibHgUM4
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!k2Q69lF3jamTrXB1.2ZM04ZQd1ibHgUM4'
+  - type: text
+    weight: 1
+    range:
+      - 87
+      - 87
+    drawn: false
+    description: >-
+      Sounding line comes up smelling of sulfur from what should be cold deep
+      water
+    _id: 0TlWbLGO9Ghq4Qiq
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!k2Q69lF3jamTrXB1.0TlWbLGO9Ghq4Qiq'
+  - type: text
+    weight: 1
+    range:
+      - 88
+      - 88
+    drawn: false
+    description: >-
+      Stars reflected in the sea don't match the stars in the sky — they show a
+      different season's constellations
+    _id: JGWofX2ykezvH3h2
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!k2Q69lF3jamTrXB1.JGWofX2ykezvH3h2'
+  - type: text
+    weight: 1
+    range:
+      - 89
+      - 89
+    drawn: false
+    description: >-
+      Stern lantern glass turns deep red without cause and casts the aft deck in
+      an eerie crimson glow
+    _id: LRXhnr7HpLWsdsEu
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!k2Q69lF3jamTrXB1.LRXhnr7HpLWsdsEu'
+  - type: text
+    weight: 1
+    range:
+      - 90
+      - 90
+    drawn: false
+    description: >-
+      Storage locker that was definitely locked is found standing open with
+      everything inside neatly re-organized
+    _id: NwxjMFE14yav6mc8
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!k2Q69lF3jamTrXB1.NwxjMFE14yav6mc8'
+  - type: text
+    weight: 1
+    range:
+      - 91
+      - 91
+    drawn: false
+    description: >-
+      Streak of bioluminescence spells out a word in the ship's wake — most crew
+      dismiss it as coincidence
+    _id: 8gEtKI2V6j1BHJGs
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!k2Q69lF3jamTrXB1.8gEtKI2V6j1BHJGs'
+  - type: text
+    weight: 1
+    range:
+      - 92
+      - 92
+    drawn: false
+    description: >-
+      Supply count reveals exactly one more barrel of hardtack than was loaded
+      at port
+    _id: KZ2ZrTFSisJHLGig
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!k2Q69lF3jamTrXB1.KZ2ZrTFSisJHLGig'
+  - type: text
+    weight: 1
+    range:
+      - 93
+      - 93
+    drawn: false
+    description: >-
+      Temperature in the cargo hold drops sharply enough to see breath, while
+      the deck bakes in tropical heat
+    _id: bl8hXEDJ1pb2rC3H
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!k2Q69lF3jamTrXB1.bl8hXEDJ1pb2rC3H'
+  - type: text
+    weight: 1
+    range:
+      - 94
+      - 94
+    drawn: false
+    description: >-
+      The crow's nest rope ladder has gained three additional rungs overnight —
+      they're made of a different wood
+    _id: CmtjszL5J3HAcDCr
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!k2Q69lF3jamTrXB1.CmtjszL5J3HAcDCr'
+  - type: text
+    weight: 1
+    range:
+      - 95
+      - 95
+    drawn: false
+    description: >-
+      Tide mark on the hull suggests the ship rode six feet higher in the water
+      during the night
+    _id: kRw2CcKSFVBAegTu
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!k2Q69lF3jamTrXB1.kRw2CcKSFVBAegTu'
+  - type: text
+    weight: 1
+    range:
+      - 96
+      - 96
+    drawn: false
+    description: >-
+      Trail of wet footprints leads from the gunwale to the hold and back — they
+      are barefoot and far too large
+    _id: k46pbb20LQ2ArBpS
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!k2Q69lF3jamTrXB1.k46pbb20LQ2ArBpS'
+  - type: text
+    weight: 1
+    range:
+      - 97
+      - 97
+    drawn: false
+    description: >-
+      Two previously hostile crew members are suddenly best friends and neither
+      can explain why
+    _id: MS7yj6oGce8Cbkoq
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!k2Q69lF3jamTrXB1.MS7yj6oGce8Cbkoq'
+  - type: text
+    weight: 1
+    range:
+      - 98
+      - 98
+    drawn: false
+    description: >-
+      Water around the hull turns briefly transparent to an impossible depth —
+      shapes move far below
+    _id: KAOav8icNwt6EKvM
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!k2Q69lF3jamTrXB1.KAOav8icNwt6EKvM'
+  - type: text
+    weight: 1
+    range:
+      - 99
+      - 99
+    drawn: false
+    description: >-
+      Whale surfaces alongside and matches speed for hours, its eye tracking
+      specific crew members as they move
+    _id: LfDpLRasl9VBztVG
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!k2Q69lF3jamTrXB1.LfDpLRasl9VBztVG'
+  - type: text
+    weight: 1
+    range:
+      - 100
+      - 100
+    drawn: false
+    description: >-
+      Wheel spins hard to starboard on its own during the graveyard watch — the
+      helmsman was not touching it
+    _id: IVvOjdcIy4UixyVG
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!k2Q69lF3jamTrXB1.IVvOjdcIy4UixyVG'
+  - type: text
+    weight: 1
+    range:
+      - 101
+      - 101
+    drawn: false
+    description: Wooden spoon in the galley has sprouted a single green leaf overnight
+    _id: 1BGW0KCz0dMIjPv4
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!k2Q69lF3jamTrXB1.1BGW0KCz0dMIjPv4'
+description: >-
+  100 atmospheric ship events for seafaring adventures — strange occurrences,
+  crew troubles, and nautical mysteries.
+replacement: true
+displayRoll: true
+img: icons/svg/d20-grey.svg
+folder: null
+ownership:
+  default: 0
+  HP3Vba5udEHYm4dW: 3
+flags: {}
+_stats:
+  compendiumSource: null
+  duplicateSource: null
+  exportSource: null
+  coreVersion: '13.348'
+  systemId: shadowdark
+  systemVersion: 3.6.1
+  createdTime: 1772831525659
+  modifiedTime: 1772831525659
+  lastModifiedBy: HP3Vba5udEHYm4dW
+_id: k2Q69lF3jamTrXB1
+sort: 0
+_key: '!tables!k2Q69lF3jamTrXB1'

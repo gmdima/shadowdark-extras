@@ -4,41 +4,48 @@ import {
     getDefaultExpandedData
 } from "./CarousingSD.mjs";
 
-export default class ExpandedCarousingTablesApp extends FormApplication {
-    constructor(object, options) {
-        super(object, options);
-        this.editingTable = null;
-        this._currentTab = "tiers"; // Track current tab for persistence
-    }
+const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
-    static get defaultOptions() {
-        return foundry.utils.mergeObject(super.defaultOptions, {
-            id: "shadowdark-expanded-carousing-tables",
-            classes: ["shadowdark-extras", "expanded-carousing-tables-app"],
+export default class ExpandedCarousingTablesApp extends HandlebarsApplicationMixin(ApplicationV2) {
+    static DEFAULT_OPTIONS = {
+        id: "shadowdark-expanded-carousing-tables",
+        classes: ["shadowdark-extras", "expanded-carousing-tables-app"],
+        tag: "form",
+        window: {
             title: "Expanded Carousing Tables Editor",
-            template: "modules/shadowdark-extras/templates/expanded-carousing-tables-app.hbs",
+            resizable: true
+        },
+        position: {
             width: 800,
-            height: 700,
-            scrollY: [".scrollable-list"],
-            closeOnSubmit: false,
+            height: 700
+        },
+        form: {
+            handler: ExpandedCarousingTablesApp.formHandler,
             submitOnChange: false,
-            submitOnClose: false,
-            resizable: true,
-            tabs: [{ navSelector: ".tabs", contentSelector: ".tab-content", initial: "tiers" }]
-        });
+            closeOnSubmit: false
+        }
+    };
+
+    static PARTS = {
+        form: {
+            template: "modules/shadowdark-extras/templates/expanded-carousing-tables-app.hbs",
+            scrollable: [".scrollable-list"]
+        }
+    };
+
+    constructor(options = {}) {
+        super(options);
+        this.editingTable = null;
+        this._currentTab = "tiers";
     }
 
-    getData() {
+    async _prepareContext(options) {
         const tables = getExpandedCarousingTables();
-        const activeTab = this._tabs?.[0]?.active || "tiers";
-
         return {
-            tables: tables, // List of tables for the list view
-            isEditing: !!this.editingTable, // Whether we are in edit mode
-            editingTable: this.editingTable, // The table currently being edited
-            activeTab: activeTab,
-            // Pre-calculated default/empty arrays to ensure structure exists in template loop if array is empty
-            // Though Handlebars usually handles empty arrays fine by just not rendering
+            tables,
+            isEditing: !!this.editingTable,
+            editingTable: this.editingTable,
+            activeTab: this._currentTab,
             defaultTiers: getDefaultExpandedData().tiers,
             defaultOutcomes: getDefaultExpandedData().outcomes,
             defaultBenefits: getDefaultExpandedData().benefits,
@@ -46,8 +53,10 @@ export default class ExpandedCarousingTablesApp extends FormApplication {
         };
     }
 
-    activateListeners(html) {
-        super.activateListeners(html);
+    _onRender(context, options) {
+        const root = this.element;
+        if (!root) return;
+        const html = $(root);
 
         // Sidebar Actions (List View)
         html.find('[data-action="new-table"]').click(this._onNewTable.bind(this));
@@ -130,9 +139,10 @@ export default class ExpandedCarousingTablesApp extends FormApplication {
         event.preventDefault();
         const tableId = event.currentTarget.dataset.tableId;
 
-        const confirm = await Dialog.confirm({
-            title: game.i18n.localize("SHADOWDARK_EXTRAS.carousing.delete_table"),
-            content: game.i18n.localize("SHADOWDARK_EXTRAS.carousing.delete_confirm")
+        const confirm = await foundry.applications.api.DialogV2.confirm({
+            window: { title: game.i18n.localize("SHADOWDARK_EXTRAS.carousing.delete_table") },
+            content: game.i18n.localize("SHADOWDARK_EXTRAS.carousing.delete_confirm"),
+            modal: true
         });
 
         if (confirm) {
@@ -209,32 +219,31 @@ export default class ExpandedCarousingTablesApp extends FormApplication {
         const defaults = getDefaultExpandedData();
 
         // Confirm before resetting
-        Dialog.confirm({
-            title: `Reset ${section}`,
+        foundry.applications.api.DialogV2.confirm({
+            window: { title: `Reset ${section}` },
             content: "Are you sure you want to reset this section to defaults?",
-            yes: () => {
+            modal: true
+        }).then(ok => {
+            if (ok) {
                 this.editingTable[section] = foundry.utils.deepClone(defaults[section]);
                 this.render(true);
             }
         });
     }
 
-    async _updateObject(event, formData) {
+    static async formHandler(event, form, formData) {
+        const flat = formData.object;
         if (!this.editingTable) return;
 
-        // Extract basic fields
-        this.editingTable.name = formData.name;
+        this.editingTable.name = flat.name;
 
-        // Helper to reconstruct array from indexed fields
         const extractArray = (prefix, fields) => {
             const list = [];
             let i = 0;
-            // Scan for index-0, index-1, etc until no more found
-            while (formData.hasOwnProperty(`${prefix}-${fields[0]}-${i}`)) {
+            while (Object.prototype.hasOwnProperty.call(flat, `${prefix}-${fields[0]}-${i}`)) {
                 const item = {};
                 for (const field of fields) {
-                    let val = formData[`${prefix}-${field}-${i}`];
-                    // Convert numeric fields
+                    let val = flat[`${prefix}-${field}-${i}`];
                     if (['cost', 'bonus', 'roll', 'mishaps', 'benefits', 'modifier', 'xp'].includes(field)) {
                         val = parseInt(val) || 0;
                     }
@@ -371,11 +380,14 @@ export default class ExpandedCarousingTablesApp extends FormApplication {
             <textarea id="import-text" style="width:100%; height:300px;"></textarea>
         `;
 
-        const result = await Dialog.prompt({
-            title: game.i18n.localize("SHADOWDARK_EXTRAS.carousing.import_tiers"),
-            content: content,
-            label: game.i18n.localize("SHADOWDARK_EXTRAS.carousing.import"),
-            callback: (html) => html.find('#import-text').val()
+        const result = await foundry.applications.api.DialogV2.prompt({
+            window: { title: game.i18n.localize("SHADOWDARK_EXTRAS.carousing.import_tiers") },
+            content,
+            ok: {
+                label: game.i18n.localize("SHADOWDARK_EXTRAS.carousing.import"),
+                callback: (event, button, dialog) => dialog.element.querySelector("#import-text")?.value
+            },
+            rejectClose: false
         });
 
         if (result) {
@@ -424,11 +436,14 @@ export default class ExpandedCarousingTablesApp extends FormApplication {
             <textarea id="import-text" style="width:100%; height:300px;"></textarea>
         `;
 
-        const result = await Dialog.prompt({
-            title: game.i18n.localize("SHADOWDARK_EXTRAS.carousing.import_outcomes"),
-            content: content,
-            label: game.i18n.localize("SHADOWDARK_EXTRAS.carousing.import"),
-            callback: (html) => html.find('#import-text').val()
+        const result = await foundry.applications.api.DialogV2.prompt({
+            window: { title: game.i18n.localize("SHADOWDARK_EXTRAS.carousing.import_outcomes") },
+            content,
+            ok: {
+                label: game.i18n.localize("SHADOWDARK_EXTRAS.carousing.import"),
+                callback: (event, button, dialog) => dialog.element.querySelector("#import-text")?.value
+            },
+            rejectClose: false
         });
 
         if (result) {
@@ -488,11 +503,14 @@ export default class ExpandedCarousingTablesApp extends FormApplication {
             <textarea id="import-text" style="width:100%; height:300px;"></textarea>
         `;
 
-        const result = await Dialog.prompt({
-            title: game.i18n.localize("SHADOWDARK_EXTRAS.carousing.import_benefits"),
-            content: content,
-            label: game.i18n.localize("SHADOWDARK_EXTRAS.carousing.import"),
-            callback: (html) => html.find('#import-text').val()
+        const result = await foundry.applications.api.DialogV2.prompt({
+            window: { title: game.i18n.localize("SHADOWDARK_EXTRAS.carousing.import_benefits") },
+            content,
+            ok: {
+                label: game.i18n.localize("SHADOWDARK_EXTRAS.carousing.import"),
+                callback: (event, button, dialog) => dialog.element.querySelector("#import-text")?.value
+            },
+            rejectClose: false
         });
 
         if (result) {
@@ -536,11 +554,14 @@ export default class ExpandedCarousingTablesApp extends FormApplication {
             <textarea id="import-text" style="width:100%; height:300px;"></textarea>
         `;
 
-        const result = await Dialog.prompt({
-            title: game.i18n.localize("SHADOWDARK_EXTRAS.carousing.import_mishaps"),
-            content: content,
-            label: game.i18n.localize("SHADOWDARK_EXTRAS.carousing.import"),
-            callback: (html) => html.find('#import-text').val()
+        const result = await foundry.applications.api.DialogV2.prompt({
+            window: { title: game.i18n.localize("SHADOWDARK_EXTRAS.carousing.import_mishaps") },
+            content,
+            ok: {
+                label: game.i18n.localize("SHADOWDARK_EXTRAS.carousing.import"),
+                callback: (event, button, dialog) => dialog.element.querySelector("#import-text")?.value
+            },
+            rejectClose: false
         });
 
         if (result) {
@@ -569,5 +590,5 @@ export default class ExpandedCarousingTablesApp extends FormApplication {
 }
 
 export function openExpandedCarousingTablesEditor() {
-    new ExpandedCarousingTablesApp().render(true);
+    new ExpandedCarousingTablesApp().render({ force: true });
 }

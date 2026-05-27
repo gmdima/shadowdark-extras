@@ -1,15 +1,12 @@
 /**
- * Backport of Shadowdark 4.0 active-effect suppression logic (PR #1297).
+ * Enhancement to Shadowdark active-effect suppression logic.
  *
- * In Shadowdark < 4.0 all active effects on an item are applied regardless
- * of whether the item is equipped, stashed, or identified.  The 4.0 fix
- * adds an `isSuppressed` getter on ActiveEffectSD that returns true for:
- *   – stashed items
- *   – equippable items that are not currently equipped
- *   – unidentified items
+ * Shadowdark 4.0.x natively suppresses effects for stashed and unequipped
+ * items. This patch extends that logic to also suppress effects for
+ * unidentified items (e.g., hiding a curse until it is identified).
  *
- * We replicate that getter here by patching the prototype once during `init`,
- * after the system has registered its own document class.
+ * We patch the prototype once during `init` and delegate to the native
+ * getter for standard behavior.
  */
 
 export function patchArmorActiveEffects() {
@@ -34,22 +31,13 @@ export function patchArmorActiveEffects() {
         configurable: true,
         enumerable: false,
         get() {
-            // Stashed items — effects never apply
-            if (this.parent?.system?.stashed) return true;
-
-            // Equippable items that are not currently equipped
-            if (
-                this.parent?.system?.canBeEquipped &&
-                this.parent?.system?.equipped === false
-            ) return true;
-
-            // Unidentified items
+            // SD v4.0.x natively covers stashed + equipped — we only add unidentified
             if (this.parent?.system?.identification?.identified === false) return true;
 
-            // Fall back to whatever the system (or Foundry core) already provides
+            // Defer everything else (stashed, equipped, etc.) to the native getter
             return originalGetter ? originalGetter.call(this) : false;
         }
     });
 
-    console.log("shadowdark-extras | ArmorAEPatch: isSuppressed patched — effects suppressed for stashed/unequipped/unidentified items.");
+    console.log("shadowdark-extras | ArmorAEPatch: isSuppressed patched — effects suppressed for unidentified items.");
 }

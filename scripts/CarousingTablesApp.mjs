@@ -7,46 +7,56 @@ const MODULE_ID = "shadowdark-extras";
 
 import { getCustomCarousingTables, saveCustomCarousingTables } from "./CarousingSD.mjs";
 
+const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
+
 /**
  * Application for managing custom carousing tables
  */
-export class CarousingTablesApp extends FormApplication {
-    static get defaultOptions() {
-        return foundry.utils.mergeObject(super.defaultOptions, {
-            id: "carousing-tables-app",
-            title: game.i18n.localize("SHADOWDARK_EXTRAS.carousing.tables_editor_title"),
-            template: "modules/shadowdark-extras/templates/carousing-tables-app.hbs",
+export class CarousingTablesApp extends HandlebarsApplicationMixin(ApplicationV2) {
+    static DEFAULT_OPTIONS = {
+        id: "carousing-tables-app",
+        classes: ["shadowdark-extras", "carousing-tables-app"],
+        tag: "form",
+        window: {
+            title: "SHADOWDARK_EXTRAS.carousing.tables_editor_title",
+            resizable: true
+        },
+        position: {
             width: 700,
-            height: 600,
-            resizable: true,
-            closeOnSubmit: false,
-            classes: ["shadowdark-extras", "carousing-tables-app"]
-        });
-    }
+            height: 600
+        },
+        form: {
+            handler: CarousingTablesApp.formHandler,
+            submitOnChange: false,
+            closeOnSubmit: false
+        }
+    };
+
+    static PARTS = {
+        form: {
+            template: "modules/shadowdark-extras/templates/carousing-tables-app.hbs"
+        }
+    };
 
     constructor(options = {}) {
-        super({}, options);
-        this.editingTable = null; // Currently editing table ID
+        super(options);
+        this.editingTable = null;
     }
 
-    /**
-     * Get data for the template
-     */
-    getData() {
+    async _prepareContext(options) {
         const tables = getCustomCarousingTables();
         return {
-            tables: tables,
+            tables,
             editingTable: this.editingTable ? tables.find(t => t.id === this.editingTable) : null,
             isEditing: !!this.editingTable,
             isNew: this.editingTable === "new"
         };
     }
 
-    /**
-     * Activate listeners
-     */
-    activateListeners(html) {
-        super.activateListeners(html);
+    _onRender(context, options) {
+        const root = this.element;
+        if (!root) return;
+        const html = $(root);
 
         // Tab switching
         html.find('.tabs .item').click((event) => {
@@ -77,9 +87,10 @@ export class CarousingTablesApp extends FormApplication {
             const table = tables.find(t => t.id === tableId);
             if (!table) return;
 
-            const confirmed = await Dialog.confirm({
-                title: game.i18n.localize("SHADOWDARK_EXTRAS.carousing.delete_table"),
-                content: `<p>${game.i18n.format("SHADOWDARK_EXTRAS.carousing.delete_table_confirm", { name: table.name })}</p>`
+            const confirmed = await foundry.applications.api.DialogV2.confirm({
+                window: { title: game.i18n.localize("SHADOWDARK_EXTRAS.carousing.delete_table") },
+                content: `<p>${game.i18n.format("SHADOWDARK_EXTRAS.carousing.delete_table_confirm", { name: table.name })}</p>`,
+                modal: true
             });
 
             if (confirmed) {
@@ -96,9 +107,7 @@ export class CarousingTablesApp extends FormApplication {
         });
 
         // Import table button
-        html.find('[data-action="import-table"]').click(() => {
-            this._importTable();
-        });
+        html.find('[data-action="import-table"]').click(() => this._importTable());
 
         // Cancel edit
         html.find('[data-action="cancel-edit"]').click(() => {
@@ -147,39 +156,40 @@ export class CarousingTablesApp extends FormApplication {
     /**
      * Handle form submission
      */
-    async _updateObject(event, formData) {
+    static async formHandler(event, form, formData) {
+        const flat = formData.object;
         const tables = getCustomCarousingTables();
         const isNew = this.editingTable === "new";
 
         // Parse tiers from form
         const tiers = [];
         let tierIndex = 0;
-        while (formData[`tier-cost-${tierIndex}`] !== undefined) {
+        while (flat[`tier-cost-${tierIndex}`] !== undefined) {
             tiers.push({
-                cost: parseInt(formData[`tier-cost-${tierIndex}`]) || 0,
-                bonus: parseInt(formData[`tier-bonus-${tierIndex}`]) || 0,
-                description: formData[`tier-description-${tierIndex}`] || ""
+                cost: parseInt(flat[`tier-cost-${tierIndex}`]) || 0,
+                bonus: parseInt(flat[`tier-bonus-${tierIndex}`]) || 0,
+                description: flat[`tier-description-${tierIndex}`] || ""
             });
             tierIndex++;
         }
 
-        // Parse outcomes from form (simplified: roll, description, benefit)
+        // Parse outcomes from form
         const outcomes = [];
         let outcomeIndex = 0;
-        while (formData[`outcome-roll-${outcomeIndex}`] !== undefined) {
+        while (flat[`outcome-roll-${outcomeIndex}`] !== undefined) {
             outcomes.push({
-                roll: formData[`outcome-roll-${outcomeIndex}`] || String(outcomeIndex + 1),
-                description: formData[`outcome-description-${outcomeIndex}`] || "",
-                benefit: formData[`outcome-benefit-${outcomeIndex}`] || ""
+                roll: flat[`outcome-roll-${outcomeIndex}`] || String(outcomeIndex + 1),
+                description: flat[`outcome-description-${outcomeIndex}`] || "",
+                benefit: flat[`outcome-benefit-${outcomeIndex}`] || ""
             });
             outcomeIndex++;
         }
 
         const tableData = {
             id: isNew ? foundry.utils.randomID() : this.editingTable,
-            name: formData.name || "Unnamed Table",
-            tiers: tiers,
-            outcomes: outcomes
+            name: flat.name || "Unnamed Table",
+            tiers,
+            outcomes
         };
 
         if (isNew) {
@@ -227,8 +237,6 @@ export class CarousingTablesApp extends FormApplication {
 
     /**
      * Import tiers from text format
-     * Handles multi-line entries. Format: "cost gp description... +bonus"
-     * Each entry starts with "N gp" or "N,NNN gp" and ends with "+N" or "-N"
      */
     async _importTiers(html) {
         const content = `
@@ -239,22 +247,20 @@ export class CarousingTablesApp extends FormApplication {
             <textarea id="import-text" style="width:100%; height:300px;"></textarea>
         `;
 
-        const result = await Dialog.prompt({
-            title: game.i18n.localize("SHADOWDARK_EXTRAS.carousing.import_tiers"),
-            content: content,
-            label: game.i18n.localize("SHADOWDARK_EXTRAS.carousing.import"),
-            callback: (html) => html.find('#import-text').val()
+        const result = await foundry.applications.api.DialogV2.prompt({
+            window: { title: game.i18n.localize("SHADOWDARK_EXTRAS.carousing.import_tiers") },
+            content,
+            ok: {
+                label: game.i18n.localize("SHADOWDARK_EXTRAS.carousing.import"),
+                callback: (event, button, dialog) => dialog.element.querySelector("#import-text")?.value
+            },
+            rejectClose: false
         });
 
         if (result) {
-            // Join all text and normalize whitespace
             const fullText = result.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
-
-            // Split on pattern: look for "digits gp" which starts a new entry
-            // We use a regex that matches "number gp" at start of line or after whitespace
             const entryPattern = /(?:^|\n)([\d,]+)\s*gp\s+/gi;
 
-            // Find all entry start positions
             const entries = [];
             let match;
             const starts = [];
@@ -266,38 +272,30 @@ export class CarousingTablesApp extends FormApplication {
                 });
             }
 
-            // Extract each entry's content
             for (let i = 0; i < starts.length; i++) {
                 const startIdx = starts[i].index;
                 const endIdx = (i + 1 < starts.length) ? starts[i + 1].index : fullText.length;
                 const entryText = fullText.slice(startIdx, endIdx).trim();
 
-                // Parse the entry: "cost gp description +bonus"
                 const entryMatch = entryText.match(/^([\d,]+)\s*gp\s+([\s\S]*?)\s*([+-]\d+)\s*$/i);
 
                 if (entryMatch) {
                     const cost = parseInt(entryMatch[1].replace(/,/g, '')) || 0;
-                    // Clean up description - normalize whitespace from multi-line
                     const description = entryMatch[2].replace(/\s+/g, ' ').trim();
                     const bonus = parseInt(entryMatch[3]) || 0;
-
                     entries.push({ cost, description, bonus });
                 } else {
-                    // Fallback: try to extract what we can
                     const cost = parseInt(starts[i].cost) || 0;
-                    // Get text after "cost gp" until end, look for bonus at end
                     const afterCost = entryText.replace(/^[\d,]+\s*gp\s*/i, '');
                     const bonusMatch = afterCost.match(/([+-]\d+)\s*$/);
                     const bonus = bonusMatch ? parseInt(bonusMatch[1]) : i;
                     const description = bonusMatch
                         ? afterCost.replace(/[+-]\d+\s*$/, '').replace(/\s+/g, ' ').trim()
                         : afterCost.replace(/\s+/g, ' ').trim();
-
                     entries.push({ cost, description, bonus });
                 }
             }
 
-            // Populate the table
             const tiersContainer = html.find('.tiers-list');
             tiersContainer.empty();
 
@@ -311,8 +309,6 @@ export class CarousingTablesApp extends FormApplication {
 
     /**
      * Import outcomes from text format
-     * Handles multi-line entries. Format: "roll description... benefit"
-     * Each entry starts with a roll number (e.g., "1", "2", "14+")
      */
     async _importOutcomes(html) {
         const content = `
@@ -323,23 +319,20 @@ export class CarousingTablesApp extends FormApplication {
             <textarea id="import-text" style="width:100%; height:300px;"></textarea>
         `;
 
-        const result = await Dialog.prompt({
-            title: game.i18n.localize("SHADOWDARK_EXTRAS.carousing.import_outcomes"),
-            content: content,
-            label: game.i18n.localize("SHADOWDARK_EXTRAS.carousing.import"),
-            callback: (html) => html.find('#import-text').val()
+        const result = await foundry.applications.api.DialogV2.prompt({
+            window: { title: game.i18n.localize("SHADOWDARK_EXTRAS.carousing.import_outcomes") },
+            content,
+            ok: {
+                label: game.i18n.localize("SHADOWDARK_EXTRAS.carousing.import"),
+                callback: (event, button, dialog) => dialog.element.querySelector("#import-text")?.value
+            },
+            rejectClose: false
         });
 
         if (result) {
-            // Join all text and normalize whitespace
             const fullText = result.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
-
-            // Split on pattern: look for small number (1-20) or number+ at START of line
-            // This prevents matching "100" in "80-100 item" which appears mid-text
-            // Pattern: start of text or newline, then 1-2 digit number (optionally with +), then space
             const entryPattern = /(?:^|\n)((?:[1-9]|1[0-9]|20)\+?)\s+/g;
 
-            // Find all entry start positions
             const entries = [];
             let match;
             const starts = [];
@@ -351,18 +344,14 @@ export class CarousingTablesApp extends FormApplication {
                 });
             }
 
-            // Extract each entry's content
             for (let i = 0; i < starts.length; i++) {
                 const startIdx = starts[i].index;
                 const endIdx = (i + 1 < starts.length) ? starts[i + 1].index : fullText.length;
                 const entryText = fullText.slice(startIdx, endIdx).trim();
 
-                // Parse the entry: "roll description benefit"
-                // The benefit is typically at the end, starting with "Gain" or similar
                 const roll = starts[i].roll;
                 const afterRoll = entryText.replace(/^(?:[1-9]|1[0-9]|20)\+?\s+/, '');
 
-                // Try to find benefit pattern (typically starts with "Gain")
                 const benefitMatch = afterRoll.match(/\s+(Gain\s+[\s\S]*?)\s*$/);
                 let description, benefit;
 
@@ -370,7 +359,6 @@ export class CarousingTablesApp extends FormApplication {
                     benefit = benefitMatch[1].replace(/\s+/g, ' ').trim();
                     description = afterRoll.slice(0, afterRoll.length - benefitMatch[0].length).replace(/\s+/g, ' ').trim();
                 } else {
-                    // No clear benefit - put everything in description
                     description = afterRoll.replace(/\s+/g, ' ').trim();
                     benefit = "";
                 }
@@ -378,7 +366,6 @@ export class CarousingTablesApp extends FormApplication {
                 entries.push({ roll, description, benefit });
             }
 
-            // Populate the table
             const outcomesContainer = html.find('.outcomes-list');
             outcomesContainer.empty();
 
@@ -401,14 +388,12 @@ export class CarousingTablesApp extends FormApplication {
             return;
         }
 
-        // Create export data (include type for import validation)
         const exportData = {
             type: "shadowdark-carousing-table",
             version: 1,
             table: foundry.utils.deepClone(table)
         };
 
-        // Create and download the file using Foundry's utility (works in both browser and Electron)
         const filename = `${table.name.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_carousing.json`;
         const data = JSON.stringify(exportData, null, 2);
         saveDataToFile(data, "application/json", filename);
@@ -420,7 +405,6 @@ export class CarousingTablesApp extends FormApplication {
      * Import a table from JSON file
      */
     async _importTable() {
-        // Create file input
         const input = document.createElement('input');
         input.type = 'file';
         input.accept = '.json';
@@ -433,23 +417,17 @@ export class CarousingTablesApp extends FormApplication {
                 const text = await file.text();
                 const importData = JSON.parse(text);
 
-                // Validate import data
                 if (importData.type !== "shadowdark-carousing-table" || !importData.table) {
                     ui.notifications.error(game.i18n.localize("SHADOWDARK_EXTRAS.carousing.invalid_import_file"));
                     return;
                 }
 
                 const tableData = importData.table;
-
-                // Generate new ID for imported table
                 tableData.id = foundry.utils.randomID();
-
-                // Ensure required fields exist
                 if (!tableData.name) tableData.name = "Imported Table";
                 if (!Array.isArray(tableData.tiers)) tableData.tiers = [];
                 if (!Array.isArray(tableData.outcomes)) tableData.outcomes = [];
 
-                // Add to existing tables
                 const tables = getCustomCarousingTables();
                 tables.push(tableData);
                 await saveCustomCarousingTables(tables);
@@ -470,5 +448,5 @@ export class CarousingTablesApp extends FormApplication {
  * Open the carousing tables editor
  */
 export function openCarousingTablesEditor() {
-    new CarousingTablesApp().render(true);
+    new CarousingTablesApp().render({ force: true });
 }

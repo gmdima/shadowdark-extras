@@ -1,0 +1,38 @@
+name: Extra Damage Die (Melee Only)
+img: icons/skills/melee/strike-sword-blood-red.webp
+transfer: false
+type: base
+disabled: false
+duration:
+  value: null
+  units: seconds
+  expiry: null
+  expired: false
+description: ''
+origin: null
+tint: '#ffffff'
+statuses: []
+showIcon: 1
+sort: 0
+flags: {}
+system:
+  changes:
+    - key: system.roll.melee.extra-damage-die.all
+      value: 1
+      priority: 20
+      type: add
+      phase: initial
+_id: glPH914UR9boVEJ1
+start: null
+folder: null
+_stats:
+  coreVersion: '14.361'
+  systemId: shadowdark
+  systemVersion: 4.0.4
+  createdTime: 1779027664608
+  modifiedTime: 1779027664608
+  lastModifiedBy: lgz0hScAHYW4VnVt
+  compendiumSource: null
+  duplicateSource: null
+  exportSource: null
+_key: '!effects!glPH914UR9boVEJ1'

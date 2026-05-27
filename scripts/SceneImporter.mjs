@@ -1,3 +1,6 @@
+// v13+ FilePicker namespaced under foundry.applications.apps.
+const FilePicker = foundry.applications.apps.FilePicker?.implementation ?? globalThis.FilePicker;
+
 /**
  * SceneImporter: Imports a Foundry VTT scene from a ZIP file exported by SceneExporter
  */
@@ -25,16 +28,18 @@ export class SceneImporter {
             </div>
         `;
 
-        new Dialog({
-            title: "Import Scene",
+        new foundry.applications.api.DialogV2({
+            window: { title: "Import Scene" },
             content: template,
-            buttons: {
-                import: {
-                    icon: '<i class="fas fa-file-import"></i>',
+            buttons: [
+                {
+                    action: "import",
+                    icon: "fas fa-file-import",
                     label: "Import",
-                    callback: async (html) => {
-                        const input = html.find("#import-file")[0];
-                        const file = input.files[0];
+                    default: true,
+                    callback: async (event, button, dialog) => {
+                        const input = dialog.element.querySelector("#import-file");
+                        const file = input?.files?.[0];
                         if (!file) {
                             ui.notifications.warn("No file selected.");
                             return;
@@ -42,13 +47,13 @@ export class SceneImporter {
                         await this.importScene(file);
                     }
                 },
-                cancel: {
-                    icon: '<i class="fas fa-times"></i>',
+                {
+                    action: "cancel",
+                    icon: "fas fa-times",
                     label: "Cancel"
                 }
-            },
-            default: "import"
-        }).render(true);
+            ]
+        }).render({ force: true });
     }
 
     /**

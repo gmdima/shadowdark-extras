@@ -1,0 +1,304 @@
+name: Alleyway Encounters
+formula: 1d12
+results:
+  - type: text
+    weight: 1
+    range:
+      - 1
+      - 1
+    drawn: false
+    description: >-
+      A feral pack of city-rats, swollen to unnatural size by alchemical runoff,
+      has claimed this stretch of alley as its den. The lead rat wears a crow's
+      skull as a crown and seems to be coordinating the others.
+    _id: ELmpPXOgHezFAAFW
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!SWtShiQ7SQc1Fbla.ELmpPXOgHezFAAFW'
+  - type: text
+    weight: 1
+    range:
+      - 2
+      - 2
+    drawn: false
+    description: >-
+      A 'shadow-broker' — a thin, pale figure who deals in stolen identities —
+      has cornered a sobbing clerk against the wall. The broker offers to sell
+      the party the clerk's debts, address, and schedule for 5 gold.
+    _id: R1Jl2JvuhHRASTRf
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!SWtShiQ7SQc1Fbla.R1Jl2JvuhHRASTRf'
+  - type: text
+    weight: 1
+    range:
+      - 3
+      - 3
+    drawn: false
+    description: >-
+      A vine-wrapped figure, festooned with dried herbs and flower wreaths,
+      lurches out of a side passage. It is not undead — it is an alchemist whose
+      potion of plant-communion went critically wrong. He now speaks only in
+      rustling and is very combative.
+    _id: qQ5xSeTsQzHruaIU
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!SWtShiQ7SQc1Fbla.qQ5xSeTsQzHruaIU'
+  - type: text
+    weight: 1
+    range:
+      - 4
+      - 4
+    drawn: false
+    description: >-
+      1d6 hooded figures practicing athletic combat drills block the entire
+      alley. Their instructor tells the party they must 'pay the toll in
+      bruises' — a short sparring match — to pass through.
+    _id: 6ycwrSefN9TiWATI
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!SWtShiQ7SQc1Fbla.6ycwrSefN9TiWATI'
+  - type: text
+    weight: 1
+    range:
+      - 5
+      - 5
+    drawn: false
+    description: >-
+      A fence with a magnificent moustache is conducting a loud, public auction
+      of 'definitely-not-stolen goods' from atop a barrel. His two bodyguards
+      scan the crowd. If the party lingers, they are recognized as potential
+      witnesses.
+    _id: 8Wr5IrcCPMoGcbND
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!SWtShiQ7SQc1Fbla.8Wr5IrcCPMoGcbND'
+  - type: text
+    weight: 1
+    range:
+      - 6
+      - 6
+    drawn: false
+    description: >-
+      A city guard captain is collecting 'unofficial tariffs' from every
+      passerby. He has two cronies flanking him. He is corrupt, well-connected,
+      and will escalate to violence if refused.
+    _id: rSAGM4AqQrW9jS3r
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!SWtShiQ7SQc1Fbla.rSAGM4AqQrW9jS3r'
+  - type: text
+    weight: 1
+    range:
+      - 7
+      - 7
+    drawn: false
+    description: >-
+      A hulking figure made of compacted garbage and broken crockery shuffles
+      down the alley, apparently drawn to heat and movement. It is not malicious
+      — just drawn to the warmth of living bodies — but it is very, very heavy.
+    _id: vgFDwLbVHntWHX9Q
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!SWtShiQ7SQc1Fbla.vgFDwLbVHntWHX9Q'
+  - type: text
+    weight: 1
+    range:
+      - 8
+      - 8
+    drawn: false
+    description: >-
+      A trio of acrobatic pickpockets — two who create a dramatic distraction (a
+      fake brawl) while the third works the crowd. If caught, they scatter to
+      different rooftops and rain roof tiles down on pursuers.
+    _id: z69VwYYqcyTLFLkP
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!SWtShiQ7SQc1Fbla.z69VwYYqcyTLFLkP'
+  - type: text
+    weight: 1
+    range:
+      - 9
+      - 9
+    drawn: false
+    description: >-
+      A pale scholar with ink-stained hands is painting glowing sigils on the
+      alley walls. She explains, calmly, that she is 'sealing a breach.' The
+      breach, whatever it is, opens regardless, and something steps through.
+    _id: P4k42MfSxPPKWfHQ
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!SWtShiQ7SQc1Fbla.P4k42MfSxPPKWfHQ'
+  - type: text
+    weight: 1
+    range:
+      - 10
+      - 10
+    drawn: false
+    description: >-
+      2d4 vengeful dockworkers are hunting for 'the one who shorted the wage,'
+      convinced it was the last group of strangers who walked through. They are
+      wrong, but persuading them of this is its own challenge.
+    _id: JKJ5oigpWd4FEBmA
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!SWtShiQ7SQc1Fbla.JKJ5oigpWd4FEBmA'
+  - type: text
+    weight: 1
+    range:
+      - 11
+      - 11
+    drawn: false
+    description: >-
+      A tick-like, spider-ish creature the size of a dog has attached itself to
+      the underside of a low bridge over the alley, perfectly camouflaged. It
+      has been feeding on the neck of an unconscious drunk. It has noticed the
+      party.
+    _id: BidiXGem9CcSMQzV
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!SWtShiQ7SQc1Fbla.BidiXGem9CcSMQzV'
+  - type: text
+    weight: 1
+    range:
+      - 12
+      - 12
+    drawn: false
+    description: >-
+      A sentient, carnivorous fog drifts in from a cracked sewer grate. It is
+      slow but persistent, and those it engulfs find their wounds refusing to
+      clot. It retreats from bright magical light — but only temporarily.
+    _id: MGDU7IXtRksUJ5uJ
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!SWtShiQ7SQc1Fbla.MGDU7IXtRksUJ5uJ'
+description: 12 original alleyway encounter threats for use in urban adventures.
+replacement: true
+displayRoll: true
+img: icons/svg/d20-grey.svg
+folder: null
+ownership:
+  default: 0
+  HP3Vba5udEHYm4dW: 3
+flags: {}
+_stats:
+  compendiumSource: null
+  duplicateSource: null
+  exportSource: null
+  coreVersion: '13.348'
+  systemId: shadowdark
+  systemVersion: 3.6.1
+  createdTime: 1772652321779
+  modifiedTime: 1772760502256
+  lastModifiedBy: HP3Vba5udEHYm4dW
+_id: SWtShiQ7SQc1Fbla
+sort: 1200000
+_key: '!tables!SWtShiQ7SQc1Fbla'

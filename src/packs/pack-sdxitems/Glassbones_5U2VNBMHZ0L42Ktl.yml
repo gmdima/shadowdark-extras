@@ -1,0 +1,85 @@
+effects: []
+folder: vmqOYZjyo8VunyyP
+img: icons/skills/wounds/bone-broken-knee-beam.webp
+name: Glassbones
+system:
+  description: >-
+    <p>A creature you touch becomes fragile. It takes double damage for the
+    spell's
+    duration.</p><p>@UUID[Compendium.shadowdark.spell-effects.Item.qNd9stCSD6ZJyoOj]{Spell
+    Effect: Glassbones}</p>
+  source:
+    title: cursed-scroll-1
+  class:
+    - Compendium.shadowdark.classes.Item.KGnBAFiTiLHZJUND
+  duration:
+    type: focus
+    value: 1
+  range: touch
+  tier: 4
+  lost: false
+  predefinedEffects: ''
+type: Spell
+_stats:
+  compendiumSource: null
+  duplicateSource: null
+  exportSource: null
+  coreVersion: '13.348'
+  systemId: shadowdark
+  systemVersion: 3.6.1
+  createdTime: 1766974741454
+  modifiedTime: 1771295884104
+  lastModifiedBy: HP3Vba5udEHYm4dW
+ownership:
+  default: 0
+  lDQovrTY32fJwPBR: 3
+flags:
+  shadowdark-extras:
+    spellDamage:
+      enabled: false
+      damageType: ''
+      damageRequirement: ''
+      damageRequirementFailAction: zero
+      formulaType: basic
+      numDice: 1
+      dieType: d6
+      bonus: 0
+      scaling: none
+      scalingDice: 0
+      formula: ''
+      tieredFormula: ''
+      effects:
+        - uuid: Compendium.shadowdark-extras.pack-sdxitems.Item.zhqP2vQKbWg5irLs
+          duration: {}
+      effectsRequirement: ''
+      effectsApplyToTarget: true
+      criticalEffects: '[]'
+      effectSelectionMode: all
+      trackDuration: false
+      perTurnTrigger: start
+      perTurnDamage: ''
+      reapplyEffects: false
+    summoning:
+      enabled: false
+      profiles: '[]'
+      deleteAtExpiry: false
+    itemGive:
+      enabled: false
+      profiles: '[]'
+    targeting:
+      mode: targeted
+      template:
+        type: circle
+        size: 30
+        fillColor: '#4e9a06'
+        placement: choose
+        deleteMode: none
+        hideOutline: false
+        excludeCaster: false
+        tokenMagic:
+          texture: ''
+          opacity: 0.5
+          preset: NOFX
+_id: 5U2VNBMHZ0L42Ktl
+sort: 4300000
+_key: '!items!5U2VNBMHZ0L42Ktl'

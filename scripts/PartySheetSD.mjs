@@ -272,9 +272,9 @@ export default class PartySheetSD extends (foundry.appv1?.sheets?.ActorSheet || 
 			if (!member) continue;
 			const isNPC = member.type === "NPC";
 			const slotsUsed = isNPC ? 0 : this._calculateActorInventorySlotsUsed(member);
-			// Use the actor's numGearSlots() method which correctly calculates max slots
+			// Use the actor's system.slots which correctly calculates max slots
 			// based on STR, talents (like Hauler), and effects
-			const slotsMax = isNPC ? 0 : (typeof member.numGearSlots === 'function' ? member.numGearSlots() : 10);
+			const slotsMax = isNPC ? 0 : (member.system?.slots ?? 10);
 			const slotsFree = Math.max(0, slotsMax - slotsUsed);
 
 			// Use UUID for compendium actors, ID for world actors (consistent with storage)
@@ -333,12 +333,12 @@ export default class PartySheetSD extends (foundry.appv1?.sheets?.ActorSheet || 
 				},
 				// Ability modifiers
 				abilities: {
-					str: member.system.abilities?.str?.mod ?? this._calculateMod(member.system.abilities?.str?.base ?? 10),
-					dex: member.system.abilities?.dex?.mod ?? this._calculateMod(member.system.abilities?.dex?.base ?? 10),
-					con: member.system.abilities?.con?.mod ?? this._calculateMod(member.system.abilities?.con?.base ?? 10),
-					int: member.system.abilities?.int?.mod ?? this._calculateMod(member.system.abilities?.int?.base ?? 10),
-					wis: member.system.abilities?.wis?.mod ?? this._calculateMod(member.system.abilities?.wis?.base ?? 10),
-					cha: member.system.abilities?.cha?.mod ?? this._calculateMod(member.system.abilities?.cha?.base ?? 10),
+					str: member.system.abilities?.str?.mod ?? this._calculateMod(member.system.abilities?.str?.value ?? 10),
+					dex: member.system.abilities?.dex?.mod ?? this._calculateMod(member.system.abilities?.dex?.value ?? 10),
+					con: member.system.abilities?.con?.mod ?? this._calculateMod(member.system.abilities?.con?.value ?? 10),
+					int: member.system.abilities?.int?.mod ?? this._calculateMod(member.system.abilities?.int?.value ?? 10),
+					wis: member.system.abilities?.wis?.mod ?? this._calculateMod(member.system.abilities?.wis?.value ?? 10),
+					cha: member.system.abilities?.cha?.mod ?? this._calculateMod(member.system.abilities?.cha?.value ?? 10),
 				}
 			};
 
@@ -972,22 +972,24 @@ export default class PartySheetSD extends (foundry.appv1?.sheets?.ActorSheet || 
 		`;
 
 		const confirmed = await new Promise((resolve) => {
-			new Dialog({
-				title: game.i18n.localize("SHADOWDARK_EXTRAS.party.divide_coins_title"),
+			new foundry.applications.api.DialogV2({
+				window: { title: game.i18n.localize("SHADOWDARK_EXTRAS.party.divide_coins_title") },
 				content,
-				buttons: {
-					confirm: {
+				buttons: [
+					{
+						action: "confirm",
 						label: game.i18n.localize("SHADOWDARK_EXTRAS.party.divide_coins_confirm"),
-						callback: () => resolve(true),
+						default: true,
+						callback: () => resolve(true)
 					},
-					cancel: {
+					{
+						action: "cancel",
 						label: game.i18n.localize("SHADOWDARK_EXTRAS.party.cancel"),
-						callback: () => resolve(false),
-					},
-				},
-				default: "confirm",
-				close: () => resolve(false),
-			}).render(true);
+						callback: () => resolve(false)
+					}
+				],
+				close: () => resolve(false)
+			}).render({ force: true });
 		});
 
 		if (!confirmed) return;
@@ -1030,25 +1032,27 @@ export default class PartySheetSD extends (foundry.appv1?.sheets?.ActorSheet || 
 		`;
 
 		const result = await new Promise((resolve) => {
-			new Dialog({
-				title,
+			new foundry.applications.api.DialogV2({
+				window: { title },
 				content,
-				buttons: {
-					save: {
+				buttons: [
+					{
+						action: "save",
 						label: game.i18n.localize("SHADOWDARK_EXTRAS.party.save"),
-						callback: (html) => {
-							const value = Number(html.find('input[name="maxSlots"]').val());
+						default: true,
+						callback: (event, button) => {
+							const value = Number(button.form.elements.maxSlots.value);
 							resolve(value);
-						},
+						}
 					},
-					cancel: {
+					{
+						action: "cancel",
 						label: game.i18n.localize("SHADOWDARK_EXTRAS.party.cancel"),
-						callback: () => resolve(null),
-					},
-				},
-				default: "save",
-				close: () => resolve(null),
-			}).render(true);
+						callback: () => resolve(null)
+					}
+				],
+				close: () => resolve(null)
+			}).render({ force: true });
 		});
 
 		if (result === null) return;
@@ -1323,9 +1327,10 @@ export default class PartySheetSD extends (foundry.appv1?.sheets?.ActorSheet || 
 		}
 		const memberName = member?.name ?? "Unknown";
 
-		const confirmed = await Dialog.confirm({
-			title: game.i18n.localize("SHADOWDARK_EXTRAS.party.remove_member"),
+		const confirmed = await foundry.applications.api.DialogV2.confirm({
+			window: { title: game.i18n.localize("SHADOWDARK_EXTRAS.party.remove_member") },
 			content: `<p>${game.i18n.format("SHADOWDARK_EXTRAS.party.confirm_remove", { name: memberName })}</p>`,
+			modal: true
 		});
 		if (!confirmed) return;
 
@@ -1444,29 +1449,32 @@ export default class PartySheetSD extends (foundry.appv1?.sheets?.ActorSheet || 
 		let filter = "all";
 		if (hasPlayers && hasNpcs) {
 			filter = await new Promise((resolve) => {
-				new Dialog({
-					title: game.i18n.localize("SHADOWDARK_EXTRAS.party.place_tokens_title"),
+				new foundry.applications.api.DialogV2({
+					window: { title: game.i18n.localize("SHADOWDARK_EXTRAS.party.place_tokens_title") },
 					content: `<p>${game.i18n.localize("SHADOWDARK_EXTRAS.party.place_tokens_prompt")}</p>`,
-					buttons: {
-						all: {
-							icon: '<i class="fas fa-users"></i>',
+					buttons: [
+						{
+							action: "all",
+							icon: "fas fa-users",
 							label: game.i18n.localize("SHADOWDARK_EXTRAS.party.place_all"),
+							default: true,
 							callback: () => resolve("all")
 						},
-						players: {
-							icon: '<i class="fas fa-user"></i>',
+						{
+							action: "players",
+							icon: "fas fa-user",
 							label: game.i18n.localize("SHADOWDARK_EXTRAS.party.place_players"),
 							callback: () => resolve("players")
 						},
-						npcs: {
-							icon: '<i class="fas fa-dragon"></i>',
+						{
+							action: "npcs",
+							icon: "fas fa-dragon",
 							label: game.i18n.localize("SHADOWDARK_EXTRAS.party.place_npcs"),
 							callback: () => resolve("npcs")
 						}
-					},
-					default: "all",
+					],
 					close: () => resolve(null)
-				}).render(true);
+				}).render({ force: true });
 			});
 
 			if (!filter) return; // User closed the dialog
@@ -1684,12 +1692,14 @@ export default class PartySheetSD extends (foundry.appv1?.sheets?.ActorSheet || 
 			</form>
 		`;
 
-		const xpAmount = await Dialog.prompt({
-			title: game.i18n.localize("SHADOWDARK_EXTRAS.party.reward_xp_title"),
-			content: content,
-			callback: (html) => {
-				const form = html[0].querySelector("form");
-				return parseInt(form.xp.value) || 0;
+		const xpAmount = await foundry.applications.api.DialogV2.prompt({
+			window: { title: game.i18n.localize("SHADOWDARK_EXTRAS.party.reward_xp_title") },
+			content,
+			ok: {
+				callback: (event, button, dialog) => {
+					const form = dialog.element.querySelector("form");
+					return parseInt(form.xp.value) || 0;
+				}
 			},
 			rejectClose: false
 		});
@@ -1753,16 +1763,18 @@ export default class PartySheetSD extends (foundry.appv1?.sheets?.ActorSheet || 
 			</form>
 		`;
 
-		const result = await Dialog.prompt({
-			title: game.i18n.localize("SHADOWDARK_EXTRAS.party.reward_coins_title"),
-			content: content,
-			callback: (html) => {
-				const form = html[0].querySelector("form");
-				return {
-					gp: parseInt(form.gp.value) || 0,
-					sp: parseInt(form.sp.value) || 0,
-					cp: parseInt(form.cp.value) || 0
-				};
+		const result = await foundry.applications.api.DialogV2.prompt({
+			window: { title: game.i18n.localize("SHADOWDARK_EXTRAS.party.reward_coins_title") },
+			content,
+			ok: {
+				callback: (event, button, dialog) => {
+					const form = dialog.element.querySelector("form");
+					return {
+						gp: parseInt(form.gp.value) || 0,
+						sp: parseInt(form.sp.value) || 0,
+						cp: parseInt(form.cp.value) || 0
+					};
+				}
 			},
 			rejectClose: false
 		});
@@ -1976,16 +1988,18 @@ export default class PartySheetSD extends (foundry.appv1?.sheets?.ActorSheet || 
 			</form>
 		`;
 
-		const result = await Dialog.prompt({
-			title: game.i18n.localize("SHADOWDARK_EXTRAS.party.add_coins_title"),
-			content: content,
-			callback: (html) => {
-				const form = html[0].querySelector("form");
-				return {
-					gp: parseInt(form.gp.value) || 0,
-					sp: parseInt(form.sp.value) || 0,
-					cp: parseInt(form.cp.value) || 0
-				};
+		const result = await foundry.applications.api.DialogV2.prompt({
+			window: { title: game.i18n.localize("SHADOWDARK_EXTRAS.party.add_coins_title") },
+			content,
+			ok: {
+				callback: (event, button, dialog) => {
+					const form = dialog.element.querySelector("form");
+					return {
+						gp: parseInt(form.gp.value) || 0,
+						sp: parseInt(form.sp.value) || 0,
+						cp: parseInt(form.cp.value) || 0
+					};
+				}
 			},
 			rejectClose: false
 		});
@@ -2025,8 +2039,8 @@ export default class PartySheetSD extends (foundry.appv1?.sheets?.ActorSheet || 
 
 		const currentDescription = this.actor.getFlag(MODULE_ID, "description") ?? "";
 
-		new Dialog({
-			title: game.i18n.localize("SHADOWDARK_EXTRAS.party.edit_description"),
+		new foundry.applications.api.DialogV2({
+			window: { title: game.i18n.localize("SHADOWDARK_EXTRAS.party.edit_description") },
 			content: `
 				<form>
 					<div class="form-group stacked">
@@ -2035,22 +2049,24 @@ export default class PartySheetSD extends (foundry.appv1?.sheets?.ActorSheet || 
 					</div>
 				</form>
 			`,
-			buttons: {
-				save: {
-					icon: '<i class="fas fa-save"></i>',
+			buttons: [
+				{
+					action: "save",
+					icon: "fas fa-save",
 					label: game.i18n.localize("SHADOWDARK_EXTRAS.party.save"),
-					callback: async (html) => {
-						const description = html.find('[name="description"]').val();
+					default: true,
+					callback: async (event, button) => {
+						const description = button.form.elements.description.value;
 						await this.actor.setFlag(MODULE_ID, "description", description);
 					}
 				},
-				cancel: {
-					icon: '<i class="fas fa-times"></i>',
+				{
+					action: "cancel",
+					icon: "fas fa-times",
 					label: game.i18n.localize("SHADOWDARK_EXTRAS.party.cancel")
 				}
-			},
-			default: "save"
-		}).render(true);
+			]
+		}).render({ force: true });
 	}
 
 	/**
@@ -2074,8 +2090,8 @@ export default class PartySheetSD extends (foundry.appv1?.sheets?.ActorSheet || 
 			`<option value="${m.id}">${m.name}</option>`
 		).join("");
 
-		new Dialog({
-			title: game.i18n.localize("SHADOWDARK_EXTRAS.party.transfer_to_member"),
+		new foundry.applications.api.DialogV2({
+			window: { title: game.i18n.localize("SHADOWDARK_EXTRAS.party.transfer_to_member") },
 			content: `
 				<form>
 					<div class="form-group">
@@ -2084,18 +2100,19 @@ export default class PartySheetSD extends (foundry.appv1?.sheets?.ActorSheet || 
 					</div>
 				</form>
 			`,
-			buttons: {
-				transfer: {
-					icon: '<i class="fas fa-share"></i>',
+			buttons: [
+				{
+					action: "transfer",
+					icon: "fas fa-share",
 					label: game.i18n.localize("SHADOWDARK_EXTRAS.party.transfer"),
-					callback: async (html) => {
-						const memberId = html.find('[name="member"]').val();
+					default: true,
+					callback: async (event, button) => {
+						const memberId = button.form.elements.member.value;
 						const member = game.actors.get(memberId);
 						if (!member) return;
 
 						await this._transferItemToActor(item, member, { move: true });
 
-						// Mask item name if unidentified and user is not GM
 						const isUnidentified = item.getFlag(MODULE_ID, "unidentified");
 						const displayName = (isUnidentified && !game.user.isGM)
 							? game.i18n.localize("SHADOWDARK_EXTRAS.item.unidentified.label")
@@ -2109,13 +2126,13 @@ export default class PartySheetSD extends (foundry.appv1?.sheets?.ActorSheet || 
 						);
 					}
 				},
-				cancel: {
-					icon: '<i class="fas fa-times"></i>',
+				{
+					action: "cancel",
+					icon: "fas fa-times",
 					label: game.i18n.localize("SHADOWDARK_EXTRAS.party.cancel")
 				}
-			},
-			default: "transfer"
-		}).render(true);
+			]
+		}).render({ force: true });
 	}
 
 	/**
@@ -2126,12 +2143,10 @@ export default class PartySheetSD extends (foundry.appv1?.sheets?.ActorSheet || 
 		event.preventDefault();
 		if (!this.actor.isOwner) return;
 
-		const confirmed = await Dialog.confirm({
-			title: game.i18n.localize("SHADOWDARK_EXTRAS.party.travel.reset_title"),
+		const confirmed = await foundry.applications.api.DialogV2.confirm({
+			window: { title: game.i18n.localize("SHADOWDARK_EXTRAS.party.travel.reset_title") },
 			content: game.i18n.localize("SHADOWDARK_EXTRAS.party.travel.reset_confirm"),
-			yes: () => true,
-			no: () => false,
-			defaultYes: false
+			modal: true
 		});
 
 		if (confirmed) {
@@ -2239,18 +2254,19 @@ export default class PartySheetSD extends (foundry.appv1?.sheets?.ActorSheet || 
 
 		for (const { actor, ability } of rolls) {
 			const abilityId = ability.toLowerCase();
-			if (actor.rollAbility) {
-				try {
-					const abilityLabel = game.i18n.localize(CONFIG.SHADOWDARK.ABILITIES_LONG[abilityId]);
-					await actor.rollAbility(abilityId, {
-						target: dc,
+			const abilityLabel = game.i18n.localize(CONFIG.SHADOWDARK.ABILITIES_LONG[abilityId]);
+
+			try {
+				if (actor.system.rollStatCheck) {
+					await actor.system.rollStatCheck(abilityId, {
+						mainRoll: { dc: dc },
 						title: `${task.name} Check - ${abilityLabel}`
 					});
-				} catch (err) {
-					console.error("Shadowdark Extras | Error rolling ability:", err);
+				} else {
+					ui.notifications.warn("Cannot roll ability for actor type: " + actor.type);
 				}
-			} else {
-				ui.notifications.warn("Cannot roll ability for actor type: " + actor.type);
+			} catch (err) {
+				console.error("Shadowdark Extras | Error rolling ability:", err);
 			}
 		}
 	}

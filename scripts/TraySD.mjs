@@ -383,8 +383,12 @@ export function getPartyTokens() {
         const actor = token.actor;
         if (!actor) continue;
 
-        // Skip item-piles enabled tokens/actors
-        const pileData = token.document.getFlag("item-piles", "data") ?? actor.getFlag("item-piles", "data");
+        // Skip item-piles enabled tokens/actors (v14: getFlag throws when scope's
+        // module isn't active, so guard against that case)
+        let pileData;
+        if (game.modules.get("item-piles")?.active) {
+            pileData = token.document.getFlag("item-piles", "data") ?? actor.getFlag("item-piles", "data");
+        }
         if (pileData?.enabled) continue;
 
         // Check if this is a player character

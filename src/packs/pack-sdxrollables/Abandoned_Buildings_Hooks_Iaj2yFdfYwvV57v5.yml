@@ -1,0 +1,494 @@
+name: Abandoned Buildings Hooks
+formula: 1d20
+results:
+  - type: text
+    weight: 1
+    range:
+      - 1
+      - 1
+    drawn: false
+    description: >-
+      A chandler's sign still hangs above the door, swinging despite no wind.
+      Inside, every surface is covered in wax — floors, walls, ceiling — from
+      century-old candles that burned themselves flat and then somehow kept
+      going.
+    _id: VVvq66eStno43A0s
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!Iaj2yFdfYwvV57v5.VVvq66eStno43A0s'
+  - type: text
+    weight: 1
+    range:
+      - 2
+      - 2
+    drawn: false
+    description: >-
+      A collapsed workshop contains a leather-bound ledger logging deliveries
+      and expenses up to three days ago, despite no one having used the building
+      in years. The handwriting is neat and fresh.
+    _id: 37gCupIy9WqR1zI4
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!Iaj2yFdfYwvV57v5.37gCupIy9WqR1zI4'
+  - type: text
+    weight: 1
+    range:
+      - 3
+      - 3
+    drawn: false
+    description: >-
+      A family of four has moved into the derelict structure and is living there
+      without apparent awareness that it is not a proper home. They greet
+      visitors warmly and offer watered-down soup from a mostly intact hearth.
+    _id: PGw6ywmALxhl77wD
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!Iaj2yFdfYwvV57v5.PGw6ywmALxhl77wD'
+  - type: text
+    weight: 1
+    range:
+      - 4
+      - 4
+    drawn: false
+    description: >-
+      The attic floor has given way into a space below the building that should
+      not exist by any architectural logic — a clean, dry room with a single
+      chair, a writing desk, and a locked drawer.
+    _id: M96kmufCvlMMvNac
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!Iaj2yFdfYwvV57v5.M96kmufCvlMMvNac'
+  - type: text
+    weight: 1
+    range:
+      - 5
+      - 5
+    drawn: false
+    description: >-
+      All the mirrors in the old manor are still intact despite every other
+      surface being wrecked. Each shows the same reflection: the room as it
+      appeared approximately fifty years ago, with people in it, going about
+      their business.
+    _id: BfJHp0ZLB6tlib1I
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!Iaj2yFdfYwvV57v5.BfJHp0ZLB6tlib1I'
+  - type: text
+    weight: 1
+    range:
+      - 6
+      - 6
+    drawn: false
+    description: >-
+      An herbalist's shop has been empty for a generation, but the herbs growing
+      through the floorboards are not native to this region, are perfectly
+      arranged by category, and some of them shouldn't grow in any climate.
+    _id: oyhBRKdHu9VU4QkR
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!Iaj2yFdfYwvV57v5.oyhBRKdHu9VU4QkR'
+  - type: text
+    weight: 1
+    range:
+      - 7
+      - 7
+    drawn: false
+    description: >-
+      The door won't open from the outside — but isn't locked. From the inside —
+      accessible via a broken window — it opens instantly. The occupant of the
+      chair inside shows no interest in explaining.
+    _id: LMu5cxYviUPWt0Uq
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!Iaj2yFdfYwvV57v5.LMu5cxYviUPWt0Uq'
+  - type: text
+    weight: 1
+    range:
+      - 8
+      - 8
+    drawn: false
+    description: >-
+      A street gang has been using the ruin as their headquarters but has
+      recently and abruptly vacated, leaving behind a meal mid-eaten, scattered
+      weapons, and a rough map with a location circled in charcoal.
+    _id: tT7HdMQ3zNxofpZi
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!Iaj2yFdfYwvV57v5.tT7HdMQ3zNxofpZi'
+  - type: text
+    weight: 1
+    range:
+      - 9
+      - 9
+    drawn: false
+    description: >-
+      The building's walls are covered in tallies — hundreds of thousands of
+      marks scored into the plaster. They are grouped in fives. No one can
+      determine what was counted or when the counting stopped.
+    _id: AaYz3sK2i6gRHY2P
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!Iaj2yFdfYwvV57v5.AaYz3sK2i6gRHY2P'
+  - type: text
+    weight: 1
+    range:
+      - 10
+      - 10
+    drawn: false
+    description: >-
+      A very fine wooden floor is hidden beneath the debris in the main room.
+      Someone has recently cleaned and polished it from the center outward in a
+      perfect circle approximately ten feet across.
+    _id: gtiC4KNATANS0UvD
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!Iaj2yFdfYwvV57v5.gtiC4KNATANS0UvD'
+  - type: text
+    weight: 1
+    range:
+      - 11
+      - 11
+    drawn: false
+    description: >-
+      A lockbox has been mortared into the wall behind a section of collapsed
+      plaster. It contains legal documentation establishing ownership of the
+      building — dated recently — in the name of a person no one in the city can
+      find.
+    _id: FyP77Ky7bG0SlrI9
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!Iaj2yFdfYwvV57v5.FyP77Ky7bG0SlrI9'
+  - type: text
+    weight: 1
+    range:
+      - 12
+      - 12
+    drawn: false
+    description: >-
+      The city's sewer maps indicate a major access point runs below this
+      building. The hatch in the floor is padlocked with a chain so new it's
+      still oiled, though the building has been derelict for decades.
+    _id: 6vf04QRlzmv15KwW
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!Iaj2yFdfYwvV57v5.6vf04QRlzmv15KwW'
+  - type: text
+    weight: 1
+    range:
+      - 13
+      - 13
+    drawn: false
+    description: >-
+      An obsessive collector has filled every room floor-to-ceiling with a
+      single category of object — every room a different category. One room:
+      chairs. One room: mirrors. One room: shoes, all left feet. The building
+      appears locked from the outside.
+    _id: DeFHV50qjilhvOF8
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!Iaj2yFdfYwvV57v5.DeFHV50qjilhvOF8'
+  - type: text
+    weight: 1
+    range:
+      - 14
+      - 14
+    drawn: false
+    description: >-
+      A child's bedroom on the upper floor is entirely untouched by time or
+      weather — toys in order, sheets pulled tight, a cup of water fresh on the
+      nightstand, and a small journal left open to a half-finished entry.
+    _id: CmXcbwniCZLRDQNA
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!Iaj2yFdfYwvV57v5.CmXcbwniCZLRDQNA'
+  - type: text
+    weight: 1
+    range:
+      - 15
+      - 15
+    drawn: false
+    description: >-
+      The structure is considered cursed by locals — three separate families
+      moved in over the years and relocated within weeks without explaining why.
+      The current asking price is three coppers and no one will take it.
+    _id: iEBLtDxIZaRr6JwC
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!Iaj2yFdfYwvV57v5.iEBLtDxIZaRr6JwC'
+  - type: text
+    weight: 1
+    range:
+      - 16
+      - 16
+    drawn: false
+    description: >-
+      A trap door under the main stair leads to a dry, well-ventilated space
+      packed with neatly organized contraband that has clearly been aging here
+      for at least a decade. Whoever hid it has not returned, or cannot.
+    _id: v6pG7gH1HwNtGNaA
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!Iaj2yFdfYwvV57v5.v6pG7gH1HwNtGNaA'
+  - type: text
+    weight: 1
+    range:
+      - 17
+      - 17
+    drawn: false
+    description: >-
+      A former apothecary's workshop still contains intact glassware, dried
+      compounds, and what appears to be an unfinished experiment. The
+      experiment, based on the notes, should have been impossible with the
+      available components.
+    _id: veYrNcXkwzrst6wJ
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!Iaj2yFdfYwvV57v5.veYrNcXkwzrst6wJ'
+  - type: text
+    weight: 1
+    range:
+      - 18
+      - 18
+    drawn: false
+    description: >-
+      Something lives in the walls. It can be heard moving at intervals. It does
+      not respond to noise or light. Whatever it is, it has worn smooth channels
+      through the plaster, routing between the outer and inner walls in complex
+      patterns.
+    _id: einucKuENEcxD7fd
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!Iaj2yFdfYwvV57v5.einucKuENEcxD7fd'
+  - type: text
+    weight: 1
+    range:
+      - 19
+      - 19
+    drawn: false
+    description: >-
+      The building was a tailor's shop. The work-in-progress garment on the
+      mannequin is too large for any human and too small for any giant: it
+      appears to be a livery coat for something between the two, with six sleeve
+      holes.
+    _id: HPLj32W9n9kiJXXe
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!Iaj2yFdfYwvV57v5.HPLj32W9n9kiJXXe'
+  - type: text
+    weight: 1
+    range:
+      - 20
+      - 20
+    drawn: false
+    description: >-
+      A sealed letter tacked to the inside of the front door is addressed to
+      'whoever comes in third.' The wax seal is intact. It cannot have been
+      there long — the paper is still crisp.
+    _id: EpmZfIYlkaUBwUS0
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!Iaj2yFdfYwvV57v5.EpmZfIYlkaUBwUS0'
+description: >-
+  20 original abandoned building hooks, complications, and opportunities for
+  urban ruin encounters.
+replacement: true
+displayRoll: true
+img: icons/svg/d20-grey.svg
+folder: null
+ownership:
+  default: 0
+  HP3Vba5udEHYm4dW: 3
+flags: {}
+_stats:
+  compendiumSource: null
+  duplicateSource: null
+  exportSource: null
+  coreVersion: '13.348'
+  systemId: shadowdark
+  systemVersion: 3.6.1
+  createdTime: 1772656229146
+  modifiedTime: 1772760502256
+  lastModifiedBy: HP3Vba5udEHYm4dW
+_id: Iaj2yFdfYwvV57v5
+sort: 400000
+_key: '!tables!Iaj2yFdfYwvV57v5'

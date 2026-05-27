@@ -1,0 +1,83 @@
+folder: K6zOr2GTFzOnckMq
+name: 'Absorption: Acid'
+type: Effect
+img: icons/magic/acid/dissolve-bone-white.webp
+system:
+  description: <p>Acid heals you.</p>
+  source:
+    title: ''
+  light:
+    active: false
+    hasBeenUsed: false
+    isSource: false
+    longevityMins: 60
+    remainingSecs: 3600
+    template: torch
+  category: effect
+  duration:
+    type: unlimited
+    value: 1
+  effectPanel:
+    show: true
+  start:
+    combatTime: '1.0'
+    value: 201320
+  tokenIcon:
+    show: true
+effects:
+  - name: SHADOWDARK.item.effect.predefined_effect.absorptionAcid
+    img: icons/magic/acid/dissolve-bone-white.webp
+    disabled: false
+    transfer: true
+    type: base
+    system:
+      changes:
+        - key: flags.shadowdark-extras.absorption.acid
+          value: -1
+          type: override
+    duration:
+      value: null
+      units: seconds
+      expiry: null
+      expired: false
+    description: ''
+    tint: '#ffffff'
+    statuses: []
+    sort: 0
+    flags: {}
+    _id: cn5dUsYrS7Hqoh77
+    origin: null
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '14.360'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+      createdTime: null
+      modifiedTime: null
+    start: null
+    showIcon: 1
+    folder: null
+    _key: '!items.effects!Lf5VfcWwqPU4sfk9.cn5dUsYrS7Hqoh77'
+flags:
+  shadowdark-extras:
+    absorption:
+      acid: '-1'
+ownership:
+  default: 0
+  lDQovrTY32fJwPBR: 3
+_stats:
+  compendiumSource: null
+  duplicateSource: null
+  exportSource: null
+  coreVersion: '14.360'
+  systemId: shadowdark
+  systemVersion: 3.6.1
+  createdTime: 1768096124464
+  modifiedTime: 1768096139170
+  lastModifiedBy: lDQovrTY32fJwPBR
+_id: Lf5VfcWwqPU4sfk9
+sort: 600000
+_key: '!items!Lf5VfcWwqPU4sfk9'

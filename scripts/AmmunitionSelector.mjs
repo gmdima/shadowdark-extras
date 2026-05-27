@@ -49,27 +49,29 @@ export default class AmmunitionSelector {
         );
 
         return new Promise(resolve => {
-            new Dialog({
-                title: game.i18n.localize("SHADOWDARK_EXTRAS.ammunition.selector.title"),
-                content: content,
-                buttons: {
-                    use: {
-                        icon: '<i class="fas fa-check"></i>',
+            new foundry.applications.api.DialogV2({
+                window: { title: game.i18n.localize("SHADOWDARK_EXTRAS.ammunition.selector.title") },
+                content,
+                buttons: [
+                    {
+                        action: "use",
+                        icon: "fas fa-check",
                         label: game.i18n.localize("SHADOWDARK_EXTRAS.ammunition.selector.use"),
-                        callback: html => {
-                            const ammoId = html.find("input[name='ammunition']:checked").val();
+                        default: true,
+                        callback: (event, button, dialog) => {
+                            const ammoId = dialog.element.querySelector("input[name='ammunition']:checked")?.value;
                             resolve(actor.items.get(ammoId));
                         }
                     },
-                    cancel: {
-                        icon: '<i class="fas fa-times"></i>',
+                    {
+                        action: "cancel",
+                        icon: "fas fa-times",
                         label: game.i18n.localize("SHADOWDARK.dialog.general.cancel"),
                         callback: () => resolve(undefined)
                     }
-                },
-                default: "use",
+                ],
                 close: () => resolve(undefined)
-            }).render(true);
+            }).render({ force: true });
         });
     }
 }

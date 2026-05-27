@@ -1,0 +1,38 @@
+name: Attack Bonus (Two-Handed Weapons)
+img: icons/weapons/swords/greatsword-crossguard-steel.webp
+transfer: false
+type: base
+disabled: false
+duration:
+  value: null
+  units: seconds
+  expiry: null
+  expired: false
+description: ''
+origin: null
+tint: '#ffffff'
+statuses: []
+showIcon: 1
+sort: 0
+flags: {}
+system:
+  changes:
+    - key: system.roll.attack.bonus.two-handed
+      value: '1'
+      priority: 20
+      type: add
+      phase: initial
+_id: xpaE2m3qkvXB4XGZ
+start: null
+folder: null
+_stats:
+  coreVersion: '14.361'
+  systemId: shadowdark
+  systemVersion: 4.0.4
+  createdTime: 1779027664609
+  modifiedTime: 1779027664609
+  lastModifiedBy: lgz0hScAHYW4VnVt
+  compendiumSource: null
+  duplicateSource: null
+  exportSource: null
+_key: '!effects!xpaE2m3qkvXB4XGZ'

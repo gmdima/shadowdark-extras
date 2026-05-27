@@ -1,0 +1,209 @@
+effects: []
+folder: vmqOYZjyo8VunyyP
+img: icons/magic/death/skull-poison-green.webp
+name: Cloud Kill
+system:
+  description: >-
+    <p>A putrid cloud of yellow poison fills a near-sized cube within range. It
+    spreads around corners. </p><p>Creatures inside the cloud are blinded and
+    take [[/r 2d6]] damage at the beginning of their turns. </p><p>A creature of
+    LV 9 or less that ends its turn fully inside the cloud dies.</p>
+  source:
+    title: core-rules
+  class:
+    - Compendium.shadowdark.classes.Item.035nuVkU9q2wtMPs
+  duration:
+    type: rounds
+    value: '5'
+  range: far
+  tier: 4
+  lost: false
+  formula: '2d6'
+  damageType: damage
+  predefinedEffects: ''
+type: Spell
+_stats:
+  compendiumSource: null
+  duplicateSource: null
+  exportSource: null
+  coreVersion: '13.348'
+  systemId: shadowdark
+  systemVersion: 3.6.1
+  createdTime: 1766798696478
+  modifiedTime: 1771295884104
+  lastModifiedBy: HP3Vba5udEHYm4dW
+ownership:
+  default: 0
+  lDQovrTY32fJwPBR: 3
+flags:
+  shadowdark-extras:
+    spellDamage:
+      enabled: false
+      damageType: Poison
+      damageRequirement: ''
+      damageRequirementFailAction: zero
+      formulaType: basic
+      numDice: 2
+      dieType: d6
+      bonus: 0
+      scaling: none
+      scalingDice: 0
+      formula: ''
+      tieredFormula: ''
+      effects: >-
+        [{"uuid":"Compendium.shadowdark.conditions.Item.Grd46xo0lgHLtfVe","duration":{}}]
+      effectsRequirement: ''
+      effectsApplyToTarget: true
+      criticalEffects: '[]'
+      effectSelectionMode: all
+      trackDuration: true
+      perTurnTrigger: start
+      perTurnDamage: ''
+      reapplyEffects: false
+    summoning:
+      enabled: false
+      profiles: '[]'
+      deleteAtExpiry: false
+    itemGive:
+      enabled: false
+      profiles: '[]'
+    targeting:
+      mode: template
+      template:
+        type: rect
+        size: 30
+        fillColor: '#4e9a06'
+        placement: choose
+        deleteMode: duration
+        hideOutline: false
+        excludeCaster: false
+        tokenMagic:
+          texture: ''
+          opacity: 0.5
+          preset: NOFX
+        deleteDuration: 5
+    templateEffects:
+      enabled: true
+      triggers:
+        onTurnStart: true
+        onEnter: false
+        onTurnEnd: true
+        onLeave: false
+      damage:
+        formula: 2d6
+        type: poison
+      save:
+        enabled: false
+        dc: '12'
+        ability: dex
+        halfOnSuccess: true
+      applyConfiguredEffects: false
+      runItemMacro: true
+    auraEffects:
+      enabled: false
+      attachTo: caster
+      radius: 30
+      triggers:
+        onEnter: false
+        onLeave: false
+        onSourceTurnStart: false
+        onSourceTurnEnd: false
+        onTargetTurnStart: false
+        onTargetTurnEnd: false
+      damage:
+        formula: ''
+        type: ''
+      damageTriggers:
+        onEnter: false
+        onLeave: false
+        onSourceTurnStart: false
+        onSourceTurnEnd: false
+        onTargetTurnStart: false
+        onTargetTurnEnd: false
+      save:
+        enabled: false
+        dc: 12
+        ability: con
+        halfOnSuccess: false
+      disposition: all
+      includeSelf: false
+      applyToOriginator: true
+      checkVisibility: false
+      animation:
+        enabled: true
+        style: circle
+        tint: '#4488ff'
+        scaleMultiplier: 1
+        opacity: 0.6
+      tokenFilters:
+        enabled: false
+        preset: ''
+      applyConfiguredEffects: false
+      effectsTriggers:
+        onEnter: false
+        onLeave: false
+        onSourceTurnStart: false
+        onSourceTurnEnd: false
+        onTargetTurnStart: false
+        onTargetTurnEnd: false
+      runItemMacro: false
+      macroTriggers:
+        onEnter: false
+        onLeave: false
+        onSourceTurnStart: false
+        onSourceTurnEnd: false
+        onTargetTurnStart: false
+        onTargetTurnEnd: false
+    alignment: ''
+  itemacro:
+    macro:
+      name: Cloud Kill
+      type: script
+      scope: global
+      command: |-
+        // Cloud Kill - Damage at Turn Start, Death at Turn End
+        if (args.trigger === "turnStart") {
+            // Deal poison damage at turn start
+            const roll = await new Roll("2d6").evaluate();
+            const damage = roll.total;
+            
+            const currentHp = actor?.system?.attributes?.hp?.value ?? 0;
+            const newHp = Math.max(0, currentHp - damage);
+            await actor.update({"system.attributes.hp.value": newHp});
+            
+            ChatMessage.create({
+                content: `<div class="shadowdark chat-card"><h3>☠️ Cloud Kill</h3><p><strong>${token.name}</strong> takes <strong>${damage}</strong> poison damage from the toxic cloud!</p></div>`
+            });
+        }
+
+        if (args.trigger === "turnEnd") {
+            // Kill LV 9 or less at turn end
+            const level = actor?.system?.level?.value ?? actor?.system?.level ?? 99;
+            
+            if (level <= 9 && (actor?.system?.attributes?.hp?.value ?? 0) > 0) {
+                await actor.update({"system.attributes.hp.value": 0});
+                
+                ChatMessage.create({
+                    content: `<div class="shadowdark chat-card"><h3>💀 Cloud Kill</h3><p><strong>${token.name}</strong> (Level ${level}) succumbs to the deadly poison!</p></div>`
+                });
+            }
+        }
+      author: lDQovrTY32fJwPBR
+      _id: null
+      img: icons/svg/dice-target.svg
+      folder: null
+      sort: 0
+      ownership:
+        default: 0
+      flags: {}
+      _stats:
+        coreVersion: '13.348'
+        systemId: shadowdark
+        systemVersion: 3.6.1
+        lastModifiedBy: null
+        compendiumSource: null
+        duplicateSource: null
+        exportSource: null
+_id: 2gWDcHTi27oFUvSB
+sort: 8000000
+_key: '!items!2gWDcHTi27oFUvSB'

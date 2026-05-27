@@ -1,0 +1,38 @@
+name: Weapon Damage Die D12
+img: icons/skills/ranged/arrows-flying-salvo-blue-light.webp
+transfer: false
+system:
+  changes:
+    - key: system.roll.attack.upgrade-damage-die.REPLACEME
+      value: 4
+      priority: 20
+      type: add
+      phase: initial
+_id: aJZnMOJKO66sdVke
+type: base
+disabled: false
+start: null
+duration:
+  value: null
+  units: seconds
+  expiry: null
+  expired: false
+description: ''
+origin: null
+tint: '#ffffff'
+statuses: []
+showIcon: 1
+folder: null
+sort: 0
+flags: {}
+_stats:
+  coreVersion: '14.361'
+  systemId: shadowdark
+  systemVersion: 4.0.4
+  createdTime: 1778965044907
+  modifiedTime: 1778965044907
+  lastModifiedBy: lgz0hScAHYW4VnVt
+  compendiumSource: null
+  duplicateSource: null
+  exportSource: null
+_key: '!effects!aJZnMOJKO66sdVke'

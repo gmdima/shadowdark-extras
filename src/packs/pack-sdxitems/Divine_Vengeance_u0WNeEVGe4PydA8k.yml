@@ -1,0 +1,72 @@
+effects: []
+folder: vmqOYZjyo8VunyyP
+img: icons/magic/light/explosion-beam-impact-silhouette.webp
+name: Divine Vengeance
+system:
+  description: >-
+    <p>You become the divine avatar of your god's wrath, wreathed in holy flames
+    or a black aura of smoldering corruption.</p><p>For the spell's duration,
+    you can fly a near distance, your weapons are magical, and you have a +4
+    bonus to your weapon attacks and
+    damage.</p><p>@UUID[Compendium.shadowdark.spell-effects.Item.o74l0TnCb0E2fAKp]{Spell
+    Effect: Divine Vengeance}</p>
+  source:
+    title: core-rules
+  class:
+    - Compendium.shadowdark.classes.Item.oZWzXx1WRLg286zD
+  duration:
+    type: rounds
+    value: '10'
+  range: self
+  tier: 5
+  lost: false
+  predefinedEffects: ''
+type: Spell
+_stats:
+  compendiumSource: null
+  duplicateSource: null
+  exportSource: null
+  coreVersion: '13.348'
+  systemId: shadowdark
+  systemVersion: 3.6.1
+  createdTime: 1766799195487
+  modifiedTime: 1771295884104
+  lastModifiedBy: HP3Vba5udEHYm4dW
+ownership:
+  default: 0
+  lDQovrTY32fJwPBR: 3
+flags:
+  shadowdark-extras:
+    spellDamage:
+      enabled: false
+      damageType: ''
+      damageRequirement: ''
+      damageRequirementFailAction: zero
+      formulaType: basic
+      numDice: 1
+      dieType: d6
+      bonus: 0
+      scaling: none
+      scalingDice: 0
+      formula: ''
+      tieredFormula: ''
+      effects: >-
+        [{"uuid":"Compendium.shadowdark.spell-effects.Item.o74l0TnCb0E2fAKp","duration":{}}]
+      effectsRequirement: ''
+      effectsApplyToTarget: false
+      criticalEffects: '[]'
+      effectSelectionMode: all
+      trackDuration: false
+      perTurnTrigger: start
+      perTurnDamage: ''
+      reapplyEffects: false
+    summoning:
+      enabled: false
+      profiles: '[]'
+      deleteAtExpiry: false
+    itemGive:
+      enabled: false
+      profiles: '[]'
+_id: u0WNeEVGe4PydA8k
+sort: 5500000
+_key: '!items!u0WNeEVGe4PydA8k'

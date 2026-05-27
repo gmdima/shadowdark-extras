@@ -1,4 +1,4 @@
-<form class="creature-types-form">
+<div class="creature-types-form">
     <section class="creature-types-content">
         {{! Header with action buttons }}
         <div class="header-actions flexrow" style="margin-bottom: 10px; gap: 5px;">
@@ -13,6 +13,10 @@
             <button type="button" data-action="reset-defaults"
                 title="{{localize 'SHADOWDARK_EXTRAS.creature_types.reset'}}">
                 <i class="fas fa-undo"></i> {{localize "SHADOWDARK_EXTRAS.creature_types.reset"}}
+            </button>
+            <button type="button" data-action="bake-types"
+                title="{{localize 'SHADOWDARK_EXTRAS.creature_types.bake'}}">
+                <i class="fas fa-wand-magic-sparkles"></i> {{localize "SHADOWDARK_EXTRAS.creature_types.bake"}}
             </button>
         </div>
 
@@ -47,4 +51,4 @@
             {{/if}}
         </div>
     </section>
-</form>
+</div>

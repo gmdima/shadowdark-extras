@@ -1,0 +1,69 @@
+effects: []
+folder: vmqOYZjyo8VunyyP
+img: icons/magic/perception/eye-slit-pink.webp
+name: Chant
+system:
+  description: >-
+    <p>You begin an unearthly chant that lifts your vision beyond its ordinary
+    limitations.</p><p>For the spell's duration, you can see all invisible and
+    hidden things as though they were plainly visible. This spell does not allow
+    you to see in a way that you could not normally, such as in darkness or
+    through
+    walls.</p><p>@UUID[Compendium.shadowdark.spell-effects.Item.ZLO5oq3gTJ762o3F]{Spell
+    Effect: Chant}</p>
+  source:
+    title: cursed-scroll-3
+  class:
+    - Compendium.shadowdark.classes.Item.xdjod5gPhNPIkLth
+  duration:
+    type: focus
+    value: 1
+  range: self
+  tier: 1
+  lost: false
+  predefinedEffects: ''
+type: Spell
+_stats:
+  compendiumSource: null
+  duplicateSource: null
+  exportSource: null
+  coreVersion: '13.348'
+  systemId: shadowdark
+  systemVersion: 3.6.1
+  createdTime: 1766715407404
+  modifiedTime: 1771295884104
+  lastModifiedBy: HP3Vba5udEHYm4dW
+ownership:
+  default: 0
+  lDQovrTY32fJwPBR: 3
+flags:
+  shadowdark-extras:
+    spellDamage:
+      enabled: false
+      damageType: ''
+      damageRequirement: ''
+      damageRequirementFailAction: zero
+      formulaType: basic
+      numDice: 1
+      dieType: d6
+      bonus: 0
+      scaling: none
+      scalingDice: 0
+      formula: ''
+      tieredFormula: ''
+      effects: >-
+        [{"uuid":"Compendium.shadowdark.spell-effects.Item.ZLO5oq3gTJ762o3F","duration":{}}]
+      effectsRequirement: ''
+      effectsApplyToTarget: false
+      criticalEffects: '[]'
+      effectSelectionMode: all
+    summoning:
+      enabled: false
+      profiles: '[]'
+      deleteAtExpiry: false
+    itemGive:
+      enabled: false
+      profiles: '[]'
+_id: Swqu9AG7X4GoxYPI
+sort: 6600000
+_key: '!items!Swqu9AG7X4GoxYPI'

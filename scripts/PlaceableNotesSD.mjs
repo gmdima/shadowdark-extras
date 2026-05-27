@@ -1,111 +1,78 @@
+import SheetLockConfig from "./SheetLockConfig.mjs";
+
 const MODULE_ID = "shadowdark-extras";
 
-const { DocumentSheetV2, HandlebarsApplicationMixin } = foundry.applications.api;
-
-class PlaceableNotesSD extends HandlebarsApplicationMixin(DocumentSheetV2) {
+/**
+ * Enhanced notes for any placeable object
+ */
+export default class PlaceableNotesSD extends foundry.applications.api.HandlebarsApplicationMixin(
+    foundry.applications.api.ApplicationV2
+) {
     constructor(object, options = {}) {
-        options.document = object;
         super(options);
-    }
-
-    get document() {
-        return this.options.document;
+        this.object = object;
     }
 
     static DEFAULT_OPTIONS = {
         id: "sdx-placeable-notes",
-        classes: ["shadowdark", "shadowdark-extras", "placeable-notes"],
         tag: "form",
+        classes: ["sdx-notes-app"],
         window: {
-            title: "Notes",
-            resizable: true
+            title: "SHADOWDARK_EXTRAS.placeable_notes.title",
+            resizable: true,
+            controls: []
         },
         position: {
-            width: 600,
-            height: 400
+            width: 500,
+            height: 450,
         },
-        form: {
-            submitOnChange: true,
-            closeOnSubmit: false
+        actions: {
+            save: PlaceableNotesSD._onSave,
+            cancel: (app) => app.close()
         }
     };
 
     static PARTS = {
-        form: {
-            template: `modules/${MODULE_ID}/templates/placeable-notes.hbs`
+        main: {
+            template: `modules/${MODULE_ID}/templates/placeable-notes.hbs`,
         }
     };
 
     async _prepareContext(options) {
-        const context = await super._prepareContext(options);
-        const rawNotes = this.document.getFlag(MODULE_ID, "notes") || "";
-
         return {
-            ...context,
-            notes: rawNotes,
-            enrichedNotes: await (foundry.applications?.ux?.TextEditor || TextEditor).enrichHTML(rawNotes, {
-                async: true,
-                secrets: this.document.isOwner,
-                relativeTo: this.document
-            }),
-            owner: game.user.id,
-            isGM: game.user.isGM
+            notes: this.object.getFlag(MODULE_ID, "notes") || "",
+            isGM: game.user.isGM,
+            objectName: this.object.name || this.object.id
         };
     }
 
-    // Compatibility for render calls in other files
-    render(force, options) {
-        if (force === true) return super.render(true, options);
-        return super.render(force, options);
+    static async _onSave(event, target) {
+        const formData = new FormDataExtended(this.element).object;
+        await this.object.setFlag(MODULE_ID, "notes", formData.notes);
+        ui.notifications.info("SHADOWDARK_EXTRAS.placeable_notes.saved", { localize: true });
+        this.close();
     }
 
+    // ============================================
+    // HEADER BUTTON HOOKS
+    // ============================================
 
-    static _onRenderTileHUD(hud, html, data) {
+    /**
+     * Add the notes button to supported application headers
+     */
+    static addHeaderButton(app, buttons) {
         if (!game.user.isGM) return;
 
-        const tile = hud.object;
-        if (!tile) return;
-
-        const notes = tile.document.getFlag(MODULE_ID, "notes");
-        const hasNotes = !!notes;
-
-        const title = game.i18n.localize("shadowdark-extras.notes.title") || "GM Notes";
-        const button = $(`
-            <div class="control-icon placeable-notes-hud ${hasNotes ? "active" : ""}" title="${title}">
-                <i class="${hasNotes ? "fas fa-sticky-note" : "far fa-sticky-note"}"></i>
-            </div>
-        `);
-
-        // Add click listener
-        button.click((event) => {
-            event.preventDefault();
-            event.stopPropagation(); // vital for HUDs
-            new PlaceableNotesSD(tile.document).render(true);
-        });
-
-        // Add to the HUD (left column usually has less stuff)
-        $(html).find(".col.left").append(button);
-    }
-
-    static _attachHeaderButton(app, buttons) {
-        if (!game.user.isGM) return;
-
-        // Handle different app structures (document or object or token)
         const object = app.document || app.object || app.token;
         if (!object) return;
 
-        // Supported types list
         const supportedTypes = ["AmbientLight", "AmbientSound", "Token", "Wall", "Tile", "Actor"];
-        const docName = object.documentName;
-
-        // Validation: must be a Document and one of the supported types
-        if (!docName || !supportedTypes.includes(docName)) return;
+        if (!object.documentName || !supportedTypes.includes(object.documentName)) return;
 
         const hasNotes = !!object.getFlag(MODULE_ID, "notes");
 
         const noteButton = {
-            label: "Notes", // Set label ensuring it appears in menus
-            tooltip: "Notes",
+            label: "SDX Notes",
             class: "open-sdx-notes",
             icon: hasNotes ? "fas fa-sticky-note" : "far fa-sticky-note",
             onclick: () => {
@@ -125,8 +92,11 @@ class PlaceableNotesSD extends HandlebarsApplicationMixin(DocumentSheetV2) {
         buttons.unshift(noteButton);
     }
 
-    static _updateHeaderButton(app, [elem]) {
+    static _updateHeaderButton(app, html) {
         if (!game.user.isGM) return;
+
+        // In V1 html is [elem], in V2 it is elem
+        const elem = Array.isArray(html) ? html[0] : html;
 
         const object = app.document || app.object || app.token;
         if (!object) return;
@@ -138,7 +108,7 @@ class PlaceableNotesSD extends HandlebarsApplicationMixin(DocumentSheetV2) {
             // Find the element
             // In V2, elem might be the HTML content, so we look up to window-app
             let appElem = elem instanceof HTMLElement ? elem.closest(".window-app") : null;
-            if (!appElem && app.element) appElem = app.element[0] || app.element;
+            if (!appElem && app.element) appElem = app.element instanceof HTMLElement ? app.element : (app.element[0] || app.element);
 
             if (!appElem) return;
 
@@ -151,8 +121,7 @@ class PlaceableNotesSD extends HandlebarsApplicationMixin(DocumentSheetV2) {
 
             if (!button) return;
 
-            const notes = object.getFlag(MODULE_ID, "notes");
-            const hasNotes = !!notes;
+            const hasNotes = !!object.getFlag(MODULE_ID, "notes");
 
             // Update icon
             const icon = button.querySelector("i");
@@ -166,7 +135,7 @@ class PlaceableNotesSD extends HandlebarsApplicationMixin(DocumentSheetV2) {
             } else {
                 button.style.color = "";
             }
-        }, 150);
+        }, 100);
     }
 }
 
@@ -175,19 +144,19 @@ export { PlaceableNotesSD };
 export function initPlaceableNotes() {
     if (!game.settings.get(MODULE_ID, "enablePlaceableNotes")) return;
 
-    // Monitor Application generally to catch everything, mirroring gm-notes approach
-    // Standard Hooks
-    Hooks.on("getApplicationHeaderButtons", PlaceableNotesSD._attachHeaderButton);
-    Hooks.on("renderApplication", PlaceableNotesSD._updateHeaderButton);
-    Hooks.on("renderTileHUD", PlaceableNotesSD._onRenderTileHUD);
+    // Hook into both V1 and V2 application header generation
+    Hooks.on("getAmbientLightConfigHeaderButtons", PlaceableNotesSD.addHeaderButton);
+    Hooks.on("getAmbientSoundConfigHeaderButtons", PlaceableNotesSD.addHeaderButton);
+    Hooks.on("getTokenConfigHeaderButtons", PlaceableNotesSD.addHeaderButton);
+    Hooks.on("getWallConfigHeaderButtons", PlaceableNotesSD.addHeaderButton);
+    Hooks.on("getTileConfigHeaderButtons", PlaceableNotesSD.addHeaderButton);
+    Hooks.on("getActorSheetHeaderButtons", PlaceableNotesSD.addHeaderButton);
 
-    // Replicate gm-notes "watchedHooksV2" hook just in case the user has a setup using it
-    Hooks.on("getHeaderControlsApplicationV2", PlaceableNotesSD._attachHeaderButton);
-
-    // Also explicit hooks for known configs to be safe if they don't bubble Application info correctly
-    const explicitApps = ["AmbientLightConfig", "AmbientSoundConfig", "TokenConfig", "WallConfig", "TileConfig", "ActorSheet"];
-    explicitApps.forEach(appName => {
-        Hooks.on(`get${appName}HeaderButtons`, PlaceableNotesSD._attachHeaderButton);
-        Hooks.on(`render${appName}`, PlaceableNotesSD._updateHeaderButton);
-    });
+    // Update buttons after render to reflect saved state
+    Hooks.on("renderAmbientLightConfig", PlaceableNotesSD._updateHeaderButton);
+    Hooks.on("renderAmbientSoundConfig", PlaceableNotesSD._updateHeaderButton);
+    Hooks.on("renderTokenConfig", PlaceableNotesSD._updateHeaderButton);
+    Hooks.on("renderWallConfig", PlaceableNotesSD._updateHeaderButton);
+    Hooks.on("renderTileConfig", PlaceableNotesSD._updateHeaderButton);
+    Hooks.on("renderActorSheet", PlaceableNotesSD._updateHeaderButton);
 }

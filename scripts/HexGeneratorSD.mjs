@@ -8,7 +8,7 @@
  * Uses the scene's current hex grid configuration (format via Hex Painter first).
  */
 
-import { setGenerating, isWaterEffect, isBwEffect, getCustomTilesByBiome, getCustomTileDimensions, getColoredTilesByBiome, getColoredTileDimensions, isTintEnabled, getActiveTileTab } from "./HexPainterSD.mjs";
+import { setGenerating, isWaterEffect, isBwEffect, getCustomTilesByBiome, getCustomTileDimensions, getCustomTilePlacement, getColoredTilesByBiome, getColoredTileDimensions, isTintEnabled, getActiveTileTab } from "./HexPainterSD.mjs";
 import { setHexTerrainBatch } from "./HexTooltipSD.mjs";
 
 const MODULE_ID = "shadowdark-extras";
@@ -510,15 +510,20 @@ export async function generateHexMap(params = {}) {
                 // Use the Foundry grid API to get the correct center for each cell,
                 // matching the hex painter's placement logic exactly (odd-q offset).
                 const center = canvas.grid.getCenterPoint({ i: r, j: c });
-                const px = center.x - tileW / 2;
-                const py = center.y - tileH / 2;
+                const placement = useCustom
+                    ? await getCustomTilePlacement(tilePath, center, 0)
+                    : null;
+                const currentTileW = placement?.width ?? tileW;
+                const currentTileH = placement?.height ?? tileH;
+                const px = placement?.x ?? (center.x - tileW / 2);
+                const py = placement?.y ?? (center.y - tileH / 2);
 
                 // Skip tiles that have NO overlap with the scene
                 // (tile is entirely to the left, right, above, or below the scene)
-                if (px + tileW <= 0) continue;  // Tile is entirely to the left
-                if (py + tileH <= 0) continue;  // Tile is entirely above
-                if (px >= sceneW + tileW) continue;  // Tile is entirely to the right (with buffer)
-                if (py >= sceneH + tileH) continue;  // Tile is entirely below (with buffer)
+                if (px + currentTileW <= 0) continue;  // Tile is entirely to the left
+                if (py + currentTileH <= 0) continue;  // Tile is entirely above
+                if (px >= sceneW + currentTileW) continue;  // Tile is entirely to the right (with buffer)
+                if (py >= sceneH + currentTileH) continue;  // Tile is entirely below (with buffer)
 
                 const isWater = biome === "water";
                 let tintData = undefined;
@@ -543,8 +548,8 @@ export async function generateHexMap(params = {}) {
                     },
                     x: px,
                     y: py,
-                    width: tileW,
-                    height: tileH,
+                    width: currentTileW,
+                    height: currentTileH,
                     sort: Math.floor(center.y),
                     flags: { [MODULE_ID]: { painted: true, biome: isWater ? "water" : undefined } }
                 });
@@ -671,8 +676,11 @@ export async function generateHexMap(params = {}) {
 
 /**
  * Remove all SDX-painted tiles from the current scene.
+ *
+ * @param {Object} [options]
+ * @param {boolean} [options.force=false] - Bypass confirmation dialog
  */
-export async function clearGeneratedTiles() {
+export async function clearGeneratedTiles({ force = false } = {}) {
     const scene = canvas.scene;
     if (!scene) return;
 
@@ -683,6 +691,15 @@ export async function clearGeneratedTiles() {
     if (!ids.length) {
         ui.notifications.info("SDX | No generated tiles to clear.");
         return;
+    }
+
+    if (!force) {
+        const proceed = await foundry.applications.api.DialogV2.confirm({
+            window: { title: "Clear Generated Tiles?" },
+            content: `<p>This will delete ${ids.length} generated hex tiles on the active scene. Proceed?</p>`,
+            classes: [MODULE_ID, "dialog-confirm-clear"]
+        });
+        if (!proceed) return { cancelled: true };
     }
 
     setGenerating(true);

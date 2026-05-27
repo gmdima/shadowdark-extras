@@ -167,6 +167,21 @@ function setupAAIntegration() {
 	
 	console.log("Shadowdark Extras | Initializing Automated Animations integration for Shadowdark");
 	
+	// Before a chat message is saved, inject data-item-id into the HTML so AA
+	// can find the item when it processes the message in createChatMessage.
+	// Shadowdark embeds the item as data-uuid="Actor.X.Item.Y" on anchor tags.
+	Hooks.on("preCreateChatMessage", (doc, data, options, userId) => {
+		const content = data.content ?? doc._source?.content ?? "";
+		if (!content || content.includes('data-item-id="')) return;
+		const uuidMatch = content.match(/data-uuid="Actor\.[^.]+\.Item\.([^"]+)"/);
+		if (!uuidMatch) return;
+		const itemId = uuidMatch[1];
+		// Prepend an invisible span that AA can detect via querySelector
+		doc.updateSource({
+			content: `<span class="sdx-aa-item-marker" data-item-id="${itemId}" style="display:none;"></span>${content}`
+		});
+	});
+
 	// Listen for chat messages to track item cards (pre-roll messages)
 	// We need to block animations on these since they're not actual rolls
 	Hooks.on("createChatMessage", (msg, options, userId) => {
@@ -244,54 +259,56 @@ function setupAAIntegration() {
 		// Get the chat message from the workflow - AA passes it as clonedData.workflow
 		const message = clonedData.workflow;
 		const shadowdarkFlags = message?.flags?.shadowdark;
-		
+
 		debug("Message flags:", shadowdarkFlags);
-		
-		// If no shadowdark flags, this might be an item card - check HTML for roll indicators
+
+		// ── No Shadowdark flags ────────────────────────────────────────────────
 		if (!shadowdarkFlags) {
-			// Check if the message content looks like an item card (has roll button)
 			const content = message?.content || "";
 			const hasRollButton = content.includes('data-action="roll-') || content.includes('chat-card-buttons');
 			if (hasRollButton) {
-				debug("Item card detected (no shadowdark flags, has roll button) - blocking animation");
+				debug("Item card (no flags, has roll button) - blocking");
 				clonedData.stopWorkflow = true;
 				return;
 			}
-			// No flags and no roll button - allow animation (might be a different system's message)
-			debug("No shadowdark flags and no roll button - allowing animation");
+			debug("No flags, no roll button - allowing");
 			return;
 		}
-		
-		// Check if this is an actual roll (has isRoll flag)
-		if (!shadowdarkFlags.isRoll) {
-			debug("Not a Shadowdark roll (isRoll flag missing) - blocking animation");
+
+		// ── SDX spell/roll path (isRoll explicitly set) ────────────────────────
+		if (shadowdarkFlags.isRoll === true) {
+			const rollResult = checkRollSuccess(shadowdarkFlags);
+			debug("Roll result:", rollResult);
+			if (!rollResult.shouldAnimate) {
+				debug("Stopping AA workflow - roll was not successful");
+				clonedData.stopWorkflow = true;
+				return;
+			}
+			clonedData.stopWorkflow = false;
+			if (rollResult.isCriticalSuccess) {
+				clonedData.isCritical = true;
+				debug("Animation will play - critical success");
+			} else {
+				debug("Animation will play - successful roll");
+			}
+			return;
+		}
+
+		// ── System-native messages (weapon attacks, healing, etc.) ─────────────
+		// These have flags.shadowdark but no isRoll — do NOT block them.
+		// They come from the Shadowdark system's own chat templates and were
+		// never meant to be intercepted here.  Let AA handle them normally.
+		// Only block if the HTML clearly marks it as a pre-roll item card.
+		const content = message?.content || "";
+		const hasRollButton = content.includes('data-action="roll-') || content.includes('chat-card-buttons');
+		if (hasRollButton) {
+			debug("Pre-roll item card (has roll button, no isRoll flag) - blocking");
 			clonedData.stopWorkflow = true;
 			return;
 		}
-		
-		// Now check the roll result
-		const rollResult = checkRollSuccess(shadowdarkFlags);
-		debug("Roll result:", rollResult);
-		
-		// If the roll should not animate, stop the workflow
-		if (!rollResult.shouldAnimate) {
-			debug("Stopping AA workflow - roll was not successful");
-			clonedData.stopWorkflow = true;
-			return;
-		}
-		
-		// Roll was successful - allow animation
-		// Explicitly ensure stopWorkflow is false to allow animation
+
+		debug("System-native message (weapon / heal / etc.) - allowing AA to handle");
 		clonedData.stopWorkflow = false;
-		
-		if (rollResult.isCriticalSuccess) {
-			clonedData.isCritical = true;
-			debug("Animation will play - critical success");
-		} else if (rollResult.isSuccess) {
-			debug("Animation will play - successful roll");
-		} else {
-			debug("Animation will play - roll marked as should animate");
-		}
 	});
 	
 	console.log("Shadowdark Extras | AA Integration ready - animations will only play on successful rolls");

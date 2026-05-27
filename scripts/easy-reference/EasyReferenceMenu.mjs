@@ -178,23 +178,24 @@ function showUuidInputDialog(title, docType, callback) {
 		</form>
 	`;
 
-    new Dialog({
-        title: title,
-        content: content,
-        buttons: {
-            insert: {
-                icon: '<i class="fas fa-check"></i>',
+    new foundry.applications.api.DialogV2({
+        window: { title },
+        content,
+        buttons: [
+            {
+                action: "insert",
+                icon: "fas fa-check",
                 label: game.i18n.localize("SHADOWDARK_EXTRAS.easy_reference.dialog.insert"),
-                callback: async (html) => {
-                    const uuid = html.find('input[name="uuid"]').val().trim();
-                    let displayName = html.find('input[name="displayName"]').val().trim();
+                default: true,
+                callback: async (event, button) => {
+                    const uuid = button.form.elements.uuid.value.trim();
+                    let displayName = button.form.elements.displayName.value.trim();
 
                     if (!uuid) {
                         ui.notifications.warn(game.i18n.localize("SHADOWDARK_EXTRAS.easy_reference.dialog.uuid_required"));
                         return;
                     }
 
-                    // Try to get the document name if no display name provided
                     if (!displayName) {
                         try {
                             const doc = await fromUuid(uuid);
@@ -207,13 +208,13 @@ function showUuidInputDialog(title, docType, callback) {
                     callback(uuid, displayName);
                 }
             },
-            cancel: {
-                icon: '<i class="fas fa-times"></i>',
+            {
+                action: "cancel",
+                icon: "fas fa-times",
                 label: game.i18n.localize("Cancel")
             }
-        },
-        default: "insert"
-    }).render(true);
+        ]
+    }).render({ force: true });
 }
 
 /**
@@ -247,27 +248,29 @@ function showCheckDialog(callback, preSelectedAbility = null) {
 		</form>
 	`;
 
-    new Dialog({
-        title: game.i18n.localize("SHADOWDARK_EXTRAS.easy_reference.checks.dialog_title"),
-        content: content,
-        buttons: {
-            insert: {
-                icon: '<i class="fas fa-check"></i>',
+    new foundry.applications.api.DialogV2({
+        window: { title: game.i18n.localize("SHADOWDARK_EXTRAS.easy_reference.checks.dialog_title") },
+        content,
+        buttons: [
+            {
+                action: "insert",
+                icon: "fas fa-check",
                 label: game.i18n.localize("SHADOWDARK_EXTRAS.easy_reference.dialog.insert"),
-                callback: (html) => {
-                    const type = html.find('select[name="type"]').val();
-                    const dc = html.find('input[name="dc"]').val();
-                    const ability = html.find('select[name="ability"]').val();
+                default: true,
+                callback: (event, button) => {
+                    const type = button.form.elements.type.value;
+                    const dc = button.form.elements.dc.value;
+                    const ability = button.form.elements.ability.value;
                     callback(dc, ability, type);
                 }
             },
-            cancel: {
-                icon: '<i class="fas fa-times"></i>',
+            {
+                action: "cancel",
+                icon: "fas fa-times",
                 label: game.i18n.localize("Cancel")
             }
-        },
-        default: "insert"
-    }).render(true);
+        ]
+    }).render({ force: true });
 }
 
 /**
@@ -284,25 +287,27 @@ function showDiceDialog(callback) {
 		</form>
 	`;
 
-    new Dialog({
-        title: game.i18n.localize("SHADOWDARK_EXTRAS.easy_reference.dice.dialog_title"),
-        content: content,
-        buttons: {
-            insert: {
-                icon: '<i class="fas fa-check"></i>',
+    new foundry.applications.api.DialogV2({
+        window: { title: game.i18n.localize("SHADOWDARK_EXTRAS.easy_reference.dice.dialog_title") },
+        content,
+        buttons: [
+            {
+                action: "insert",
+                icon: "fas fa-check",
                 label: game.i18n.localize("SHADOWDARK_EXTRAS.easy_reference.dialog.insert"),
-                callback: (html) => {
-                    const formula = html.find('input[name="formula"]').val().trim();
+                default: true,
+                callback: (event, button) => {
+                    const formula = button.form.elements.formula.value.trim();
                     if (formula) callback(formula);
                 }
             },
-            cancel: {
-                icon: '<i class="fas fa-times"></i>',
+            {
+                action: "cancel",
+                icon: "fas fa-times",
                 label: game.i18n.localize("Cancel")
             }
-        },
-        default: "insert"
-    }).render(true);
+        ]
+    }).render({ force: true });
 }
 
 /**

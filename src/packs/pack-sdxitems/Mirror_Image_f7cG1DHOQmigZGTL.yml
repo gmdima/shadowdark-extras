@@ -1,0 +1,113 @@
+effects: []
+folder: vmqOYZjyo8VunyyP
+img: icons/magic/defensive/illusion-evasion-echo-purple.webp
+name: Mirror Image
+system:
+  description: >-
+    <p>You create a number of illusory duplicates of yourself equal to half your
+    level rounded down (minimum 1). The duplicates surround you and mimic
+    you.</p><p>Each time a creature attacks you, the attack misses and causes
+    one of the duplicates to evaporate.</p><p>If all of the illusions have
+    disappeared, the spell
+    ends.</p><p>@UUID[Compendium.shadowdark.spell-effects.vI70AaskCqH9tKJ7]{Spell
+    Effect: Mirror Image}</p>
+  source:
+    title: core-rules
+  class:
+    - Compendium.shadowdark.classes.Item.035nuVkU9q2wtMPs
+  duration:
+    type: rounds
+    value: '5'
+  range: self
+  tier: 2
+  lost: false
+  magicItem: false
+  predefinedEffects: ''
+type: Spell
+_stats:
+  compendiumSource: null
+  duplicateSource: null
+  exportSource: null
+  coreVersion: '13.348'
+  systemId: shadowdark
+  systemVersion: 3.6.1
+  createdTime: 1767053169368
+  modifiedTime: 1771295884104
+  lastModifiedBy: HP3Vba5udEHYm4dW
+ownership:
+  default: 0
+  lDQovrTY32fJwPBR: 3
+flags:
+  shadowdark-extras:
+    spellDamage:
+      enabled: false
+      damageType: ''
+      damageRequirement: ''
+      damageRequirementFailAction: zero
+      formulaType: basic
+      numDice: 1
+      dieType: d6
+      bonus: 0
+      scaling: none
+      scalingDice: 0
+      formula: ''
+      tieredFormula: ''
+      effects: >-
+        [{"uuid":"Compendium.shadowdark.spell-effects.Item.vI70AaskCqH9tKJ7","duration":{}}]
+      effectsRequirement: ''
+      effectsApplyToTarget: false
+      trackDuration: true
+      criticalEffects: '[]'
+      effectSelectionMode: all
+      perTurnTrigger: start
+      perTurnDamage: ''
+      reapplyEffects: false
+    summoning:
+      enabled: false
+      profiles: '[]'
+      deleteAtExpiry: false
+    itemGive:
+      enabled: false
+      profiles: '[]'
+    targeting:
+      mode: targeted
+      template:
+        type: circle
+        size: 30
+        fillColor: '#4e9a06'
+        placement: choose
+        deleteMode: none
+        hideOutline: false
+        excludeCaster: false
+        tokenMagic:
+          texture: ''
+          opacity: 0.5
+          preset: NOFX
+    itemMacro:
+      runAsGm: false
+      triggers: []
+  itemacro:
+    macro:
+      name: Mirror Image
+      type: script
+      scope: global
+      command: ''
+      author: lDQovrTY32fJwPBR
+      _id: null
+      img: icons/svg/dice-target.svg
+      folder: null
+      sort: 0
+      ownership:
+        default: 0
+      flags: {}
+      _stats:
+        coreVersion: '13.348'
+        systemId: shadowdark
+        systemVersion: 3.6.1
+        lastModifiedBy: null
+        compendiumSource: null
+        duplicateSource: null
+        exportSource: null
+_id: f7cG1DHOQmigZGTL
+sort: 3100000
+_key: '!items!f7cG1DHOQmigZGTL'

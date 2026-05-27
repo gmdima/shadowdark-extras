@@ -73,27 +73,31 @@ function showToastGlobal(message, type) {
     }, 3000);
 }
 
+const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
+
 /**
  * Full-screen Carousing Overlay Application
  */
-export default class CarousingOverlaySD extends Application {
-    constructor(options = {}) {
-        super(options);
-    }
-
-    static get defaultOptions() {
-        return foundry.utils.mergeObject(super.defaultOptions, {
-            id: "sdx-carousing-overlay",
-            classes: ["sdx-carousing-overlay-app"],
-            template: `modules/${MODULE_ID}/templates/carousing-overlay.hbs`,
-            width: "100%",
-            height: "100%",
-            popOut: true,
+export default class CarousingOverlaySD extends HandlebarsApplicationMixin(ApplicationV2) {
+    static DEFAULT_OPTIONS = {
+        id: "sdx-carousing-overlay",
+        classes: ["sdx-carousing-overlay-app"],
+        position: {
+            width: window.innerWidth,
+            height: window.innerHeight
+        },
+        window: {
+            title: "SHADOWDARK_EXTRAS.carousing.title",
             resizable: false,
-            minimizable: false,
-            title: game.i18n.localize("SHADOWDARK_EXTRAS.carousing.title")
-        });
-    }
+            minimizable: false
+        }
+    };
+
+    static PARTS = {
+        content: {
+            template: `modules/${MODULE_ID}/templates/carousing-overlay.hbs`
+        }
+    };
 
     /**
      * Get the singleton instance
@@ -115,7 +119,7 @@ export default class CarousingOverlaySD extends Application {
         await instance._autoAssignCharacter();
 
         // Render the overlay
-        instance.render(true);
+        instance.render({ force: true });
         return instance;
     }
 
@@ -133,7 +137,7 @@ export default class CarousingOverlaySD extends Application {
      */
     static refresh() {
         if (_overlayInstance?.rendered) {
-            _overlayInstance.render(false);
+            _overlayInstance.render();
         }
     }
 
@@ -160,7 +164,7 @@ export default class CarousingOverlaySD extends Application {
     /**
      * Get data for template
      */
-    async getData() {
+    async _prepareContext(options) {
         // GM Cleanup: Remove offline players from carousing state
         if (game.user.isGM) {
             await pruneOfflineCarousingData();
@@ -326,24 +330,29 @@ export default class CarousingOverlaySD extends Application {
     /**
      * Activate listeners
      */
-    activateListeners(html) {
-        super.activateListeners(html);
+    _onRender(context, options) {
+        const html = this.element;
+        if (!html) return;
+
+        const on = (selector, event, handler) => {
+            html.querySelectorAll(selector).forEach(el => el.addEventListener(event, handler));
+        };
 
         // Close button
-        html.find('[data-action="close-overlay"]').click((e) => {
+        on('[data-action="close-overlay"]', "click", (e) => {
             e.preventDefault();
             this.close();
         });
 
         // GM: Table selection
-        html.find('[data-action="select-table"]').change(async (event) => {
+        on('[data-action="select-table"]', "change", async (event) => {
             if (!game.user.isGM) return;
             const tableId = event.target.value || "default";
             await setCarousingTable(tableId);
         });
 
         // GM: Tier selection
-        html.find('[data-action="select-tier"]').change(async (event) => {
+        on('[data-action="select-tier"]', "change", async (event) => {
             if (!game.user.isGM) return;
             const val = event.target.value;
             const tierIndex = val === "" ? null : parseInt(val);
@@ -351,24 +360,23 @@ export default class CarousingOverlaySD extends Application {
         });
 
         // GM: Roll button
-        html.find('[data-action="roll-carousing"]').click(async (event) => {
+        on('[data-action="roll-carousing"]', "click", async (event) => {
             event.preventDefault();
             if (!game.user.isGM) return;
             await executeCarousingRolls();
         });
 
         // GM: Reset button
-        html.find('[data-action="reset-carousing"]').click(async (event) => {
+        on('[data-action="reset-carousing"]', "click", async (event) => {
             event.preventDefault();
             if (!game.user.isGM) return;
             await resetCarousingSession();
         });
 
         // Player: Confirm button
-        html.find('[data-action="confirm-carousing"]').click(async (event) => {
+        on('[data-action="confirm-carousing"]', "click", async (event) => {
             event.preventDefault();
-            const pId = $(event.currentTarget).data('participant-id');
-            // If GM managed, GM can confirm. If user managed, only user can confirm.
+            const pId = event.currentTarget.dataset.participantId;
             const p = getCarousingParticipants().find(x => x.participantId === pId);
             if (!p) return;
             if (p.isGmManaged && !game.user.isGM) return;
@@ -377,9 +385,9 @@ export default class CarousingOverlaySD extends Application {
         });
 
         // Player: Unconfirm button
-        html.find('[data-action="unconfirm-carousing"]').click(async (event) => {
+        on('[data-action="unconfirm-carousing"]', "click", async (event) => {
             event.preventDefault();
-            const pId = $(event.currentTarget).data('participant-id');
+            const pId = event.currentTarget.dataset.participantId;
             const p = getCarousingParticipants().find(x => x.participantId === pId);
             if (!p) return;
             if (p.isGmManaged && !game.user.isGM) return;
@@ -387,35 +395,33 @@ export default class CarousingOverlaySD extends Application {
             await setPlayerConfirmation(pId, false);
         });
 
-
         // Player: Change character button
-        html.find('[data-action="change-character"]').click(async (event) => {
+        on('[data-action="change-character"]', "click", async (event) => {
             event.preventDefault();
-            const pId = $(event.currentTarget).data('participant-id');
-            // For non-GM players, they can only change their own
+            const pId = event.currentTarget.dataset.participantId;
             if (!game.user.isGM && pId !== game.user.id) return;
             await this._showCharacterSelectDialog(pId);
         });
 
         // Flip card button
-        html.find('[data-action="flip-card"]').click((event) => {
+        on('[data-action="flip-card"]', "click", (event) => {
             event.preventDefault();
-            const card = $(event.currentTarget).closest('.sdx-carousing-overlay-card');
-            card.toggleClass('flipped');
+            const card = event.currentTarget.closest('.sdx-carousing-overlay-card');
+            card?.classList.toggle('flipped');
         });
 
         // Player: Clear drop button
-        html.find('[data-action="clear-carousing-drop"]').click(async (event) => {
+        on('[data-action="clear-carousing-drop"]', "click", async (event) => {
             event.preventDefault();
-            const pId = $(event.currentTarget).data('participant-id');
+            const pId = event.currentTarget.dataset.participantId;
             if (!game.user.isGM && pId !== game.user.id) return;
             await setCarousingDrop(pId, null);
         });
 
         // Result actions (benefit/mishap)
-        html.find('[data-action="add-benefit"]').click(async (event) => {
+        on('[data-action="add-benefit"]', "click", async (event) => {
             event.preventDefault();
-            const pId = $(event.currentTarget).data('participant-id');
+            const pId = event.currentTarget.dataset.participantId;
             const result = await addCarousingResult(pId, "benefit");
             if (result) {
                 const p = getCarousingParticipants().find(x => x.participantId === pId);
@@ -423,9 +429,9 @@ export default class CarousingOverlaySD extends Application {
             }
         });
 
-        html.find('[data-action="add-mishap"]').click(async (event) => {
+        on('[data-action="add-mishap"]', "click", async (event) => {
             event.preventDefault();
-            const pId = $(event.currentTarget).data('participant-id');
+            const pId = event.currentTarget.dataset.participantId;
             const result = await addCarousingResult(pId, "mishap");
             if (result) {
                 const p = getCarousingParticipants().find(x => x.participantId === pId);
@@ -434,24 +440,24 @@ export default class CarousingOverlaySD extends Application {
         });
 
         // GM: Add/Remove Offline Actor
-        html.find('[data-action="add-gm-actor"]').click(async (event) => {
+        on('[data-action="add-gm-actor"]', "click", async (event) => {
             event.preventDefault();
-            const actorId = $(event.currentTarget).data('actor-id');
+            const actorId = event.currentTarget.dataset.actorId;
             await addGmParticipant(actorId);
         });
 
-        html.find('[data-action="remove-gm-participant"]').click(async (event) => {
+        on('[data-action="remove-gm-participant"]', "click", async (event) => {
             event.preventDefault();
-            const actorId = $(event.currentTarget).data('actor-id');
+            const actorId = event.currentTarget.dataset.actorId;
             await removeGmParticipant(actorId);
         });
 
-
         // Remove benefit/mishap
-        html.find('[data-action="remove-benefit"]').click(async (event) => {
+        on('[data-action="remove-benefit"]', "click", async (event) => {
             event.preventDefault();
-            const pId = $(event.currentTarget).closest('.sdx-results-section').data('player-id');
-            const index = parseInt($(event.currentTarget).data('index'));
+            const section = event.currentTarget.closest('.sdx-results-section');
+            const pId = section?.dataset.playerId;
+            const index = parseInt(event.currentTarget.dataset.index);
             const success = await removeCarousingResult(pId, "benefit", index);
             if (success) {
                 const p = getCarousingParticipants().find(x => x.participantId === pId);
@@ -459,10 +465,11 @@ export default class CarousingOverlaySD extends Application {
             }
         });
 
-        html.find('[data-action="remove-mishap"]').click(async (event) => {
+        on('[data-action="remove-mishap"]', "click", async (event) => {
             event.preventDefault();
-            const pId = $(event.currentTarget).closest('.sdx-results-section').data('player-id');
-            const index = parseInt($(event.currentTarget).data('index'));
+            const section = event.currentTarget.closest('.sdx-results-section');
+            const pId = section?.dataset.playerId;
+            const index = parseInt(event.currentTarget.dataset.index);
             const success = await removeCarousingResult(pId, "mishap", index);
             if (success) {
                 const p = getCarousingParticipants().find(x => x.participantId === pId);
@@ -470,18 +477,9 @@ export default class CarousingOverlaySD extends Application {
             }
         });
 
-
-        // Click outside to close (on the backdrop)
-        html.find('.sdx-carousing-overlay-backdrop').click((e) => {
-            if (e.target === e.currentTarget) {
-                // Only close if clicking directly on backdrop, not children
-                // Disabled for now - user must use X button
-            }
-        });
-
         // Modifiers
-        html.find('.sdx-modifier-input').on('change', this._onModifierChange.bind(this));
-        html.find('[data-action="toggle-modifiers"]').click(this._onToggleModifiers.bind(this));
+        on('.sdx-modifier-input', "change", this._onModifierChange.bind(this));
+        on('[data-action="toggle-modifiers"]', "click", this._onToggleModifiers.bind(this));
     }
 
     async _onModifierChange(event) {
@@ -563,29 +561,29 @@ export default class CarousingOverlaySD extends Application {
             </div>
         `;
 
-        const dialog = new Dialog({
-            title: game.i18n.localize("SHADOWDARK_EXTRAS.carousing.change_character"),
-            content: content,
-            buttons: {
-                cancel: {
-                    icon: '<i class="fas fa-times"></i>',
-                    label: game.i18n.localize("SHADOWDARK_EXTRAS.dialog.cancel")
+        const dialog = new foundry.applications.api.DialogV2({
+            window: { title: game.i18n.localize("SHADOWDARK_EXTRAS.carousing.change_character") },
+            classes: ["sdx-carousing-character-dialog"],
+            position: { width: 400 },
+            content,
+            buttons: [
+                {
+                    action: "cancel",
+                    icon: "fas fa-times",
+                    label: game.i18n.localize("SHADOWDARK_EXTRAS.dialog.cancel"),
+                    default: true
                 }
-            },
-            render: (html) => {
-                html.find('.sdx-character-option').click(async (e) => {
-                    const actorId = $(e.currentTarget).data('actor-id');
+            ]
+        });
+        dialog.render({ force: true }).then(() => {
+            dialog.element.querySelectorAll('.sdx-character-option').forEach(opt => {
+                opt.addEventListener("click", async () => {
+                    const actorId = opt.dataset.actorId;
                     await setCarousingDrop(userId, actorId);
-                    // Close the dialog properly
                     dialog.close();
                 });
-            },
-            default: "cancel"
-        }, {
-            classes: ["sdx-carousing-character-dialog"],
-            width: 400
+            });
         });
-        dialog.render(true);
     }
 
     /**

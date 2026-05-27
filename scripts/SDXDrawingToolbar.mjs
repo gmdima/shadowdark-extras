@@ -72,6 +72,12 @@ export class SDXDrawingToolbar {
         this._visible = false;
         this._dragOffset = null;
         this._isDragging = false;
+
+        // Reflect the tool's active state on the draw-toggle button live —
+        // covers both toolbar-click and hotkey-hold activation paths.
+        Hooks.on("sdxDrawingActiveChanged", (active) => {
+            this._el?.querySelector('[data-action="drawToggle"]')?.classList.toggle("sdx-dt-active", active);
+        });
     }
 
     get visible() { return this._visible; }
@@ -155,6 +161,23 @@ export class SDXDrawingToolbar {
 
         let h = `<div class="sdx-dt-handle" title="Drag to move"><i class="fa-solid fa-grip-lines"></i></div>`;
 
+        // Help hint — shows the current drawing hotkey so users know how to
+        // actually draw (toolbar configures *what*; the hotkey triggers *when*).
+        const hotkeyLabel = this._getDrawHotkeyLabel();
+        if (hotkeyLabel) {
+            h += `<div class="sdx-dt-hint" title="Bound in Foundry's Configure Controls under '${MODULE_ID}'.">`;
+            h += `<i class="fa-solid fa-keyboard"></i> Hold <kbd>${hotkeyLabel}</kbd> + drag<br>or click pencil ↓`;
+            h += `</div>`;
+        }
+
+        // Draw toggle — click to lock draw mode on (no hotkey hold required).
+        // Active state is reflected by .sdx-dt-active and synced in _syncAllButtons.
+        const drawActive = tool.active ? " sdx-dt-active" : "";
+        h += `<div class="sdx-dt-group">`;
+        h += `<div class="sdx-dt-group-label">Draw</div>`;
+        h += `<button class="sdx-dt-btn${drawActive}" data-action="drawToggle" title="Toggle draw mode (no hotkey hold needed)"><i class="fa-solid fa-pencil"></i></button>`;
+        h += `</div>`;
+
         // Drawing modes
         h += this._groupHtml("Mode", DRAWING_MODES, "mode", st.drawingMode);
 
@@ -214,10 +237,37 @@ export class SDXDrawingToolbar {
         return h;
     }
 
+    /**
+     * Returns a human-readable label for the bound drawing hotkey
+     * (e.g. "L", "Space", "Shift+D"). Returns "" if no key is bound or if
+     * the hotkey-enabled setting is off.
+     */
+    _getDrawHotkeyLabel() {
+        try {
+            if (!game.settings.get(MODULE_ID, "drawing.hotkeyEnabled")) return "";
+        } catch {}
+        const bindings = game.keybindings?.bindings?.get(`${MODULE_ID}.drawHotkey`) || [];
+        const b = bindings[0];
+        if (!b?.key) return "";
+        // Humanize key code: "KeyL" -> "L", "Space" -> "Space", "ShiftLeft" -> "Shift"
+        let label = b.key.replace(/^Key/, "").replace(/^Digit/, "").replace(/Left$|Right$/, "");
+        // Prepend modifiers if any
+        const mods = (b.modifiers || []).map(m => m.replace(/^Control$/, "Ctrl"));
+        return [...mods, label].join("+");
+    }
+
     // ── Button handling ─────────────────────────────────────────
     _onButton(action, value) {
         const tool = sdxDrawingTool;
         switch (action) {
+            case "drawToggle": {
+                // Toggle draw mode without holding the hotkey. While active,
+                // the canvas accepts drawing strokes from click+drag directly.
+                if (tool.active) tool.deactivate(false);
+                else tool.activate(false);
+                this._el?.querySelector(`[data-action="drawToggle"]`)?.classList.toggle("sdx-dt-active", tool.active);
+                break;
+            }
             case "mode":
                 tool.setDrawingMode(value);
                 this._setRadio("mode", value);
@@ -538,6 +588,8 @@ export class SDXDrawingToolbar {
         this._el?.querySelector('[data-action="timedErase"]')?.classList.toggle("sdx-dt-active", st.timedEraseEnabled);
         // Sync permanent mode
         this._el?.querySelector('[data-action="permanentMode"]')?.classList.toggle("sdx-dt-active", st.permanentMode);
+        // Sync draw-mode toggle with the tool's live active state
+        this._el?.querySelector('[data-action="drawToggle"]')?.classList.toggle("sdx-dt-active", sdxDrawingTool.active);
     }
 
     // ── Drawing Inspector panel ──────────────────────────────────

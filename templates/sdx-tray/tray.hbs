@@ -55,8 +55,8 @@
                 <i class="far fa-globe"></i>
             </button>
             <button class="tray-handle-button-tool{{#unless isHexagonal}} disabled{{/unless}}"
-                data-action="sdx-hex-tooltip" title="Hexplorer">
-                <i class="fa-solid fa-hexagon-image"></i>
+                data-action="sdx-hex-tooltip" title="Hex Tooltip / Hexplorer">
+                <i class="fa-solid fa-circle-info"></i>
             </button>
             {{#if isGM}}
             <button class="tray-handle-button-tool{{#if hexFogActive}} active{{/if}}" data-action="sdx-hex-fog"
@@ -891,28 +891,51 @@
                     </div>
 
                     <!-- Custom Tiles Grid -->
-                    <div class="hex-tile-grid {{#unless (eq activeTileTab 'custom')}}hidden{{/unless}}"
+                    <div class="hex-tile-custom-panel {{#unless (eq activeTileTab 'custom')}}hidden{{/unless}}"
                         data-tile-panel="custom">
-                        {{#if hexCustomTiles.length}}
-                        {{#each hexCustomTiles}}
-                        <div class="hex-tile-thumb {{#if this.active}}active{{/if}}" data-tile="{{this.path}}"
-                            title="{{this.label}}{{#if this.biome}} ({{this.biome}}){{/if}}">
-                            <img src="{{this.src}}" alt="{{this.label}}" loading="lazy" />
-                            <span class="hex-tile-label">{{this.label}}</span>
-                            {{#if this.biome}}<span class="hex-tile-biome">{{this.biome}}</span>{{/if}}
+                        <div class="hex-custom-breadcrumb">
+                            {{#each customNavBreadcrumb}}
+                            <button type="button" class="hex-custom-breadcrumb-segment"
+                                data-segments="{{#each this.segments}}{{this}}/{{/each}}">{{this.label}}</button>
+                            {{#unless @last}}<span class="hex-custom-breadcrumb-sep">&rsaquo;</span>{{/unless}}
+                            {{/each}}
+                            {{#if customNavPath.length}}
+                            <button type="button" class="hex-custom-up-btn" title="Back to parent folder">
+                                <i class="fas fa-arrow-left"></i>
+                            </button>
+                            {{/if}}
+                            <button type="button" class="hex-custom-reload-btn" title="Re-scan Data/hexes/">
+                                <i class="fas fa-rotate"></i>
+                            </button>
                         </div>
-                        {{/each}}
-                        {{else}}
-                        <div class="hex-no-custom-tiles">
-                            <p><i class="fas fa-folder-open"></i></p>
-                            <p>No custom tiles found</p>
-                            <p class="hex-custom-hint">Add .png or .webp files to:<br><code>Data/hexes/</code></p>
-                            <p class="hex-custom-hint">Biome folders:<br>
-                                <code>water</code>, <code>vegetation</code>, <code>mountains</code>,<br>
-                                <code>desert</code>, <code>swamp</code>, <code>badlands</code>
-                            </p>
+                        {{#if customNavChips.length}}
+                        <div class="hex-custom-chip-row">
+                            {{#each customNavChips}}
+                            <button type="button" class="hex-custom-chip"
+                                data-chip-name="{{this.name}}">{{this.label}} <span class="hex-custom-chip-count">{{this.count}}</span></button>
+                            {{/each}}
                         </div>
                         {{/if}}
+                        <div class="hex-tile-grid">
+                            {{#if hexCustomTiles.length}}
+                            {{#each hexCustomTiles}}
+                            <div class="hex-tile-thumb {{#if this.active}}active{{/if}}" data-tile="{{this.path}}"
+                                title="{{this.label}}{{#if this.biome}} ({{this.biome}}){{/if}}">
+                                <img src="{{this.src}}" alt="{{this.label}}" loading="lazy" />
+                                <span class="hex-tile-label">{{this.label}}</span>
+                                {{#if this.biome}}<span class="hex-tile-biome">{{this.biome}}</span>{{/if}}
+                            </div>
+                            {{/each}}
+                            {{else}}
+                            {{#unless customNavChips.length}}
+                            <div class="hex-no-custom-tiles">
+                                <p><i class="fas fa-folder-open"></i></p>
+                                <p>No tiles found.</p>
+                                <p class="hex-custom-hint">Drop .png or .webp files into<br><code>Data/hexes/</code> (any subfolder depth).</p>
+                            </div>
+                            {{/unless}}
+                            {{/if}}
+                        </div>
                     </div>
 
                     <!-- Symbol Tiles Grid (folder-based) -->
@@ -1080,6 +1103,30 @@
                             <input type="range" class="dgen-clutter" min="0" max="10"
                                 value="{{generatorSettings.clutter}}" step="1">
                             <span class="dgen-value">{{generatorSettings.clutter}}</span>
+                        </div>
+                    </div>
+
+                    <div class="dgen-section">
+                        <div class="dgen-section-title">Multi-Level</div>
+                        <div class="dgen-row">
+                            <label>Levels</label>
+                            <input type="range" class="dgen-levels" min="1" max="8" value="1" step="1">
+                            <span class="dgen-value">1</span>
+                        </div>
+                        <div class="dgen-row">
+                            <label>Links/Floor</label>
+                            <input type="range" class="dgen-links" min="1" max="4" value="1" step="1">
+                            <span class="dgen-value">1</span>
+                        </div>
+                        <div class="dgen-row">
+                            <label>Variation</label>
+                            <input type="range" class="dgen-variation" min="0" max="1" value="1" step="0.1">
+                            <span class="dgen-value">1</span>
+                        </div>
+                        <div class="dgen-row">
+                            <label>Variety</label>
+                            <input type="range" class="dgen-variety" min="0" max="1" value="0.4" step="0.1">
+                            <span class="dgen-value">0.4</span>
                         </div>
                     </div>
 
@@ -1279,6 +1326,16 @@
                 <div class="hex-search-section">
                     <input type="text" class="decor-search-input" placeholder="Search decor tiles..."
                         value="{{decorSearchFilter}}" />
+                </div>
+
+                <div class="decor-import-section">
+                    <button type="button" class="decor-import-btn">
+                        <i class="fas fa-folder-open"></i> Add Decor Asset
+                    </button>
+                    <button type="button" class="decor-ddpack-btn">
+                        <i class="fas fa-cubes"></i> Dungeondraft Packs
+                    </button>
+                    <span class="decor-import-hint">Add files, folders, URLs, or Dungeondraft object packs</span>
                 </div>
 
                 <!-- POI info -->

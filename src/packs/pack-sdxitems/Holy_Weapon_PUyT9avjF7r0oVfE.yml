@@ -1,0 +1,210 @@
+effects: []
+folder: vmqOYZjyo8VunyyP
+img: icons/weapons/swords/sword-gold-holy.webp
+name: Holy Weapon
+system:
+  description: >-
+    <p>One weapon you touch is imbued with a sacred blessing.</p><p>The weapon
+    becomes magical and has +1 to attack and damage rolls for the
+    duration.</p><p>@UUID[Compendium.shadowdark.spell-effects.r2JNgS2474vuq9oy]{Spell
+    Effect: Holy Weapon}</p>
+  source:
+    title: core-rules
+  class:
+    - Compendium.shadowdark.classes.Item.oZWzXx1WRLg286zD
+  duration:
+    type: rounds
+    value: '5'
+  range: close
+  tier: 1
+  lost: false
+  magicItem: false
+  predefinedEffects: ''
+type: Spell
+_stats:
+  compendiumSource: null
+  duplicateSource: null
+  exportSource: null
+  coreVersion: '13.348'
+  systemId: shadowdark
+  systemVersion: 3.6.1
+  createdTime: 1766982452888
+  modifiedTime: 1771295884104
+  lastModifiedBy: HP3Vba5udEHYm4dW
+ownership:
+  default: 0
+  lDQovrTY32fJwPBR: 3
+flags:
+  shadowdark-extras:
+    spellDamage:
+      enabled: false
+      damageType: ''
+      damageRequirement: ''
+      damageRequirementFailAction: zero
+      formulaType: basic
+      numDice: 1
+      dieType: d6
+      bonus: 0
+      scaling: none
+      scalingDice: 0
+      formula: ''
+      tieredFormula: ''
+      effects: '[]'
+      effectsRequirement: ''
+      effectsApplyToTarget: true
+      criticalEffects: '[]'
+      effectSelectionMode: all
+      trackDuration: true
+      perTurnTrigger: start
+      perTurnDamage: ''
+      reapplyEffects: false
+    summoning:
+      enabled: false
+      profiles: '[]'
+      deleteAtExpiry: false
+    itemGive:
+      enabled: false
+      profiles: '[]'
+    targeting:
+      mode: targeted
+      template:
+        type: circle
+        size: 30
+        fillColor: '#4e9a06'
+        placement: choose
+        deleteMode: none
+        hideOutline: false
+        excludeCaster: false
+        tokenMagic:
+          texture: ''
+          opacity: 0.5
+          preset: NOFX
+    itemMacro:
+      runAsGm: false
+      triggers:
+        - onSuccess
+    templateEffects:
+      enabled: false
+      triggers:
+        onEnter: false
+        onTurnStart: false
+        onTurnEnd: false
+        onLeave: false
+      damage:
+        formula: ''
+        type: ''
+      save:
+        enabled: false
+        dc: '12'
+        ability: dex
+        halfOnSuccess: true
+      applyConfiguredEffects: false
+      runItemMacro: false
+    auraEffects:
+      enabled: false
+      attachTo: caster
+      radius: 30
+      triggers:
+        onEnter: false
+        onLeave: false
+        onSourceTurnStart: false
+        onSourceTurnEnd: false
+        onTargetTurnStart: false
+        onTargetTurnEnd: false
+      damage:
+        formula: ''
+        type: ''
+      damageTriggers:
+        onEnter: false
+        onLeave: false
+        onSourceTurnStart: false
+        onSourceTurnEnd: false
+        onTargetTurnStart: false
+        onTargetTurnEnd: false
+      save:
+        enabled: false
+        dc: 12
+        ability: con
+        halfOnSuccess: false
+      disposition: all
+      includeSelf: false
+      applyToOriginator: true
+      checkVisibility: false
+      animation:
+        enabled: true
+        style: circle
+        tint: '#4488ff'
+        scaleMultiplier: 1
+        opacity: 0.6
+      tokenFilters:
+        enabled: false
+        preset: ''
+      applyConfiguredEffects: false
+      effectsTriggers:
+        onEnter: false
+        onLeave: false
+        onSourceTurnStart: false
+        onSourceTurnEnd: false
+        onTargetTurnStart: false
+        onTargetTurnEnd: false
+      runItemMacro: false
+      macroTriggers:
+        onEnter: false
+        onLeave: false
+        onSourceTurnStart: false
+        onSourceTurnEnd: false
+        onTargetTurnStart: false
+        onTargetTurnEnd: false
+    alignment: ''
+  itemacro:
+    macro:
+      name: Holy Weapon
+      type: script
+      scope: global
+      command: >-
+        /* Holy Weapon Macro */
+
+        const targetToken = (typeof target !== "undefined" && target) ? target :
+        Array.from(game.user.targets)[0];
+
+
+        if (!targetToken) { 
+            ui.notifications.warn("To cast Holy Weapon, you must target a creature!"); 
+            return; 
+        }
+
+
+        const sdxModule = game.modules.get("shadowdark-extras");
+
+        if (sdxModule.api.showHolyWeaponDialog) {
+            // Get critical success status from the spell cast context
+            const isCritical = args.isCritical ?? false;
+            
+            await sdxModule.api.showHolyWeaponDialog(
+                actor,                      // casterActor
+                item,                       // casterItem (the Holy Weapon spell)
+                targetToken.actor,          // targetActor
+                targetToken,                // targetToken
+                args.originatingUserId,     // originatingUserId (for GM routing)
+                isCritical                  // isCritical - grants +2/+2 on critical success
+            );
+        }
+      author: lDQovrTY32fJwPBR
+      _id: null
+      img: icons/svg/dice-target.svg
+      folder: null
+      sort: 0
+      ownership:
+        default: 0
+      flags: {}
+      _stats:
+        coreVersion: '13.348'
+        systemId: shadowdark
+        systemVersion: 3.6.1
+        lastModifiedBy: null
+        compendiumSource: null
+        duplicateSource: null
+        exportSource: null
+_id: PUyT9avjF7r0oVfE
+sort: 5400000
+_key: '!items!PUyT9avjF7r0oVfE'

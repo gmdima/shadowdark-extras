@@ -1,0 +1,489 @@
+name: Graveyard Hooks
+formula: 1d20
+results:
+  - type: text
+    weight: 1
+    range:
+      - 1
+      - 1
+    drawn: false
+    description: >-
+      A stonemason is frantically trying to re-carve a name on a headstone
+      before the sun sets. He keeps getting it wrong. The name keeps changing as
+      he works, letter by letter, on its own.
+    _id: zI46TUR5EJ9tYK4e
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!ZDFjbpQK2tR1t5T8.zI46TUR5EJ9tYK4e'
+  - type: text
+    weight: 1
+    range:
+      - 2
+      - 2
+    drawn: false
+    description: >-
+      A freshly dug grave is empty of both occupant and gravedigger. The coffin
+      is inside, the lid sealed from within. Muffled, rhythmic knocking can be
+      heard if anyone leans close.
+    _id: NRjkrxWTxpjV5GF5
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!ZDFjbpQK2tR1t5T8.NRjkrxWTxpjV5GF5'
+  - type: text
+    weight: 1
+    range:
+      - 3
+      - 3
+    drawn: false
+    description: >-
+      An elderly woman visits the same headstone every night, leaving a bowl of
+      soup. The soup is always gone by morning. The person on the stone has been
+      dead for sixty years.
+    _id: irbxtm7S5SsVnEaO
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!ZDFjbpQK2tR1t5T8.irbxtm7S5SsVnEaO'
+  - type: text
+    weight: 1
+    range:
+      - 4
+      - 4
+    drawn: false
+    description: >-
+      A foreign scholar has set up a small camp near the cemetery wall. She is
+      cataloguing epitaphs, and claims two dozen of them contain, between them,
+      a complete map to somewhere she will not name.
+    _id: qeJ23BwLg6a1u0Va
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!ZDFjbpQK2tR1t5T8.qeJ23BwLg6a1u0Va'
+  - type: text
+    weight: 1
+    range:
+      - 5
+      - 5
+    drawn: false
+    description: >-
+      A thin veil of midnight-blue mist clings to the ground only in the newest
+      section of the cemetery. It does not respond to wind. Locals report that
+      voices can be faintly heard within it.
+    _id: a4J7QB0Her2CWr3Y
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!ZDFjbpQK2tR1t5T8.a4J7QB0Her2CWr3Y'
+  - type: text
+    weight: 1
+    range:
+      - 6
+      - 6
+    drawn: false
+    description: >-
+      All the iron grave markers in the southern section have been bent,
+      simultaneously and recently, into the shape of pointing hands. They all
+      point to the same spot: an unmarked, sunken patch of earth.
+    _id: fYNAjBlrPrpnMQHJ
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!ZDFjbpQK2tR1t5T8.fYNAjBlrPrpnMQHJ'
+  - type: text
+    weight: 1
+    range:
+      - 7
+      - 7
+    drawn: false
+    description: >-
+      A large black wolf has been sleeping peacefully on a specific grave for
+      three days. It allows no one to approach. A small crowd has gathered at a
+      respectful distance debating what to do.
+    _id: aHWMoiEYYCz51aHW
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!ZDFjbpQK2tR1t5T8.aHWMoiEYYCz51aHW'
+  - type: text
+    weight: 1
+    range:
+      - 8
+      - 8
+    drawn: false
+    description: >-
+      A grieving father is offering substantial pay to anyone willing to sit
+      inside the family mausoleum from dusk to dawn. He won't say what happened
+      to the last three people who agreed.
+    _id: ljK3iEH0kKXvZWNV
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!ZDFjbpQK2tR1t5T8.ljK3iEH0kKXvZWNV'
+  - type: text
+    weight: 1
+    range:
+      - 9
+      - 9
+    drawn: false
+    description: >-
+      An itinerant preacher has claimed the graveyard's central chapel and is
+      delivering fervent sermons about 'the obligation of the dead to complete
+      their promises.' The permanent chaplain is baffled and furious.
+    _id: 5PHBAqkCouyy57B9
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!ZDFjbpQK2tR1t5T8.5PHBAqkCouyy57B9'
+  - type: text
+    weight: 1
+    range:
+      - 10
+      - 10
+    drawn: false
+    description: >-
+      A very small, very fresh grave has appeared in the corner of the
+      children's section. No burial was recorded. The name on the stone belongs
+      to someone in the next town over who was alive as of yesterday.
+    _id: jK0WtU3M2Oj0rhgd
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!ZDFjbpQK2tR1t5T8.jK0WtU3M2Oj0rhgd'
+  - type: text
+    weight: 1
+    range:
+      - 11
+      - 11
+    drawn: false
+    description: >-
+      Grave goods — small personal items — have been systematically removed from
+      every burial in the east section. They have been arranged into a precise
+      pattern on the path outside the cemetery gate.
+    _id: eN7BKJCiguZUYi0X
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!ZDFjbpQK2tR1t5T8.eN7BKJCiguZUYi0X'
+  - type: text
+    weight: 1
+    range:
+      - 12
+      - 12
+    drawn: false
+    description: >-
+      A master locksmith is at the graveyard on official business: several
+      chest-tombs have locked themselves, from the inside, using mechanisms that
+      were never built into them.
+    _id: KKLfMqxHXVYdLKkm
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!ZDFjbpQK2tR1t5T8.KKLfMqxHXVYdLKkm'
+  - type: text
+    weight: 1
+    range:
+      - 13
+      - 13
+    drawn: false
+    description: >-
+      Two rival families both claim the same mausoleum, based on family records
+      that are both entirely authentic. They are currently having a refined,
+      hostile picnic outside it and awaiting adjudication.
+    _id: qCcIa0bo9mLtYkFv
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!ZDFjbpQK2tR1t5T8.qCcIa0bo9mLtYkFv'
+  - type: text
+    weight: 1
+    range:
+      - 14
+      - 14
+    drawn: false
+    description: >-
+      A lantern that has not been refueled in forty years still burns at the
+      cemetery entrance. The caretaker is terrified of it. The undertaker
+      insists it is a blessing. They have not spoken for a decade.
+    _id: JrV15ydS3lg7y04c
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!ZDFjbpQK2tR1t5T8.JrV15ydS3lg7y04c'
+  - type: text
+    weight: 1
+    range:
+      - 15
+      - 15
+    drawn: false
+    description: >-
+      A night-soil collector has been discovered moonlighting as an unlicensed
+      undertaker, burying people under the names of those already in the
+      cemetery. He argues this is 'efficient' and technically 'no one is
+      missing.'
+    _id: vh5DQVz6uSJmQkPI
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!ZDFjbpQK2tR1t5T8.vh5DQVz6uSJmQkPI'
+  - type: text
+    weight: 1
+    range:
+      - 16
+      - 16
+    drawn: false
+    description: >-
+      A mason's apprentice chipped a piece from a notable headstone while doing
+      repair work. Since then, he claims to see the deceased standing behind him
+      in every reflective surface.
+    _id: mXga4JTuOzdWjPpk
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!ZDFjbpQK2tR1t5T8.mXga4JTuOzdWjPpk'
+  - type: text
+    weight: 1
+    range:
+      - 17
+      - 17
+    drawn: false
+    description: >-
+      Flowers placed on graves in the northern section are growing at an
+      impossible rate — feet per hour — and are beginning to cover adjacent
+      stones and pathways. They are beautiful, fragrant, and have thorns like
+      needles.
+    _id: 3PWgYNm7lUthubnj
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!ZDFjbpQK2tR1t5T8.3PWgYNm7lUthubnj'
+  - type: text
+    weight: 1
+    range:
+      - 18
+      - 18
+    drawn: false
+    description: >-
+      An old grave has been found to contain a sealed lead chest inside the
+      coffin — not part of the original burial. The chest is addressed, in fresh
+      ink, to a specific living person in the nearest city.
+    _id: yAtGZjaocYeZFxJR
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!ZDFjbpQK2tR1t5T8.yAtGZjaocYeZFxJR'
+  - type: text
+    weight: 1
+    range:
+      - 19
+      - 19
+    drawn: false
+    description: >-
+      The old cemetery records, kept sealed in the chapel, have been partially
+      rewritten. The changes are subtle: dates shifted, causes of death altered.
+      No one knows how recently, or how far back the alterations go.
+    _id: XLFP1hDa7WNuqQPr
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!ZDFjbpQK2tR1t5T8.XLFP1hDa7WNuqQPr'
+  - type: text
+    weight: 1
+    range:
+      - 20
+      - 20
+    drawn: false
+    description: >-
+      A group of students from a distant academy of memory arts have rented
+      permission to 'interview the residual echoes' in the graveyard. Two of
+      them haven't spoken since entering the oldest section three hours ago.
+    _id: 2uPLmwjFAro1rOCd
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!ZDFjbpQK2tR1t5T8.2uPLmwjFAro1rOCd'
+description: >-
+  20 original graveyard hooks, complications, and opportunities for cemetery
+  encounters.
+replacement: true
+displayRoll: true
+img: icons/svg/d20-grey.svg
+folder: null
+ownership:
+  default: 0
+  HP3Vba5udEHYm4dW: 3
+flags: {}
+_stats:
+  compendiumSource: null
+  duplicateSource: null
+  exportSource: null
+  coreVersion: '13.348'
+  systemId: shadowdark
+  systemVersion: 3.6.1
+  createdTime: 1772655266255
+  modifiedTime: 1772760502256
+  lastModifiedBy: HP3Vba5udEHYm4dW
+_id: ZDFjbpQK2tR1t5T8
+sort: 700000
+_key: '!tables!ZDFjbpQK2tR1t5T8'

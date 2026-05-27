@@ -1,0 +1,88 @@
+effects: []
+folder: vmqOYZjyo8VunyyP
+img: icons/magic/defensive/shield-barrier-deflect-teal.webp
+name: Protection From Evil
+system:
+  description: >-
+    <p>For the spell’s duration, chaotic beings have disadvantage on attack
+    rolls and hostile spellcasting checks against the target. These beings also
+    can’t possess, compel, or beguile it.</p><p>When cast on an
+    already-possessed target, the possessing entity makes a CHA check vs. the
+    last spellcasting check. On a failure, the entity is
+    expelled.</p><p>@UUID[Compendium.shadowdark.spell-effects.H7v5Izebo8O45DXB]{Spell
+    Effect: Protection From Evil}</p>
+  source:
+    title: core-rules
+  class:
+    - Compendium.shadowdark.classes.Item.oZWzXx1WRLg286zD
+  duration:
+    type: focus
+    value: 1
+  range: close
+  tier: 1
+  lost: false
+  magicItem: false
+  predefinedEffects: ''
+type: Spell
+_stats:
+  compendiumSource: null
+  duplicateSource: null
+  exportSource: null
+  coreVersion: '13.348'
+  systemId: shadowdark
+  systemVersion: 3.6.1
+  createdTime: 1767119605129
+  modifiedTime: 1771295884104
+  lastModifiedBy: HP3Vba5udEHYm4dW
+ownership:
+  default: 0
+  lDQovrTY32fJwPBR: 3
+flags:
+  shadowdark-extras:
+    spellDamage:
+      enabled: false
+      damageType: ''
+      damageRequirement: ''
+      damageRequirementFailAction: zero
+      formulaType: basic
+      numDice: 1
+      dieType: d6
+      bonus: 0
+      scaling: none
+      scalingDice: 0
+      formula: ''
+      tieredFormula: ''
+      effects: >-
+        [{"uuid":"Compendium.shadowdark.spell-effects.Item.H7v5Izebo8O45DXB","duration":{}}]
+      effectsRequirement: ''
+      effectsApplyToTarget: true
+      trackDuration: false
+      criticalEffects: '[]'
+      effectSelectionMode: all
+      perTurnTrigger: start
+      perTurnDamage: ''
+      reapplyEffects: false
+    summoning:
+      enabled: false
+      profiles: '[]'
+      deleteAtExpiry: false
+    itemGive:
+      enabled: false
+      profiles: '[]'
+    targeting:
+      mode: targeted
+      template:
+        type: circle
+        size: 30
+        fillColor: '#4e9a06'
+        placement: choose
+        deleteMode: none
+        hideOutline: false
+        excludeCaster: false
+        tokenMagic:
+          texture: ''
+          opacity: 0.5
+          preset: NOFX
+_id: cRnSODzrdQ7kJxiz
+sort: 2100000
+_key: '!items!cRnSODzrdQ7kJxiz'

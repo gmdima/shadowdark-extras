@@ -7,6 +7,25 @@ const MODULE_ID = "shadowdark-extras";
 const FLAG_KEY = "journalPins";
 const LAYER_NAME = "sdx-journal-pins-layer";
 
+// GSAP PixiPlugin registration. PixiPlugin.min.js auto-registers itself with
+// gsap on load, but it needs `PixiPlugin.registerPIXI(PIXI)` to know which PIXI
+// instance to operate on. Without that, tweens of the `pixi` property
+// (brightness/hue filters) warn "Missing plugin? gsap.registerPlugin()" every
+// frame. Defer to "init" so window.PIXI is guaranteed to be set up.
+function _registerGsapPixiPlugin() {
+    if (!window.gsap || !window.PixiPlugin || !window.PIXI) return;
+    try {
+        window.gsap.registerPlugin(window.PixiPlugin);
+        window.PixiPlugin.registerPIXI(window.PIXI);
+    } catch (e) {
+        console.warn("SDX Journal Pins | GSAP PixiPlugin registration failed:", e);
+    }
+}
+// Try at module load (usually PIXI is already a global by then)…
+_registerGsapPixiPlugin();
+// …and again at init, in case PIXI wasn't ready yet.
+Hooks.once("init", _registerGsapPixiPlugin);
+
 // ================================================================
 // PIN SCHEMA & DEFAULTS
 // ================================================================
@@ -29,6 +48,9 @@ const DEFAULT_PIN_STYLE = {
     imagePath: "", // Path to image for "image" shape
     contentType: "number", // "number", "icon", "text"
     iconClass: "fa-solid fa-book-open",
+    iconColor: "#ffffff",
+    symbolColor: "#ffffff",
+    customIconPath: "",
     customText: "",
     fontSize: 14,
     fontFamily: "Arial",
@@ -633,7 +655,8 @@ class JournalPinGraphics extends PIXI.Container {
 
     async unsetFlag(scope, key) {
         const updateData = {};
-        updateData[`flags.${scope}.-=${key}`] = null;
+        // v14+: use ForcedDeletion sentinel instead of legacy "-=" deletion key syntax.
+        updateData[`flags.${scope}.${key}`] = foundry.data.operators.ForcedDeletion;
         return await JournalPinManager.update(this.pinData.id, updateData);
     }
 
@@ -1721,7 +1744,7 @@ class JournalPinGraphics extends PIXI.Container {
         // BUT: Always check TMFX flags if we have them, as shaders might need refresh
         const hasTMFX = !!(this.pinData.flags?.tokenmagic || newData.flags?.tokenmagic);
 
-        if (!hasTMFX && foundry.utils.objectsEqual(this.pinData, newData)) {
+        if (!hasTMFX && foundry.utils.equals(this.pinData, newData)) {
             return;
         }
 

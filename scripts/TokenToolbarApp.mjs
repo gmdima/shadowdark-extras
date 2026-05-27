@@ -255,15 +255,16 @@ export class TokenToolbarApp extends HandlebarsApplicationMixin(ApplicationV2) {
 
                 // For weapons, roll the attack
                 if (itemType === "Weapon") {
-                    // Shadowdark uses rollAttack for weapons
-                    if (typeof actor.rollAttack === "function") {
+                    // Shadowdark 4.x uses rollAttack on the data model
+                    if (typeof actor.system?.rollAttack === "function") {
+                        await actor.system.rollAttack(itemId);
+                    } else if (typeof actor.rollAttack === "function") {
                         await actor.rollAttack(itemId);
                     } else if (typeof item.roll === "function") {
                         await item.roll();
                     }
                 } else if (itemType === "NPC Attack") {
-                    // Check if it's a special attack which shouldn't be rolled via rollNpcAttack
-                    // This mirrors logic in NpcSheetSD._onRollItem
+                    // Check if it's a special attack which shouldn't be rolled via rollAttack
                     if (item.system.attackType === "special") {
                         if (typeof item.displayCard === "function") {
                             await item.displayCard();
@@ -273,26 +274,23 @@ export class TokenToolbarApp extends HandlebarsApplicationMixin(ApplicationV2) {
                         return;
                     }
 
-                    // Prepare data for rollNpcAttack
-                    const data = {
-                        item: item,
-                        actor: actor,
-                    };
-                    const parts = ["1d20", "@attackBonus"];
-                    data.attackBonus = item.system.bonuses.attackBonus;
-                    data.damageParts = ["@damageBonus"];
-                    data.damageBonus = item.system.bonuses.damageBonus;
+                    // For NPC attacks in 4.x, we should also try actor.system.rollAttack
+                    if (typeof actor.system?.rollAttack === "function") {
+                        await actor.system.rollAttack(itemId);
+                    } else if (typeof item.rollNpcAttack === "function") {
+                        // Legacy fallback
+                        const data = { item: item, actor: actor };
+                        const parts = ["1d20", "@attackBonus"];
+                        data.attackBonus = item.system.bonuses.attackBonus;
+                        data.damageParts = ["@damageBonus"];
+                        data.damageBonus = item.system.bonuses.damageBonus;
 
-                    // Get the first targeted token to enable "VS" display and hit/miss checking
-                    const options = {};
-                    const targets = game.user.targets;
-                    if (targets.size > 0) {
-                        options.targetToken = targets.values().next().value;
-                        // Set the target AC for hit/miss checking
-                        options.target = options.targetToken.actor.system.attributes.ac.value;
-                    }
-
-                    if (typeof item.rollNpcAttack === "function") {
+                        const options = {};
+                        const targets = game.user.targets;
+                        if (targets.size > 0) {
+                            options.targetToken = targets.values().next().value;
+                            options.target = options.targetToken.actor.system.attributes.ac.value;
+                        }
                         await item.rollNpcAttack(parts, data, options);
                     } else if (typeof item.displayCard === "function") {
                         await item.displayCard();

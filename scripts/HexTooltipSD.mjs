@@ -1,3 +1,6 @@
+// v13+ FilePicker namespaced under foundry.applications.apps.
+const FilePicker = foundry.applications.apps.FilePicker?.implementation ?? globalThis.FilePicker;
+
 
 
 import { getAvailableBiomes, generateHexHtml } from "./HexContentGenerator.mjs";
@@ -220,6 +223,7 @@ export class SDXHexTooltip {
 	#clickKey = null;
 	#hlName = "SDXHexTooltip";
 	#hlAllName = "SDXHexTooltipAll";
+	#markerLayer = null;
 	#altHeld = false;
 	#ctxMenuEl = null;
 	#ctxMenuCloseHandler = null;
@@ -261,6 +265,12 @@ export class SDXHexTooltip {
 			canvas.grid.addHighlightLayer(this.#hlAllName);
 		} catch { this.#hlAllName = null; }
 
+		try {
+			this.#ensureMarkerLayer();
+		} catch {
+			this.#markerLayer = null;
+		}
+
 		// Canvas events
 		this.#onMoveRef = this.#onMouseMove.bind(this);
 		this.#onDownRef = this.#onMouseDown.bind(this);
@@ -280,6 +290,7 @@ export class SDXHexTooltip {
 			if (journal.name !== HEX_JOURNAL_NAME) return;
 			this.#allData = loadAllHexDataSync();
 			this.#lastKey = null;
+			if (this.#enabled) this.#drawMarkers();
 		};
 		Hooks.on("updateJournalEntry", this.#onJournalRef);
 	}
@@ -288,7 +299,12 @@ export class SDXHexTooltip {
 
 	toggle() {
 		this.#enabled = !this.#enabled;
-		if (!this.#enabled) this.#hide();
+		if (this.#markerLayer) this.#markerLayer.visible = this.#enabled;
+		if (this.#enabled) this.#drawMarkers();
+		else {
+			try { this.#markerLayer?.clear(); } catch { this.#markerLayer = null; }
+			this.#hide();
+		}
 		return this.#enabled;
 	}
 
@@ -296,6 +312,7 @@ export class SDXHexTooltip {
 		if (!this.#allData[sceneId]) this.#allData[sceneId] = {};
 		this.#allData[sceneId][hexKey] = record;
 		if (this.#enabled && this.#lastKey === hexKey) this.#show(hexKey, record);
+		if (this.#enabled) this.#drawMarkers();
 	}
 
 	finalize() {
@@ -308,6 +325,8 @@ export class SDXHexTooltip {
 		this.#hide();
 		if (this.#hlName) try { canvas.grid.destroyHighlightLayer(this.#hlName); } catch { }
 		if (this.#hlAllName) try { canvas.grid.destroyHighlightLayer(this.#hlAllName); } catch { }
+		this.#destroyMarkerLayer();
+		this.#markerLayer = null;
 		if (this.#onJournalRef) Hooks.off("updateJournalEntry", this.#onJournalRef);
 		this.#tooltipEl?.remove();
 		this.#tooltipEl = null;
@@ -328,6 +347,83 @@ export class SDXHexTooltip {
 		return !(tl.x < d.sceneX || tl.y < d.sceneY ||
 			tl.x >= d.sceneX + d.sceneWidth ||
 			tl.y >= d.sceneY + d.sceneHeight);
+	}
+
+	#ensureMarkerLayer() {
+		if (this.#markerLayer && !this.#markerLayer.destroyed && this.#markerLayer.parent) return true;
+		if (!canvas?.interface) return false;
+		this.#markerLayer = new PIXI.Graphics();
+		this.#markerLayer.eventMode = "none";
+		this.#markerLayer.visible = this.#enabled;
+		this.#markerLayer.sdxHexTooltipMarkers = true;
+		canvas.interface.addChild(this.#markerLayer);
+		return true;
+	}
+
+	#destroyMarkerLayer() {
+		if (!this.#markerLayer) return;
+		try {
+			this.#markerLayer.parent?.removeChild(this.#markerLayer);
+		} catch { }
+		try {
+			if (!this.#markerLayer.destroyed) this.#markerLayer.destroy();
+		} catch (err) {
+			if (!String(err?.message || err).includes("refCount")) throw err;
+		}
+	}
+
+	#drawMarker(x, y, radius, color) {
+		if (!this.#ensureMarkerLayer()) return;
+		try {
+			this.#markerLayer.lineStyle(2, 0x000000, 0.65);
+			this.#markerLayer.beginFill(color, 0.95);
+			this.#markerLayer.drawCircle(x, y, radius);
+			this.#markerLayer.endFill();
+		} catch (err) {
+			console.warn(`${MODULE_ID} | Failed to draw hex tooltip marker:`, err);
+		}
+	}
+
+	#drawMarkers() {
+		if (!this.#ensureMarkerLayer()) return;
+		try {
+			this.#markerLayer.clear();
+		} catch {
+			this.#markerLayer = null;
+			if (!this.#ensureMarkerLayer()) return;
+			try { this.#markerLayer.clear(); } catch { return; }
+		}
+		if (!canvas.grid?.isHexagonal) return;
+
+		const sceneId = canvas.scene?.id;
+		const hexes = this.#allData[sceneId];
+		if (!hexes) return;
+
+		const isGM = game.user.isGM;
+		const hexW = canvas.grid.sizeX || canvas.grid.size || 100;
+		const hexH = canvas.grid.sizeY || canvas.grid.size || 100;
+		const radius = Math.max(3, Math.min(hexW, hexH) * 0.055);
+		const sideX = hexW * 0.31;
+		const cornerX = hexW * 0.25;
+		const cornerY = hexH * 0.28;
+
+		for (const [hexKey, record] of Object.entries(hexes)) {
+			if (!isGM && !record.showToPlayers) continue;
+			const [i, j] = hexKey.split("_").map(Number);
+			if (!Number.isFinite(i) || !Number.isFinite(j)) continue;
+
+			const center = canvas.grid.getCenterPoint({ i, j });
+			const exploration = record?.exploration ?? "unexplored";
+			if (exploration === "explored" || exploration === "mapped") {
+				this.#drawMarker(center.x + cornerX, center.y - cornerY, radius, 0xffffff);
+			}
+			if (record?.claimed) {
+				this.#drawMarker(center.x - sideX, center.y, radius, 0x2dd4bf);
+			}
+			if (record?.showToPlayers) {
+				this.#drawMarker(center.x + cornerX, center.y + cornerY, radius, 0x22c55e);
+			}
+		}
 	}
 
 	#onMouseMove(event) {

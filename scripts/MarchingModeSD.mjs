@@ -234,25 +234,26 @@ function injectSidebarButtons($html) {
 
         // SDX Pins - Menu Dialog
         $addPinBtn.find("button").on("click", () => {
-            new Dialog({
-                title: "SDX Pins",
+            new foundry.applications.api.DialogV2({
+                window: { title: "SDX Pins" },
                 content: "<p>Select an action:</p>",
-                buttons: {
-                    add: {
-                        icon: '<i class="fas fa-map-pin"></i>',
+                position: { width: 300 },
+                buttons: [
+                    {
+                        action: "add",
+                        icon: "fas fa-map-pin",
                         label: "Add Pin",
+                        default: true,
                         callback: () => PinPlacer.activate()
                     },
-                    list: {
-                        icon: '<i class="fas fa-list"></i>',
+                    {
+                        action: "list",
+                        icon: "fas fa-list",
                         label: "Pin List",
                         callback: () => PinListApp.show()
                     }
-                },
-                default: "add"
-            }, {
-                width: 300
-            }).render(true);
+                ]
+            }).render({ force: true });
         });
     }
 
@@ -317,25 +318,27 @@ export function showLeaderDialog() {
         </form>
     `;
 
-    new Dialog({
-        title: "Set Party Leader",
-        content: content,
-        buttons: {
-            set: {
-                icon: '<i class="fas fa-check"></i>',
+    new foundry.applications.api.DialogV2({
+        window: { title: "Set Party Leader" },
+        content,
+        buttons: [
+            {
+                action: "set",
+                icon: "fas fa-check",
                 label: "Set Leader",
-                callback: (html) => {
-                    const leaderId = html.find('[name="leaderId"]').val();
+                default: true,
+                callback: (event, button) => {
+                    const leaderId = button.form?.elements?.leaderId?.value;
                     setLeader(leaderId || null);
                 }
             },
-            cancel: {
-                icon: '<i class="fas fa-times"></i>',
+            {
+                action: "cancel",
+                icon: "fas fa-times",
                 label: "Cancel"
             }
-        },
-        default: "set"
-    }).render(true);
+        ]
+    }).render({ force: true });
 }
 
 /**
@@ -363,36 +366,39 @@ export function showMovementModeDialog() {
         </form>
     `;
 
-    const dialog = new Dialog({
-        title: "Configure Movement Mode",
-        content: content,
-        buttons: {
-            apply: {
-                icon: '<i class="fas fa-check"></i>',
+    const dialog = new foundry.applications.api.DialogV2({
+        window: { title: "Configure Movement Mode" },
+        content,
+        classes: ["sdx-movement-mode-dialog"],
+        position: { width: 520, height: "auto" },
+        buttons: [
+            {
+                action: "apply",
+                icon: "fas fa-check",
                 label: "Apply",
-                callback: (html) => {
-                    const selectedMode = html.find('.sdx-movement-option.selected').data('mode');
-                    setMovementMode(selectedMode === 'marching');
+                default: true,
+                callback: (event, button, dlg) => {
+                    const selected = dlg.element.querySelector(".sdx-movement-option.selected");
+                    const selectedMode = selected?.dataset?.mode;
+                    setMovementMode(selectedMode === "marching");
                 }
             },
-            close: {
-                icon: '<i class="fas fa-times"></i>',
+            {
+                action: "close",
+                icon: "fas fa-times",
                 label: "Close"
             }
-        },
-        default: "apply",
-        render: (html) => {
-            // Make options clickable
-            html.find('.sdx-movement-option').on('click', function () {
-                html.find('.sdx-movement-option').removeClass('selected');
-                $(this).addClass('selected');
+        ]
+    });
+    dialog.render({ force: true }).then(() => {
+        const options = dialog.element.querySelectorAll(".sdx-movement-option");
+        options.forEach(opt => {
+            opt.addEventListener("click", () => {
+                options.forEach(o => o.classList.remove("selected"));
+                opt.classList.add("selected");
             });
-        }
-    }, {
-        width: 480,
-        height: 245,
-        classes: ["sdx-movement-mode-dialog"]
-    }).render(true);
+        });
+    });
 }
 
 /**

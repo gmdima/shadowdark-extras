@@ -34,6 +34,10 @@ class SDXDrawingTool {
     constructor() {
         this.active = false;
         this._keyDown = false;
+        // Toggle-driven (click-to-draw) state. Mirrors _keyDown but is driven
+        // by the toolbar's draw-toggle button instead of the hotkey.
+        this._toggleActive = false;
+        this._mouseButtonDown = false;
         this._pixiContainer = null; // PIXI container for all drawings
         this._pixiDrawings = [];
         this._previewGraphics = null;
@@ -213,24 +217,58 @@ class SDXDrawingTool {
     // ── Activate / Deactivate ───────────────────────────────────
     activate(keyBased = false) {
         if (!this._canDraw()) return false;
-        if (this.active) return true;
+        if (this.active) {
+            // Re-enter: keep activation latched if either path is asking for it.
+            if (!keyBased) this._toggleActive = true;
+            return true;
+        }
         this.active = true;
+        if (!keyBased) this._toggleActive = true;
         this._attachCanvasHandlers();
         this._updateCursor();
+        Hooks.callAll("sdxDrawingActiveChanged", true, keyBased);
         return true;
     }
 
     deactivate(keyBased = false) {
         if (!this.active) return;
+        // Clear only the activation source that initiated this deactivation.
+        // If the other source is still active, keep the tool live.
+        if (keyBased) this._keyDown = false;
+        else this._toggleActive = false;
+        if (this._keyDown || this._toggleActive) {
+            // Other activation source still holds the tool open.
+            Hooks.callAll("sdxDrawingActiveChanged", true, keyBased);
+            return;
+        }
         this.active = false;
+        this._mouseButtonDown = false;
         this._detachCanvasHandlers();
         this._removePreviewSymbol();
         this._updateCursor();
         if (this.state.isDrawing) this._cancelDrawing();
+        Hooks.callAll("sdxDrawingActiveChanged", false, keyBased);
+    }
+
+    /**
+     * True when input should drive drawing. Either:
+     *   - hotkey is held (_keyDown), or
+     *   - toggle mode is on AND mouse button is currently down.
+     * The toggle path requires mouse-button-down so click-drag works
+     * intuitively (move-while-not-clicking does NOT draw).
+     */
+    _isInputActive() {
+        return this._keyDown || (this._toggleActive && this._mouseButtonDown);
     }
 
     cleanup() {
-        if (this.active) this.deactivate(true);
+        // Force full teardown — clear both activation sources so deactivate
+        // doesn't short-circuit (used on canvas teardown).
+        if (this.active) {
+            this._keyDown = false;
+            this._toggleActive = false;
+            this.deactivate(true);
+        }
         this._detachCanvasHandlers();
         if (this._cleanupInterval) {
             clearInterval(this._cleanupInterval);
@@ -257,23 +295,37 @@ class SDXDrawingTool {
         const self = this;
 
         this._handlePointerDown = (e) => {
-            if (!self.active || !self._keyDown) return;
+            if (!self.active) return;
+            // Track mouse button for toggle-mode click-drag gating.
+            if (e.button === 0) self._mouseButtonDown = true;
+            if (!self._isInputActive()) return;
             if (self.state.drawingMode === "box" || self.state.drawingMode === "ellipse") {
-                e.preventDefault(); e.stopPropagation(); return;
+                e.preventDefault(); e.stopPropagation();
+                // In toggle mode, pointerdown is the natural start trigger for box/ellipse.
+                if (self._toggleActive && !self._keyDown && !self.state.isDrawing) {
+                    if (self.state.drawingMode === "box") self._startBox(e);
+                    else self._startEllipse(e);
+                }
+                return;
             }
             if (self.state.drawingMode === "stamp" && self._canDraw() && !e.ctrlKey && !e.altKey) {
                 e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation();
                 self._stampSymbol(self.state.stampStyle, e);
                 return;
             }
-            if (["sketch", "line", "box", "ellipse"].includes(self.state.drawingMode)) {
+            if (["sketch", "line"].includes(self.state.drawingMode)) {
                 e.preventDefault(); e.stopPropagation();
+                // In toggle mode, pointerdown starts the line/sketch.
+                if (self._toggleActive && !self._keyDown && !self.state.isDrawing) {
+                    if (self.state.drawingMode === "sketch") self._startSketch(e);
+                    else if (self.state.drawingMode === "line") self._startLine(e);
+                }
             }
         };
 
         this._handlePointerMove = (e) => {
             if (!self.active) return;
-            if (self._keyDown) {
+            if (self._isInputActive()) {
                 const mode = self.state.drawingMode;
                 if (mode === "sketch") {
                     if (!self.state.isDrawing) self._startSketch(e); else self._updateSketch(e);
@@ -286,6 +338,9 @@ class SDXDrawingTool {
                 } else if (mode === "stamp") {
                     self._updatePreviewSymbol(e);
                 }
+            } else if (self._toggleActive && self.state.drawingMode === "stamp") {
+                // Toggle + stamp: show preview cursor on hover even without mouse button.
+                self._updatePreviewSymbol(e);
             } else {
                 self._removePreviewSymbol();
             }
@@ -293,7 +348,21 @@ class SDXDrawingTool {
 
         this._handlePointerUp = (e) => {
             if (!self.active) return;
-            if (self.state.drawingMode === "line" || self.state.drawingMode === "box" || self.state.drawingMode === "ellipse") {
+            const wasMouseDown = self._mouseButtonDown;
+            if (e.button === 0) self._mouseButtonDown = false;
+
+            const mode = self.state.drawingMode;
+
+            // Toggle-mode click-drag: finish the stroke on mouse release.
+            if (self._toggleActive && !self._keyDown && self.state.isDrawing && wasMouseDown) {
+                if (mode === "box") self._finishBox(e);
+                else if (mode === "ellipse") self._finishEllipse(e);
+                else if (mode === "line") self._finishLine(e);
+                else self._finishSketch(e);
+                return;
+            }
+
+            if (mode === "line" || mode === "box" || mode === "ellipse") {
                 e.preventDefault(); e.stopPropagation(); return;
             }
             if (self.state.isDrawing && !self._keyDown) {

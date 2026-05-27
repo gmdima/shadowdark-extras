@@ -1,3 +1,5 @@
+import { readSdDamageRoll } from "./sd4Compat.mjs";
+
 export const MODULE_ID = "shadowdark-extras";
 
 // In-memory set of actor IDs with mysterious mode enabled.
@@ -78,8 +80,10 @@ export function initMysteriousCasting() {
 
         const content = messageDoc.content ?? "";
 
-        // Check if it's an item card
-        if (!content.includes("item-card")) return true;
+        // SD 4.x dropped item-card/chat-card wrappers; rollConfig and dice-roll mark SD roll messages.
+        if (!content.includes("item-card")
+            && !content.includes("dice-roll")
+            && !messageDoc.flags?.shadowdark?.rollConfig) return true;
 
         // Skip ability check rolls — those should always be visible
         if (content.includes("card-ability-roll")) return true;
@@ -94,7 +98,7 @@ export function initMysteriousCasting() {
         // IT IS MYSTERIOUS!
         const isAttack = content.includes("card-attack-roll") ||
             content.includes("card-damage-roll") ||
-            messageDoc.flags?.shadowdark?.rolls?.damage;
+            !!readSdDamageRoll(messageDoc).roll;
         const mysteriousLabel = isAttack ? "Unknown Attack" : "Unknown Spell";
 
         const mysteriousText = game.settings.get(MODULE_ID, "mysteriousCastingMessage");

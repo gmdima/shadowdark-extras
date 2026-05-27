@@ -3,7 +3,11 @@
  * Allows GMs to create, edit, and delete custom NPC creature types/subtypes.
  */
 
+import { CREATURE_TYPE_MAP } from "../data/creature-type-map.mjs";
+
 const MODULE_ID = "shadowdark-extras";
+
+const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
 /**
  * Default creature types (D&D standard types)
@@ -11,18 +15,24 @@ const MODULE_ID = "shadowdark-extras";
 export const DEFAULT_CREATURE_TYPES = [
     "",            // None/Unset
     "Aberration",
-    "Beast",
+    "Animal",
     "Celestial",
     "Construct",
+    "Dinosaur",
     "Dragon",
     "Elemental",
     "Fey",
     "Fiend",
     "Giant",
+    "Golem",
     "Humanoid",
+    "Insect",
+    "Legendary",
     "Monstrosity",
     "Ooze",
+    "Outsider",
     "Plant",
+    "Swarm",
     "Undead"
 ];
 
@@ -59,72 +69,154 @@ export async function saveCreatureTypes(types) {
 }
 
 /**
+ * Normalize a monster/NPC name to a CREATURE_TYPE_MAP key
+ * (uppercase, single-spaced, straight apostrophes).
+ * @param {string} name
+ * @returns {string}
+ */
+export function normalizeMonsterName(name) {
+    return String(name ?? "").toUpperCase().replace(/[’']/g, "'").replace(/\s+/g, " ").trim();
+}
+
+/**
+ * Look up the mapped (default) creature type for a name, with fallbacks for
+ * tiered/variant names. Returns "" if unknown.
+ * @param {string} name
+ * @returns {string}
+ */
+export function getMappedType(name) {
+    const key = normalizeMonsterName(name);
+    if (!key) return "";
+    if (CREATURE_TYPE_MAP[key]) return CREATURE_TYPE_MAP[key];
+    // Fallback: strip an Elemental-style tier suffix, e.g. "ELEMENTAL, FIRE (GREATER)"
+    const noTier = key.replace(/\s*\((?:GREATER|LESSER)\)\s*$/g, "").trim();
+    if (noTier !== key && CREATURE_TYPE_MAP[noTier]) return CREATURE_TYPE_MAP[noTier];
+    // Fallback: strip variant qualifiers, e.g. "BASILISK HATCHLING" -> "BASILISK"
+    const noVariant = key.replace(/\b(?:HATCHLING|ADULT|YOUNG|GREATER|LESSER)\b/g, "").replace(/\s+/g, " ").trim();
+    if (noVariant !== key && CREATURE_TYPE_MAP[noVariant]) return CREATURE_TYPE_MAP[noVariant];
+    return "";
+}
+
+/**
+ * Effective creature type for an actor (or plain {name, flags} object):
+ * manual flag override > bestiary map > "" (none).
+ * @param {Actor|object} actor
+ * @returns {string}
+ */
+export function getEffectiveCreatureType(actor) {
+    if (!actor) return "";
+    let flagVal = "";
+    try {
+        flagVal = typeof actor.getFlag === "function"
+            ? (actor.getFlag(MODULE_ID, "creatureType") || "")
+            : (actor.flags?.[MODULE_ID]?.creatureType || "");
+    } catch (e) {
+        flagVal = "";
+    }
+    if (flagVal) return flagVal;
+    return getMappedType(actor.name);
+}
+
+/**
+ * GM tool: write the mapped creature type onto world NPC actors that lack an
+ * explicit creatureType flag. Does NOT touch compendiums.
+ * @param {object} [opts]
+ * @param {boolean} [opts.overwrite=false] - also overwrite actors with an existing flag
+ * @returns {Promise<{updated:number, skipped:number, unmatched:number, failed:number, total:number}>}
+ */
+export async function bakeCreatureTypesToWorldActors({ overwrite = false } = {}) {
+    if (!game.user?.isGM) {
+        ui.notifications?.warn("Only a GM can bake creature types.");
+        return { updated: 0, skipped: 0, unmatched: 0, failed: 0, total: 0 };
+    }
+    const npcs = game.actors.filter(a => a.type === "NPC");
+    let updated = 0, skipped = 0, unmatched = 0, failed = 0;
+    for (const actor of npcs) {
+        const existing = actor.getFlag(MODULE_ID, "creatureType") || "";
+        if (existing && !overwrite) { skipped++; continue; }
+        const mapped = getMappedType(actor.name);
+        if (!mapped) { unmatched++; continue; }
+        if (existing === mapped) { skipped++; continue; }
+        try {
+            await actor.setFlag(MODULE_ID, "creatureType", mapped);
+            updated++;
+        } catch (e) {
+            console.warn(`${MODULE_ID} | bake creature type failed for ${actor.name}:`, e);
+            failed++;
+        }
+    }
+    return { updated, skipped, unmatched, failed, total: npcs.length };
+}
+
+/**
  * Application for managing custom creature types
  */
-export class CreatureTypesApp extends FormApplication {
-    static get defaultOptions() {
-        return foundry.utils.mergeObject(super.defaultOptions, {
-            id: "creature-types-app",
-            title: game.i18n.localize("SHADOWDARK_EXTRAS.creature_types.editor_title"),
-            template: "modules/shadowdark-extras/templates/creature-types-app.hbs",
+export class CreatureTypesApp extends HandlebarsApplicationMixin(ApplicationV2) {
+    static DEFAULT_OPTIONS = {
+        id: "creature-types-app",
+        classes: ["shadowdark-extras", "creature-types-app"],
+        window: {
+            title: "SHADOWDARK_EXTRAS.creature_types.editor_title",
+            resizable: true
+        },
+        position: {
             width: 400,
-            height: 500,
-            resizable: true,
-            closeOnSubmit: false,
-            classes: ["shadowdark-extras", "creature-types-app"]
-        });
-    }
+            height: 500
+        }
+    };
 
-    constructor(options = {}) {
-        super({}, options);
-    }
+    static PARTS = {
+        form: {
+            template: "modules/shadowdark-extras/templates/creature-types-app.hbs",
+            scrollable: [".types-list"]
+        }
+    };
 
-    /**
-     * Get data for the template
-     */
-    getData() {
-        const types = getCreatureTypes().filter(t => t !== ""); // Exclude empty for display
+    async _prepareContext(options) {
+        const types = getCreatureTypes().filter(t => t !== "");
         return {
-            types: types,
+            types,
             hasTypes: types.length > 0
         };
     }
 
-    /**
-     * Activate listeners
-     */
-    activateListeners(html) {
-        super.activateListeners(html);
+    _onRender(context, options) {
+        const html = this.element;
+        if (!html) return;
 
         // Add new type
-        html.find('[data-action="add-type"]').click(() => {
-            const input = html.find('#new-type-input');
-            const newType = input.val()?.trim();
+        html.querySelector('[data-action="add-type"]')?.addEventListener("click", () => {
+            const input = html.querySelector("#new-type-input");
+            const newType = input?.value?.trim();
             if (newType) {
                 this._addType(newType);
-                input.val('');
+                if (input) input.value = "";
             }
         });
 
         // Allow Enter key to add
-        html.find('#new-type-input').on('keypress', (e) => {
-            if (e.key === 'Enter') {
+        html.querySelector("#new-type-input")?.addEventListener("keypress", (e) => {
+            if (e.key === "Enter") {
                 e.preventDefault();
-                html.find('[data-action="add-type"]').click();
+                html.querySelector('[data-action="add-type"]')?.click();
             }
         });
 
-        // Delete type
-        html.on('click', '[data-action="delete-type"]', (event) => {
-            const typeToDelete = $(event.currentTarget).data('type');
-            this._deleteType(typeToDelete);
+        // Delete type (event delegation)
+        html.addEventListener("click", (event) => {
+            const deleteBtn = event.target.closest('[data-action="delete-type"]');
+            if (deleteBtn) {
+                const typeToDelete = deleteBtn.dataset.type;
+                this._deleteType(typeToDelete);
+            }
         });
 
         // Reset to defaults
-        html.find('[data-action="reset-defaults"]').click(async () => {
-            const confirmed = await Dialog.confirm({
-                title: game.i18n.localize("SHADOWDARK_EXTRAS.creature_types.reset_confirm_title"),
-                content: `<p>${game.i18n.localize("SHADOWDARK_EXTRAS.creature_types.reset_confirm_content")}</p>`
+        html.querySelector('[data-action="reset-defaults"]')?.addEventListener("click", async () => {
+            const confirmed = await foundry.applications.api.DialogV2.confirm({
+                window: { title: game.i18n.localize("SHADOWDARK_EXTRAS.creature_types.reset_confirm_title") },
+                content: `<p>${game.i18n.localize("SHADOWDARK_EXTRAS.creature_types.reset_confirm_content")}</p>`,
+                modal: true
             });
             if (confirmed) {
                 await saveCreatureTypes(DEFAULT_CREATURE_TYPES.filter(t => t !== ""));
@@ -134,14 +226,13 @@ export class CreatureTypesApp extends FormApplication {
         });
 
         // Export types
-        html.find('[data-action="export-types"]').click(() => {
-            this._exportTypes();
-        });
+        html.querySelector('[data-action="export-types"]')?.addEventListener("click", () => this._exportTypes());
 
         // Import types
-        html.find('[data-action="import-types"]').click(() => {
-            this._importTypes();
-        });
+        html.querySelector('[data-action="import-types"]')?.addEventListener("click", () => this._importTypes());
+
+        // Bake mapped creature types onto world actors
+        html.querySelector('[data-action="bake-types"]')?.addEventListener("click", () => this._bakeWorldActors());
     }
 
     /**
@@ -192,9 +283,9 @@ export class CreatureTypesApp extends FormApplication {
      * Import types from JSON
      */
     async _importTypes() {
-        const input = document.createElement('input');
-        input.type = 'file';
-        input.accept = '.json';
+        const input = document.createElement("input");
+        input.type = "file";
+        input.accept = ".json";
 
         input.onchange = async (event) => {
             const file = event.target.files[0];
@@ -204,7 +295,6 @@ export class CreatureTypesApp extends FormApplication {
                 const text = await file.text();
                 const importData = JSON.parse(text);
 
-                // Validate import data
                 if (importData.type !== "shadowdark-creature-types" || !Array.isArray(importData.creatureTypes)) {
                     ui.notifications.error(game.i18n.localize("SHADOWDARK_EXTRAS.creature_types.invalid_import"));
                     return;
@@ -225,10 +315,22 @@ export class CreatureTypesApp extends FormApplication {
     }
 
     /**
-     * Handle form submission (not used but required by FormApplication)
+     * GM action: apply mapped creature types to world NPC actors that lack one.
      */
-    async _updateObject(event, formData) {
-        // Form submission handled by individual actions
+    async _bakeWorldActors() {
+        const confirmed = await foundry.applications.api.DialogV2.confirm({
+            window: { title: game.i18n.localize("SHADOWDARK_EXTRAS.creature_types.bake_confirm_title") },
+            content: `<p>${game.i18n.localize("SHADOWDARK_EXTRAS.creature_types.bake_confirm_content")}</p>`,
+            modal: true
+        });
+        if (!confirmed) return;
+        const res = await bakeCreatureTypesToWorldActors();
+        ui.notifications.info(game.i18n.format("SHADOWDARK_EXTRAS.creature_types.bake_result", {
+            updated: res.updated,
+            skipped: res.skipped,
+            unmatched: res.unmatched,
+            total: res.total
+        }));
     }
 }
 
@@ -236,5 +338,5 @@ export class CreatureTypesApp extends FormApplication {
  * Open the creature types editor
  */
 export function openCreatureTypesEditor() {
-    new CreatureTypesApp().render(true);
+    new CreatureTypesApp().render({ force: true });
 }

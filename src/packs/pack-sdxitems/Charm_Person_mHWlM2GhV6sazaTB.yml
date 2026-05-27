@@ -1,0 +1,70 @@
+effects: []
+folder: vmqOYZjyo8VunyyP
+img: icons/magic/life/heart-shadow-red.webp
+name: Charm Person
+system:
+  description: >-
+    <p>You magically beguile one humanoid of LV 2 or less within near range, who
+    regards you as a friend for the duration.</p><p>The spell ends if you or
+    your allies do anything harmful to the target.</p><p>The target knows it was
+    magically charmed after the spell ends.</p><p>Roll [[/r 1d8]] to determine
+    amount of days
+    effective</p><p>@UUID[Compendium.shadowdark.spell-effects.Z0YwWUGs3WYC6OGn]{Spell
+    Effect: Charm Person}</p>
+  source:
+    title: core-rules
+  class:
+    - Compendium.shadowdark.classes.Item.035nuVkU9q2wtMPs
+  duration:
+    type: days
+    value: 1d8
+  range: near
+  tier: 1
+  lost: false
+  magicItem: false
+  predefinedEffects: ''
+type: Spell
+_stats:
+  compendiumSource: null
+  duplicateSource: null
+  exportSource: null
+  coreVersion: '13.348'
+  systemId: shadowdark
+  systemVersion: 3.6.1
+  createdTime: 1766715430548
+  modifiedTime: 1771295884104
+  lastModifiedBy: HP3Vba5udEHYm4dW
+ownership:
+  default: 0
+  lDQovrTY32fJwPBR: 3
+flags:
+  shadowdark-extras:
+    spellDamage:
+      enabled: false
+      damageType: ''
+      damageRequirement: ''
+      damageRequirementFailAction: zero
+      formulaType: basic
+      numDice: 1
+      dieType: d6
+      bonus: 0
+      scaling: none
+      scalingDice: 0
+      formula: ''
+      tieredFormula: ''
+      effects: >-
+        [{"uuid":"Compendium.shadowdark.spell-effects.Item.Z0YwWUGs3WYC6OGn","duration":{}}]
+      effectsRequirement: ''
+      effectsApplyToTarget: true
+      criticalEffects: '[]'
+      effectSelectionMode: all
+    summoning:
+      enabled: false
+      profiles: '[]'
+      deleteAtExpiry: false
+    itemGive:
+      enabled: false
+      profiles: '[]'
+_id: mHWlM2GhV6sazaTB
+sort: 7500000
+_key: '!items!mHWlM2GhV6sazaTB'

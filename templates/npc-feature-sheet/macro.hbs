@@ -5,8 +5,7 @@
 
         <div class="macro-editor-container">
             {{#if isEditable}}
-            <input type="hidden" name="flags.itemacro.macro.name" value="{{item.name}}" />
-            <textarea name="flags.itemacro.macro.command" class="macro-textarea" spellcheck="false"
+            <textarea name="flags.shadowdark-extras.macroCommand" class="macro-textarea" spellcheck="false"
                 placeholder="Enter Javascript code here...">{{macroCommand}}</textarea>
 
             {{else}}
@@ -19,7 +18,7 @@
         <div class="macro-info">
             <p class="hint">
                 <i class="fas fa-info-circle"></i> This script executes when the NPC feature is used.
-                Requires the <strong>Item Macro</strong> module for execution, but you can edit the script here.
+                Runs via Shadowdark Extras' native executor — no extra modules required.
             </p>
         </div>
     </fieldset>

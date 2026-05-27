@@ -1,0 +1,492 @@
+name: Docks Hooks
+formula: 1d20
+results:
+  - type: text
+    weight: 1
+    range:
+      - 1
+      - 1
+    drawn: false
+    description: >-
+      One of the pier's main support posts has cracked through the night, and
+      the dock master is desperately negotiating with engineers and concerned
+      merchants while the whole structure tilts several degrees to the east.
+    _id: WBFQ39FwYEbnFlcN
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!wMzt4vkGqJ9Xm3Nz.WBFQ39FwYEbnFlcN'
+  - type: text
+    weight: 1
+    range:
+      - 2
+      - 2
+    drawn: false
+    description: >-
+      A sealed crate bearing no manifest has been sitting on Pier Two for eight
+      days. The harbor authority is afraid to open it. It hums faintly at high
+      tide.
+    _id: gDlxmnFDca6XHSCr
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!wMzt4vkGqJ9Xm3Nz.gDlxmnFDca6XHSCr'
+  - type: text
+    weight: 1
+    range:
+      - 3
+      - 3
+    drawn: false
+    description: >-
+      A weathered sailor is auctioning off his ship — map, charts, cargo hold
+      and all — for 'enough coin to buy one good meal and one good drink.' He
+      says the vessel is fine, but he won't say what happened to his previous
+      crew.
+    _id: XKMbew8KwDHSiLxZ
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!wMzt4vkGqJ9Xm3Nz.XKMbew8KwDHSiLxZ'
+  - type: text
+    weight: 1
+    range:
+      - 4
+      - 4
+    drawn: false
+    description: >-
+      A group of dockworkers has refused to unload the latest merchant vessel,
+      claiming they can smell something wrong in the hold. The merchant insists
+      they're being superstitious and is demanding the harbor master intervene.
+    _id: TgMOgBCGCJcDXnp9
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!wMzt4vkGqJ9Xm3Nz.TgMOgBCGCJcDXnp9'
+  - type: text
+    weight: 1
+    range:
+      - 5
+      - 5
+    drawn: false
+    description: >-
+      A silver-tongued recruiter for an 'exploration syndicate' is signing
+      sailors onto a voyage to a chain of islands not found on any regional
+      chart. He is paying triple the standard rate.
+    _id: k3xpMwMFompBnwdR
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!wMzt4vkGqJ9Xm3Nz.k3xpMwMFompBnwdR'
+  - type: text
+    weight: 1
+    range:
+      - 6
+      - 6
+    drawn: false
+    description: >-
+      A child is running the length of every pier, pressing her ear to the
+      planks and listening intently. She claims she can hear the harbor bottom
+      'breathing' and is trying to identify exactly where.
+    _id: hPyrSo99I97SP2o0
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!wMzt4vkGqJ9Xm3Nz.hPyrSo99I97SP2o0'
+  - type: text
+    weight: 1
+    range:
+      - 7
+      - 7
+    drawn: false
+    description: >-
+      Every cleat and mooring ring on the northern pier has been polished to a
+      mirror shine overnight. The rope marks suggest they were untied and retied
+      dozens of times. No one recalls seeing anyone.
+    _id: EWYgK2kmGlCYevBr
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!wMzt4vkGqJ9Xm3Nz.EWYgK2kmGlCYevBr'
+  - type: text
+    weight: 1
+    range:
+      - 8
+      - 8
+    drawn: false
+    description: >-
+      A freshly capsized rowing boat floats bottom-up in the harbor. It is
+      clearly new — the paint is not yet dry. The name painted on the side
+      belongs to a ship currently in port and not scheduled to depart.
+    _id: YBpDl5k6g8CJGO72
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!wMzt4vkGqJ9Xm3Nz.YBpDl5k6g8CJGO72'
+  - type: text
+    weight: 1
+    range:
+      - 9
+      - 9
+    drawn: false
+    description: >-
+      A harbor official is collecting a 'water tax' from every boat that has
+      touched the dock in the last month. The tax was not in effect last month.
+      The official has no documentation and a very large friend.
+    _id: vixKD5sDX76Ac6N4
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!wMzt4vkGqJ9Xm3Nz.vixKD5sDX76Ac6N4'
+  - type: text
+    weight: 1
+    range:
+      - 10
+      - 10
+    drawn: false
+    description: >-
+      Dozens of dead fish have arranged themselves in a perfect circle roughly
+      thirty feet across in the shallows near the fish market. The gulls, who
+      are everywhere else in abundance, refuse to approach the circle.
+    _id: tBfvVerkHuB2b4r2
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!wMzt4vkGqJ9Xm3Nz.tBfvVerkHuB2b4r2'
+  - type: text
+    weight: 1
+    range:
+      - 11
+      - 11
+    drawn: false
+    description: >-
+      A one-eyed cartographer is selling 'honest maps of dishonest waters' —
+      charts that mark smuggling lanes, unofficial anchorages, and the locations
+      of wrecked ships with recoverable cargo.
+    _id: jtaPk7EoCnjwzJUC
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!wMzt4vkGqJ9Xm3Nz.jtaPk7EoCnjwzJUC'
+  - type: text
+    weight: 1
+    range:
+      - 12
+      - 12
+    drawn: false
+    description: >-
+      A vessel flying no nation's colors has been anchored just outside the
+      harbor entrance for three days. It is never seen to take on supplies or
+      receive visitors. Occasionally, lights are observed through its portholes.
+    _id: 6WtqI5hJivASPEh3
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!wMzt4vkGqJ9Xm3Nz.6WtqI5hJivASPEh3'
+  - type: text
+    weight: 1
+    range:
+      - 13
+      - 13
+    drawn: false
+    description: >-
+      The lighthouse keeper has not been seen in two days. The lighthouse is
+      fully operational—the oil is fresh, the light turning, the log filled out
+      in neat handwriting up to this morning.
+    _id: QoIUTyLXxTsgnDbC
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!wMzt4vkGqJ9Xm3Nz.QoIUTyLXxTsgnDbC'
+  - type: text
+    weight: 1
+    range:
+      - 14
+      - 14
+    drawn: false
+    description: >-
+      A merchant is frantically purchasing every item of warm clothing from the
+      dockside markets, at any price. He won't explain why, but he keeps
+      glancing at the sky.
+    _id: 71voC6AjcQttVXxW
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!wMzt4vkGqJ9Xm3Nz.71voC6AjcQttVXxW'
+  - type: text
+    weight: 1
+    range:
+      - 15
+      - 15
+    drawn: false
+    description: >-
+      A sea priest is conducting a public ritual to 'un-bless' a ship that has
+      already been blessed by a rival faith. Both the original priest and the
+      ship's owner are present and increasingly hostile.
+    _id: 1OYQMahGWraSPKDg
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!wMzt4vkGqJ9Xm3Nz.1OYQMahGWraSPKDg'
+  - type: text
+    weight: 1
+    range:
+      - 16
+      - 16
+    drawn: false
+    description: >-
+      Several crates of quality crossbow bolts have washed up at the base of the
+      sea wall. Each one is stamped with a crest belonging to a naval vessel
+      that supposedly sank three years ago.
+    _id: YVvcWibMfN2RWCIP
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!wMzt4vkGqJ9Xm3Nz.YVvcWibMfN2RWCIP'
+  - type: text
+    weight: 1
+    range:
+      - 17
+      - 17
+    drawn: false
+    description: >-
+      A retired admiral is sitting alone at the dock's edge, staring at the
+      water and refusing to speak to anyone. The dockmaster is quietly worried —
+      the admiral predicted the last two major storms hours before they arrived.
+    _id: PKddiKiq2irfx4n5
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!wMzt4vkGqJ9Xm3Nz.PKddiKiq2irfx4n5'
+  - type: text
+    weight: 1
+    range:
+      - 18
+      - 18
+    drawn: false
+    description: >-
+      A fast courier vessel has arrived with a pouch of sealed letters for
+      'anyone currently in port who sailed under Captain Maerix.' Two local
+      captains have already, separately, paid the courier handsomely to forget
+      they were ever asked.
+    _id: gXa4Gdfliq8RCVia
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!wMzt4vkGqJ9Xm3Nz.gXa4Gdfliq8RCVia'
+  - type: text
+    weight: 1
+    range:
+      - 19
+      - 19
+    drawn: false
+    description: >-
+      The annual 'Drowned Saint's Day' festival is being celebrated on the
+      docks: sailors race to the harbor mouth and back, merchants offer prayers
+      over the water, and one young sailor per year is chosen to symbolically
+      'take the plunge' — though this year, the chosen volunteer has gone
+      missing.
+    _id: 2TWE0cYNefnyPJeY
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!wMzt4vkGqJ9Xm3Nz.2TWE0cYNefnyPJeY'
+  - type: text
+    weight: 1
+    range:
+      - 20
+      - 20
+    drawn: false
+    description: >-
+      A pair of merfolk have surfaced at the far end of the loading dock and are
+      attempting to negotiate. Their translator — a sea-tattooed scholar with a
+      speaking tube — insists the conversation is 'going well,' despite the
+      rising tension.
+    _id: xUkx7xFk6sZEHRj5
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!wMzt4vkGqJ9Xm3Nz.xUkx7xFk6sZEHRj5'
+description: >-
+  20 original docks hooks, complications, and opportunities for port and
+  harbourside encounters.
+replacement: true
+displayRoll: true
+img: icons/svg/d20-grey.svg
+folder: null
+ownership:
+  default: 0
+  HP3Vba5udEHYm4dW: 3
+flags: {}
+_stats:
+  compendiumSource: null
+  duplicateSource: null
+  exportSource: null
+  coreVersion: '13.348'
+  systemId: shadowdark
+  systemVersion: 3.6.1
+  createdTime: 1772654859830
+  modifiedTime: 1772760502256
+  lastModifiedBy: HP3Vba5udEHYm4dW
+_id: wMzt4vkGqJ9Xm3Nz
+sort: 1100000
+_key: '!tables!wMzt4vkGqJ9Xm3Nz'

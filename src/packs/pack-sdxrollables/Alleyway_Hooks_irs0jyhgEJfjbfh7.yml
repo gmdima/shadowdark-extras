@@ -1,0 +1,484 @@
+name: Alleyway Hooks
+formula: 1d20
+results:
+  - type: text
+    weight: 1
+    range:
+      - 1
+      - 1
+    drawn: false
+    description: >-
+      A one-handed cobbler has set up shop in a shadowed doorway, offering to
+      repair boots at half-price. His other hand is nowhere to be seen, but the
+      fresh blood on his workbench suggests it isn't far.
+    _id: mtKbmHy1mcn1cpxA
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!irs0jyhgEJfjbfh7.mtKbmHy1mcn1cpxA'
+  - type: text
+    weight: 1
+    range:
+      - 2
+      - 2
+    drawn: false
+    description: >-
+      Two children are locked in a fierce argument over a single copper coin
+      found in the gutter, each claiming they saw it first. A third child
+      watches from the shadows with obvious, calculating patience.
+    _id: JiPTXRuxou0TPIyq
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!irs0jyhgEJfjbfh7.JiPTXRuxou0TPIyq'
+  - type: text
+    weight: 1
+    range:
+      - 3
+      - 3
+    drawn: false
+    description: >-
+      A cloaked man is systematically prying the iron numbers off every door in
+      the alley and placing them into a velvet pouch, muttering a name under his
+      breath with each one.
+    _id: EflTk0s5dep7YQ1G
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!irs0jyhgEJfjbfh7.EflTk0s5dep7YQ1G'
+  - type: text
+    weight: 1
+    range:
+      - 4
+      - 4
+    drawn: false
+    description: >-
+      A cat is sitting on a crate, staring intently at a wall with no visible
+      features. It has been there for three hours. A small crowd of suspicious
+      locals has gathered at a respectable distance to watch.
+    _id: Y2EIGml7RsxODOa4
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!irs0jyhgEJfjbfh7.Y2EIGml7RsxODOa4'
+  - type: text
+    weight: 1
+    range:
+      - 5
+      - 5
+    drawn: false
+    description: >-
+      A finely dressed merchant is arguing through a barred window with someone
+      who speaks only in a high-pitched whistle. The merchant seems to
+      understand perfectly and is not happy.
+    _id: og636pOqE8Vy9H1s
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!irs0jyhgEJfjbfh7.og636pOqE8Vy9H1s'
+  - type: text
+    weight: 1
+    range:
+      - 6
+      - 6
+    drawn: false
+    description: >-
+      A ladder has been propped against a building, leading to a window with a
+      curtain of black silk. A sign on the ladder reads: 'Knock thrice before
+      climbing. Or don't.'
+    _id: fiRuxEK7YruYSdRS
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!irs0jyhgEJfjbfh7.fiRuxEK7YruYSdRS'
+  - type: text
+    weight: 1
+    range:
+      - 7
+      - 7
+    drawn: false
+    description: >-
+      A man wearing a sack over his head is offering to sell 'sounds' — small
+      clay jars that, when opened, release a specific noise (a sigh, a lock
+      clicking, a child's name being called).
+    _id: QbTfatYy5zWCagdp
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!irs0jyhgEJfjbfh7.QbTfatYy5zWCagdp'
+  - type: text
+    weight: 1
+    range:
+      - 8
+      - 8
+    drawn: false
+    description: >-
+      A large, locked iron box sits perfectly centered in the middle of the
+      alley. It is far too heavy for one person, has no visible keyhole, and is
+      slightly warm to the touch.
+    _id: ImQo4N9khqmcW0cd
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!irs0jyhgEJfjbfh7.ImQo4N9khqmcW0cd'
+  - type: text
+    weight: 1
+    range:
+      - 9
+      - 9
+    drawn: false
+    description: >-
+      A woman is furiously scrubbing a huge X off a wooden door with a wet rag,
+      clearly terrified of being seen doing so. The chalk mark keeps reappearing
+      as fast as she wipes it away.
+    _id: mCbnpMa3sQbABQhY
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!irs0jyhgEJfjbfh7.mCbnpMa3sQbABQhY'
+  - type: text
+    weight: 1
+    range:
+      - 10
+      - 10
+    drawn: false
+    description: >-
+      Several bats have arranged themselves on a low ledge in the shape of an
+      arrow, all pointing toward the same crumbling wall. They have not moved in
+      hours.
+    _id: gPrvshFHgsxkt6mo
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!irs0jyhgEJfjbfh7.gPrvshFHgsxkt6mo'
+  - type: text
+    weight: 1
+    range:
+      - 11
+      - 11
+    drawn: false
+    description: >-
+      A retired city guard sits on a stool in front of a building, charging 1
+      silver to tell you 'the one thing you definitely shouldn't know about this
+      street.' He gives no refunds if you already know.
+    _id: Dbhtk2u2OpujcyLC
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!irs0jyhgEJfjbfh7.Dbhtk2u2OpujcyLC'
+  - type: text
+    weight: 1
+    range:
+      - 12
+      - 12
+    drawn: false
+    description: >-
+      A pile of identical hats — all in different sizes — is stacked in a
+      corner. Each hat has a different name stitched inside the brim, and one of
+      the names belongs to someone in the party.
+    _id: olMp8yRUxjlSQMT1
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!irs0jyhgEJfjbfh7.olMp8yRUxjlSQMT1'
+  - type: text
+    weight: 1
+    range:
+      - 13
+      - 13
+    drawn: false
+    description: >-
+      An herbalist offers a vial of 'liquid silence' that will make any sound
+      stop for one minute in a small radius. She asks only for 'a secret worth
+      keeping' in exchange.
+    _id: Ba9rYbhQSpqbiA5o
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!irs0jyhgEJfjbfh7.Ba9rYbhQSpqbiA5o'
+  - type: text
+    weight: 1
+    range:
+      - 14
+      - 14
+    drawn: false
+    description: >-
+      A small fire is burning in a tin bowl. Two figures stand on either side of
+      it, feeding it pieces of paper one by one. They stop and stare at the
+      party until they pass.
+    _id: k4EnJvGnAFabviyX
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!irs0jyhgEJfjbfh7.k4EnJvGnAFabviyX'
+  - type: text
+    weight: 1
+    range:
+      - 15
+      - 15
+    drawn: false
+    description: >-
+      A man is conscientiously painting over a detailed mural on a wall. What
+      little remains visible depicts a building that no longer exists — and a
+      door that, by all records, was never built.
+    _id: 0naZsEvlyelKFNQJ
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!irs0jyhgEJfjbfh7.0naZsEvlyelKFNQJ'
+  - type: text
+    weight: 1
+    range:
+      - 16
+      - 16
+    drawn: false
+    description: >-
+      A rope hangs from a rooftop, attached to a basket containing a brief note:
+      'Pull twice if you need work. Three times if you owe me money.'
+    _id: eCN7lEV08jB3Qlw1
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!irs0jyhgEJfjbfh7.eCN7lEV08jB3Qlw1'
+  - type: text
+    weight: 1
+    range:
+      - 17
+      - 17
+    drawn: false
+    description: >-
+      A healer is quietly treating the wounds of someone who refuses to describe
+      how they got them, while a second patient sits waiting and watching the
+      alley entrance with practiced vigilance.
+    _id: SNe0ZItrzvoLSz4n
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!irs0jyhgEJfjbfh7.SNe0ZItrzvoLSz4n'
+  - type: text
+    weight: 1
+    range:
+      - 18
+      - 18
+    drawn: false
+    description: >-
+      Three street performers are mid-act when they suddenly freeze in place,
+      looking past the party at something behind them. When the party turns to
+      look, the performers have vanished.
+    _id: 4abg4lmF1gvPHu75
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!irs0jyhgEJfjbfh7.4abg4lmF1gvPHu75'
+  - type: text
+    weight: 1
+    range:
+      - 19
+      - 19
+    drawn: false
+    description: >-
+      A tavern's back door is propped open, and from within comes the sound of a
+      lively auction — but the items being auctioned sound like descriptions of
+      people, not objects.
+    _id: lRZUqDnqsnGUxtEv
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!irs0jyhgEJfjbfh7.lRZUqDnqsnGUxtEv'
+  - type: text
+    weight: 1
+    range:
+      - 20
+      - 20
+    drawn: false
+    description: >-
+      A gaunt figure is carefully arranging a trail of breadcrumbs from the
+      alley entrance to a specific iron grate in the floor. He seems very, very
+      pleased with himself.
+    _id: mKr80RV6nnyeaZMW
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!irs0jyhgEJfjbfh7.mKr80RV6nnyeaZMW'
+description: 20 original alleyway encounter hooks for use in urban adventures.
+replacement: true
+displayRoll: true
+img: icons/svg/d20-grey.svg
+folder: null
+ownership:
+  default: 0
+  HP3Vba5udEHYm4dW: 3
+flags: {}
+_stats:
+  compendiumSource: null
+  duplicateSource: null
+  exportSource: null
+  coreVersion: '13.348'
+  systemId: shadowdark
+  systemVersion: 3.6.1
+  createdTime: 1772651736430
+  modifiedTime: 1772760502256
+  lastModifiedBy: HP3Vba5udEHYm4dW
+_id: irs0jyhgEJfjbfh7
+sort: 1000000
+_key: '!tables!irs0jyhgEJfjbfh7'

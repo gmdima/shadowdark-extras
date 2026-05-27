@@ -1,0 +1,90 @@
+effects: []
+folder: vmqOYZjyo8VunyyP
+img: icons/magic/control/voodoo-doll-pain-damage-pink.webp
+name: Pin Doll
+system:
+  description: >-
+    <p>You pin a piece of hair or flesh taken from one creature to a small,
+    burlap doll the spell conjures.</p><p>On your turn while focusing on this
+    spell, you can push a pin into the doll. Each time you do this, the creature
+    who the hair or flesh belonged to takes 2d6 damage. After this spell ends,
+    the piece of hair or flesh burns to
+    ash.</p><p>@UUID[Compendium.shadowdark.spell-effects.Item.zjm48oHhbVG4XeoB]{Spell
+    Effect: Pin Doll}</p>
+  source:
+    title: cursed-scroll-1
+  class:
+    - Compendium.shadowdark.classes.Item.KGnBAFiTiLHZJUND
+  duration:
+    type: focus
+    value: 1
+  range: samePlane
+  tier: 3
+  lost: false
+  magicItem: false
+  formula: '2d6'
+  damageType: damage
+  predefinedEffects: ''
+type: Spell
+_stats:
+  compendiumSource: null
+  duplicateSource: null
+  exportSource: null
+  coreVersion: '13.348'
+  systemId: shadowdark
+  systemVersion: 3.6.1
+  createdTime: 1767064394550
+  modifiedTime: 1771295884104
+  lastModifiedBy: HP3Vba5udEHYm4dW
+ownership:
+  default: 0
+  lDQovrTY32fJwPBR: 3
+flags:
+  shadowdark-extras:
+    spellDamage:
+      enabled: true
+      damageType: Necrotic
+      damageRequirement: ''
+      damageRequirementFailAction: zero
+      formulaType: basic
+      numDice: 2
+      dieType: d6
+      bonus: 0
+      scaling: none
+      scalingDice: 0
+      formula: ''
+      tieredFormula: ''
+      effects: >-
+        [{"uuid":"Compendium.shadowdark.spell-effects.Item.zjm48oHhbVG4XeoB","duration":{}}]
+      effectsRequirement: ''
+      effectsApplyToTarget: true
+      trackDuration: false
+      criticalEffects: '[]'
+      effectSelectionMode: all
+      perTurnTrigger: start
+      perTurnDamage: ''
+      reapplyEffects: false
+    summoning:
+      enabled: false
+      profiles: '[]'
+      deleteAtExpiry: false
+    itemGive:
+      enabled: false
+      profiles: '[]'
+    targeting:
+      mode: targeted
+      template:
+        type: circle
+        size: 30
+        fillColor: '#4e9a06'
+        placement: choose
+        deleteMode: none
+        hideOutline: false
+        excludeCaster: false
+        tokenMagic:
+          texture: ''
+          opacity: 0.5
+          preset: NOFX
+_id: TMcKTM1kDx81oS5p
+sort: 3400000
+_key: '!items!TMcKTM1kDx81oS5p'

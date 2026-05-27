@@ -1,0 +1,490 @@
+name: Tavern Hooks
+formula: 1d20
+results:
+  - type: text
+    weight: 1
+    range:
+      - 1
+      - 1
+    drawn: false
+    description: >-
+      A well-traveled merchant has arrived and is offering to sell 'the most
+      valuable thing in this room' — which he claims is not on his person, not
+      in his bags, and not visible to the naked eye.
+    _id: Tb3cri0qh6kx84np
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!v4sdbl9i292uK1lm.Tb3cri0qh6kx84np'
+  - type: text
+    weight: 1
+    range:
+      - 2
+      - 2
+    drawn: false
+    description: >-
+      The tavern's oldest regular — a fixture on the same stool for thirty years
+      — has not shown up tonight. The barkeep is more unsettled than the
+      situation seems to warrant.
+    _id: 4k6FO60NQ7U7qVH4
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!v4sdbl9i292uK1lm.4k6FO60NQ7U7qVH4'
+  - type: text
+    weight: 1
+    range:
+      - 3
+      - 3
+    drawn: false
+    description: >-
+      A hooded figure in the corner is buying a round for the entire tavern
+      every hour, on the hour, without speaking a word or looking up from the
+      table.
+    _id: 1KerupGzT1ESQEKa
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!v4sdbl9i292uK1lm.1KerupGzT1ESQEKa'
+  - type: text
+    weight: 1
+    range:
+      - 4
+      - 4
+    drawn: false
+    description: >-
+      Two retired soldiers are playing a board game at a corner table. The game
+      is not one anyone recognizes. They've been playing it for six hours and
+      show no signs of either winning or stopping.
+    _id: 8dA5YAr0RAlPSJLw
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!v4sdbl9i292uK1lm.8dA5YAr0RAlPSJLw'
+  - type: text
+    weight: 1
+    range:
+      - 5
+      - 5
+    drawn: false
+    description: >-
+      A bard begins a song the whole crowd seems to know, though no one can say
+      where they first heard it. Halfway through, one patron bursts into tears,
+      one begins laughing uncontrollably, and one quietly slips out the back.
+    _id: zb36aMyl0GhlNHG2
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!v4sdbl9i292uK1lm.zb36aMyl0GhlNHG2'
+  - type: text
+    weight: 1
+    range:
+      - 6
+      - 6
+    drawn: false
+    description: >-
+      The barkeep is offering a free meal to anyone who can tell him something
+      he hasn't heard before. He has heard a great deal. The board behind him
+      lists forty-seven failed attempts tonight.
+    _id: r5rKr3sN2nQXaOTH
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!v4sdbl9i292uK1lm.r5rKr3sN2nQXaOTH'
+  - type: text
+    weight: 1
+    range:
+      - 7
+      - 7
+    drawn: false
+    description: >-
+      A messenger arrives soaking wet, delivers a sealed letter to the barkeep,
+      and collapses face-first onto the bar. The letter is addressed to 'whoever
+      finds this useful.'
+    _id: kvvWkM8XXN9ZeXhE
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!v4sdbl9i292uK1lm.kvvWkM8XXN9ZeXhE'
+  - type: text
+    weight: 1
+    range:
+      - 8
+      - 8
+    drawn: false
+    description: >-
+      Every candle in the tavern simultaneously gutters to blue for exactly four
+      seconds, then returns to normal. The barkeep refills everyone's glass
+      without being asked and says only: 'Third time this week.'
+    _id: PhJlEqVagCRzXetC
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!v4sdbl9i292uK1lm.PhJlEqVagCRzXetC'
+  - type: text
+    weight: 1
+    range:
+      - 9
+      - 9
+    drawn: false
+    description: >-
+      A wealthy local has reserved the entire upper floor for a 'private
+      celebration' but the celebration sounds, from below, less like celebration
+      and more like a very civil disagreement escalating very slowly.
+    _id: eQtCdCC0lCX2aBKJ
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!v4sdbl9i292uK1lm.eQtCdCC0lCX2aBKJ'
+  - type: text
+    weight: 1
+    range:
+      - 10
+      - 10
+    drawn: false
+    description: >-
+      A woman enters, sits at the bar, and places a key on the counter. She says
+      she will pay handsomely for someone to return it to the lock it belongs to
+      — which she cannot identify — before dawn.
+    _id: mAkNCITIajxVaTxL
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!v4sdbl9i292uK1lm.mAkNCITIajxVaTxL'
+  - type: text
+    weight: 1
+    range:
+      - 11
+      - 11
+    drawn: false
+    description: >-
+      A halfling card player has been winning consistently for three hours. He
+      isn't cheating — several people have checked. He's doing something else,
+      but no one can identify what.
+    _id: UvquhDb2MtFk1ZK7
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!v4sdbl9i292uK1lm.UvquhDb2MtFk1ZK7'
+  - type: text
+    weight: 1
+    range:
+      - 12
+      - 12
+    drawn: false
+    description: >-
+      A courier arrives, reads out a short proclamation in an official voice,
+      hands the barkeep a sealed writ, and departs without taking questions. The
+      barkeep reads the writ, puts it in a drawer, and pours himself a very
+      large drink.
+    _id: n9A9MQDxQUk9I12c
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!v4sdbl9i292uK1lm.n9A9MQDxQUk9I12c'
+  - type: text
+    weight: 1
+    range:
+      - 13
+      - 13
+    drawn: false
+    description: >-
+      An off-duty city guard is sitting alone, methodically tearing a piece of
+      parchment into increasingly small pieces. He won't say what the parchment
+      said. The pieces, if reassembled, might.
+    _id: 8TlzfmOAowjDvlUe
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!v4sdbl9i292uK1lm.8TlzfmOAowjDvlUe'
+  - type: text
+    weight: 1
+    range:
+      - 14
+      - 14
+    drawn: false
+    description: >-
+      A notorious local miser has just bought a round for the tavern — first
+      time in thirty years of drinking here. He looks terrified. No one has the
+      courage to ask why.
+    _id: 3yx7c3fjGRSvQSk9
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!v4sdbl9i292uK1lm.3yx7c3fjGRSvQSk9'
+  - type: text
+    weight: 1
+    range:
+      - 15
+      - 15
+    drawn: false
+    description: >-
+      A stranger asks the party if they've seen a very specific book — she
+      describes it in precise detail — then asks them to swear an oath that if
+      they find it, they won't open it. She won't say why. She seems sincere.
+    _id: evPvtLXdoIvAPZ5T
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!v4sdbl9i292uK1lm.evPvtLXdoIvAPZ5T'
+  - type: text
+    weight: 1
+    range:
+      - 16
+      - 16
+    drawn: false
+    description: >-
+      Three people at separate tables are individually, secretly, watching the
+      same fourth person. None of the three appears to be working with either of
+      the others.
+    _id: pfONcRvfDpFkBsmN
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!v4sdbl9i292uK1lm.pfONcRvfDpFkBsmN'
+  - type: text
+    weight: 1
+    range:
+      - 17
+      - 17
+    drawn: false
+    description: >-
+      The tavern's house cat — ancient, practically a landmark — is sitting
+      rigidly on the bar, staring at the door, growling very quietly. It has not
+      moved in two hours.
+    _id: QXtvAoXPnbHLB1sh
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!v4sdbl9i292uK1lm.QXtvAoXPnbHLB1sh'
+  - type: text
+    weight: 1
+    range:
+      - 18
+      - 18
+    drawn: false
+    description: >-
+      A traveling scholar is writing furiously at a corner table, surrounded by
+      books. She has been writing for six hours. At one point she crossed out
+      everything she'd done and started again. She looks elated.
+    _id: JjQVAxb8qHlSbIKt
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!v4sdbl9i292uK1lm.JjQVAxb8qHlSbIKt'
+  - type: text
+    weight: 1
+    range:
+      - 19
+      - 19
+    drawn: false
+    description: >-
+      The dice at the gambling table have been rolling nothing but fives for the
+      last twenty minutes. The players have all gone completely silent and are
+      now placing increasingly large bets with the expressions of people who are
+      simultaneously aware something is very wrong and unable to stop.
+    _id: Ra65ectMYLN89CZs
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!v4sdbl9i292uK1lm.Ra65ectMYLN89CZs'
+  - type: text
+    weight: 1
+    range:
+      - 20
+      - 20
+    drawn: false
+    description: >-
+      Last call is announced. Every patron except one gets up and leaves. The
+      remaining patron has not moved, touched their drink, or blinked in some
+      time. The barkeep is holding a broom and visibly reconsidering their life
+      choices.
+    _id: 3pca9xYrAz6xb38V
+    name: ''
+    img: null
+    flags: {}
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '13.348'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+    _key: '!tables.results!v4sdbl9i292uK1lm.3pca9xYrAz6xb38V'
+description: >-
+  20 original tavern hooks, complications, and opportunities for urban and rural
+  inn encounters.
+replacement: true
+displayRoll: true
+img: icons/svg/d20-grey.svg
+folder: null
+ownership:
+  default: 0
+  HP3Vba5udEHYm4dW: 3
+flags: {}
+_stats:
+  compendiumSource: null
+  duplicateSource: null
+  exportSource: null
+  coreVersion: '13.348'
+  systemId: shadowdark
+  systemVersion: 3.6.1
+  createdTime: 1772672918040
+  modifiedTime: 1772760502256
+  lastModifiedBy: HP3Vba5udEHYm4dW
+_id: v4sdbl9i292uK1lm
+sort: 500000
+_key: '!tables!v4sdbl9i292uK1lm'

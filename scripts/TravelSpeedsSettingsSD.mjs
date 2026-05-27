@@ -5,6 +5,8 @@
 
 const MODULE_ID = "shadowdark-extras";
 
+const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
+
 // Default travel speeds
 const DEFAULT_TRAVEL_SPEEDS = [
 	{ key: "slow", name: "Slow" },
@@ -15,188 +17,184 @@ const DEFAULT_TRAVEL_SPEEDS = [
 /**
  * Travel Speeds Settings Application
  */
-export class TravelSpeedsSettingsApp extends FormApplication {
-	static get defaultOptions() {
-		return foundry.utils.mergeObject(super.defaultOptions, {
-			id: "sdx-travel-speeds-settings",
-			title: game.i18n.localize("SHADOWDARK_EXTRAS.travel_speeds.title"),
-			template: `modules/${MODULE_ID}/templates/travel-speeds-settings.hbs`,
-			classes: ["shadowdark", "shadowdark-extras", "travel-speeds-settings-app"],
-			width: 500,
-			height: "auto",
-			resizable: true,
-			closeOnSubmit: false,
-			submitOnChange: true,
-			scrollY: [".sdx-speeds-list"]
-		});
-	}
-
+export class TravelSpeedsSettingsApp extends HandlebarsApplicationMixin(ApplicationV2) {
 	static _instance = null;
+
+	static DEFAULT_OPTIONS = {
+		id: "sdx-travel-speeds-settings",
+		classes: ["shadowdark", "shadowdark-extras", "travel-speeds-settings-app"],
+		tag: "form",
+		window: {
+			title: "SHADOWDARK_EXTRAS.travel_speeds.title",
+			resizable: true
+		},
+		position: {
+			width: 500,
+			height: "auto"
+		},
+		form: {
+			handler: TravelSpeedsSettingsApp.formHandler,
+			submitOnChange: true,
+			closeOnSubmit: false
+		}
+	};
+
+	static PARTS = {
+		form: {
+			template: `modules/${MODULE_ID}/templates/travel-speeds-settings.hbs`,
+			scrollable: [".sdx-speeds-list"]
+		}
+	};
 
 	static show() {
 		if (!this._instance) {
 			this._instance = new TravelSpeedsSettingsApp();
 		}
-		this._instance.render(true);
+		this._instance.render({ force: true });
 		return this._instance;
 	}
 
-	getData(options = {}) {
+	async _prepareContext(options) {
 		let speeds = getTravelSpeeds();
 
-		// Ensure we always have speeds to display
 		if (!speeds || !Array.isArray(speeds) || speeds.length === 0) {
 			speeds = foundry.utils.deepClone(DEFAULT_TRAVEL_SPEEDS);
 		}
 
 		return {
-			speeds: speeds.map((speed, index) => ({
-				...speed,
-				index
-			})),
+			speeds: speeds.map((speed, index) => ({ ...speed, index })),
 			MODULE_ID
 		};
 	}
 
-	activateListeners(html) {
-		super.activateListeners(html);
-
-		// Store reference to html for use in event handlers
-		this._html = html;
+	_onRender(context, options) {
+		const html = this.element;
+		if (!html) return;
 
 		// Add new speed
-		html.find(".sdx-add-speed").on("click", (ev) => {
+		html.querySelector(".sdx-add-speed")?.addEventListener("click", (ev) => {
 			ev.preventDefault();
-			console.log("Shadowdark Extras | Add Speed clicked");
-			this._addSpeed(this._html);
+			this._addSpeed();
 		});
 
-		// Remove speed
-		html.on("click", ".sdx-remove-speed", (ev) => {
-			ev.preventDefault();
-			this._removeSpeed(html, ev);
-		});
-
-		// Move speed up
-		html.on("click", ".sdx-move-up", (ev) => {
-			ev.preventDefault();
-			this._moveSpeed(html, ev, -1);
-		});
-
-		// Move speed down
-		html.on("click", ".sdx-move-down", (ev) => {
-			ev.preventDefault();
-			this._moveSpeed(html, ev, 1);
+		// Event delegation for row buttons
+		html.addEventListener("click", (ev) => {
+			if (ev.target.closest(".sdx-remove-speed")) {
+				ev.preventDefault();
+				this._removeSpeed(ev);
+			} else if (ev.target.closest(".sdx-move-up")) {
+				ev.preventDefault();
+				this._moveSpeed(ev, -1);
+			} else if (ev.target.closest(".sdx-move-down")) {
+				ev.preventDefault();
+				this._moveSpeed(ev, 1);
+			}
 		});
 
 		// Reset to defaults
-		html.find(".sdx-reset-defaults").on("click", async (ev) => {
+		html.querySelector(".sdx-reset-defaults")?.addEventListener("click", async (ev) => {
 			ev.preventDefault();
-			const confirmed = await Dialog.confirm({
-				title: game.i18n.localize("SHADOWDARK_EXTRAS.travel_speeds.reset_confirm_title"),
-				content: `<p>${game.i18n.localize("SHADOWDARK_EXTRAS.travel_speeds.reset_confirm_content")}</p>`
+			const confirmed = await foundry.applications.api.DialogV2.confirm({
+				window: { title: game.i18n.localize("SHADOWDARK_EXTRAS.travel_speeds.reset_confirm_title") },
+				content: `<p>${game.i18n.localize("SHADOWDARK_EXTRAS.travel_speeds.reset_confirm_content")}</p>`,
+				modal: true
 			});
 			if (confirmed) {
 				await game.settings.set(MODULE_ID, "travelSpeeds", { speeds: foundry.utils.deepClone(DEFAULT_TRAVEL_SPEEDS) });
-				this.render(true);
+				this.render({ force: true });
 				ui.notifications.info(game.i18n.localize("SHADOWDARK_EXTRAS.travel_speeds.reset_complete"));
 			}
 		});
 
 		// Save button - close after submit
-		html.find('button[name="submit"]').on("click", () => {
+		html.querySelector('button[name="submit"]')?.addEventListener("click", () => {
 			setTimeout(() => this.close(), 100);
 		});
 	}
 
-	_addSpeed(html) {
-		// Use element reference if html is stale
-		const $html = this.element || html;
-		const $list = $html.find(".sdx-speeds-list");
-		console.log("Shadowdark Extras | Speeds list found:", $list.length);
-		const newIndex = $list.find(".sdx-speed-row").length;
+	_addSpeed() {
+		const html = this.element;
+		const list = html?.querySelector(".sdx-speeds-list");
+		if (!list) return;
+		const newIndex = list.querySelectorAll(".sdx-speed-row").length;
 		const newKey = `speed${Date.now()}`;
 
-		const newRow = `
-			<div class="sdx-speed-row" data-index="${newIndex}">
-				<div class="sdx-speed-order">
-					<button type="button" class="sdx-move-up" data-tooltip="${game.i18n.localize("SHADOWDARK_EXTRAS.travel_speeds.move_up")}">
-						<i class="fas fa-chevron-up"></i>
-					</button>
-					<button type="button" class="sdx-move-down" data-tooltip="${game.i18n.localize("SHADOWDARK_EXTRAS.travel_speeds.move_down")}">
-						<i class="fas fa-chevron-down"></i>
-					</button>
-				</div>
-				<input type="hidden" name="speeds.${newIndex}.key" value="${newKey}">
-				<input type="text" name="speeds.${newIndex}.name"
-					placeholder="${game.i18n.localize("SHADOWDARK_EXTRAS.travel_speeds.name_placeholder")}"
-					value="" class="sdx-speed-name"/>
-				<button type="button" class="sdx-remove-speed" data-tooltip="${game.i18n.localize("SHADOWDARK_EXTRAS.travel_speeds.remove")}">
-					<i class="fas fa-trash"></i>
+		const row = document.createElement("div");
+		row.className = "sdx-speed-row";
+		row.dataset.index = String(newIndex);
+		row.innerHTML = `
+			<div class="sdx-speed-order">
+				<button type="button" class="sdx-move-up" data-tooltip="${game.i18n.localize("SHADOWDARK_EXTRAS.travel_speeds.move_up")}">
+					<i class="fas fa-chevron-up"></i>
+				</button>
+				<button type="button" class="sdx-move-down" data-tooltip="${game.i18n.localize("SHADOWDARK_EXTRAS.travel_speeds.move_down")}">
+					<i class="fas fa-chevron-down"></i>
 				</button>
 			</div>
+			<input type="hidden" name="speeds.${newIndex}.key" value="${newKey}">
+			<input type="text" name="speeds.${newIndex}.name"
+				placeholder="${game.i18n.localize("SHADOWDARK_EXTRAS.travel_speeds.name_placeholder")}"
+				value="" class="sdx-speed-name"/>
+			<button type="button" class="sdx-remove-speed" data-tooltip="${game.i18n.localize("SHADOWDARK_EXTRAS.travel_speeds.remove")}">
+				<i class="fas fa-trash"></i>
+			</button>
 		`;
-		$list.append(newRow);
+		list.appendChild(row);
 		this.setPosition({ height: "auto" });
 	}
 
-	_removeSpeed(html, ev) {
-		$(ev.currentTarget).closest(".sdx-speed-row").remove();
-		const $html = this.element || html;
-		this._reindexRows($html);
+	_removeSpeed(ev) {
+		ev.target.closest(".sdx-speed-row")?.remove();
+		this._reindexRows();
 		this.setPosition({ height: "auto" });
-		this._onSubmit(ev);
+		this.element?.dispatchEvent(new SubmitEvent("submit", { cancelable: true }));
 	}
 
-	_moveSpeed(html, ev, direction) {
-		const $html = this.element || html;
-		const $row = $(ev.currentTarget).closest(".sdx-speed-row");
-		const $rows = $html.find(".sdx-speed-row");
-		const currentIndex = $rows.index($row);
+	_moveSpeed(ev, direction) {
+		const html = this.element;
+		const row = ev.target.closest(".sdx-speed-row");
+		const rows = Array.from(html.querySelectorAll(".sdx-speed-row"));
+		const currentIndex = rows.indexOf(row);
 		const newIndex = currentIndex + direction;
 
-		if (newIndex < 0 || newIndex >= $rows.length) return;
+		if (newIndex < 0 || newIndex >= rows.length) return;
 
 		if (direction < 0) {
-			$row.insertBefore($rows.eq(newIndex));
+			rows[newIndex].before(row);
 		} else {
-			$row.insertAfter($rows.eq(newIndex));
+			rows[newIndex].after(row);
 		}
 
-		this._reindexRows($html);
-		this._onSubmit(ev);
+		this._reindexRows();
+		html?.dispatchEvent(new SubmitEvent("submit", { cancelable: true }));
 	}
 
-	_reindexRows(html) {
-		const $html = this.element || html;
-		$html.find(".sdx-speed-row").each((i, row) => {
-			$(row).attr("data-index", i);
-			$(row).find("input, select").each((j, input) => {
-				const $input = $(input);
-				const oldName = $input.attr("name");
+	_reindexRows() {
+		const html = this.element;
+		if (!html) return;
+		html.querySelectorAll(".sdx-speed-row").forEach((row, i) => {
+			row.dataset.index = String(i);
+			row.querySelectorAll("input, select").forEach(input => {
+				const oldName = input.getAttribute("name");
 				if (oldName && oldName.startsWith("speeds.")) {
 					const parts = oldName.split(".");
-					parts[1] = i;
-					$input.attr("name", parts.join("."));
+					parts[1] = String(i);
+					input.setAttribute("name", parts.join("."));
 				}
 			});
 		});
 	}
 
-	async _updateObject(event, formData) {
-		// Process form data into speeds array
+	static async formHandler(event, form, formData) {
+		const flat = formData.object;
 		const speedsData = {};
 
-		for (const [key, value] of Object.entries(formData)) {
+		for (const [key, value] of Object.entries(flat)) {
 			if (key.startsWith("speeds.")) {
 				const parts = key.split(".");
 				const index = parseInt(parts[1]);
 				const field = parts[2];
-
-				if (!speedsData[index]) {
-					speedsData[index] = {};
-				}
-
+				if (!speedsData[index]) speedsData[index] = {};
 				speedsData[index][field] = value;
 			}
 		}
@@ -218,7 +216,7 @@ export class TravelSpeedsSettingsApp extends FormApplication {
 		await game.settings.set(MODULE_ID, "travelSpeeds", { speeds });
 
 		// Refresh any open party sheets to show changes
-		for (const app of Object.values(ui.windows)) {
+		for (const app of foundry.applications.instances.values()) {
 			if (app.constructor.name === "PartySheetSD") {
 				app.render(false);
 			}

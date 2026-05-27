@@ -1,0 +1,100 @@
+effects:
+  - name: Wizard Robe +1
+    img: icons/skills/melee/shield-block-gray-orange.webp
+    disabled: false
+    origin: Actor.JyUXFdnlpchlM2Jr.Item.49zYrszPphM7SeC9
+    transfer: true
+    _id: JBrXlvMKz17OMqjY
+    type: base
+    system:
+      changes:
+        - key: system.bonuses.acBonus
+          value: 1
+          priority: null
+          type: add
+    duration:
+      value: null
+      units: seconds
+      expiry: null
+      expired: false
+    description: ''
+    tint: '#ffffff'
+    statuses: []
+    sort: 0
+    flags:
+      shadowdark-extras:
+        sourceRequirement: charClass === "wizard"
+    _stats:
+      compendiumSource: null
+      duplicateSource: null
+      exportSource: null
+      coreVersion: '14.360'
+      systemId: shadowdark
+      systemVersion: 3.6.1
+      lastModifiedBy: null
+      createdTime: null
+      modifiedTime: null
+    start:
+      combat: null
+      round: 1
+      time: 197667
+      turn: 0
+      combatant: null
+      initiative: null
+    showIcon: 1
+    folder: null
+    _key: '!items.effects!8AlZLysnSynr47mQ.JBrXlvMKz17OMqjY'
+folder: F3AKMIJQch1KV4FP
+img: icons/equipment/chest/robe-layered-teal.webp
+name: Shimmering Robe
+system:
+  description: <p>A lovely made blu robe. It seems like it's shimmering. </p>
+  source:
+    title: ''
+  broken: false
+  canBeEquipped: true
+  cost:
+    cp: 0
+    gp: 100
+    sp: 0
+  equipped: true
+  isAmmunition: false
+  isPhysical: true
+  magicItem: true
+  quantity: 1
+  slots:
+    free_carry: 0
+    per_slot: 1
+    slots_used: 2
+  stashed: false
+  ac:
+    attribute: dex
+    base: 10
+    modifier: 0
+  baseArmor: ''
+  properties: []
+  predefinedEffects: ''
+  bonuses:
+    acBonusFromAttribute: str
+    acBonus: '1'
+type: Armor
+_stats:
+  compendiumSource: null
+  duplicateSource: null
+  exportSource: null
+  coreVersion: '14.360'
+  systemId: shadowdark
+  systemVersion: 3.6.1
+  createdTime: 1768073095134
+  modifiedTime: 1768073095134
+  lastModifiedBy: lDQovrTY32fJwPBR
+ownership:
+  default: 0
+  lDQovrTY32fJwPBR: 3
+flags:
+  item-piles:
+    item:
+      '-=overheadCost': null
+_id: 8AlZLysnSynr47mQ
+sort: 0
+_key: '!items!8AlZLysnSynr47mQ'

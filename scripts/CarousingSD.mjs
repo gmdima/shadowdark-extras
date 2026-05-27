@@ -549,7 +549,7 @@ export async function setCarousingTable(tableId) {
 
     await journal.update({
         [`flags.${MODULE_ID}.carousingSession`]: session,
-        [`flags.${MODULE_ID}.-=carousingDrops`]: null
+        [`flags.${MODULE_ID}.carousingDrops`]: foundry.data.operators.ForcedDeletion
     });
 
     rerenderPlayerSheets();
@@ -643,11 +643,10 @@ export async function resetCarousingSession() {
 
     ui.notifications.info(game.i18n.localize("SHADOWDARK_EXTRAS.carousing.resetting"));
 
-    // Forcefully wipe the flags using the -= syntax
-    // This ensures a clean slate better than just setting to {}
+    // Forcefully wipe the flags via ForcedDeletion sentinel (v14+)
     await journal.update({
-        [`flags.${MODULE_ID}.-=carousingSession`]: null,
-        [`flags.${MODULE_ID}.-=carousingDrops`]: null
+        [`flags.${MODULE_ID}.carousingSession`]: foundry.data.operators.ForcedDeletion,
+        [`flags.${MODULE_ID}.carousingDrops`]: foundry.data.operators.ForcedDeletion
     });
 
     // Manually trigger local re-render immediately so the GM sees it instantly
@@ -1479,8 +1478,8 @@ async function applyOutcomeEffect(actor, effect) {
         }
 
         case "luckToken": {
-            const currentLuck = actor.system?.luck || 0;
-            await actor.update({ "system.luck": currentLuck + effect.amount });
+            const currentLuck = actor.system?.luck?.remaining ?? actor.system?.luck ?? 0;
+            await actor.update({ "system.luck.remaining": currentLuck + effect.amount });
             return game.i18n.format("SHADOWDARK_EXTRAS.carousing.gained_luck", { amount: effect.amount });
         }
 
@@ -1508,14 +1507,13 @@ export function initCarousingSocket() {
         const flagChanges = changes?.flags?.[MODULE_ID];
         if (!flagChanges) return;
 
-        // Re-render if drops or session changed (including deletions with -= prefix)
+        // Re-render if drops or session changed. ForcedDeletion sentinel
+        // appears as a defined value under the actual key (not a "-=" prefix),
+        // so this check catches both normal updates and deletions.
         const hasCarousingChange =
             flagChanges.carousingDrops !== undefined ||
             flagChanges.carousingGmActors !== undefined ||
-            flagChanges.carousingSession !== undefined ||
-            flagChanges["-=carousingDrops"] !== undefined ||
-            flagChanges["-=carousingGmActors"] !== undefined ||
-            flagChanges["-=carousingSession"] !== undefined;
+            flagChanges.carousingSession !== undefined;
 
         if (hasCarousingChange) {
             rerenderPlayerSheets();

@@ -1,0 +1,38 @@
+name: Damage Bonus (By Property — REPLACEME)
+img: icons/skills/melee/hand-grip-axe-strike-orange.webp
+transfer: false
+type: base
+disabled: false
+duration:
+  value: null
+  units: seconds
+  expiry: null
+  expired: false
+description: ''
+origin: null
+tint: '#ffffff'
+statuses: []
+showIcon: 1
+sort: 0
+flags: {}
+system:
+  changes:
+    - key: system.roll.attack.damage.REPLACEME
+      value: '1'
+      priority: 20
+      type: add
+      phase: initial
+_id: 3N7rBLFpdqlAnluo
+start: null
+folder: null
+_stats:
+  coreVersion: '14.361'
+  systemId: shadowdark
+  systemVersion: 4.0.4
+  createdTime: 1779027664610
+  modifiedTime: 1779027664610
+  lastModifiedBy: lgz0hScAHYW4VnVt
+  compendiumSource: null
+  duplicateSource: null
+  exportSource: null
+_key: '!effects!3N7rBLFpdqlAnluo'

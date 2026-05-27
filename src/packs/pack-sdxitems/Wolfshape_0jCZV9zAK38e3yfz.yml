@@ -1,0 +1,196 @@
+effects: []
+folder: vmqOYZjyo8VunyyP
+img: icons/creatures/mammals/wolf-howl-moon-forest-blue.webp
+name: Wolfshape
+system:
+  description: >-
+    <p>You and your gear transform into a wolf for the spell's duration. You
+    assume the wolf's STR, DEX, CON, HP, AC, speed, attacks, and physical
+    characteristics, but retain your INT, WIS, and CHA.</p><p>You can cast
+    spells in this form. If you go to 0 HP, you revert to your true shape at 0
+    HP.</p><p>If you are level 5+, you can transform into a dire wolf or a
+    winter wolf,
+    instead.</p><p>@UUID[Compendium.shadowdark.spell-effects.Item.B9ChlhtUjECrLlre]{Spell
+    Effect: Wolfshape
+    (Wolf)}</p><p>@UUID[Compendium.shadowdark.spell-effects.Item.3vCyl2kqfz31N1yP]{Spell
+    Effect: Wolfshape (Dire
+    Wolf)}</p><p>@UUID[Compendium.shadowdark.spell-effects.Item.cC4hF54uctVhvvCo]{Spell
+    Effect: Wolfshape (Winter Wolf)}</p>
+  source:
+    title: cursed-scroll-3
+  class:
+    - Compendium.shadowdark.classes.Item.xdjod5gPhNPIkLth
+  duration:
+    type: focus
+    value: 1
+  range: self
+  tier: 3
+  lost: false
+  predefinedEffects: ''
+type: Spell
+_stats:
+  compendiumSource: null
+  duplicateSource: null
+  exportSource: null
+  coreVersion: '13.348'
+  systemId: shadowdark
+  systemVersion: 3.6.1
+  createdTime: 1769459821671
+  modifiedTime: 1771295884104
+  lastModifiedBy: HP3Vba5udEHYm4dW
+ownership:
+  default: 0
+  lDQovrTY32fJwPBR: 3
+flags:
+  shadowdark-extras:
+    spellDamage:
+      enabled: false
+      damageType: ''
+      numDice: 0
+      dieType: d4
+      effects: >-
+        [{"uuid":"Compendium.shadowdark-extras.pack-sdxitems.Item.y99NlRKDtNrbIFoC","duration":{}},{"uuid":"Compendium.shadowdark-extras.pack-sdxitems.Item.qR2KbhmWINVOOmRw","duration":{}},{"uuid":"Compendium.shadowdark-extras.pack-sdxitems.Item.9K9xJegp56cqT67u","duration":{}}]
+      damageRequirement: ''
+      damageRequirementFailAction: zero
+      formulaType: basic
+      bonus: null
+      scaling: none
+      scalingDice: null
+      formula: undefined
+      tieredFormula: ''
+      criticalEffects: '[]'
+      effectsRequirement: ''
+      effectsApplyToTarget: false
+      effectSelectionMode: prompt
+      trackDuration: false
+      perTurnTrigger: start
+      perTurnDamage: ''
+      reapplyEffects: false
+    summoning:
+      enabled: false
+      profiles: '[]'
+      deleteAtExpiry: false
+    itemGive:
+      enabled: false
+      profiles: '[]'
+    alignment: ''
+    targeting:
+      mode: targeted
+      template:
+        type: circle
+        size: 30
+        fillColor: '#4e9a06'
+        placement: choose
+        deleteMode: none
+        hideOutline: false
+        excludeCaster: false
+        tokenMagic:
+          texture: ''
+          opacity: 0.5
+          preset: NOFX
+    templateEffects:
+      enabled: false
+      triggers:
+        onEnter: false
+        onTurnStart: false
+        onTurnEnd: false
+        onLeave: false
+      damage:
+        formula: ''
+        type: ''
+      save:
+        enabled: false
+        dc: '12'
+        ability: dex
+        halfOnSuccess: true
+      applyConfiguredEffects: false
+      runItemMacro: false
+    auraEffects:
+      enabled: false
+      attachTo: caster
+      radius: 30
+      triggers:
+        onEnter: false
+        onLeave: false
+        onSourceTurnStart: false
+        onSourceTurnEnd: false
+        onTargetTurnStart: false
+        onTargetTurnEnd: false
+      damage:
+        formula: ''
+        type: ''
+      damageTriggers:
+        onEnter: false
+        onLeave: false
+        onSourceTurnStart: false
+        onSourceTurnEnd: false
+        onTargetTurnStart: false
+        onTargetTurnEnd: false
+      save:
+        enabled: false
+        dc: 12
+        ability: con
+        halfOnSuccess: false
+      disposition: all
+      includeSelf: false
+      applyToOriginator: true
+      checkVisibility: false
+      animation:
+        enabled: true
+        style: circle
+        tint: '#4488ff'
+        scaleMultiplier: 1
+        opacity: 0.6
+      tokenFilters:
+        enabled: false
+        preset: ''
+      applyConfiguredEffects: false
+      effectsTriggers:
+        onEnter: false
+        onLeave: false
+        onSourceTurnStart: false
+        onSourceTurnEnd: false
+        onTargetTurnStart: false
+        onTargetTurnEnd: false
+      runItemMacro: false
+      macroTriggers:
+        onEnter: false
+        onLeave: false
+        onSourceTurnStart: false
+        onSourceTurnEnd: false
+        onTargetTurnStart: false
+        onTargetTurnEnd: false
+    itemMacro:
+      triggers:
+        - onSuccess
+  itemacro:
+    macro:
+      name: Wolfshape
+      type: script
+      scope: global
+      command: |-
+        const sdx = game.modules.get("shadowdark-extras");
+          if (!sdx?.api?.showShapechangerDialog) {
+              ui.notifications.error("Shadowdark Extras API not available");
+              return;
+          }
+          await sdx.api.showShapechangerDialog(actor, item, game.user.id);
+      author: HP3Vba5udEHYm4dW
+      _id: null
+      img: icons/svg/dice-target.svg
+      folder: null
+      sort: 0
+      ownership:
+        default: 0
+      flags: {}
+      _stats:
+        coreVersion: '13.348'
+        systemId: shadowdark
+        systemVersion: 3.6.1
+        lastModifiedBy: null
+        compendiumSource: null
+        duplicateSource: null
+        exportSource: null
+_id: 0jCZV9zAK38e3yfz
+sort: 400000
+_key: '!items!0jCZV9zAK38e3yfz'

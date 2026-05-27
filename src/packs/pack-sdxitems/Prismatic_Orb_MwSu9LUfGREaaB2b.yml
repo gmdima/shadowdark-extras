@@ -1,0 +1,304 @@
+effects: []
+folder: vmqOYZjyo8VunyyP
+img: icons/magic/water/orb-water-transparent.webp
+name: Prismatic Orb
+system:
+  description: >-
+    <p>You send a strobing orb of energy streaking toward a target within range.
+    </p><p>Choose an energy type from fire, cold, or electricity. The orb deals
+    3d8 damage and delivers a concussive blast of the chosen energy type.
+    </p><p>If the energy type is anathema to the target's existence (for
+    example, cold energy against a fire elemental), the orb deals double damage
+    to it, instead.</p>
+  source:
+    title: core-rules
+  class:
+    - Compendium.shadowdark.classes.Item.035nuVkU9q2wtMPs
+  duration:
+    type: instant
+    value: 1
+  range: far
+  tier: 5
+  lost: false
+  formula: '3d8'
+  damageType: damage
+  predefinedEffects: ''
+type: Spell
+_stats:
+  compendiumSource: null
+  duplicateSource: null
+  exportSource: null
+  coreVersion: '13.348'
+  systemId: shadowdark
+  systemVersion: 3.6.1
+  createdTime: 1767137738631
+  modifiedTime: 1771295884104
+  lastModifiedBy: HP3Vba5udEHYm4dW
+ownership:
+  default: 0
+  lDQovrTY32fJwPBR: 3
+flags:
+  shadowdark-extras:
+    spellDamage:
+      enabled: false
+      damageType: ''
+      damageRequirement: ''
+      damageRequirementFailAction: zero
+      formulaType: basic
+      numDice: 3
+      dieType: d8
+      bonus: 0
+      scaling: none
+      scalingDice: 0
+      formula: ''
+      tieredFormula: ''
+      effects: '[]'
+      effectsRequirement: ''
+      effectsApplyToTarget: true
+      criticalEffects: '[]'
+      effectSelectionMode: all
+      trackDuration: false
+      perTurnTrigger: start
+      perTurnDamage: ''
+      reapplyEffects: false
+    summoning:
+      enabled: false
+      profiles: '[]'
+      deleteAtExpiry: false
+    itemGive:
+      enabled: false
+      profiles: '[]'
+    targeting:
+      mode: targeted
+      template:
+        type: circle
+        size: 30
+        fillColor: '#4e9a06'
+        placement: choose
+        deleteMode: none
+        hideOutline: false
+        excludeCaster: false
+        tokenMagic:
+          texture: ''
+          opacity: 0.5
+          preset: NOFX
+    itemMacro:
+      triggers:
+        - onSuccess
+      runAsGm: true
+  itemacro:
+    macro:
+      name: Prismatic Orb
+      type: script
+      scope: global
+      command: >-
+        // Concussive Orb - Energy Spell
+
+        // Trigger: onSuccess (also enable onCritical for critical hits)
+
+        // Deals 3d8 damage of chosen energy type (fire, cold, or electricity)
+
+        // Double damage if anathema to target
+
+
+        if (!token) {
+            ui.notifications.warn("Caster token not found!");
+            return;
+        }
+
+
+        const isCritical = args.isCritical || false;
+
+        const targets = Array.from(game.user.targets);
+
+
+        if (targets.length === 0) {
+            ui.notifications.warn("Please target a creature first!");
+            return;
+        }
+
+
+        // Create dialog for energy type selection
+
+        const dialogContent = `
+            <form>
+                <div class="form-group">
+                    <label><strong>Energy Type:</strong></label>
+                    <select id="energy-type" style="width: 100%; margin-bottom: 10px;">
+                        <option value="fire">🔥 Fire</option>
+                        <option value="cold">❄️ Cold</option>
+                        <option value="electricity">⚡ Electricity</option>
+                    </select>
+                </div>
+                <div class="form-group" style="margin-top: 10px;">
+                    <label style="display: flex; align-items: center; gap: 8px;">
+                        <input type="checkbox" id="is-anathema" />
+                        <span><strong>Anathema</strong> (double damage)</span>
+                    </label>
+                    <p style="color: #ff9900; font-size: 11px; margin: 4px 0 0 24px; font-style: italic;">
+                        ⚠️ Ask the Game Master before selecting this option!
+                    </p>
+                </div>
+            </form>
+        `;
+
+
+        const result = await Dialog.wait({
+            title: "Prismatic Orb",
+            content: dialogContent,
+            buttons: {
+                cast: {
+                    icon: '<i class="fas fa-magic"></i>',
+                    label: "Cast",
+                    callback: (html) => {
+                        return {
+                            energyType: html.find("#energy-type").val(),
+                            isAnathema: html.find("#is-anathema").is(":checked")
+                        };
+                    }
+                },
+                cancel: {
+                    icon: '<i class="fas fa-times"></i>',
+                    label: "Cancel",
+                    callback: () => null
+                }
+            },
+            default: "cast",
+            close: () => null
+        });
+
+
+        if (!result) return; // Cancelled
+
+
+        const { energyType, isAnathema } = result;
+
+
+        // Energy type display info
+
+        const energyInfo = {
+            fire: { icon: "🔥", color: "#ff6600", name: "Fire" },
+            cold: { icon: "❄️", color: "#66ccff", name: "Cold" },
+            electricity: { icon: "⚡", color: "#ffff66", name: "Electricity" }
+        };
+
+        const energy = energyInfo[energyType];
+
+
+        // Play JB2A animation if available
+
+        if (game.modules.get("sequencer")?.active) {
+            const animations = {
+                fire: "jb2a.scorching_ray.01.orange",
+                cold: "jb2a.ray_of_frost.blue",
+                electricity: "jb2a.chain_lightning.primary.blue"
+            };
+
+            for (const target of targets) {
+                new Sequence()
+                    .effect()
+                    .file(animations[energyType])
+                    .atLocation(token)
+                    .stretchTo(target)
+                    .play();
+            }
+        }
+
+
+        // Roll base damage
+
+        const damageRoll = await new Roll("3d8").evaluate();
+
+        let totalDamage = damageRoll.total;
+
+
+        // Critical doubles (Shadowdark handles this, but just in case)
+
+        if (isCritical) {
+            totalDamage *= 2;
+        }
+
+
+        // Anathema doubles damage
+
+        if (isAnathema) {
+            totalDamage *= 2;
+        }
+
+
+        // Apply damage to each target
+
+        const hitNames = [];
+
+        for (const target of targets) {
+            const targetActor = target.actor;
+            if (!targetActor) continue;
+
+            const currentHP = targetActor.system.attributes.hp.value;
+            const newHP = Math.max(0, currentHP - totalDamage);
+            await targetActor.update({ "system.attributes.hp.value": newHP });
+            hitNames.push(target.name);
+        }
+
+
+        // Build damage breakdown text
+
+        let damageBreakdown = `3d8 = ${damageRoll.total}`;
+
+        if (isCritical) damageBreakdown += " × 2 (Critical)";
+
+        if (isAnathema) damageBreakdown += " × 2 (Anathema)";
+
+        damageBreakdown += ` = <b>${totalDamage}</b>`;
+
+
+        // Determine effects text
+
+        let effectsText = "";
+
+        if (isCritical) effectsText += '<span style="color: #ff3333;">CRITICAL
+        HIT!</span> ';
+
+        if (isAnathema) effectsText += '<span style="color:
+        #ffcc00;">ANATHEMA!</span>';
+
+
+        // Create chat message
+
+        ChatMessage.create({
+            content: `
+                <div style="border: 2px solid ${energy.color}; border-radius: 8px; padding: 8px; background: linear-gradient(135deg, #1a1a2a 0%, #2a2a4a 100%);">
+                    <h3 style="color: ${energy.color}; margin: 0 0 4px 0;">${energy.icon} Prismatic Orb (${energy.name})</h3>
+                    ${effectsText ? `<p style="margin: 4px 0;">${effectsText}</p>` : ""}
+                    <p style="margin: 4px 0; color: #cccccc;">Damage: ${damageBreakdown} ${energyType}</p>
+                    <p style="margin: 4px 0; color: #cccccc;">Hit: <b>${hitNames.join(", ")}</b></p>
+                    <p style="font-size: 11px; color: #888888; margin: 8px 0 0 0; font-style: italic;">
+                        A strobing orb of ${energyType} energy streaks toward the target, delivering a concussive blast!
+                    </p>
+                </div>
+            `,
+            speaker: speaker
+        });
+
+
+        ui.notifications.info(`Prismatic Orb dealt ${totalDamage} ${energyType}
+        damage to ${hitNames.length} target(s)!`);
+      author: lDQovrTY32fJwPBR
+      _id: null
+      img: icons/svg/dice-target.svg
+      folder: null
+      sort: 0
+      ownership:
+        default: 0
+      flags: {}
+      _stats:
+        coreVersion: '13.348'
+        systemId: shadowdark
+        systemVersion: 3.6.1
+        lastModifiedBy: null
+        compendiumSource: null
+        duplicateSource: null
+        exportSource: null
+_id: MwSu9LUfGREaaB2b
+sort: 2600000
+_key: '!items!MwSu9LUfGREaaB2b'

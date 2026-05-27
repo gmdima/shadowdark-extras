@@ -1118,9 +1118,11 @@ export class TomPlayerView extends HandlebarsApplicationMixin(ApplicationV2) {
     // Sheet button - only shown if user owns the actor
     const sheetBtnHtml = isOwner ? `<button class="tom-arena-token-sheet-btn" title="Open Character Sheet"><i class="fas fa-user"></i></button>` : '';
 
+    const escapedName = foundry.utils.escapeHTML(actorName);
+    const escapedImage = foundry.utils.escapeHTML(image);
     tokenEl.innerHTML = `
       <div class="tom-arena-token-portrait">
-        <img src="${image}" alt="${actorName}">
+        <img src="${escapedImage}" alt="${escapedName}">
         <div class="tom-arena-conditions">${conditionsHtml}</div>
         ${gmConditionsBtn}
         <button class="tom-arena-token-toggle-btn" title="Toggle compact view"><i class="fas ${isCompact ? 'fa-compress' : 'fa-expand'}"></i></button>
@@ -1128,7 +1130,7 @@ export class TomPlayerView extends HandlebarsApplicationMixin(ApplicationV2) {
       </div>
       <div class="tom-arena-token-info">
         ${acBadge}
-        <div class="tom-arena-token-name">${actorName}</div>
+        <div class="tom-arena-token-name">${escapedName}</div>
         ${hpBadge}
       </div>
     `;
@@ -1312,8 +1314,8 @@ export class TomPlayerView extends HandlebarsApplicationMixin(ApplicationV2) {
   }
 
   static _showHpEditDialog(tokenId, actorId, isNPC, currentHp, maxHp, actorName) {
-    new Dialog({
-      title: `Edit HP - ${actorName}`,
+    new foundry.applications.api.DialogV2({
+      window: { title: `Edit HP - ${actorName}` },
       content: `
         <form class="tom-hp-edit-dialog">
           <div class="form-group">
@@ -1323,38 +1325,36 @@ export class TomPlayerView extends HandlebarsApplicationMixin(ApplicationV2) {
           </div>
         </form>
       `,
-      buttons: {
-        save: {
-          icon: '<i class="fas fa-check"></i>',
+      buttons: [
+        {
+          action: "save",
+          icon: "fas fa-check",
           label: "Save",
-          callback: async (html) => {
-            const newHp = parseInt(html.find('input[name="hp"]').val()) || 0;
+          default: true,
+          callback: async (event, button) => {
+            const newHp = parseInt(button.form.elements.hp.value) || 0;
             const clampedHp = Math.max(0, Math.min(newHp, maxHp));
-
 
             const { TomSocketHandler } = await import('../data/TomSocketHandler.mjs');
 
             if (isNPC) {
-
               TomSocketHandler.emitArenaTokenHpUpdate({ tokenId, hp: clampedHp, maxHp });
             } else {
-
               const actor = game.actors.get(actorId);
               if (actor) {
                 await actor.update({ 'system.attributes.hp.value': clampedHp });
-
                 TomSocketHandler.emitArenaTokenHpUpdate({ tokenId, hp: clampedHp, maxHp });
               }
             }
           }
         },
-        cancel: {
-          icon: '<i class="fas fa-times"></i>',
+        {
+          action: "cancel",
+          icon: "fas fa-times",
           label: "Cancel"
         }
-      },
-      default: "save"
-    }).render(true);
+      ]
+    }).render({ force: true });
   }
 
   static moveArenaToken(tokenId, x, y) {
@@ -1516,7 +1516,8 @@ export class TomPlayerView extends HandlebarsApplicationMixin(ApplicationV2) {
     assetEl.style.left = `${x}%`;
     assetEl.style.top = `${y}%`;
     assetEl.style.transform = `translate(-50%, -50%) scale(${scale || 1})`;
-    assetEl.innerHTML = `<img src="${image}" alt="Asset">`;
+    const escapedImage = foundry.utils.escapeHTML(image);
+    assetEl.innerHTML = `<img src="${escapedImage}" alt="Asset">`;
 
     assetsContainer.appendChild(assetEl);
 

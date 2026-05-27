@@ -26,18 +26,18 @@ export class TomSD {
     Hooks.on('updateActor', this._onActorUpdate.bind(this));
 
     // Hook to fix critical failure styling
-    Hooks.on('renderChatMessage', (message, html, data) => {
-      const diceTotal = html.find('.dice-total.failure');
-      if (diceTotal.length > 0) {
-        if (diceTotal.text().includes('Critical Failure!')) {
-          diceTotal.addClass('fumble');
+    Hooks.on('renderChatMessageHTML', (message, html, context) => {
+      const diceTotal = html.querySelector('.dice-total.failure');
+      if (diceTotal) {
+        if (diceTotal.innerText.includes('Critical Failure!')) {
+          diceTotal.classList.add('fumble');
         }
       }
 
-      const diceTotalSuccess = html.find('.dice-total.success');
-      if (diceTotalSuccess.length > 0) {
-        if (diceTotalSuccess.text().includes('Critical Success!')) {
-          diceTotalSuccess.addClass('critical');
+      const diceTotalSuccess = html.querySelector('.dice-total.success');
+      if (diceTotalSuccess) {
+        if (diceTotalSuccess.innerText.includes('Critical Success!')) {
+          diceTotalSuccess.classList.add('critical');
         }
       }
     });

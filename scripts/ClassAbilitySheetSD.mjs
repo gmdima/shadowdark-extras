@@ -1,3 +1,6 @@
+// v13+ FilePicker namespaced under foundry.applications.apps.
+const FilePicker = foundry.applications.apps.FilePicker?.implementation ?? globalThis.FilePicker;
+
 /**
  * Class Ability Item Sheet - AppV2
  * Details, Description, and Macro tabs
@@ -79,14 +82,12 @@ export default class ClassAbilitySheetSD extends HandlebarsApplicationMixin(Docu
 	_getHeaderControls() {
 		const controls = super._getHeaderControls();
 
-		if (game.modules.get("itemacro")?.active) {
-			controls.unshift({
-				icon: "fas fa-code",
-				label: "Item Macro",
-				action: "itemMacro",
-				class: "item-macro-header-btn"
-			});
-		}
+		controls.unshift({
+			icon: "fas fa-code",
+			label: "Item Macro",
+			action: "itemMacro",
+			class: "item-macro-header-btn"
+		});
 
 		return controls;
 	}
@@ -129,8 +130,8 @@ export default class ClassAbilitySheetSD extends HandlebarsApplicationMixin(Docu
 
 		// Item Macro content
 		context.macroId = item.id;
-		context.macroCommand = item.getFlag("itemacro", "macro.command") || "";
-		context.macroName = item.getFlag("itemacro", "macro.name") || item.name;
+		context.macroCommand = item.getFlag(MODULE_ID, "macroCommand") ?? item.flags?.itemacro?.macro?.command ?? "";
+		context.macroName = item.getFlag(MODULE_ID, "macroName") ?? item.flags?.itemacro?.macro?.name ?? item.name;
 
 		// Tabs
 		context.tabs = this._prepareTabs();

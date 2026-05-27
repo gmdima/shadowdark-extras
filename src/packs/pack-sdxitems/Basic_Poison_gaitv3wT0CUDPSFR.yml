@@ -1,0 +1,94 @@
+folder: F3AKMIJQch1KV4FP
+name: Basic Poison
+type: Potion
+img: icons/consumables/potions/bottle-bulb-corked-green.webp
+system:
+  description: >-
+    <p>This is a basic poison that you can smear on your weapon (or the weapon
+    of a friend). Do not ingest.</p>
+  source:
+    title: ''
+  class: []
+  duration:
+    type: ''
+    value: 1
+  range: ''
+  tier: 1
+  broken: false
+  canBeEquipped: false
+  cost:
+    cp: 0
+    gp: 0
+    sp: 0
+  equipped: false
+  isAmmunition: false
+  isPhysical: true
+  magicItem: true
+  quantity: 1
+  slots:
+    free_carry: 0
+    per_slot: 1
+    slots_used: 1
+  stashed: false
+  spellName: ''
+effects: []
+ownership:
+  default: 0
+  lDQovrTY32fJwPBR: 3
+flags:
+  shadowdark-extras:
+    unidentified: false
+    unidentifiedName: ''
+    spellDamage:
+      enabled: false
+      damageType: ''
+      formulaType: basic
+      numDice: 1
+      dieType: d6
+      bonus: 0
+      scaling: none
+      scalingDice: 0
+      formula: ''
+      tieredFormula: ''
+      damageRequirement: ''
+      damageRequirementFailAction: zero
+      effectsRequirement: ''
+      effectsApplyToTarget: false
+      effectSelectionMode: all
+      trackDuration: false
+      perTurnTrigger: start
+      perTurnDamage: ''
+      reapplyEffects: false
+    summoning:
+      enabled: false
+      deleteAtExpiry: false
+    itemGive:
+      enabled: false
+    coatingPoison:
+      enabled: true
+      formulaType: basic
+      numDice: 1
+      dieType: d4
+      bonus: 0
+      formula: ''
+      tieredFormula: ''
+    unidentifiedDescription: ''
+    itemMacro:
+      runAsGm: false
+      executeOnUse: true
+  itemacro:
+    macro:
+      command: ''
+_stats:
+  compendiumSource: null
+  duplicateSource: null
+  exportSource: null
+  coreVersion: '13.348'
+  systemId: shadowdark
+  systemVersion: 3.6.1
+  createdTime: 1767970871609
+  modifiedTime: 1767970871609
+  lastModifiedBy: lDQovrTY32fJwPBR
+_id: gaitv3wT0CUDPSFR
+sort: 0
+_key: '!items!gaitv3wT0CUDPSFR'

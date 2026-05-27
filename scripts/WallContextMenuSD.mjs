@@ -12,8 +12,8 @@ export class WallContextMenuSD {
         // Hook into the right-click event on the WallsLayer (background)
         const WallsLayerClass = foundry.canvas?.layers?.WallsLayer || globalThis.WallsLayer;
         if (typeof libWrapper === "function") {
-            libWrapper.register(MODULE_ID, "WallsLayer.prototype._onClickRight", this._onLayerRightClick, "WRAPPER");
-            libWrapper.register(MODULE_ID, "Wall.prototype._onClickRight", this._onWallRightClick, "WRAPPER");
+            libWrapper.register(MODULE_ID, "foundry.canvas.layers.WallsLayer.prototype._onClickRight", this._onLayerRightClick, "WRAPPER");
+            libWrapper.register(MODULE_ID, "foundry.canvas.placeables.Wall.prototype._onClickRight", this._onWallRightClick, "WRAPPER");
         } else {
             const originalLayer = WallsLayerClass.prototype._onClickRight;
             WallsLayerClass.prototype._onClickRight = function (event) {

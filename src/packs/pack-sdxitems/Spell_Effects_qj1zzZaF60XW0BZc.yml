@@ -1,0 +1,20 @@
+type: Item
+folder: null
+name: Spell Effects
+color: null
+sorting: a
+_id: qj1zzZaF60XW0BZc
+description: ''
+sort: 0
+flags: {}
+_stats:
+  compendiumSource: null
+  duplicateSource: null
+  exportSource: null
+  coreVersion: '13.348'
+  systemId: shadowdark
+  systemVersion: 3.6.1
+  createdTime: 1767309319999
+  modifiedTime: 1767309319999
+  lastModifiedBy: lDQovrTY32fJwPBR
+_key: '!folders!qj1zzZaF60XW0BZc'
