@@ -1,8 +1,0 @@
-2026/05/27-08:41:53.251 30d4 Recovering log #104
-2026/05/27-08:41:53.254 30d4 Delete type=0 #104
-2026/05/27-08:41:53.254 30d4 Delete type=3 #102
-2026/05/27-08:52:00.791 953c Level-0 table #110: started
-2026/05/27-08:52:00.791 953c Level-0 table #110: 0 bytes OK
-2026/05/27-08:52:00.792 953c Delete type=0 #108
-2026/05/27-08:52:00.795 953c Manual compaction at level-0 from '!effects!0kYfBmCtUgrdP4jf' @ 72057594037927935 : 1 .. '!effects!zLBQIFzVlWgPT9p3' @ 0 : 0; will stop at (end)
-2026/05/27-08:52:00.795 953c Manual compaction at level-1 from '!effects!0kYfBmCtUgrdP4jf' @ 72057594037927935 : 1 .. '!effects!zLBQIFzVlWgPT9p3' @ 0 : 0; will stop at (end)
