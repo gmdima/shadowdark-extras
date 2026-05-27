@@ -66,7 +66,6 @@ jobs:
             maps \
             packs \
             scripts \
-            src \
             styles \
             templates \
             art
